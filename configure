@@ -1,0 +1,110 @@
+#! /bin/sh
+# Fancy colors used to beautify the output a bit.
+#
+NORMAL="\033[0m"
+BOLD="\033[1m"
+RED="\033[91m"
+YELLOW="\033[93m"
+GREEN="\033[92m"
+
+# Checks for Python interpreter. Honours $PYTHON if set. Stores path to
+# interpreter in $PYTHON.
+#
+checkPython()
+{
+	if [ -z $PYTHON ]; then
+	  PYTHON=`which python 2>/dev/null`
+	fi
+	echo -n "Checking for Python               :  "
+	if [ ! -x "$PYTHON" ]; then
+	  echo -e $GREEN"not found!"$NORMAL
+	  echo "Please make sure that the Python interpreter is available in your PATH"
+	  echo "or invoke configure using the PYTHON flag, e.g."
+	  echo "$ PYTHON=/usr/local/bin/python configure"
+	  exit 1
+	fi
+	echo -e $GREEN"$PYTHON"$NORMAL
+}
+
+# Check if configure is invoked from user made 'build' dir
+checkBuild()
+{
+    if [ ! -f "wscript" ]; then
+	if [ -f "../wscript" ]; then
+	    WAF_DIR=".."
+	    BLD_DIR=$(pwd)
+	else
+	    echo "No wscript file found!" && exit 1
+	fi
+    else
+	WAF_DIR="."
+	BLD_DIR="."
+    fi
+}
+
+
+# Checks for Waf. Honours $WAF if set. Stores path to 'waf' in $WAF.
+# Requires that $PYTHON is set.
+#
+checkWaf()
+{
+	echo -n "Checking for Waf                  :  "
+	if [ -z $WAF ]; then
+	  WAF=`which waf 2>/dev/null`
+	fi
+	if [ ! -e "$WAF" ]; then
+	  WAF=$WAF_DIR/waf.py
+	fi
+	if [ ! -e "$WAF" ]; then
+	  echo -e $BOLD"not found, will use mini distribution."$NORMAL
+	  cd $WAF_DIR
+	  tar xjf admin/waf-mini.tar.bz2
+	  cd -
+	  WAF=$WAF_DIR"/waf.py"
+	else
+	  echo -e $GREEN"$WAF"$NORMAL
+	fi
+}
+
+# Generates a Makefile. Requires that $WAF is set.
+#
+generateMakefile()
+{
+	cat > Makefile << EOF
+all:
+	@$WAF build
+
+# it is also possible to use
+# @$WAF -j4
+
+install:
+	@$WAF install
+
+clean:
+	@$WAF clean
+
+uninstall:
+	@$WAF uninstall
+
+dist:
+	@$WAF dist
+
+distclean:
+	@$WAF distclean
+EOF
+}
+
+checkBuild
+checkPython
+checkWaf
+
+if [[ "$1" == "--help" ]]; then
+   $WAF --help
+   exit
+fi
+
+generateMakefile
+echo "calling waf with parameters:"
+echo "$WAF $@ configure "
+$WAF $@ configure 
+
