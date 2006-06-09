@@ -13,7 +13,7 @@ blddir = '_build_'
 
 def build(bld):
 	# process subfolders from here
-	bld.add_subdirs('reporting')
+	bld.add_subdirs('reporting taskbrowser')
 
 def configure(conf):
 	conf.checkTool(['g++'])
