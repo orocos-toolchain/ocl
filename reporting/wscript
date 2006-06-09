@@ -8,14 +8,14 @@ def build(bld):
 	obj.source='''
 	main.cpp
 	'''
-	obj.includes='. /myreporting/include'
-	#obj.useliblocal='./orocos-reporting.a'
+	obj.includes='.'
+	obj.useliblocal='./orocos-reporting.a'
 	obj.uselib='OROCOS'
 	obj.target='reporting-test'
 
 	# 2. A shared library
 	# The extension (.so) is added automatically
-# 	obj = bld.createObj('cpp', 'staticlib')
+# 	obj = bld.createObj('cpp', 'shlib')
 # 	obj.source='''
 # 	ReportingComponent.cxx
 # 	'''
@@ -24,12 +24,12 @@ def build(bld):
 
 	# 3. A static library
 	# The extension (.a) is added automatically
-# 	obj = bld.createObj('cpp', 'staticlib')
-# 	obj.source='''
-# 	ReportingComponent.cxx
-# 	'''
-# 	obj.includes='/usr/local/orocos/include'
-# 	obj.target='orocos-reporting'
+	obj = bld.createObj('cpp', 'staticlib')
+	obj.source='''
+	ReportingComponent.cxx
+	'''
+	obj.uselib='OROCOS'
+	obj.target='orocos-reporting'
 
 def set_options(opt):
 	# options defined if src/ was to be compiled as a standalone module

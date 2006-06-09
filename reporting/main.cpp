@@ -1,13 +1,13 @@
 #include "ReportingComponent.hpp"
 
 #include <corelib/SlaveActivity.hpp>
+#include <corelib/PeriodicActivity.hpp>
 #include <execution/TaskBrowser.hpp>
 #include <execution/Ports.hpp>
 
 using namespace std;
-using namespace ORO_CoreLib;
-using namespace ORO_Execution;
-using namespace ORO_Components;
+using namespace Orocos;
+using namespace RTT;
 
 class TestTaskContext
     : public GenericTaskContext
@@ -25,6 +25,10 @@ public:
         this->attributes()->addProperty( & hello );
         this->ports()->addPort( &drport );
         this->ports()->addPort( &dwport );
+
+        // write initial value.
+        std::vector<double> init(10, 1.0);
+        dwport.Set( init );
     }
 };
 
@@ -49,7 +53,15 @@ public:
 
 int ORO_main( int argc, char** argv)
 {
-    SlaveActivity slave(0.01);
+    // Set log level more verbose than default,
+    // such that we can see output :
+    if ( Logger::log().getLogLevel() < Logger::Info ) {
+        Logger::log().setLogLevel( Logger::Info );
+        Logger::log() << Logger::Info << argv[0] << " manually raises LogLevel to 'Info' (5). See also file 'orocos.log'."<<Logger::endl;
+    }
+
+
+    PeriodicActivity act(10, 1.0);
     ReportingComponent rc("Reporting");
     TestTaskContext gtc("MyPeer");
     TestTaskContext2 gtc2("MyPeer2");
@@ -60,9 +72,16 @@ int ORO_main( int argc, char** argv)
 
     TaskBrowser tb( &rc );
 
-    slave.run( rc.engine() );
+    act.run( rc.engine() );
 
+    cout <<endl<< "  This demo allows reporting of Components." << endl;
+    cout << "  Use 'reportComponent(\"MyPeer\")' and/or 'reportComponent(\"MyPeer2\")'" <<endl;
+    cout << "  Then invoke 'start()' and 'stop()'" <<endl;
+    cout << "  Other methods (type 'this') are available as well."<<endl;
+        
     tb.loop();
+
+    act.stop();
 
     return 0;
 }

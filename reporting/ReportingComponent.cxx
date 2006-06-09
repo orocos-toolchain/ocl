@@ -25,137 +25,97 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifdef ORO_PRAGMA_INTERFACE
-#pragma implementation
-#endif
-
 #include "ReportingComponent.hpp"
-#include <corelib/PropertyComposition.hpp>
 #include <corelib/Logger.hpp>
+
+// Impl.
 #include <execution/TemplateFactories.hpp>
+#include <corelib/marshalling/TableMarshaller.hpp>
+#include <corelib/marshalling/TableHeaderMarshaller.hpp>
+#include <corelib/marshalling/EmptyMarshaller.hpp>
+#include <iostream>
+#include <fstream>
 
-namespace ORO_Components
+
+
+
+namespace Orocos
 {
-    using namespace detail;
+    using namespace RTT;
+    using namespace std;
 
-    ReportingComponent::ReportingComponent(std::string _name) 
-        : GenericTaskContext( _name )
-        splitStream(0), config(0), nh_config(0),
-        reporter(0),
-        period("ReportPeriod","in seconds", 0.1 ), 
-        repFile("ReportFile","", "report.txt"),
-        toStdOut("WriteToStdOut","", false),
-        writeHeader("WriteHeader","", true)
-#ifdef OROINT_OS_STDIOSTREAM
-        ,toFile("WriteToFile","", false)
-#endif
+    ReportingComponent::ReportingComponent( std::string name /*= "Reporting" */ ) 
+        : GenericTaskContext( name ),
+          report("Report"),
+          autotrigger("AutoTrigger","When set to 1, the data is taken upon each update, "
+                      "otherwise, the data is only taken when the user invokes 'update()'.",
+                      true),
+          starttime(0), timestamp("TimeStamp","The time at which the data was read.",0.0)
     {
-        this->attributes()->addProperty( &period);
-        this->attributes()->addProperty( &repFile);
-        this->attributes()->addProperty( &toStdOut);
-        this->attributes()->addProperty( &writeHeader);
-#ifdef OROINT_OS_STDIOSTREAM
-        this->attributes()->addProperty( &toFile);
-#endif
-    }
+        this->attributes()->addProperty( &autotrigger );
+        this->attributes()->addProperty( &autotrigger );
 
-    ReportingComponent::~ReportingComponent() {
-        if (serverOwner) {
-            // only cleanup upon destruction, if this reportserver is still used, the application
-            // will crash.
-            PropertyReporter<NoHeaderMarshallTableType>::nameserver.unregisterName( reportServer );
-            PropertyReporter<MarshallTableType>::nameserver.unregisterName( reportServer );
-            delete reporterTask;
-            delete reporter;
-            delete config;
-            delete nh_config;
-            delete splitStream;
-#ifdef OROINT_OS_STDIOSTREAM
-            if ( toFile )
-                {
-                    delete fileStream;
-                }
-#endif
-        }
-    }
-
-    bool ReportingComponent::startup()
-    {
-        Logger::In in( this->getName().c_str() );
-
-        
-
-        if ( writeHeader )
-            {
-                PropertyReporter<MarshallTableType>* tmp_ptr;
-                tmp_ptr = new PropertyReporter<MarshallTableType>( *config, reportServer );
-                tmp_run = tmp_ptr;
-                reporter = tmp_ptr;
-            }
-        else
-            {
-                PropertyReporter<NoHeaderMarshallTableType>* tmp_ptr;
-                tmp_ptr = new PropertyReporter<NoHeaderMarshallTableType>( *nh_config, reportServer );
-                tmp_run = tmp_ptr;
-                reporter = tmp_ptr;
-            }
-        return true;
-    }
-
-    void ReportingComponent::update()
-    {
-        // copy contents, if possible, on frequency of reporter.
-        for ( DosList::iterator it = active_dos.begin(); it != active_dos.end(); ++it )
-            (*it)->refresh();
-
-        //(*it)->refreshReports( (*it)->getReports()->value() );
-
-        if ( reporter && serverOwner )
-            {
-                if ( count % interval == 0 )
-                    {
-                        reporter->trigger(); // instruct copy.
-                        count = 0;
-                    }
-                ++count;
-            }
-    }
-
-    void ReportingComponent::finalize()
-    {
-        Logger::In in("Reporting");
-    }
-
-    using namespace ORO_Execution;
-    MethodFactoryInterface* ReportingComponent::createMethodFactory()
-    {
         // Add the methods, methods make sure that they are 
         // executed in the context of the (non realtime) caller.
         TemplateMethodFactory< ReportingComponent  >* ret =
             newMethodFactory( this );
+        ret->add( "snapshot",
+                  method
+                  ( &ReportingComponent::snapshot ,
+                    "Take a new shapshot of the data and set the timestamp.") );
         ret->add( "reportComponent",
                   method
                   ( &ReportingComponent::reportComponent ,
-                    "Add a Component for reporting. Only works if Component exists and Kernel is not running.",
+                    "Add a Component for reporting. Only works if Component is connected.",
                     "Component", "Name of the Component") );
-        ret->add( "reportDataObject",
-                  method
-                  ( &ReportingComponent::reportDataObject ,
-                    "Add a DataObject for reporting. Only works if DataObject exists and Kernel is not running.",
-                    "DataObject", "Name of the DataObject. For example, 'Inputs' or 'Inputs::ChannelValues'.") );
         ret->add( "unreportComponent",
                   method
                   ( &ReportingComponent::unreportComponent ,
-                    "Remove a Component for reporting. Only works if Component exists and Kernel is not running.",
-                    "Component", "Name of the Component") );
-        ret->add( "reportDataObject",
+                    "Remove a Component from reporting.",
+                    "Component", "Name of the Component"
+                    ) );
+        ret->add( "reportData",
                   method
-                  ( &ReportingComponent::unreportDataObject ,
-                    "Remove a DataObject for reporting. Only works if DataObject exists and Kernel is not running.",
-                    "DataObject", "Name of the DataObject. For example, 'Inputs' or 'Inputs::ChannelValues'.") );
-        return ret;
+                  ( &ReportingComponent::reportData ,
+                    "Add a Component's DataSource for reporting. Only works if DataObject exists and Component is connected.",
+                    "Component", "Name of the Component",
+                    "DataObject", "Name of the DataObject. For example, a property or attribute.") );
+        ret->add( "unreportData",
+                  method
+                  ( &ReportingComponent::unreportData ,
+                    "Remove a DataObject from reporting.",
+                    "Component", "Name of the Component",
+                    "DataObject", "Name of the DataObject.") );
+        ret->add( "reportConnection",
+                  method
+                  ( &ReportingComponent::reportConnection ,
+                    "Add a Component's Connection for reporting. Only works if the Connection exists and Component is connected.",
+                    "Component", "Name of the Component",
+                    "Port", "Name of the Port to the connection.") );
+        ret->add( "unreportConnection",
+                  method
+                  ( &ReportingComponent::unreportConnection ,
+                    "Remove a Connection for reporting.",
+                    "Component", "Name of the Component",
+                    "Port", "Name of the Port to the connection.") );
+        this->methods()->registerObject("this", ret);
     }
 
+    ReportingComponent::~ReportingComponent() {}
+
+    bool ReportingComponent::addMarshaller( RTT::Marshaller* headerM, RTT::Marshaller* bodyM)
+    {
+        boost::shared_ptr<RTT::Marshaller> header(headerM);
+        boost::shared_ptr<RTT::Marshaller> body(bodyM);
+        if ( !header && !body)
+            return false;
+        if ( !header )
+            header.reset( new RTT::EmptyMarshaller() );
+        if ( !body)
+            body.reset( new RTT::EmptyMarshaller());
+
+        marshallers.push_back( std::make_pair( header, body ) );
+    }
 
     bool ReportingComponent::screenComponent( const std::string& comp )
     {
@@ -164,6 +124,7 @@ namespace ORO_Components
             return false;
         return this->screenImpl( comp, cout );
     }
+
     bool ReportingComponent::screenComponentToFile( const std::string& comp, const std::string& filename )
     {
         Logger::In in("screenComponentToFile");
@@ -180,29 +141,214 @@ namespace ORO_Components
             Logger::log() <<Logger::Error << "Unknown Component: " <<comp<<Logger::endl;
             return false;
         }
-        output << "Screening Component '"<< comp << "' : "<< nl << nl;
-        PropertyBag* bag = c->properties();
+        output << "Screening Component '"<< comp << "' : "<< endl << endl;
+        PropertyBag* bag = c->attributes()->properties();
         if (bag) {
-            output << "Properties :" << nl;
+            output << "Properties :" << endl;
             for (PropertyBag::iterator it= bag->begin(); it != bag->end(); ++it)
-                output << "  " << (*it)->getName() << " : " << *(*it)->getDataSource() << nl;
+                output << "  " << (*it)->getName() << " : " << (*it)->getDataSource() << endl;
         }
         AttributeRepository::AttributeNames atts = c->attributes()->names();
         if ( !atts.empty() ) {
-            output << "Attributes :" << nl;
+            output << "Attributes :" << endl;
             for (AttributeRepository::AttributeNames::iterator it= atts.begin(); it != atts.end(); ++it)
-                output << "  " << *it << " : " << *c->attributes()->getValue(*it)->getDataSource() << nl;
+                output << "  " << *it << " : " << c->attributes()->getValue(*it)->getDataSource() << endl;
         }
     }
 
-    // report the datasources.
-    bool ReportingComponent::reportComponent( const std::string& comp );
-    bool ReportingComponent::unreportComponent( const std::string& comp );
+    bool ReportingComponent::reportComponent( const std::string& component ) { 
+        // Users may add own data sources, so avoid duplicates
+        //std::vector<std::string> sources                = comp->data()->getNames();
+        RTT::TaskContext* comp = this->getPeer(component);
+        using namespace ORO_CoreLib;
+        if ( !comp ) {
+            Logger::log() <<Logger::Error << "Could not report Component " << component <<" : no such peer."<<Logger::endl;
+            return false;
+        }
+        Ports ports   = comp->ports()->getPorts();
+        for (Ports::iterator it = ports.begin(); it != ports.end() ; ++it) {
+            if ( (*it)->connected() ) {
+                this->reportDataSource( component + "." + (*it)->getName(), (*it)->connection()->getDataSource() );
+                Logger::log() <<Logger::Info << "Reporting port " << (*it)->getName()<<" : ok."<<Logger::endl;
+            } else {
+                Logger::log() <<Logger::Warning << "Could not report port " << (*it)->getName()<<" : not connected."<<Logger::endl;
+            }
+        }
+        return true;
+    }
+
+            
+    bool ReportingComponent::unreportComponent( const std::string& component ) {
+        RTT::TaskContext* comp = this->getPeer(component);
+        using namespace ORO_CoreLib;
+        if ( !comp ) {
+            Logger::log() <<Logger::Error << "Could not unreport Component " << component <<" : no such peer."<<Logger::endl;
+            return false;
+        }
+        Ports ports   = comp->ports()->getPorts();
+        for (Ports::iterator it = ports.begin(); it != ports.end() ; ++it) {
+            this->unreportData( component + "." + (*it)->getName() );
+        }
+    }
+
     // report a specific connection.
-    bool ReportingComponent::reportConnection(const std::string& comp, const std::string& port );
-    bool ReportingComponent::unreportConnection(const std::string& comp, const std::string& port );
-    // report a specific datasource.
-    bool ReportingComponent::reportDataSource(const std::string& comp,const std::string& datasource);
-    bool ReportingComponent::unreportDataSource(const std::string& comp,const std::string& datasource);
+    bool ReportingComponent::reportConnection(const std::string& component, const std::string& port ) {
+        RTT::TaskContext* comp = this->getPeer(component);
+        using namespace ORO_CoreLib;
+        using namespace RTT;
+        if ( !comp ) {
+            Logger::log() <<Logger::Error << "Could not report Component " << component <<" : no such peer."<<Logger::endl;
+            return false;
+        }
+        PortInterface* porti   = comp->ports()->getPort(port);
+        if ( !porti ) {
+            Logger::log() <<Logger::Error << "Could not report Port " << port
+                          <<" : no such port on Component "<<component<<"."<<Logger::endl;
+            return false;
+        }
+        if ( porti->connected() ) {
+            this->reportDataSource( component + "." + port, porti->connection()->getDataSource() );
+            Logger::log() <<Logger::Info << "Reporting port " << port <<" : ok."<<Logger::endl;
+        } else {
+            Logger::log() <<Logger::Warning << "Could not report port " << port <<" : not connected."<<Logger::endl;
+        }
+        return true;
+    }
+
+    bool ReportingComponent::unreportConnection(const std::string& component, const std::string& port ) {
+        return this->unreportData( component + "." + port );
+    }
+
+    // report a specific datasource, property,...
+    bool ReportingComponent::reportData(const std::string& component,const std::string& dataname) 
+    { 
+        RTT::TaskContext* comp = this->getPeer(component);
+        using namespace ORO_CoreLib;
+        if ( !comp ) {
+            Logger::log() <<Logger::Error << "Could not report Component " << component <<" : no such peer."<<Logger::endl;
+            return false;
+        }
+        // Is it an attribute ?
+        if ( comp->attributes()->getValue( dataname ) )
+            return this->reportDataSource( component + "." + dataname,
+                                           comp->attributes()->getValue( dataname )->getDataSource() );
+        // Is it a property ?
+        if ( comp->attributes()->properties() && comp->attributes()->properties()->find( dataname ) )
+            return this->reportDataSource( component + "." + dataname,
+                                           comp->attributes()->properties()->find( dataname )->getDataSource() );
+        // Is it a datasource ?
+        if ( comp->datasources()->hasMember("this",dataname) ) {
+            if (comp->datasources()->getObjectFactory("this")->getArity( dataname ) == 0)
+                return this->reportDataSource( component + "." + dataname,
+                                               comp->datasources()->getObjectFactory("this")
+                                               ->create( dataname, std::vector<DataSourceBase::shared_ptr>() ) );
+            Logger::log() <<Logger::Error << "Could not report Data " << dataname <<" with arity != 0."<<Logger::endl;
+        }
+        return false; 
+    }
+
+    bool ReportingComponent::unreportData(const std::string& component,const std::string& datasource) { 
+        return this->unreportData( component +"." + datasource); 
+    }
+
+    void ReportingComponent::snapshot() {
+        timestamp = RTT::TimeService::Instance()->secondsSince( starttime );
+            
+        // execute the copy commands (fast).
+        for(Reports::iterator it = root.begin(); it != root.end(); ++it )
+            (it->get<2>())->execute();
+    }
+
+    bool ReportingComponent::reportDataSource(std::string tag, RTT::DataSourceBase::shared_ptr orig)
+    {
+        // creates a copy of the data and an update command to
+        // update the copy from the original.
+        RTT::DataSourceBase::shared_ptr clone = orig->getTypeInfo()->buildValue();
+        using namespace ORO_CoreLib;
+        if ( !clone ) {
+            Logger::log() <<Logger::Error << "Could not report '"<< tag <<"' : unknown type." << Logger::endl;
+            return false;
+        }
+        try {
+            boost::shared_ptr<RTT::CommandInterface> comm( clone->updateCommand( orig.get() ) );
+            assert( comm );
+            root.push_back( boost::make_tuple( tag, orig, comm, clone ) );
+        } catch ( bad_assignment& ba ) {
+            Logger::log() <<Logger::Error << "Could not report '"<< tag <<"' : failed to create Command." << Logger::endl;
+            return false;
+        }
+        return true;
+    }
+
+    bool ReportingComponent::unreportData(std::string tag)
+    {
+        for (Reports::iterator it = root.begin();
+             it != root.end(); ++it)
+            if ( it->get<0>() == tag ) {
+                root.erase(it);
+                return true;
+            }
+        return false;
+    }
+
+    bool ReportingComponent::startup() {
+        if (marshallers.begin() == marshallers.end())
+            this->addMarshaller( new RTT::TableHeaderMarshaller<std::ostream>( std::cerr ),
+                                 new RTT::TableMarshaller<std::ostream>( std::cerr) );
+        // write headers.
+        this->makeReport();
+        for(Marshallers::iterator it=marshallers.begin(); it != marshallers.end(); ++it) {
+            it->first->serialize( report );
+            it->first->flush();
+        }
+        this->cleanReport();
+        starttime = RTT::TimeService::Instance()->getTicks();
+    }
+
+    void ReportingComponent::makeReport()
+    {
+        using namespace ORO_CoreLib;
+            
+        report.add( timestamp.clone() );
+        for(Reports::iterator it = root.begin(); it != root.end(); ++it ) {
+            DataSourceBase::shared_ptr clone = it->get<3>();
+            Property<PropertyBag> subbag( it->get<0>(), "");
+            if ( clone->getTypeInfo()->decomposeType( clone, subbag.value() ) )
+                report.add( subbag.clone() );
+            else
+                report.add( clone->getTypeInfo()->buildProperty(it->get<0>(), "", clone) );
+        }
+    }
+
+    void ReportingComponent::cleanReport()
+    {
+        // Only clones were added to result, so delete them.
+        deletePropertyBag( report );
+    }
+
+    void ReportingComponent::update() {
+        // Step 1: Make copies in order to 'snapshot' all data with a timestamp
+        if ( autotrigger )
+            this->snapshot();
+
+        // Step 2: Prepare bag: Decompose to native types (double,int,...)
+        this->makeReport();
+
+        // Step 3: print out the result
+        // write out to all marshallers
+        for(Marshallers::iterator it=marshallers.begin(); it != marshallers.end(); ++it) {
+            it->second->serialize( report );
+            it->second->flush();
+        }
+
+        this->cleanReport();
+    }
+
+    void ReportingComponent::shutdown() {
+        // tell body marshallers that serialization is done.
+        for(Marshallers::iterator it=marshallers.begin(); it != marshallers.end(); ++it) {
+            it->second->flush();
+        }
+    }
 
 }
