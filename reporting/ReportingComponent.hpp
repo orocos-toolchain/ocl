@@ -93,9 +93,9 @@ namespace Orocos
         bool unreportComponent( const std::string& component );
 
         // report a specific connection.
-        bool reportConnection(const std::string& component, const std::string& port );
+        bool reportPort(const std::string& component, const std::string& port );
 
-        bool unreportConnection(const std::string& component, const std::string& port );
+        bool unreportPort(const std::string& component, const std::string& port );
 
         // report a specific datasource, property,...
         bool reportData(const std::string& component,const std::string& dataname);

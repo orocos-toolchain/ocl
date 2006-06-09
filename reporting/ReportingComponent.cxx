@@ -63,6 +63,11 @@ namespace Orocos
                   method
                   ( &ReportingComponent::snapshot ,
                     "Take a new shapshot of the data and set the timestamp.") );
+        ret->add( "screenComponent",
+                  method
+                  ( &ReportingComponent::screenComponent ,
+                    "Display the variables and ports of a Component.",
+                    "Component", "Name of the Component") );
         ret->add( "reportComponent",
                   method
                   ( &ReportingComponent::reportComponent ,
@@ -86,15 +91,15 @@ namespace Orocos
                     "Remove a DataObject from reporting.",
                     "Component", "Name of the Component",
                     "DataObject", "Name of the DataObject.") );
-        ret->add( "reportConnection",
+        ret->add( "reportPort",
                   method
-                  ( &ReportingComponent::reportConnection ,
-                    "Add a Component's Connection for reporting. Only works if the Connection exists and Component is connected.",
+                  ( &ReportingComponent::reportPort ,
+                    "Add a Component's Connection or Port for reporting.",
                     "Component", "Name of the Component",
                     "Port", "Name of the Port to the connection.") );
-        ret->add( "unreportConnection",
+        ret->add( "unreportPort",
                   method
-                  ( &ReportingComponent::unreportConnection ,
+                  ( &ReportingComponent::unreportPort ,
                     "Remove a Connection for reporting.",
                     "Component", "Name of the Component",
                     "Port", "Name of the Port to the connection.") );
@@ -115,6 +120,7 @@ namespace Orocos
             body.reset( new RTT::EmptyMarshaller());
 
         marshallers.push_back( std::make_pair( header, body ) );
+        return true;
     }
 
     bool ReportingComponent::screenComponent( const std::string& comp )
@@ -154,6 +160,19 @@ namespace Orocos
             for (AttributeRepository::AttributeNames::iterator it= atts.begin(); it != atts.end(); ++it)
                 output << "  " << *it << " : " << c->attributes()->getValue(*it)->getDataSource() << endl;
         }
+
+        vector<string> ports = c->ports()->getPortNames();
+        if ( !ports.empty() ) {
+            output << "Ports :" << endl;
+            for (vector<string>::iterator it= ports.begin(); it != ports.end(); ++it) {
+                output << "  " << *it << " : "; 
+                if (c->ports()->getPort(*it)->connected() )
+                    output << c->ports()->getPort(*it)->connection()->getDataSource() << endl;
+                else
+                    output << "(not connected)" << endl;
+            }
+        }
+        return true;
     }
 
     bool ReportingComponent::reportComponent( const std::string& component ) { 
@@ -167,12 +186,8 @@ namespace Orocos
         }
         Ports ports   = comp->ports()->getPorts();
         for (Ports::iterator it = ports.begin(); it != ports.end() ; ++it) {
-            if ( (*it)->connected() ) {
-                this->reportDataSource( component + "." + (*it)->getName(), (*it)->connection()->getDataSource() );
-                Logger::log() <<Logger::Info << "Reporting port " << (*it)->getName()<<" : ok."<<Logger::endl;
-            } else {
-                Logger::log() <<Logger::Warning << "Could not report port " << (*it)->getName()<<" : not connected."<<Logger::endl;
-            }
+            Logger::log() <<Logger::Debug << "Checking port " << (*it)->getName()<<"."<<Logger::endl;
+            this->reportPort( component, (*it)->getName() );
         }
         return true;
     }
@@ -188,11 +203,13 @@ namespace Orocos
         Ports ports   = comp->ports()->getPorts();
         for (Ports::iterator it = ports.begin(); it != ports.end() ; ++it) {
             this->unreportData( component + "." + (*it)->getName() );
+            if ( this->ports()->getPort( (*it)->getName() ) ) {
+            }
         }
     }
 
     // report a specific connection.
-    bool ReportingComponent::reportConnection(const std::string& component, const std::string& port ) {
+    bool ReportingComponent::reportPort(const std::string& component, const std::string& port ) {
         RTT::TaskContext* comp = this->getPeer(component);
         using namespace ORO_CoreLib;
         using namespace RTT;
@@ -210,12 +227,27 @@ namespace Orocos
             this->reportDataSource( component + "." + port, porti->connection()->getDataSource() );
             Logger::log() <<Logger::Info << "Reporting port " << port <<" : ok."<<Logger::endl;
         } else {
-            Logger::log() <<Logger::Warning << "Could not report port " << port <<" : not connected."<<Logger::endl;
+            // create new port temporarily 
+            // this port is only created with the purpose of
+            // creating a connection object.
+            PortInterface* ourport = porti->antiClone();
+            assert(ourport);
+
+            ConnectionInterface::shared_ptr ci = porti->createConnection( ourport );
+            if ( !ci ) 
+                ci = ourport->createConnection( porti );
+            if ( !ci )
+                return false;
+            ci->connect();
+            
+            delete ourport;
+            this->reportDataSource( component + "." + porti->getName(), ci->getDataSource() );
+            Logger::log() <<Logger::Info << "Created connection for port " << porti->getName()<<" : ok."<<Logger::endl;
         }
         return true;
     }
 
-    bool ReportingComponent::unreportConnection(const std::string& component, const std::string& port ) {
+    bool ReportingComponent::unreportPort(const std::string& component, const std::string& port ) {
         return this->unreportData( component + "." + port );
     }
 

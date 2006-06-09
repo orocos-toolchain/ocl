@@ -66,8 +66,11 @@ int ORO_main( int argc, char** argv)
     TestTaskContext gtc("MyPeer");
     TestTaskContext2 gtc2("MyPeer2");
 
+    TestTaskContext2 gtc3("MySoloPeer");
+
     rc.addPeer( &gtc );
     rc.addPeer( &gtc2 );
+    rc.addPeer( &gtc3 );
     gtc.connectPeers( &gtc2 );
 
     TaskBrowser tb( &rc );
