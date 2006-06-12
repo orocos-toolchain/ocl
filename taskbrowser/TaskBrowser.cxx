@@ -72,6 +72,8 @@ namespace Orocos
     std::string TaskBrowser::text;
     TaskContext* TaskBrowser::taskcontext = 0;
     TaskContext* TaskBrowser::peer = 0;
+    TaskContext* TaskBrowser::ppeer = 0;
+    TaskContext* TaskBrowser::tb = 0;
 
     using boost::bind;
     using namespace ORO_CoreLib;

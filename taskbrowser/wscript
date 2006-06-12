@@ -4,24 +4,24 @@
 
 def build(bld):
 	# 1. A simple program
-# 	obj = bld.createObj('cpp', 'program')
-# 	obj.source='''
-# 	main.cpp
-# 	'''
-# 	obj.includes='.'
-# 	obj.useliblocal='./orocos-taskbrowser'
-# 	obj.uselib='OROCOS'
-# 	obj.target='task-test'
+	obj = bld.createObj('cpp', 'program')
+	obj.source='''
+	main.cpp
+	'''
+	obj.includes='.'
+	obj.useliblocal='./orocos-taskbrowser.a'
+	obj.uselib='OROCOS'
+	obj.target='task-test'
 
 	# 2. A shared library
 	# The extension (.so) is added automatically
-	obj = bld.createObj('cpp', 'shlib')
-	obj.source='''
-	TaskBrowser.cxx
-	'''
-	obj.includes='.'
-	obj.uselib='OROCOS'
-	obj.target='orocos-taskbrowser'
+# 	obj = bld.createObj('cpp', 'shlib')
+# 	obj.source='''
+# 	TaskBrowser.cxx
+# 	'''
+# 	obj.includes='.'
+# 	obj.uselib='OROCOS'
+# 	obj.target='orocos-taskbrowser'
 
 	# 3. A static library
 	# The extension (.a) is added automatically
@@ -29,6 +29,7 @@ def build(bld):
 	obj.source='''
 	TaskBrowser.cxx
 	'''
+	obj.uselib='OROCOS'
 	obj.includes='.'
 	obj.target='orocos-taskbrowser'
 
