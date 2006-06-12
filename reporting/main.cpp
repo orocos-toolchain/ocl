@@ -1,4 +1,4 @@
-#include "ReportingComponent.hpp"
+#include "ConsoleReporting.hpp"
 
 #include <corelib/SlaveActivity.hpp>
 #include <corelib/PeriodicActivity.hpp>
@@ -62,7 +62,7 @@ int ORO_main( int argc, char** argv)
 
 
     PeriodicActivity act(10, 1.0);
-    ReportingComponent rc("Reporting");
+    ConsoleReporting rc("Reporting");
     TestTaskContext gtc("MyPeer");
     TestTaskContext2 gtc2("MyPeer2");
 

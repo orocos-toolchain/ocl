@@ -1,0 +1,43 @@
+#ifndef ORO_COMP_FILE_REPORTING_HPP
+#define ORO_COMP_FILE_REPORTING_HPP
+
+#include "ReportingComponent.hpp"
+#include <fstream>
+
+namespace Orocos
+{
+    /**
+     * A component which writes data reports to a file.
+     */
+    class FileReporting
+        : public ReportingComponent
+    {
+    protected:
+        /**
+         * File name to write reports to.
+         */
+        RTT::Property<std::string>   repfile;
+
+        /**
+         * File to write reports to.
+         */
+        std::ofstream mfile;
+
+        RTT::Marshaller* fheader;
+        RTT::Marshaller* fbody;
+    public:
+        FileReporting(const std::string& fr_name);
+
+        bool startup();
+
+        void shutdown();
+
+        /**
+         * Writes the interface status of \a comp to 
+         * a file 'comp.screen'.
+         */
+        bool screenComponent( const std::string& comp);
+    };
+}
+
+#endif

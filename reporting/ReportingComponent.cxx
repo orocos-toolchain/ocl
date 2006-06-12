@@ -30,14 +30,13 @@
 
 // Impl.
 #include <execution/TemplateFactories.hpp>
-#include <corelib/marshalling/TableMarshaller.hpp>
-#include <corelib/marshalling/TableHeaderMarshaller.hpp>
 #include <corelib/marshalling/EmptyMarshaller.hpp>
-#include <iostream>
+
+#ifdef OROINT_OS_STDIOSTREAM
+#include <corelib/marshalling/CPFDemarshaller.hpp>
+#include <corelib/marshalling/CPFMarshaller.hpp>
 #include <fstream>
-
-
-
+#endif
 
 namespace Orocos
 {
@@ -47,13 +46,18 @@ namespace Orocos
     ReportingComponent::ReportingComponent( std::string name /*= "Reporting" */ ) 
         : GenericTaskContext( name ),
           report("Report"),
-          autotrigger("AutoTrigger","When set to 1, the data is taken upon each update, "
-                      "otherwise, the data is only taken when the user invokes 'update()'.",
+          autotrigger("AutoTrigger","When set to 1, the data is taken upon each update(), "
+                      "otherwise, the data is only taken when the user invokes 'snapshot()'.",
                       true),
-          starttime(0), timestamp("TimeStamp","The time at which the data was read.",0.0)
+          config("Configuration","The name of the property file which lists what is to be reported.",
+                 "reporter.cpf"),
+          writeHeader("WriteHeader","Set to true to start each report with a header.", true),
+          starttime(0), 
+          timestamp("TimeStamp","The time at which the data was read.",0.0)
     {
         this->attributes()->addProperty( &autotrigger );
-        this->attributes()->addProperty( &autotrigger );
+        this->attributes()->addProperty( &config );
+        this->attributes()->addProperty( &writeHeader );
 
         // Add the methods, methods make sure that they are 
         // executed in the context of the (non realtime) caller.
@@ -63,6 +67,14 @@ namespace Orocos
                   method
                   ( &ReportingComponent::snapshot ,
                     "Take a new shapshot of the data and set the timestamp.") );
+        ret->add( "load",
+                  method
+                  ( &ReportingComponent::load ,
+                    "Read the Configuration file.") );
+        ret->add( "store",
+                  method
+                  ( &ReportingComponent::store ,
+                    "Write the Configuration file.") );
         ret->add( "screenComponent",
                   method
                   ( &ReportingComponent::screenComponent ,
@@ -108,6 +120,7 @@ namespace Orocos
 
     ReportingComponent::~ReportingComponent() {}
 
+
     bool ReportingComponent::addMarshaller( RTT::Marshaller* headerM, RTT::Marshaller* bodyM)
     {
         boost::shared_ptr<RTT::Marshaller> header(headerM);
@@ -123,25 +136,95 @@ namespace Orocos
         return true;
     }
 
-    bool ReportingComponent::screenComponent( const std::string& comp )
+    bool ReportingComponent::removeMarshallers()
     {
-        Logger::In in("screenComponent");
-        if (!cout)
-            return false;
-        return this->screenImpl( comp, cout );
+        marshallers.clear();
+        return true;
     }
 
-    bool ReportingComponent::screenComponentToFile( const std::string& comp, const std::string& filename )
+
+    bool ReportingComponent::store()
     {
-        Logger::In in("screenComponentToFile");
-        ofstream file( filename.c_str() );
-        if (!file)
+#ifdef OROINT_OS_STDIOSTREAM
+        Logger::In in("ReportingComponent");
+        ofstream outf( config.get().c_str() );
+        if ( !outf ) {
+            Logger::log() << Logger::Error << "Writing file "<< config.get() << " failed."<<Logger::endl;
             return false;
-        return this->screenImpl( comp, file );
+        }
+        CPFMarshaller<std::ostream> marsh( outf );
+        PropertyBag bag;
+        Reports::iterator it = root.begin();
+        while ( it != root.end() ) {
+            string tag = boost::get<0>(*it);
+            string type = boost::get<4>(*it);
+            bag.add( new Property<string>(type,"",tag ) );
+            ++it;
+        }
+        marsh.serialize( bag );
+        deleteProperties(bag);
+        return true;
+#else
+        return false;
+#endif
+    }
+
+    bool ReportingComponent::load()
+    {
+#ifdef OROINT_OS_STDIOSTREAM
+        Logger::In in("ReportingComponent");
+        CPFDemarshaller dem( config.get() );
+        PropertyBag bag;
+        if (dem.deserialize( bag ) == false ) {
+            Logger::log() << Logger::Error << "Reading file "<< config.get() << " failed."<<Logger::endl;
+            return false;
+        }
+        
+        bool ok = true;
+        PropertyBag::const_iterator it = bag.getProperties().begin();
+        while ( it != bag.getProperties().end() )
+            {
+                Property<std::string>* compName = dynamic_cast<Property<std::string>* >( *it );
+                if ( !compName )
+                    Logger::log() << Logger::Error << "Expected Property \""
+                                  << (*it)->getName() <<"\" to be of type string."<< Logger::endl;
+                else if ( compName->getName() == "Component" ) {
+                    ok &= this->reportComponent( compName->value() );
+                }
+                else if ( compName->getName() == "Port" ) {
+                    string cname = compName->value().substr(0, compName->value().find("."));
+                    string pname = compName->value().substr( compName->value().find(".")+1, string::npos);
+                    ok &= this->reportPort(cname, pname);
+                }
+                else if ( compName->getName() == "Data" ) {
+                    string cname = compName->value().substr(0, compName->value().find("."));
+                    string pname = compName->value().substr( compName->value().find(".")+1, string::npos);
+                    ok &= this->reportData(cname, pname);
+                }
+                else {
+                    Logger::log() << Logger::Error << "Expected \"Component\", \"Port\" or \"Data\", got "
+                                  << compName->getName() << Logger::endl;
+                    ok = false;
+                }
+                ++it;
+            }
+        deleteProperties( bag );
+        return ok;
+#else
+        return false;
+#endif
+    }
+
+    bool ReportingComponent::screenComponent( const std::string& comp )
+    {
+        Logger::In in("ReportingComponent::screenComponent");
+        Logger::log() <<Logger::Error << "not implemented." <<comp<<Logger::endl;
+        return false;
     }
 
     bool ReportingComponent::screenImpl( const std::string& comp, std::ostream& output)
     {
+        Logger::In in("ReportingComponent");
         TaskContext* c = this->getPeer(comp);
         if ( c == 0) {
             Logger::log() <<Logger::Error << "Unknown Component: " <<comp<<Logger::endl;
@@ -176,6 +259,7 @@ namespace Orocos
     }
 
     bool ReportingComponent::reportComponent( const std::string& component ) { 
+        Logger::In in("ReportingComponent");
         // Users may add own data sources, so avoid duplicates
         //std::vector<std::string> sources                = comp->data()->getNames();
         RTT::TaskContext* comp = this->getPeer(component);
@@ -210,6 +294,7 @@ namespace Orocos
 
     // report a specific connection.
     bool ReportingComponent::reportPort(const std::string& component, const std::string& port ) {
+        Logger::In in("ReportingComponent");
         RTT::TaskContext* comp = this->getPeer(component);
         using namespace ORO_CoreLib;
         using namespace RTT;
@@ -224,7 +309,7 @@ namespace Orocos
             return false;
         }
         if ( porti->connected() ) {
-            this->reportDataSource( component + "." + port, porti->connection()->getDataSource() );
+            this->reportDataSource( component + "." + port, "Port", porti->connection()->getDataSource() );
             Logger::log() <<Logger::Info << "Reporting port " << port <<" : ok."<<Logger::endl;
         } else {
             // create new port temporarily 
@@ -241,7 +326,7 @@ namespace Orocos
             ci->connect();
             
             delete ourport;
-            this->reportDataSource( component + "." + porti->getName(), ci->getDataSource() );
+            this->reportDataSource( component + "." + porti->getName(), "Port", ci->getDataSource() );
             Logger::log() <<Logger::Info << "Created connection for port " << porti->getName()<<" : ok."<<Logger::endl;
         }
         return true;
@@ -254,6 +339,7 @@ namespace Orocos
     // report a specific datasource, property,...
     bool ReportingComponent::reportData(const std::string& component,const std::string& dataname) 
     { 
+        Logger::In in("ReportingComponent");
         RTT::TaskContext* comp = this->getPeer(component);
         using namespace ORO_CoreLib;
         if ( !comp ) {
@@ -262,16 +348,16 @@ namespace Orocos
         }
         // Is it an attribute ?
         if ( comp->attributes()->getValue( dataname ) )
-            return this->reportDataSource( component + "." + dataname,
+            return this->reportDataSource( component + "." + dataname, "Data",
                                            comp->attributes()->getValue( dataname )->getDataSource() );
         // Is it a property ?
         if ( comp->attributes()->properties() && comp->attributes()->properties()->find( dataname ) )
-            return this->reportDataSource( component + "." + dataname,
+            return this->reportDataSource( component + "." + dataname, "Data",
                                            comp->attributes()->properties()->find( dataname )->getDataSource() );
         // Is it a datasource ?
         if ( comp->datasources()->hasMember("this",dataname) ) {
             if (comp->datasources()->getObjectFactory("this")->getArity( dataname ) == 0)
-                return this->reportDataSource( component + "." + dataname,
+                return this->reportDataSource( component + "." + dataname, "Data",
                                                comp->datasources()->getObjectFactory("this")
                                                ->create( dataname, std::vector<DataSourceBase::shared_ptr>() ) );
             Logger::log() <<Logger::Error << "Could not report Data " << dataname <<" with arity != 0."<<Logger::endl;
@@ -291,7 +377,7 @@ namespace Orocos
             (it->get<2>())->execute();
     }
 
-    bool ReportingComponent::reportDataSource(std::string tag, RTT::DataSourceBase::shared_ptr orig)
+    bool ReportingComponent::reportDataSource(std::string tag, std::string type, RTT::DataSourceBase::shared_ptr orig)
     {
         // creates a copy of the data and an update command to
         // update the copy from the original.
@@ -304,7 +390,7 @@ namespace Orocos
         try {
             boost::shared_ptr<RTT::CommandInterface> comm( clone->updateCommand( orig.get() ) );
             assert( comm );
-            root.push_back( boost::make_tuple( tag, orig, comm, clone ) );
+            root.push_back( boost::make_tuple( tag, orig, comm, clone, type ) );
         } catch ( bad_assignment& ba ) {
             Logger::log() <<Logger::Error << "Could not report '"<< tag <<"' : failed to create Command." << Logger::endl;
             return false;
@@ -324,16 +410,21 @@ namespace Orocos
     }
 
     bool ReportingComponent::startup() {
-        if (marshallers.begin() == marshallers.end())
-            this->addMarshaller( new RTT::TableHeaderMarshaller<std::ostream>( std::cerr ),
-                                 new RTT::TableMarshaller<std::ostream>( std::cerr) );
-        // write headers.
-        this->makeReport();
-        for(Marshallers::iterator it=marshallers.begin(); it != marshallers.end(); ++it) {
-            it->first->serialize( report );
-            it->first->flush();
+        Logger::In in("ReportingComponent");
+        if (marshallers.begin() == marshallers.end()) {
+            Logger::log() << Logger::Error << "Need at least one marshaller to write reports." <<Logger::endl;
+            return false;
         }
-        this->cleanReport();
+
+        // write headers.
+        if (writeHeader.get()) {
+            this->makeReport();
+            for(Marshallers::iterator it=marshallers.begin(); it != marshallers.end(); ++it) {
+                it->first->serialize( report );
+                it->first->flush();
+            }
+            this->cleanReport();
+        }
         starttime = RTT::TimeService::Instance()->getTicks();
     }
 

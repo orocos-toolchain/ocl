@@ -27,6 +27,8 @@ def build(bld):
 	obj = bld.createObj('cpp', 'staticlib')
 	obj.source='''
 	ReportingComponent.cxx
+	FileReporting.cxx
+	ConsoleReporting.cxx
 	'''
 	obj.uselib='OROCOS'
 	obj.target='orocos-reporting'

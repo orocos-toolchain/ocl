@@ -49,11 +49,16 @@ namespace Orocos
      * default is a table with a header.
      *
      * It can report to any data format, using the 'addMarshaller'
-     * function.
+     * function. If the user does \b not add any marshallers, the
+     * properties will be used to create default marshallers.
      */
     class ReportingComponent
         : public RTT::GenericTaskContext
     {
+    protected:
+        /**
+         * This method writes out the status of a component's interface.
+         */
         bool screenImpl( const std::string& comp, std::ostream& output);
     public:
 
@@ -67,12 +72,13 @@ namespace Orocos
         virtual ~ReportingComponent();
 
         /**
-         * Adds a Plugin to receive incomming data. If the user has not used this
-         * method, a default pair will be created upon startup().
+         * Adds a Plugin to receive incomming data. The marshallers become
+         * owned by this component.
          * @param header A marshaller which writes out a header when this
          * component is started. May be null (0).
          * @param body A marshaller wich will get periodically a serialisation
          * request to process incomming data. May be null(0).
+         *
          * example:
          * addMarshaller( new HeaderMarshaller(), new ContentsMarshaller() );
          *
@@ -80,26 +86,61 @@ namespace Orocos
         bool addMarshaller( RTT::Marshaller* headerM, RTT::Marshaller* bodyM);
 
         /**
+         * Remove and delete all added Marshallers.
+         */
+        bool removeMarshallers();
+
+        /**
          * @name Script Methods
          * @{
          */
-        // write interface to file+values of prop/attrs.
-        bool screenComponent( const std::string& comp );
-        bool screenComponentToFile( const std::string& comp, const std::string& filename );
 
-        // report the datasources.
+        /**
+         * Read the configuration file in order to decide
+         * on what to report.
+         */
+        bool load();
+
+        /**
+         * Write the configuration file describing what is
+         * being reported.
+         */
+        bool store();
+
+        /**
+         * Write state information of a component. This method must be
+         * overridden by a subclass to be useful.
+         */
+        virtual bool screenComponent( const std::string& comp );
+
+        /**
+         * Report all the data ports of a component.
+         */
         bool reportComponent( const std::string& component );
             
+        /**
+         * Unreport the data ports of a component.
+         */
         bool unreportComponent( const std::string& component );
 
-        // report a specific connection.
+        /**
+         * Report a specific data port of a component.
+         */
         bool reportPort(const std::string& component, const std::string& port );
 
+        /**
+         * Unreport a specific data port of a component.
+         */
         bool unreportPort(const std::string& component, const std::string& port );
 
-        // report a specific datasource, property,...
+        /**
+         * Report a specific data source of a component.
+         */
         bool reportData(const std::string& component,const std::string& dataname);
 
+        /**
+         * Unreport a specific data source of a component.
+         */
         bool unreportData(const std::string& component,const std::string& datasource);
 
         /**
@@ -111,24 +152,18 @@ namespace Orocos
         /** @} */
 
     protected:
-        typedef std::vector<RTT::TaskContext*> ComponentList;
-        ComponentList components;
-        typedef std::map< std::pair<std::string,std::string>, RTT::ConnectionInterface::shared_ptr> ConnectionList;
-        ConnectionList connections;
-        typedef std::map< std::pair<std::string,std::string>, RTT::DataSourceBase::shared_ptr> DataList;
-        DataList datasources;
-
         typedef boost::tuple<std::string,
-                              RTT::DataSourceBase::shared_ptr,
-                              boost::shared_ptr<RTT::CommandInterface>,
-                              RTT::DataSourceBase::shared_ptr> DTupple;
+                             RTT::DataSourceBase::shared_ptr,
+                             boost::shared_ptr<RTT::CommandInterface>,
+                             RTT::DataSourceBase::shared_ptr,
+                             std::string> DTupple;
         /**
          * Stores the 'datasource' of all reported items as properties.
          */
         typedef std::vector<DTupple> Reports;
         Reports root;
 
-        bool reportDataSource(std::string tag, RTT::DataSourceBase::shared_ptr orig);
+        bool reportDataSource(std::string tag, std::string type, RTT::DataSourceBase::shared_ptr orig);
 
         bool unreportData(std::string tag);
 
@@ -149,7 +184,9 @@ namespace Orocos
         Marshallers marshallers;
         RTT::PropertyBag report;
         
-        RTT::Property<bool>   autotrigger;
+        RTT::Property<bool>          autotrigger;
+        RTT::Property<std::string>   config;
+        RTT::Property<bool>          writeHeader;
 
         RTT::TimeService::ticks starttime;
         RTT::Property<RTT::TimeService::Seconds> timestamp;
