@@ -64,9 +64,10 @@
 #include <device_drivers/SimulationAxis.hpp>
 
 #endif
+namespace Orocos {
 
-using namespace ORO_DeviceDriver;
-using namespace ORO_Execution;
+	using namespace RTT;
+	using namespace std;
 
 #define NUM_AXES 6
 
@@ -77,6 +78,10 @@ const char number[10]={'0','1','2','3','4','5','6','7','8','9'};
     Logger::log() << Logger::Info << __PRETTY_FUNCTION__ << Logger::endl;
 
 //#define ORO_Debug(x,y) 
+
+
+using namespace Orocos;
+
 
 LiASnAxesVelocityController::LiASnAxesVelocityController(const std::string& propertyfilename)
   : GenericTaskContext("lias"),
@@ -259,6 +264,12 @@ LiASnAxesVelocityController::LiASnAxesVelocityController(const std::string& prop
    */
    events()->addEvent( "driveOutOfRange", &driveOutOfRange );
    events()->addEvent( "positionOutOfRange", &positionOutOfRange );
+
+   /**
+	* Connecting EventC to Events making c++-emit possible
+	*/
+	driveOutOfRange_eventc = events()->setupEmit("driveOutOfRange").arg(driveOutOfRange_axis).arg(driveOutOfRange_value);
+	positionOutOfRange_eventc = events()->setupEmit("positionOutOfRange").arg(positionOutOfRange_axis).arg(positionOutOfRange_value);
 
    /**
     * Initializing servoloop
@@ -613,9 +624,12 @@ void LiASnAxesVelocityController::update() {
             (measpos < lowerPositionLimits.value()[axis]) 
           ||(measpos > upperPositionLimits.value()[axis])
           ) {
-            //TODO emit event.
+            // emit event.
+			positionOutOfRange_axis  = axis;
+			positionOutOfRange_value = measpos;
+			positionOutOfRange_eventc.emit();
         }
-        // \TODO this is check : on the wright place ?
+        // \TODO is this check : on the wright place ?
         if (_axes[axis]->isDriven()) {
             setpoint = driveValue[axis]->Get();
         } else {
@@ -632,11 +646,20 @@ void LiASnAxesVelocityController::update() {
         // send the drive value to hw and performs checks
         if (outputvel[axis] < -driveLimits.value()[axis])  {
              outputvel[axis] = -driveLimits.value()[axis];
-            //TODO emit event.
+            // emit event.
+			driveOutOfRange_axis  = axis;
+			driveOutOfRange_value = outputvel[axis];
+			driveOutOfRange_eventc.emit();
+			// saturate
+            outputvel[axis] = -driveLimits.value()[axis];
         }
         if (outputvel[axis] >  driveLimits.value()[axis]) {
+            // emit event.
+    		driveOutOfRange_axis  = axis;
+			driveOutOfRange_value = outputvel[axis];
+			driveOutOfRange_eventc.emit();
+			// saturate
             outputvel[axis] = driveLimits.value()[axis];
-            //TODO emit event.
         }
         _axes[axis]->drive(outputvel[axis]);
         // ask the reference value from the hw 
@@ -686,7 +709,6 @@ void LiASnAxesVelocityController::shutdown() {
 }
 
 
-
-
+} // end of namespace Orocos
 
 //#endif //OROPKG_OS_LXRT

@@ -1,17 +1,18 @@
-#ifndef LIAS_HARDWARE_HPP
-#define LIAS_HARDWARE_HPP
+#ifndef LIAS_NAXES_VELOCITY_CONTROLLER_HPP
+#define LIAS_NAXES_VELOCITY_CONTROLLER_HPP
 #include <vector>
+#include <corelib/RTT.hpp>
 #include <execution/GenericTaskContext.hpp>
-#include <corelib/Event.hpp>
 #include <execution/DataPort.hpp>
 
 
 #include <pkgconf/system.h> 
 
 #include "interfaces/IP_Encoder_6_EncInterface.hpp"
-#if !defined (OROPKG_OS_LXRT)
-    #include <device_drivers/SimulationAxis.hpp>
+#include <device_drivers/SimulationAxis.hpp> 
 
+
+#if defined (OROPKG_OS_LXRT)
 
     #include "interfaces/CombinedDigitalOutInterface.hpp"
 
@@ -26,6 +27,7 @@
 
 #include "LiASConstants.hpp"
 
+namespace Orocos {
 
 class LiASnAxesVelocityController : public ORO_Execution::GenericTaskContext
 {
@@ -123,23 +125,23 @@ private:
   * Used to fire an event if necessary and to saturate the velocities.
   * It is a good idea to set this property to a low value when using experimental code.
   */
-  ORO_CoreLib::Property<std::vector <double> >     driveLimits;
+  RTT::Property<std::vector <double> >     driveLimits;
 
   /**
    * Lower limit for the positions.  Used to fire an event if necessary.
    */
-  ORO_CoreLib::Property<std::vector <double> >     lowerPositionLimits;
+  RTT::Property<std::vector <double> >     lowerPositionLimits;
 
   /**
    * upper limit for the positions.  Used to fire an event if necessary.
    */
-  ORO_CoreLib::Property<std::vector <double> >     upperPositionLimits;
+  RTT::Property<std::vector <double> >     upperPositionLimits;
 
   /**
    *  Start position in rad for simulation.  If the encoders are relative ( like for this component )
    *  also the starting value for the relative encoders.
    */
-  ORO_CoreLib::Property<std::vector <double> >     initialPosition;
+  RTT::Property<std::vector <double> >     initialPosition;
 
 
    /**
@@ -147,7 +149,10 @@ private:
     *  Each axis that is out of range throws a seperate event.
     *  The component will continue with a saturated value.
     */
-  ORO_CoreLib::Event< void(int,double) > driveOutOfRange;
+  RTT::Event< void(int,double) > driveOutOfRange;
+  RTT::EventC                    driveOutOfRange_eventc;
+  int                                    driveOutOfRange_axis;
+  double 								 driveOutOfRange_value;
 
    /**
     *  parameters to this event are the axis and the position that is out of range.
@@ -155,7 +160,10 @@ private:
     *  The component will continue.  The hardware limit switches can be reached when this
     *  event is not handled.
     */ 
-  ORO_CoreLib::Event< void(int,double) > positionOutOfRange;
+  RTT::Event< void(int,double) > positionOutOfRange;
+  RTT::EventC				     positionOutOfRange_eventc;
+  int									 positionOutOfRange_axis;
+  double							     positionOutOfRange_value;
 
    /**
     *  This function contains the application's startup code.
@@ -183,14 +191,14 @@ private:
    * conversion factor between drive value and the analog output.
    * volt = (setpoint + offset)/scale
    *
-   * ORO_CoreLib::Property<std::vector <double> >     driveConvertFactor;
+   * RTT::Property<std::vector <double> >     driveConvertFactor;
    */
 
   /**
    * Offset to the drive value 
    * volt = (setpoint + offset)/scale
    *
-   * ORO_CoreLib::Property<std::vector <double> >     driveOffset;
+   * RTT::Property<std::vector <double> >     driveOffset;
    */
 
 
@@ -200,19 +208,19 @@ private:
   //   Servo-loop gain :
   //   property to indicate initial value and variable to store actual value
   
-  ORO_CoreLib::Property<std::vector <double> >     servoGain;
+  RTT::Property<std::vector <double> >     servoGain;
   std::vector<double>                              _servoGain;
   //
   //   Servo-loop integration time
   //   property to indicate initial value and variable to store actual value
-  ORO_CoreLib::Property<std::vector <double> >     servoIntegrationFactor;
+  RTT::Property<std::vector <double> >     servoIntegrationFactor;
   std::vector<double>                              _servoIntegrationFactor;
 
   //
   //   Feedforward scale factor
   //   (mainly to turn feedforward on and off).
   //   property to indicate initial value and variable to store actual value
-  ORO_CoreLib::Property<std::vector <double> >     servoFFScale;
+  RTT::Property<std::vector <double> >     servoFFScale;
   std::vector<double>                              _servoFFScale;
 
   //
@@ -221,7 +229,7 @@ private:
   std::vector<double>  servoIntVel;     // integrated velocity
   std::vector<double>  servoIntError;   // integrated error
   bool                               servoInitialized;
-  ORO_CoreLib::TimeService::ticks    previousTime;
+  RTT::TimeService::ticks    previousTime;
 
   //
   // Command to read and apply the properties to the controller
@@ -233,10 +241,11 @@ private:
   // 
   // Members implementing the interface to the hardware
   //
-  #if defined (OROPKG_OS_LXRT)
-     std::vector<ORO_DeviceDriver::Axis*>                _axes;
+  #if !defined (OROPKG_OS_LXRT)
+     std::vector<ORO_DeviceDriver::SimulationAxis*>      _axes;
+     std::vector<ORO_DeviceInterface::AxisInterface*>    _axesInterface;
   #else
-    std::vector<ORO_DeviceDriver::SimulationAxis*>      _axes;
+    std::vector<ORO_DeviceDriver::Axis*>                _axes;
 
     std::vector<ORO_DeviceInterface::AxisInterface*>    _axesInterface;
   
@@ -263,6 +272,6 @@ private:
 
 };
 
-
+} // namespace Orocos
 
 #endif // LIAS_HARDWARE_HPP
