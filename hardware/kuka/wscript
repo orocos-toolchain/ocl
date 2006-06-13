@@ -9,7 +9,7 @@ def build(bld):
 	main.cpp
 	'''
 	#obj.includes='.'
-	obj.useliblocal='./orocos-kuka160.a ../../taskbrowser/orocos-taskbrowser.a'
+	obj.useliblocal='./orocos-kuka160.a ../../taskbrowser/orocos-taskbrowser.a ../../reporting/orocos-reporting.a'
 	obj.uselib='OROCOS'
 	obj.target='kuka160-test'
 
