@@ -3,7 +3,7 @@
 #include "Kuka160nAxesVelocityController.hpp"
 
 //User interface
-#include "../taskbrowser/TaskBrowser.hpp"
+#include "../../taskbrowser/TaskBrowser.hpp"
 
 //main
 //#include <corelib/Activities.hpp>
