@@ -1,0 +1,17 @@
+#! /usr/bin/env python
+# encoding: utf-8
+# Thomas Nagy, 2006 (ita)
+
+def build(bld):
+	# process subfolders from here
+        bld.add_subdirs('kuka')
+
+def set_options(opt):
+	# options defined if src/ was to be compiled as a standalone module
+	print 'ok'
+
+
+def configure(conf):
+	print 'ok'
+
+
