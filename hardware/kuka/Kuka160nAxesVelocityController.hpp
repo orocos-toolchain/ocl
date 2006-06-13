@@ -18,17 +18,15 @@
 //#include <comedi/ComediSubDeviceDIn.hpp>
 //#include <comedi/ComediSubDeviceDOut.hpp>
 //#include <comedi/ComediEncoder.hpp>
-#else
-#include <device_drivers/SimulationAxis.hpp>
-#endif
-
 //#include <device_drivers/IncrementalEncoderSensor.hpp>
 //#include <device_drivers/AnalogOutput.hpp>
 //#include <device_drivers/DigitalOutput.hpp>
 //#include <device_drivers/DigitalInput.hpp>
 //#include <device_drivers/AnalogDrive.hpp>
-//#include <device_interface/AxisInterface.hpp>
 //#include <device_drivers/Axis.hpp>
+#endif
+#include <device_drivers/SimulationAxis.hpp>
+//#include <device_interface/AxisInterface.hpp>
 
 namespace Orocos
 {
@@ -170,10 +168,13 @@ namespace Orocos
     /**
      *  parameters to this event are the axis and the velocity that is out of range.
      *  Each axis that is out of range throws a seperate event.
-     *  The component will continue with a saturated value.
+     *  The component will continue with the previous value.
      */
     RTT::Event< void(int,double) > _driveOutOfRange;
-    
+    RTT::EventC _driveOutOfRange_event;
+    int _driveOutOfRange_axis;
+    double _driveOutOfRange_value;
+        
     /**
      *  parameters to this event are the axis and the position that is out of range.
      *  Each axis that is out of range throws a seperate event.
@@ -181,6 +182,9 @@ namespace Orocos
      *  event is not handled.
      */ 
     RTT::Event< void(int,double) > _positionOutOfRange;
+    RTT::EventC _positionOutOfRange_event;
+    int _positionOutOfRange_axis;
+    double _positionOutOfRange_value;
     
   private:
     /**

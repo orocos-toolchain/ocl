@@ -231,6 +231,12 @@ namespace Orocos
      */
     events()->addEvent( "driveOutOfRange", &_driveOutOfRange );
     events()->addEvent( "positionOutOfRange", &_positionOutOfRange );
+    
+    /**
+     * Connecting EventC to Event make c++-emit possible
+     */
+    EventC _driveOutOfRange_event = events()->setupEmit("driveOutOfRange").arg(_driveOutOfRange_axis).arg(_driveOutOfRange_value);
+    EventC _positionOutOfRange_event = events()->setupEmit("driveOutOfRange").arg(_positionOutOfRange_axis).arg(_positionOutOfRange_value);
   }
   
   Kuka160nAxesVelocityController::~Kuka160nAxesVelocityController()
@@ -268,7 +274,9 @@ namespace Orocos
       if((_positionValue[axis]->Get() < _lowerPositionLimits.value()[axis]) 
          ||(_positionValue[axis]->Get() > _upperPositionLimits.value()[axis])
          ) {
-        //TODO emit event.
+        _positionOutOfRange_axis = axis;
+	_positionOutOfRange_value = _positionValue[axis]->Get();
+	_positionOutOfRange_event.emit();
       }
       
       // send the drive value to hw and performs checks
@@ -276,7 +284,9 @@ namespace Orocos
         if ((_driveValue[axis]->Get() < -_driveLimits.value()[axis]) 
   	  || (_driveValue[axis]->Get() >  _driveLimits.value()[axis]))
   	{
-  	  //TODO emit event.
+	  _driveOutOfRange_axis = axis;
+	  _driveOutOfRange_value = _driveValue[axis]->Get();
+	  _driveOutOfRange_event.emit();
   	}
         else{
   	_axes[axis]->drive(_driveValue[axis]->Get());
