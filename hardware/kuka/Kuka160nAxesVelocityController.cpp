@@ -235,8 +235,8 @@ namespace Orocos
     /**
      * Connecting EventC to Event make c++-emit possible
      */
-    EventC _driveOutOfRange_event = events()->setupEmit("driveOutOfRange").arg(_driveOutOfRange_axis).arg(_driveOutOfRange_value);
-    EventC _positionOutOfRange_event = events()->setupEmit("driveOutOfRange").arg(_positionOutOfRange_axis).arg(_positionOutOfRange_value);
+    _driveOutOfRange_event = events()->setupEmit("driveOutOfRange").arg(_driveOutOfRange_axis).arg(_driveOutOfRange_value);
+    _positionOutOfRange_event = events()->setupEmit("driveOutOfRange").arg(_positionOutOfRange_axis).arg(_positionOutOfRange_value);
   }
   
   Kuka160nAxesVelocityController::~Kuka160nAxesVelocityController()
