@@ -13,7 +13,7 @@ blddir = '_build_'
 
 def build(bld):
 	# process subfolders from here
-	bld.add_subdirs('reporting taskbrowser hardware hardware/kuka')
+	bld.add_subdirs('reporting taskbrowser hardware hardware/kuka hardware/lias') 
 
 def configure(conf):
 	conf.checkTool(['g++'])

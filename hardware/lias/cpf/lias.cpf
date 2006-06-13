@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "cpf.dtd">
+<properties>
+  <struct name="driveLimits" type="std::vector&lt;double&gt;">
+     <description>velocity limits of the axes, in rad/s</description>
+     <simple name="Size" type="long"><description>Dimension of the Vector</description><value>6</value></simple>
+     <simple name="0" type="double"><value>1</value></simple>
+     <simple name="1" type="double"><value>1</value></simple>
+     <simple name="2" type="double"><value>1</value></simple>
+     <simple name="3" type="double"><value>1</value></simple>
+     <simple name="4" type="double"><value>1</value></simple>
+     <simple name="5" type="double"><value>1</value></simple>
+  </struct>
+  <struct name="LowerPositionLimits" type="std::vector&lt;double&gt;">
+     <description>Lower position limits in rad</description>
+     <simple name="Size" type="long"><description>Dimension of the Vector</description><value>6</value></simple>
+     <simple name="0" type="double"><value>-3.15</value></simple>
+     <simple name="1" type="double"><value>-3.15</value></simple>
+     <simple name="2" type="double"><value>-3.15</value></simple>
+     <simple name="3" type="double"><value>-3.15</value></simple>
+     <simple name="4" type="double"><value>-3.15</value></simple>
+     <simple name="5" type="double"><value>-3.15</value></simple>
+  </struct>
+  <struct name="UpperPositionLimits" type="std::vector&lt;double&gt;">
+     <description>Upper position limits in rad</description>
+     <simple name="Size" type="long"><description>Dimension of the Vector</description><value>6</value></simple>
+     <simple name="0" type="double"><value>3.15</value></simple>
+     <simple name="1" type="double"><value>3.15</value></simple>
+     <simple name="2" type="double"><value>3.15</value></simple>
+     <simple name="3" type="double"><value>3.15</value></simple>
+     <simple name="4" type="double"><value>3.15</value></simple>
+     <simple name="5" type="double"><value>3.15</value></simple>
+  </struct>
+  <struct name="initialPosition" type="std::vector&lt;double&gt;">
+     <description>Initial position in rad for simulation or hardware</description>
+     <simple name="Size" type="long"><description>Dimension of the Vector</description><value>6</value></simple>
+     <simple name="0" type="double"><value>0</value></simple>
+     <simple name="1" type="double"><value>0</value></simple>
+     <simple name="2" type="double"><value>0</value></simple>
+     <simple name="3" type="double"><value>0</value></simple>
+     <simple name="4" type="double"><value>0</value></simple>
+     <simple name="5" type="double"><value>0</value></simple>
+  </struct>
+  <struct name="servoGain" type="std::vector&lt;double&gt;">
+     <description>gain of the servoloop (no units)</description>
+     <simple name="Size" type="long"><description>Dimension of the Vector</description><value>6</value></simple>
+     <simple name="0" type="double"><value>0</value></simple>
+     <simple name="1" type="double"><value>0</value></simple>
+     <simple name="2" type="double"><value>0</value></simple>
+     <simple name="3" type="double"><value>0</value></simple>
+     <simple name="4" type="double"><value>0</value></simple>
+     <simple name="5" type="double"><value>0</value></simple>
+  </struct>
+  <struct name="servoIntegrationFactor" type="std::vector&lt;double&gt;">
+     <description>INVERSE of the integration time for the servoloop (s)</description>
+     <simple name="Size" type="long"><description>Dimension of the Vector</description><value>6</value></simple>
+     <simple name="0" type="double"><value>0</value></simple>
+     <simple name="1" type="double"><value>0</value></simple>
+     <simple name="2" type="double"><value>0</value></simple>
+     <simple name="3" type="double"><value>0</value></simple>
+     <simple name="4" type="double"><value>0</value></simple>
+     <simple name="5" type="double"><value>0</value></simple>
+  </struct>
+  <struct name="servoFFScale" type="std::vector&lt;double&gt;">
+     <description>scale factor on the feedforward signal of the servo loop </description>
+     <simple name="Size" type="long"><description>Dimension of the Vector</description><value>6</value></simple>
+     <simple name="0" type="double"><value>1</value></simple>
+     <simple name="1" type="double"><value>1</value></simple>
+     <simple name="2" type="double"><value>1</value></simple>
+     <simple name="3" type="double"><value>1</value></simple>
+     <simple name="4" type="double"><value>1</value></simple>
+     <simple name="5" type="double"><value>1</value></simple>
+  </struct>
+</properties>

@@ -1,0 +1,10 @@
+The makefile in this directory is meant for a 2.6.x kernel.
+
+You should edit the CPPFLAGS in the makefile.
+
+After this, you can compile the modules with
+
+    make -C /usr/src/linux-2.6.9_hal-r10/ SUBDIRS=$PWD modules
+
+    (with of course /usr/src/linux-2.6.9_hal-r10/ your
+     kernel source directory)
