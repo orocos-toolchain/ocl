@@ -24,19 +24,15 @@ def configure(conf):
 	orotgt = Params.g_options.orotarget
 	
 	if not conf.checkHeader('corelib/CoreLib.hpp', pathlst=[ oroloc+'/include' ]):
-		print "Orocos headers not found: aborting."
+		Params.fatal("Orocos headers not found: aborting.")
 		exit
 	if not conf.checkHeader('os/'+orotgt+'.h', pathlst=[ oroloc+'/include' ]):
-		print "Headers for target "+orotgt+" not found: aborting."
-		exit
+		Params.fatal("Headers for target "+orotgt+" not found: aborting.")
+
+	if not conf.checkPkg('orocos-'+orotgt,'OROCOS', '0.23.0', oroloc+'/lib/pkgconfig'):
+		Params.fatal("Orocos pkgconf file not found !")
 		
-	conf.env['CPPPATH_OROCOS']= [oroloc+'/include']
-	conf.env['LIBPATH_OROCOS']= [oroloc+'/lib']
-	conf.env['LIB_OROCOS']    = ['orocos-'+orotgt, 'pthread', 'xerces-c', 'ncurses', 'readline' ]
-	if orotgt == 'lxrt':
-		conf.env['LIB_OROCOS'] += ['lxrt']
-	if orotgt == 'xenomai':
-		conf.env['LIB_OROCOS'] += ['xenomai']
+	conf.env['LIB_OROCOS']= [ 'orocos-'+orotgt ]
 	
 
 def set_options(opt):

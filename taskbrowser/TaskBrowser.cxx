@@ -167,7 +167,7 @@ namespace Orocos
             if ( pos+1 != line.length() ) // bounds check
                 peer = findPeer( line.substr(pos+1) );
             else
-                peer = taskcontext;
+                peer = tb;
             //std::string peername = text.substring( pos+1, std::string::npos );
             TaskContext::PeerList v = peer->getPeerList();
             for (TaskContext::PeerList::iterator i = v.begin(); i != v.end(); ++i) {
@@ -510,13 +510,13 @@ namespace Orocos
     void TaskBrowser::find_peers( std::string::size_type startpos )
     {
         peerpath.clear();
-        peer = taskcontext;
+        peer = tb;
 
         //cerr <<" text : "<<text<<endl;
         findPeer( text );
 
         // there is only a peerpath, if there is another peer :
-        if ( peer != taskcontext ) {
+        if ( peer != tb ) {
             std::string::size_type pos = 0;
             pos = text.rfind("."); // last dot
             assert( pos != std::string::npos );
@@ -605,7 +605,7 @@ namespace Orocos
         cout << "    TAB completion and HISTORY is available ('bash' like)" <<coloroff<<nl<<nl;
         while (1)
             {
-                cout << " In Task "<<green<< taskcontext->getName() <<coloroff<< ". (Status of last Command : ";
+                cout << " Watching Task "<<green<< taskcontext->getName() <<coloroff<< ". (Status of last Command : ";
                 if ( command == 0 )
                     cout << "none";
                 else if ( condition == 0 || condition->evaluate() ) // disposed or done
@@ -819,7 +819,7 @@ namespace Orocos
         our_pos_iter_t parsebegin( s.begin(), s.end(), "teststring" );
         our_pos_iter_t parseend;
             
-        PeerParser pp( taskcontext );
+        PeerParser pp( tb );
         try {
             parse( parsebegin, parseend, pp.parser(), SKIP_PARSER );
         }
@@ -947,9 +947,9 @@ namespace Orocos
     {
         cout << "      Got :"<< comm <<nl;
 
-        command_fact = taskcontext->commandFactory.getObjectFactory( comm );
-        datasource_fact = taskcontext->dataFactory.getObjectFactory( comm );
-        method_fact = taskcontext->methodFactory.getObjectFactory( comm );
+        command_fact = tb->commandFactory.getObjectFactory( comm );
+        datasource_fact = tb->dataFactory.getObjectFactory( comm );
+        method_fact = tb->methodFactory.getObjectFactory( comm );
         if ( command_fact ) // only commandobject name was typed
             {
                 std::vector<std::string> methods = command_fact->getCommandList();
@@ -970,8 +970,8 @@ namespace Orocos
         // if both the object and attribute with that name exist. the if
         // statement after this one would return and not give the expr parser
         // time to evaluate 'comm'. 
-        if ( taskcontext->attributes()->getValue( comm ) ) {
-                this->printResult( taskcontext->attributes()->getValue( comm )->getDataSource().get(), true );
+        if ( tb->attributes()->getValue( comm ) ) {
+                this->printResult( tb->attributes()->getValue( comm )->getDataSource().get(), true );
                 return;
         }
             
@@ -985,7 +985,7 @@ namespace Orocos
             cerr << "Trying ValueChange..."<<nl;
         try {
             // Check if it was a method or datasource :
-            DataSourceBase::shared_ptr ds = _parser.parseValueChange( comm, taskcontext );
+            DataSourceBase::shared_ptr ds = _parser.parseValueChange( comm, tb );
             // methods and DS'es are processed immediately.
             if ( ds.get() != 0 ) {
                 this->printResult( ds.get(), false );
@@ -1023,7 +1023,7 @@ namespace Orocos
             cerr << "Trying Expression..."<<nl;
         try {
             // Check if it was a method or datasource :
-            DataSourceBase::shared_ptr ds = _parser.parseExpression( comm, taskcontext );
+            DataSourceBase::shared_ptr ds = _parser.parseExpression( comm, tb );
             // methods and DS'es are processed immediately.
             if ( ds.get() != 0 ) {
                 this->printResult( ds.get(), true );
@@ -1060,7 +1060,7 @@ namespace Orocos
         if (debug)
             cerr << "Trying Command..."<<nl;
         try {
-            comcon = _parser.parseCommand( comm, taskcontext, true ); // create a dispatch command.
+            comcon = _parser.parseCommand( comm, tb, true ); // create a dispatch command.
             assert( dynamic_cast<DispatchInterface*>(comcon.first) );
             if ( condition && !condition->evaluate() ) {
                 cerr << "Warning : previous command is not yet processed by Processor." <<nl;
@@ -1134,6 +1134,7 @@ namespace Orocos
         }
 
         DataSourceBase::shared_ptr dsb(ds);
+        dsb->evaluate();
         cout << dsb;
     }
 
@@ -1433,7 +1434,7 @@ namespace Orocos
         }
         cout << coloroff << nl;
 
-        cout <<coloroff<<nl<< " Ports       : "<<coloron;
+        cout <<coloroff<<nl<< " Ports        : "<<coloron;
         objlist = peer->ports()->getPortNames();
         if ( !objlist.empty() ) {
             copy(objlist.begin(), objlist.end(), std::ostream_iterator<std::string>(cout, " "));
