@@ -6,9 +6,9 @@
 #include <corelib/RTT.hpp>
 
 #include <execution/GenericTaskContext.hpp>
+#include <execution/Ports.hpp>
 #include <corelib/Event.hpp>
-#include <execution/DataPort.hpp>
-
+#include <corelib/Properties.hpp>
 
 #include <pkgconf/system.h> 
 

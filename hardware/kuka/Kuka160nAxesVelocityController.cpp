@@ -28,8 +28,6 @@
 #include <corelib/Logger.hpp>
 #include <corelib/Attribute.hpp>
 
-#include <iostream>
-
 #include "Kuka160nAxesVelocityController.hpp"
 
 namespace Orocos
@@ -73,6 +71,7 @@ namespace Orocos
 #if (defined OROPKG_OS_LXRT && defined OROPKG_DEVICE_DRIVERS_COMEDI)
       _axes_hardware(NUM_AXES),
 #endif
+      _axes(NUM_AXES),
       _axes_simulation(NUM_AXES)
   {
     double ticks2rad[NUM_AXES] = KUKA160_TICKS2RAD;
@@ -98,8 +97,6 @@ namespace Orocos
     }  
     
 #if (defined OROPKG_OS_LXRT && defined OROPKG_DEVICE_DRIVERS_COMEDI)
-    Logger::log() << Logger::Info << "LXRT version of LiASnAxesVelocityController has started" << Logger::endl;
-    
     _comediDevAOut       = new ComediDevice( 0 );
     _comediDevDInOut     = new ComediDevice( 3 );
     _comediDevEncoder    = new ComediDevice( 2 );
@@ -140,25 +137,29 @@ namespace Orocos
       
     }
     
-    Logger::log() << Logger::Info << "LXRT simulation version of Kuka160nAxesVelocityController has started" << Logger::endl;
-    
-#else
-    Logger::log() << Logger::Info << "GNULINUX simulation version of Kuka160nAxesVelocityController has started" << Logger::endl;
 #endif
     for (unsigned int i = 0; i <NUM_AXES; i++)
       {
   	_axes_simulation[i] = new ORO_DeviceDriver::SimulationAxis(_initialPosition.value()[i],_lowerPositionLimits.value()[i],_upperPositionLimits.value()[i]);
   	_axes_simulation[i]->setMaxDriveValue( _driveLimits.value()[i] );
       }
+
 #if (defined OROPKG_OS_LXRT && defined OROPKG_DEVICE_DRIVERS_COMEDI)
-    if(!_simulation.value())
+    if(!_simulation.value()){
       for (unsigned int i = 0; i <NUM_AXES; i++)
 	_axes[i] = _axes_hardware[i];
-    else
-#endif
+      Logger::log() << Logger::Info << "LXRT version of LiASnAxesVelocityController has started" << Logger::endl;
+    }
+    else{
       for (unsigned int i = 0; i <NUM_AXES; i++)
 	_axes[i] = _axes_simulation[i];
-
+      Logger::log() << Logger::Info << "LXRT simulation version of Kuka160nAxesVelocityController has started" << Logger::endl;
+    }
+#else
+    for (unsigned int i = 0; i <NUM_AXES; i++)
+      _axes[i] = _axes_simulation[i];
+    Logger::log() << Logger::Info << "GNULINUX simulation version of Kuka160nAxesVelocityController has started" << Logger::endl;
+#endif
     
     // make task context
     /*
