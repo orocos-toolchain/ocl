@@ -4,14 +4,14 @@
 
 def build(bld):
 	# 1. A simple program
-	obj = bld.createObj('cpp', 'program')
-	obj.source='''
-	main.cpp
-	'''
-	obj.includes='.'
-	obj.useliblocal='./orocos-taskbrowser.a'
-	obj.uselib='OROCOS'
-	obj.target='task-test'
+ 	obj = bld.createObj('cpp', 'program')
+ 	obj.source='''
+ 	main.cpp
+ 	'''
+ 	obj.includes='.'
+ 	obj.useliblocal='./orocos-taskbrowser.a'
+ 	obj.uselib='OROCOS'
+ 	obj.target='task-test'
 
 	# 2. A shared library
 	# The extension (.so) is added automatically
