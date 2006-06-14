@@ -24,40 +24,13 @@
  *                                                                         *
  ***************************************************************************/ 
 
-#include <execution/GenericTaskContext.hpp>
-#include <corelib/NonPreemptibleActivity.hpp>
 #include <execution/TemplateFactories.hpp>
-#include <execution/BufferPort.hpp>
-#include <corelib/Event.hpp>
 #include <corelib/Logger.hpp>
 #include <corelib/Attribute.hpp>
-#include <execution/DataPort.hpp>
+
 #include <iostream>
 
 #include "Kuka160nAxesVelocityController.hpp"
-
-#include <device_drivers/IncrementalEncoderSensor.hpp>
-#include <device_drivers/AnalogOutput.hpp>
-#include <device_drivers/DigitalOutput.hpp>
-#include <device_drivers/DigitalInput.hpp>
-#include <device_drivers/AnalogDrive.hpp>
-#include <device_drivers/Axis.hpp>
-#include <device_interface/AxisInterface.hpp>
-
-#if (defined OROPKG_OS_LXRT && defined OROPKG_DEVICE_DRIVERS_COMEDI)
-
-#include <comedi/ComediDevice.hpp>
-#include <comedi/ComediSubDeviceAOut.hpp>
-#include <comedi/ComediSubDeviceDIn.hpp>
-#include <comedi/ComediSubDeviceDOut.hpp>
-#include <comedi/ComediEncoder.hpp>
-
-#else
-
-#include <device_drivers/SimulationAxis.hpp>
-
-#endif
-
 
 namespace Orocos
 {
@@ -97,8 +70,10 @@ namespace Orocos
       _activated(false),
       _positionConvertFactor(NUM_AXES),
       _driveConvertFactor(NUM_AXES),
-      _axes(NUM_AXES),
-      _axesInterface(NUM_AXES)
+#if (defined OROPKG_OS_LXRT && defined OROPKG_DEVICE_DRIVERS_COMEDI)
+      _axes_hardware(NUM_AXES),
+#endif
+      _axes_simulation(NUM_AXES)
   {
     double ticks2rad[NUM_AXES] = KUKA160_TICKS2RAD;
     double vel2volt[NUM_AXES] = KUKA160_RADproSEC2VOLT;
@@ -145,8 +120,8 @@ namespace Orocos
       subd = 0; // subdevice 0 is counter
       _encoderInterface[i] = new ComediEncoder(_comediDevEncoder , subd , i);
       _encoder[i] = new IncrementalEncoderSensor( _encoderInterface[i], 1.0 / _positionConvertFactor[i], 
-  						_initialPosition.value()[i]*_positionConvertFactor[i], 
-  						_lowerPositionLimits.value()[i], _upperPositionLimits.value()[i]);
+						  _initialPosition.value()[i]*_positionConvertFactor[i], 
+						  _lowerPositionLimits.value()[i], _upperPositionLimits.value()[i],KUKA160_ENC_RES);
       _brake[i] = new DigitalOutput( _comediSubdevDOut, 23 - i,true);
       _brake[i]->switchOn();
       
@@ -156,39 +131,34 @@ namespace Orocos
       _drive[i] = new AnalogDrive( _vref[i], _enable[i], 1.0 / _driveConvertFactor[i], 
   				 _driveOffset.value()[i] / _driveConvertFactor[i]);
       
-      _axes[i] = new ORO_DeviceDriver::Axis( _drive[i] );
-      _axes[i]->limitDrive( _driveLimits.value()[i] );
+      _axes_hardware[i] = new ORO_DeviceDriver::Axis( _drive[i] );
+      _axes_hardware[i]->limitDrive( _driveLimits.value()[i] );
       //_axes[i]->setLimitDriveEvent( maximumDrive );
-      _axes[i]->setBrake( _brake[i] );
-      _axes[i]->setSensor( "Position", _encoder[i] );
-      _axes[i]->setSwitch( "Reference", _reference[i]);
+      _axes_hardware[i]->setBrake( _brake[i] );
+      _axes_hardware[i]->setSensor( "Position", _encoder[i] );
+      _axes_hardware[i]->setSwitch( "Reference", _reference[i]);
       
-      _axesInterface[i] = _axes[i];
     }
     
-    if(_simulation.value()){
-      
-      Logger::log() << Logger::Info << "LXRT simulation version of Kuka160nAxesVelocityController has started" << Logger::endl;
-      
-      for (unsigned int i = 0; i <NUM_AXES; i++)
-        {
-	  _axes[i] = new ORO_DeviceDriver::SimulationAxis(_initialPosition.value()[i],_lowerPositionLimits.value()[i],_upperPositionLimits.value()[i]);
-  	_axes[i]->setMaxDriveValue( _driveLimits.value()[i] );
-  	_axesInterface[i] = _axes[i];
-        }
-    }
+    Logger::log() << Logger::Info << "LXRT simulation version of Kuka160nAxesVelocityController has started" << Logger::endl;
     
 #else
     Logger::log() << Logger::Info << "GNULINUX simulation version of Kuka160nAxesVelocityController has started" << Logger::endl;
-    
+#endif
     for (unsigned int i = 0; i <NUM_AXES; i++)
       {
-  	_axes[i] = new ORO_DeviceDriver::SimulationAxis(_initialPosition.value()[i],_lowerPositionLimits.value()[i],_upperPositionLimits.value()[i]);
-  	_axes[i]->setMaxDriveValue( _driveLimits.value()[i] );
-  	_axesInterface[i] = _axes[i];
+  	_axes_simulation[i] = new ORO_DeviceDriver::SimulationAxis(_initialPosition.value()[i],_lowerPositionLimits.value()[i],_upperPositionLimits.value()[i]);
+  	_axes_simulation[i]->setMaxDriveValue( _driveLimits.value()[i] );
       }
-#endif  // ifndef   OROPKG_OS_LXRT
-    
+#if (defined OROPKG_OS_LXRT && defined OROPKG_DEVICE_DRIVERS_COMEDI)
+    if(!_simulation.value())
+      for (unsigned int i = 0; i <NUM_AXES; i++)
+	_axes[i] = _axes_hardware[i];
+    else
+#endif
+      for (unsigned int i = 0; i <NUM_AXES; i++)
+	_axes[i] = _axes_simulation[i];
+
     
     // make task context
     /*
@@ -246,9 +216,11 @@ namespace Orocos
     
     // brake, drive, sensors and switches are deleted by each axis
     for (unsigned int i = 0; i < NUM_AXES; i++)
-      delete _axes[i];
+      delete _axes_simulation[i];
     
 #if (defined OROPKG_OS_LXRT && defined OROPKG_DEVICE_DRIVERS_COMEDI)
+    for (unsigned int i = 0; i < NUM_AXES; i++)
+      delete _axes_hardware[i];
     delete _comediDevAOut;
     delete _comediDevDInOut;
     delete _comediDevEncoder;
@@ -490,7 +462,7 @@ namespace Orocos
   {
 #if (defined OROPKG_OS_LXRT&& defined OROPKG_DEVICE_DRIVERS_COMEDI)
     if(!_simulation.value())
-      _axes[axis]->getDrive()->addOffset(offset);  
+      ((Axis*)_axes[axis])->getDrive()->addOffset(offset);  
 #endif
     return true;
   }
@@ -504,7 +476,7 @@ namespace Orocos
   {
 #if (defined OROPKG_OS_LXRT&& defined OROPKG_DEVICE_DRIVERS_COMEDI)
     if(!_simulation.value())
-      _axes[axis]->getSensor("Position")->writeSensor(_initialPosition.value()[i]);
+      ((IncrementalEncoderSensor*)_axes[axis]->getSensor("Position"))->writeSensor(_initialPosition.value()[axis]);
 #endif
     return true;
   }

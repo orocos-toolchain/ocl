@@ -6,27 +6,27 @@
 #include <corelib/RTT.hpp>
 
 #include <execution/GenericTaskContext.hpp>
-//#include <corelib/Event.hpp>
+#include <corelib/Event.hpp>
 #include <execution/DataPort.hpp>
 
 
 #include <pkgconf/system.h> 
 
 #if (defined (OROPKG_OS_LXRT) && defined (OROPKG_DEVICE_DRIVERS_COMEDI))
-//#include <comedi/ComediDevice.hpp>
-//#include <comedi/ComediSubDeviceAOut.hpp>
-//#include <comedi/ComediSubDeviceDIn.hpp>
-//#include <comedi/ComediSubDeviceDOut.hpp>
-//#include <comedi/ComediEncoder.hpp>
-//#include <device_drivers/IncrementalEncoderSensor.hpp>
-//#include <device_drivers/AnalogOutput.hpp>
-//#include <device_drivers/DigitalOutput.hpp>
-//#include <device_drivers/DigitalInput.hpp>
-//#include <device_drivers/AnalogDrive.hpp>
-//#include <device_drivers/Axis.hpp>
+#include <comedi/ComediDevice.hpp>
+#include <comedi/ComediSubDeviceAOut.hpp>
+#include <comedi/ComediSubDeviceDIn.hpp>
+#include <comedi/ComediSubDeviceDOut.hpp>
+#include <comedi/ComediEncoder.hpp>
+#include <device_drivers/IncrementalEncoderSensor.hpp>
+#include <device_drivers/AnalogOutput.hpp>
+#include <device_drivers/DigitalOutput.hpp>
+#include <device_drivers/DigitalInput.hpp>
+#include <device_drivers/AnalogDrive.hpp>
+#include <device_drivers/Axis.hpp>
 #endif
 #include <device_drivers/SimulationAxis.hpp>
-//#include <device_interface/AxisInterface.hpp>
+#include <device_interface/AxisInterface.hpp>
 
 namespace Orocos
 {
@@ -233,25 +233,24 @@ namespace Orocos
     // Members implementing the interface to the hardware
     //
 #if  (defined (OROPKG_OS_LXRT) && defined (OROPKG_DEVICE_DRIVERS_COMEDI))
-    std::vector<ORO_DeviceDriver::Axis*>               _axes;
+    std::vector<ORO_DeviceDriver::Axis*>  _axes_hardware;
     RTT::ComediDevice*                    _comediDevAOut;
     RTT::ComediDevice*                    _comediDevEncoder;
     RTT::ComediDevice*                    _comediDevDInOut;
     RTT::ComediSubDeviceAOut*             _comediSubdevAOut;
     RTT::ComediSubDeviceDIn*              _comediSubdevDIn;
     RTT::ComediSubDeviceDOut*             _comediSubdevDOut;
-    RTT::EncoderInterface*             _encoderInterface[KUKA160_NUM_AXIS];
+    RTT::EncoderInterface*                _encoderInterface[6];
   
-    RTT::AnalogOutput<unsigned int>*      _vref[KUKA160_NUM_AXIS];
-    RTT::IncrementalEncoderSensor*        _encoder[KUKA160_NUM_AXIS];
-    RTT::DigitalOutput*                   _enable[KUKA160_NUM_AXIS];
-    RTT::AnalogDrive*                     _drive[KUKA160_NUM_AXIS];
-    RTT::DigitalOutput*                   _brake[KUKA160_NUM_AXIS];
-    RTT::DigitalInput*                    _reference[KUKA160_NUM_AXIS];  
-#else
-    std::vector<RTT::SimulationAxis*>      _axes;
+    RTT::AnalogOutput<unsigned int>*      _vref[6];
+    RTT::IncrementalEncoderSensor*        _encoder[6];
+    RTT::DigitalOutput*                   _enable[6];
+    RTT::AnalogDrive*                     _drive[6];
+    RTT::DigitalOutput*                   _brake[6];
+    RTT::DigitalInput*                    _reference[6];  
 #endif
-    std::vector<RTT::AxisInterface*>    _axesInterface;
+    std::vector<RTT::SimulationAxis*>     _axes_simulation;
+    std::vector<RTT::AxisInterface*>      _axes;
     
   };//class Kuka160nAxesVelocityController
 }//namespace Orocos
