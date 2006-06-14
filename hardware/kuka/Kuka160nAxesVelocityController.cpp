@@ -24,11 +24,11 @@
  *                                                                         *
  ***************************************************************************/ 
 
+#include "Kuka160nAxesVelocityController.hpp"
+
 #include <execution/TemplateFactories.hpp>
 #include <corelib/Logger.hpp>
 #include <corelib/Attribute.hpp>
-
-#include "Kuka160nAxesVelocityController.hpp"
 
 namespace Orocos
 {
@@ -53,8 +53,8 @@ namespace Orocos
 #define KUKA160_RADproSEC2VOLT { 3.97143, 4.40112, 3.65062, 3.38542, 4.30991, 2.75810 }
   
   
-  Kuka160nAxesVelocityController::Kuka160nAxesVelocityController(const string propertyfile)
-    : GenericTaskContext("Kuka160"),
+  Kuka160nAxesVelocityController::Kuka160nAxesVelocityController(string name,const string propertyfile)
+    : GenericTaskContext(name),
       _driveValue(NUM_AXES),
       _references(NUM_AXES),
       _positionValue(NUM_AXES),

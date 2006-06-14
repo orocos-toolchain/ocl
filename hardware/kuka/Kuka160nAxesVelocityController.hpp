@@ -33,7 +33,7 @@ namespace Orocos
   class Kuka160nAxesVelocityController : public RTT::GenericTaskContext
   {
   public:
-    Kuka160nAxesVelocityController(const std::string propertyfilename="cpf/Kuka160.cpf");
+    Kuka160nAxesVelocityController(std::string name,const std::string propertyfilename="cpf/Kuka160.cpf");
     virtual ~Kuka160nAxesVelocityController();
     
   protected:  

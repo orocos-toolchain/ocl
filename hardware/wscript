@@ -4,7 +4,7 @@
 
 def build(bld):
 	# process subfolders from here
-    bld.add_subdirs('')
+    bld.add_subdirs('kuka')
 
 def set_options(opt):
 	# options defined if src/ was to be compiled as a standalone module
