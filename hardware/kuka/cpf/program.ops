@@ -7,7 +7,7 @@ program Kuka160TestProg
   do Kuka160.startAllAxes()
   do driveValue0.Set( 0.01 )
   do Reporting.start()
-  while(!Kuka160.positionValue0==1){
+  while(Kuka160.positionValue0.Get()<1.0){
      do nothing
   }
   do Reporting.stop()
