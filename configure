@@ -65,7 +65,7 @@ checkWaf()
 	  tar xjf admin/waf-mini.tar.bz2
 	else
 	  cd $WAF_DIR
-	  if ! md5sum --status -c admin/md5.sum; then
+	  if ! md5sum -c admin/md5.sum &>/dev/null; then
 	      echo -e $BOLD"new version of mini distribution."$NORMAL
 	      tar xjf admin/waf-mini.tar.bz2
 	  fi
