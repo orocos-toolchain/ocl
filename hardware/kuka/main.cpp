@@ -76,12 +76,12 @@ int ORO_main(int argc, char* argv[])
   
   ///Reporting
   FileReporting reporter("Reporting");
-  reporter.addPeer(&my_robot);
+  reporter.connectPeers(&my_robot);
 
   /// Link my_robot to Taskbrowser
   TaskBrowser browser(&my_robot );
   browser.setColorTheme( TaskBrowser::whitebg );
-  browser.addPeer(&reporter);
+  browser.connectPeers(&reporter);
 
   //Loading program in browser
   browser.loadProgram("cpf/program.ops");
@@ -90,10 +90,11 @@ int ORO_main(int argc, char* argv[])
   NonPreemptibleActivity _kukaTask(0.1, my_robot.engine() );  
   PeriodicActivity _browserTask(2,1, browser.engine() );  
   PeriodicActivity reportingTask(10,1.0,reporter.engine());
+
   /// Start the console reader.
+  _browserTask.start();
+  
   browser.loop();
   
-  _kukaTask.stop();
-
-  return 0;
+    return 0;
 }
