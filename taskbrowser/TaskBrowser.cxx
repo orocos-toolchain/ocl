@@ -72,8 +72,8 @@ namespace Orocos
     std::string TaskBrowser::text;
     TaskContext* TaskBrowser::taskcontext = 0;
     TaskContext* TaskBrowser::peer = 0;
-    TaskContext* TaskBrowser::ppeer = 0;
     TaskContext* TaskBrowser::tb = 0;
+    TaskContext* TaskBrowser::context = 0;
 
     using boost::bind;
     using namespace ORO_CoreLib;
@@ -205,24 +205,24 @@ namespace Orocos
         if ( line.find(std::string("list ")) == 0 ) { 
             // PEER :
             // first make a list of all sensible completions.
-            string tcn = std::string("list ")+taskcontext->getName();
+            string tcn = std::string("list ")+context->getName();
             if ( tcn.find(line) == 0 )
                 completes.push_back( tcn );
 
-            std::vector<std::string> progs = taskcontext->scripting()->getPrograms();
+            std::vector<std::string> progs = context->scripting()->getPrograms();
             // then see which one matches the already typed line :
             for( std::vector<std::string>::iterator it = progs.begin();
                  it != progs.end();
                  ++it) {
-                string res = "list " + taskcontext->getName() + "." + *it;
+                string res = "list " + context->getName() + "." + *it;
                 if ( res.find(line) == 0 )
                     completes.push_back( *it ); // if partial match, add.
             }
-            progs = taskcontext->scripting()->getStateMachines();
+            progs = context->scripting()->getStateMachines();
             for( std::vector<std::string>::iterator it = progs.begin();
                  it != progs.end();
                  ++it) {
-                string res = "list " + taskcontext->getName() + "." + *it;
+                string res = "list " + context->getName() + "." + *it;
                 if ( res.find(line) == 0 )
                     completes.push_back( *it ); // if partial match, add.
             }
@@ -253,10 +253,13 @@ namespace Orocos
             completes.push_back("cd "); 
             completes.push_back("cd ..");
             completes.push_back("ls"); 
-            completes.push_back("peers");
             completes.push_back("help");
             completes.push_back("quit");
             completes.push_back("list");
+            if (taskcontext == context)
+                completes.push_back("leave");
+            else
+                completes.push_back("enter");
             // go on below to add components and tasks as well.
         }
 
@@ -344,14 +347,18 @@ namespace Orocos
                 completes.push_back("ls"); 
             if ( std::string( "cd .." ).find(text) == 0 )
                 completes.push_back("cd ..");
-            if ( std::string( "peers" ).find(text) == 0 )
-                completes.push_back("peers");
             if ( std::string( "help" ).find(text) == 0 )
                 completes.push_back("help");
             if ( std::string( "quit" ).find(text) == 0 )
                 completes.push_back("quit");
             if ( std::string( "list " ).find(text) == 0 )
                 completes.push_back("list ");
+
+            if (taskcontext == context && string("leave").find(text) == 0)
+                completes.push_back("leave");
+
+            if (context == tb && string("enter").find(text) == 0)
+                completes.push_back("enter");
         }
     }
         
@@ -510,13 +517,13 @@ namespace Orocos
     void TaskBrowser::find_peers( std::string::size_type startpos )
     {
         peerpath.clear();
-        peer = tb;
+        peer = context;
 
         //cerr <<" text : "<<text<<endl;
         findPeer( text );
 
         // there is only a peerpath, if there is another peer :
-        if ( peer != tb ) {
+        if ( peer != context ) {
             std::string::size_type pos = 0;
             pos = text.rfind("."); // last dot
             assert( pos != std::string::npos );
@@ -572,6 +579,7 @@ namespace Orocos
           lastc(0), storedname(""), storedline(-1)
     {
         tb = this;
+        context = tb;
         this->switchTaskContext(_c);
         rl_completion_append_character = '\0'; // avoid adding spaces
         rl_attempted_completion_function = &TaskBrowser::orocos_hmi_completion;
@@ -605,7 +613,12 @@ namespace Orocos
         cout << "    TAB completion and HISTORY is available ('bash' like)" <<coloroff<<nl<<nl;
         while (1)
             {
-                cout << " Watching Task "<<green<< taskcontext->getName() <<coloroff<< ". (Status of last Command : ";
+                if ( context == tb )
+                    cout << green << " Watching " <<coloroff;
+                else
+                    cout << red << " In " << coloroff;
+
+                cout << "Task "<<green<< taskcontext->getName() <<coloroff<< ". (Status of last Command : ";
                 if ( command == 0 )
                     cout << "none";
                 else if ( condition == 0 || condition->evaluate() ) // disposed or done
@@ -647,13 +660,12 @@ namespace Orocos
                     command = std::string(command, pos, command.length());
                     printInfo( command );
                 } else if ( command == "" ) { // nop
-                } else if ( command == "peers" ) {
-                    std::vector<std::string> objlist;
-                    cout <<endl<< "  This task's peer tasks are :"<<endl;
-                    objlist = taskcontext->getPeerList();
-                    std::for_each( objlist.begin(), objlist.end(), cout << _1 << " " );
                 } else if ( command.find("cd ..") == 0  ) {
                     this->switchBack( );
+                } else if ( command.find("enter") == 0  ) {
+                    this->enterTask();
+                } else if ( command.find("leave") == 0  ) {
+                    this->leaveTask();
                 } else if ( command.find("cd ") == 0  ) {
                     std::string::size_type pos = command.find("cd")+2;
                     command = std::string(command, pos, command.length());
@@ -676,6 +688,26 @@ namespace Orocos
     std::string TaskBrowser::coloron("\e[m\e[1;31m");
     std::string TaskBrowser::underline("\e[4m");
     std::string TaskBrowser::coloroff("\e[m");
+
+    void TaskBrowser::enterTask()
+    {
+        if ( context == taskcontext ) {
+            Logger::log() << Logger::Info <<"Already in Task "<< taskcontext->getName()<<Logger::endl;
+            return;
+        }
+        context = taskcontext;
+        Logger::log() << Logger::Info <<"Entering Task "<< taskcontext->getName()<<Logger::endl;
+    }
+
+    void TaskBrowser::leaveTask()
+    {
+        if ( context == tb ) {
+            Logger::log() << Logger::Info <<"Already watching Task "<< taskcontext->getName()<<Logger::endl;
+            return;
+        }
+        context = tb;
+        Logger::log() << Logger::Info <<"Watching Task "<< taskcontext->getName()<<Logger::endl;
+    }
 
     void TaskBrowser::switchBack()
     {
@@ -796,6 +828,8 @@ namespace Orocos
         }
 
         // now switch to new one :
+        if ( context == taskcontext )
+            context = tc;
         taskcontext = tc; // peer is the new taskcontext.
         lastc = 0;
 
@@ -819,7 +853,7 @@ namespace Orocos
         our_pos_iter_t parsebegin( s.begin(), s.end(), "teststring" );
         our_pos_iter_t parseend;
             
-        PeerParser pp( tb );
+        PeerParser pp( context );
         try {
             parse( parsebegin, parseend, pp.parser(), SKIP_PARSER );
         }
@@ -892,14 +926,14 @@ namespace Orocos
         ss >> arg;
         ProgramLoader loader;
         if ( instr == "loadProgram") {
-            if ( loader.loadProgram( arg, taskcontext ) )
+            if ( loader.loadProgram( arg, context ) )
                 cout << "Done."<<endl;
             else
                 cout << "Failed."<<endl;
             return;
         }
         if ( instr == "unloadProgram") {
-            if ( loader.unloadProgram( arg, taskcontext ) )
+            if ( loader.unloadProgram( arg, context ) )
                 cout << "Done."<<endl;
             else
                 cout << "Failed."<<endl;
@@ -907,14 +941,14 @@ namespace Orocos
         }
 
         if ( instr == "loadStateMachine") {
-            if ( loader.loadStateMachine( arg, taskcontext ) )
+            if ( loader.loadStateMachine( arg, context ) )
                 cout << "Done."<<endl;
             else
                 cout << "Failed."<<endl;
             return;
         }
         if ( instr == "unloadStateMachine") {
-            if ( loader.unloadStateMachine( arg, taskcontext ) )
+            if ( loader.unloadStateMachine( arg, context ) )
                 cout << "Done."<<endl;
             else
                 cout << "Failed."<<endl;
@@ -947,9 +981,9 @@ namespace Orocos
     {
         cout << "      Got :"<< comm <<nl;
 
-        command_fact = tb->commandFactory.getObjectFactory( comm );
-        datasource_fact = tb->dataFactory.getObjectFactory( comm );
-        method_fact = tb->methodFactory.getObjectFactory( comm );
+        command_fact = context->commandFactory.getObjectFactory( comm );
+        datasource_fact = context->dataFactory.getObjectFactory( comm );
+        method_fact = context->methodFactory.getObjectFactory( comm );
         if ( command_fact ) // only commandobject name was typed
             {
                 std::vector<std::string> methods = command_fact->getCommandList();
@@ -970,8 +1004,8 @@ namespace Orocos
         // if both the object and attribute with that name exist. the if
         // statement after this one would return and not give the expr parser
         // time to evaluate 'comm'. 
-        if ( tb->attributes()->getValue( comm ) ) {
-                this->printResult( tb->attributes()->getValue( comm )->getDataSource().get(), true );
+        if ( context->attributes()->getValue( comm ) ) {
+                this->printResult( context->attributes()->getValue( comm )->getDataSource().get(), true );
                 return;
         }
             
@@ -985,7 +1019,7 @@ namespace Orocos
             cerr << "Trying ValueChange..."<<nl;
         try {
             // Check if it was a method or datasource :
-            DataSourceBase::shared_ptr ds = _parser.parseValueChange( comm, tb );
+            DataSourceBase::shared_ptr ds = _parser.parseValueChange( comm, context );
             // methods and DS'es are processed immediately.
             if ( ds.get() != 0 ) {
                 this->printResult( ds.get(), false );
@@ -1023,7 +1057,7 @@ namespace Orocos
             cerr << "Trying Expression..."<<nl;
         try {
             // Check if it was a method or datasource :
-            DataSourceBase::shared_ptr ds = _parser.parseExpression( comm, tb );
+            DataSourceBase::shared_ptr ds = _parser.parseExpression( comm, context );
             // methods and DS'es are processed immediately.
             if ( ds.get() != 0 ) {
                 this->printResult( ds.get(), true );
@@ -1060,7 +1094,7 @@ namespace Orocos
         if (debug)
             cerr << "Trying Command..."<<nl;
         try {
-            comcon = _parser.parseCommand( comm, tb, true ); // create a dispatch command.
+            comcon = _parser.parseCommand( comm, context, true ); // create a dispatch command.
             assert( dynamic_cast<DispatchInterface*>(comcon.first) );
             if ( condition && !condition->evaluate() ) {
                 cerr << "Warning : previous command is not yet processed by Processor." <<nl;
@@ -1087,7 +1121,7 @@ namespace Orocos
         }
 
         if ( command->execute() == false ) {
-            cerr << "Command not accepted by"<<taskcontext->getName()<<"'s Processor !" << nl;
+            cerr << "Command not accepted by"<<context->getName()<<"'s Processor !" << nl;
             delete command;
             delete condition;
             command = 0;
@@ -1270,20 +1304,12 @@ namespace Orocos
         int end;
         bool found(false);
 
-        // Extract peername (if any) from progname
-        string pname = progname.substr( 0, progname.find(".") );
-        if ( pname == taskcontext->getName() ) {
-            ppeer = taskcontext;
-            storedname = progname.substr( progname.find("."), string::npos );
-        } else
-            ppeer = this;
-        
         // if program exists, display.
-        if ( ppeer->scripting()->hasProgram( storedname ) ) {
-            ps = ppeer->scripting()->getProgramStatus(storedname);
+        if ( context->scripting()->hasProgram( storedname ) ) {
+            ps = context->scripting()->getProgramStatus(storedname);
             s = toupper(ps[0]);
-            txtss.str( ppeer->scripting()->getProgramText(storedname) );
-            ln = ppeer->scripting()->getProgramLine(storedname);
+            txtss.str( context->scripting()->getProgramText(storedname) );
+            ln = context->scripting()->getProgramLine(storedname);
             if ( cl < 0 ) cl = ln;
             start = cl < 10 ? 1 : cl - 10;
             end   = cl + 10;
@@ -1292,11 +1318,11 @@ namespace Orocos
         }
 
         // If statemachine exists, display.
-        if ( ppeer->scripting()->hasStateMachine( storedname ) ) {
-            ps = ppeer->scripting()->getStateMachineStatus(storedname);
+        if ( context->scripting()->hasStateMachine( storedname ) ) {
+            ps = context->scripting()->getStateMachineStatus(storedname);
             s = toupper(ps[0]);
-            txtss.str( ppeer->scripting()->getStateMachineText(storedname) );
-            ln = ppeer->scripting()->getStateMachineLine(storedname);
+            txtss.str( context->scripting()->getStateMachineText(storedname) );
+            ln = context->scripting()->getStateMachineLine(storedname);
             if ( cl < 0 ) cl = ln;
             start = cl <= 10 ? 1 : cl - 10;
             end   = cl + 10;
@@ -1315,11 +1341,11 @@ namespace Orocos
         int start;
         int end;
         bool found(false);
-        if ( ppeer->scripting()->hasProgram( storedname ) ) {
-            ps = ppeer->scripting()->getProgramStatus(storedname);
+        if ( context->scripting()->hasProgram( storedname ) ) {
+            ps = context->scripting()->getProgramStatus(storedname);
             s = toupper(ps[0]);
-            txtss.str( ppeer->scripting()->getProgramText(storedname) );
-            ln = ppeer->scripting()->getProgramLine(storedname);
+            txtss.str( context->scripting()->getProgramText(storedname) );
+            ln = context->scripting()->getProgramLine(storedname);
             if ( cl < 0 ) cl = storedline;
             if (storedline < 0 ) cl = ln -10;
             start = cl;
@@ -1327,11 +1353,11 @@ namespace Orocos
             this->listText( txtss, start, end, ln, s);
             found = true;
         }
-        if ( ppeer->scripting()->hasStateMachine(storedname) ) {
-            ps = ppeer->scripting()->getStateMachineStatus(storedname);
+        if ( context->scripting()->hasStateMachine(storedname) ) {
+            ps = context->scripting()->getStateMachineStatus(storedname);
             s = toupper(ps[0]);
-            txtss.str( ppeer->scripting()->getStateMachineText(storedname) );
-            ln = ppeer->scripting()->getStateMachineLine(storedname);
+            txtss.str( context->scripting()->getStateMachineText(storedname) );
+            ln = context->scripting()->getStateMachineLine(storedname);
             if ( cl < 0 ) cl = storedline;
             if (storedline < 0 ) cl = ln -10;
             start = cl;
@@ -1434,7 +1460,7 @@ namespace Orocos
         }
         cout << coloroff << nl;
 
-        cout <<coloroff<<nl<< " Ports        : "<<coloron;
+        cout << " Ports        : "<<coloron;
         objlist = peer->ports()->getPortNames();
         if ( !objlist.empty() ) {
             copy(objlist.begin(), objlist.end(), std::ostream_iterator<std::string>(cout, " "));
@@ -1446,21 +1472,34 @@ namespace Orocos
 
         objlist = peer->scripting()->getPrograms();
         if ( !objlist.empty() ) {
-            cout <<coloroff<<nl<< " Programs     : "<<coloron;
+            cout << " Programs     : "<<coloron;
             copy(objlist.begin(), objlist.end(), std::ostream_iterator<std::string>(cout, " "));
-        }
-        objlist = peer->scripting()->getStateMachines();
-        if ( !objlist.empty() ) {
-            cout <<coloroff<<nl<< " StateMachines: "<<coloron;
-            copy(objlist.begin(), objlist.end(), std::ostream_iterator<std::string>(cout, " "));
+            cout << coloroff << nl;
         }
 
-        cout <<coloroff<<nl<< " Peers        : "<<coloron;
-        objlist = peer->getPeerList();
-        if ( !objlist.empty() )
+        objlist = peer->scripting()->getStateMachines();
+        if ( !objlist.empty() ) {
+            cout << " StateMachines: "<<coloron;
             copy(objlist.begin(), objlist.end(), std::ostream_iterator<std::string>(cout, " "));
-        else
-            cout << "(none)";
+            cout << coloroff << nl;
+        }
+
+        // if we are in the TB, display the peers of our connected task:
+        if ( context == tb ) {
+            cout << " "<<taskcontext->getName()<<" Peers : "<<coloron;
+            objlist = taskcontext->getPeerList();
+            if ( !objlist.empty() )
+                copy(objlist.begin(), objlist.end(), std::ostream_iterator<std::string>(cout, " "));
+            else
+                cout << "(none)";
+        } else {
+            cout << " Peers        : "<<coloron;
+            objlist = taskcontext->getPeerList();
+            if ( !objlist.empty() )
+                copy(objlist.begin(), objlist.end(), std::ostream_iterator<std::string>(cout, " "));
+            else
+                cout << "(none)";
+        }
         cout <<coloroff<<nl;
     }
         

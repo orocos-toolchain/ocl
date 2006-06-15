@@ -61,10 +61,10 @@ namespace Orocos
         static RTT::TaskContext* taskcontext;
         // the TC we are using for completion.
         static RTT::TaskContext* peer;
-        // the TC we are using for program listing.
-        static RTT::TaskContext* ppeer;
         // the TaskBrowser
         static RTT::TaskContext* tb;
+        // the current Context: is tb or taskcontext
+        static RTT::TaskContext* context;
         RTT::ConditionInterface* condition;
         RTT::DispatchInterface*   command;
         RTT::DataSource<bool>::shared_ptr   accepted;
@@ -125,6 +125,8 @@ namespace Orocos
 
         void doPrint( RTT::DataSourceBase* ds, bool recurse);
 
+        void enterTask();
+        void leaveTask();
     public:
 
         /**
