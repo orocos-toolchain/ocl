@@ -53,7 +53,7 @@ namespace Orocos
 #define KUKA160_RADproSEC2VOLT { 3.97143, 4.40112, 3.65062, 3.38542, 4.30991, 2.75810 }
   
   
-  Kuka160nAxesVelocityController::Kuka160nAxesVelocityController(string name,const string propertyfile)
+  Kuka160nAxesVelocityController::Kuka160nAxesVelocityController(string name,string propertyfile)
     : GenericTaskContext(name),
       _driveValue(NUM_AXES),
       _references(NUM_AXES),
@@ -207,7 +207,7 @@ namespace Orocos
      * Connecting EventC to Event make c++-emit possible
      */
     _driveOutOfRange_event = events()->setupEmit("driveOutOfRange").arg(_driveOutOfRange_axis).arg(_driveOutOfRange_value);
-    _positionOutOfRange_event = events()->setupEmit("driveOutOfRange").arg(_positionOutOfRange_axis).arg(_positionOutOfRange_value);
+    _positionOutOfRange_event = events()->setupEmit("positionOutOfRange").arg(_positionOutOfRange_axis).arg(_positionOutOfRange_value);
   }
   
   Kuka160nAxesVelocityController::~Kuka160nAxesVelocityController()
@@ -391,7 +391,7 @@ namespace Orocos
   {
     bool _return = true;
     for(unsigned int i = 0;i<NUM_AXES;i++){
-      _return &= _axes[i]->stop();
+      _return &= stopAxis(i);
     }
     return _return;
   }
@@ -400,29 +400,25 @@ namespace Orocos
   {
     bool _return = true;
     for(unsigned int i = 0;i<NUM_AXES;i++){
-      _return &= _axes[i]->drive(0.0);
+      _return &= startAxis(i);
     }
     return _return;
   }
   
   bool Kuka160nAxesVelocityController::unlockAllAxes()
   {
-    if(_activated){
-      bool _return = true;
-      for(unsigned int i = 0;i<NUM_AXES;i++){
-        _return &= _axes[i]->unlock();
+    bool _return = true;
+    for(unsigned int i = 0;i<NUM_AXES;i++){
+      _return &= unlockAxis(i);
       }
       return _return;
-    }
-    else
-      return false;
   }
   
   bool Kuka160nAxesVelocityController::lockAllAxes()
   {
     bool _return = true;
     for(unsigned int i = 0;i<NUM_AXES;i++){
-      _return &= _axes[i]->lock();
+      _return &= lockAxis(i);
     }
     return _return;
   }
@@ -431,7 +427,7 @@ namespace Orocos
   {
     bool _return = true;
     for(unsigned int i = 0;i<NUM_AXES;i++)
-      _return &= _axes[i]->isStopped();
+      _return &= stopAxisCompleted(i);
     return _return;
   }
   
@@ -439,7 +435,7 @@ namespace Orocos
   {
     bool _return = true;
     for(unsigned int i = 0;i<NUM_AXES;i++)
-     _return &= _axes[i]->isDriven();
+     _return &= startAxisCompleted(i);
     return _return;
   }
   
@@ -447,7 +443,7 @@ namespace Orocos
   {
     bool _return = true;
     for(unsigned int i = 0;i<NUM_AXES;i++)
-      _return &= _axes[i]->isLocked();
+      _return &= lockAxisCompleted(i);
     return _return;
   }
   
@@ -455,7 +451,7 @@ namespace Orocos
   {
     bool _return = true;
     for(unsigned int i = 0;i<NUM_AXES;i++)
-      _return &= !_axes[i]->isLocked();
+      _return &= unlockAxisCompleted(i);
     return _return;
   }
   

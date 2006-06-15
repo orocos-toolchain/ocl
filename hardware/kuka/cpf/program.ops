@@ -1,0 +1,15 @@
+program Kuka160TestProg
+{
+  do Kuka160.start()
+  do Reporting.reportComponent("Kuka160")
+  do Kuka160.prepareForUse()
+  do Kuka160.unlockAllAxes()
+  do Kuka160.startAllAxes()
+  do driveValue0.Set( 0.01 )
+  do Reporting.start()
+  while(!Kuka160.positionValue0==1){
+     do nothing
+  }
+  do Reporting.stop()
+  do Kuka160.stop()
+}   

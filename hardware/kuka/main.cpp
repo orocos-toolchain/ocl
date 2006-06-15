@@ -60,37 +60,40 @@ int ORO_main(int argc, char* argv[])
               Logger::log() << Logger::Info << argv[0] << " manually raises LogLevel to 'Info' (5). See also file 'orocos.log'."<<Logger::endl;
   }
   
-  RTT::GenericTaskContext* my_robot = new Kuka160nAxesVelocityController();
-
-  EmergencyStop _emergency(my_robot);
+  Kuka160nAxesVelocityController my_robot("Kuka160");
+  
+  EmergencyStop _emergency(&my_robot);
   
   /// Creating Event Handlers
-  Handle _emergencyHandle = my_robot->events()->setupConnection("driveOutOfRange").
+  Handle _emergencyHandle = my_robot.events()->setupConnection("driveOutOfRange").
     callback(&_emergency,&EmergencyStop::callback).handle();
-  Handle _positionWarning = my_robot->events()->setupConnection("positionOutOfRange").
+  Handle _positionWarning = my_robot.events()->setupConnection("positionOutOfRange").
     callback(&PositionLimitCallBack).handle();
 
   /// Connecting Event Handlers
   _emergencyHandle.connect();
   _positionWarning.connect();
   
-  /// Link my_robot to Taskbrowser
-  TaskBrowser browser( my_robot );
-  browser.setColorTheme( TaskBrowser::whitebg );
-  
   ///Reporting
   FileReporting reporter("Reporting");
-  reporter.connectPeers(my_robot);
-  
-  /// Creating Task
-  NonPreemptibleActivity _kukaTask(1, my_robot->engine() );  // very slow for debugging purposes
+  reporter.addPeer(&my_robot);
+
+  /// Link my_robot to Taskbrowser
+  TaskBrowser browser(&my_robot );
+  browser.setColorTheme( TaskBrowser::whitebg );
+  browser.addPeer(&reporter);
+
+  //Loading program in browser
+  browser.loadProgram("cpf/program.ops");
+
+  /// Creating Tasks
+  NonPreemptibleActivity _kukaTask(0.1, my_robot.engine() );  
+  PeriodicActivity _browserTask(2,1, browser.engine() );  
   PeriodicActivity reportingTask(10,1.0,reporter.engine());
   /// Start the console reader.
   browser.loop();
   
   _kukaTask.stop();
 
-  delete my_robot;
-    
   return 0;
 }
