@@ -32,7 +32,7 @@ def configure(conf):
 	if not conf.checkPkg('orocos-'+orotgt,'OROCOS', '0.23.0', oroloc+'/lib/pkgconfig'):
 		Params.fatal("Orocos pkgconf file not found !")
 		
-	conf.env['LIB_OROCOS']= [ 'orocos-'+orotgt ]
+	conf.env['LIB_OROCOS'].append( 'orocos-'+orotgt )
 	
 
 def set_options(opt):
