@@ -33,10 +33,10 @@ public:
     _value = value;
     _stop.execute();
     _lock.execute();
-    cout << "---------------------------------------------" << endl;
-    cout << "--------- EMERGENCY STOP --------------------" << endl;
-    cout << "---------------------------------------------" << endl;
-    cout << "Axis "<< _axis <<" drive value "<<_value<< " reached limitDriveValue"<<endl;
+    Logger::log()<<Logger::Error << "---------------------------------------------" << Logger::endl;
+    Logger::log()<<Logger::Error << "--------- EMERGENCY STOP --------------------" << Logger::endl;
+    Logger::log()<<Logger::Error << "---------------------------------------------" << Logger::endl;
+    Logger::log()<<Logger::Error << "Axis "<< _axis <<" drive value "<<_value<< " reached limitDriveValue"<<Logger::endl;
   };
 private:
   GenericTaskContext *_robot;
@@ -48,8 +48,8 @@ private:
 
 void PositionLimitCallBack(int axis, double value)
 {
-  cout<< "-------------Warning----------------"<<endl;
-  cout<< "Axis "<<axis<<" moving passed software position limit, current value: "<<value<<endl;
+  Logger::log()<<Logger::Warning<< "-------------Warning----------------"<<Logger::endl;
+  Logger::log()<<Logger::Warning<< "Axis "<<axis<<" moving passed software position limit, current value: "<<value<<Logger::endl;
 }
 
 // main() function
@@ -77,39 +77,45 @@ int ORO_main(int argc, char* argv[])
   _positionWarning.connect();
   
   //nAxesComponents
-  nAxesSensorPos _sensor("nAxesSensor",6);
-  nAxesGeneratorPos _generator("nAxesGenerator",6);
-  nAxesControllerPosVel _controller("nAxesController",6);
-  nAxesEffectorVel _effector("nAxesEffector",6);
+  nAxesSensorPos sensor("nAxesSensor",6);
+  nAxesGeneratorPos generator("nAxesGenerator",6);
+  nAxesControllerPosVel controller("nAxesController",6);
+  nAxesEffectorVel effector("nAxesEffector",6);
 
   //connecting sensor and effector to hardware
-  _sensor.addPeer(&my_robot);
-  _effector.addPeer(&my_robot);
+  sensor.connectPeers(&my_robot);
+  effector.connectPeers(&my_robot);
   
   //connection naxes components to each other
-  _generator.connectPeers(&_sensor);
-  _controller.connectPeers(&_sensor);
-  _controller.connectPeers(&_generator);
-  _effector.connectPeers(&_controller);
+  generator.connectPeers(&sensor);
+  controller.connectPeers(&sensor);
+  controller.connectPeers(&generator);
+  effector.connectPeers(&controller);
     
   //Reporting
   FileReporting reporter("Reporting");
-  reporter.connectPeers(&_sensor);
-  reporter.connectPeers(&_generator);
-  reporter.connectPeers(&_controller);
-  reporter.connectPeers(&_effector);
+  reporter.connectPeers(&sensor);
+  reporter.connectPeers(&generator);
+  reporter.connectPeers(&controller);
+  reporter.connectPeers(&effector);  
     
   
   // Creating Tasks
   NonPreemptibleActivity _kukaTask(0.01, my_robot.engine() ); 
-  NonPreemptibleActivity _sensorTask(0.1, _sensor.engine() ); 
-  NonPreemptibleActivity _generatorTask(0.1, _generator.engine() ); 
-  NonPreemptibleActivity _controllerTask(0.1, _controller.engine() ); 
-  NonPreemptibleActivity _effectorTask(0.1, _effector.engine() ); 
+  NonPreemptibleActivity _sensorTask(0.1, sensor.engine() ); 
+  NonPreemptibleActivity _generatorTask(0.1, generator.engine() ); 
+  NonPreemptibleActivity _controllerTask(0.1, controller.engine() ); 
+  NonPreemptibleActivity _effectorTask(0.1, effector.engine() ); 
   PeriodicActivity reportingTask(10,1.0,reporter.engine());
 
   // Link my_robot to Taskbrowser
   TaskBrowser browser(&my_robot);
+  browser.connectPeers(&reporter);
+  //  browser.connectPeers(&my_robot);
+  browser.connectPeers(&sensor);    
+  browser.connectPeers(&generator); 
+  browser.connectPeers(&controller);
+  browser.connectPeers(&effector);  
   browser.setColorTheme( TaskBrowser::whitebg );
   
   // Start the console reader.
