@@ -78,8 +78,11 @@ int ORO_main(int argc, char* argv[])
   
   //nAxesComponents
   nAxesSensorPos sensor("nAxesSensor",6);
-  nAxesGeneratorPos generator("nAxesGenerator",6);
-  nAxesControllerPosVel controller("nAxesController",6);
+  nAxesGeneratorPos generatorPos("nAxesGeneratorPos",6);
+  nAxesGeneratorVel generatorVel("nAxesGeneratorVel",6);
+  nAxesControllerPos controllerPos("nAxesControllerPos",6);
+  nAxesControllerPosVel controllerPosVel("nAxesControllerPosVel",6);
+  nAxesControllerVel controllerVel("nAxesControllerPosVel",6);
   nAxesEffectorVel effector("nAxesEffector",6);
 
   //connecting sensor and effector to hardware
@@ -87,39 +90,59 @@ int ORO_main(int argc, char* argv[])
   effector.connectPeers(&my_robot);
   
   //connection naxes components to each other
-  generator.connectPeers(&sensor);
-  controller.connectPeers(&sensor);
-  controller.connectPeers(&generator);
-  effector.connectPeers(&controller);
+  generatorPos.connectPeers(&sensor);
+  generatorVel.connectPeers(&sensor);
+  controllerPos.connectPeers(&sensor);
+  controllerPosVel.connectPeers(&sensor);
+  controllerVel.connectPeers(&sensor);
+  controllerPos.connectPeers(&generatorPos);
+  controllerPosVel.connectPeers(&generatorPos);
+  controllerVel.connectPeers(&generatorVel);
+  effector.connectPeers(&controllerPos);
+  effector.connectPeers(&controllerPosVel);
+  effector.connectPeers(&controllerVel);
     
   //Reporting
   FileReporting reporter("Reporting");
   reporter.connectPeers(&sensor);
-  reporter.connectPeers(&generator);
-  reporter.connectPeers(&controller);
+  reporter.connectPeers(&generatorPos);
+  reporter.connectPeers(&generatorVel);
+  reporter.connectPeers(&controllerPos);
+  reporter.connectPeers(&controllerPosVel);
+  reporter.connectPeers(&controllerVel);
   reporter.connectPeers(&effector);  
     
+  // Link my_robot to Taskbrowser
+  TaskBrowser browser(&my_robot);
+  browser.connectPeers(&reporter);
+  browser.connectPeers(&sensor);    
+  browser.connectPeers(&generatorPos); 
+  browser.connectPeers(&generatorVel); 
+  browser.connectPeers(&controllerPos);
+  browser.connectPeers(&controllerPosVel);
+  browser.connectPeers(&controllerVel);
+  browser.connectPeers(&effector);
+  
+  browser.setColorTheme( TaskBrowser::whitebg );
   
   // Creating Tasks
   NonPreemptibleActivity _kukaTask(0.01, my_robot.engine() ); 
   NonPreemptibleActivity _sensorTask(0.1, sensor.engine() ); 
-  NonPreemptibleActivity _generatorTask(0.1, generator.engine() ); 
-  NonPreemptibleActivity _controllerTask(0.1, controller.engine() ); 
+  NonPreemptibleActivity _generatorPosTask(0.1, generatorPos.engine() ); 
+  NonPreemptibleActivity _generatorVelTask(0.1, generatorVel.engine() ); 
+  NonPreemptibleActivity _controllerPosTask(0.1, controllerPos.engine() ); 
+  NonPreemptibleActivity _controllerPosVelTask(0.1, controllerPosVel.engine() ); 
+  NonPreemptibleActivity _controllerVelTask(0.1, controllerVel.engine() ); 
   NonPreemptibleActivity _effectorTask(0.1, effector.engine() ); 
   PeriodicActivity reportingTask(10,1.0,reporter.engine());
+  PeriodicActivity browserTask(2,0.1,reporter.engine());
 
-  // Link my_robot to Taskbrowser
-  TaskBrowser browser(&my_robot);
-  browser.connectPeers(&reporter);
-  //  browser.connectPeers(&my_robot);
-  browser.connectPeers(&sensor);    
-  browser.connectPeers(&generator); 
-  browser.connectPeers(&controller);
-  browser.connectPeers(&effector);  
-  browser.setColorTheme( TaskBrowser::whitebg );
+  browserTask.start();
   
   // Start the console reader.
   browser.loop();
+  
+  browserTask.stop();
   
   return 0;
 }

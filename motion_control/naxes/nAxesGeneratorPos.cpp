@@ -19,7 +19,6 @@
 //  
 
 #include "nAxesGeneratorPos.hpp"
-#include <corelib/Logger.hpp>
 #include <execution/TemplateFactories.hpp>
 #include <assert.h>
 
@@ -64,8 +63,7 @@ namespace Orocos
     commandFactory.registerObject("this",_my_commandfactory);
 
     //Adding Methods
-    TemplateMethodFactory<MyType>*  _my_methodfactory;
-    _my_methodfactory = newMethodFactory( this );
+    TemplateMethodFactory<MyType>*  _my_methodfactory = newMethodFactory( this );
     _my_methodfactory->add( "reset", method( &MyType::reset, "Reset generator" ));  
     methodFactory.registerObject("this",_my_methodfactory);
   

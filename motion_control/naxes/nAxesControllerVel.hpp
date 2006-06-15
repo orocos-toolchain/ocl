@@ -1,4 +1,4 @@
-// $Id: nAxisControllerPosVel.hpp,v 1.1.1.1 2003/12/02 20:32:06 kgadeyne Exp $
+// $Id: nAxisControllerVel.hpp,v 1.1.1.1 2003/12/02 20:32:06 kgadeyne Exp $
 // Copyright (C) 2003 Klaas Gadeyne <klaas.gadeyne@mech.kuleuven.ac.be>
 //                    Wim Meeussen  <wim.meeussen@mech.kuleuven.ac.be>
 // Copyright (C) 2006 Ruben Smits <ruben.smits@mech.kuleuven.be>
@@ -18,38 +18,47 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 //  
 
-#ifndef __N_AXES_CONTROLLER_POS_VEL_H__
-#define __N_AXES_CONTROLLER_POS_VEL_H__
+#ifndef __N_AXES_CONTROLLER_VEL_H__
+#define __N_AXES_CONTROLLER_VEL_H__
 
 #include <corelib/RTT.hpp>
-
 #include <execution/GenericTaskContext.hpp>
 #include <corelib/Properties.hpp>
+#include <corelib/TimeService.hpp>
 #include <execution/Ports.hpp>
 
 namespace Orocos
 {
-  class nAxesControllerPosVel : public RTT::GenericTaskContext
+  
+  class nAxesControllerVel : public ORO_Execution::GenericTaskContext
   {
   public:
-    nAxesControllerPosVel(std::string name, unsigned int num_axes, 
-  			std::string propertyfile="cpf/nAxesControllerPosVel.cpf");
-    virtual ~nAxesControllerPosVel();
-    
+    nAxesControllerVel(std::string name,unsigned int num_axes, 
+  		     std::string propertyfile="cpf/nAxesControllerVel.cpf");
+    virtual ~nAxesControllerVel();
+  
     virtual bool startup();
     virtual void update();
     virtual void shutdown();
-    
+  
   private:
-    unsigned int                              _num_axes;
-    std::string                               _propertyfile;
+    void reset();
+    void reset(int axis);
+  
+    unsigned int                               _num_axes;
+    std::string                                _propertyfile;
+  					       
+    std::vector<double>                        _position_meas_local, _position_desi_local, _velocity_desi_local, _velocity_out_local;
+
+    RTT::ReadDataPort< std::vector<double> >   _position_meas, _velocity_desi;
+    RTT::WriteDataPort< std::vector<double> >  _velocity_out;
+  					       
+    std::vector<bool>                          _is_initialized;
+    std::vector<RTT::TimeService::ticks>       _time_begin;
+    RTT::Property< std::vector<double> >       _controller_gain;
+  
     
-    std::vector<double>                       _position_meas_local, _position_desi_local, _velocity_desi_local, _velocity_out_local;
-    RTT::ReadDataPort< std::vector<double> >  _position_meas, _position_desi, _velocity_desi;
-    RTT::WriteDataPort< std::vector<double> > _velocity_out;
-  
-    RTT::Property< std::vector<double> >      _controller_gain;
-  
   }; // class
 }//namespace
-#endif // __N_AXES_CONTROLLER_POS_VEL_H__
+
+#endif // __N_AXES_CONTROLLER_VEL_H__

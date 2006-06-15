@@ -28,7 +28,10 @@ def build(bld):
 	obj.source='''
 	nAxesSensorPos.cpp
 	nAxesGeneratorPos.cpp
+	nAxesGeneratorVel.cpp
+	nAxesControllerPos.cpp
 	nAxesControllerPosVel.cpp
+	nAxesControllerVel.cpp
 	nAxesEffectorVel.cpp
 	main.cpp
 	'''
