@@ -51,5 +51,5 @@
      <simple name="4" type="double"><value>0</value></simple>
      <simple name="5" type="double"><value>0</value></simple>
   </struct>
-  <simple name="simulation" type="boolean"><description>true if simulationAxes should be used</description><value>1</value></simple>
+  <simple name="simulation" type="boolean"><description>true if simulationAxes should be used</description><value>0</value></simple>
 </properties>

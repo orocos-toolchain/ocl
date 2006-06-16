@@ -93,7 +93,6 @@ namespace Orocos
     
     if (!readProperties(_propertyfile)) {
       Logger::log() << Logger::Error << "Failed to read the property file, continueing with default values." << Logger::endl;
-      assert(0);
     }  
     
 #if (defined OROPKG_OS_LXRT && defined OROPKG_DEVICE_DRIVERS_COMEDI)
