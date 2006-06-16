@@ -1,0 +1,25 @@
+export function MoveToJoint(double j1, double j2, double j3, double j4, double j5, double j6)
+{
+  do nAxesSensorPos.start()
+  do nAxesGeneratorPos.start()
+  do nAxesControllerPosVel.start()
+  do nAxesEffectorVel.start()
+
+  var array MoveToPos(6)
+  set MoveToPos[0] = j1
+  set MoveToPos[1] = j2
+  set MoveToPos[2] = j3
+  set MoveToPos[3] = j4
+  set MoveToPos[4] = j5
+  set MoveToPos[5] = j6
+  do nAxesGeneratorPos.moveTo(MoveToPos, 0.0)
+  
+  do nAxesEffectorVel.stop()
+  do nAxesControllerPosVel.stop()
+  do nAxesGeneratorPos.stop()
+  do nAxesSensorPos.stop()
+}
+
+// empty program to avoid parse warning
+program MoveToProg{
+}    

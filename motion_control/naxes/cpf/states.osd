@@ -1,0 +1,70 @@
+StateMachine Default
+{
+
+  var bool calibrate_offsets     = true
+
+  const double pi = 3.14159265358979
+
+  initial state StartRobotState {
+    entry {
+      do Kuka160.prepareForUse()
+    }
+    exit {
+      do Kuka160.unlockAllAxes()
+      do Kuka160.startAllAxes()
+    }
+    transitions {
+      select CalibrateOffsetsState
+    }
+  }
+
+
+
+  state CalibrateOffsetsState {
+    preconditions {
+      if (calibrate_offsets == false) then
+        select MoveToState
+    }
+    entry {
+      do nAxesSensorPos.start()
+      do nAxesGeneratorPos.start()
+      do nAxesControllerPos.start()
+      do nAxesEffectorVel.start()
+      do programs.CalibrateOffsetsProg.start()
+    }
+    exit {
+      do nAxesSensorPos.stop()
+      do nAxesGeneratorPos.stop()
+      do nAxesControllerPos.stop()
+      do nAxesEffectorVel.stop()
+    }
+    transitions {
+      if !programs.CalibrateOffsetsProg.isRunning then
+       select MoveToState
+    }
+  }      
+
+  state MoveToState {
+    entry {
+      do MoveToJoint(0.98349,   0.15951,   1.44723,  -0.79855,  -1.69069,  1.78101)
+    }
+    exit {
+    }
+    transitions {
+      select StopRobotState
+    }
+  }
+
+
+  final state StopRobotState {
+    entry {
+        do Kuka160.stopAllAxes()
+        do Kuka160.lockAllAxes()
+    }
+    exit {
+      do Kuka160.prepareForShutdown()
+    }
+  }
+}
+
+RootMachine Default Default
