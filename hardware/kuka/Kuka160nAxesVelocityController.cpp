@@ -292,9 +292,10 @@ namespace Orocos
   bool Kuka160nAxesVelocityController::prepareForUse()
   {
 #if (defined OROPKG_OS_LXRT&& defined OROPKG_DEVICE_DRIVERS_COMEDI)
-    if(!_simulation.value())
+    if(!_simulation.value()){
       _comediSubdevDOut->switchOn( 17 );
-    Logger::log()<<Logger::Warning<<"Release Emergency stop and push button to start ...."<<Logger::endl;
+      Logger::log()<<Logger::Warning<<"Release Emergency stop and push button to start ...."<<Logger::endl;
+    }
 #endif
     _activated = true;
     return true;

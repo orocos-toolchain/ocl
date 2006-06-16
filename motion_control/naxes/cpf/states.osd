@@ -2,7 +2,7 @@ StateMachine Default
 {
 
   var bool calibrate_offsets     = true
-  var bool move_to               = false
+  var bool move_to               = true
 
   const double pi = 3.14159265358979
 
@@ -51,7 +51,7 @@ StateMachine Default
         select StopRobotState
     }
     entry {
-      do MoveToJoint(0.98349,   0.15951,   1.44723,  -0.79855,  -1.69069,  1.78101)
+      do MoveToJoint(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
     }
     exit {
     }
