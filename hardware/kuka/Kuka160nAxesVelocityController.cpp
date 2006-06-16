@@ -228,7 +228,6 @@ namespace Orocos
     delete _comediSubdevAOut;
     delete _comediSubdevDIn;
     delete _comediSubdevDOut;
-    delete _encoderInterface;
 #endif
   }
   
