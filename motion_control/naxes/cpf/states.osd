@@ -51,7 +51,23 @@ StateMachine Default
         select StopRobotState
     }
     entry {
-      do MoveToJoint(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+      var double position0 = Kuka160.positionValue0.Get()      
+      var double position1 = Kuka160.positionValue1.Get()      
+      var double position2 = Kuka160.positionValue2.Get()      
+      var double position3 = Kuka160.positionValue3.Get()      
+      var double position4 = Kuka160.positionValue4.Get()      
+      var double position5 = Kuka160.positionValue5.Get() 
+
+      set position0 = position0 + pi/4
+      set position3 = position3 + pi/2
+      set position4 = position4 + pi/4
+      set position5 = position5 + pi/2
+      do MoveToJoint(position0, position1, position2, position3, position4, position5)
+      set position0 = position0 - pi/4
+      set position3 = position3 - pi/2
+      set position4 = position4 - pi/4
+      set position5 = position5 - pi/2
+      do MoveToJoint(position0, position1, position2, position3, position4, position5)
     }
     exit {
     }

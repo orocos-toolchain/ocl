@@ -44,12 +44,12 @@
   <struct name="driveOffset" type="std::vector&lt;double&gt;">
      <description>offset (in rad/s) to the drive value.</description>
      <simple name="Size" type="long"><description>Dimension of the Vector</description><value>6</value></simple>
-     <simple name="0" type="double"><value>-0.0288498</value></simple>
-     <simple name="1" type="double"><value>-0.0271783</value></simple>
-     <simple name="2" type="double"><value>-0.0327846</value></simple>
-     <simple name="3" type="double"><value>-0.0237506</value></simple>
-     <simple name="4" type="double"><value>-0.0266268</value></simple>
-     <simple name="5" type="double"><value>-0.0416255</value></simple>
+     <simple name="0" type="double"><value>-0.0288846</value></simple>
+     <simple name="1" type="double"><value>-0.0272208</value></simple>
+     <simple name="2" type="double"><value>-0.0327684</value></simple>
+     <simple name="3" type="double"><value>-0.0237901</value></simple>
+     <simple name="4" type="double"><value>-0.0266407</value></simple>
+     <simple name="5" type="double"><value>-0.0416198</value></simple>
   </struct>
-  <simple name="simulation" type="boolean"><description>true if simulationAxes should be used</description><value>1</value></simple>
+  <simple name="simulation" type="boolean"><description>true if simulationAxes should be used</description><value>0</value></simple>
 </properties>
