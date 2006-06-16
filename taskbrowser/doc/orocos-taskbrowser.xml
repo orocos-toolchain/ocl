@@ -1,0 +1,108 @@
+<?xml version='1.0'?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
+"http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd"
+[
+<!ENTITY % oro_ents SYSTEM "http://people.mech.kuleuven.be/~psoetens/orocos/doc/orocos.ent" >
+%oro_ents;
+]
+>
+
+<article>
+  <articleinfo>
+    <title>The TaskBrowser Component</title>
+    <authorgroup>
+      <author>
+	<firstname>Peter</firstname>
+	<surname>Soetens</surname>
+	<affiliation>
+	  <orgname>FMTC</orgname>
+	  <address><country>Belgium</country></address>
+	</affiliation>
+      </author>
+    </authorgroup>
+    <copyright>
+      <year>2006</year>
+      <holder>Peter Soetens, FMTC</holder>
+    </copyright>
+
+    <abstract>
+      <para>
+	This document explains the design and implementation of the
+	<emphasis>Core Library</emphasis> of &orocos;, the <emphasis>Open
+	RObot COntrol Software</emphasis> project. The CoreLib provides
+	infrastructural support for the functional and application components
+	of the &orocos; framework.
+      </para>
+    </abstract>
+
+    <revhistory>
+      <revision>
+	<revnumber>0.24.0</revnumber>
+	<date>16 June 2006</date>
+	<authorinitials>ps</authorinitials>
+	<revremark>Introduction.</revremark>
+      </revision>
+    </revhistory>
+
+    <legalnotice>
+      <para>
+	Permission is granted to copy, distribute and/or modify this document
+	under the terms of the GNU Free Documentation License, Version 1.1 or
+	any later version published by the Free Software Foundation, with no
+	Invariant Sections, with no Front-Cover Texts, and with no Back-Cover
+	Texts. A copy of this license can be found at
+	<ulink
+	  url="http://www.fsf.org/copyleft/fdl.html">http://www.fsf.org/copyleft/fdl.html</ulink>.
+      </para>
+    </legalnotice>
+
+  </articleinfo>
+
+  <section>
+    <title>Introduction</title>
+    <para>
+      This document describes the TaskBrowser Orocos component for
+      user interaction with other components. It can visit any
+      component in a given network, query it, send it commands,
+      run programs etc.
+    </para>
+    <section>Principle</section>
+    <para>
+      Each Orocos component has a standard interface of properties,
+      events, commands etc. It is possible to query and use this interface
+      generically. The TaskBrowser is connected to one component only
+      at a time. It can however be used to 'browse' the network of
+      peer components and visit any component in an application.
+    </para>
+    <para>
+      The TaskBrowser is a component itself, but it offers a 'window'
+      to another component. When it is connected
+      to another component, it dynamically creates the 'anti' 
+      data ports and connects these to the other component. In
+      this way, the TaskBrowser can send data to any component.
+      When the component is left, the ports are disconnected and
+      removed.
+    </para>
+    <figure><title>Task Browsing</title>
+    <mediaobject>
+      <imageobject>
+	<imagedata fileref="taskbrowsing" />
+      </imageobject>
+      <caption><para>The TaskBrowser is initially connected to a
+      component. It can 'enter' a component, which shows a perspective
+      from 'within' the component. it can 'leave' a component which
+      shows a perspective from outside the component. The 'cd' command
+      allows to visit other components.
+      </para></caption>
+    </mediaobject>
+    </figure>
+    <para>
+      There are two possible views on a component: from inside the component,
+      as a program inside the component sees the component interface, or
+      from outside the component, as a peer component sees the component 
+      interface. The Taskbrowser can offer the user both views, allowing
+      maximum interactivity. In both views, the component network can be
+      browsed.
+    </para>
+  </section>
+</article>
