@@ -280,6 +280,10 @@ namespace Orocos
     //Make sure machine is shut down
     prepareForShutdown();
     //Write properties back to file
+#if (defined OROPKG_OS_LXRT&& defined OROPKG_DEVICE_DRIVERS_COMEDI)
+    if(!_simulation.value())
+      _driveOffset.set(((Axis*)_axes[axis])->getDrive()->getOffset());  
+#endif
     writeProperties(_propertyfile);
   }
   
