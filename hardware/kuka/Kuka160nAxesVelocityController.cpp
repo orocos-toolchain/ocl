@@ -125,7 +125,7 @@ namespace Orocos
       _enable[i] = new DigitalOutput( _comediSubdevDOut, 13 - i );
       _reference[i] = new DigitalInput( _comediSubdevDIn, 23 - i);
       _drive[i] = new AnalogDrive( _vref[i], _enable[i], 1.0 / _driveConvertFactor[i], 
-  				 _driveOffset.value()[i] / _driveConvertFactor[i]);
+  				 _driveOffset.value()[i]);
       
       _axes_hardware[i] = new ORO_DeviceDriver::Axis( _drive[i] );
       _axes_hardware[i]->limitDrive( _driveLimits.value()[i] );
