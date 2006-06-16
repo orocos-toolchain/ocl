@@ -282,7 +282,8 @@ namespace Orocos
     //Write properties back to file
 #if (defined OROPKG_OS_LXRT&& defined OROPKG_DEVICE_DRIVERS_COMEDI)
     if(!_simulation.value())
-      _driveOffset.set(((Axis*)_axes[axis])->getDrive()->getOffset());  
+      for(unsigned int i = 0;i<NUM_AXES;i++)    
+	_driveOffset.set()[i] = ((Axis*)_axes[i])->getDrive()->getOffset();  
 #endif
     writeProperties(_propertyfile);
   }
