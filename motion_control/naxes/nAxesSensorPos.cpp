@@ -49,14 +49,20 @@ namespace Orocos
   
   bool nAxesSensorPos::startup()
   {
+    //initialize values
+    Logger::log()<<Logger::Debug<<"nAxesSensorPos: Initial position: ";
+    for (unsigned int i=0; i<_num_axes; i++){
+      _position_local[i] = _position_sensors[i]->Get();
+      Logger::log()<<_position_local[i]<<Logger::endl;
+    }
+    _position_naxes.Set(_position_local);
+    
     return true;
   }
   
   
   void nAxesSensorPos::update()
   {
-    Logger::log()<<Logger::Debug<<"nAxesSensorPos::update()"<<Logger::endl;
-    
     // copy values from position sensors to local variable
     for (unsigned int i=0; i<_num_axes; i++)
       _position_local[i] = _position_sensors[i]->Get();

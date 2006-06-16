@@ -33,7 +33,6 @@ def build(bld):
 	nAxesControllerPosVel.cpp
 	nAxesControllerVel.cpp
 	nAxesEffectorVel.cpp
-	main.cpp
 	'''
 	obj.uselib='OROCOS'
 	obj.target='orocos-naxes'

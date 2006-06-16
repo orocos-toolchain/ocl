@@ -50,7 +50,7 @@ namespace Orocos
                       "otherwise, the data is only taken when the user invokes 'snapshot()'.",
                       true),
           config("Configuration","The name of the property file which lists what is to be reported.",
-                 "reporter.cpf"),
+                 "cpf/reporter.cpf"),
           writeHeader("WriteHeader","Set to true to start each report with a header.", true),
           starttime(0), 
           timestamp("TimeStamp","The time at which the data was read.",0.0)

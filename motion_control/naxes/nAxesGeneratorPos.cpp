@@ -84,7 +84,12 @@ namespace Orocos
       Logger::log()<<Logger::Error<<"(nAxesGeneratorPos) Reading Properties from "<<_propertyfile<<" failed!!"<<Logger::endl;
       return false;
     }
-        
+
+    //Check if readPort is connected
+    if (!_position_desi.connected())
+      Logger::log()<<Logger::Warning<<"(nAxesGeneratorPos) Port "<<_position_desi.getName()<<"not connected"<<Logger::endl;
+    
+    
     // check size of properties
     if(_maximum_velocity.value().size() != _num_axes || _maximum_acceleration.value().size() != _num_axes){
       Logger::log()<<Logger::Error<<"Sizes of properies not equal to num_axes"<<Logger::endl;
@@ -96,8 +101,11 @@ namespace Orocos
     
     // initialize
     _position_desi_local = _position_meas.Get();
-    for(unsigned int i = 0; i < _num_axes; i++)
+    Logger::log()<<Logger::Debug<<"nAxesGeneratorPos: Initial position: ";
+    for(unsigned int i = 0; i < _num_axes; i++){
+      Logger::log()<<_position_desi_local[i]<<Logger::endl;
       _velocity_desi_local[i] = 0;
+    }
     _position_desi.Set(_position_desi_local);
     _velocity_desi.Set(_velocity_desi_local);
     

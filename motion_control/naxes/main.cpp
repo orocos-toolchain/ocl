@@ -23,20 +23,26 @@ class EmergencyStop
 {
 public:
   EmergencyStop(GenericTaskContext *robot)
-    : _robot(robot) {
+    : _robot(robot),fired(6) {
     _stop = _robot->commands()->create("this", "stopAxis").arg(_axis).arg(_value);
     _lock = _robot->commands()->create("this", "lockAxis").arg(_axis).arg(_value);
+    for(int i=0;i<6;i++)
+      fired[i]=false;
   };
   ~EmergencyStop(){};
   void callback(int axis, double value) {
     _axis = axis;
     _value = value;
-    _stop.execute();
-    _lock.execute();
-    Logger::log()<<Logger::Error << "---------------------------------------------" << Logger::endl;
-    Logger::log()<<Logger::Error << "--------- EMERGENCY STOP --------------------" << Logger::endl;
-    Logger::log()<<Logger::Error << "---------------------------------------------" << Logger::endl;
-    Logger::log()<<Logger::Error << "Axis "<< _axis <<" drive value "<<_value<< " reached limitDriveValue"<<Logger::endl;
+    if(!fired[axis]){
+      _stop.execute();
+      _lock.execute();
+      Logger::log()<<Logger::Error << "---------------------------------------------" << Logger::endl;
+      Logger::log()<<Logger::Error << "--------- EMERGENCY STOP --------------------" << Logger::endl;
+      Logger::log()<<Logger::Error << "---------------------------------------------" << Logger::endl;
+      Logger::log()<<Logger::Error << "Axis "<< _axis <<" drive value "<<_value<< " reached limitDriveValue"<<Logger::endl;
+      fired[axis] = true;
+    }
+    
   };
 private:
   GenericTaskContext *_robot;
@@ -44,6 +50,7 @@ private:
   CommandC _lock;
   int _axis;
   double _value;
+  vector<bool> fired;
 }; // class
 
 void PositionLimitCallBack(int axis, double value)
@@ -77,17 +84,17 @@ int ORO_main(int argc, char* argv[])
   _positionWarning.connect();
   
   //nAxesComponents
-  nAxesSensorPos sensor("nAxesSensor",6);
+  nAxesSensorPos sensor("nAxesSensorPos",6);
   nAxesGeneratorPos generatorPos("nAxesGeneratorPos",6);
   nAxesGeneratorVel generatorVel("nAxesGeneratorVel",6);
   nAxesControllerPos controllerPos("nAxesControllerPos",6);
   nAxesControllerPosVel controllerPosVel("nAxesControllerPosVel",6);
-  nAxesControllerVel controllerVel("nAxesControllerPosVel",6);
-  nAxesEffectorVel effector("nAxesEffector",6);
+  nAxesControllerVel controllerVel("nAxesControllerVel",6);
+  nAxesEffectorVel effector("nAxesEffectorVel",6);
 
   //connecting sensor and effector to hardware
-  sensor.connectPeers(&my_robot);
-  effector.connectPeers(&my_robot);
+  my_robot.connectPeers(&sensor);
+  my_robot.connectPeers(&effector);
   
   //connection naxes components to each other
   generatorPos.connectPeers(&sensor);
@@ -111,38 +118,52 @@ int ORO_main(int argc, char* argv[])
   reporter.connectPeers(&controllerPosVel);
   reporter.connectPeers(&controllerVel);
   reporter.connectPeers(&effector);  
-    
-  // Link my_robot to Taskbrowser
-  TaskBrowser browser(&my_robot);
-  browser.connectPeers(&reporter);
-  browser.connectPeers(&sensor);    
-  browser.connectPeers(&generatorPos); 
-  browser.connectPeers(&generatorVel); 
-  browser.connectPeers(&controllerPos);
-  browser.connectPeers(&controllerPosVel);
-  browser.connectPeers(&controllerVel);
-  browser.connectPeers(&effector);
+
+  //Create supervising TaskContext
+  GenericTaskContext super("nAxes");
   
+  // Link components to supervisor
+  super.connectPeers(&my_robot);
+  super.connectPeers(&reporter);
+  super.connectPeers(&sensor);    
+  super.connectPeers(&generatorPos); 
+  super.connectPeers(&generatorVel); 
+  super.connectPeers(&controllerPos);
+  super.connectPeers(&controllerPosVel);
+  super.connectPeers(&controllerVel);
+  super.connectPeers(&effector);
+
+  // Load programs in supervisor
+  super.loadProgram("cpf/program_calibrate_offsets.ops");
+  super.loadProgram("cpf/program_moveto.ops");
+  
+  // Load StateMachine in supervisor
+  super.loadStateMachine("cpf/states.osd");
+
+    // Creating Tasks
+  NonPreemptibleActivity _kukaTask(0.01, my_robot.engine() ); 
+  NonPreemptibleActivity _sensorTask(0.01, sensor.engine() ); 
+  NonPreemptibleActivity _generatorPosTask(0.01, generatorPos.engine() ); 
+  NonPreemptibleActivity _generatorVelTask(0.01, generatorVel.engine() ); 
+  NonPreemptibleActivity _controllerPosTask(0.01, controllerPos.engine() ); 
+  NonPreemptibleActivity _controllerPosVelTask(0.01, controllerPosVel.engine() ); 
+  NonPreemptibleActivity _controllerVelTask(0.01, controllerVel.engine() ); 
+  NonPreemptibleActivity _effectorTask(0.01, effector.engine() ); 
+  PeriodicActivity reportingTask(2,0.1,reporter.engine());
+  NonPreemptibleActivity superTask(0.01,super.engine());
+
+  TaskBrowser browser(&super);
   browser.setColorTheme( TaskBrowser::whitebg );
   
-  // Creating Tasks
-  NonPreemptibleActivity _kukaTask(0.01, my_robot.engine() ); 
-  NonPreemptibleActivity _sensorTask(0.1, sensor.engine() ); 
-  NonPreemptibleActivity _generatorPosTask(0.1, generatorPos.engine() ); 
-  NonPreemptibleActivity _generatorVelTask(0.1, generatorVel.engine() ); 
-  NonPreemptibleActivity _controllerPosTask(0.1, controllerPos.engine() ); 
-  NonPreemptibleActivity _controllerPosVelTask(0.1, controllerPosVel.engine() ); 
-  NonPreemptibleActivity _controllerVelTask(0.1, controllerVel.engine() ); 
-  NonPreemptibleActivity _effectorTask(0.1, effector.engine() ); 
-  PeriodicActivity reportingTask(10,1.0,reporter.engine());
-  PeriodicActivity browserTask(2,0.1,reporter.engine());
-
-  browserTask.start();
+  superTask.start();
+  _kukaTask.start();
+  
+  //Load Reporterconfiguration and start Reporter
+  reporter.load();
+  reportingTask.start();
   
   // Start the console reader.
   browser.loop();
-  
-  browserTask.stop();
   
   return 0;
 }

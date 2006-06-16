@@ -121,6 +121,8 @@ namespace Orocos
   
   bool nAxesControllerPos::startMeasuringOffsets(double time_sleep, int num_samples)
   {
+    Logger::log()<<Logger::Debug<<"(nAxesControllerPos) start measuring offsets"<<Logger::endl;
+    
     // don't do anything if still measuring
     if (_is_measuring)
       return false;
