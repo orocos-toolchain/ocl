@@ -27,6 +27,7 @@ def build(bld):
 	obj = bld.createObj('cpp', 'staticlib')
 	obj.source='''
 	Kuka160nAxesVelocityController.cpp
+	Kuka361nAxesVelocityController.cpp
 	'''
 	obj.uselib='OROCOS'
 	obj.target='orocos-kuka160'
