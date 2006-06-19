@@ -61,7 +61,6 @@ int ORO_main(int argc, char* argv[])
   }
   
   RTT::GenericTaskContext* my_robot = new LiASnAxesVelocityController("lias");
-
   EmergencyStop _emergency(my_robot);
   
   /// Creating Event Handlers
@@ -80,18 +79,22 @@ int ORO_main(int argc, char* argv[])
   
   ///Reporting
   FileReporting reporter("Reporting");
+
+  // Connecting to peers
   reporter.connectPeers(my_robot);
   
   /// Creating Task
-  NonPreemptibleActivity _kukaTask(0.01, my_robot->engine() );  // very slow for debugging purposes
-  PeriodicActivity reportingTask(10,0.01,reporter.engine());
+  NonPreemptibleActivity _kukaTask(0.01, my_robot->engine() ); 
+  PeriodicActivity       reportingTask(10,0.01,reporter.engine());
+
+  // Load some default programs :
+  my_robot->loadProgram("cpf/program.ops"); 
   /// Start the console reader.
   browser.loop();
   Logger::log()<< Logger::Info << "Browser ended " << Logger::endl;
   
   _kukaTask.stop();
   Logger::log()<< Logger::Info << "Task stopped" << Logger::endl;
-
   delete my_robot;
   Logger::log()<< Logger::Info << "robot deleted" << Logger::endl;
   return 0;

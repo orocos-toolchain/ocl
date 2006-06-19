@@ -307,25 +307,24 @@ LiASnAxesVelocityController::~LiASnAxesVelocityController()
   for (unsigned int i = 0; i < LiAS_NUM_AXIS; i++)
   {
     // brake, drive, encoders are deleted by each axis
-    TRACE(delete _axes[i]);
+    delete _axes[i];
     #if defined (OROPKG_OS_LXRT)
-        TRACE(delete _reference[i]);
-        TRACE(delete _encoderInterface[i]);
+        delete _reference[i];
+        delete _encoderInterface[i];
     #endif
   }
     #if defined (OROPKG_OS_LXRT)
-    TRACE(delete _combined_enable_DOutInterface);
-    TRACE(delete _enable);
-    TRACE(delete _combined_brake_DOutInterface);
-    TRACE(delete _brake);
-    TRACE(if (_IP_Encoder_6_task!=0) _IP_Encoder_6_task->stop());
-  
-    TRACE(delete _IP_Digital_24_DOut);
-    TRACE(delete _IP_Encoder_6_task);
-    TRACE(delete _IP_FastDac_AOut);
-    TRACE(delete _IP_OptoInput_DIn);
+    delete _combined_enable_DOutInterface;
+    delete _enable;
+    delete _combined_brake_DOutInterface;
+    delete _brake;
+    if (_IP_Encoder_6_task!=0) _IP_Encoder_6_task->stop();
+ 
+    delete _IP_Digital_24_DOut;
+    delete _IP_Encoder_6_task;
+    delete _IP_FastDac_AOut;
+    delete _IP_OptoInput_DIn;
     #endif
-  DBG;
 }
 
 bool
@@ -641,15 +640,15 @@ void LiASnAxesVelocityController::update() {
         // \TODO is this check : on the wright place ?
         if (_axes[axis]->isDriven()) {
             setpoint = driveValue[axis]->Get();
+        	// perform control action ( dt is zero the first time !) :
+        	servoIntVel[axis]      += dt*setpoint;
+        	double error            = servoIntVel[axis] - measpos;
+        	servoIntError[axis]    += dt*error;
+        	outputvel[axis]         = _servoGain[axis]* (error + _servoIntegrationFactor[axis]*servoIntError[axis]) 
+                                   + _servoFFScale[axis]*setpoint;
         } else {
-            setpoint = 0.0;
+            outputvel[axis]        = 0.0;
         }
-        // perform control action ( dt is zero the first time !) :
-        servoIntVel[axis]      += dt*setpoint;
-        double error            = servoIntVel[axis] - measpos;
-        servoIntError[axis]    += dt*error;
-        outputvel[axis]         = _servoGain[axis]* (error + _servoIntegrationFactor[axis]*servoIntError[axis]) 
-                                  + _servoFFScale[axis]*setpoint;
     }
     for (int axis=0;axis<NUM_AXES;axis++) {
         // send the drive value to hw and performs checks

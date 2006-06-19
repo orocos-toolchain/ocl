@@ -2,7 +2,6 @@
 #define IP_DIGITAL_24_DOUTINTERFACE
 
 
-
 #include <device_interface/DigitalOutInterface.hpp>
 
 

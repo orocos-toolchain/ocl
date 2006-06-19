@@ -3,5 +3,4 @@
 <properties>
   <simple name="Port" type="string"><value>lias.driveValue0</value></simple>
   <simple name="Port" type="string"><value>lias.positionValue0</value></simple>
-  <simple name="Component" type="string"><value>lias</value></simple>
 </properties>
