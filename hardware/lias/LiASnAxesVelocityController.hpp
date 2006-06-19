@@ -2,8 +2,11 @@
 #define LIAS_NAXES_VELOCITY_CONTROLLER_HPP
 #include <vector>
 #include <corelib/RTT.hpp>
+
 #include <execution/GenericTaskContext.hpp>
-#include <execution/DataPort.hpp>
+#include <execution/Ports.hpp>
+#include <corelib/Event.hpp>
+#include <corelib/Properties.hpp>
 
 
 #include <pkgconf/system.h> 
@@ -32,7 +35,7 @@ namespace Orocos {
 class LiASnAxesVelocityController : public ORO_Execution::GenericTaskContext
 {
 public:
-   LiASnAxesVelocityController(const std::string& propertyfilename="cpf/lias.cpf");
+   LiASnAxesVelocityController(const std::string& name,const std::string& propertyfilename="cpf/lias.cpf");
   virtual ~LiASnAxesVelocityController();
 
 protected:  

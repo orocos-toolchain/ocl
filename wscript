@@ -13,7 +13,7 @@ blddir = '_build_'
 
 def build(bld):
 	# process subfolders from here
-	bld.add_subdirs('reporting taskbrowser hardware/kuka motion_control/naxes') 
+	bld.add_subdirs('reporting taskbrowser hardware/kuka hardware/lias motion_control/naxes') 
 
 def configure(conf):
 	conf.checkTool(['g++'])

@@ -28,6 +28,9 @@
 /**
  * \TODO getSensor("Position")  ==> naar variabele vermijden opzoekwerk.
  */
+
+#include "LiASnAxesVelocityController.hpp"
+
 #include <execution/GenericTaskContext.hpp>
 #include <corelib/NonPreemptibleActivity.hpp>
 #include <execution/TemplateFactories.hpp>
@@ -36,9 +39,8 @@
 #include <corelib/Logger.hpp>
 #include <corelib/Attribute.hpp>
 #include <execution/DataPort.hpp>
-#include <iostream>
+//#include <iostream>
 
-#include "LiASnAxesVelocityController.hpp"
 
 #include <device_drivers/IncrementalEncoderSensor.hpp>
 #include <device_drivers/AnalogOutput.hpp>
@@ -83,8 +85,8 @@ const char number[10]={'0','1','2','3','4','5','6','7','8','9'};
 using namespace Orocos;
 
 
-LiASnAxesVelocityController::LiASnAxesVelocityController(const std::string& propertyfilename)
-  : GenericTaskContext("lias"),
+LiASnAxesVelocityController::LiASnAxesVelocityController(const std::string& name,const std::string& propertyfilename)
+  : GenericTaskContext(name),
     driveValue(NUM_AXES),
     reference(NUM_AXES),
     positionValue(NUM_AXES),
@@ -138,7 +140,7 @@ LiASnAxesVelocityController::LiASnAxesVelocityController(const std::string& prop
   //attributes()->addConstant( "pi", double(3.14159265358979) );
   attributes()->addConstant( "NUM_AXES", NUM_AXES);
  
-  if (!readProperties("cpf/lias.cpf")) {
+  if (!readProperties(propertyfilename)) {
     Logger::log() << Logger::Error << "Failed to read the property file, continueing with default values." << Logger::endl;
     assert(0);
   }

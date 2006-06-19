@@ -60,7 +60,7 @@ int ORO_main(int argc, char* argv[])
               Logger::log() << Logger::Info << argv[0] << " manually raises LogLevel to 'Info' (5). See also file 'orocos.log'."<<Logger::endl;
   }
   
-  RTT::GenericTaskContext* my_robot = new LiASnAxesVelocityController();
+  RTT::GenericTaskContext* my_robot = new LiASnAxesVelocityController("lias");
 
   EmergencyStop _emergency(my_robot);
   
