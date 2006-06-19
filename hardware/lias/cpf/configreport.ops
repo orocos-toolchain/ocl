@@ -1,0 +1,10 @@
+// Load this program into the robot component.
+//  (of type XXXnAxesVelocityController)
+//
+program tryAxis {
+
+do Reporting.reportPort("lias","driveValue0")
+do Reporting.reportPort("lias","positionValue0")
+do Reporting.start()
+
+}

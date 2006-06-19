@@ -83,14 +83,16 @@ int ORO_main(int argc, char* argv[])
   reporter.connectPeers(my_robot);
   
   /// Creating Task
-  NonPreemptibleActivity _kukaTask(1, my_robot->engine() );  // very slow for debugging purposes
-  PeriodicActivity reportingTask(10,1.0,reporter.engine());
+  NonPreemptibleActivity _kukaTask(0.01, my_robot->engine() );  // very slow for debugging purposes
+  PeriodicActivity reportingTask(10,0.01,reporter.engine());
   /// Start the console reader.
   browser.loop();
+  Logger::log()<< Logger::Info << "Browser ended " << Logger::endl;
   
   _kukaTask.stop();
+  Logger::log()<< Logger::Info << "Task stopped" << Logger::endl;
 
   delete my_robot;
-    
+  Logger::log()<< Logger::Info << "robot deleted" << Logger::endl;
   return 0;
 }

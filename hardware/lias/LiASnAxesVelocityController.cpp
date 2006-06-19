@@ -79,6 +79,11 @@ const char number[10]={'0','1','2','3','4','5','6','7','8','9'};
     Logger::log() << Logger::Info << Logger::endl; \
     Logger::log() << Logger::Info << __PRETTY_FUNCTION__ << Logger::endl;
 
+
+#define TRACE(x) \
+    Logger::log() << Logger::Info << "TRACE " << #x << Logger::endl; \
+    x;
+    
 //#define ORO_Debug(x,y) 
 
 
@@ -142,7 +147,7 @@ LiASnAxesVelocityController::LiASnAxesVelocityController(const std::string& name
  
   if (!readProperties(propertyfilename)) {
     Logger::log() << Logger::Error << "Failed to read the property file, continueing with default values." << Logger::endl;
-    assert(0);
+    throw 0;
   }
 #if defined (OROPKG_OS_LXRT)
     Logger::log() << Logger::Info << "LXRT version of LiASnAxesVelocityController has started" << Logger::endl;
@@ -221,6 +226,11 @@ LiASnAxesVelocityController::LiASnAxesVelocityController(const std::string& name
     }
   #endif    
 
+  _deactivate_axis3 = false;
+  _deactivate_axis2 = false;
+  _activate_axis2   = false;
+  _activate_axis3   = false;
+
   /*
    *  Command Interface
    * /TODO fill in description
@@ -297,26 +307,25 @@ LiASnAxesVelocityController::~LiASnAxesVelocityController()
   for (unsigned int i = 0; i < LiAS_NUM_AXIS; i++)
   {
     // brake, drive, encoders are deleted by each axis
-    delete _axes[i];
-
+    TRACE(delete _axes[i]);
     #if defined (OROPKG_OS_LXRT)
-        delete _reference[i];
-        delete _encoderInterface[i];
-        delete _combined_enable_DOutInterface;
-        delete _enable;
-        delete _combined_brake_DOutInterface;
-        delete _brake;
-
-        if (_IP_Encoder_6_task!=0) 
-            _IP_Encoder_6_task->stop();
-  
-        delete _IP_Digital_24_DOut;
-        delete _IP_Encoder_6_task;
-        delete _IP_FastDac_AOut;
-        delete _IP_OptoInput_DIn;
+        TRACE(delete _reference[i]);
+        TRACE(delete _encoderInterface[i]);
     #endif
   }
-
+    #if defined (OROPKG_OS_LXRT)
+    TRACE(delete _combined_enable_DOutInterface);
+    TRACE(delete _enable);
+    TRACE(delete _combined_brake_DOutInterface);
+    TRACE(delete _brake);
+    TRACE(if (_IP_Encoder_6_task!=0) _IP_Encoder_6_task->stop());
+  
+    TRACE(delete _IP_Digital_24_DOut);
+    TRACE(delete _IP_Encoder_6_task);
+    TRACE(delete _IP_FastDac_AOut);
+    TRACE(delete _IP_OptoInput_DIn);
+    #endif
+  DBG;
 }
 
 bool
@@ -441,7 +450,8 @@ LiASnAxesVelocityController::unlockAxis(int axis)
 bool 
 LiASnAxesVelocityController::unlockAxisCompleted(int axis) const {
     DBG;
-    return !_axes[axis]->isLocked();
+    //return !_axes[axis]->isLocked();
+    return true;
 }
 
 
@@ -484,7 +494,7 @@ LiASnAxesVelocityController::lockAxis(int axis)
 bool 
 LiASnAxesVelocityController::lockAxisCompleted(int axis) const {
     DBG;
-    return _axes[axis]->isLocked();
+    //return _axes[axis]->isLocked();
 }
 
 
@@ -493,7 +503,7 @@ LiASnAxesVelocityController::lockAllAxes() {
     DBG;
     bool result=true;
     for (int axis=0;axis<NUM_AXES;axis++) {
-        result &= lockAxis(axis);
+       _axes[axis]->lock();
     }
     return result; 
 }
@@ -501,21 +511,17 @@ LiASnAxesVelocityController::lockAllAxes() {
 bool 
 LiASnAxesVelocityController::lockAllAxesCompleted() const {
     DBG;
-    bool _return = true;
-    for(unsigned int i = 0;i<NUM_AXES;i++)
-       _return &= _axes[i]->isLocked();
-    return _return;
+    return true;
 }
 
 
 bool
 LiASnAxesVelocityController::unlockAllAxes() {
     DBG;
-    bool result = true;
     for (int axis=0;axis<NUM_AXES;axis++) {
-         result &= unlockAxis(axis);
+         _axes[axis]->unlock();
     }
-    return result; 
+    return true; 
 }
 
 
