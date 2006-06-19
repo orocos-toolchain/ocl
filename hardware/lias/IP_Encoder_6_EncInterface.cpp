@@ -1,15 +1,15 @@
 #include <pkgconf/system.h>
 
 #if defined (OROPKG_OS_LXRT)
-
+#include <corelib/NonPreemptibleActivity.hpp>
 
 #include "IP_Encoder_6_EncInterface.hpp"
-#include "../drivers/LiAS_lxrt_user.h"
+#include "drivers/LiAS_lxrt_user.h"
 
 using namespace ORO_CoreLib;
 
 IP_Encoder_6_Task::IP_Encoder_6_Task( Seconds period )
-    : TaskNonPreemptible( period )
+    : NonPreemptibleActivity( period )
     , _virtual_encoder_1("encoder1"), _virtual_encoder_2("encoder2"), _virtual_encoder_3("encoder3")
     , _virtual_encoder_4("encoder4"), _virtual_encoder_5("encoder5"), _virtual_encoder_6("encoder6")
 {

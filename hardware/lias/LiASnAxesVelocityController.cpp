@@ -53,11 +53,11 @@
 
 #if defined (OROPKG_OS_LXRT)
 
-#include "interfaces/IP_Digital_24_DOutInterface.hpp"
-#include "interfaces/IP_Encoder_6_EncInterface.hpp"
-#include "interfaces/IP_FastDAC_AOutInterface.hpp"
-#include "interfaces/IP_OptoInput_DInInterface.hpp"
-#include "interfaces/CombinedDigitalOutInterface.hpp"
+#include "IP_Digital_24_DOutInterface.hpp"
+#include "IP_Encoder_6_EncInterface.hpp"
+#include "IP_FastDAC_AOutInterface.hpp"
+#include "IP_OptoInput_DInInterface.hpp"
+#include "CombinedDigitalOutInterface.hpp"
 
 #include "LiASConstants.hpp"
 
@@ -148,6 +148,7 @@ LiASnAxesVelocityController::LiASnAxesVelocityController(const std::string& name
     Logger::log() << Logger::Info << "LXRT version of LiASnAxesVelocityController has started" << Logger::endl;
     
     _IP_Digital_24_DOut = new IP_Digital_24_DOutInterface("IP_Digital_24_DOut");
+    // \TODO : Set this automatically to the correct value :
     _IP_Encoder_6_task  = new IP_Encoder_6_Task(LiAS_ENCODER_REFRESH_PERIOD);
     _IP_FastDac_AOut    = new IP_FastDAC_AOutInterface("IP_FastDac_AOut");
     _IP_OptoInput_DIn   = new IP_OptoInput_DInInterface("IP_OptoInput_DIn");
@@ -530,7 +531,7 @@ LiASnAxesVelocityController::addDriveOffset(int axis, double offset)
   DBG;
   if (!(axis<0 || axis>NUM_AXES-1)) {
        #if defined (OROPKG_OS_LXRT)
-       axes[axis]->getDrive()->addOffset(offset);
+       _axes[axis]->getDrive()->addOffset(offset);
        #endif
        return true;
   } else {
@@ -553,7 +554,7 @@ LiASnAxesVelocityController::initPosition(int axis)
   if (!(axis<0 || axis>NUM_AXES-1)) {
        #if defined (OROPKG_OS_LXRT)
        _encoder[axis]->writeSensor(initialPosition.value()[axis]);
-       servoIntVel[axis] = initalPosition.value()[axis];
+       servoIntVel[axis] = initialPosition.value()[axis];
        #else
        #endif
        return true;

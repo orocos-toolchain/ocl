@@ -4,7 +4,7 @@
 
 
 #include "IP_Digital_24_DOutInterface.hpp"
-#include "../drivers/LiAS_lxrt_user.h"
+#include "drivers/LiAS_lxrt_user.h"
 
 void IP_Digital_24_DOutInterface::switchOn( unsigned int n )
 {

@@ -2,7 +2,7 @@
 #define IP_FASTDAC_AOUTINTERFACE_HPP
 
 
-#include "../drivers/LiAS_lxrt_user.h"
+#include "drivers/LiAS_lxrt_user.h"
 #include <device_interface/AnalogOutInterface.hpp>
 #include <iostream>
 

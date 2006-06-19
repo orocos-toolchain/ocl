@@ -11,13 +11,13 @@
 
 #include <pkgconf/system.h> 
 
-#include "interfaces/IP_Encoder_6_EncInterface.hpp"
+#include "IP_Encoder_6_EncInterface.hpp"
 #include <device_drivers/SimulationAxis.hpp> 
 
 
 #if defined (OROPKG_OS_LXRT)
 
-    #include "interfaces/CombinedDigitalOutInterface.hpp"
+    #include "CombinedDigitalOutInterface.hpp"
 
     #include <device_drivers/IncrementalEncoderSensor.hpp>
     #include <device_drivers/AnalogOutput.hpp>

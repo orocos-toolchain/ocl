@@ -29,6 +29,11 @@ def build(bld):
 	obj = bld.createObj('cpp', 'staticlib')
 	obj.source='''
 	LiASnAxesVelocityController.cpp
+    CombinedDigitalOutInterface.cpp  
+    IP_Encoder_6_EncInterface.cpp  
+    IP_OptoInput_DInInterface.cpp  
+    IP_Digital_24_DOutInterface.cpp  
+    IP_FastDAC_AOutInterface.cpp 
 	'''
 	obj.uselib='OROCOS'
 	obj.target='orocos-lias'

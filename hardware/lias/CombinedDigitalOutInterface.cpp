@@ -21,7 +21,7 @@
 #if defined (OROPKG_OS_LXRT)
 
 
-#include <lias/LiASHardware.hpp>
+//#include <lias/LiASHardware.hpp>
 #include "CombinedDigitalOutInterface.hpp"
 #include <assert.h>
 

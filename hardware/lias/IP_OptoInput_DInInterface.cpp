@@ -5,7 +5,7 @@
 
 
 #include "IP_OptoInput_DInInterface.hpp"
-#include "../drivers/LiAS_lxrt_user.h"
+#include "drivers/LiAS_lxrt_user.h"
 
 
 bool IP_OptoInput_DInInterface::isOn( unsigned int bit ) const
