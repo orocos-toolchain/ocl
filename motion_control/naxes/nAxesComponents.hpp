@@ -1,4 +1,4 @@
-#include "nAxesSensorPos.hpp"
+#include "nAxesSensor.hpp"
 #include "nAxesGeneratorPos.hpp"
 #include "nAxesGeneratorVel.hpp"
 #include "nAxesControllerPos.hpp"

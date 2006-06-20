@@ -1,7 +1,4 @@
-// $Id: nAxesSensorPos.hpp,v 1.1.1.1 2003/12/02 20:32:06 kgadeyne Exp $
-// Copyright (C) 2003 Klaas Gadeyne <klaas.gadeyne@mech.kuleuven.ac.be>
-//                    Wim Meeussen  <wim.meeussen@mech.kuleuven.ac.be>
-// Copyright (C) 2006 Ruben Smits <ruben.smits@mech.kuleuven.be>
+// Copyright (C) 2006 Ruben Smits <ruben dot smits at mech dot kuleuven dot be>
 //  
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,21 +15,22 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 //  
 
-#ifndef __N_AXES_SENSOR_POS_H__
-#define __N_AXES_SENSOR_POS_H__
+#ifndef __CARTESIAN_SENSOR_POS_H__
+#define __CARTESIAN_SENSOR_POS_H__
 
-#include <corelib/RTT.hpp>
-#include <execution/GenericTaskContext.hpp>
-#include <execution/Ports.hpp>
+#include "../naxes/nAxesSensor.hpp"
+
+#include <geometry/GeometryToolkit.hpp>
 
 namespace Orocos
 {
-  class nAxesSensorPos : public RTT::GenericTaskContext
+  class CartesianSensor : public nAxesSensor
   {
   public:
-    nAxesSensorPos(std::string name,unsigned int num_axes);
+    CartesianSensor(std::string name,unsigned int num_axes,
+			  std::string kine_comp_name);
     
-    virtual ~nAxesSensorPos();
+    virtual ~CartesianSensor();
   
     // Redefining virtual members
     virtual bool startup();
@@ -40,12 +38,15 @@ namespace Orocos
     virtual void shutdown();
   
   private:
-    unsigned int                                _num_axes;
-    
-    std::vector<double>                         _position_local;
-    std::vector< RTT::ReadDataPort<double>* >   _position_sensors;
-    RTT::WriteDataPort< std::vector<double> >   _position_naxes;
-      
+    ORO_Geometry::Frame                         _frame_local;
+    ORO_Geometry::Twist                         _twist_local;
+    RTT::WriteDataPort< ORO_Geometry::Frame >   _frame;
+    RTT::WriteDataPort< ORO_Geometry::Twist >   _twist;
+
+    std::string                                 _kine_comp_name;
+        
+    RTT::MethodC                                _positionForward, _velocityForward;
+          
   }; // class
 }//namespace
-#endif // __N_AXES_SENSOR_POS_H__
+#endif // __CARTESIAN_SENSOR_H__

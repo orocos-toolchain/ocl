@@ -9,9 +9,9 @@ def build(bld):
 	main.cpp
 	'''
 	#obj.includes='.'
-	obj.useliblocal='./orocos-naxes.a ../../hardware/kuka/orocos-kuka.a ../../taskbrowser/orocos-taskbrowser.a ../../reporting/orocos-reporting.a'
+	obj.useliblocal='./orocos-cartesian.a ../../kinematics/orocos-kinematics.a ../naxes/orocos-naxes.a ../../hardware/kuka/orocos-kuka.a ../../taskbrowser/orocos-taskbrowser.a ../../reporting/orocos-reporting.a'
 	obj.uselib='OROCOS'
-	obj.target='naxes-test'
+	obj.target='cartesian-test'
 
 	# 2. A shared library
 	# The extension (.so) is added automatically
@@ -26,16 +26,10 @@ def build(bld):
 	# The extension (.a) is added automatically
 	obj = bld.createObj('cpp', 'staticlib')
 	obj.source='''
-	nAxesSensor.cpp
-	nAxesGeneratorPos.cpp
-	nAxesGeneratorVel.cpp
-	nAxesControllerPos.cpp
-	nAxesControllerPosVel.cpp
-	nAxesControllerVel.cpp
-	nAxesEffectorVel.cpp
+	CartesianSensor.cpp
 	'''
 	obj.uselib='OROCOS'
-	obj.target='orocos-naxes'
+	obj.target='orocos-cartesian'
 
 def set_options(opt):
 	# options defined if src/ was to be compiled as a standalone module

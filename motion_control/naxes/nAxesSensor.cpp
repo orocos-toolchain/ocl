@@ -18,7 +18,7 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 //  
 
-#include "nAxesSensorPos.hpp"
+#include "nAxesSensor.hpp"
 #include <corelib/Logger.hpp>
 #include <assert.h>
 
@@ -27,12 +27,15 @@ namespace Orocos
   using namespace RTT;
   using namespace std;
   
-  nAxesSensorPos::nAxesSensorPos(string name,unsigned int num_axes)
+  nAxesSensor::nAxesSensor(string name,unsigned int num_axes)
     : GenericTaskContext(name),
       _num_axes(num_axes), 
       _position_local(num_axes),
+      _velocity_local(num_axes),
       _position_sensors(num_axes),
-      _position_naxes("nAxesSensorPosition")
+      _velocity_sensors(num_axes),
+      _position_naxes("nAxesSensorPosition"),
+      _velocity_naxes("nAxesSensorVelocity")
   {
     
     for(int i=0;i<_num_axes;i++){
@@ -40,37 +43,44 @@ namespace Orocos
       sprintf(buf,"positionValue%d",i);
       _position_sensors[i] = new ReadDataPort<double>(buf);
       ports()->addPort(_position_sensors[i]);
+      sprintf(buf,"driveValue%d",i);
+      _velocity_sensors[i] = new ReadDataPort<double>(buf);
+      ports()->addPort(_velocity_sensors[i]);
     }
     
     ports()->addPort(&_position_naxes);
+    ports()->addPort(&_velocity_naxes);
   }
   
-  nAxesSensorPos::~nAxesSensorPos(){};
+  nAxesSensor::~nAxesSensor(){};
   
-  bool nAxesSensorPos::startup()
+  bool nAxesSensor::startup()
   {
     //initialize values
-    Logger::log()<<Logger::Debug<<"nAxesSensorPos: Initial position: ";
     for (unsigned int i=0; i<_num_axes; i++){
       _position_local[i] = _position_sensors[i]->Get();
-      Logger::log()<<_position_local[i]<<Logger::endl;
+      _velocity_local[i] = _velocity_sensors[i]->Get();
     }
     _position_naxes.Set(_position_local);
+    _velocity_naxes.Set(_velocity_local);
     
     return true;
   }
   
   
-  void nAxesSensorPos::update()
+  void nAxesSensor::update()
   {
     // copy values from position sensors to local variable
-    for (unsigned int i=0; i<_num_axes; i++)
+    for (unsigned int i=0; i<_num_axes; i++){
       _position_local[i] = _position_sensors[i]->Get();
-    
+      _velocity_local[i] = _velocity_sensors[i]->Get();
+    }
+        
     _position_naxes.Set(_position_local);
+    _velocity_naxes.Set(_velocity_local);
   }
   
-  void nAxesSensorPos::shutdown()
+  void nAxesSensor::shutdown()
   {
   }
   

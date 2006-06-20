@@ -1,6 +1,6 @@
 export function MoveToJoint(double j1, double j2, double j3, double j4, double j5, double j6)
 {
-  do nAxesSensorPos.start()
+  do nAxesSensor.start()
   do nAxesGeneratorPos.start()
   do nAxesControllerPosVel.start()
   do nAxesEffectorVel.start()
@@ -17,7 +17,7 @@ export function MoveToJoint(double j1, double j2, double j3, double j4, double j
   do nAxesEffectorVel.stop()
   do nAxesControllerPosVel.stop()
   do nAxesGeneratorPos.stop()
-  do nAxesSensorPos.stop()
+  do nAxesSensor.stop()
 }
 
 // empty program to avoid parse warning

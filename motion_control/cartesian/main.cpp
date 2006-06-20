@@ -8,7 +8,13 @@
 #include "../../reporting/FileReporting.hpp"
 
 //nAxes components
-#include "nAxesComponents.hpp"
+#include "../naxes/nAxesComponents.hpp"
+//Cartesian components
+#include "CartesianComponents.hpp"
+//Kinematics component
+#include <kindyn/KinematicsFactory.hpp>
+#include "../../kinematics/KinematicsComponent.hpp"
+
 
 //#include <corelib/Activities.hpp>
 #include <execution/GenericTaskContext.hpp>
@@ -83,41 +89,40 @@ int ORO_main(int argc, char* argv[])
   _emergencyHandle.connect();
   _positionWarning.connect();
   
-  //nAxesComponents
-  nAxesSensor sensor("nAxesSensor",6);
-  nAxesGeneratorPos generatorPos("nAxesGeneratorPos",6);
-  nAxesGeneratorVel generatorVel("nAxesGeneratorVel",6);
-  nAxesControllerPos controllerPos("nAxesControllerPos",6);
-  nAxesControllerPosVel controllerPosVel("nAxesControllerPosVel",6);
-  nAxesControllerVel controllerVel("nAxesControllerVel",6);
-  nAxesEffectorVel effector("nAxesEffectorVel",6);
+  //KinematicsComponents
+  KinematicsComponent kinematics("Kinematics");
+  kinematics.setAlgorithm(ORO_KinDyn::KinematicsFactory::getInstance()->Create("Kuka160"));
 
+  //CartesianComponents
+  CartesianSensor sensor("CartesianSensor",6,"Kinematics");
+  
   //connecting sensor and effector to hardware
   my_robot.connectPeers(&sensor);
-  my_robot.connectPeers(&effector);
+  sensor.connectPeers(&kinematics);
+  //my_robot.connectPeers(&effector);
   
   //connection naxes components to each other
-  generatorPos.connectPeers(&sensor);
-  generatorVel.connectPeers(&sensor);
-  controllerPos.connectPeers(&sensor);
-  controllerPosVel.connectPeers(&sensor);
-  controllerVel.connectPeers(&sensor);
-  controllerPos.connectPeers(&generatorPos);
-  controllerPosVel.connectPeers(&generatorPos);
-  controllerVel.connectPeers(&generatorVel);
-  effector.connectPeers(&controllerPos);
-  effector.connectPeers(&controllerPosVel);
-  effector.connectPeers(&controllerVel);
+  //generatorPos.connectPeers(&sensor);
+  //generatorVel.connectPeers(&sensor);
+  //controllerPos.connectPeers(&sensor);
+  //controllerPosVel.connectPeers(&sensor);
+  //controllerVel.connectPeers(&sensor);
+  //controllerPos.connectPeers(&generatorPos);
+  //controllerPosVel.connectPeers(&generatorPos);
+  //controllerVel.connectPeers(&generatorVel);
+  //effector.connectPeers(&controllerPos);
+  //effector.connectPeers(&controllerPosVel);
+  //effector.connectPeers(&controllerVel);
     
   //Reporting
   FileReporting reporter("Reporting");
   reporter.connectPeers(&sensor);
-  reporter.connectPeers(&generatorPos);
-  reporter.connectPeers(&generatorVel);
-  reporter.connectPeers(&controllerPos);
-  reporter.connectPeers(&controllerPosVel);
-  reporter.connectPeers(&controllerVel);
-  reporter.connectPeers(&effector);  
+  //reporter.connectPeers(&generatorPos);
+  //reporter.connectPeers(&generatorVel);
+  //reporter.connectPeers(&controllerPos);
+  //reporter.connectPeers(&controllerPosVel);
+  //reporter.connectPeers(&controllerVel);
+  //reporter.connectPeers(&effector);  
 
   //Create supervising TaskContext
   GenericTaskContext super("nAxes");
@@ -126,29 +131,29 @@ int ORO_main(int argc, char* argv[])
   super.connectPeers(&my_robot);
   super.connectPeers(&reporter);
   super.connectPeers(&sensor);    
-  super.connectPeers(&generatorPos); 
-  super.connectPeers(&generatorVel); 
-  super.connectPeers(&controllerPos);
-  super.connectPeers(&controllerPosVel);
-  super.connectPeers(&controllerVel);
-  super.connectPeers(&effector);
-
-  // Load programs in supervisor
-  super.loadProgram("cpf/program_calibrate_offsets.ops");
-  super.loadProgram("cpf/program_moveto.ops");
-  
-  // Load StateMachine in supervisor
-  super.loadStateMachine("cpf/states.osd");
+  //super.connectPeers(&generatorPos); 
+  //super.connectPeers(&generatorVel); 
+  //super.connectPeers(&controllerPos);
+  //super.connectPeers(&controllerPosVel);
+  //super.connectPeers(&controllerVel);
+  //super.connectPeers(&effector);
+  //
+  //// Load programs in supervisor
+  //super.loadProgram("cpf/program_calibrate_offsets.ops");
+  //super.loadProgram("cpf/program_moveto.ops");
+  //
+  //// Load StateMachine in supervisor
+  //super.loadStateMachine("cpf/states.osd");
 
     // Creating Tasks
   NonPreemptibleActivity _kukaTask(0.01, my_robot.engine() ); 
   NonPreemptibleActivity _sensorTask(0.01, sensor.engine() ); 
-  NonPreemptibleActivity _generatorPosTask(0.01, generatorPos.engine() ); 
-  NonPreemptibleActivity _generatorVelTask(0.01, generatorVel.engine() ); 
-  NonPreemptibleActivity _controllerPosTask(0.01, controllerPos.engine() ); 
-  NonPreemptibleActivity _controllerPosVelTask(0.01, controllerPosVel.engine() ); 
-  NonPreemptibleActivity _controllerVelTask(0.01, controllerVel.engine() ); 
-  NonPreemptibleActivity _effectorTask(0.01, effector.engine() ); 
+  //NonPreemptibleActivity _generatorPosTask(0.01, generatorPos.engine() ); 
+  //NonPreemptibleActivity _generatorVelTask(0.01, generatorVel.engine() ); 
+  //NonPreemptibleActivity _controllerPosTask(0.01, controllerPos.engine() ); 
+  //NonPreemptibleActivity _controllerPosVelTask(0.01, controllerPosVel.engine() ); 
+  //NonPreemptibleActivity _controllerVelTask(0.01, controllerVel.engine() ); 
+  //NonPreemptibleActivity _effectorTask(0.01, effector.engine() ); 
   PeriodicActivity reportingTask(2,0.1,reporter.engine());
   NonPreemptibleActivity superTask(0.01,super.engine());
 
