@@ -73,7 +73,7 @@ namespace Orocos {
 
 #define NUM_AXES 6
 
-const char number[10]={'0','1','2','3','4','5','6','7','8','9'};
+//const char number[10]={'0','1','2','3','4','5','6','7','8','9'};
 
 #define DBG \
     Logger::log() << Logger::Info << Logger::endl; \
@@ -95,11 +95,13 @@ LiASnAxesVelocityController::LiASnAxesVelocityController(const std::string& name
     driveValue(NUM_AXES),
     reference(NUM_AXES),
     positionValue(NUM_AXES),
+    output(NUM_AXES),
     _propertyfile(propertyfilename),
     driveLimits("driveLimits","velocity limits of the axes, (rad/s)"),
     lowerPositionLimits("LowerPositionLimits","Lower position limits (rad)"),
     upperPositionLimits("UpperPositionLimits","Upper position limits (rad)"),
     initialPosition("initialPosition","Initial position (rad) for simulation or hardware"),
+    signAxes("signAxes","Indicates the sign of each of the axes"),
     //driveConvertFactor("driveConvertFactor","conversion factor between drive value and analog output"),
     //driveOffset("driveOffset","offset (in rad/s) to the drive value."),
     servoGain("servoGain","gain of the servoloop (no units)"),
@@ -119,6 +121,7 @@ LiASnAxesVelocityController::LiASnAxesVelocityController(const std::string& name
   /**
    * initializing properties (not necessary).
    * \TODO remove this when everything is ok
+   *
   driveLimits.value().resize(6);
   lowerPositionLimits.value().resize(6);
   upperPositionLimits.value().resize(6);
@@ -127,8 +130,8 @@ LiASnAxesVelocityController::LiASnAxesVelocityController(const std::string& name
   //driveOffset.value().resize(6);
   servoFFScale.value().resize(6);
   servoIntegrationFactor.value().resize(6);
-  servoFFScale.value().resize(6);
-*/
+  servoFFScale.value().resize(6);*/
+
 
   /**
    * Adding properties
@@ -137,6 +140,7 @@ LiASnAxesVelocityController::LiASnAxesVelocityController(const std::string& name
   attributes()->addProperty( &lowerPositionLimits );
   attributes()->addProperty( &upperPositionLimits  );
   attributes()->addProperty( &initialPosition  );
+  attributes()->addProperty( &signAxes  );
   //attributes()->addProperty( &driveConvertFactor  );
   //attributes()->addProperty( &driveOffset  );
   attributes()->addProperty( &servoGain  );
@@ -254,6 +258,12 @@ LiASnAxesVelocityController::LiASnAxesVelocityController(const std::string& name
   cfact->add( "initPosition"     , command( &MyType::initPosition,      &MyType::initPositionCompleted,  "changes position value to the initial position","axis","axis to initialize") );
   cfact->add( "changeServo"     ,command( &MyType::changeServo,         &MyType::changeServoCompleted,  "Apply the changed properties of the servo loop") );
   this->commands()->registerObject("this", cfact);
+  
+  TemplateMethodFactory<MyType>* cmeth = newMethodFactory( this );
+  cmeth->add( "isDriven",         method( &MyType::isDriven,  "checks wether axis is driven","axis","axis to check" ) );
+
+
+  this->methods()->registerObject("this", cmeth);
 
 
   /**
@@ -270,6 +280,9 @@ LiASnAxesVelocityController::LiASnAxesVelocityController(const std::string& name
       sprintf(buf,"positionValue%d",i);
       positionValue[i]  = new WriteDataPort<double>(buf);
       ports()->addPort(positionValue[i]);
+      sprintf(buf,"output%d",i);
+      output[i]  = new WriteDataPort<double>(buf);
+      ports()->addPort(output[i]);
   }
 
   /**
@@ -325,6 +338,18 @@ LiASnAxesVelocityController::~LiASnAxesVelocityController()
     delete _IP_FastDac_AOut;
     delete _IP_OptoInput_DIn;
     #endif
+}
+
+bool
+LiASnAxesVelocityController::isDriven(int axis)
+{
+  DBG;
+  if (!(axis<0 || axis>NUM_AXES-1))
+    return _axes[axis]->isDriven();
+  else{
+    Logger::log()<<Logger::Error<<"Axis "<< axis <<"doesn't exist!!"<<Logger::endl;
+    return false;
+  }
 }
 
 bool
@@ -597,7 +622,11 @@ bool LiASnAxesVelocityController::changeServoCompleted() const {
  *  Return false to abort startup.
  **/
 bool LiASnAxesVelocityController::startup() {
-  DBG;
+    DBG;
+    // Initialize the servo loop
+  for (int axis=0;axis<NUM_AXES;++axis) {
+    servoIntVel[axis] = _axes[axis]->getSensor("Position")->readSensor();
+  }
   return true;
 }
                    
@@ -623,9 +652,9 @@ void LiASnAxesVelocityController::update() {
         double setpoint;
         // Ask the position and perform checks in joint space.
         #if !defined (OROPKG_OS_LXRT)
-            measpos = _axes[axis]->getSensor("Position")->readSensor();
+            measpos = signAxes.value()[axis]*_axes[axis]->getSensor("Position")->readSensor();
         #else
-            measpos = _encoder[axis]->readSensor();
+            measpos = signAxes.value()[axis]*_encoder[axis]->readSensor();
         #endif
         positionValue[axis] ->Set(  measpos );
         if( 
@@ -635,7 +664,7 @@ void LiASnAxesVelocityController::update() {
             // emit event.
 			positionOutOfRange_axis  = axis;
 			positionOutOfRange_value = measpos;
-			positionOutOfRange_eventc.emit();
+			//positionOutOfRange_eventc.emit();
         }
         // \TODO is this check : on the wright place ?
         if (_axes[axis]->isDriven()) {
@@ -653,7 +682,6 @@ void LiASnAxesVelocityController::update() {
     for (int axis=0;axis<NUM_AXES;axis++) {
         // send the drive value to hw and performs checks
         if (outputvel[axis] < -driveLimits.value()[axis])  {
-             outputvel[axis] = -driveLimits.value()[axis];
             // emit event.
 			driveOutOfRange_axis  = axis;
 			driveOutOfRange_value = outputvel[axis];
@@ -665,11 +693,12 @@ void LiASnAxesVelocityController::update() {
             // emit event.
     		driveOutOfRange_axis  = axis;
 			driveOutOfRange_value = outputvel[axis];
-			driveOutOfRange_eventc.emit();
+			//driveOutOfRange_eventc.emit();
 			// saturate
             outputvel[axis] = driveLimits.value()[axis];
         }
-        _axes[axis]->drive(outputvel[axis]);
+        output[axis]->Set(outputvel[axis]);
+        _axes[axis]->drive(signAxes.value()[axis]*outputvel[axis]);
         // ask the reference value from the hw 
         #if !defined (OROPKG_OS_LXRT)
             reference[axis]->Set(false);

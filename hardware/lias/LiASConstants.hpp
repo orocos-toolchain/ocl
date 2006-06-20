@@ -26,10 +26,11 @@
 #define LiAS_JOINTPOSITIONLIMITS { 4./2., 2./2., 4./2., 7.5/2., 4./2., 9./2. }
 
 // Joint speed limits
-#define LiAS_JOINTSPEEDLIMITS { 1.0, 1.0, 2.0, 2.0, 2.0, 3.0 }
+#define LiAS_JOINTSPEEDLIMITS { 10.0, 10.0, 10.0, 10.0, 10.0, 10.0 }
 
 // Conversion from angular speed to voltage
-#define LiAS_RADproSEC2VOLT { 3.0, 4.0, 3.0, 3.0, 2.355, 2.2 } // NOT CORRECT!
+//#define LiAS_RADproSEC2VOLT { 3.0, 4.0, 3.0, 3.0, 2.355, 2.2 } // NOT CORRECT!
+#define LiAS_RADproSEC2VOLT { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 } // NOT CORRECT!
 
 // Offsets in volts to minimalize drift
 #define LiAS_OFFSETSinVOLTS { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}

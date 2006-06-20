@@ -110,11 +110,15 @@ protected:
   virtual bool prepareForShutdown();
   virtual bool prepareForShutdownCompleted() const;
 
+  // METHOD returning the status of each axis
+  virtual bool isDriven(int axis);
+
 private:
   std::vector<ORO_Execution::ReadDataPort<double>*>   driveValue;
 
   std::vector<ORO_Execution::WriteDataPort<bool>*>    reference;
   std::vector<ORO_Execution::WriteDataPort<double>*>  positionValue;
+  std::vector<ORO_Execution::WriteDataPort<double>*>  output;
 
 private:  
   /**
@@ -146,6 +150,10 @@ private:
    */
   RTT::Property<std::vector <double> >     initialPosition;
 
+  /**
+   * Sign for each axis.  Double, should have only -1.0 and 1.0 values.
+   */
+  RTT::Property<std::vector<double> >      signAxes;
 
    /**
     *  parameters to this event are the axis and the velocity that is out of range.
