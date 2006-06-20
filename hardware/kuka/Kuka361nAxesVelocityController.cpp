@@ -110,12 +110,12 @@ namespace Orocos
       _encoderInterface[i] = new EncoderSSI_apci1710( i + 1, _apci1710 );
       _encoder[i]          = new AbsoluteEncoderSensor( _encoderInterface[i], 1.0 / ticks2rad[i], encoderOffsets[i], -10, 10 );
       
-      _brake[i] = new DigitalOutput( _apci2200, i + KUKA361_NUM_AXIS );
+      _brake[i] = new DigitalOutput( _apci2200, i + NUM_AXES );
       _brake[i]->switchOn();
       
       _vref[i]   = new AnalogOutput<unsigned int>( _comediSubdevAOut, i );
       _enable[i] = new DigitalOutput( _apci2200, i );
-      _drive[i] = new AnalogDrive( _vref[i], _enable[i], 1.0 / vel2volt[i], _driveOffsets.value()[i]);
+      _drive[i] = new AnalogDrive( _vref[i], _enable[i], 1.0 / vel2volt[i], _driveOffset.value()[i]);
       
       _axes_hardware[i] = new ORO_DeviceDriver::Axis( _drive[i] );
       _axes_hardware[i]->limitDrive( _driveLimits.value()[i] );

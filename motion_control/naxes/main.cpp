@@ -1,5 +1,6 @@
 //hardware interfaces
 #include "../../hardware/kuka/Kuka160nAxesVelocityController.hpp"
+#include "../../hardware/kuka/Kuka361nAxesVelocityController.hpp"
 
 //User interface
 #include "../../taskbrowser/TaskBrowser.hpp"
@@ -63,20 +64,35 @@ void PositionLimitCallBack(int axis, double value)
 
 int ORO_main(int argc, char* argv[])
 {
+  GenericTaskContext* my_robot;
+  if (argc > 1)
+    {
+      string s = argv[1];
+      if(s == "Kuka361"){
+	Logger::log()<<Logger::Warning<<"Choosing Kuka361"<<Logger::endl;
+	my_robot = new Kuka361nAxesVelocityController("Robot");
+      }
+      else if(s == "Kuka160"){
+	Logger::log()<<Logger::Warning<<"Choosing Kuka160"<<Logger::endl;
+	my_robot = new Kuka160nAxesVelocityController("Robot");
+      }
+    }
+  else{
+    Logger::log()<<Logger::Warning<<"Using Default Kuka160"<<Logger::endl;
+    my_robot = new Kuka160nAxesVelocityController("Robot");
+  }
 
   if ( Logger::log().getLogLevel() < Logger::Info ) {
     Logger::log().setLogLevel( Logger::Info );
               Logger::log() << Logger::Info << argv[0] << " manually raises LogLevel to 'Info' (5). See also file 'orocos.log'."<<Logger::endl;
   }
   
-  Kuka160nAxesVelocityController my_robot("Kuka160");
-
-  EmergencyStop _emergency(&my_robot);
+  EmergencyStop _emergency(my_robot);
   
   // Creating Event Handlers
-  Handle _emergencyHandle = my_robot.events()->setupConnection("driveOutOfRange").
+  Handle _emergencyHandle = my_robot->events()->setupConnection("driveOutOfRange").
     callback(&_emergency,&EmergencyStop::callback).handle();
-  Handle _positionWarning = my_robot.events()->setupConnection("positionOutOfRange").
+  Handle _positionWarning = my_robot->events()->setupConnection("positionOutOfRange").
     callback(&PositionLimitCallBack).handle();
 
   // Connecting Event Handlers
@@ -93,8 +109,8 @@ int ORO_main(int argc, char* argv[])
   nAxesEffectorVel effector("nAxesEffectorVel",6);
 
   //connecting sensor and effector to hardware
-  my_robot.connectPeers(&sensor);
-  my_robot.connectPeers(&effector);
+  my_robot->connectPeers(&sensor);
+  my_robot->connectPeers(&effector);
   
   //connection naxes components to each other
   generatorPos.connectPeers(&sensor);
@@ -123,7 +139,7 @@ int ORO_main(int argc, char* argv[])
   GenericTaskContext super("nAxes");
   
   // Link components to supervisor
-  super.connectPeers(&my_robot);
+  super.connectPeers(my_robot);
   super.connectPeers(&reporter);
   super.connectPeers(&sensor);    
   super.connectPeers(&generatorPos); 
@@ -141,7 +157,7 @@ int ORO_main(int argc, char* argv[])
   super.loadStateMachine("cpf/states.osd");
 
     // Creating Tasks
-  NonPreemptibleActivity _kukaTask(0.01, my_robot.engine() ); 
+  NonPreemptibleActivity _kukaTask(0.01, my_robot->engine() ); 
   NonPreemptibleActivity _sensorTask(0.01, sensor.engine() ); 
   NonPreemptibleActivity _generatorPosTask(0.01, generatorPos.engine() ); 
   NonPreemptibleActivity _generatorVelTask(0.01, generatorVel.engine() ); 

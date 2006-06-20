@@ -10,7 +10,7 @@ program CalibrateOffsetsProg{
   do nAxesControllerPos.measureOffset(sleep, number_of_samples)
   var array offset = nAxesControllerPos.getOffset()
   for(set i=0;i<6;set i=i+1){
-    do Kuka160.addDriveOffset(i,offset[i])
+    do Robot.addDriveOffset(i,offset[i])
   }
   do nAxesGeneratorPos.reset()
 }    

@@ -8,11 +8,11 @@ StateMachine Default
 
   initial state StartRobotState {
     entry {
-      do Kuka160.prepareForUse()
+      do Robot.prepareForUse()
     }
     exit {
-      do Kuka160.unlockAllAxes()
-      do Kuka160.startAllAxes()
+      do Robot.unlockAllAxes()
+      do Robot.startAllAxes()
     }
     transitions {
       select CalibrateOffsetsState
@@ -51,12 +51,12 @@ StateMachine Default
         select StopRobotState
     }
     entry {
-      var double position0 = Kuka160.positionValue0.Get()      
-      var double position1 = Kuka160.positionValue1.Get()      
-      var double position2 = Kuka160.positionValue2.Get()      
-      var double position3 = Kuka160.positionValue3.Get()      
-      var double position4 = Kuka160.positionValue4.Get()      
-      var double position5 = Kuka160.positionValue5.Get() 
+      var double position0 = Robot.positionValue0.Get()      
+      var double position1 = Robot.positionValue1.Get()      
+      var double position2 = Robot.positionValue2.Get()      
+      var double position3 = Robot.positionValue3.Get()      
+      var double position4 = Robot.positionValue4.Get()      
+      var double position5 = Robot.positionValue5.Get() 
 
       set position0 = position0 + pi/4
       set position3 = position3 + pi/2
@@ -79,11 +79,11 @@ StateMachine Default
 
   final state StopRobotState {
     entry {
-        do Kuka160.stopAllAxes()
-        do Kuka160.lockAllAxes()
+        do Robot.stopAllAxes()
+        do Robot.lockAllAxes()
     }
     exit {
-      do Kuka160.prepareForShutdown()
+      do Robot.prepareForShutdown()
     }
   }
 }

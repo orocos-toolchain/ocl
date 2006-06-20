@@ -248,7 +248,7 @@ namespace Orocos
     RTT::SwitchDigitalInapci1032*         _apci1032;
 
     RTT::EncoderInterface*                _encoderInterface[6];
-    RTT::AbsoluteEncoderSensor*           _encoder[KUKA361_NUM_AXIS];
+    RTT::AbsoluteEncoderSensor*           _encoder[6];
     RTT::AnalogOutput<unsigned int>*      _vref[6];
     RTT::DigitalOutput*                   _enable[6];
     RTT::AnalogDrive*                     _drive[6];

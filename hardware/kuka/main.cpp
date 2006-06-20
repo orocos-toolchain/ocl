@@ -55,8 +55,6 @@ void PositionLimitCallBack(int axis, double value)
 
 int ORO_main(int argc, char* argv[])
 {
-  cout << argc<<endl;
-  
   GenericTaskContext* my_robot;
   if (argc > 1)
     {
