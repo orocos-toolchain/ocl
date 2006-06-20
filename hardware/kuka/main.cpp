@@ -1,6 +1,7 @@
 //hardware interfaces
 
 #include "Kuka160nAxesVelocityController.hpp"
+#include "Kuka361nAxesVelocityController.hpp"
 
 //User interface
 #include "../../taskbrowser/TaskBrowser.hpp"
@@ -54,20 +55,38 @@ void PositionLimitCallBack(int axis, double value)
 
 int ORO_main(int argc, char* argv[])
 {
-
+  cout << argc<<endl;
+  
+  GenericTaskContext* my_robot;
+  if (argc > 1)
+    {
+      string s = argv[1];
+      if(s == "Kuka361"){
+	Logger::log()<<Logger::Warning<<"Choosing Kuka361"<<Logger::endl;
+	my_robot = new Kuka361nAxesVelocityController("Kuka361");
+      }
+      else if(s == "Kuka160"){
+	Logger::log()<<Logger::Warning<<"Choosing Kuka160"<<Logger::endl;
+	my_robot = new Kuka160nAxesVelocityController("Kuka160");
+      }
+    }
+  else{
+    Logger::log()<<Logger::Warning<<"Using Default Kuka160"<<Logger::endl;
+    my_robot = new Kuka160nAxesVelocityController("Kuka160");
+  }
+  
   if ( Logger::log().getLogLevel() < Logger::Info ) {
     Logger::log().setLogLevel( Logger::Info );
               Logger::log() << Logger::Info << argv[0] << " manually raises LogLevel to 'Info' (5). See also file 'orocos.log'."<<Logger::endl;
   }
   
-  Kuka160nAxesVelocityController my_robot("Kuka160");
   
-  EmergencyStop _emergency(&my_robot);
+  EmergencyStop _emergency(my_robot);
   
   /// Creating Event Handlers
-  Handle _emergencyHandle = my_robot.events()->setupConnection("driveOutOfRange").
+  Handle _emergencyHandle = my_robot->events()->setupConnection("driveOutOfRange").
     callback(&_emergency,&EmergencyStop::callback).handle();
-  Handle _positionWarning = my_robot.events()->setupConnection("positionOutOfRange").
+  Handle _positionWarning = my_robot->events()->setupConnection("positionOutOfRange").
     callback(&PositionLimitCallBack).handle();
 
   /// Connecting Event Handlers
@@ -75,14 +94,14 @@ int ORO_main(int argc, char* argv[])
   _positionWarning.connect();
   
   /// Link my_robot to Taskbrowser
-  TaskBrowser browser(&my_robot );
+  TaskBrowser browser(my_robot );
   browser.setColorTheme( TaskBrowser::whitebg );
 
   //Loading program in browser
-  my_robot.loadProgram("cpf/program.ops");
+  my_robot->loadProgram("cpf/program.ops");
 
   /// Creating Tasks
-  NonPreemptibleActivity _kukaTask(0.1, my_robot.engine() );  
+  NonPreemptibleActivity _kukaTask(0.1, my_robot->engine() );  
   
   /// Start the console reader.
   _kukaTask.start();

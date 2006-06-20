@@ -9,9 +9,9 @@ def build(bld):
 	main.cpp
 	'''
 	#obj.includes='.'
-	obj.useliblocal='./orocos-kuka160.a ../../taskbrowser/orocos-taskbrowser.a ../../reporting/orocos-reporting.a'
+	obj.useliblocal='./orocos-kuka.a ../../taskbrowser/orocos-taskbrowser.a ../../reporting/orocos-reporting.a'
 	obj.uselib='OROCOS'
-	obj.target='kuka160-test'
+	obj.target='kuka-test'
 
 	# 2. A shared library
 	# The extension (.so) is added automatically
@@ -30,7 +30,7 @@ def build(bld):
 	Kuka361nAxesVelocityController.cpp
 	'''
 	obj.uselib='OROCOS'
-	obj.target='orocos-kuka160'
+	obj.target='orocos-kuka'
 
 def set_options(opt):
 	# options defined if src/ was to be compiled as a standalone module

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "cpf.dtd">
+<properties>
+  <struct name="driveLimits" type="std::vector&lt;double&gt;">
+     <description>velocity limits of the axes, (rad/s)</description>
+     <simple name="Size" type="long"><description>Dimension of the Vector</description><value>6</value></simple>
+     <simple name="0" type="double"><value>1</value></simple>
+     <simple name="1" type="double"><value>1</value></simple>
+     <simple name="2" type="double"><value>2</value></simple>
+     <simple name="3" type="double"><value>2</value></simple>
+     <simple name="4" type="double"><value>2</value></simple>
+     <simple name="5" type="double"><value>3</value></simple>
+  </struct>
+  <struct name="LowerPositionLimits" type="std::vector&lt;double&gt;">
+     <description>Lower position limits (rad)</description>
+     <simple name="Size" type="long"><description>Dimension of the Vector</description><value>6</value></simple>
+     <simple name="0" type="double"><value>-3.14</value></simple>
+     <simple name="1" type="double"><value>-3.14</value></simple>
+     <simple name="2" type="double"><value>-3.14</value></simple>
+     <simple name="3" type="double"><value>-3.14</value></simple>
+     <simple name="4" type="double"><value>-3.14</value></simple>
+     <simple name="5" type="double"><value>-3.14</value></simple>
+  </struct>
+  <struct name="UpperPositionLimits" type="std::vector&lt;double&gt;">
+     <description>Upper position limits (rad)</description>
+     <simple name="Size" type="long"><description>Dimension of the Vector</description><value>6</value></simple>
+     <simple name="0" type="double"><value>3.14</value></simple>
+     <simple name="1" type="double"><value>3.14</value></simple>
+     <simple name="2" type="double"><value>3.14</value></simple>
+     <simple name="3" type="double"><value>3.14</value></simple>
+     <simple name="4" type="double"><value>3.14</value></simple>
+     <simple name="5" type="double"><value>3.14</value></simple>
+  </struct>
+  <struct name="initialPosition" type="std::vector&lt;double&gt;">
+     <description>Initial position (rad) for simulation or hardware</description>
+     <simple name="Size" type="long"><description>Dimension of the Vector</description><value>6</value></simple>
+     <simple name="0" type="double"><value>0</value></simple>
+     <simple name="1" type="double"><value>0</value></simple>
+     <simple name="2" type="double"><value>1.2426</value></simple>
+     <simple name="3" type="double"><value>1.0373</value></simple>
+     <simple name="4" type="double"><value>1.197</value></simple>
+     <simple name="5" type="double"><value>-1.0373</value></simple>
+  </struct>
+  <struct name="driveOffset" type="std::vector&lt;double&gt;">
+     <description>offset (in rad/s) to the drive value.</description>
+     <simple name="Size" type="long"><description>Dimension of the Vector</description><value>6</value></simple>
+     <simple name="0" type="double"><value>0</value></simple>
+     <simple name="1" type="double"><value>0</value></simple>
+     <simple name="2" type="double"><value>0</value></simple>
+     <simple name="3" type="double"><value>0</value></simple>
+     <simple name="4" type="double"><value>0</value></simple>
+     <simple name="5" type="double"><value>0</value></simple>
+  </struct>
+  <simple name="simulation" type="boolean"><description>true if simulationAxes should be used</description><value>1</value></simple>
+</properties>

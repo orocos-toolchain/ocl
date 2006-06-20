@@ -1,4 +1,4 @@
-program Kuka160TestProg
+program KukaTestProg
 {
   do prepareForUse()
   do unlockAllAxes()
