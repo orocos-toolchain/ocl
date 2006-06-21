@@ -16,3 +16,8 @@
 //  
 
 #include "CartesianSensor.hpp"
+#include "CartesianGeneratorPos.hpp"
+#include "CartesianControllerPos.hpp"
+#include "CartesianControllerPosVel.hpp"
+#include "CartesianControllerVel.hpp"
+#include "CartesianEffectorVel.hpp"

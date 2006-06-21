@@ -27,6 +27,11 @@ def build(bld):
 	obj = bld.createObj('cpp', 'staticlib')
 	obj.source='''
 	CartesianSensor.cpp
+	CartesianGeneratorPos.cpp
+	CartesianControllerPos.cpp
+	CartesianControllerPosVel.cpp
+	CartesianControllerVel.cpp
+	CartesianEffectorVel.cpp
 	'''
 	obj.uselib='OROCOS'
 	obj.target='orocos-cartesian'

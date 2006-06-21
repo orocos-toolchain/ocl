@@ -31,8 +31,8 @@ namespace Orocos
   CartesianSensor::CartesianSensor(string name,unsigned int num_axes,
 					       string kine_comp_name)
     : nAxesSensor(name,num_axes),
-      _frame("PositionEndEffector"),
-      _twist("VelocityEndEffector"),
+      _frame("CartesianSensorPosition"),
+      _twist("CartesianSensorVelocity"),
       _kine_comp_name(kine_comp_name)
   {
     Toolkit::Import( GeometryToolkit );

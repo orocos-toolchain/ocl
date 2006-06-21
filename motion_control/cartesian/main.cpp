@@ -95,48 +95,46 @@ int ORO_main(int argc, char* argv[])
 
   //CartesianComponents
   CartesianSensor sensor("CartesianSensor",6,"Kinematics");
+  CartesianGeneratorPos generator("CartesianGenerator");
+  CartesianControllerPosVel controller("CartesianController");
+  CartesianEffectorVel cartesian_effector("CartesianEffector",6,"Kinematics");
+  nAxesEffectorVel naxes_effector("nAxesEffector",6);
   
   //connecting sensor and effector to hardware
   my_robot.connectPeers(&sensor);
+  my_robot.connectPeers(&naxes_effector);
+
+  //connecting components who need kinematics to kinematics
   sensor.connectPeers(&kinematics);
-  //my_robot.connectPeers(&effector);
+  cartesian_effector.connectPeers(&kinematics);
   
-  //connection naxes components to each other
-  //generatorPos.connectPeers(&sensor);
-  //generatorVel.connectPeers(&sensor);
-  //controllerPos.connectPeers(&sensor);
-  //controllerPosVel.connectPeers(&sensor);
-  //controllerVel.connectPeers(&sensor);
-  //controllerPos.connectPeers(&generatorPos);
-  //controllerPosVel.connectPeers(&generatorPos);
-  //controllerVel.connectPeers(&generatorVel);
-  //effector.connectPeers(&controllerPos);
-  //effector.connectPeers(&controllerPosVel);
-  //effector.connectPeers(&controllerVel);
+  //connecting components to eachother
+  sensor.connectPeers(&generator);
+  sensor.connectPeers(&controller);
+  sensor.connectPeers(&cartesian_effector);
+  controller.connectPeers(&generator);
+  controller.connectPeers(&cartesian_effector);
+  naxes_effector.connectPeers(&cartesian_effector);
     
+  
   //Reporting
   FileReporting reporter("Reporting");
   reporter.connectPeers(&sensor);
-  //reporter.connectPeers(&generatorPos);
-  //reporter.connectPeers(&generatorVel);
-  //reporter.connectPeers(&controllerPos);
-  //reporter.connectPeers(&controllerPosVel);
-  //reporter.connectPeers(&controllerVel);
-  //reporter.connectPeers(&effector);  
+  reporter.connectPeers(&generator);
+  reporter.connectPeers(&controller);
+  reporter.connectPeers(&cartesian_effector);  
 
   //Create supervising TaskContext
-  GenericTaskContext super("nAxes");
+  GenericTaskContext super("CartesianTest");
   
   // Link components to supervisor
   super.connectPeers(&my_robot);
   super.connectPeers(&reporter);
   super.connectPeers(&sensor);    
-  //super.connectPeers(&generatorPos); 
-  //super.connectPeers(&generatorVel); 
-  //super.connectPeers(&controllerPos);
-  //super.connectPeers(&controllerPosVel);
-  //super.connectPeers(&controllerVel);
-  //super.connectPeers(&effector);
+  super.connectPeers(&generator); 
+  super.connectPeers(&controller);
+  super.connectPeers(&cartesian_effector);
+  super.connectPeers(&naxes_effector);
   //
   //// Load programs in supervisor
   //super.loadProgram("cpf/program_calibrate_offsets.ops");
@@ -148,12 +146,10 @@ int ORO_main(int argc, char* argv[])
     // Creating Tasks
   NonPreemptibleActivity _kukaTask(0.01, my_robot.engine() ); 
   NonPreemptibleActivity _sensorTask(0.01, sensor.engine() ); 
-  //NonPreemptibleActivity _generatorPosTask(0.01, generatorPos.engine() ); 
-  //NonPreemptibleActivity _generatorVelTask(0.01, generatorVel.engine() ); 
-  //NonPreemptibleActivity _controllerPosTask(0.01, controllerPos.engine() ); 
-  //NonPreemptibleActivity _controllerPosVelTask(0.01, controllerPosVel.engine() ); 
-  //NonPreemptibleActivity _controllerVelTask(0.01, controllerVel.engine() ); 
-  //NonPreemptibleActivity _effectorTask(0.01, effector.engine() ); 
+  NonPreemptibleActivity _generatorTask(0.01, generator.engine() ); 
+  NonPreemptibleActivity _controllerTask(0.01, controller.engine() ); 
+  NonPreemptibleActivity _cartesian_effectorTask(0.01, cartesian_effector.engine() ); 
+  NonPreemptibleActivity _naxes_effectorTask(0.01, naxes_effector.engine() ); 
   PeriodicActivity reportingTask(2,0.1,reporter.engine());
   NonPreemptibleActivity superTask(0.01,super.engine());
 
