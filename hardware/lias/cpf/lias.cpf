@@ -57,9 +57,9 @@
   <struct name="servoGain" type="std::vector&lt;double&gt;">
      <description>gain of the servoloop (no units)</description>
      <simple name="Size" type="long"><description>Dimension of the Vector</description><value>6</value></simple>
-     <simple name="0" type="double"><value>0</value></simple>
-     <simple name="1" type="double"><value>0</value></simple>
-     <simple name="2" type="double"><value>0</value></simple>
+     <simple name="0" type="double"><value>40</value></simple>
+     <simple name="1" type="double"><value>160</value></simple>
+     <simple name="2" type="double"><value>200</value></simple>
      <simple name="3" type="double"><value>200</value></simple>
      <simple name="4" type="double"><value>800</value></simple>
      <simple name="5" type="double"><value>100</value></simple>
@@ -67,7 +67,7 @@
   <struct name="servoIntegrationFactor" type="std::vector&lt;double&gt;">
      <description>INVERSE of the integration time for the servoloop (1/s)</description>
      <simple name="Size" type="long"><description>Dimension of the Vector</description><value>6</value></simple>
-     <simple name="0" type="double"><value>0</value></simple>
+     <simple name="0" type="double"><value>2</value></simple>
      <simple name="1" type="double"><value>0</value></simple>
      <simple name="2" type="double"><value>0</value></simple>
      <simple name="3" type="double"><value>0</value></simple>
