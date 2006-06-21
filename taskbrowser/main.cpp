@@ -71,10 +71,10 @@ int ORO_main( int argc, char** argv)
 
     TaskBrowser tb( &gtc );
 
-    cout <<endl<< "  This demo allows reporting of Components." << endl;
-    cout << "  Use 'reportComponent(\"MyPeer\")' and/or 'reportComponent(\"MyPeer2\")'" <<endl;
-    cout << "  Then invoke 'start()' and 'stop()'" <<endl;
-    cout << "  Other methods (type 'this') are available as well."<<endl;
+    Logger::log()<<Logger::Info <<Logger::endl<< "  This demo allows reporting of Components." << Logger::endl;
+    Logger::log()<<Logger::Info << "  Use 'reportComponent(\"MyPeer\")' and/or 'reportComponent(\"MyPeer2\")'" <<Logger::endl;
+    Logger::log()<<Logger::Info << "  Then invoke 'start()' and 'stop()'" <<Logger::endl;
+    Logger::log()<<Logger::Info << "  Other methods (type 'this') are available as well."<<Logger::endl;
         
     tb.loop();
 
