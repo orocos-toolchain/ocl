@@ -111,6 +111,7 @@ LiASnAxesVelocityController::LiASnAxesVelocityController(const std::string& name
     _servoIntegrationFactor(NUM_AXES),
     servoFFScale(        "servoFFScale","scale factor on the feedforward signal of the servo loop "),
     _servoFFScale(NUM_AXES),
+    servoDerivTime(      "servoDerivTime","Derivative time for the servo loop "),
     servoIntVel(NUM_AXES),
     servoIntError(NUM_AXES),
     previousPos(NUM_AXES),
@@ -149,6 +150,7 @@ LiASnAxesVelocityController::LiASnAxesVelocityController(const std::string& name
   attributes()->addProperty( &servoGain  );
   attributes()->addProperty( &servoIntegrationFactor  );
   attributes()->addProperty( &servoFFScale  );
+  attributes()->addProperty( &servoDerivTime );
   //attributes()->addConstant( "pi", double(3.14159265358979) );
   attributes()->addConstant( "NUM_AXES", NUM_AXES);
  
@@ -679,8 +681,15 @@ void LiASnAxesVelocityController::update() {
         	servoIntVel[axis]      += dt*setpoint;
         	double error            = servoIntVel[axis] - measpos;
         	servoIntError[axis]    += dt*error;
-        	outputvel[axis]         = _servoGain[axis]* (error + _servoIntegrationFactor[axis]*servoIntError[axis]) 
-                                   + _servoFFScale[axis]*setpoint;
+            double deriv;
+            if (dt < 1E-4) {
+                deriv = 0.0;
+            } else {
+                deriv = servoDerivTime.value()[axis]*(measpos-previousPos[axis])/dt;
+            }
+        	outputvel[axis]         = _servoGain[axis]* 
+                (error + _servoIntegrationFactor[axis]*servoIntError[axis] + deriv) 
+                + _servoFFScale[axis]*setpoint;
             // check direction of motion or desired motion :
             double offsetsign;
             if (previousPos[axis] < measpos) {

@@ -239,6 +239,12 @@ private:
   RTT::Property<std::vector <double> >     servoFFScale;
   std::vector<double>                              _servoFFScale;
 
+  /**
+   * Derivative action for each axis.
+   */
+  RTT::Property<std::vector<double> >     servoDerivTime; 
+
+
   //
   // Continuous state for the servo-loop
   //

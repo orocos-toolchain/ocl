@@ -14,22 +14,22 @@
   <struct name="LowerPositionLimits" type="std::vector&lt;double&gt;">
      <description>Lower position limits in rad</description>
      <simple name="Size" type="long"><description>Dimension of the Vector</description><value>6</value></simple>
-     <simple name="0" type="double"><value>-30.15</value></simple>
-     <simple name="1" type="double"><value>-30.15</value></simple>
-     <simple name="2" type="double"><value>-30.15</value></simple>
-     <simple name="3" type="double"><value>-30.15</value></simple>
-     <simple name="4" type="double"><value>-30.15</value></simple>
-     <simple name="5" type="double"><value>-30.15</value></simple>
+     <simple name="0" type="double"><value>-3.0543</value></simple>
+     <simple name="1" type="double"><value>-1.5708</value></simple>
+     <simple name="2" type="double"><value>-1.9199</value></simple>
+     <simple name="3" type="double"><value>-3.1416</value></simple>
+     <simple name="4" type="double"><value>-1.8326</value></simple>
+     <simple name="5" type="double"><value>-3.1416</value></simple>
   </struct>
   <struct name="UpperPositionLimits" type="std::vector&lt;double&gt;">
      <description>Upper position limits in rad</description>
      <simple name="Size" type="long"><description>Dimension of the Vector</description><value>6</value></simple>
-     <simple name="0" type="double"><value>30.15</value></simple>
-     <simple name="1" type="double"><value>30.15</value></simple>
-     <simple name="2" type="double"><value>30.15</value></simple>
-     <simple name="3" type="double"><value>30.15</value></simple>
-     <simple name="4" type="double"><value>30.15</value></simple>
-     <simple name="5" type="double"><value>30.15</value></simple>
+     <simple name="0" type="double"><value>3.0543</value></simple>
+     <simple name="1" type="double"><value>1.5708</value></simple>
+     <simple name="2" type="double"><value>1.9199</value></simple>
+     <simple name="3" type="double"><value>3.1416</value></simple>
+     <simple name="4" type="double"><value>1.8326</value></simple>
+     <simple name="5" type="double"><value>3.1416</value></simple>
   </struct>
 
   <struct name="signAxes" type="std::vector&lt;double&gt;">
@@ -54,7 +54,6 @@
      <simple name="5" type="double"><value>0.0</value></simple>
   </struct>
  
-
   <struct name="initialPosition" type="std::vector&lt;double&gt;">
      <description>Initial position in rad for simulation or hardware</description>
      <simple name="Size" type="long"><description>Dimension of the Vector</description><value>6</value></simple>
@@ -68,7 +67,7 @@
   <struct name="servoGain" type="std::vector&lt;double&gt;">
      <description>gain of the servoloop (no units)</description>
      <simple name="Size" type="long"><description>Dimension of the Vector</description><value>6</value></simple>
-     <simple name="0" type="double"><value>40</value></simple>
+     <simple name="0" type="double"><value>10</value></simple>
      <simple name="1" type="double"><value>160</value></simple>
      <simple name="2" type="double"><value>200</value></simple>
      <simple name="3" type="double"><value>200</value></simple>
@@ -78,17 +77,28 @@
   <struct name="servoIntegrationFactor" type="std::vector&lt;double&gt;">
      <description>INVERSE of the integration time for the servoloop (1/s)</description>
      <simple name="Size" type="long"><description>Dimension of the Vector</description><value>6</value></simple>
-     <simple name="0" type="double"><value>2</value></simple>
+     <simple name="0" type="double"><value>0</value></simple>
      <simple name="1" type="double"><value>0</value></simple>
      <simple name="2" type="double"><value>0</value></simple>
      <simple name="3" type="double"><value>0</value></simple>
      <simple name="4" type="double"><value>0</value></simple>
      <simple name="5" type="double"><value>0</value></simple>
   </struct>
+  <struct name="servoDerivTime" type="std::vector&lt;double&gt;">
+     <description>Derivative time for the servo-loop (s)</description>
+     <simple name="Size" type="long"><description>Dimension of the Vector</description><value>6</value></simple>
+     <simple name="0" type="double"><value>0</value></simple>
+     <simple name="1" type="double"><value>0</value></simple>
+     <simple name="2" type="double"><value>0</value></simple>
+     <simple name="3" type="double"><value>0</value></simple>
+     <simple name="4" type="double"><value>0</value></simple>
+     <simple name="5" type="double"><value>0</value></simple>
+  </struct>
+ 
   <struct name="servoFFScale" type="std::vector&lt;double&gt;">
      <description>scale factor on the feedforward signal of the servo loop </description>
      <simple name="Size" type="long"><description>Dimension of the Vector</description><value>6</value></simple>
-     <simple name="0" type="double"><value>1</value></simple>
+     <simple name="0" type="double"><value>0</value></simple>
      <simple name="1" type="double"><value>1</value></simple>
      <simple name="2" type="double"><value>1</value></simple>
      <simple name="3" type="double"><value>1</value></simple>

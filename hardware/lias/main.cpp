@@ -1,5 +1,5 @@
 //hardware interfaces
-
+#include <corelib/ZeroTimeThread.hpp>
 #include "LiASnAxesVelocityController.hpp"
 
 //User interface
@@ -8,9 +8,9 @@
 //Reporting
 #include "../../reporting/FileReporting.hpp"
 
-//#include <corelib/Activities.hpp>
-//#include <execution/GenericTaskContext.hpp>
-//#include <corelib/Logger.hpp>
+#include <corelib/Activities.hpp>
+#include <execution/GenericTaskContext.hpp>
+#include <corelib/Logger.hpp>
 #include <os/main.h>
 
 using namespace Orocos;
@@ -60,9 +60,14 @@ int ORO_main(int argc, char* argv[])
               Logger::log() << Logger::Info << argv[0] << " manually raises LogLevel to 'Info' (5). See also file 'orocos.log'."<<Logger::endl;
   }
   
-  RTT::GenericTaskContext* my_robot = new LiASnAxesVelocityController("lias");
+  GenericTaskContext* my_robot = new LiASnAxesVelocityController("lias");
   EmergencyStop _emergency(my_robot);
-  
+
+  ZeroTimeThread::Instance()->stop();
+  ZeroTimeThread::Instance()->setPeriod(0.002);
+  ZeroTimeThread::Instance()->start();
+
+
   /// Creating Event Handlers
   Handle _emergencyHandle = my_robot->events()->setupConnection("driveOutOfRange").
     callback(&_emergency,&EmergencyStop::callback).handle();
