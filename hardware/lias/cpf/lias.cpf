@@ -43,6 +43,17 @@
      <simple name="5" type="double"><value>1.0</value></simple>
   </struct>
  
+  <struct name="offset" type="std::vector&lt;double&gt;">
+     <description>Offset for each axis to compensate friction</description>
+     <simple name="Size" type="long"><description>Dimension of the Vector</description><value>6</value></simple>
+     <simple name="0" type="double"><value>0.0</value></simple>
+     <simple name="1" type="double"><value>0.0</value></simple>
+     <simple name="2" type="double"><value>0.0</value></simple>
+     <simple name="3" type="double"><value>0.0</value></simple>
+     <simple name="4" type="double"><value>0.0</value></simple>
+     <simple name="5" type="double"><value>0.0</value></simple>
+  </struct>
+ 
 
   <struct name="initialPosition" type="std::vector&lt;double&gt;">
      <description>Initial position in rad for simulation or hardware</description>

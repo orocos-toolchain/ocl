@@ -102,6 +102,7 @@ LiASnAxesVelocityController::LiASnAxesVelocityController(const std::string& name
     upperPositionLimits("UpperPositionLimits","Upper position limits (rad)"),
     initialPosition("initialPosition","Initial position (rad) for simulation or hardware"),
     signAxes("signAxes","Indicates the sign of each of the axes"),
+    offset  ("offset",  "offset to compensate for friction.  Should only partially compensate friction"),
     //driveConvertFactor("driveConvertFactor","conversion factor between drive value and analog output"),
     //driveOffset("driveOffset","offset (in rad/s) to the drive value."),
     servoGain("servoGain","gain of the servoloop (no units)"),
@@ -112,6 +113,7 @@ LiASnAxesVelocityController::LiASnAxesVelocityController(const std::string& name
     _servoFFScale(NUM_AXES),
     servoIntVel(NUM_AXES),
     servoIntError(NUM_AXES),
+    previousPos(NUM_AXES),
     servoInitialized(false),
     _axes(NUM_AXES),
     _axesInterface(NUM_AXES)
@@ -141,6 +143,7 @@ LiASnAxesVelocityController::LiASnAxesVelocityController(const std::string& name
   attributes()->addProperty( &upperPositionLimits  );
   attributes()->addProperty( &initialPosition  );
   attributes()->addProperty( &signAxes  );
+  attributes()->addProperty( &offset    );
   //attributes()->addProperty( &driveConvertFactor  );
   //attributes()->addProperty( &driveOffset  );
   attributes()->addProperty( &servoGain  );
@@ -303,6 +306,7 @@ LiASnAxesVelocityController::LiASnAxesVelocityController(const std::string& name
     for (int axis=0;axis<NUM_AXES;++axis) {
         // state      :
         servoIntVel[axis]   = initialPosition.value()[axis];
+        previousPos[axis]   = initialPosition.value()[axis];
         servoIntError[axis] = 0;  // for now.  Perhaps store it and reuse it in a property file.
         // parameters :
         _servoGain[axis]              = servoGain.value()[axis];
@@ -585,6 +589,7 @@ LiASnAxesVelocityController::initPosition(int axis)
        #if defined (OROPKG_OS_LXRT)
        _encoder[axis]->writeSensor(initialPosition.value()[axis]);
        servoIntVel[axis] = initialPosition.value()[axis];
+       previousPos[axis] = servoIntVel[axis];
        #else
        #endif
        return true;
@@ -626,6 +631,7 @@ bool LiASnAxesVelocityController::startup() {
     // Initialize the servo loop
   for (int axis=0;axis<NUM_AXES;++axis) {
     servoIntVel[axis] = _axes[axis]->getSensor("Position")->readSensor();
+    previousPos[axis] = servoIntVel[axis];
   }
   return true;
 }
@@ -656,7 +662,7 @@ void LiASnAxesVelocityController::update() {
         #else
             measpos = signAxes.value()[axis]*_encoder[axis]->readSensor();
         #endif
-        positionValue[axis] ->Set(  measpos );
+        positionValue[axis]->Set(  measpos );
         if( 
             (measpos < lowerPositionLimits.value()[axis]) 
           ||(measpos > upperPositionLimits.value()[axis])
@@ -664,7 +670,7 @@ void LiASnAxesVelocityController::update() {
             // emit event.
 			positionOutOfRange_axis  = axis;
 			positionOutOfRange_value = measpos;
-			//positionOutOfRange_eventc.emit();
+			positionOutOfRange_eventc.emit();
         }
         // \TODO is this check : on the wright place ?
         if (_axes[axis]->isDriven()) {
@@ -675,9 +681,20 @@ void LiASnAxesVelocityController::update() {
         	servoIntError[axis]    += dt*error;
         	outputvel[axis]         = _servoGain[axis]* (error + _servoIntegrationFactor[axis]*servoIntError[axis]) 
                                    + _servoFFScale[axis]*setpoint;
+            // check direction of motion or desired motion :
+            double offsetsign;
+            if (previousPos[axis] < measpos) {
+                offsetsign = 1.0;
+            } else if ( previousPos[axis] > measpos ) {
+                offsetsign = -1.0;
+            } else {
+                offsetsign = outputvel[axis] < 0.0 ? -1.0 : 1.0;
+            }
+            outputvel[axis] += offsetsign*offset.value()[axis];
         } else {
             outputvel[axis]        = 0.0;
         }
+        previousPos[axis] = measpos;
     }
     for (int axis=0;axis<NUM_AXES;axis++) {
         // send the drive value to hw and performs checks
@@ -685,7 +702,7 @@ void LiASnAxesVelocityController::update() {
             // emit event.
 			driveOutOfRange_axis  = axis;
 			driveOutOfRange_value = outputvel[axis];
-			driveOutOfRange_eventc.emit();
+			//driveOutOfRange_eventc.emit();
 			// saturate
             outputvel[axis] = -driveLimits.value()[axis];
         }
