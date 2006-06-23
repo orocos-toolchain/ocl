@@ -2,7 +2,6 @@ StateMachine Default
 {
 
   var bool move_to               = true
-  var int nextState = 0
 
   const double pi = 3.14159265358979
 
@@ -28,12 +27,11 @@ StateMachine Default
     }
     entry {
 	  var frame f = frame(vector(1.,1.,1.), rotation(pi,0.0,0.0))
-	  moveTo(position)
+	  do MoveToCartesian(f)
     }
     exit {
     }
     transitions {
-    if nextState == 1 then
       select StopRobotState
     }
   }
