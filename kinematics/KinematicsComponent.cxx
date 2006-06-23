@@ -43,6 +43,7 @@ namespace Orocos
           qdotPort("JointVelocities")
     {
         attributes()->addProperty(&kinarch);
+        methods()->registerObject("this",createMethodFactory());
     }
 
     const std::string& KinematicsComponent::getArchitecture() const {
