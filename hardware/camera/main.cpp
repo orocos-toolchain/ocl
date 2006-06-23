@@ -27,7 +27,7 @@ int ORO_main(int argc, char* argv[])
   browser.setColorTheme( TaskBrowser::whitebg );
 
   /// Creating Tasks
-  NonPeriodicActivity cameraTask(5, camera.engine() );  
+  NonPreemptibleActivity cameraTask(0.02, camera.engine() );  
   
   /// Start the console reader.
   browser.loop();

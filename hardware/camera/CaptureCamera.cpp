@@ -16,7 +16,7 @@
 //  
 
 #include "CaptureCamera.hpp"
-#include <corelib/Logger.hpp>
+#include <execution/TemplateFactories.hpp>
 #include <libdc1394/dc1394_control.h>
 
 namespace Orocos
@@ -35,7 +35,9 @@ namespace Orocos
      _capture_gain("gain","Capture Gain",200),
      _capture_convert("convert","Capture Convert",0),
      _capture_fps("fps","Capture Framerate",30),
-     _show_time("show_time","True if i have to log capture times",false)
+     _show_time("show_time","True if i have to log capture times",false),
+     _show_image("show_image","True if i have to show captured image",false),
+     _update(false)
   {
     //    TemplateMethodFactory<CaptureCamera> _my_methodfactory = newMethodFactory( this );
     //    _my_methodfactory->add("getImage",method(&CaptureCamera::getFrame,"Capturing new image"));
@@ -43,9 +45,7 @@ namespace Orocos
   
     this->ports()->addPort(&_image);
     this->ports()->addPort(&_capture_time);
-    
     _empty = cvCreateImage(cvSize(640,480),8,3);
-    
     //Adding Properties
     //=================
     this->attributes()->addProperty( &_capture_mode );
@@ -54,10 +54,19 @@ namespace Orocos
     this->attributes()->addProperty( &_capture_convert );
     this->attributes()->addProperty( &_capture_fps );
     this->attributes()->addProperty( &_show_time );
+    this->attributes()->addProperty( &_show_image );
+
+    //Adding command
+    //==============
+    TemplateCommandFactory<CaptureCamera>* _com_fact = newCommandFactory(this);
+    _com_fact->add("updateImage",command(&CaptureCamera::updateImage,&CaptureCamera::updateImageFinished,"update image in port"));
+    commands()->registerObject("this",_com_fact);
+    
   }
   
   CaptureCamera::~CaptureCamera()
   {
+    cvReleaseImage(&_empty);
   }
   
   bool CaptureCamera::startup()
@@ -85,43 +94,61 @@ namespace Orocos
   
     //Initialize dataflow
     //===================
-    _capture_time.data()->Set(TimeService::Instance()->ticksGet());
-    _image.data()->Set(*cvQueryFrame(_capture));
-  
+    _capture_time.Set(TimeService::Instance()->ticksGet());
+    _image.Set(*cvQueryFrame(_capture));
+    if(_show_image.value()){
+      cvNamedWindow(_image.getName().c_str(),CV_WINDOW_AUTOSIZE);
+      cvShowImage(_image.getName().c_str(),&_image.Get());
+      cvWaitKey(3);
+      cvShowImage(_image.getName().c_str(),&_image.Get());
+      cvWaitKey(3);
+    }
+    
     return true;
   
   }
   
   void CaptureCamera::shutdown()
   {
-    writeProperties("cpf/CaptureCamera.cpf");
+    if(_show_image.value())
+      cvDestroyAllWindows();
+    
     Logger::log() << Logger::Info << "(CaptureCamera) stopping Capture..." << Logger::endl;
     cvReleaseCapture( &_capture );
   }
   
+  bool CaptureCamera::updateImage()
+  {
+    return true;
+  }
+  
+  bool CaptureCamera::updateImageFinished()const
+  {
+      return _update;
+  }
+  
   void CaptureCamera::update()
   {
-    if(!isRunning()){
-      Logger::log()<<Logger::Error<<"(CaptureCamera) is not running, first start CaptureCamera ..."<<Logger::endl;
-    }  
+    _update = false;
+    
     if(_show_time.value()){
       _elapsed = TimeService::Instance()->secondsSince( _timestamp );
       Logger::log()<< Logger::Info << "time since last capture: "<< _elapsed << Logger::endl;
       _timestamp = TimeService::Instance()->ticksGet();
     }
     
-    else{
-      if(_capture_time.connected())
-        _capture_time.data()->Set(TimeService::Instance()->ticksGet());
-      if(_image.connected())
-        _image.data()->Set(*cvQueryFrame(_capture));
-    }
-      
+    _capture_time.data()->Set(TimeService::Instance()->ticksGet());
+    _image.data()->Set(*cvQueryFrame(_capture));
+    
+    if(_show_image.value())
+      cvShowImage(_image.getName().c_str(),&_image.Get());
+        
     if(_show_time.value()){
       _elapsed = TimeService::Instance()->secondsSince( _timestamp );
       Logger::log()<< Logger::Info << "time used for capturing: "<< _elapsed << Logger::endl;
       _timestamp = TimeService::Instance()->ticksGet();
     }
+    _update = true;
   }
 }//namespace
 

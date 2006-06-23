@@ -43,7 +43,11 @@ namespace Orocos
     virtual void shutdown();
         
   private:
-  
+
+    virtual bool updateImage();
+    virtual bool updateImageFinished()const;
+    
+
     std::string                          _propertyfile;
     
     CvCapture                            *_capture;
@@ -57,8 +61,10 @@ namespace Orocos
     RTT::Property<int>                  _capture_mode, _capture_shutter,_capture_gain,_capture_convert;
     RTT::Property<double>               _capture_fps;
     RTT::Property<bool>                 _show_time;
+    RTT::Property<bool>                 _show_image;
     
     IplImage* _empty;
+    bool _update;
     
   };
 }//namespace
