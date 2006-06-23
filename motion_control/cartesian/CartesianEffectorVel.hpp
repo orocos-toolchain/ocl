@@ -25,7 +25,6 @@
 #include <corelib/RTT.hpp>
 
 #include <execution/GenericTaskContext.hpp>
-#include <corelib/Properties.hpp>
 #include <execution/Ports.hpp>
 
 #include <geometry/GeometryToolkit.hpp>
@@ -45,14 +44,15 @@ namespace Orocos
     virtual void shutdown();
   
   private:
-    
+    unsigned int _num_axes;
+        
     std::vector<double>                                 _velocity_joint_local, _position_joint_local;
     ORO_Geometry::Twist                                 _velocity_cartesian_local;
     ORO_Geometry::Frame                                 _position_cartesian_local;
     ORO_Execution::ReadDataPort< ORO_Geometry::Twist >  _velocity_cartesian;
     ORO_Execution::ReadDataPort< ORO_Geometry::Frame >  _position_cartesian;
     ORO_Execution::ReadDataPort< std::vector<double> >  _position_joint;
-    ORO_Execution::WriteDataPort< std::vector<double> > _velocity_joint;
+    std::vector<RTT::WriteDataPort<double>*>            _velocity_drives;
 
     std::string                                         _kine_comp_name;
     

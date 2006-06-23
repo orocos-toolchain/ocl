@@ -33,20 +33,27 @@ namespace Orocos
   CartesianEffectorVel::CartesianEffectorVel(string name,unsigned int num_axes, 
 					     string kine_comp_name)
     : GenericTaskContext(name),
+      _num_axes(num_axes),
       _velocity_joint_local(num_axes),
       _position_joint_local(num_axes),
       _velocity_cartesian("CartesianOutputVelocity"),
       _position_cartesian("CartesianSensorPosition"),
       _position_joint("nAxesSensorPosition"),
-      _velocity_joint("nAxesOutPutVelocity"),
+      _velocity_drives(num_axes),
       _kine_comp_name(kine_comp_name)
   {
     Toolkit::Import( GeometryToolkit );
     
+    //Adding ports
+    for (int i=0;i<_num_axes;++i) {
+      char buf[80];
+      sprintf(buf,"driveValue%d",i);
+      _velocity_drives[i] = new WriteDataPort<double>(buf);
+      ports()->addPort(_velocity_drives[i]);
+    }
     this->ports()->addPort(&_velocity_cartesian);
     this->ports()->addPort(&_position_cartesian);
     this->ports()->addPort(&_position_joint);
-    this->ports()->addPort(&_velocity_joint);
   }
   
   
@@ -79,7 +86,8 @@ namespace Orocos
     // inverse velocity kinematics
     _velocityInverse.execute();
 
-    _velocity_joint.Set(_velocity_joint_local);
+    for (unsigned int i=0; i<_num_axes; i++)
+      _velocity_drives[i]->Set(_velocity_joint_local[i]);
   }
   
   void CartesianEffectorVel::shutdown()

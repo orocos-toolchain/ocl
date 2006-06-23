@@ -15,6 +15,7 @@
 #include <kindyn/KinematicsFactory.hpp>
 #include "../../kinematics/KinematicsComponent.hpp"
 
+#include <geometry/GeometryToolkit.hpp>
 
 //#include <corelib/Activities.hpp>
 #include <execution/GenericTaskContext.hpp>
@@ -23,6 +24,7 @@
 
 using namespace Orocos;
 using namespace RTT;
+using namespace ORO_Geometry;
 using namespace std;
 
 class EmergencyStop
@@ -70,12 +72,14 @@ void PositionLimitCallBack(int axis, double value)
 int ORO_main(int argc, char* argv[])
 {
 
+  Toolkit::Import( GeometryToolkit );
+  
   if ( Logger::log().getLogLevel() < Logger::Info ) {
     Logger::log().setLogLevel( Logger::Info );
               Logger::log() << Logger::Info << argv[0] << " manually raises LogLevel to 'Info' (5). See also file 'orocos.log'."<<Logger::endl;
   }
   
-  Kuka160nAxesVelocityController my_robot("Kuka160");
+  Kuka160nAxesVelocityController my_robot("Robot");
 
   EmergencyStop _emergency(&my_robot);
   
@@ -97,24 +101,22 @@ int ORO_main(int argc, char* argv[])
   CartesianSensor sensor("CartesianSensor",6,"Kinematics");
   CartesianGeneratorPos generator("CartesianGenerator");
   CartesianControllerPosVel controller("CartesianController");
-  CartesianEffectorVel cartesian_effector("CartesianEffector",6,"Kinematics");
-  nAxesEffectorVel naxes_effector("nAxesEffector",6);
+  CartesianEffectorVel effector("CartesianEffector",6,"Kinematics");
   
   //connecting sensor and effector to hardware
   my_robot.connectPeers(&sensor);
-  my_robot.connectPeers(&naxes_effector);
+  my_robot.connectPeers(&effector);
 
   //connecting components who need kinematics to kinematics
   sensor.connectPeers(&kinematics);
-  cartesian_effector.connectPeers(&kinematics);
+  effector.connectPeers(&kinematics);
   
   //connecting components to eachother
   sensor.connectPeers(&generator);
   sensor.connectPeers(&controller);
-  sensor.connectPeers(&cartesian_effector);
+  sensor.connectPeers(&effector);
   controller.connectPeers(&generator);
-  controller.connectPeers(&cartesian_effector);
-  naxes_effector.connectPeers(&cartesian_effector);
+  controller.connectPeers(&effector);
     
   
   //Reporting
@@ -122,7 +124,7 @@ int ORO_main(int argc, char* argv[])
   reporter.connectPeers(&sensor);
   reporter.connectPeers(&generator);
   reporter.connectPeers(&controller);
-  reporter.connectPeers(&cartesian_effector);  
+  reporter.connectPeers(&effector);  
 
   //Create supervising TaskContext
   GenericTaskContext super("CartesianTest");
@@ -133,23 +135,21 @@ int ORO_main(int argc, char* argv[])
   super.connectPeers(&sensor);    
   super.connectPeers(&generator); 
   super.connectPeers(&controller);
-  super.connectPeers(&cartesian_effector);
-  super.connectPeers(&naxes_effector);
+  super.connectPeers(&effector);
   //
   //// Load programs in supervisor
   //super.loadProgram("cpf/program_calibrate_offsets.ops");
-  //super.loadProgram("cpf/program_moveto.ops");
+  super.loadProgram("cpf/program_moveto.ops");
   //
   //// Load StateMachine in supervisor
-  //super.loadStateMachine("cpf/states.osd");
+  super.loadStateMachine("cpf/states.osd");
 
     // Creating Tasks
   NonPreemptibleActivity _kukaTask(0.01, my_robot.engine() ); 
   NonPreemptibleActivity _sensorTask(0.01, sensor.engine() ); 
   NonPreemptibleActivity _generatorTask(0.01, generator.engine() ); 
   NonPreemptibleActivity _controllerTask(0.01, controller.engine() ); 
-  NonPreemptibleActivity _cartesian_effectorTask(0.01, cartesian_effector.engine() ); 
-  NonPreemptibleActivity _naxes_effectorTask(0.01, naxes_effector.engine() ); 
+  NonPreemptibleActivity _effectorTask(0.01, effector.engine() ); 
   PeriodicActivity reportingTask(2,0.1,reporter.engine());
   NonPreemptibleActivity superTask(0.01,super.engine());
 
