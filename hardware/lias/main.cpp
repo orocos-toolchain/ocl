@@ -54,6 +54,10 @@ void PositionLimitCallBack(int axis, double value)
 
 int ORO_main(int argc, char* argv[])
 {
+  ZeroTimeThread::Instance()->stop();
+  ZeroTimeThread::Instance()->setPeriod(0.002);
+  ZeroTimeThread::Instance()->start();
+
 
   if ( Logger::log().getLogLevel() < Logger::Info ) {
     Logger::log().setLogLevel( Logger::Info );
@@ -62,10 +66,6 @@ int ORO_main(int argc, char* argv[])
   
   GenericTaskContext* my_robot = new LiASnAxesVelocityController("lias");
   EmergencyStop _emergency(my_robot);
-
-  ZeroTimeThread::Instance()->stop();
-  ZeroTimeThread::Instance()->setPeriod(0.002);
-  ZeroTimeThread::Instance()->start();
 
 
   /// Creating Event Handlers
@@ -89,7 +89,7 @@ int ORO_main(int argc, char* argv[])
   reporter.connectPeers(my_robot);
   
   /// Creating Task
-  NonPreemptibleActivity _kukaTask(0.01, my_robot->engine() ); 
+  NonPreemptibleActivity _robotTask(0.002, my_robot->engine() ); 
   PeriodicActivity       reportingTask(10,0.01,reporter.engine());
 
   // Load some default programs :
@@ -98,7 +98,7 @@ int ORO_main(int argc, char* argv[])
   browser.loop();
   Logger::log()<< Logger::Info << "Browser ended " << Logger::endl;
   
-  _kukaTask.stop();
+  _robotTask.stop();
   Logger::log()<< Logger::Info << "Task stopped" << Logger::endl;
   delete my_robot;
   Logger::log()<< Logger::Info << "robot deleted" << Logger::endl;

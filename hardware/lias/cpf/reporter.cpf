@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE properties SYSTEM "cpf.dtd">
 <properties>
-  <simple name="Port" type="string"><value>lias.driveValue0</value></simple>
-  <simple name="Port" type="string"><value>lias.positionValue0</value></simple>
-  <simple name="Port" type="string"><value>lias.output0</value></simple>
+  <simple name="Port" type="string"><value>lias.driveValue4</value></simple>
+  <simple name="Port" type="string"><value>lias.positionValue4</value></simple>
+  <simple name="Port" type="string"><value>lias.output4</value></simple>
 </properties>
