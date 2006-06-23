@@ -60,12 +60,12 @@ namespace Orocos
     _my_commandfactory->add( "moveTo", command(&MyType::moveTo,&MyType::moveFinished,"Set the position setpoint",
 					       "setpoint", "joint setpoint for all axes",
 					       "time", "minimum time to complete trajectory") );
-    commandFactory.registerObject("this",_my_commandfactory);
+    commands()->registerObject("this",_my_commandfactory);
 
     //Adding Methods
     TemplateMethodFactory<MyType>*  _my_methodfactory = newMethodFactory( this );
     _my_methodfactory->add( "reset", method( &MyType::reset, "Reset generator" ));  
-    methodFactory.registerObject("this",_my_methodfactory);
+    methods()->registerObject("this",_my_methodfactory);
   
     // Instantiate Motion Profiles
     for( unsigned int i=0; i<_num_axes; i++)
@@ -86,7 +86,7 @@ namespace Orocos
     }
 
     //Check if readPort is connected
-    if (!_position_desi.connected())
+    if (!_position_meas.connected())
       Logger::log()<<Logger::Warning<<"(nAxesGeneratorPos) Port "<<_position_desi.getName()<<"not connected"<<Logger::endl;
     
     
@@ -101,9 +101,7 @@ namespace Orocos
     
     // initialize
     _position_desi_local = _position_meas.Get();
-    Logger::log()<<Logger::Debug<<"nAxesGeneratorPos: Initial position: ";
     for(unsigned int i = 0; i < _num_axes; i++){
-      Logger::log()<<_position_desi_local[i]<<Logger::endl;
       _velocity_desi_local[i] = 0;
     }
     _position_desi.Set(_position_desi_local);
@@ -124,7 +122,7 @@ namespace Orocos
 	    // set end position
 	    for (unsigned int i=0; i<_num_axes; i++){
 	      _position_desi_local[i] = _motion_profile[i]->Pos( _max_duration );
-	      _velocity_desi_local[i] = _motion_profile[i]->Vel( _max_duration );
+	      _velocity_desi_local[i] = 0;//_motion_profile[i]->Vel( _max_duration );
 	      _is_moving = false;
 	    }
 	  }

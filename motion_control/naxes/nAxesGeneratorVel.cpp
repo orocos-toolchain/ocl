@@ -53,6 +53,7 @@ namespace Orocos
     //Adding Ports
     this->ports()->addPort(&_velocity_desi);
     
+    //Creating commands
     typedef nAxesGeneratorVel MyType;
     TemplateCommandFactory<MyType>* _my_commandfactory = newCommandFactory( this );
     _my_commandfactory->add( "applyVelocities", command( &MyType::applyVelocities,
@@ -77,15 +78,17 @@ namespace Orocos
 						      "axis", "selected axis",
 						      "velocity", "joint velocity for axis",
 						      "duration", "duration of movement") );
-    commandFactory.registerObject("this",_my_commandfactory);
+    commands()->registerObject("this",_my_commandfactory);
   
+    //Creating Methods
     TemplateMethodFactory<MyType>* _my_methodfactory = newMethodFactory( this );
     _my_methodfactory->add( "setInitVelocity", method( &MyType::setInitVelocity, "set initial velocity", 
 						       "axis", "axis where to set velocity",
 						       "velocity", "velocity to set" ));
     _my_methodfactory->add( "setInitVelocities", method( &MyType::setInitVelocities, "set initial velocity", 
 							 "velocities", "velocities to set" ));
-
+    methods()->registerObject("this",_my_methodfactory);
+    
     // Instantiate Motion Profiles
     for( unsigned int i=0; i<_num_axes; i++)
       _vel_profile[i] = new VelocityProfile_Trap( 0,0);

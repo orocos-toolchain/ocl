@@ -59,7 +59,7 @@ namespace Orocos
     TemplateMethodFactory<nAxesControllerVel>*  _my_methodfactory = newMethodFactory(this);
     _my_methodfactory->add( "reset", method( &nAxesControllerVel::reset, "reset the controller"));
     _my_methodfactory->add( "resetAxis", method( &nAxesControllerVel::reset, "reset the controller","axis","axis to reset"));  
-    methodFactory.registerObject("this",_my_methodfactory);
+    methods()->registerObject("this",_my_methodfactory);
   
   }
   

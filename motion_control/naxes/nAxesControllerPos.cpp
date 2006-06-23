@@ -20,15 +20,13 @@
 
 
 #include "nAxesControllerPos.hpp"
-#include <corelib/Logger.hpp>
 #include <execution/TemplateFactories.hpp>
 #include <assert.h>
 
 namespace Orocos
 {
   
-  using namespace ORO_Execution;
-  using namespace ORO_CoreLib;
+  using namespace RTT;
   using namespace std;
   
   nAxesControllerPos::nAxesControllerPos(string name,unsigned int num_axes, 
@@ -63,13 +61,13 @@ namespace Orocos
 						       "calculate the velocity offset on the axes",
 						       "time_sleep", "time to wait before starting measurement",
 						       "num_samples", "number of samples to take"));
-    commandFactory.registerObject("this",_my_commandfactory);
+    commands()->registerObject("this",_my_commandfactory);
   
     //Adding Methods
     TemplateMethodFactory<MyType>* _my_methodfactory = newMethodFactory( this );
     _my_methodfactory->add( "getOffset", method( &MyType::getMeasurementOffsets,
 						 "Get offset measurements"));
-    methodFactory.registerObject("this",_my_methodfactory);
+    methods()->registerObject("this",_my_methodfactory);
   
   }
   
