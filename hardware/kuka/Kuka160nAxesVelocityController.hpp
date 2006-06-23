@@ -163,8 +163,12 @@ namespace Orocos
      */
     
     RTT::Property<bool >     _simulation;
-    
-    
+
+    /**
+     * Constant: number of axes
+     */
+    RTT::Constant<unsigned int> _num_axes;
+        
     /**
      *  parameters to this event are the axis and the velocity that is out of range.
      *  Each axis that is out of range throws a seperate event.
@@ -202,7 +206,6 @@ namespace Orocos
      */
     
     std::vector<double>     _positionConvertFactor;
-    
     
     /**
      * conversion factor between drive value and the analog output.
