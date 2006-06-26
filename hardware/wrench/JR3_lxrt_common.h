@@ -1,6 +1,5 @@
-
-#ifndef LIAS_LXRT_COMMON_H
-#define LIAS_LXRT_COMMON_H
+#ifndef JR3_LXRT_COMMON_H
+#define JR3_LXRT_COMMON_H
 
 
 #include <asm/types.h>
@@ -17,8 +16,8 @@ struct s16Forces
 #define RANGE_5_V    1
 #define RANGE_10_V   0
 
-
-#define MYIDX			14
+/** These are used somewhere else for LiAS :
+#define MYIDX			15
 #define IP_ENCODER_6_GET_COUNTER_CHANNEL     1
 #define IP_DIGITAL_24_SET_BIT_OF_CHANNEL     2
 #define IP_DIGITAL_24_CLEAR_BIT_OF_CHANNEL   3
@@ -27,6 +26,8 @@ struct s16Forces
 #define IP_FASTDAC_SET_GAIN_OF_GROUP         6
 #define IP_FASTDAC_WRITE_TO_CHANNEL          7
 #define IP_OPTOINPUT_READ_IDR                8
+*/
+#define MYIDX			                    14
 #define JR3DSP_CHECK_SENSOR_AND_DSP         60
 #define JR3DSP_GET_ERROR_WORD               61
 #define JR3DSP_GET_UNITS                    62
@@ -36,5 +37,5 @@ struct s16Forces
 #define JR3DSP_GET_FULL_SCALE               66
 #define JR3DSP_GET_COMMAND_WORD0            67
 
-
 #endif
+
