@@ -212,7 +212,10 @@ private:
    * RTT::Property<std::vector <double> >     driveOffset;
    */
 
-
+   /**
+    * Constant : number of axes
+    */
+   RTT::Constant<unsigned int> _num_axes;
 
 private:
   //

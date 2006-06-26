@@ -102,6 +102,7 @@ LiASnAxesVelocityController::LiASnAxesVelocityController(const std::string& name
     upperPositionLimits("UpperPositionLimits","Upper position limits (rad)"),
     initialPosition("initialPosition","Initial position (rad) for simulation or hardware"),
     signAxes("signAxes","Indicates the sign of each of the axes"),
+    _num_axes(NUM_AXES),
     //driveConvertFactor("driveConvertFactor","conversion factor between drive value and analog output"),
     //driveOffset("driveOffset","offset (in rad/s) to the drive value."),
     servoGain("servoGain","gain of the servoloop (no units)"),
@@ -147,7 +148,7 @@ LiASnAxesVelocityController::LiASnAxesVelocityController(const std::string& name
   attributes()->addProperty( &servoIntegrationFactor  );
   attributes()->addProperty( &servoFFScale  );
   //attributes()->addConstant( "pi", double(3.14159265358979) );
-  attributes()->addConstant( "NUM_AXES", NUM_AXES);
+  attributes()->addConstant( "NUM_AXES", &_num_axes);
  
   if (!readProperties(propertyfilename)) {
     Logger::log() << Logger::Error << "Failed to read the property file, continueing with default values." << Logger::endl;
