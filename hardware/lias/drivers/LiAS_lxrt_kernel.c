@@ -7,7 +7,7 @@
 MODULE_LICENSE("GPL");
 
 
-extern void JR3DSP_check_sensor_and_DSP( unsigned int dsp );
+extern u16  JR3DSP_check_sensor_and_DSP( unsigned int dsp );
 extern u16  JR3DSP_get_error_word(unsigned int dsp);
 extern u16  JR3DSP_get_command_word0(unsigned int dsp);
 extern u16  JR3DSP_get_units( unsigned int dsp );

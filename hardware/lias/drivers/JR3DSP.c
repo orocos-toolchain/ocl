@@ -198,7 +198,7 @@ void JR3DSP_get_full_scale(struct s16Forces* fullscale, unsigned int dsp)
    fullscale->Tz = JR3DSP_read_word( FULL_SCALE+5, dsp );
 }
 
-void JR3DSP_check_sensor_and_DSP(unsigned int dsp)
+u16 JR3DSP_check_sensor_and_DSP(unsigned int dsp)
 // Checks for copyright, software date and year on the DSP and the eeprom, 
 // software version, serial and model number of the sensor (unique identifiers)
 // and calibration date of sensor
@@ -245,7 +245,9 @@ void JR3DSP_check_sensor_and_DSP(unsigned int dsp)
     printk("There seem to be errors!\n");
     printk("Error code : 0x%x\n", JR3DSP_read_word(ERRORS, dsp));
     printk("Check the manual for further explanation.\n");
+    return 0;
   }
+  return 1;
 }
 
 

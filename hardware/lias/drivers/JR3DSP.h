@@ -10,7 +10,7 @@ struct s16Forces
 };
 
 
-void JR3DSP_check_sensor_and_DSP( unsigned int dsp );
+u16 JR3DSP_check_sensor_and_DSP( unsigned int dsp );
 
 u16  JR3DSP_get_error_word(unsigned int dsp);
 
