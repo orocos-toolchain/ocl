@@ -67,8 +67,8 @@ WrenchSensor::WrenchSensor(double samplePeriod,std::string name,unsigned int DSP
 
     #if defined (OROPKG_OS_LXRT)            
     chooseFilter(samplePeriod);
+    assert(JR3DSP_check_sensor_and_DSP( _dsp));
 	JR3DSP_set_units(1, _dsp);
-	JR3DSP_check_sensor_and_DSP( _dsp);
 	
 	JR3DSP_get_full_scale(&_full_scale, _dsp);
 	

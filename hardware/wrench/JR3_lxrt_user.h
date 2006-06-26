@@ -6,10 +6,12 @@
 #include "JR3_lxrt_common.h"
 
 
-static inline void JR3DSP_check_sensor_and_DSP( unsigned int dsp )
+static inline unsigned int JR3DSP_check_sensor_and_DSP( unsigned int dsp )
 {
+  unsigned int retval;
   struct { unsigned int dsp; } arg = { dsp };
-  rtai_lxrt(MYIDX, SIZARG, JR3DSP_CHECK_SENSOR_AND_DSP, &arg);
+  retval = rtai_lxrt(MYIDX, SIZARG, JR3DSP_CHECK_SENSOR_AND_DSP, &arg).i[LOW];
+  return retval;
 }
 
 static inline unsigned int JR3DSP_get_error_word(unsigned int dsp)
