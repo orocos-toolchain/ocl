@@ -20,14 +20,19 @@ namespace Orocos
   using namespace std;
   using namespace ORO_Geometry;
   
-  WrenchSensor::WrenchSensor(double samplePeriod,std::string name,unsigned int DSP) 
+  WrenchSensor::WrenchSensor(double samplePeriod,std::string name,unsigned int DSP,string propertyfile) 
     : RTT::GenericTaskContext(name),
       outdatPort("WrenchData"),
       _filterToReadFrom(6),
-      _dsp(DSP)
+      _dsp(DSP),
+      _propertyfile(propertyfile),
+      _offset("offset","Offset for zero-measurement",Wrench::Zero())
   {
     this->ports()->addPort( &outdatPort );
-  
+
+    this->attributes()->addProperty(&_offset);
+    
+
     /**
      * Method Factory Interface.
      */
@@ -35,7 +40,7 @@ namespace Orocos
       newMethodFactory( this );
     
     _writeBuffer = new Wrench(Wrench::Zero());
-    _offset = Wrench::Zero();
+    _offset.value() = Wrench::Zero();
     
     fact->add( "minMeasurement",
 	       method( &WrenchSensor::minMeasurement, "Gets the minimum measurement value." ) );
@@ -59,6 +64,10 @@ namespace Orocos
     
     cfact->add( "setOffset",
 		command( &WrenchSensor::setOffset,
+			 &WrenchSensor::setOffsetDone,
+			 "Command to set the zero offset","o","offset vector" ) );	
+    cfact->add( "addOffset",
+		command( &WrenchSensor::addOffset,
 			 &WrenchSensor::setOffsetDone,
 			 "Command to set the zero offset","o","offset vector" ) );	
     
@@ -86,10 +95,9 @@ namespace Orocos
 #endif				
     
     
-    /*if (!readProperties("tcp.cpf")) {
-      Logger::log() << Logger::Error << "Failed to read the property file." << Logger::endl;
-      assert(0);
-      }*/
+    if (!readProperties(_propertyfile)) {
+      Logger::log() << Logger::Error << "Failed to read the property file. Offsets are set to zero" << Logger::endl;
+    }
     
     
   }
@@ -142,7 +150,13 @@ namespace Orocos
   bool WrenchSensor::setOffset(ORO_Geometry::Wrench off)
   {
     
-    _offset=off;
+    _offset.value()=off;
+    return true;
+  }
+  bool WrenchSensor::addOffset(ORO_Geometry::Wrench off)
+  {
+    
+    _offset.value()= _offset.value()+off;
     return true;
   }
   
@@ -204,15 +218,14 @@ namespace Orocos
     (*_writeBuffer)(4) = - (double)_write_struct.Ty * (double) _full_scale.Ty / 16384.0 / 10;         
     (*_writeBuffer)(5) =   (double)_write_struct.Tz * (double) _full_scale.Tz / 16384.0 / 10;
     
-    outdatPort.Set( *_writeBuffer - _offset );
+    outdatPort.Set( *_writeBuffer - _offset.value() );
   }
   
   /**
    * This function is called when the task is stopped.
    */
   void WrenchSensor::shutdown() {
-    
-    
+    writeProperties(_propertyfile);
   }
   
   WrenchSensor::~WrenchSensor() {

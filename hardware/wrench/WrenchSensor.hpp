@@ -25,49 +25,50 @@ struct s16Forces
 
 namespace Orocos
 {
-  
-  class WrenchSensor 
-      : public RTT::GenericTaskContext
+  class WrenchSensor : public RTT::GenericTaskContext
   {
-      /**
-       * Task's Data Ports.
-       */
-      public:
-      WrenchSensor(double samplePeriod, std::string name="WrenchSensor",unsigned int DSP=0);
-      virtual ~WrenchSensor();
-      
-      protected:
-      RTT::WriteDataPort<ORO_Geometry::Wrench> outdatPort;
-  
-     /**
-       * Task's Methods.
-       */
-      virtual ORO_Geometry::Wrench maxMeasurement() const;
-      virtual ORO_Geometry::Wrench minMeasurement() const;
-      virtual ORO_Geometry::Wrench zeroMeasurement() const;
-      
+    /**
+     * Task's Data Ports.
+     */
+  public:
+    WrenchSensor(double samplePeriod, std::string name="WrenchSensor",unsigned int DSP=0,std::string propertyfile="cpf/WrenchSensor.cpf");
+    virtual ~WrenchSensor();
     
-      virtual bool chooseFilter(double period); 
-      virtual bool chooseFilterDone() const;
-  
-      virtual bool setOffset(ORO_Geometry::Wrench); 
-      virtual bool setOffsetDone() const;
-      
-      RTT::Event<void(void)> maximumLoadEvent;
-  
-      virtual bool startup();
-      virtual void update();
-      virtual void shutdown();
-      
-      private:
-      
-      unsigned int  _filterToReadFrom;
-      unsigned int  _dsp;
-      
-      ORO_Geometry::Wrench*  _writeBuffer;
-      ORO_Geometry::Wrench   _offset;  
-      s16Forces              _write_struct,_full_scale;
-      
+  protected:
+    RTT::WriteDataPort<ORO_Geometry::Wrench> outdatPort;
+    
+    /**
+     * Task's Methods.
+     */
+    virtual ORO_Geometry::Wrench maxMeasurement() const;
+    virtual ORO_Geometry::Wrench minMeasurement() const;
+    virtual ORO_Geometry::Wrench zeroMeasurement() const;
+    
+    
+    virtual bool chooseFilter(double period); 
+    virtual bool chooseFilterDone() const;
+    
+    virtual bool setOffset(ORO_Geometry::Wrench); 
+    virtual bool addOffset(ORO_Geometry::Wrench); 
+    virtual bool setOffsetDone() const;
+    
+    RTT::Event<void(void)> maximumLoadEvent;
+    
+    virtual bool startup();
+    virtual void update();
+    virtual void shutdown();
+    
+  private:
+    
+    unsigned int  _filterToReadFrom;
+    unsigned int  _dsp;
+    std::string   _propertyfile;
+    
+    
+    ORO_Geometry::Wrench*  _writeBuffer;
+    RTT::Property<ORO_Geometry::Wrench>   _offset;  
+    s16Forces              _write_struct,_full_scale;
+    
   };
 }//namespace
 
