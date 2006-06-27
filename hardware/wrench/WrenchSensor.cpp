@@ -171,7 +171,7 @@ namespace Orocos
    * Return false to abort startup.
    */
   bool WrenchSensor::startup() {
-    
+    update(); 
     return true;
     
   }
