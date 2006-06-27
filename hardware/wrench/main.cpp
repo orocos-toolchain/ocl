@@ -10,7 +10,7 @@
 //#include <execution/ConnectionC.hpp>
 #include <execution/Ports.hpp>
 
-#include "WrenchSensor.h"
+#include "WrenchSensor.hpp"
 #include <os/main.h>
 
 //User interface

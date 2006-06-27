@@ -28,7 +28,7 @@ def build(bld):
 	# The extension (.a) is added automatically
 	obj = bld.createObj('cpp', 'staticlib')
 	obj.source='''
-    WrenchSensor.cpp
+	WrenchSensor.cpp
 	'''
 	obj.uselib='OROCOS'
 	obj.target='orocos-wrench'
