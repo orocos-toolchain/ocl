@@ -1,4 +1,4 @@
-#include "WrenchSensor.h"
+#include "WrenchSensor.hpp"
 #include <corelib/Attribute.hpp>
 #include <execution/TemplateFactories.hpp>
 #include <geometry/frames.h>
