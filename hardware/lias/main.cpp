@@ -13,9 +13,50 @@
 #include <corelib/Logger.hpp>
 #include <os/main.h>
 
+#include <execution/TemplateFactories.hpp>
+#include <string>
+
 using namespace Orocos;
 using namespace RTT;
 using namespace std;
+
+
+class Supervisor : public GenericTaskContext
+{
+public:
+   Supervisor():
+	GenericTaskContext("supervisor") ,
+    driveValue(6)	
+	{
+  		TemplateMethodFactory<Supervisor>* cmeth = newMethodFactory( this );
+  		cmeth->add( "message",  method( &Supervisor::message,  "give a message to the user","msg","msg to display" ) );
+  		this->methods()->registerObject("this", cmeth);
+		char buf[80];
+		for (int i=0;i<6;++i) {
+			sprintf(buf,"driveValue%d",i);
+			driveValue[i] = new WriteDataPort<double>(buf);
+			ports()->addPort(driveValue[i]);
+		}
+	}
+
+   virtual void message(const std::string& msg) {
+         Logger::log() << Logger::Info << msg <<Logger::endl;
+	}
+
+   virtual ~Supervisor() {}
+   virtual bool startup() {
+	   return true;
+   }
+                   
+   virtual void update() {
+   }
+ 
+   virtual void shutdown() {
+   }
+
+	std::vector<ORO_Execution::WriteDataPort<double>*> driveValue;	
+};
+
 
 class EmergencyStop
 {
@@ -66,6 +107,7 @@ int ORO_main(int argc, char* argv[])
   
   GenericTaskContext* my_robot = new LiASnAxesVelocityController("lias");
   EmergencyStop _emergency(my_robot);
+  Supervisor supervisor;
 
 
   /// Creating Event Handlers
@@ -87,9 +129,11 @@ int ORO_main(int argc, char* argv[])
 
   // Connecting to peers
   reporter.connectPeers(my_robot);
+  supervisor.connectPeers(my_robot);
   
   /// Creating Task
   NonPreemptibleActivity _robotTask(0.002, my_robot->engine() ); 
+  NonPreemptibleActivity _supervisorTask(0.002, supervisor.engine() ); 
   PeriodicActivity       reportingTask(10,0.01,reporter.engine());
 
   // Load some default programs :
