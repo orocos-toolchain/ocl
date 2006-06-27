@@ -76,12 +76,12 @@ WrenchSensor::WrenchSensor(double samplePeriod,std::string name,unsigned int DSP
                 << (double) _full_scale.Fx << ", " << (double) _full_scale.Fy << ", " << (double) _full_scale.Fz
                 << (double) _full_scale.Tx << ", " << (double) _full_scale.Ty << ", " << (double) _full_scale.Tz << ")" << Logger::endl;
     #else
-        _full_scale.Fx=100.0;
-        _full_scale.Fy=100.0;
-        _full_scale.Fz=100.0;
-        _full_scale.Tx=100.0;
-        _full_scale.Ty=100.0;
-        _full_scale.Tz=100.0;
+        _full_scale.Fx=100;
+        _full_scale.Fy=100;
+        _full_scale.Fz=100;
+        _full_scale.Tx=100;
+        _full_scale.Ty=100;
+        _full_scale.Tz=100;
     #endif				
 
 
@@ -183,12 +183,12 @@ WrenchSensor::WrenchSensor(double samplePeriod,std::string name,unsigned int DSP
        maximumLoadEvent.emit();
 	 }
      #else
-      _write_struct.Fx = 0.0;
-      _write_struct.Fy = 0.0;
-      _write_struct.Fz = 0.0;
-      _write_struct.Tx = 0.0;
-      _write_struct.Ty = 0.0;
-      _write_struct.Tz = 0.0;
+      _write_struct.Fx = 0;
+      _write_struct.Fy = 0;
+      _write_struct.Fz = 0;
+      _write_struct.Tx = 0;
+      _write_struct.Ty = 0;
+      _write_struct.Tz = 0;
      #endif
 	
 	 // Scale and copy to _writeBuffer (a Wrench)
