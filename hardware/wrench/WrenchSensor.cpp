@@ -103,8 +103,8 @@ namespace Orocos
   
   ORO_Geometry::Wrench WrenchSensor::minMeasurement() const
   {
-    return ORO_Geometry::Wrench( -ORO_Geometry::Vector((double)_full_scale.Fx     , -(double)_full_scale.Fy     , -(double)_full_scale.Fz)
-				 , -ORO_Geometry::Vector((double)_full_scale.Tx / 10, -(double)_full_scale.Fy / 10, -(double)_full_scale.Fz / 10) );
+    return ORO_Geometry::Wrench( ORO_Geometry::Vector(-(double)_full_scale.Fx     , -(double)_full_scale.Fy     , -(double)_full_scale.Fz)
+				 , ORO_Geometry::Vector(-(double)_full_scale.Tx / 10, -(double)_full_scale.Fy / 10, -(double)_full_scale.Fz / 10) );
     
   }
   
