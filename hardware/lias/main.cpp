@@ -48,7 +48,7 @@ public:
 			driveValue[i] = new WriteDataPort<double>(buf);
 			ports()->addPort(driveValue[i]);
 			sprintf(buf,"reference%d",i);
-			reference[i] = new ReadDataPort<double>(buf);
+			reference[i] = new ReadDataPort<bool>(buf);
 			ports()->addPort(reference[i]);
 		}
 	}
@@ -86,7 +86,7 @@ public:
    }
 
 	std::vector<ORO_Execution::WriteDataPort<double>*> driveValue;	
-	std::vector<ORO_Execution::ReadDataPort<double>*>  reference;	
+	std::vector<ORO_Execution::ReadDataPort<bool>*>  reference;	
 };
 
 
@@ -151,18 +151,18 @@ int ORO_main(int argc, char* argv[])
   /// Connecting Event Handlers
   _emergencyHandle.connect();
   _positionWarning.connect();
-  
+   ///Reporting
+  FileReporting reporter("Reporting");
+
+  // Connecting to peers
+  my_robot->connectPeers(&reporter);
+  my_robot->connectPeers(&supervisor);
+   
   /// Link my_robot to Taskbrowser
   TaskBrowser browser( my_robot );
   browser.setColorTheme( TaskBrowser::whitebg );
   
-  ///Reporting
-  FileReporting reporter("Reporting");
 
-  // Connecting to peers
-  reporter.connectPeers(my_robot);
-  supervisor.connectPeers(my_robot);
-  
   /// Creating Task
   NonPreemptibleActivity _robotTask(0.002, my_robot->engine() ); 
   NonPreemptibleActivity _supervisorTask(0.002, supervisor.engine() ); 
