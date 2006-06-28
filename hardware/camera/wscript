@@ -5,33 +5,35 @@
 import Params
 
 def build(bld):
-	# 1. A simple program
-	obj = bld.createObj('cpp', 'program')
-	obj.source='''
-	main.cpp
-	'''
-	#obj.includes='.'
-	obj.useliblocal='./orocos-camera.a ../../taskbrowser/orocos-taskbrowser.a ../../reporting/orocos-reporting.a'
-	obj.uselib='OROCOS OPENCV GTK GTHREAD DC1394'
-	obj.target='camera-test'
+	opencv = Params.g_options.opencv
+	if bool(opencv):
+		# 1. A simple program
+		obj = bld.createObj('cpp', 'program')
+		obj.source='''
+		main.cpp
+		'''
+		#obj.includes='.'
+		obj.useliblocal='./orocos-camera.a ../../taskbrowser/orocos-taskbrowser.a ../../reporting/orocos-reporting.a'
+		obj.uselib='OROCOS OPENCV GTK GTHREAD DC1394'
+		obj.target='camera-test'
 
-	# 2. A shared library
-	# The extension (.so) is added automatically
-# 	obj = bld.createObj('cpp', 'shlib')
-# 	obj.source='''
-# 	ReportingComponent.cxx
-# 	'''
-# 	obj.includes='src /usr/local/orocos/include'
-# 	obj.target='orocos-reporting'
+		# 2. A shared library
+		# The extension (.so) is added automatically
+		# 	obj = bld.createObj('cpp', 'shlib')
+		# 	obj.source='''
+		# 	ReportingComponent.cxx
+		# 	'''
+		# 	obj.includes='src /usr/local/orocos/include'
+		# 	obj.target='orocos-reporting'
 
-	# 3. A static library
-	# The extension (.a) is added automatically
-	obj = bld.createObj('cpp', 'staticlib')
-	obj.source='''
-	CaptureCamera.cpp
-	'''
-	obj.uselib='OROCOS'
-	obj.target='orocos-camera'
+		# 3. A static library
+		# The extension (.a) is added automatically
+		obj = bld.createObj('cpp', 'staticlib')
+		obj.source='''
+		CaptureCamera.cpp
+		'''
+		obj.uselib='OROCOS'
+		obj.target='orocos-camera'
 
 def set_options(opt):
 	# options defined if src/ was to be compiled as a standalone module
