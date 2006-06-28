@@ -43,12 +43,11 @@ def set_options(opt):
 def configure(conf):
 	opencv = Params.g_options.opencv
 	opencvloc = Params.g_options.opencvloc
-
 	if bool(opencv)|bool(opencvloc):
 		pth = ''
 		if opencvloc != '':
 			pth = opencvloc+'/lib/pkgconfig'
-		if conf.checkPkg('opencv','OPENCV','0.9.6',pth):
+		if conf.checkPkg('opencv','OPENCV','0.9.7',pth):
 			conf.checkPkg('gtk+-2.0','GTK')
 			conf.checkPkg('gthread-2.0','GTHREAD')
 			conf.env['LIB_OPENCV'].append( 'dc1394_control')
