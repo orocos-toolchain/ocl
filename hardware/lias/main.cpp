@@ -23,25 +23,53 @@ using namespace std;
 
 class Supervisor : public GenericTaskContext
 {
+	int nrofaxes;
 public:
-   Supervisor():
+   Supervisor(int _nrofaxes=6):
 	GenericTaskContext("supervisor") ,
-    driveValue(6)	
+	nrofaxes(_nrofaxes),
+    driveValue(_nrofaxes),
+	reference(_nrofaxes)
 	{
   		TemplateMethodFactory<Supervisor>* cmeth = newMethodFactory( this );
   		cmeth->add( "message",  method( &Supervisor::message,  "give a message to the user","msg","msg to display" ) );
+  		cmeth->add( "setDriveValue",  method( &Supervisor::setDriveValue,  
+					"sets the value of a driveValue port",
+					"axis","the driveValue port for this axis",
+					"value","the drive value in rad/s" ) );
+		cmeth->add( "getReference",  method( &Supervisor::getReference,
+					"gets the reference switch value from a reference port",
+					"axis","the reference port corresponding to this axis") );
+
   		this->methods()->registerObject("this", cmeth);
 		char buf[80];
-		for (int i=0;i<6;++i) {
+		for (int i=0;i<_nrofaxes;++i) {
 			sprintf(buf,"driveValue%d",i);
 			driveValue[i] = new WriteDataPort<double>(buf);
 			ports()->addPort(driveValue[i]);
+			sprintf(buf,"reference%d",i);
+			reference[i] = new ReadDataPort<double>(buf);
+			ports()->addPort(reference[i]);
 		}
 	}
 
    virtual void message(const std::string& msg) {
          Logger::log() << Logger::Info << msg <<Logger::endl;
 	}
+   virtual void setDriveValue(int axis,double value) {
+		if ((0<=axis)&&(axis<nrofaxes)) {
+			driveValue[axis]->Set( value);
+		} else {
+  			Logger::log()<< Logger::Error << "parameter axis out of range" << Logger::endl;
+		}
+   }
+   virtual bool getReference(int axis) {
+		if ((0<=axis)&&(axis<nrofaxes)) {
+			return reference[axis]->Get();
+		} else {
+  			Logger::log()<< Logger::Error << "parameter axis out of range" << Logger::endl;
+		}
+   }
 
    virtual ~Supervisor() {}
    virtual bool startup() {
@@ -52,9 +80,13 @@ public:
    }
  
    virtual void shutdown() {
+		for (int i=0;i<nrofaxes;++i) {
+			driveValue[i]->Set( 0.0 );
+		}
    }
 
 	std::vector<ORO_Execution::WriteDataPort<double>*> driveValue;	
+	std::vector<ORO_Execution::ReadDataPort<double>*>  reference;	
 };
 
 
