@@ -2,6 +2,8 @@
 # encoding: utf-8
 # Thomas Nagy, 2006 (ita)
 
+import Params
+
 def build(bld):
 	# 1. A simple program
 	obj = bld.createObj('cpp', 'program')
@@ -33,8 +35,23 @@ def build(bld):
 
 def set_options(opt):
 	# options defined if src/ was to be compiled as a standalone module
-	print 'ok'
-
+	opt.add_option('--enable-opencv',action='store_true',help='Enable OpenCv',dest='opencv')
+	opt.add_option('--with-opencv',type='string',help='location of Opencv',dest='opencvloc',default='')
 
 def configure(conf):
-	print 'ok'
+	opencv = Params.g_options.opencv
+	opencvloc = Params.g_options.opencvloc
+
+	if bool(opencv)|bool(opencvloc):
+		pth = ''
+		if opencvloc != '':
+			pth = opencvloc+'/lib/pkgconfig'
+		if conf.checkPkg('opencv','OPENCV','0.9.6',pth):
+			conf.checkPkg('gtk+-2.0','GTK')
+			conf.checkPkg('gthread-2.0','GTHREAD')
+			conf.env['LIB_OPENCV'].append( 'dc1394_control')
+			conf.env['LIB_OPENCV'].append( 'raw1394')
+			conf.env['LIB_OPENCV'].append( 'jpeg')
+		else:
+			Params.fatal("Opencv pkgconf file not found ! hardware/camera will not be available")
+		

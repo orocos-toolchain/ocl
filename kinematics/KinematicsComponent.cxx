@@ -54,12 +54,14 @@ namespace Orocos
         return &mykincomp;
     }
 
-    void KinematicsComponent::setAlgorithm( ORO_KinDyn::KinematicsInterface *kin,
-                                         const ORO_KinDyn::JointVelocities& _signs /*= ORO_KinDyn::JointVelocities()*/, 
-                                         const ORO_KinDyn::JointPositions&  _offsets /*= ORO_KinDyn::JointPositions()*/ ) {
-        mykin = kin;
-        mykincomp.setKinematics( kin, _signs, _offsets );
-    }
+  void KinematicsComponent::setAlgorithm( ORO_KinDyn::KinematicsInterface *kin,
+					  const ORO_KinDyn::JointVelocities& _signs /*= ORO_KinDyn::JointVelocities()*/,
+					  const ORO_KinDyn::JointPositions&  _offsets /*= ORO_KinDyn::JointPositions()*/
+					  )
+  {
+    mykin = kin;
+    mykincomp.setKinematics( kin, _signs, _offsets );
+  }
 
     bool KinematicsComponent::startup() {
 

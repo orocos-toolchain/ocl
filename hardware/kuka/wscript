@@ -4,6 +4,7 @@
 
 def build(bld):
 	# 1. A simple program
+	print 'kuka'
 	obj = bld.createObj('cpp', 'program')
 	obj.source='''
 	main.cpp

@@ -145,13 +145,13 @@ int ORO_main(int argc, char* argv[])
   super.loadStateMachine("cpf/states.osd");
 
     // Creating Tasks
-  NonPreemptibleActivity _kukaTask(0.01, my_robot.engine() ); 
+  NonPreemptibleActivity _kukaTask(0.005, my_robot.engine() ); 
   NonPreemptibleActivity _sensorTask(0.01, sensor.engine() ); 
   NonPreemptibleActivity _generatorTask(0.01, generator.engine() ); 
   NonPreemptibleActivity _controllerTask(0.01, controller.engine() ); 
   NonPreemptibleActivity _effectorTask(0.01, effector.engine() ); 
-  PeriodicActivity reportingTask(2,0.1,reporter.engine());
-  NonPreemptibleActivity superTask(0.01,super.engine());
+  PeriodicActivity reportingTask(3,0.02,reporter.engine());
+  PeriodicActivity superTask(2,0.1,super.engine());
 
   TaskBrowser browser(&super);
   browser.setColorTheme( TaskBrowser::whitebg );
