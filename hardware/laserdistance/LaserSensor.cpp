@@ -19,7 +19,7 @@
 
 #if defined (OROPKG_DEVICE_DRIVERS_COMEDI)
 #define NR_CHAN 2
-#define OFFSET 3
+#define OFFSET 0
 #endif
 
 namespace Orocos
@@ -30,6 +30,7 @@ namespace Orocos
   LaserSensor::LaserSensor(string name,unsigned int nr_chan ,string propertyfile):
     GenericTaskContext(name),
     _nr_chan(nr_chan),
+    _LaserInput(nr_chan),
     _simulation_values("sim_values","Value used for simulation"),
     _volt2m("volt2m","Convert Factor from volt to m"),
     _offsets("offsets","Offset in m"),
@@ -40,31 +41,38 @@ namespace Orocos
     _distances_local(nr_chan),
     _propertyfile(propertyfile)
   {
-
+    Logger::log()<<Logger::Debug<<this->getName()<<": adding Properties"<<Logger::endl;
     attributes()->addProperty(&_simulation_values);
     attributes()->addProperty(&_volt2m);
     attributes()->addProperty(&_offsets);
     attributes()->addProperty(&_upperLimits);
     attributes()->addProperty(&_lowerLimits);
 
+    Logger::log()<<Logger::Debug<<this->getName()<<": adding Ports"<<Logger::endl;
     ports()->addPort(&_distances);
+
+    Logger::log()<<Logger::Debug<<this->getName()<<": adding Events"<<Logger::endl;
+    events()->addEvent("distanceOutOfRange",&_distanceOutOfRange);
     
 #if defined (OROPKG_DEVICE_DRIVERS_COMEDI)
     if(_nr_chan>NR_CHAN){
-      _Logger::log()<<Logger::Warning<<"Only 2 hardware sensors currently available, resetting nr of channels to 2"<<Logger::endl;
+      Logger::log()<<Logger::Warning<<"Only 2 hardware sensors currently available, resetting nr of channels to 2"<<Logger::endl;
       _nr_chan = NR_CHAN;
     }
-    
+    Logger::log()<<Logger::Debug<<this->getName()<<": Creating ComediDevice"<<Logger::endl;
     _comediDev_NI6024  = new ComediDevice( 4 ); //NI-6024 for analog in
     int subd;
     subd = 0; // subdevice 0 is analog  in
+    Logger::log()<<Logger::Debug<<this->getName()<<": Creating ComediSubDevice"<<Logger::endl;
     _comediSubdevAIn     = new ComediSubDeviceAIn( _comediDev_NI6024, "Laser", subd );
-    for(unsigned int i = 0; i < nr_chan;i++)
+    for(unsigned int i = 0; i < nr_chan;i++){
+      Logger::log()<<Logger::Debug<<this->getName()<<": Creating AnalogInput "<<i<<Logger::endl;
       _LaserInput[i] = new AnalogInput<unsigned int>(_comediSubdevAIn, i+OFFSET); //channel number starting from 0
+    }
 #endif
+    Logger::log()<<Logger::Debug<<this->getName()<<": constructed."<<Logger::endl;
   }
-
-
+  
   LaserSensor::~LaserSensor()
   {
 #if defined (OROPKG_DEVICE_DRIVERS_COMEDI)
