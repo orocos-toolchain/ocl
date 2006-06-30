@@ -22,7 +22,7 @@ public:
           dwport("D2Port"),
           drport("D1Port")
     {
-        this->attributes()->addProperty( & hello );
+        this->attributes()->addProperty( &hello );
         this->ports()->addPort( &drport );
         this->ports()->addPort( &dwport );
 
@@ -71,10 +71,10 @@ int ORO_main( int argc, char** argv)
 
     TaskBrowser tb( &gtc );
 
-    Logger::log()<<Logger::Info <<Logger::endl<< "  This demo allows reporting of Components." << Logger::endl;
-    Logger::log()<<Logger::Info << "  Use 'reportComponent(\"MyPeer\")' and/or 'reportComponent(\"MyPeer2\")'" <<Logger::endl;
-    Logger::log()<<Logger::Info << "  Then invoke 'start()' and 'stop()'" <<Logger::endl;
-    Logger::log()<<Logger::Info << "  Other methods (type 'this') are available as well."<<Logger::endl;
+    Logger::log()<<Logger::Info <<Logger::endl<< "  This demo demonstrates interaction with Components." << Logger::endl;
+    Logger::log()<<Logger::Info << "  Use 'enter' and/or 'leave' to go 'inside' or 'outside' a component. " <<Logger::endl;
+    Logger::log()<<Logger::Info << "  The inside interface shows the methods and ports of the visited component," <<Logger::endl;
+    Logger::log()<<Logger::Info << "  the outside interface show the methods and ports of the TaskBrowser."<<Logger::endl;
         
     tb.loop();
 
