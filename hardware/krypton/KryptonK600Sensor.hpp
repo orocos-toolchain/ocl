@@ -52,15 +52,15 @@ namespace Orocos
     int _num_leds;
 
 #if defined (OROPKG_OS_LXRT)
-    unsigned short _lenght_msg, _type_msg, _nr_msg, _nr_answer_msg, _type_body_msg, _cycle_nr, _nr_markers;
+    unsigned short _length_msg, _type_msg, _nr_msg, _nr_answer_msg, _type_body_msg, _cycle_nr, _nr_markers;
     unsigned char _msg_valid;
 
     SEM * udp_message_arrived;
     MBX * udp_message;
 
-    char* msg;
+    char* _msg;
 
-    bool interprete_K600_Msg(char * msg);
+    bool interprete_K600_Msg();
 #endif
 
     std::vector<ORO_Geometry::Vector> _ledPositions_local;

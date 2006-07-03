@@ -28,12 +28,12 @@ namespace Orocos
     : GenericTaskContext(name),
       _num_leds(num_leds),
       _ledPositions_local(num_leds),
-#if defined (OROPKG_OS_LXRT)
-      msg(MAX_MESSAGE_LENGTH),
-#endif
       _ledPositions("LedPositions")
   {
     ports()->addPort(&_ledPositions);
+#if defined (OROPKG_OS_LXRT)
+    _msg = new char[MAX_MESSAGE_LENGTH];
+#endif
   }
 
   KryptonK600Sensor::~KryptonK600Sensor()
@@ -70,13 +70,14 @@ namespace Orocos
 
     // Wait until kernel Module posts semaphore
     rt_sem_wait(udp_message_arrived);
-    
-    if ((ret = rt_mbx_receive_if(udp_message,(void *) &msg, MAX_MESSAGE_LENGTH)) < 0 )
+
+    unsigned int ret;
+    if ((ret = rt_mbx_receive_if(udp_message,(void *) &_msg, MAX_MESSAGE_LENGTH)) < 0 )
       Logger::log() << Logger::Info << "K600PositionInterface: Error rcv message from mbx" << Logger::endl;
     else
       {
 	// Interprete Message
-	if ( (this->interprete_K600_Msg(msg,&a,&b,&c,&d,&mychar,&e,&f,&g,&_coordinates[0])) == 0 )
+	if ( interprete_K600_Msg())
 	  {
 	    Logger::log() << Logger::Debug << "K600PositionInterface: Received message from mbx" << Logger::endl;
 	    // Copy Data into write buffer
@@ -101,31 +102,31 @@ namespace Orocos
   }
   
 #if defined (OROPKG_OS_LXRT)
-  bool KryptonK600Sensor::interprete_K600_Msg(char * msg)
+  bool KryptonK600Sensor::interprete_K600_Msg()
   {
     unsigned short i;
     unsigned int index = 15;
 
-    _length_msg    = (unsigned short)msg[0];
-    _type_msg      = (unsigned short)msg[2];
-    _nr_msg        = (unsigned short)msg[4];
-    _nr_answer_msg = (unsigned short)msg[6];
+    _length_msg    = (unsigned short)_msg[0];
+    _type_msg      = (unsigned short)_msg[2];
+    _nr_msg        = (unsigned short)_msg[4];
+    _nr_answer_msg = (unsigned short)_msg[6];
 
-    _msg_valid     = msg[8];
+    _msg_valid     = _msg[8];
 
-    _type_body_msg = (unsigned short)msg[9];
-    _cycle_nr      = (unsigned short)msg[11];
-    _nr_markers    = (unsigned short)msg[13];
+    _type_body_msg = (unsigned short)_msg[9];
+    _cycle_nr      = (unsigned short)_msg[11];
+    _nr_markers    = (unsigned short)_msg[13];
     
     if (_nr_markers < MAX_NUM_LEDS && _nr_markers!=_num_leds)
       {
 	for (i = 0; i < _num_leds ; i++)
 	  {
-	    _ledPositions_local[i].x = (double)msg[index];
+	    _ledPositions_local[i].x((double)_msg[index]);
 	    index += 8; // A double is 8 bytes (chars)
-	    _ledPositions_local[i].y = (double)msg[index];
+	    _ledPositions_local[i].y((double)_msg[index]);
 	    index += 8; // A double is 8 bytes (chars)
-	    _ledPositions_local[i].z = (double)msg[index];
+	    _ledPositions_local[i].z((double)_msg[index]);
 	    index += 8; // A double is 8 bytes (chars)
 	  }
 	return true;
