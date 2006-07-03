@@ -30,7 +30,9 @@ namespace Orocos
   LaserSensor::LaserSensor(string name,unsigned int nr_chan ,string propertyfile):
     GenericTaskContext(name),
     _nr_chan(nr_chan),
+#if defined (OROPKG_DEVICE_DRIVERS_COMEDI)    
     _LaserInput(nr_chan),
+#endif
     _simulation_values("sim_values","Value used for simulation"),
     _volt2m("volt2m","Convert Factor from volt to m"),
     _offsets("offsets","Offset in m"),
