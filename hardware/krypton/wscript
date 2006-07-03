@@ -1,0 +1,44 @@
+#! /usr/bin/env python
+# encoding: utf-8
+# Thomas Nagy, 2006 (ita)
+
+import os;
+
+def build(bld):
+	# 1. A simple program
+	obj = bld.createObj('cpp', 'program')
+	obj.source='''
+	main.cpp
+	'''
+	#obj.includes='.'
+	obj.useliblocal='./orocos-krypton.a ../../taskbrowser/orocos-taskbrowser.a ../../reporting/orocos-reporting.a'
+	obj.uselib='OROCOS'
+	obj.target='krypton-test'
+
+	# 2. A shared library
+	# The extension (.so) is added automatically
+# 	obj = bld.createObj('cpp', 'shlib')
+# 	obj.source='''
+# 	ReportingComponent.cxx
+# 	'''
+# 	obj.includes='src /usr/local/orocos/include'
+# 	obj.target='orocos-reporting'
+
+	# 3. A static library
+	# The extension (.a) is added automatically
+	obj = bld.createObj('cpp', 'staticlib')
+	obj.source='''
+	KryptonK600Sensor.cpp
+	'''
+	obj.uselib='OROCOS'
+	obj.target='orocos-krypton'
+
+def set_options(opt):
+	# options defined if src/ was to be compiled as a standalone module
+	print 'ok'
+
+
+def configure(conf):
+	print 'ok'
+
+
