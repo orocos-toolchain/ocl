@@ -25,10 +25,6 @@
  *                                                                         *
  ***************************************************************************/ 
 
-/**
- * \TODO getSensor("Position")  ==> naar variabele vermijden opzoekwerk.
- */
-
 #include "LiASnAxesVelocityController.hpp"
 
 #include <execution/GenericTaskContext.hpp>
@@ -39,9 +35,6 @@
 #include <corelib/Logger.hpp>
 #include <corelib/Attribute.hpp>
 #include <execution/DataPort.hpp>
-//#include <iostream>
-
-
 #include <device_drivers/IncrementalEncoderSensor.hpp>
 #include <device_drivers/AnalogOutput.hpp>
 #include <device_drivers/DigitalOutput.hpp>
@@ -117,23 +110,6 @@ LiASnAxesVelocityController::LiASnAxesVelocityController(const std::string& name
     _axes(NUM_AXES),
     _axesInterface(NUM_AXES)
 {
-    DBG;
-
-  /**
-   * initializing properties (not necessary).
-   * \TODO remove this when everything is ok
-   *
-  driveLimits.value().resize(6);
-  lowerPositionLimits.value().resize(6);
-  upperPositionLimits.value().resize(6);
-  initialPosition.value().resize(6);
-  //driveConvertFactor.value().resize(6);
-  //driveOffset.value().resize(6);
-  servoFFScale.value().resize(6);
-  servoIntegrationFactor.value().resize(6);
-  servoFFScale.value().resize(6);*/
-
-
   /**
    * Adding properties
    */
@@ -225,7 +201,10 @@ LiASnAxesVelocityController::LiASnAxesVelocityController(const std::string& name
     _brake                         = 0;*/
   
     for (unsigned int i = 0; i <NUM_AXES; i++) {
-      _axes[i] = new ORO_DeviceDriver::SimulationAxis(initialPosition.value()[i]);
+      _axes[i] = new ORO_DeviceDriver::SimulationAxis(
+					initialPosition.value()[i],
+					lowerPositionLimits.value()[i],
+					upperPositionLimits.value()[i]);
       _axes[i]->setMaxDriveValue( driveLimits.value()[i] );
       _axesInterface[i] = _axes[i];
     }
@@ -238,11 +217,7 @@ LiASnAxesVelocityController::LiASnAxesVelocityController(const std::string& name
 
   /*
    *  Command Interface
-   * /TODO fill in description
    */
-
-
-
   typedef LiASnAxesVelocityController MyType;
   TemplateCommandFactory<MyType>* cfact = newCommandFactory( this );
   cfact->add( "startAxis",         command( &MyType::startAxis,         &MyType::startAxisCompleted, "start axis, initializes drive value to zero and starts updating the drive-value with the drive-port (only possible if axis is unlocked)","axis","axis to start" ) );
@@ -635,6 +610,20 @@ bool LiASnAxesVelocityController::startup() {
  * This function is periodically called.
  */
 void LiASnAxesVelocityController::update() {
+#if !defined (OROPKG_OS_LXRT)
+	for (int axis=0;axis<NUM_AXES;axis++) {
+        _axes[axis]->drive(
+			signAxes.value()[axis]*driveValue[axis]->Get()
+		);
+        positionValue[axis] ->Set( 
+			signAxes.value()[axis]*_axes[axis]->getSensor("Position")->readSensor()
+		);
+		output[axis]->Set(
+			signAxes.value()[axis]*driveValue[axis]->Get()
+		);
+        reference[axis]->Set(false);
+	}
+#else
     double dt;
     // Determine sampling time :
     if (servoInitialized) {
@@ -652,11 +641,7 @@ void LiASnAxesVelocityController::update() {
         double measpos;
         double setpoint;
         // Ask the position and perform checks in joint space.
-        #if !defined (OROPKG_OS_LXRT)
-            measpos = signAxes.value()[axis]*_axes[axis]->getSensor("Position")->readSensor();
-        #else
-            measpos = signAxes.value()[axis]*_encoder[axis]->readSensor();
-        #endif
+        measpos = signAxes.value()[axis]*_encoder[axis]->readSensor();
         positionValue[axis] ->Set(  measpos );
         if( 
             (measpos < lowerPositionLimits.value()[axis]) 
@@ -701,38 +686,31 @@ void LiASnAxesVelocityController::update() {
         output[axis]->Set(outputvel[axis]);
         _axes[axis]->drive(signAxes.value()[axis]*outputvel[axis]);
         // ask the reference value from the hw 
-        #if !defined (OROPKG_OS_LXRT)
-            reference[axis]->Set(false);
-        #else
-            reference[axis]->Set( _reference[axis]->isOn());
-        #endif
+        reference[axis]->Set( _reference[axis]->isOn());
     }
+	#endif
 }
  
 bool LiASnAxesVelocityController::prepareForUse() {
     DBG;
-    // \TODO 
     return true;
 }
 
 bool
 LiASnAxesVelocityController::prepareForUseCompleted() const {
     DBG;
-    // \TODO
     return true;
 }
 
 
 bool LiASnAxesVelocityController::prepareForShutdown() {
     DBG;
-    // \TODO 
     return true;
 }
 
 bool
 LiASnAxesVelocityController::prepareForShutdownCompleted() const {
     DBG;
-    // \TODO
     return true;
 }
 

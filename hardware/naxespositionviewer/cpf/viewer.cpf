@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "cpf.dtd">
+<properties>
+  <simple name="PortNumber" type="long"><description>Port number to listen to for clients</description><value>9999</value></simple>
+  <simple name="NumAxes" type="long"><description>Number of axes to observe</description><value>6</value></simple>
+</properties>
