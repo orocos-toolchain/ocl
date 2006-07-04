@@ -3,13 +3,13 @@
 
 //hardware interfaces
 #include <corelib/ZeroTimeThread.hpp>
-#include "../lias/LiASnAxesVelocityController.hpp"
+#include "../hardware/lias/LiASnAxesVelocityController.hpp"
 
 //User interface
-#include "../../taskbrowser/TaskBrowser.hpp"
+#include "../taskbrowser/TaskBrowser.hpp"
 
 //Reporting
-#include "../../reporting/FileReporting.hpp"
+#include "../reporting/FileReporting.hpp"
 
 #include <corelib/Activities.hpp>
 #include <execution/GenericTaskContext.hpp>

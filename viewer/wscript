@@ -10,9 +10,8 @@ def build(bld):
 	main.cpp
 	'''
 	#obj.includes='.'
-	obj.useliblocal="./orocos-viewer.a ../lias/orocos-lias.a ../../taskbrowser/orocos-taskbrowser.a ../../reporting/orocos-reporting.a"
+	obj.useliblocal="./orocos-viewer.a ../hardware/lias/orocos-lias.a ../taskbrowser/orocos-taskbrowser.a ../reporting/orocos-reporting.a"
 	obj.uselib="ACE"
-	print "useliblocal = " + obj.useliblocal
 	obj.uselib='OROCOS'
 	obj.target='viewer-test'
 
