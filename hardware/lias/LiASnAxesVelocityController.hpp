@@ -155,6 +155,12 @@ private:
    */
   RTT::Property<std::vector<double> >      signAxes;
 
+  /**
+   * Offset for each axis to compensate friction.  Should only partially compensate friction.
+   */
+  RTT::Property<std::vector<double> >      offset;
+
+
    /**
     *  parameters to this event are the axis and the velocity that is out of range.
     *  Each axis that is out of range throws a seperate event.
@@ -218,6 +224,8 @@ private:
    RTT::Constant<unsigned int> _num_axes;
 
 private:
+  // to keep track of which axes are homed :
+  std::vector<bool>  _homed;	
   //
   //   Servo-loop gain :
   //   property to indicate initial value and variable to store actual value
@@ -237,6 +245,11 @@ private:
   RTT::Property<std::vector <double> >     servoFFScale;
   std::vector<double>                              _servoFFScale;
 
+  /**
+   * Derivative action for each axis.
+   */
+  RTT::Property<std::vector<double> >     servoDerivTime; 
+
   //
   // Continuous state for the servo-loop
   //
@@ -244,6 +257,7 @@ private:
   std::vector<double>  servoIntError;   // integrated error
   bool                               servoInitialized;
   RTT::TimeService::ticks    previousTime;
+  std::vector<double>        previousPos;  // used by friction comp.
 
   //
   // Command to read and apply the properties to the controller

@@ -20,7 +20,6 @@ using namespace Orocos;
 using namespace RTT;
 using namespace std;
 
-
 class Supervisor : public GenericTaskContext
 {
 	int nrofaxes;

@@ -66,8 +66,6 @@ namespace Orocos {
 
 #define NUM_AXES 6
 
-//const char number[10]={'0','1','2','3','4','5','6','7','8','9'};
-
 #define DBG \
     Logger::log() << Logger::Info << Logger::endl; \
     Logger::log() << Logger::Info << __PRETTY_FUNCTION__ << Logger::endl;
@@ -77,8 +75,6 @@ namespace Orocos {
     Logger::log() << Logger::Info << "TRACE " << #x << Logger::endl; \
     x;
     
-//#define ORO_Debug(x,y) 
-
 
 using namespace Orocos;
 
@@ -95,17 +91,19 @@ LiASnAxesVelocityController::LiASnAxesVelocityController(const std::string& name
     upperPositionLimits("UpperPositionLimits","Upper position limits (rad)"),
     initialPosition("initialPosition","Initial position (rad) for simulation or hardware"),
     signAxes("signAxes","Indicates the sign of each of the axes"),
+ 	offset  ("offset",  "offset to compensate for friction.  Should only partially compensate friction"),
     _num_axes(NUM_AXES),
-    //driveConvertFactor("driveConvertFactor","conversion factor between drive value and analog output"),
-    //driveOffset("driveOffset","offset (in rad/s) to the drive value."),
+	_homed(NUM_AXES),
     servoGain("servoGain","gain of the servoloop (no units)"),
     _servoGain(NUM_AXES),
     servoIntegrationFactor("servoIntegrationFactor","INVERSE of the integration time for the servoloop (s)"),
     _servoIntegrationFactor(NUM_AXES),
     servoFFScale(        "servoFFScale","scale factor on the feedforward signal of the servo loop "),
     _servoFFScale(NUM_AXES),
+    servoDerivTime(      "servoDerivTime","Derivative time for the servo loop "),
     servoIntVel(NUM_AXES),
     servoIntError(NUM_AXES),
+	previousPos(NUM_AXES),
     servoInitialized(false),
     _axes(NUM_AXES),
     _axesInterface(NUM_AXES)
@@ -118,12 +116,11 @@ LiASnAxesVelocityController::LiASnAxesVelocityController(const std::string& name
   attributes()->addProperty( &upperPositionLimits  );
   attributes()->addProperty( &initialPosition  );
   attributes()->addProperty( &signAxes  );
-  //attributes()->addProperty( &driveConvertFactor  );
-  //attributes()->addProperty( &driveOffset  );
+  attributes()->addProperty( &offset  );
   attributes()->addProperty( &servoGain  );
   attributes()->addProperty( &servoIntegrationFactor  );
   attributes()->addProperty( &servoFFScale  );
-  //attributes()->addConstant( "pi", double(3.14159265358979) );
+  attributes()->addProperty( &servoDerivTime  );
   attributes()->addConstant( "NUM_AXES", &_num_axes);
  
   if (!readProperties(propertyfilename)) {
@@ -163,6 +160,7 @@ LiASnAxesVelocityController::LiASnAxesVelocityController(const std::string& name
     
     for (unsigned int i = 0; i < LiAS_NUM_AXIS; i++)
     {
+		_homed[i] = false;
         //Setting up encoders
         _encoderInterface[i] = new IP_Encoder_6_EncInterface( *_IP_Encoder_6_task, i ); // Encoder 0, 1, 2, 3, 4 and 5.
         _encoder[i] = new IncrementalEncoderSensor( _encoderInterface[i], 1.0 / ticks2rad[i], encoderOffsets[i], -180, 180, LiAS_ENC_RES );
@@ -201,6 +199,7 @@ LiASnAxesVelocityController::LiASnAxesVelocityController(const std::string& name
     _brake                         = 0;*/
   
     for (unsigned int i = 0; i <NUM_AXES; i++) {
+	  _homed[i] = true;
       _axes[i] = new ORO_DeviceDriver::SimulationAxis(
 					initialPosition.value()[i],
 					lowerPositionLimits.value()[i],
@@ -279,6 +278,7 @@ LiASnAxesVelocityController::LiASnAxesVelocityController(const std::string& name
     for (int axis=0;axis<NUM_AXES;++axis) {
         // state      :
         servoIntVel[axis]   = initialPosition.value()[axis];
+        previousPos[axis]   = initialPosition.value()[axis];
         servoIntError[axis] = 0;  // for now.  Perhaps store it and reuse it in a property file.
         // parameters :
         _servoGain[axis]              = servoGain.value()[axis];
@@ -558,9 +558,11 @@ LiASnAxesVelocityController::initPosition(int axis)
 {
   DBG;
   if (!(axis<0 || axis>NUM_AXES-1)) {
+	   _homed[axis] = true;
        #if defined (OROPKG_OS_LXRT)
        _encoder[axis]->writeSensor(initialPosition.value()[axis]);
        servoIntVel[axis] = initialPosition.value()[axis];
+       previousPos[axis] = servoIntVel[axis];
        #else
        #endif
        return true;
@@ -602,6 +604,7 @@ bool LiASnAxesVelocityController::startup() {
     // Initialize the servo loop
   for (int axis=0;axis<NUM_AXES;++axis) {
     servoIntVel[axis] = _axes[axis]->getSensor("Position")->readSensor();
+	previousPos[axis] = servoIntVel[axis];
   }
   return true;
 }
@@ -612,15 +615,20 @@ bool LiASnAxesVelocityController::startup() {
 void LiASnAxesVelocityController::update() {
 #if !defined (OROPKG_OS_LXRT)
 	for (int axis=0;axis<NUM_AXES;axis++) {
-        _axes[axis]->drive(
-			signAxes.value()[axis]*driveValue[axis]->Get()
-		);
-        positionValue[axis] ->Set( 
-			signAxes.value()[axis]*_axes[axis]->getSensor("Position")->readSensor()
-		);
-		output[axis]->Set(
-			signAxes.value()[axis]*driveValue[axis]->Get()
-		);
+		double measpos = signAxes.value()[axis]*_axes[axis]->getSensor("Position")->readSensor();
+/*        if(( 
+            (measpos < lowerPositionLimits.value()[axis]) 
+          ||(measpos > upperPositionLimits.value()[axis])
+          ) && _homed[axis]) {
+            // emit event.
+			positionOutOfRange_axis  = axis;
+			positionOutOfRange_value = measpos;
+			positionOutOfRange_eventc.emit();
+        }*/
+		double setpoint = signAxes.value()[axis]*driveValue[axis]->Get();
+        _axes[axis]->drive(setpoint);
+        positionValue[axis] ->Set(measpos);
+		output[axis]->Set(setpoint);
         reference[axis]->Set(false);
 	}
 #else
@@ -643,27 +651,44 @@ void LiASnAxesVelocityController::update() {
         // Ask the position and perform checks in joint space.
         measpos = signAxes.value()[axis]*_encoder[axis]->readSensor();
         positionValue[axis] ->Set(  measpos );
-        if( 
+        if(( 
             (measpos < lowerPositionLimits.value()[axis]) 
           ||(measpos > upperPositionLimits.value()[axis])
-          ) {
+          ) && _homed[axis]) {
             // emit event.
 			positionOutOfRange_axis  = axis;
 			positionOutOfRange_value = measpos;
-			//positionOutOfRange_eventc.emit();
+			positionOutOfRange_eventc.emit();
         }
-        // \TODO is this check : on the wright place ?
         if (_axes[axis]->isDriven()) {
             setpoint = driveValue[axis]->Get();
         	// perform control action ( dt is zero the first time !) :
         	servoIntVel[axis]      += dt*setpoint;
         	double error            = servoIntVel[axis] - measpos;
         	servoIntError[axis]    += dt*error;
-        	outputvel[axis]         = _servoGain[axis]* (error + _servoIntegrationFactor[axis]*servoIntError[axis]) 
-                                   + _servoFFScale[axis]*setpoint;
-        } else {
-            outputvel[axis]        = 0.0;
-        }
+            double deriv;
+            if (dt < 1E-4) {
+                deriv = 0.0;
+            } else {
+                deriv = servoDerivTime.value()[axis]*(measpos-previousPos[axis])/dt;
+            }
+        	outputvel[axis]         = _servoGain[axis]* 
+                (error + _servoIntegrationFactor[axis]*servoIntError[axis] + deriv) 
+                + _servoFFScale[axis]*setpoint;
+            // check direction of motion or desired motion :
+            double offsetsign;
+            if (previousPos[axis] < measpos) {
+                offsetsign = 1.0;
+            } else if ( previousPos[axis] > measpos ) {
+                offsetsign = -1.0;
+            } else {
+                offsetsign = outputvel[axis] < 0.0 ? -1.0 : 1.0;
+            }
+            outputvel[axis] += offsetsign*offset.value()[axis];
+		} else {
+			outputvel[axis] = 0.0;
+		}
+		previousPos[axis] = measpos;
     }
     for (int axis=0;axis<NUM_AXES;axis++) {
         // send the drive value to hw and performs checks
@@ -671,7 +696,7 @@ void LiASnAxesVelocityController::update() {
             // emit event.
 			driveOutOfRange_axis  = axis;
 			driveOutOfRange_value = outputvel[axis];
-			driveOutOfRange_eventc.emit();
+			//driveOutOfRange_eventc.emit();
 			// saturate
             outputvel[axis] = -driveLimits.value()[axis];
         }
