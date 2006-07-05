@@ -4,8 +4,27 @@
 program Program {
 //  do start()
   do prepareForUse()
-  do unlockAllAxes()
-  do startAllAxes()
+//do unlockAllAxes()
+//do startAllAxes()
+
+  do unlockAxis(0)
+  do startAxis(0)
+
+  do unlockAxis(1)
+  do startAxis(1)
+
+  do unlockAxis(2)
+  do startAxis(2)
+
+  do unlockAxis(3)
+  do startAxis(3)
+
+  do unlockAxis(4)
+  do startAxis(4)
+
+  do unlockAxis(5)
+  do startAxis(5)
+  
   do Reporting.start()
   do Reporting.load()
 }

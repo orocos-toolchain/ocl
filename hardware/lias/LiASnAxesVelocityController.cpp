@@ -417,28 +417,6 @@ LiASnAxesVelocityController::unlockAxis(int axis)
   DBG;
   if (!(axis<0 || axis>LiAS_NUM_AXIS-1))
   {
-      if (axis == 1) 
-      {
-          if( _activate_axis3 )
-          {
-              _activate_axis3 = false;
-              _axes[1]->unlock();
-              _axes[2]->unlock();
-          }
-          else _activate_axis2 = true;
-          return true;
-      }
-      if (axis == 2) 
-      {
-          if( _activate_axis2 )
-          {
-              _activate_axis2 = false;
-              _axes[1]->unlock();
-              _axes[2]->unlock();
-          }
-          else _activate_axis3 = true;
-          return true;
-      }
       _axes[axis]->unlock();
       return true;
   } else{
@@ -450,7 +428,6 @@ LiASnAxesVelocityController::unlockAxis(int axis)
 bool 
 LiASnAxesVelocityController::unlockAxisCompleted(int axis) const {
     DBG;
-    //return !_axes[axis]->isLocked();
     return true;
 }
 
@@ -461,28 +438,6 @@ LiASnAxesVelocityController::lockAxis(int axis)
   DBG;
   if (!(axis<0 || axis>LiAS_NUM_AXIS-1))
   {
-      if (axis == 1) 
-      {
-          if( _deactivate_axis3 )
-          {
-              _deactivate_axis3 = false;
-              _axes[1]->lock();
-              _axes[2]->lock();
-          }
-          else _deactivate_axis2 = true;
-          return true;
-      }
-      if (axis == 2) 
-      {
-          if( _deactivate_axis2 )
-          {
-              _deactivate_axis2 = false;
-              _axes[1]->lock();
-              _axes[2]->lock();
-          }
-          else _deactivate_axis3 = true;
-          return true;
-      }
       _axes[axis]->lock();
       return true;
   } else {
@@ -494,7 +449,7 @@ LiASnAxesVelocityController::lockAxis(int axis)
 bool 
 LiASnAxesVelocityController::lockAxisCompleted(int axis) const {
     DBG;
-    //return _axes[axis]->isLocked();
+    return true;
 }
 
 
@@ -603,8 +558,8 @@ bool LiASnAxesVelocityController::startup() {
     DBG;
     // Initialize the servo loop
   for (int axis=0;axis<NUM_AXES;++axis) {
-    servoIntVel[axis] = _axes[axis]->getSensor("Position")->readSensor();
-	previousPos[axis] = servoIntVel[axis];
+      servoIntVel[axis] = _axes[axis]->getSensor("Position")->readSensor();
+	  previousPos[axis] = servoIntVel[axis];
   }
   return true;
 }
@@ -670,7 +625,7 @@ void LiASnAxesVelocityController::update() {
             if (dt < 1E-4) {
                 deriv = 0.0;
             } else {
-                deriv = servoDerivTime.value()[axis]*(measpos-previousPos[axis])/dt;
+                deriv = servoDerivTime.value()[axis]*(previousPos[axis]-measpos)/dt;
             }
         	outputvel[axis]         = _servoGain[axis]* 
                 (error + _servoIntegrationFactor[axis]*servoIntError[axis] + deriv) 
