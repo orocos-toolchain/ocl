@@ -201,7 +201,7 @@ LiASnAxesVelocityController::LiASnAxesVelocityController(const std::string& name
     for (unsigned int i = 0; i <NUM_AXES; i++) {
 	  _homed[i] = true;
       _axes[i] = new ORO_DeviceDriver::SimulationAxis(
-					initialPosition.value()[i],
+					0.0,
 					lowerPositionLimits.value()[i],
 					upperPositionLimits.value()[i]);
       _axes[i]->setMaxDriveValue( driveLimits.value()[i] );
@@ -584,7 +584,9 @@ void LiASnAxesVelocityController::update() {
         _axes[axis]->drive(setpoint);
         positionValue[axis] ->Set(measpos);
 		output[axis]->Set(setpoint);
-        reference[axis]->Set(false);
+        bool ref = measpos > initialPosition.value()[axis];
+		if (axis==3) ref = !ref;
+        reference[axis]->Set(ref);
 	}
 #else
     double dt;
