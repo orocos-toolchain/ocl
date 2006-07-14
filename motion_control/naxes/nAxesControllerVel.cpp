@@ -112,6 +112,10 @@ namespace Orocos
   
   void nAxesControllerVel::shutdown()
   {
+    for(unsigned int i=0; i<_num_axes; i++){
+		_velocity_out_local[i] = 0.0;
+	}
+	_velocity_out.Set(_velocity_out_local);
   }
   
   void nAxesControllerVel::reset()
