@@ -115,6 +115,10 @@ namespace Orocos
   
   void nAxesControllerPos::shutdown()
   {
+    for(unsigned int i=0; i<_num_axes; i++){
+		_velocity_out_local[i] = 0.0;
+	}
+	_velocity_out.Set(_velocity_out_local);
   }
   
   bool nAxesControllerPos::startMeasuringOffsets(double time_sleep, int num_samples)

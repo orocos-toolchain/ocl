@@ -65,6 +65,8 @@ namespace Orocos
   
   void nAxesEffectorVel::shutdown()
   {
+    for (unsigned int i=0; i<_num_axes; i++)
+      _velocity_drives[i]->Set(0.0);
   }
 }//namespace
 
