@@ -163,11 +163,11 @@ namespace Orocos
             pos = line.find(" ");      // pos+1 is first peername
             startpos = line.find_last_of(". "); // find last peer
             //cerr <<"startpos :"<<startpos<<endl;
-            TaskContext* peer;
+            // start searching from component.
+            peer = taskcontext;
             if ( pos+1 != line.length() ) // bounds check
                 peer = findPeer( line.substr(pos+1) );
-            else
-                peer = tb;
+
             //std::string peername = text.substring( pos+1, std::string::npos );
             TaskContext::PeerList v = peer->getPeerList();
             for (TaskContext::PeerList::iterator i = v.begin(); i != v.end(); ++i) {
@@ -779,6 +779,7 @@ namespace Orocos
 
     void TaskBrowser::switchTaskContext(std::string& c) {
         // if nothing new found, return.
+        peer = taskcontext
         if ( this->findPeer( c + "." ) == 0 ) {
             cerr << "No such peer: "<< c <<nl;
             return;
@@ -790,7 +791,7 @@ namespace Orocos
         }
             
         if ( peer == tb ) {
-            cerr << "Can not switch to TaskContext." <<nl;
+            cerr << "Can not switch to TaskBrowser." <<nl;
             return;
         }
             
@@ -858,7 +859,7 @@ namespace Orocos
         our_pos_iter_t parsebegin( s.begin(), s.end(), "teststring" );
         our_pos_iter_t parseend;
             
-        PeerParser pp( context );
+        PeerParser pp( peer );
         try {
             parse( parsebegin, parseend, pp.parser(), SKIP_PARSER );
         }
@@ -1406,6 +1407,7 @@ namespace Orocos
     void TaskBrowser::printInfo(const std::string& peerp)
     {
         // this sets this->peer to the peer given
+        peer = context;
         if ( this->findPeer( peerp+"." ) == 0 )
             return;
 
@@ -1421,7 +1423,7 @@ namespace Orocos
                 DataSourceBase::shared_ptr pds = peer->attributes()->getValue(*it)->getDataSource();
                 cout << ((bag && bag->find(*it)) ? " (Property ) " : " (Attribute) ")
                      << setw(11)<< pds->getType()<< " "
-                     << coloron <<setw(14)<<left<< *it << coloroff;
+                     << coloron <<setw( 14 )<<left<< *it << coloroff;
                 this->printResult( pds.get(), false ); // do not recurse
                 if (bag && bag->find(*it)) {
                     cout<<" ("<< bag->find(*it)->getDescription() <<')'<< nl;
