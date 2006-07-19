@@ -88,7 +88,7 @@ all: $MD5C
 # it is also possible to use
 # @$WAF -j4
 
-install: md5c
+install: $MD5C
 	@$WAF install
 
 clean:

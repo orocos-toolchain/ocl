@@ -35,7 +35,7 @@ def configure(conf):
 	conf.sub_config('hardware')
 	
 def set_options(opt):
-	opt.add_option('--prefix', type='string', help='installation prefix', dest='prefix')
+	opt.add_option('--prefix', type='string', help='installation prefix', dest='prefix', default='/usr/local/orocos')
 	opt.add_option('--with-orocos', type='string', help='Orocos installation directory', dest='oropath', default='/usr/local/orocos')
 	opt.add_option('--target', type='string', help='Build target (lxrt, xenomai, gnulinux)', dest='orotarget', default='gnulinux')
 	opt.sub_options('hardware')
