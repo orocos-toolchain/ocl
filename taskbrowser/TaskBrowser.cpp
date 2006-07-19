@@ -1048,7 +1048,7 @@ namespace Orocos
             return;
         }
 
-        if ( command->execute() == false ) {
+        if ( command->dispatch() == false ) {
             cerr << "Command not accepted by"<<context->getName()<<"'s Processor !" << nl;
             delete command;
             delete condition;
