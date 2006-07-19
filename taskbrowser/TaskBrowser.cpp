@@ -289,17 +289,9 @@ namespace Orocos
 //                 comp.replace( comp.find(" "),1,"" );
 
         // try if it is an object :
-        if ( peer->commandFactory.getObjectFactory( object ) ) {
+        if ( peer->getObject( object ) ) {
             // fill with new ones.
-            find_command( startpos );
-        }
-        if ( peer->dataFactory.getObjectFactory( object ) ) {
-            // fill with new ones.
-            find_datasource( startpos );
-        }
-        if ( peer->methodFactory.getObjectFactory( object ) ) {
-            // fill with new ones.
-            find_method( startpos );
+            find_ops( startpos );
         }
 
         find_attribute( startpos );
@@ -318,19 +310,9 @@ namespace Orocos
             }
         }
         // Only complete peers and objects, not "this" methods.
-        comps = peer->commandFactory.getObjectList();
+        comps = peer->getObjectList();
         for (std::vector<std::string>::iterator i = comps.begin(); i!= comps.end(); ++i ) {
             if ( i->find( comp ) == 0 )//&& *i != "this" )
-                completes.push_back( peerpath+*i + "." ); // +"."
-        }
-        comps = peer->dataFactory.getObjectList();
-        for (std::vector<std::string>::iterator i = comps.begin(); i!= comps.end(); ++i ) {
-            if ( i->find( comp ) == 0 )//&& *i != "this"  )
-                completes.push_back( peerpath+*i + "." ); // +"."
-        }
-        comps = peer->methodFactory.getObjectList();
-        for (std::vector<std::string>::iterator i = comps.begin(); i!= comps.end(); ++i ) {
-            if ( i->find( comp ) == 0 )//&& *i != "this"  )
                 completes.push_back( peerpath+*i + "." ); // +"."
         }
         comps = peer->getPeerList();
@@ -362,28 +344,8 @@ namespace Orocos
         }
     }
         
-    void TaskBrowser::find_command(std::string::size_type startpos)
+    void TaskBrowser::find_ops(std::string::size_type startpos)
     {
-#if 0
-        std::string::size_type pos;
-        if ( (pos = text.find( "(", startpos )) != std::string::npos ) {
-            std::string _method( text, startpos, pos - 1); // remove "("
-            //cout << "FoundMethod : "<< _method <<endl;
-
-            // strip white spaces from method
-            while ( _method.find(" ") != std::string::npos )
-                _method.replace( _method.find(" "),1,"" );
-
-            // try if it is a command :
-            if ( peer->commandFactory.getObjectFactory( component )->hasCommand( _method ) ) {
-                // complete :
-                method = _method;
-                return; // nothing to do
-            } else {
-                cerr << "Illegal method" << endl;
-            }
-        }
-#endif
         // no brace found, thus build completion list :
         std::string _method;
         if (startpos != std::string::npos )
@@ -394,8 +356,9 @@ namespace Orocos
         while ( _method.find(" ") != std::string::npos )
             _method.replace( _method.find(" "),1,"" );
 
+        // commands:
         std::vector<std::string> comps;
-        comps = peer->commandFactory.getObjectFactory( object )->getCommandList();
+        comps = peer->getObject( object )->commands()->getNames();
         for (std::vector<std::string>::iterator i = comps.begin(); i!= comps.end(); ++i ) {
             if ( i->find( _method ) == 0  )
                 if ( object == "this" )
@@ -403,40 +366,10 @@ namespace Orocos
                 else
                     completes.push_back( peerpath +object+"."+ *i );
         }
-    }
-
-    void TaskBrowser::find_datasource(std::string::size_type startpos)
-    {
-#if 0
-        std::string::size_type pos;
-        if ( (pos = text.find( "(", startpos )) != std::string::npos ) {
-            std::string _datasource( text, startpos, pos - 1); // remove "("
-            //cout << "FoundDatasource : "<< _datasource <<endl;
-
-            // strip white spaces from datasource
-            while ( _datasource.find(" ") != std::string::npos )
-                _datasource.replace( _datasource.find(" "),1,"" );
-
-            // try if it is a command :
-            if ( peer->dataFactory.getObjectFactory( component )->hasMember( _datasource ) ) {
-                datasource = _datasource;
-            }
-        }
-#endif
-        // no brace found, thus build completion list :
-        std::string _datasource;
-        if (startpos != std::string::npos)
-            _datasource = text.substr( startpos );
-        //cout << "FoundDatasource2 : "<< _datasource << endl;
-            
-        // strip white spaces from _datasource
-        while ( _datasource.find(" ") != std::string::npos )
-            _datasource.replace( _datasource.find(" "),1,"" );
-
-        std::vector<std::string> comps;
-        comps = peer->dataFactory.getObjectFactory(object)->getNames();
+        // methods:
+        comps = peer->getObject( object )->methods()->getNames();
         for (std::vector<std::string>::iterator i = comps.begin(); i!= comps.end(); ++i ) {
-            if ( i->find( _datasource ) == 0  )
+            if ( i->find( _method ) == 0  )
                 if ( object == "this" )
                     completes.push_back( peerpath + *i );
                 else
@@ -457,7 +390,7 @@ namespace Orocos
                 _method.replace( _method.find(" "),1,"" );
 
             // try if it is a command :
-            if ( peer->methodFactory.getObjectFactory( object )->hasMember( _method ) ) {
+            if ( peer->methods()->getObject( object )->hasMember( _method ) ) {
                 method = _method;
             }
         }
@@ -473,7 +406,7 @@ namespace Orocos
             _method.replace( _method.find(" "),1,"" );
 
         std::vector<std::string> comps;
-        comps = peer->methodFactory.getObjectFactory(object)->getNames();
+        comps = peer->getObject(object)->methods()->getNames();
         for (std::vector<std::string>::iterator i = comps.begin(); i!= comps.end(); ++i ) {
             if ( i->find( _method ) == 0  )
                 if ( object == "this" )
@@ -573,7 +506,7 @@ namespace Orocos
 
     TaskBrowser::TaskBrowser( TaskContext* _c )
         : GenericTaskContext("TaskBrowser"),
-          condition(0), command(0), command_fact(0), datasource_fact(0),
+          condition(0), command(0),
           debug(0),
           line_read(0),
           lastc(0), storedname(""), storedline(-1)
@@ -779,7 +712,7 @@ namespace Orocos
 
     void TaskBrowser::switchTaskContext(std::string& c) {
         // if nothing new found, return.
-        peer = taskcontext
+        peer = taskcontext;
         if ( this->findPeer( c + "." ) == 0 ) {
             cerr << "No such peer: "<< c <<nl;
             return;
@@ -987,24 +920,13 @@ namespace Orocos
     {
         cout << "      Got :"<< comm <<nl;
 
-        command_fact = context->commandFactory.getObjectFactory( comm );
-        datasource_fact = context->dataFactory.getObjectFactory( comm );
-        method_fact = context->methodFactory.getObjectFactory( comm );
-        if ( command_fact ) // only commandobject name was typed
+        OperationInterface* ops = taskcontext->getObject( comm );
+        if ( ops ) // only object name was typed
             {
-                std::vector<std::string> methods = command_fact->getCommandList();
-                std::for_each( methods.begin(), methods.end(), boost::bind(&TaskBrowser::printCommand, this, _1) );
-            }
-                    
-        if ( datasource_fact ) // only datasource_fact name was typed
-            {
-                std::vector<std::string> methods = datasource_fact->getNames();
-                std::for_each( methods.begin(), methods.end(), boost::bind(&TaskBrowser::printSource, this, _1) );
-            }
-        if ( method_fact ) // only method_fact name was typed
-            {
-                std::vector<std::string> methods = method_fact->getNames();
-                std::for_each( methods.begin(), methods.end(), boost::bind(&TaskBrowser::printMethod, this, _1) );
+                std::vector<std::string> methods = ops->commands()->getNames();
+                std::for_each( methods.begin(), methods.end(), boost::bind(&TaskBrowser::printCommand, this, _1, ops) );
+                methods = ops->methods()->getNames();
+                std::for_each( methods.begin(), methods.end(), boost::bind(&TaskBrowser::printMethod, this, _1, ops) );
             }
         // Minor hack : also check if it was an attribute of current TC, for example, 
         // if both the object and attribute with that name exist. the if
@@ -1015,7 +937,7 @@ namespace Orocos
                 return;
         }
             
-        if ( command_fact || datasource_fact || method_fact )
+        if ( ops )
             return;
                     
         Parser _parser;
@@ -1445,16 +1367,10 @@ namespace Orocos
             cout <<coloron<< "(none)" << coloroff<<nl;
         }
 
-        objlist = peer->commandFactory.getObjectList();
-        std::vector<std::string> objlist2 = peer->dataFactory.getObjectList();
-        objlist.insert(objlist.end(), objlist2.begin(), objlist2.end() );
-        objlist2 = peer->methodFactory.getObjectList();
-        objlist.insert(objlist.end(), objlist2.begin(), objlist2.end() );
-        sort(objlist.begin(), objlist.end() );
-        std::vector<std::string>::iterator new_end = unique(objlist.begin(), objlist.end());
+        objlist = peer->getObjectList();
         cout <<nl<< " Objects      : "<<coloron;
         if ( !objlist.empty() ) {
-            copy(objlist.begin(), new_end, std::ostream_iterator<std::string>(cout, " "));
+            copy(objlist.begin(), objlist.end(), std::ostream_iterator<std::string>(cout, " "));
         } else {
             cout << "(none)" <<coloroff <<nl;
         }
@@ -1511,11 +1427,11 @@ namespace Orocos
         cout <<coloroff<<nl;
     }
         
-    void TaskBrowser::printCommand( const std::string m )
+    void TaskBrowser::printCommand( const std::string m, OperationInterface* ops )
     {
         using boost::lambda::_1;
         std::vector<ArgumentDescription> args;
-        args = command_fact->getArgumentList( m );
+        args = ops->commands()->getArgumentList( m );
         cout << "  Command    : bool " << coloron << m << coloroff<< "( ";
         for (std::vector<ArgumentDescription>::iterator it = args.begin(); it != args.end(); ++it) {
             cout << it->type <<" ";
@@ -1526,16 +1442,16 @@ namespace Orocos
                 cout << " ";
         }
         cout << ")"<<nl;
-        cout << "   " << command_fact->getDescription( m )<<nl;
+        cout << "   " << ops->commands()->getDescription( m )<<nl;
         for (std::vector<ArgumentDescription>::iterator it = args.begin(); it != args.end(); ++it)
             cout <<"   "<< it->name <<" : " << it->description << nl;
     }
                 
-    void TaskBrowser::printSource( const std::string m )
+    void TaskBrowser::printMethod( const std::string m, OperationInterface* ops )
     {
         std::vector<ArgumentDescription> args;
-        args = datasource_fact->getArgumentList( m );
-        cout << "  DataSource : "<< datasource_fact->getResultType(m)<<" " << coloron << m << coloroff<< "( ";
+        args = ops->methods()->getArgumentList( m );
+        cout << "  Method     : "<< ops->methods()->getResultType(m)<<" " << coloron << m << coloroff<< "( ";
         for (std::vector<ArgumentDescription>::iterator it = args.begin(); it != args.end(); ++it) {
             cout << it->type <<" ";
             cout << coloron << it->name << coloroff;
@@ -1545,26 +1461,7 @@ namespace Orocos
                 cout << " ";
         }
         cout << ")"<<nl;
-        cout << "   " << datasource_fact->getDescription( m )<<nl;
-        for (std::vector<ArgumentDescription>::iterator it = args.begin(); it != args.end(); ++it)
-            cout <<"   "<< it->name <<" : " << it->description << nl;
-    }
-                
-    void TaskBrowser::printMethod( const std::string m )
-    {
-        std::vector<ArgumentDescription> args;
-        args = method_fact->getArgumentList( m );
-        cout << "  Method     : "<< method_fact->getResultType(m)<<" " << coloron << m << coloroff<< "( ";
-        for (std::vector<ArgumentDescription>::iterator it = args.begin(); it != args.end(); ++it) {
-            cout << it->type <<" ";
-            cout << coloron << it->name << coloroff;
-            if ( it+1 != args.end() )
-                cout << ", ";
-            else
-                cout << " ";
-        }
-        cout << ")"<<nl;
-        cout << "   " << method_fact->getDescription( m )<<nl;
+        cout << "   " << ops->methods()->getDescription( m )<<nl;
         for (std::vector<ArgumentDescription>::iterator it = args.begin(); it != args.end(); ++it)
             cout <<"   "<< it->name <<" : " << it->description << nl;
     }

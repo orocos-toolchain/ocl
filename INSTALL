@@ -1,0 +1,33 @@
+
+THE SHORT VERSION
+-----------------
+
+Just do:
+
+'cmake .'
+'make'
+(as root) 'make install'
+
+
+THE LONG VERSION
+----------------
+
+Orocos uses cmake (www.cmake.org) for its build configuration.
+CMake is a cross-platform build system.
+
+
+
+There are a few ways you can do things differently to the short version:
+
+
+1) Out-of-source builds:
+
+'mkdir build'
+'cd build'
+'cmake ..'
+'make'
+
+
+2) GUI Configurator:
+
+Use 'ccmake' rather than 'cmake' for a GUI configurator.

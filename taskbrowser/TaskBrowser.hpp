@@ -32,9 +32,7 @@
 
 #include <corelib/RTT.hpp>
 #include <execution/GenericTaskContext.hpp>
-#include "execution/MethodFactoryInterface.hpp"
-#include "execution/DataSourceFactoryInterface.hpp"
-#include "execution/CommandFactoryInterface.hpp"
+#include "execution/OperationInterface.hpp"
 #include "execution/DispatchInterface.hpp"
 #include <deque>
 #include <string>
@@ -68,9 +66,6 @@ namespace Orocos
         RTT::ConditionInterface* condition;
         RTT::DispatchInterface*   command;
         RTT::DataSource<bool>::shared_ptr   accepted;
-        const RTT::CommandFactoryInterface* command_fact;
-        const RTT::DataSourceFactoryInterface* datasource_fact;
-        const RTT::MethodFactoryInterface* method_fact;
 
         int debug;
         /* A static variable for holding the line. */
@@ -106,10 +101,8 @@ namespace Orocos
 
         static void find_completes();
         
-        static void find_command(std::string::size_type startpos);
+        static void find_ops(std::string::size_type startpos);
         static void find_peers(std::string::size_type startpos);
-
-        static void find_datasource(std::string::size_type startpos);
 
         static void find_method(std::string::size_type startpos);
 
@@ -181,7 +174,7 @@ namespace Orocos
         /**
          * Print the synopsis of a command.
          */
-        void printCommand( const std::string c );
+        void printCommand( const std::string c, OperationInterface* ops );
                 
         /**
          * Print the synopsis of a DataSource.
@@ -191,7 +184,7 @@ namespace Orocos
         /**
          * Print the synopsis of a Method.
          */
-        void printMethod( const std::string m );
+        void printMethod( const std::string m, OperationInterface* ops );
 
         /**
          * Print a program listing of a loaded program centered at line \a line.

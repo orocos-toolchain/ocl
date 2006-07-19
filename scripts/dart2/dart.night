@@ -1,0 +1,3 @@
+SHELL=/bin/bash
+source ~/.bashrc
+/usr/bin/ctest -S /home/dart/ctest-scripts/orocos/orocos-night-gcc40.cfg -V >> /home/dart/cron_logs/orocos_night_build.log 2>&1

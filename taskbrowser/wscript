@@ -1,6 +1,5 @@
 #! /usr/bin/env python
 # encoding: utf-8
-# Thomas Nagy, 2006 (ita)
 
 def build(bld):
 	# 1. A simple program
@@ -13,6 +12,18 @@ def build(bld):
  	obj.uselib='OROCOS'
  	obj.target='task-test'
 
+# 	obj = bld.createObj('docbook', 'pdf')
+# 	obj.source='''
+# 	doc/orocos-taskbrowser.xml
+# 	'''
+# 	obj.target='doc/orocos-taskbrowser.pdf'
+
+# 	obj = bld.createObj('docbook', 'html')
+# 	obj.source='''
+# 	doc/orocos-taskbrowser.xml
+# 	'''
+# 	obj.target='doc/orocos-taskbrowser.html'
+	
 	# 2. A shared library
 	# The extension (.so) is added automatically
 # 	obj = bld.createObj('cpp', 'shlib')

@@ -1,0 +1,13 @@
+#!/bin/bash
+
+while true; do
+  echo "***************************"
+  echo " Starting ctest at `date`"
+  echo "***************************"
+  ctest -V -S orocos-cont-gcc40.cfg
+  echo "***************************"
+  echo " Finished ctest at `date`"
+  echo "***************************"
+  echo " "
+  sleep 300
+done
