@@ -10,7 +10,6 @@
 
 
 
-class ACE_SOCK_Stream;
 
 namespace Orocos {
 
@@ -48,8 +47,10 @@ protected:
    RTT::Property<int>                                  num_axes;
    int                                                 _num_axes;
    std::vector<RTT::ReadDataPort<double>*>             positionValue;
-
-	ACE_SOCK_Stream* stream;
+   std::vector<double>                                 jointvec;
+   void*                                     		   clientacceptor;
+   int												   state;
+			// 0 = stopped, 1 = want to startup, 2 = running
 };
 
 } // namespace Orocos

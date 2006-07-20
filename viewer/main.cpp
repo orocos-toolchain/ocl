@@ -171,8 +171,8 @@ int ORO_main(int argc, char* argv[])
   /// Creating Task
   NonPreemptibleActivity _robotTask(0.002, my_robot->engine() ); 
   NonPreemptibleActivity _supervisorTask(0.002, supervisor.engine() ); 
-  PeriodicActivity       reportingTask(10,0.01,reporter.engine());
-  NonRealTimeActivity    viewerTask(0.1,viewer.engine());
+  PeriodicActivity       _reportingTask(10,0.01,reporter.engine());
+  NonRealTimeActivity    _viewerTask(0.1,viewer.engine());
 
   // Load some default programs :
   my_robot->loadProgram("cpf/program.ops"); 
