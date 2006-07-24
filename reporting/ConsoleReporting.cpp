@@ -1,8 +1,8 @@
 
 #include "ConsoleReporting.hpp"
-#include "corelib/Logger.hpp"
-#include "corelib/marshalling/TableMarshaller.hpp"
-#include "corelib/marshalling/TableHeaderMarshaller.hpp"
+#include "rtt/Logger.hpp"
+#include "rtt/marsh/TableMarshaller.hpp"
+#include "rtt/marsh/TableHeaderMarshaller.hpp"
 
 namespace Orocos
 {

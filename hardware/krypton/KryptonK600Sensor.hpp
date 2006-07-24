@@ -21,10 +21,10 @@
 
 #include <pkgconf/system.h> 
 
-#include <corelib/RTT.hpp>
+#include <rtt/RTT.hpp>
 #include <geometry/GeometryToolkit.hpp>
-#include <execution/GenericTaskContext.hpp>
-#include <execution/Ports.hpp>
+#include <rtt/GenericTaskContext.hpp>
+#include <rtt/Ports.hpp>
 
 #if defined (OROPKG_OS_LXRT)
 #include <rtai_mbx.h>

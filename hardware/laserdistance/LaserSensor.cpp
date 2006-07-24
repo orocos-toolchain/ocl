@@ -44,11 +44,11 @@ namespace Orocos
     _propertyfile(propertyfile)
   {
     Logger::log()<<Logger::Debug<<this->getName()<<": adding Properties"<<Logger::endl;
-    attributes()->addProperty(&_simulation_values);
-    attributes()->addProperty(&_volt2m);
-    attributes()->addProperty(&_offsets);
-    attributes()->addProperty(&_upperLimits);
-    attributes()->addProperty(&_lowerLimits);
+    properties()->addProperty(&_simulation_values);
+    properties()->addProperty(&_volt2m);
+    properties()->addProperty(&_offsets);
+    properties()->addProperty(&_upperLimits);
+    properties()->addProperty(&_lowerLimits);
 
     Logger::log()<<Logger::Debug<<this->getName()<<": adding Ports"<<Logger::endl;
     ports()->addPort(&_distances);

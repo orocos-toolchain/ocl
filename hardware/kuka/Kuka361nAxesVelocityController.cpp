@@ -26,9 +26,9 @@
 
 #include "Kuka361nAxesVelocityController.hpp"
 
-#include <execution/TemplateFactories.hpp>
-#include <corelib/Logger.hpp>
-#include <corelib/Attribute.hpp>
+#include <rtt/TemplateFactories.hpp>
+#include <rtt/Logger.hpp>
+#include <rtt/Attribute.hpp>
 
 namespace Orocos
 {
@@ -84,12 +84,12 @@ namespace Orocos
       _driveConvertFactor[i] = vel2volt[i];
     }
     
-    attributes()->addProperty( &_driveLimits );
-    attributes()->addProperty( &_lowerPositionLimits );
-    attributes()->addProperty( &_upperPositionLimits  );
-    attributes()->addProperty( &_initialPosition  );
-    attributes()->addProperty( &_driveOffset  );
-    attributes()->addProperty( &_simulation  );
+    properties()->addProperty( &_driveLimits );
+    properties()->addProperty( &_lowerPositionLimits );
+    properties()->addProperty( &_upperPositionLimits  );
+    properties()->addProperty( &_initialPosition  );
+    properties()->addProperty( &_driveOffset  );
+    properties()->addProperty( &_simulation  );
     attributes()->addConstant( "NUM_AXES", &_num_axes);
     
     if (!readProperties(_propertyfile)) {
@@ -116,7 +116,7 @@ namespace Orocos
       _enable[i] = new DigitalOutput( _apci2200, i );
       _drive[i] = new AnalogDrive( _vref[i], _enable[i], 1.0 / vel2volt[i], _driveOffset.value()[i]);
       
-      _axes_hardware[i] = new ORO_DeviceDriver::Axis( _drive[i] );
+      _axes_hardware[i] = new RTT::Axis( _drive[i] );
       _axes_hardware[i]->limitDrive( _driveLimits.value()[i] );
       //_axes[i]->setLimitDriveEvent( maximumDrive );
       _axes_hardware[i]->setBrake( _brake[i] );
@@ -126,7 +126,7 @@ namespace Orocos
 #endif
     for (unsigned int i = 0; i <NUM_AXES; i++)
       {
-  	_axes_simulation[i] = new ORO_DeviceDriver::SimulationAxis(_initialPosition.value()[i],_lowerPositionLimits.value()[i],_upperPositionLimits.value()[i]);
+  	_axes_simulation[i] = new RTT::SimulationAxis(_initialPosition.value()[i],_lowerPositionLimits.value()[i],_upperPositionLimits.value()[i]);
   	_axes_simulation[i]->setMaxDriveValue( _driveLimits.value()[i] );
       }
 
@@ -152,20 +152,19 @@ namespace Orocos
      *  Command Interface
      */
     typedef Kuka361nAxesVelocityController MyType;
-    TemplateCommandFactory<MyType>* cfact = newCommandFactory( this );
-    cfact->add( "startAxis",         command( &MyType::startAxis,         &MyType::startAxisCompleted, "start axis, initializes drive value to zero and starts updating the drive-value with the drive-port (only possible if axis is unlocked)","axis","axis to start" ) );
-    cfact->add( "stopAxis",          command( &MyType::stopAxis,          &MyType::stopAxisCompleted, "stop axis, sets drive value to zero and disables the update of the drive-port, (only possible if axis is started)","axis","axis to stop" ) );
-    cfact->add( "lockAxis",          command( &MyType::lockAxis,          &MyType::lockAxisCompleted, "lock axis, enables the brakes (only possible if axis is stopped)","axis","axis to lock" ) );
-    cfact->add( "unlockAxis",        command( &MyType::unlockAxis,        &MyType::unlockAxisCompleted, "unlock axis, disables the brakes and enables the drive (only possible if axis is locked)","axis","axis to unlock" ) );
-    cfact->add( "startAllAxes",      command( &MyType::startAllAxes,      &MyType::startAllAxesCompleted, "start all axes" ) );
-    cfact->add( "stopAllAxes",       command( &MyType::stopAllAxes,       &MyType::stopAllAxesCompleted, "stops all axes" ) );
-    cfact->add( "lockAllAxes",       command( &MyType::lockAllAxes,       &MyType::lockAllAxesCompleted, "locks all axes" ) );
-    cfact->add( "unlockAllAxes",     command( &MyType::unlockAllAxes,     &MyType::unlockAllAxesCompleted, "unlock all axes" ) );
-    cfact->add( "prepareForUse",     command( &MyType::prepareForUse,     &MyType::prepareForUseCompleted, "prepares the robot for use" ) );
-    cfact->add( "prepareForShutdown",command( &MyType::prepareForShutdown,&MyType::prepareForShutdownCompleted, "prepares the robot for shutdown" ) );
-    cfact->add( "addDriveOffset"    ,command( &MyType::addDriveOffset,    &MyType::addDriveOffsetCompleted,  "adds an offset to the drive value of axis","axis","axis to add offset to","offset","offset value in rad/s") );
-    this->commands()->registerObject("this", cfact);
-    
+
+    this->commands()->addCommand( command( "startAxis", &MyType::startAxis,         &MyType::startAxisCompleted, this), "start axis, initializes drive value to zero and starts updating the drive-value with the drive-port (only possible if axis is unlocked","axis","axis to start" ) );
+    this->commands()->addCommand( command( "stopAxis", &MyType::stopAxis,          &MyType::stopAxisCompleted, this), "stop axis, sets drive value to zero and disables the update of the drive-port, (only possible if axis is started","axis","axis to stop" ) );
+    this->commands()->addCommand( command( "lockAxis", &MyType::lockAxis,          &MyType::lockAxisCompleted, this), "lock axis, enables the brakes (only possible if axis is stopped","axis","axis to lock" ) );
+    this->commands()->addCommand( command( "unlockAxis", &MyType::unlockAxis,        &MyType::unlockAxisCompleted, this), "unlock axis, disables the brakes and enables the drive (only possible if axis is locked","axis","axis to unlock" ) );
+    this->commands()->addCommand( command( "startAllAxes", &MyType::startAllAxes,      &MyType::startAllAxesCompleted, this), "start all axes"  );
+    this->commands()->addCommand( command( "stopAllAxes", &MyType::stopAllAxes,       &MyType::stopAllAxesCompleted, this), "stops all axes"  );
+    this->commands()->addCommand( command( "lockAllAxes", &MyType::lockAllAxes,       &MyType::lockAllAxesCompleted, this), "locks all axes"  );
+    this->commands()->addCommand( command( "unlockAllAxes", &MyType::unlockAllAxes,     &MyType::unlockAllAxesCompleted, this), "unlock all axes"  );
+    this->commands()->addCommand( command( "prepareForUse", &MyType::prepareForUse,     &MyType::prepareForUseCompleted, this), "prepares the robot for use"  );
+    this->commands()->addCommand( command( "prepareForShutdown", &MyType::prepareForShutdown,&MyType::prepareForShutdownCompleted, this), "prepares the robot for shutdown"  );
+    this->commands()->addCommand( command( "addDriveOffset"    , &MyType::addDriveOffset,    &MyType::addDriveOffsetCompleted, this),  "adds an offset to the drive value of axis","axis","axis to add offset to","offset","offset value in rad/s" );
+
     /**
      * Creating and adding the data-ports
      */

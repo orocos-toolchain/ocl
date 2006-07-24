@@ -19,10 +19,10 @@
 #ifndef _COMBINED_DIGITAL_OUT_
 #define _COMBINED_DIGITAL_OUT_
 
-#include <device_drivers/DigitalOutput.hpp>
+#include <rtt/dev/DigitalOutput.hpp>
 #include <vector>
 
-namespace ORO_DeviceInterface
+namespace RTT
 {
     enum combinetype {OR, AND};
 
@@ -30,14 +30,14 @@ namespace ORO_DeviceInterface
     {
         private:
             std::vector<bool>                 _channels;
-            ORO_DeviceDriver::DigitalOutput*  _digitalout;
+            RTT::DigitalOutput*  _digitalout;
             enum combinetype                  _combine;
             
             void refresh();
 
 
         public:
-            CombinedDigitalOutInterface (const std::string& name, ORO_DeviceDriver::DigitalOutput* digitalout, unsigned int num_channels, combinetype type);
+            CombinedDigitalOutInterface (const std::string& name, RTT::DigitalOutput* digitalout, unsigned int num_channels, combinetype type);
             virtual ~CombinedDigitalOutInterface();
 
             virtual void switchOn( unsigned int n );

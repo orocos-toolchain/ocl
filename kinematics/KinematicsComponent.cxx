@@ -28,7 +28,7 @@
  
 
 #include "KinematicsComponent.hpp"
-#include "corelib/Logger.hpp"
+#include "rtt/Logger.hpp"
 
 namespace Orocos
 {
@@ -99,7 +99,7 @@ namespace Orocos
         }
     }
 
-    ORO_Execution::MethodFactoryInterface* KinematicsComponent::createMethodFactory()
+    RTT::MethodFactoryInterface* KinematicsComponent::createMethodFactory()
     {
         TemplateMethodFactory<ORO_KinDyn::KinematicsComponent>* kfact =
             new TemplateMethodFactory<ORO_KinDyn::KinematicsComponent>(&mykincomp);

@@ -1,9 +1,9 @@
-#include "TaskBrowser.hpp"
+#include "taskbrowser/TaskBrowser.hpp"
 
-#include <corelib/SlaveActivity.hpp>
-#include <corelib/PeriodicActivity.hpp>
-#include <execution/Ports.hpp>
-#include <os/main.h>
+#include <rtt/SlaveActivity.hpp>
+#include <rtt/PeriodicActivity.hpp>
+#include <rtt/Ports.hpp>
+#include <rtt/os/main.h>
 
 using namespace std;
 using namespace Orocos;
@@ -22,7 +22,7 @@ public:
           dwport("D2Port"),
           drport("D1Port")
     {
-        this->attributes()->addProperty( &hello );
+        this->properties()->addProperty( &hello );
         this->ports()->addPort( &drport );
         this->ports()->addPort( &dwport );
 
@@ -45,7 +45,7 @@ public:
           dwport("D1Port"),
           drport("D2Port")
     {
-        this->attributes()->addProperty( & hello );
+        this->properties()->addProperty( & hello );
         this->ports()->addPort( &drport );
         this->ports()->addPort( &dwport );
     }

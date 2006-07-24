@@ -1,6 +1,6 @@
 #include "WrenchSensor.hpp"
-#include <corelib/Attribute.hpp>
-#include <execution/TemplateFactories.hpp>
+#include <rtt/Attribute.hpp>
+#include <rtt/TemplateFactories.hpp>
 #include <geometry/frames.h>
 
 #define CUTOFF_FREQUENCY_FILTER1 500.0
@@ -30,49 +30,33 @@ namespace Orocos
   {
     this->ports()->addPort( &outdatPort );
 
-    this->attributes()->addProperty(&_offset);
+    this->properties()->addProperty(&_offset);
     
 
     /**
      * Method Factory Interface.
      */
-    TemplateMethodFactory<WrenchSensor>* fact =
-      newMethodFactory( this );
-    
+
     _writeBuffer = new Wrench(Wrench::Zero());
     _offset.value() = Wrench::Zero();
     
-    fact->add( "minMeasurement",
-	       method( &WrenchSensor::minMeasurement, "Gets the minimum measurement value." ) );
+    this->methods()->addMethod( method( "minMeasurement", &WrenchSensor::minMeasurement, this), "Gets the minimum measurement value."  );
     
-    fact->add( "maxMeasurement",
-	       method( &WrenchSensor::maxMeasurement, "Gets the maximum measurement value." ) );
+    this->methods()->addMethod( method( "maxMeasurement", &WrenchSensor::maxMeasurement, this), "Gets the maximum measurement value."  );
     
-    fact->add( "zeroMeasurement",
-	       method( &WrenchSensor::zeroMeasurement, "Gets the zero measurement value." ) );
+    this->methods()->addMethod( method( "zeroMeasurement", &WrenchSensor::zeroMeasurement, this), "Gets the zero measurement value."  );
+
+    this->commands()->addCommand( command( "chooseFilter", &WrenchSensor::chooseFilter,
+			 &WrenchSensor::chooseFilterDone, this),
+			 "Command to choose a different filter","p","periodValue"  );	
     
-    
-    this->methods()->registerObject("this", fact);
-    
-    TemplateCommandFactory<WrenchSensor>* cfact =
-      newCommandFactory( this );
-    
-    cfact->add( "chooseFilter",
-		command( &WrenchSensor::chooseFilter,
-			 &WrenchSensor::chooseFilterDone,
-			 "Command to choose a different filter","p","periodValue" ) );	
-    
-    cfact->add( "setOffset",
-		command( &WrenchSensor::setOffset,
-			 &WrenchSensor::setOffsetDone,
-			 "Command to set the zero offset","o","offset vector" ) );	
-    cfact->add( "addOffset",
-		command( &WrenchSensor::addOffset,
-			 &WrenchSensor::setOffsetDone,
-			 "Command to set the zero offset","o","offset vector" ) );	
-    
-    this->commands()->registerObject("this", cfact);
-    
+    this->commands()->addCommand( command( "setOffset", &WrenchSensor::setOffset,
+			 &WrenchSensor::setOffsetDone, this),
+			 "Command to set the zero offset","o","offset vector"  );	
+    this->commands()->addCommand( command( "addOffset", &WrenchSensor::addOffset,
+			 &WrenchSensor::setOffsetDone, this),
+			 "Command to set the zero offset","o","offset vector"  );	
+
     this->events()->addEvent( "maximumLoadEvent", &maximumLoadEvent);
     
 #if defined (OROPKG_OS_LXRT)            

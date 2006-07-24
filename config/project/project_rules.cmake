@@ -1,9 +1,0 @@
-#
-# Add project-specific rules.
-#
-
-# Macro to get the location of generatecfg
-MACRO( FIND_GENERATE_CFG GENERATE_CFG_EXE_LOCATION )
-  SET( GENERATE_CFG_BINARY_DIR ${PROJ_BINARY_DIR}/src/utils/orcadef )
-  SET( ${GENERATE_CFG_EXE_LOCATION} ${GENERATE_CFG_BINARY_DIR}/generatecfg )
-ENDMACRO( FIND_GENERATE_CFG GENERATE_CFG_EXE_LOCATION )

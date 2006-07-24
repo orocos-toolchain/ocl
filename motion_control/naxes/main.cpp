@@ -11,10 +11,10 @@
 //nAxes components
 #include "nAxesComponents.hpp"
 
-//#include <corelib/Activities.hpp>
-#include <execution/GenericTaskContext.hpp>
-//#include <corelib/Logger.hpp>
-#include <os/main.h>
+//#include <rtt/Activities.hpp>
+#include <rtt/GenericTaskContext.hpp>
+//#include <rtt/Logger.hpp>
+#include <rtt/os/main.h>
 
 using namespace Orocos;
 using namespace RTT;

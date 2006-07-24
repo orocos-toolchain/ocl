@@ -20,16 +20,16 @@
 
 #include <pkgconf/system.h>
 
-#include <corelib/RTT.hpp>
-#include <execution/GenericTaskContext.hpp>
-#include <execution/Ports.hpp>
-#include <corelib/Event.hpp>
-#include <corelib/Properties.hpp>
+#include <rtt/RTT.hpp>
+#include <rtt/GenericTaskContext.hpp>
+#include <rtt/Ports.hpp>
+#include <rtt/Event.hpp>
+#include <rtt/Properties.hpp>
 
 #if defined (OROPKG_DEVICE_DRIVERS_COMEDI)
-#include <comedi/ComediDevice.hpp>
-#include <comedi/ComediSubDeviceAIn.hpp>
-#include <device_drivers/AnalogInput.hpp>
+#include <rtt/dev/ComediDevice.hpp>
+#include <rtt/dev/ComediSubDeviceAIn.hpp>
+#include <rtt/dev/AnalogInput.hpp>
 #endif
 
 namespace Orocos
@@ -53,9 +53,9 @@ namespace Orocos
         
   private:
 #if defined (OROPKG_DEVICE_DRIVERS_COMEDI)
-    ORO_DeviceDriver::ComediDevice* _comediDev_NI6024; //NI-6024 for analog in
-    ORO_DeviceDriver::ComediSubDeviceAIn* _comediSubdevAIn;
-    std::vector<ORO_DeviceDriver::AnalogInput<unsigned int>*> _LaserInput;
+    RTT::ComediDevice* _comediDev_NI6024; //NI-6024 for analog in
+    RTT::ComediSubDeviceAIn* _comediSubdevAIn;
+    std::vector<RTT::AnalogInput<unsigned int>*> _LaserInput;
 #endif
     
     unsigned int _nr_chan;

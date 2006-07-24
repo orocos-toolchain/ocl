@@ -21,9 +21,9 @@
 #ifndef __N_AXES_SENSOR_POS_H__
 #define __N_AXES_SENSOR_POS_H__
 
-#include <corelib/RTT.hpp>
-#include <execution/GenericTaskContext.hpp>
-#include <execution/Ports.hpp>
+#include <rtt/RTT.hpp>
+#include <rtt/GenericTaskContext.hpp>
+#include <rtt/Ports.hpp>
 
 namespace Orocos
 {

@@ -2,32 +2,85 @@
 # Include and link against required stuff
 #
 
-INCLUDE (${PROJ_SOURCE_DIR}/config/FindOrocosRTT.cmake)
-
 ADD_DEFINITIONS( "-Wall" )
 
 #
-# Components should add themselves by calling 'GLOBAL_ADD_EXECUTABLE' 
-# instead of 'ADD_EXECUTABLE' in CMakeLists.txt.
+# Components should add themselves by calling 'GLOBAL_ADD_COMPONENT' 
+# instead of 'ADD_COMPONENT' in CMakeLists.txt.
 #
 # This gives a centralised location where all components are registered
 # and lets us add various things to all components in just one place.
 #
 #
-# Usage: GLOBAL_ADD_EXECUTABLE( COMPONENT_NAME src1 src2 src3 )
+# Usage: GLOBAL_ADD_COMPONENT( COMPONENT_NAME src1 src2 src3 )
 #
-MACRO( GLOBAL_ADD_EXECUTABLE COMPONENT_NAME )
+MACRO( GLOBAL_ADD_COMPONENT COMPONENT_NAME )
+  
+  IF(STANDALONE_COMPONENTS)
+     MESSAGE( "BROKEN: Building Stand-alone component ${COMPONENT_NAME}" )
+     ADD_EXECUTABLE( ${COMPONENT_NAME} ${ARGN} )
+     INSTALL_TARGETS( /bin ${COMPONENT_NAME} )
+     TARGET_LINK_LIBRARIES( ${COMPONENT_NAME} ${OROCOS_RTT_LIBS} )
+  ENDIF(STANDALONE_COMPONENTS)
+  
+  IF(GLOBAL_LIBRARY)
+     MESSAGE( "BROKEN: Adding ${COMPONENT_NAME} to global sources:[ ${GLOBAL_LIBRARY_SRCS} ]" )
+     SET (GLOBAL_LIBRARY_SRCS "${GLOBAL_LIBRARY_SRCS} ${ARGN}" )
+  ENDIF(GLOBAL_LIBRARY)
+
+  IF(LOCAL_LIBRARY)
+     MESSAGE( "Building Stand-alone library ${COMPONENT_NAME}" )
+     ADD_LIBRARY( ${COMPONENT_NAME} SHARED ${ARGN} )
+     INSTALL_TARGETS( /lib ${COMPONENT_NAME} )
+     SET (LOCAL_LIBRARIES "${LOCAL_LIBRARIES} ${COMPONENT_NAME}" )
+     LINK_DIRECTORIES( ${PROJ_BINARY_DIR}/${COMPONENT_NAME} )
+  ENDIF(LOCAL_LIBRARY)
+
+  MESSAGE( "Planning to Build Component: ${COMPONENT_NAME}" )
+
+ENDMACRO( GLOBAL_ADD_COMPONENT COMPONENT_NAME )
+
+#
+# Components should add tests by calling 'GLOBAL_ADD_TEST' 
+# instead of 'ADD_EXECUTABLE' in CMakeLists.txt.
+#
+# This gives a centralised location where all tests are registered
+# and lets us add various things to all components in just one place.
+#
+#
+# Usage: GLOBAL_ADD_TEST( TEST_NAME src1 src2 src3 )
+#
+MACRO( GLOBAL_ADD_TEST TEST_NAME )
   
   #
   # unless we have a good reason not to, 
   # build and install this component
   #
-  ADD_EXECUTABLE( ${COMPONENT_NAME} ${ARGN} )
-  INSTALL_TARGETS( /bin ${COMPONENT_NAME} )
+IF(BUILD_TESTS)
+  ADD_EXECUTABLE( ${TEST_NAME} ${ARGN} )
+  #INSTALL_TARGETS( /bin ${TEST_NAME} )
+  TARGET_LINK_LIBRARIES( ${TEST_NAME} ${OROCOS_RTT_LIBS} )
 
-  MESSAGE( "Planning to Build Component: ${COMPONENT_NAME}" )
+  MESSAGE( "Planning to build test: ${TEST_NAME}" )
+ELSE(BUILD_TESTS)
+  MESSAGE( "Not building test: ${TEST_NAME}" )
+ENDIF(BUILD_TESTS)
 
-ENDMACRO( GLOBAL_ADD_EXECUTABLE COMPONENT_NAME )
+
+ENDMACRO( GLOBAL_ADD_TEST TEST_NAME )
+
+#
+# Components should add library dependencies by calling 'GLOBAL_ADD_DEPENDENCY' 
+# This gives a centralised location where all deps are registered
+#
+# Usage: GLOBAL_ADD_DEPENDENCY( lib1 lib2 ...  )
+#
+MACRO( GLOBAL_ADD_DEPENDENCY  )
+  
+    SEPARATE_ARGUMENTS( NARGS )
+    SET( COMPONENTS_LIBRARY_DEPS "${COMPONENTS_LIBRARY_DEPS};${NARGS}" )
+
+ENDMACRO( GLOBAL_ADD_DEPENDENCY  )
 
 #
 # Macro to check for optional sub-libraries, eg in the case where
@@ -81,30 +134,3 @@ MACRO( OPTIONAL_SUB_LIBRARY DESCRIPTION SUBDIRECTORY OUTPUT_LIBRARY LINK_LIBS OK
 
 ENDMACRO( OPTIONAL_SUB_LIBRARY DESCRIPTION DIRECTORY LIBNAME )
 
-#
-# Project-specific rules
-#
-INCLUDE( ${PROJ_SOURCE_DIR}/config/project/project_rules.cmake )
-
-
-#
-# Rule for generating .cfg files from .def files
-#
-MACRO( GENERATE_FROM_DEF DEF_FILE )
-
-  FIND_GENERATE_CFG( GENERATE_CFG_EXE )
-  STRING( REGEX REPLACE "\\.def" ".cfg" CFG_FILE ${DEF_FILE} )
-  ADD_CUSTOM_TARGET( 
-    ${CFG_FILE} ALL
-    ${GENERATE_CFG_EXE} ${CMAKE_CURRENT_SOURCE_DIR}/${DEF_FILE} ${CFG_FILE}
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${DEF_FILE} )
-  ADD_DEPENDENCIES( ${CFG_FILE} generatecfg )
-  INSTALL_FILES( /cfg FILES ${CFG_FILE} )
-
-ENDMACRO( GENERATE_FROM_DEF DEF_FILE )
-
-#
-# Install component definition files (.def files)
-#
-INSTALL_FILES( /cfg .+\\.cfg$ )
-INSTALL_FILES( /def .+\\.def$ )

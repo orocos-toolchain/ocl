@@ -21,14 +21,14 @@
 #ifndef __N_AXES_EFFECTOR_VEL_H__
 #define __N_AXES_EFFECTOR_VEL_H__
 
-#include <corelib/RTT.hpp>
+#include <rtt/RTT.hpp>
 
-#include <execution/GenericTaskContext.hpp>
-#include <execution/Ports.hpp>
+#include <rtt/GenericTaskContext.hpp>
+#include <rtt/Ports.hpp>
 
 namespace Orocos
 {
-  class nAxesEffectorVel : public ORO_Execution::GenericTaskContext
+  class nAxesEffectorVel : public RTT::GenericTaskContext
   {
   public:
     nAxesEffectorVel(std::string name,unsigned int num_axes);

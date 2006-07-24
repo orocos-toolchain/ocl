@@ -1,13 +1,13 @@
-#include "ConsoleReporting.hpp"
+#include <reporting/ConsoleReporting.hpp>
+#include <taskbrowser/TaskBrowser.hpp>
 
-#include <corelib/SlaveActivity.hpp>
-#include <corelib/PeriodicActivity.hpp>
-#include <execution/TaskBrowser.hpp>
-#include <execution/Ports.hpp>
+#include <rtt/SlaveActivity.hpp>
+#include <rtt/PeriodicActivity.hpp>
+#include <rtt/Ports.hpp>
+
 
 using namespace std;
 using namespace Orocos;
-using namespace RTT;
 
 class TestTaskContext
     : public GenericTaskContext
@@ -22,7 +22,7 @@ public:
           dwport("D2Port"),
           drport("D1Port")
     {
-        this->attributes()->addProperty( & hello );
+        this->properties()->addProperty( & hello );
         this->ports()->addPort( &drport );
         this->ports()->addPort( &dwport );
 
@@ -45,7 +45,7 @@ public:
           dwport("D1Port"),
           drport("D2Port")
     {
-        this->attributes()->addProperty( & hello );
+        this->properties()->addProperty( & hello );
         this->ports()->addPort( &drport );
         this->ports()->addPort( &dwport );
     }

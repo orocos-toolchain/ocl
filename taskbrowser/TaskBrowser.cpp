@@ -27,18 +27,18 @@
  
  
 
-#include <corelib/Logger.hpp>
-#include <corelib/MultiVector.hpp>
-#include <corelib/TypeStream.hpp>
+#include <rtt/Logger.hpp>
+#include <rtt/MultiVector.hpp>
+#include <rtt/TypeStream.hpp>
 #include "TaskBrowser.hpp"
 
-#include "execution/TryCommand.hpp"
-#include <execution/TemplateFactories.hpp>
-#include <execution/TaskContext.hpp>
-#include <execution/Parser.hpp>
-#include <execution/ProgramLoader.hpp>
-#include <execution/parse_exception.hpp>
-#include <execution/PeerParser.hpp>
+#include "rtt/TryCommand.hpp"
+#include <rtt/TemplateFactories.hpp>
+#include <rtt/TaskContext.hpp>
+#include <rtt/Parser.hpp>
+#include <rtt/ProgramLoader.hpp>
+#include <rtt/parse_exception.hpp>
+#include <rtt/PeerParser.hpp>
 
 #include <iostream>
 #include <sstream>
@@ -60,7 +60,7 @@
 namespace Orocos
 {
     using namespace RTT;
-    using namespace ORO_Execution::detail;
+    using namespace RTT::detail;
     std::vector<std::string> TaskBrowser::candidates;
     std::vector<std::string> TaskBrowser::completes;
     std::vector<std::string>::iterator TaskBrowser::complete_iter;
@@ -76,7 +76,7 @@ namespace Orocos
     TaskContext* TaskBrowser::context = 0;
 
     using boost::bind;
-    using namespace ORO_CoreLib;
+    using namespace RTT;
     using namespace std;
 
     string TaskBrowser::red("\e[m\e[1;31m");
@@ -302,8 +302,8 @@ namespace Orocos
                 completes.push_back( peerpath+*i );
         }
 
-        if (peer->attributes()->properties() != 0 ) {
-            peer->attributes()->properties()->list(comps);
+        if (peer->properties() != 0 ) {
+            peer->properties()->list(comps);
             for (std::vector<std::string>::iterator i = comps.begin(); i!= comps.end(); ++i ) {
                 if ( i->find( comp ) == 0 )
                     completes.push_back( peerpath+*i );
@@ -437,9 +437,9 @@ namespace Orocos
                 completes.push_back( peerpath + *i );
         }
         // all properties :
-        if (peer->attributes()->properties() != 0 ) {
+        if (peer->properties() != 0 ) {
             std::vector<std::string> props;
-            peer->attributes()->properties()->list(props);
+            peer->properties()->list(props);
             for (std::vector<std::string>::iterator i = props.begin(); i!= props.end(); ++i ) {
                 if ( i->find( _attribute ) == 0 && !_attribute.empty() )
                     completes.push_back( peerpath + *i );
@@ -815,7 +815,7 @@ namespace Orocos
         our_pos_iter_t parseend;
             
         PropertyParser pp();
-        pp.setPropertyBag( taskcontext.attributes()->properties() );
+        pp.setPropertyBag( taskcontext.properties() );
         try {
             parse( parsebegin, parseend, pp.locator(), SKIP_PARSER );
         }
@@ -1336,7 +1336,7 @@ namespace Orocos
         cout <<nl<<" Listing "<< green << peer->getName()<<coloroff<< " :"<<nl;
 
         std::vector<std::string> objlist = peer->attributes()->names();
-        PropertyBag* bag = peer->attributes()->properties();
+        PropertyBag* bag = peer->properties();
         cout <<nl<<" Attributes   : ";
         if ( !objlist.empty() || !bag->empty() ) {
             cout << nl;

@@ -19,7 +19,7 @@
 //  
 
 #include "CartesianEffectorVel.hpp"
-#include <corelib/Logger.hpp>
+#include <rtt/Logger.hpp>
 #include <assert.h>
 
 namespace Orocos

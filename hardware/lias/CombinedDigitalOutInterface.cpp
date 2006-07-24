@@ -25,14 +25,14 @@
 #include "CombinedDigitalOutInterface.hpp"
 #include <assert.h>
 
-using namespace ORO_DeviceInterface;
+using namespace RTT;
 
 
 
 
 std::vector<bool>  channels;
 
-CombinedDigitalOutInterface::CombinedDigitalOutInterface( const std::string& name, ORO_DeviceDriver::DigitalOutput* digitalout
+CombinedDigitalOutInterface::CombinedDigitalOutInterface( const std::string& name, RTT::DigitalOutput* digitalout
                                                         , unsigned int num_channels, combinetype type)
    : DigitalOutInterface(name), _channels(num_channels), _digitalout(digitalout), _combine(type)
 {}

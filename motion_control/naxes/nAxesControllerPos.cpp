@@ -20,7 +20,7 @@
 
 
 #include "nAxesControllerPos.hpp"
-#include <execution/TemplateFactories.hpp>
+#include <rtt/TemplateFactories.hpp>
 #include <assert.h>
 
 namespace Orocos
@@ -51,22 +51,22 @@ namespace Orocos
     this->ports()->addPort(&_velocity_out);
     
     //Adding Properties
-    this->attributes()->addProperty(&_controller_gain);
+    this->properties()->addProperty(&_controller_gain);
     
     //Adding Commands
     typedef nAxesControllerPos MyType;
-    TemplateCommandFactory<MyType>* _my_commandfactory = newCommandFactory( this );
-    _my_commandfactory->add( "measureOffset", command( &MyType::startMeasuringOffsets,
-						       &MyType::finishedMeasuringOffsets,
+
+    this->commands()->addCommand( command( "measureOffset", &MyType::startMeasuringOffsets,
+						       &MyType::finishedMeasuringOffsets, this),
 						       "calculate the velocity offset on the axes",
 						       "time_sleep", "time to wait before starting measurement",
-						       "num_samples", "number of samples to take"));
+						       "num_samples", "number of samples to take");
     commands()->registerObject("this",_my_commandfactory);
   
     //Adding Methods
-    TemplateMethodFactory<MyType>* _my_methodfactory = newMethodFactory( this );
-    _my_methodfactory->add( "getOffset", method( &MyType::getMeasurementOffsets,
-						 "Get offset measurements"));
+
+    this->methods()->addMethod( method( "getOffset", &MyType::getMeasurementOffsets, this),
+						 "Get offset measurements");
     methods()->registerObject("this",_my_methodfactory);
   
   }

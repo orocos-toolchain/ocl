@@ -20,7 +20,7 @@
 
 #include "nAxesControllerVel.hpp"
 
-#include <execution/TemplateFactories.hpp>
+#include <rtt/TemplateFactories.hpp>
 #include <assert.h>
 
 namespace Orocos
@@ -53,12 +53,12 @@ namespace Orocos
     this->ports()->addPort(&_velocity_out);
     
     //Adding Properties
-    this->attributes()->addProperty(&_controller_gain);
+    this->properties()->addProperty(&_controller_gain);
   
     //Adding Methods
-    TemplateMethodFactory<nAxesControllerVel>*  _my_methodfactory = newMethodFactory(this);
-    _my_methodfactory->add( "reset", method( &nAxesControllerVel::reset, "reset the controller"));
-    _my_methodfactory->add( "resetAxis", method( &nAxesControllerVel::reset, "reset the controller","axis","axis to reset"));  
+
+    this->methods()->addMethod( method( "reset", &nAxesControllerVel::reset, this), "reset the controller");
+    this->methods()->addMethod( method( "resetAxis", &nAxesControllerVel::reset, this), "reset the controller","axis","axis to reset");  
     methods()->registerObject("this",_my_methodfactory);
   
   }

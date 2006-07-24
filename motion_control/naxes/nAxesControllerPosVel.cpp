@@ -20,7 +20,7 @@
 
 
 #include "nAxesControllerPosVel.hpp"
-#include <corelib/Logger.hpp>
+#include <rtt/Logger.hpp>
 #include <assert.h>
 
 namespace Orocos
@@ -52,7 +52,7 @@ namespace Orocos
     this->ports()->addPort(&_velocity_out);
     
     //Adding properties
-    this->attributes()->addProperty(&_controller_gain);
+    this->properties()->addProperty(&_controller_gain);
   
   }
   

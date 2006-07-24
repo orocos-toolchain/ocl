@@ -30,10 +30,10 @@
 #define ORO_TASKBROWSER_HPP
  
 
-#include <corelib/RTT.hpp>
-#include <execution/GenericTaskContext.hpp>
-#include "execution/OperationInterface.hpp"
-#include "execution/DispatchInterface.hpp"
+#include <rtt/RTT.hpp>
+#include <rtt/GenericTaskContext.hpp>
+#include "rtt/OperationInterface.hpp"
+#include "rtt/DispatchInterface.hpp"
 #include <deque>
 #include <string>
 #include <sstream>

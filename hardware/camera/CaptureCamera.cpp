@@ -16,7 +16,7 @@
 //  
 
 #include "CaptureCamera.hpp"
-#include <execution/TemplateFactories.hpp>
+#include <rtt/TemplateFactories.hpp>
 #include <libdc1394/dc1394_control.h>
 
 namespace Orocos
@@ -40,7 +40,7 @@ namespace Orocos
      _update(false)
   {
     //    TemplateMethodFactory<CaptureCamera> _my_methodfactory = newMethodFactory( this );
-    //    _my_methodfactory->add("getImage",method(&CaptureCamera::getFrame,"Capturing new image"));
+    //    this->methods()->addMethod( method("getImage",&CaptureCamera::getFrame, this),"Capturing new image");
     //    methodFactory.registerObject("this",_my_methodfactory);
   
     this->ports()->addPort(&_image);
@@ -48,18 +48,18 @@ namespace Orocos
     _empty = cvCreateImage(cvSize(640,480),8,3);
     //Adding Properties
     //=================
-    this->attributes()->addProperty( &_capture_mode );
-    this->attributes()->addProperty( &_capture_shutter );
-    this->attributes()->addProperty( &_capture_gain );
-    this->attributes()->addProperty( &_capture_convert );
-    this->attributes()->addProperty( &_capture_fps );
-    this->attributes()->addProperty( &_show_time );
-    this->attributes()->addProperty( &_show_image );
+    this->properties()->addProperty( &_capture_mode );
+    this->properties()->addProperty( &_capture_shutter );
+    this->properties()->addProperty( &_capture_gain );
+    this->properties()->addProperty( &_capture_convert );
+    this->properties()->addProperty( &_capture_fps );
+    this->properties()->addProperty( &_show_time );
+    this->properties()->addProperty( &_show_image );
 
     //Adding command
     //==============
-    TemplateCommandFactory<CaptureCamera>* _com_fact = newCommandFactory(this);
-    _com_fact->add("updateImage",command(&CaptureCamera::updateImage,&CaptureCamera::updateImageFinished,"update image in port"));
+
+    this->commands()->addCommand( command("updateImage",&CaptureCamera::updateImage,&CaptureCamera::updateImageFinished, this),"update image in port");
     commands()->registerObject("this",_com_fact);
     
   }

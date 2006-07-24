@@ -1,9 +1,9 @@
 
 #include "FileReporting.hpp"
-#include "corelib/RTT.hpp"
-#include "corelib/Logger.hpp"
-#include "corelib/marshalling/TableMarshaller.hpp"
-#include "corelib/marshalling/TableHeaderMarshaller.hpp"
+#include "rtt/RTT.hpp"
+#include "rtt/Logger.hpp"
+#include "rtt/marsh/TableMarshaller.hpp"
+#include "rtt/marsh/TableHeaderMarshaller.hpp"
 
 namespace Orocos
 {
@@ -14,7 +14,7 @@ namespace Orocos
         : ReportingComponent( fr_name ),
           repfile("ReportFile","Location on disc to store the reports.", "results.txt")
     {
-        this->attributes()->addProperty( &repfile );
+        this->properties()->addProperty( &repfile );
     }
 
     bool FileReporting::startup()

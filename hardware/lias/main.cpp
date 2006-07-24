@@ -1,5 +1,5 @@
 //hardware interfaces
-#include <corelib/ZeroTimeThread.hpp>
+#include <rtt/ZeroTimeThread.hpp>
 #include "LiASnAxesVelocityController.hpp"
 
 //User interface
@@ -8,12 +8,12 @@
 //Reporting
 #include "../../reporting/FileReporting.hpp"
 
-#include <corelib/Activities.hpp>
-#include <execution/GenericTaskContext.hpp>
-#include <corelib/Logger.hpp>
-#include <os/main.h>
+#include <rtt/Activities.hpp>
+#include <rtt/GenericTaskContext.hpp>
+#include <rtt/Logger.hpp>
+#include <rtt/os/main.h>
 
-#include <execution/TemplateFactories.hpp>
+#include <rtt/TemplateFactories.hpp>
 #include <string>
 
 using namespace Orocos;
@@ -30,17 +30,16 @@ public:
     driveValue(_nrofaxes),
 	reference(_nrofaxes)
 	{
-  		TemplateMethodFactory<Supervisor>* cmeth = newMethodFactory( this );
-  		cmeth->add( "message",  method( &Supervisor::message,  "give a message to the user","msg","msg to display" ) );
-  		cmeth->add( "setDriveValue",  method( &Supervisor::setDriveValue,  
+
+  		this->methods()->addMethod( method( "message", &Supervisor::message, this),  "give a message to the user","msg","msg to display"  );
+  		this->methods()->addMethod( method( "setDriveValue", &Supervisor::setDriveValue, this),  
 					"sets the value of a driveValue port",
 					"axis","the driveValue port for this axis",
-					"value","the drive value in rad/s" ) );
-		cmeth->add( "getReference",  method( &Supervisor::getReference,
+					"value","the drive value in rad/s"  );
+		this->methods()->addMethod( method( "getReference", &Supervisor::getReference, this),
 					"gets the reference switch value from a reference port",
-					"axis","the reference port corresponding to this axis") );
+					"axis","the reference port corresponding to this axis" );
 
-  		this->methods()->registerObject("this", cmeth);
 		char buf[80];
 		for (int i=0;i<_nrofaxes;++i) {
 			sprintf(buf,"driveValue%d",i);
@@ -84,8 +83,8 @@ public:
 		}
    }
 
-	std::vector<ORO_Execution::WriteDataPort<double>*> driveValue;	
-	std::vector<ORO_Execution::ReadDataPort<bool>*>  reference;	
+	std::vector<RTT::WriteDataPort<double>*> driveValue;	
+	std::vector<RTT::ReadDataPort<bool>*>  reference;	
 };
 
 

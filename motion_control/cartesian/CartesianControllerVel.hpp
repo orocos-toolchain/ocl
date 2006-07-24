@@ -21,12 +21,12 @@
 #ifndef __CARTESIAN_VEL_CONTROLLER_H__
 #define __CARTESIAN_VEL_CONTROLLER_H__
 
-#include <corelib/RTT.hpp>
+#include <rtt/RTT.hpp>
 
-#include <execution/GenericTaskContext.hpp>
-#include <corelib/TimeService.hpp>
-#include <corelib/Properties.hpp>
-#include <execution/Ports.hpp>
+#include <rtt/GenericTaskContext.hpp>
+#include <rtt/TimeService.hpp>
+#include <rtt/Properties.hpp>
+#include <rtt/Ports.hpp>
 
 #include <geometry/GeometryToolkit.hpp>
 

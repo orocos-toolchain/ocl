@@ -15,11 +15,11 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 //  
 
-#include <corelib/RTT.hpp>
-#include <corelib/NonPreemptibleActivity.hpp>
+#include <rtt/RTT.hpp>
+#include <rtt/NonPreemptibleActivity.hpp>
 
 #include "LaserSensor.hpp"
-#include <os/main.h>
+#include <rtt/os/main.h>
 
 //User interface
 #include "../../taskbrowser/TaskBrowser.hpp"

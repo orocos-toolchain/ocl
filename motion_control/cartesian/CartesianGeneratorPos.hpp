@@ -21,13 +21,13 @@
 #ifndef __CARTESIAN_GENERATOR_POS_H__
 #define __CARTESIAN_GENERATOR_POS_H__
 
-#include <corelib/RTT.hpp>
+#include <rtt/RTT.hpp>
 
-#include <execution/GenericTaskContext.hpp>
-#include <corelib/Properties.hpp>
-#include <execution/Ports.hpp>
+#include <rtt/GenericTaskContext.hpp>
+#include <rtt/Properties.hpp>
+#include <rtt/Ports.hpp>
 #include <geometry/velocityprofile_trap.h>
-#include <corelib/TimeService.hpp>
+#include <rtt/TimeService.hpp>
 
 #include <geometry/GeometryToolkit.hpp>
 
@@ -61,8 +61,8 @@ namespace Orocos
     RTT::WriteDataPort< ORO_Geometry::Twist >  _velocity_desi;
   
     std::vector<ORO_Geometry::VelocityProfile_Trap*>     _motion_profile;
-    ORO_CoreLib::TimeService::ticks                      _time_begin;
-    ORO_CoreLib::TimeService::Seconds                    _time_passed;
+    RTT::TimeService::ticks                      _time_begin;
+    RTT::TimeService::Seconds                    _time_passed;
     double                                               _max_duration;
     
     bool                                                 _is_moving;

@@ -6,7 +6,7 @@
 //User interface
 #include "../../taskbrowser/TaskBrowser.hpp"
 
-#include <os/main.h>
+#include <rtt/os/main.h>
 
 using namespace Orocos;
 using namespace RTT;

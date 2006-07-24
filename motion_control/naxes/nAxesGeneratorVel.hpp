@@ -21,13 +21,13 @@
 #ifndef __N_AXES_GENERATOR_VEL_H__
 #define __N_AXES_GENERATOR_VEL_H__
 
-#include <corelib/RTT.hpp>
+#include <rtt/RTT.hpp>
 
-#include <execution/GenericTaskContext.hpp>
-#include <corelib/Properties.hpp>
-#include <execution/Ports.hpp>
+#include <rtt/GenericTaskContext.hpp>
+#include <rtt/Properties.hpp>
+#include <rtt/Ports.hpp>
 #include <geometry/velocityprofile_trap.h>
-#include <corelib/TimeService.hpp>
+#include <rtt/TimeService.hpp>
 
 namespace Orocos
 {

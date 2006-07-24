@@ -21,11 +21,11 @@
 #ifndef __CARTESIAN_POS_VEL_CONTROLLER_H__
 #define __CARTESIAN_POS_VEL_CONTROLLER_H__
 
-#include <corelib/RTT.hpp>
+#include <rtt/RTT.hpp>
 
-#include <execution/GenericTaskContext.hpp>
-#include <corelib/Properties.hpp>
-#include <execution/Ports.hpp>
+#include <rtt/GenericTaskContext.hpp>
+#include <rtt/Properties.hpp>
+#include <rtt/Ports.hpp>
 
 #include <geometry/GeometryToolkit.hpp>
 namespace Orocos

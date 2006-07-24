@@ -3,30 +3,30 @@
 
 
 #include <vector>
-#include <corelib/RTT.hpp>
+#include <rtt/RTT.hpp>
 
-#include <execution/GenericTaskContext.hpp>
-#include <execution/Ports.hpp>
-#include <corelib/Event.hpp>
-#include <corelib/Properties.hpp>
+#include <rtt/GenericTaskContext.hpp>
+#include <rtt/Ports.hpp>
+#include <rtt/Event.hpp>
+#include <rtt/Properties.hpp>
 
 #include <pkgconf/system.h> 
 
 #if (defined (OROPKG_OS_LXRT) && defined (OROPKG_DEVICE_DRIVERS_COMEDI)) && defined (OROPKG_DEVICE_DRIVERS_APCI)
-#include <device_drivers/SwitchDigitalInapci1032.hpp>
-#include <device_drivers/RelayCardapci2200.hpp>
-#include <device_drivers/EncoderSSIapci1710.hpp>
-#include <comedi/ComediDevice.hpp>
-#include <comedi/ComediSubDeviceAOut.hpp>
+#include <rtt/dev/SwitchDigitalInapci1032.hpp>
+#include <rtt/dev/RelayCardapci2200.hpp>
+#include <rtt/dev/EncoderSSIapci1710.hpp>
+#include <rtt/dev/ComediDevice.hpp>
+#include <rtt/dev/ComediSubDeviceAOut.hpp>
 
-#include <device_drivers/AbsoluteEncoderSensor.hpp>
-#include <device_drivers/AnalogOutput.hpp>
-#include <device_drivers/DigitalOutput.hpp>
-#include <device_drivers/AnalogDrive.hpp>
-#include <device_drivers/Axis.hpp>
+#include <rtt/dev/AbsoluteEncoderSensor.hpp>
+#include <rtt/dev/AnalogOutput.hpp>
+#include <rtt/dev/DigitalOutput.hpp>
+#include <rtt/dev/AnalogDrive.hpp>
+#include <rtt/dev/Axis.hpp>
 #endif
-#include <device_drivers/SimulationAxis.hpp>
-#include <device_interface/AxisInterface.hpp>
+#include <rtt/dev/SimulationAxis.hpp>
+#include <rtt/dev/AxisInterface.hpp>
 
 namespace Orocos
 {
@@ -124,7 +124,7 @@ namespace Orocos
     //std::vector<RTT::WriteDataPort<bool>*>    _references;
     std::vector<RTT::WriteDataPort<double>*>  _positionValue;
     //
-    //std::vector<ORO_Execution::WriteDataPort<bool>*>    _homed;
+    //std::vector<RTT::WriteDataPort<bool>*>    _homed;
     
   private:
     
@@ -243,7 +243,7 @@ namespace Orocos
     // Members implementing the interface to the hardware
     //
 #if  (defined (OROPKG_OS_LXRT) && defined (OROPKG_DEVICE_DRIVERS_COMEDI))&& defined (OROPKG_DEVICE_DRIVERS_APCI)
-    std::vector<ORO_DeviceDriver::Axis*>  _axes_hardware;
+    std::vector<RTT::Axis*>  _axes_hardware;
 
     RTT::ComediDevice*                    _comediDev;
     RTT::ComediSubDeviceAOut*             _comediSubdevAOut;

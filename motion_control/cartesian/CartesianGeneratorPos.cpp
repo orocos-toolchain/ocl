@@ -19,7 +19,7 @@
 //  
 
 #include "CartesianGeneratorPos.hpp"
-#include <execution/TemplateFactories.hpp>
+#include <rtt/TemplateFactories.hpp>
 #include <assert.h>
 
 namespace Orocos
@@ -48,21 +48,21 @@ namespace Orocos
     this->ports()->addPort(&_velocity_desi);
     
     //Adding Properties
-    this->attributes()->addProperty(&_maximum_velocity);
-    this->attributes()->addProperty(&_maximum_acceleration);
+    this->properties()->addProperty(&_maximum_velocity);
+    this->properties()->addProperty(&_maximum_acceleration);
   
     //Adding Commands
-    TemplateCommandFactory<CartesianGeneratorPos>* _my_commandfactory = newCommandFactory( this );
-    _my_commandfactory->add( "moveTo", command( &CartesianGeneratorPos::moveTo,
-  					      &CartesianGeneratorPos::moveFinished,
+
+    this->commands()->addCommand( command( "moveTo", &CartesianGeneratorPos::moveTo,
+  					      &CartesianGeneratorPos::moveFinished, this),
   					      "Set the position setpoint",
   					      "setpoint", "position setpoint for end effector",
-  					      "time", "minimum time to execute trajectory") );
+  					      "time", "minimum time to execute trajectory" );
     commands()->registerObject("this",_my_commandfactory);
     
     //Adding Methods
-    TemplateMethodFactory<CartesianGeneratorPos>*  _my_methodfactory = newMethodFactory( this );
-    _my_methodfactory->add( "reset", method( &CartesianGeneratorPos::reset, "Reset generator" ));  
+
+    this->methods()->addMethod( method( "reset", &CartesianGeneratorPos::reset, this), "Reset generator" );  
     methods()->registerObject("this",_my_methodfactory);
     
     // Instantiate Motion Profiles

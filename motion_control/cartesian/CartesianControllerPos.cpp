@@ -48,7 +48,7 @@ namespace Orocos
     this->ports()->addPort(&_velocity_out);
     
     //Adding Properties
-    this->attributes()->addProperty(&_controller_gain);
+    this->properties()->addProperty(&_controller_gain);
   }
     
   CartesianControllerPos::~CartesianControllerPos(){};

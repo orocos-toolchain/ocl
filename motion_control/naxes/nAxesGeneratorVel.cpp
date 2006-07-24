@@ -18,7 +18,7 @@
 //  
 
 #include "nAxesGeneratorVel.hpp"
-#include <execution/TemplateFactories.hpp>
+#include <rtt/TemplateFactories.hpp>
 #include <assert.h>
 
 namespace Orocos
@@ -47,46 +47,46 @@ namespace Orocos
     //Creating TaskContext
     
     //Adding Properties
-    this->attributes()->addProperty(&_max_acc);
-    this->attributes()->addProperty(&_max_jerk);
+    this->properties()->addProperty(&_max_acc);
+    this->properties()->addProperty(&_max_jerk);
   
     //Adding Ports
     this->ports()->addPort(&_velocity_desi);
     
     //Creating commands
     typedef nAxesGeneratorVel MyType;
-    TemplateCommandFactory<MyType>* _my_commandfactory = newCommandFactory( this );
-    _my_commandfactory->add( "applyVelocities", command( &MyType::applyVelocities,
-							 &MyType::velocitiesFinished,
+
+    this->commands()->addCommand( command( "applyVelocities", &MyType::applyVelocities,
+							 &MyType::velocitiesFinished, this),
 							 "Set the velocity",
 							 "velocity", "joint velocity for all axes",
-							 "duration", "duration of movement") );
-    _my_commandfactory->add( "applyVelocity", command( &MyType::applyVelocity,
-						       &MyType::velocityFinished,
+							 "duration", "duration of movement" );
+    this->commands()->addCommand( command( "applyVelocity", &MyType::applyVelocity,
+						       &MyType::velocityFinished, this),
 						       "Set the velocity for one axis",
 						       "axis", "selected axis",
 						       "velocity", "joint velocity for axis",
-						       "duration", "duration of movement") );
-    _my_commandfactory->add( "gotoVelocities", command( &MyType::gotoVelocities,
-							&MyType::velocitiesFinished,
+						       "duration", "duration of movement" );
+    this->commands()->addCommand( command( "gotoVelocities", &MyType::gotoVelocities,
+							&MyType::velocitiesFinished, this),
 							"Set the velocities",
 							"velocities", "joint velocities for all axes",
-							"duration", "duration of movement") );
-    _my_commandfactory->add( "gotoVelocity", command( &MyType::gotoVelocity,
-						      &MyType::velocityFinished,
+							"duration", "duration of movement" );
+    this->commands()->addCommand( command( "gotoVelocity", &MyType::gotoVelocity,
+						      &MyType::velocityFinished, this),
 						      "Set the velocity for one axis",
 						      "axis", "selected axis",
 						      "velocity", "joint velocity for axis",
-						      "duration", "duration of movement") );
+						      "duration", "duration of movement" );
     commands()->registerObject("this",_my_commandfactory);
   
     //Creating Methods
-    TemplateMethodFactory<MyType>* _my_methodfactory = newMethodFactory( this );
-    _my_methodfactory->add( "setInitVelocity", method( &MyType::setInitVelocity, "set initial velocity", 
+
+    this->methods()->addMethod( method( "setInitVelocity", &MyType::setInitVelocity, this), "set initial velocity", 
 						       "axis", "axis where to set velocity",
-						       "velocity", "velocity to set" ));
-    _my_methodfactory->add( "setInitVelocities", method( &MyType::setInitVelocities, "set initial velocity", 
-							 "velocities", "velocities to set" ));
+						       "velocity", "velocity to set" );
+    this->methods()->addMethod( method( "setInitVelocities", &MyType::setInitVelocities, this), "set initial velocity", 
+							 "velocities", "velocities to set" );
     methods()->registerObject("this",_my_methodfactory);
     
     // Instantiate Motion Profiles

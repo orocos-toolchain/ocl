@@ -27,21 +27,21 @@
 
 #include "LiASnAxesVelocityController.hpp"
 
-#include <execution/GenericTaskContext.hpp>
-#include <corelib/NonPreemptibleActivity.hpp>
-#include <execution/TemplateFactories.hpp>
-#include <execution/BufferPort.hpp>
-#include <corelib/Event.hpp>
-#include <corelib/Logger.hpp>
-#include <corelib/Attribute.hpp>
-#include <execution/DataPort.hpp>
-#include <device_drivers/IncrementalEncoderSensor.hpp>
-#include <device_drivers/AnalogOutput.hpp>
-#include <device_drivers/DigitalOutput.hpp>
-#include <device_drivers/DigitalInput.hpp>
-#include <device_drivers/AnalogDrive.hpp>
-#include <device_drivers/Axis.hpp>
-#include <device_interface/AxisInterface.hpp>
+#include <rtt/GenericTaskContext.hpp>
+#include <rtt/NonPreemptibleActivity.hpp>
+#include <rtt/TemplateFactories.hpp>
+#include <rtt/BufferPort.hpp>
+#include <rtt/Event.hpp>
+#include <rtt/Logger.hpp>
+#include <rtt/Attribute.hpp>
+#include <rtt/DataPort.hpp>
+#include <rtt/dev/IncrementalEncoderSensor.hpp>
+#include <rtt/dev/AnalogOutput.hpp>
+#include <rtt/dev/DigitalOutput.hpp>
+#include <rtt/dev/DigitalInput.hpp>
+#include <rtt/dev/AnalogDrive.hpp>
+#include <rtt/dev/Axis.hpp>
+#include <rtt/dev/AxisInterface.hpp>
 
 
 #if defined (OROPKG_OS_LXRT)
@@ -56,7 +56,7 @@
 
 #else
 
-#include <device_drivers/SimulationAxis.hpp>
+#include <rtt/dev/SimulationAxis.hpp>
 
 #endif
 namespace Orocos {
@@ -111,16 +111,16 @@ LiASnAxesVelocityController::LiASnAxesVelocityController(const std::string& name
   /**
    * Adding properties
    */
-  attributes()->addProperty( &driveLimits );
-  attributes()->addProperty( &lowerPositionLimits );
-  attributes()->addProperty( &upperPositionLimits  );
-  attributes()->addProperty( &initialPosition  );
-  attributes()->addProperty( &signAxes  );
-  attributes()->addProperty( &offset  );
-  attributes()->addProperty( &servoGain  );
-  attributes()->addProperty( &servoIntegrationFactor  );
-  attributes()->addProperty( &servoFFScale  );
-  attributes()->addProperty( &servoDerivTime  );
+  properties()->addProperty( &driveLimits );
+  properties()->addProperty( &lowerPositionLimits );
+  properties()->addProperty( &upperPositionLimits  );
+  properties()->addProperty( &initialPosition  );
+  properties()->addProperty( &signAxes  );
+  properties()->addProperty( &offset  );
+  properties()->addProperty( &servoGain  );
+  properties()->addProperty( &servoIntegrationFactor  );
+  properties()->addProperty( &servoFFScale  );
+  properties()->addProperty( &servoDerivTime  );
   attributes()->addConstant( "NUM_AXES", &_num_axes);
  
   if (!readProperties(propertyfilename)) {
@@ -172,7 +172,7 @@ LiASnAxesVelocityController::LiASnAxesVelocityController(const std::string& name
         _reference[i] = new DigitalInput( _IP_OptoInput_DIn, i + 1 ); // Bit 1, 2, 3, 4, 5, and 6. 
         
         
-        _axes[i] = new ORO_DeviceDriver::Axis( _drive[i] );
+        _axes[i] = new RTT::Axis( _drive[i] );
         _axes[i]->limitDrive( jointspeedlimits[i] );
         //_axes[i]->setLimitDriveEvent( maximumDrive );  \\TODO I prefere to handle this myself.
         _axes[i]->setSensor( "Position", _encoder[i] );
@@ -200,7 +200,7 @@ LiASnAxesVelocityController::LiASnAxesVelocityController(const std::string& name
   
     for (unsigned int i = 0; i <NUM_AXES; i++) {
 	  _homed[i] = true;
-      _axes[i] = new ORO_DeviceDriver::SimulationAxis(
+      _axes[i] = new RTT::SimulationAxis(
 					0.0,
 					lowerPositionLimits.value()[i],
 					upperPositionLimits.value()[i]);
@@ -218,28 +218,22 @@ LiASnAxesVelocityController::LiASnAxesVelocityController(const std::string& name
    *  Command Interface
    */
   typedef LiASnAxesVelocityController MyType;
-  TemplateCommandFactory<MyType>* cfact = newCommandFactory( this );
-  cfact->add( "startAxis",         command( &MyType::startAxis,         &MyType::startAxisCompleted, "start axis, initializes drive value to zero and starts updating the drive-value with the drive-port (only possible if axis is unlocked)","axis","axis to start" ) );
-  cfact->add( "stopAxis",          command( &MyType::stopAxis,          &MyType::stopAxisCompleted, "stop axis, sets drive value to zero and disables the update of the drive-port, (only possible if axis is started)","axis","axis to stop" ) );
-  cfact->add( "lockAxis",          command( &MyType::lockAxis,          &MyType::lockAxisCompleted, "lock axis, enables the brakes (only possible if axis is stopped)","axis","axis to lock" ) );
-  cfact->add( "unlockAxis",        command( &MyType::unlockAxis,        &MyType::unlockAxisCompleted, "unlock axis, disables the brakes and enables the drive (only possible if axis is locked)","axis","axis to unlock" ) );
-  cfact->add( "startAllAxes",      command( &MyType::startAllAxes,      &MyType::startAllAxesCompleted, "start all axes" ) );
-  cfact->add( "stopAllAxes",       command( &MyType::stopAllAxes,       &MyType::stopAllAxesCompleted, "stops all axes" ) );
-  cfact->add( "lockAllAxes",       command( &MyType::lockAllAxes,       &MyType::lockAllAxesCompleted, "locks all axes" ) );
-  cfact->add( "unlockAllAxes",     command( &MyType::unlockAllAxes,     &MyType::unlockAllAxesCompleted, "unlock all axes" ) );
-  cfact->add( "prepareForUse",     command( &MyType::prepareForUse,     &MyType::prepareForUseCompleted, "prepares the robot for use" ) );
-  cfact->add( "prepareForShutdown",command( &MyType::prepareForShutdown,&MyType::prepareForShutdownCompleted, "prepares the robot for shutdown" ) );
-  cfact->add( "addDriveOffset"    ,command( &MyType::addDriveOffset,    &MyType::addDriveOffsetCompleted,  "adds an offset to the drive value of axis","axis","axis to add offset to","offset","offset value in rad/s") );
-  cfact->add( "initPosition"     , command( &MyType::initPosition,      &MyType::initPositionCompleted,  "changes position value to the initial position","axis","axis to initialize") );
-  cfact->add( "changeServo"     ,command( &MyType::changeServo,         &MyType::changeServoCompleted,  "Apply the changed properties of the servo loop") );
-  this->commands()->registerObject("this", cfact);
-  
-  TemplateMethodFactory<MyType>* cmeth = newMethodFactory( this );
-  cmeth->add( "isDriven",         method( &MyType::isDriven,  "checks wether axis is driven","axis","axis to check" ) );
 
+  this->commands()->addCommand( command( "startAxis", &MyType::startAxis,         &MyType::startAxisCompleted, this), "start axis, initializes drive value to zero and starts updating the drive-value with the drive-port (only possible if axis is unlocked","axis","axis to start" ) );
+  this->commands()->addCommand( command( "stopAxis", &MyType::stopAxis,          &MyType::stopAxisCompleted, this), "stop axis, sets drive value to zero and disables the update of the drive-port, (only possible if axis is started","axis","axis to stop" ) );
+  this->commands()->addCommand( command( "lockAxis", &MyType::lockAxis,          &MyType::lockAxisCompleted, this), "lock axis, enables the brakes (only possible if axis is stopped","axis","axis to lock" ) );
+  this->commands()->addCommand( command( "unlockAxis", &MyType::unlockAxis,        &MyType::unlockAxisCompleted, this), "unlock axis, disables the brakes and enables the drive (only possible if axis is locked","axis","axis to unlock" ) );
+  this->commands()->addCommand( command( "startAllAxes", &MyType::startAllAxes,      &MyType::startAllAxesCompleted, this), "start all axes"  );
+  this->commands()->addCommand( command( "stopAllAxes", &MyType::stopAllAxes,       &MyType::stopAllAxesCompleted, this), "stops all axes"  );
+  this->commands()->addCommand( command( "lockAllAxes", &MyType::lockAllAxes,       &MyType::lockAllAxesCompleted, this), "locks all axes"  );
+  this->commands()->addCommand( command( "unlockAllAxes", &MyType::unlockAllAxes,     &MyType::unlockAllAxesCompleted, this), "unlock all axes"  );
+  this->commands()->addCommand( command( "prepareForUse", &MyType::prepareForUse,     &MyType::prepareForUseCompleted, this), "prepares the robot for use"  );
+  this->commands()->addCommand( command( "prepareForShutdown", &MyType::prepareForShutdown,&MyType::prepareForShutdownCompleted, this), "prepares the robot for shutdown"  );
+  this->commands()->addCommand( command( "addDriveOffset"    , &MyType::addDriveOffset,    &MyType::addDriveOffsetCompleted, this),  "adds an offset to the drive value of axis","axis","axis to add offset to","offset","offset value in rad/s" );
+  this->commands()->addCommand( command( "initPosition"     , &MyType::initPosition,      &MyType::initPositionCompleted, this),  "changes position value to the initial position","axis","axis to initialize" );
+  this->commands()->addCommand( command( "changeServo"     , &MyType::changeServo,         &MyType::changeServoCompleted, this),  "Apply the changed properties of the servo loop" );
 
-  this->methods()->registerObject("this", cmeth);
-
+  this->methods()->addMethod( method( "isDriven", &MyType::isDriven, this),  "checks wether axis is driven","axis","axis to check"  );
 
   /**
    * Creating and adding the data-ports

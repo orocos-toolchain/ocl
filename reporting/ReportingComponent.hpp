@@ -29,17 +29,19 @@
 #define ORO_REPORTING_COMPONENT_HPP
 
 
-#include <os/main.h>
+#include <rtt/os/main.h>
 #include <boost/tuple/tuple.hpp>
 
-#include <corelib/Property.hpp>
-#include <corelib/PropertyBag.hpp>
-#include <corelib/Marshaller.hpp>
-#include <corelib/TimeService.hpp>
-#include <corelib/CommandInterface.hpp>
-#include <execution/GenericTaskContext.hpp>
+#include <rtt/Property.hpp>
+#include <rtt/PropertyBag.hpp>
+#include <rtt/Marshaller.hpp>
+#include <rtt/TimeService.hpp>
+#include <rtt/CommandInterface.hpp>
+#include <rtt/GenericTaskContext.hpp>
+#include <rtt/Method.hpp>
+#include <rtt/Command.hpp>
 
-#include <corelib/RTT.hpp>
+#include <rtt/RTT.hpp>
 
 namespace Orocos
 {
@@ -165,7 +167,7 @@ namespace Orocos
 
         bool reportDataSource(std::string tag, std::string type, RTT::DataSourceBase::shared_ptr orig);
 
-        bool unreportData(std::string tag);
+        bool unreportDataSource(std::string tag);
 
         virtual bool startup();
 

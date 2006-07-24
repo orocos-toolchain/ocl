@@ -16,7 +16,7 @@
 //  
 
 #include "KryptonK600Sensor.hpp"
-#include <corelib/Logger.hpp>
+#include <rtt/Logger.hpp>
 
 namespace Orocos
 {

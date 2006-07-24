@@ -1,17 +1,17 @@
-//#include <execution/GenericTaskContext.hpp>
-#include <corelib/NonPreemptibleActivity.hpp>
-//#include <corelib/Attribute.hpp>
-//#include <corelib/Event.hpp>
-//#include <execution/TemplateFactories.hpp>
-//#include <execution/TaskBrowser.hpp>
-//#include <execution/MethodC.hpp>
-//#include <execution/CommandC.hpp>
-//#include <execution/EventC.hpp>
-//#include <execution/ConnectionC.hpp>
-#include <execution/Ports.hpp>
+//#include <rtt/GenericTaskContext.hpp>
+#include <rtt/NonPreemptibleActivity.hpp>
+//#include <rtt/Attribute.hpp>
+//#include <rtt/Event.hpp>
+//#include <rtt/TemplateFactories.hpp>
+//#include <rtt/TaskBrowser.hpp>
+//#include <rtt/MethodC.hpp>
+//#include <rtt/CommandC.hpp>
+//#include <rtt/EventC.hpp>
+//#include <rtt/ConnectionC.hpp>
+#include <rtt/Ports.hpp>
 
 #include "WrenchSensor.hpp"
-#include <os/main.h>
+#include <rtt/os/main.h>
 
 //User interface
 #include "../../taskbrowser/TaskBrowser.hpp"

@@ -21,16 +21,16 @@
 #ifndef __N_AXES_CONTROLLER_VEL_H__
 #define __N_AXES_CONTROLLER_VEL_H__
 
-#include <corelib/RTT.hpp>
-#include <execution/GenericTaskContext.hpp>
-#include <corelib/Properties.hpp>
-#include <corelib/TimeService.hpp>
-#include <execution/Ports.hpp>
+#include <rtt/RTT.hpp>
+#include <rtt/GenericTaskContext.hpp>
+#include <rtt/Properties.hpp>
+#include <rtt/TimeService.hpp>
+#include <rtt/Ports.hpp>
 
 namespace Orocos
 {
   
-  class nAxesControllerVel : public ORO_Execution::GenericTaskContext
+  class nAxesControllerVel : public RTT::GenericTaskContext
   {
   public:
     nAxesControllerVel(std::string name,unsigned int num_axes, 

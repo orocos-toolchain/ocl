@@ -19,7 +19,7 @@
 //  
 
 #include "nAxesGeneratorPos.hpp"
-#include <execution/TemplateFactories.hpp>
+#include <rtt/TemplateFactories.hpp>
 #include <assert.h>
 
 namespace Orocos
@@ -46,8 +46,8 @@ namespace Orocos
     //Creating TaskContext
 
     //Adding properties
-    this->attributes()->addProperty(&_maximum_velocity);
-    this->attributes()->addProperty(&_maximum_acceleration);
+    this->properties()->addProperty(&_maximum_velocity);
+    this->properties()->addProperty(&_maximum_acceleration);
     
     //Adding ports
     this->ports()->addPort(&_position_meas);
@@ -56,15 +56,15 @@ namespace Orocos
     
     //Adding Commands
     typedef nAxesGeneratorPos MyType;
-    TemplateCommandFactory<MyType>* _my_commandfactory = newCommandFactory( this );
-    _my_commandfactory->add( "moveTo", command(&MyType::moveTo,&MyType::moveFinished,"Set the position setpoint",
+
+    this->commands()->addCommand( command( "moveTo",&MyType::moveTo,&MyType::moveFinished, this),"Set the position setpoint",
 					       "setpoint", "joint setpoint for all axes",
-					       "time", "minimum time to complete trajectory") );
+					       "time", "minimum time to complete trajectory" );
     commands()->registerObject("this",_my_commandfactory);
 
     //Adding Methods
-    TemplateMethodFactory<MyType>*  _my_methodfactory = newMethodFactory( this );
-    _my_methodfactory->add( "reset", method( &MyType::reset, "Reset generator" ));  
+
+    this->methods()->addMethod( method( "reset", &MyType::reset, this), "Reset generator" );  
     methods()->registerObject("this",_my_methodfactory);
   
     // Instantiate Motion Profiles

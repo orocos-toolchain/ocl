@@ -2,13 +2,13 @@
 #define IP_DIGITAL_24_DOUTINTERFACE
 
 
-#include <device_interface/DigitalOutInterface.hpp>
+#include <rtt/dev/DigitalOutInterface.hpp>
 
 
-class IP_Digital_24_DOutInterface : public ORO_DeviceInterface::DigitalOutInterface
+class IP_Digital_24_DOutInterface : public RTT::DigitalOutInterface
 {
 public:
-    IP_Digital_24_DOutInterface(const std::string& name) : ORO_DeviceInterface::DigitalOutInterface(name) {};
+    IP_Digital_24_DOutInterface(const std::string& name) : RTT::DigitalOutInterface(name) {};
     IP_Digital_24_DOutInterface() {};
     virtual ~IP_Digital_24_DOutInterface() {};
 

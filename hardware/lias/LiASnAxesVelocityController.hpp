@@ -1,38 +1,38 @@
 #ifndef LIAS_NAXES_VELOCITY_CONTROLLER_HPP
 #define LIAS_NAXES_VELOCITY_CONTROLLER_HPP
 #include <vector>
-#include <corelib/RTT.hpp>
+#include <rtt/RTT.hpp>
 
-#include <execution/GenericTaskContext.hpp>
-#include <execution/Ports.hpp>
-#include <corelib/Event.hpp>
-#include <corelib/Properties.hpp>
+#include <rtt/GenericTaskContext.hpp>
+#include <rtt/Ports.hpp>
+#include <rtt/Event.hpp>
+#include <rtt/Properties.hpp>
 
 
 #include <pkgconf/system.h> 
 
 #include "IP_Encoder_6_EncInterface.hpp"
-#include <device_drivers/SimulationAxis.hpp> 
+#include <rtt/dev/SimulationAxis.hpp> 
 
 
 #if defined (OROPKG_OS_LXRT)
 
     #include "CombinedDigitalOutInterface.hpp"
 
-    #include <device_drivers/IncrementalEncoderSensor.hpp>
-    #include <device_drivers/AnalogOutput.hpp>
-    #include <device_drivers/DigitalOutput.hpp>
-    #include <device_drivers/DigitalInput.hpp>
-    #include <device_drivers/AnalogDrive.hpp>
-    #include <device_drivers/Axis.hpp>
-    #include <device_interface/AxisInterface.hpp>
+    #include <rtt/dev/IncrementalEncoderSensor.hpp>
+    #include <rtt/dev/AnalogOutput.hpp>
+    #include <rtt/dev/DigitalOutput.hpp>
+    #include <rtt/dev/DigitalInput.hpp>
+    #include <rtt/dev/AnalogDrive.hpp>
+    #include <rtt/dev/Axis.hpp>
+    #include <rtt/dev/AxisInterface.hpp>
 #endif
 
 #include "LiASConstants.hpp"
 
 namespace Orocos {
 
-class LiASnAxesVelocityController : public ORO_Execution::GenericTaskContext
+class LiASnAxesVelocityController : public RTT::GenericTaskContext
 {
 public:
    LiASnAxesVelocityController(const std::string& name,const std::string& propertyfilename="cpf/lias.cpf");
@@ -114,11 +114,11 @@ protected:
   virtual bool isDriven(int axis);
 
 private:
-  std::vector<ORO_Execution::ReadDataPort<double>*>   driveValue;
+  std::vector<RTT::ReadDataPort<double>*>   driveValue;
 
-  std::vector<ORO_Execution::WriteDataPort<bool>*>    reference;
-  std::vector<ORO_Execution::WriteDataPort<double>*>  positionValue;
-  std::vector<ORO_Execution::WriteDataPort<double>*>  output;
+  std::vector<RTT::WriteDataPort<bool>*>    reference;
+  std::vector<RTT::WriteDataPort<double>*>  positionValue;
+  std::vector<RTT::WriteDataPort<double>*>  output;
 
 private:  
   /**
@@ -270,30 +270,30 @@ private:
   // Members implementing the interface to the hardware
   //
   #if !defined (OROPKG_OS_LXRT)
-     std::vector<ORO_DeviceDriver::SimulationAxis*>      _axes;
-     std::vector<ORO_DeviceInterface::AxisInterface*>    _axesInterface;
+     std::vector<RTT::SimulationAxis*>      _axes;
+     std::vector<RTT::AxisInterface*>    _axesInterface;
   #else
-    std::vector<ORO_DeviceDriver::Axis*>                _axes;
+    std::vector<RTT::Axis*>                _axes;
 
-    std::vector<ORO_DeviceInterface::AxisInterface*>    _axesInterface;
+    std::vector<RTT::AxisInterface*>    _axesInterface;
   
-    ORO_DeviceInterface::DigitalOutInterface*               _IP_Digital_24_DOut;
+    RTT::DigitalOutInterface*               _IP_Digital_24_DOut;
     IP_Encoder_6_Task*                                      _IP_Encoder_6_task;
-    ORO_DeviceInterface::AnalogOutInterface<unsigned int>*  _IP_FastDac_AOut;
-    ORO_DeviceInterface::DigitalInInterface*                _IP_OptoInput_DIn;
+    RTT::AnalogOutInterface<unsigned int>*  _IP_FastDac_AOut;
+    RTT::DigitalInInterface*                _IP_OptoInput_DIn;
   
-    ORO_DeviceDriver::DigitalOutput*                    _enable;
-    ORO_DeviceDriver::DigitalOutput*                    _combined_enable[LiAS_NUM_AXIS];
-    ORO_DeviceInterface::CombinedDigitalOutInterface*   _combined_enable_DOutInterface;
-    ORO_DeviceDriver::DigitalOutput*                    _brake;
-    ORO_DeviceDriver::DigitalOutput*                    _combined_brake[2];
-    ORO_DeviceInterface::CombinedDigitalOutInterface*   _combined_brake_DOutInterface;
+    RTT::DigitalOutput*                    _enable;
+    RTT::DigitalOutput*                    _combined_enable[LiAS_NUM_AXIS];
+    RTT::CombinedDigitalOutInterface*   _combined_enable_DOutInterface;
+    RTT::DigitalOutput*                    _brake;
+    RTT::DigitalOutput*                    _combined_brake[2];
+    RTT::CombinedDigitalOutInterface*   _combined_brake_DOutInterface;
 
-    ORO_DeviceInterface::EncoderInterface*              _encoderInterface[LiAS_NUM_AXIS];
-    ORO_DeviceDriver::IncrementalEncoderSensor*         _encoder[LiAS_NUM_AXIS];
-    ORO_DeviceDriver::AnalogOutput<unsigned int>*       _vref[LiAS_NUM_AXIS];
-    ORO_DeviceDriver::AnalogDrive*                      _drive[LiAS_NUM_AXIS];
-    ORO_DeviceDriver::DigitalInput*                     _reference[LiAS_NUM_AXIS];  
+    RTT::EncoderInterface*              _encoderInterface[LiAS_NUM_AXIS];
+    RTT::IncrementalEncoderSensor*         _encoder[LiAS_NUM_AXIS];
+    RTT::AnalogOutput<unsigned int>*       _vref[LiAS_NUM_AXIS];
+    RTT::AnalogDrive*                      _drive[LiAS_NUM_AXIS];
+    RTT::DigitalInput*                     _reference[LiAS_NUM_AXIS];  
   #endif
   
   bool _activate_axis2, _activate_axis3, _deactivate_axis2, _deactivate_axis3;

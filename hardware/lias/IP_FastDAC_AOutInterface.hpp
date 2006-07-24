@@ -3,10 +3,10 @@
 
 
 #include "drivers/LiAS_lxrt_user.h"
-#include <device_interface/AnalogOutInterface.hpp>
+#include <rtt/dev/AnalogOutInterface.hpp>
 #include <iostream>
 
-class IP_FastDAC_AOutInterface : public ORO_DeviceInterface::AnalogOutInterface<unsigned int>
+class IP_FastDAC_AOutInterface : public RTT::AnalogOutInterface<unsigned int>
 {
 public:
     IP_FastDAC_AOutInterface(const std::string& name);

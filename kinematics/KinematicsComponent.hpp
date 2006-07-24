@@ -30,12 +30,12 @@
 #define ORO_CONTROL_KERNEL_KINEMATIC_PROCESS_HPP
 
 
-#include <execution/GenericTaskContext.hpp>
-#include <execution/Ports.hpp>
+#include <rtt/GenericTaskContext.hpp>
+#include <rtt/Ports.hpp>
 #include <kindyn/KinematicsComponent.hpp>
 #include <kindyn/KinematicsFactory.hpp>
-#include <corelib/PropertyComposition.hpp>
-#include <corelib/RTT.hpp>
+#include <rtt/PropertyComposition.hpp>
+#include <rtt/RTT.hpp>
 
 namespace Orocos
 {
@@ -109,7 +109,7 @@ namespace Orocos
 
         void update();
 
-        ORO_Execution::MethodFactoryInterface* createMethodFactory();
+        RTT::MethodFactoryInterface* createMethodFactory();
     };
 
 }

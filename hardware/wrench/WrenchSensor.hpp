@@ -1,11 +1,11 @@
 #ifndef WRENCH_SENSOR_H
 #define WRENCH_SENSOR_H
 
-#include <execution/GenericTaskContext.hpp>
-#include <corelib/Attribute.hpp>
-#include <corelib/Event.hpp>
-#include <execution/TemplateFactories.hpp>
-#include <execution/Ports.hpp>
+#include <rtt/GenericTaskContext.hpp>
+#include <rtt/Attribute.hpp>
+#include <rtt/Event.hpp>
+#include <rtt/TemplateFactories.hpp>
+#include <rtt/Ports.hpp>
 #include <geometry/frames.h>
 #include <geometry/GeometryToolkit.hpp>
 

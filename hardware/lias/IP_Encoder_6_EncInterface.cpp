@@ -1,12 +1,12 @@
 #include <pkgconf/system.h>
 
 #if defined (OROPKG_OS_LXRT)
-#include <corelib/NonPreemptibleActivity.hpp>
+#include <rtt/NonPreemptibleActivity.hpp>
 
 #include "IP_Encoder_6_EncInterface.hpp"
 #include "drivers/LiAS_lxrt_user.h"
 
-using namespace ORO_CoreLib;
+using namespace RTT;
 
 IP_Encoder_6_Task::IP_Encoder_6_Task( Seconds period )
     : NonPreemptibleActivity( period )

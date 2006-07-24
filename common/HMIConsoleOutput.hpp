@@ -32,14 +32,14 @@
 
 #include <pkgconf/control_kernel.h>
 #ifdef OROPKG_CONTROL_KERNEL_EXTENSIONS_EXECUTION
-#include <execution/TemplateMethodFactory.hpp>
+#include <rtt/TemplateMethodFactory.hpp>
 #include <control_kernel/ExecutionExtension.hpp>
 #endif
 #include <control_kernel/ExtensionComposition.hpp>
-#include <corelib/PropertyComposition.hpp>
-#include <corelib/TaskNonRealTime.hpp>
+#include <rtt/PropertyComposition.hpp>
+#include <rtt/TaskNonRealTime.hpp>
 
-#include <os/MutexLock.hpp>
+#include <rtt/os/MutexLock.hpp>
 #include <sstream>
 #include <iostream>
 
@@ -49,11 +49,11 @@
 namespace ORO_ControlKernel
 {
 #ifdef OROPKG_CONTROL_KERNEL_EXTENSIONS_EXECUTION
-    using namespace ORO_Execution;
+    using namespace RTT;
 #endif
-    using ORO_OS::Mutex;
-    using ORO_OS::MutexLock;
-    using ORO_OS::MutexTryLock;
+    using RTT::OS::Mutex;
+    using RTT::OS::MutexLock;
+    using RTT::OS::MutexTryLock;
 
     /**
      * @brief This component can be used to display messages on the
@@ -70,7 +70,7 @@ namespace ORO_ControlKernel
                                               , ExecutionExtension
 #endif
                                               >::Result >,
-          public ORO_CoreLib::TaskNonRealTime
+          public RTT::TaskNonRealTime
     {
         typedef SupportComponent< MakeFacet<KernelBaseFunction
 #ifdef OROPKG_CONTROL_KERNEL_EXTENSIONS_EXECUTION
@@ -240,48 +240,39 @@ namespace ORO_ControlKernel
         // Methods are display commands.
         MethodFactoryInterface* createMethodFactory()
         {
-            TemplateMethodFactory< HMIConsoleOutput >* ret =
-                newMethodFactory( this );
-            ret->add( "display", 
-                      method( &HMIConsoleOutput::display,
+
+            this->methods()->addMethod( method( "display", &HMIConsoleOutput::display, this),
                                "Display a message on the console",
                                "message","The message to be displayed"
-                               ) );
-            ret->add( "displayBool", 
-                      method( &HMIConsoleOutput::displayBool,
+                                );
+            this->methods()->addMethod( method( "displayBool", &HMIConsoleOutput::displayBool, this),
                                "Display a boolean on the console",
                                "boolean","The Boolean to be displayed"
-                               ) );
-            ret->add( "displayInt", 
-                      method( &HMIConsoleOutput::displayInt,
+                                );
+            this->methods()->addMethod( method( "displayInt", &HMIConsoleOutput::displayInt, this),
                                "Display a integer on the console",
                                "integer","The Integer to be displayed"
-                               ) );
-            ret->add( "displayDouble", 
-                      method( &HMIConsoleOutput::displayDouble,
+                                );
+            this->methods()->addMethod( method( "displayDouble", &HMIConsoleOutput::displayDouble, this),
                                "Display a double on the console",
                                "double","The Double to be displayed"
-                               ) );
-            ret->add( "log", 
-                      method( &HMIConsoleOutput::log,
+                                );
+            this->methods()->addMethod( method( "log", &HMIConsoleOutput::log, this),
                                "Log a message on the console",
                                "message","The message to be logged"
-                               ) );
-            ret->add( "logBool", 
-                      method( &HMIConsoleOutput::logBool,
+                                );
+            this->methods()->addMethod( method( "logBool", &HMIConsoleOutput::logBool, this),
                                "Log a boolean on the console",
                                "boolean","The Boolean to be logged"
-                               ) );
-            ret->add( "logInt", 
-                      method( &HMIConsoleOutput::logInt,
+                                );
+            this->methods()->addMethod( method( "logInt", &HMIConsoleOutput::logInt, this),
                                "Log a integer on the console",
                                "integer","The Integer to be logged"
-                               ) );
-            ret->add( "logDouble", 
-                      method( &HMIConsoleOutput::logDouble,
+                                );
+            this->methods()->addMethod( method( "logDouble", &HMIConsoleOutput::logDouble, this),
                                "Log a double on the console",
                                "double","The Double to be logged"
-                               ) );
+                                );
             return ret;
         }
 #endif

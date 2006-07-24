@@ -2,17 +2,17 @@
 #define IP_ENCODER_6_ENCINTERFACE_HPP
 
 
-//#include <corelib/TaskNonPreemptible.hpp>
-#include <corelib/NonPreemptibleActivity.hpp>
-#include <corelib/DataObjectInterfaces.hpp>
-#include <device_interface/EncoderInterface.hpp>
+//#include <rtt/TaskNonPreemptible.hpp>
+#include <rtt/NonPreemptibleActivity.hpp>
+#include <rtt/DataObjectInterfaces.hpp>
+#include <rtt/dev/EncoderInterface.hpp>
 #include <vector>
 
 
-class IP_Encoder_6_Task : public ORO_CoreLib::NonPreemptibleActivity
+class IP_Encoder_6_Task : public RTT::NonPreemptibleActivity
 {
 public:
-    IP_Encoder_6_Task( ORO_CoreLib::Seconds period );
+    IP_Encoder_6_Task( RTT::Seconds period );
     virtual ~IP_Encoder_6_Task() {};
 
     virtual bool initialize();
@@ -26,12 +26,12 @@ public:
 private:
     long               _virtualEncoder[6];
     unsigned short     _prevEncoderValue[6];
-    ORO_CoreLib::DataObjectLockFree<long>  _virtual_encoder_1, _virtual_encoder_2, _virtual_encoder_3, 
+    RTT::DataObjectLockFree<long>  _virtual_encoder_1, _virtual_encoder_2, _virtual_encoder_3, 
                                            _virtual_encoder_4, _virtual_encoder_5, _virtual_encoder_6;
 };
 
 
-class IP_Encoder_6_EncInterface : public ORO_DeviceInterface::EncoderInterface
+class IP_Encoder_6_EncInterface : public RTT::EncoderInterface
 {
 public:
     IP_Encoder_6_EncInterface( IP_Encoder_6_Task& IP_encoder_task, const unsigned int& encoder_nr, const std::string& name );

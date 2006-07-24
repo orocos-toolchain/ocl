@@ -22,10 +22,10 @@
 #define __CARTESIAN_EFFECTOR_VEL_H__
 
 
-#include <corelib/RTT.hpp>
+#include <rtt/RTT.hpp>
 
-#include <execution/GenericTaskContext.hpp>
-#include <execution/Ports.hpp>
+#include <rtt/GenericTaskContext.hpp>
+#include <rtt/Ports.hpp>
 
 #include <geometry/GeometryToolkit.hpp>
 
@@ -49,9 +49,9 @@ namespace Orocos
     std::vector<double>                                 _velocity_joint_local, _position_joint_local;
     ORO_Geometry::Twist                                 _velocity_cartesian_local;
     ORO_Geometry::Frame                                 _position_cartesian_local;
-    ORO_Execution::ReadDataPort< ORO_Geometry::Twist >  _velocity_cartesian;
-    ORO_Execution::ReadDataPort< ORO_Geometry::Frame >  _position_cartesian;
-    ORO_Execution::ReadDataPort< std::vector<double> >  _position_joint;
+    RTT::ReadDataPort< ORO_Geometry::Twist >  _velocity_cartesian;
+    RTT::ReadDataPort< ORO_Geometry::Frame >  _position_cartesian;
+    RTT::ReadDataPort< std::vector<double> >  _position_joint;
     std::vector<RTT::WriteDataPort<double>*>            _velocity_drives;
 
     std::string                                         _kine_comp_name;

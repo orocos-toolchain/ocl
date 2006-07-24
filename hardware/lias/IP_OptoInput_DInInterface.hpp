@@ -2,13 +2,13 @@
 #define IP_OPTOINPUT_DININTERFACE_HPP
 
 
-#include <device_interface/DigitalInInterface.hpp>
+#include <rtt/dev/DigitalInInterface.hpp>
 
 
-class IP_OptoInput_DInInterface : public ORO_DeviceInterface::DigitalInInterface
+class IP_OptoInput_DInInterface : public RTT::DigitalInInterface
 {
 public:
-    IP_OptoInput_DInInterface(const std::string& name) : ORO_DeviceInterface::DigitalInInterface(name) {};
+    IP_OptoInput_DInInterface(const std::string& name) : RTT::DigitalInInterface(name) {};
     IP_OptoInput_DInInterface() {};
     virtual ~IP_OptoInput_DInInterface() {};
 

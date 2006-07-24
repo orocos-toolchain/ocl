@@ -18,14 +18,14 @@
 #ifndef __CAPTURECAMERA_HPP__
 #define __CAPTURECAMERA_HPP__
 
-#include <corelib/RTT.hpp>
+#include <rtt/RTT.hpp>
 
-#include <execution/GenericTaskContext.hpp>
-#include <execution/Ports.hpp>
-#include <corelib/Properties.hpp>
+#include <rtt/GenericTaskContext.hpp>
+#include <rtt/Ports.hpp>
+#include <rtt/Properties.hpp>
 
-#include <corelib/TimeService.hpp>
-#include <corelib/Time.hpp>
+#include <rtt/TimeService.hpp>
+#include <rtt/Time.hpp>
 
 #include <opencv/cv.h>
 #include <opencv/highgui.h>

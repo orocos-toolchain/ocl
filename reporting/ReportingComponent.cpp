@@ -26,21 +26,20 @@
  ***************************************************************************/
 
 #include "ReportingComponent.hpp"
-#include <corelib/Logger.hpp>
+#include <rtt/Logger.hpp>
 
 // Impl.
-#include <execution/TemplateFactories.hpp>
-#include <corelib/marshalling/EmptyMarshaller.hpp>
+#include <rtt/TemplateFactories.hpp>
+#include <rtt/marsh/EmptyMarshaller.hpp>
 
 #ifdef OROINT_OS_STDIOSTREAM
-#include <corelib/marshalling/CPFDemarshaller.hpp>
-#include <corelib/marshalling/CPFMarshaller.hpp>
+#include <rtt/marsh/CPFDemarshaller.hpp>
+#include <rtt/marsh/CPFMarshaller.hpp>
 #include <fstream>
 #endif
 
 namespace Orocos
 {
-    using namespace RTT;
     using namespace std;
 
     ReportingComponent::ReportingComponent( std::string name /*= "Reporting" */ ) 
@@ -55,82 +54,61 @@ namespace Orocos
           starttime(0), 
           timestamp("TimeStamp","The time at which the data was read.",0.0)
     {
-        this->attributes()->addProperty( &autotrigger );
-        this->attributes()->addProperty( &config );
-        this->attributes()->addProperty( &writeHeader );
+        this->properties()->addProperty( &autotrigger );
+        this->properties()->addProperty( &config );
+        this->properties()->addProperty( &writeHeader );
 
         // Add the methods, methods make sure that they are 
         // executed in the context of the (non realtime) caller.
-        TemplateMethodFactory< ReportingComponent  >* ret =
-            newMethodFactory( this );
-        ret->add( "snapshot",
-                  method
-                  ( &ReportingComponent::snapshot ,
-                    "Take a new shapshot of the data and set the timestamp.") );
-        ret->add( "load",
-                  method
-                  ( &ReportingComponent::load ,
-                    "Read the Configuration file.") );
-        ret->add( "store",
-                  method
-                  ( &ReportingComponent::store ,
-                    "Write the Configuration file.") );
-        ret->add( "screenComponent",
-                  method
-                  ( &ReportingComponent::screenComponent ,
+
+        this->methods()->addMethod( method( "snapshot", &ReportingComponent::snapshot , this),
+                    "Take a new shapshot of the data and set the timestamp." );
+        this->methods()->addMethod( method( "load", &ReportingComponent::load , this),
+                    "Read the Configuration file." );
+        this->methods()->addMethod( method( "store", &ReportingComponent::store , this),
+                    "Write the Configuration file." );
+        this->methods()->addMethod( method( "screenComponent", &ReportingComponent::screenComponent , this),
                     "Display the variables and ports of a Component.",
-                    "Component", "Name of the Component") );
-        ret->add( "reportComponent",
-                  method
-                  ( &ReportingComponent::reportComponent ,
+                    "Component", "Name of the Component" );
+        this->methods()->addMethod( method( "reportComponent", &ReportingComponent::reportComponent , this),
                     "Add a Component for reporting. Only works if Component is connected.",
-                    "Component", "Name of the Component") );
-        ret->add( "unreportComponent",
-                  method
-                  ( &ReportingComponent::unreportComponent ,
+                    "Component", "Name of the Component" );
+        this->methods()->addMethod( method( "unreportComponent", &ReportingComponent::unreportComponent , this),
                     "Remove a Component from reporting.",
                     "Component", "Name of the Component"
-                    ) );
-        ret->add( "reportData",
-                  method
-                  ( &ReportingComponent::reportData ,
+                     );
+        this->methods()->addMethod( method( "reportData", &ReportingComponent::reportData , this),
                     "Add a Component's DataSource for reporting. Only works if DataObject exists and Component is connected.",
                     "Component", "Name of the Component",
-                    "DataObject", "Name of the DataObject. For example, a property or attribute.") );
-        ret->add( "unreportData",
-                  method
-                  ( &ReportingComponent::unreportData ,
+                    "DataObject", "Name of the DataObject. For example, a property or attribute." );
+        this->methods()->addMethod( method( "unreportData", &ReportingComponent::unreportData , this),
                     "Remove a DataObject from reporting.",
                     "Component", "Name of the Component",
-                    "DataObject", "Name of the DataObject.") );
-        ret->add( "reportPort",
-                  method
-                  ( &ReportingComponent::reportPort ,
+                    "DataObject", "Name of the DataObject." );
+        this->methods()->addMethod( method( "reportPort", &ReportingComponent::reportPort , this),
                     "Add a Component's Connection or Port for reporting.",
                     "Component", "Name of the Component",
-                    "Port", "Name of the Port to the connection.") );
-        ret->add( "unreportPort",
-                  method
-                  ( &ReportingComponent::unreportPort ,
+                    "Port", "Name of the Port to the connection." );
+        this->methods()->addMethod( method( "unreportPort", &ReportingComponent::unreportPort , this),
                     "Remove a Connection for reporting.",
                     "Component", "Name of the Component",
-                    "Port", "Name of the Port to the connection.") );
-        this->methods()->registerObject("this", ret);
+                    "Port", "Name of the Port to the connection." );
+
     }
 
     ReportingComponent::~ReportingComponent() {}
 
 
-    bool ReportingComponent::addMarshaller( RTT::Marshaller* headerM, RTT::Marshaller* bodyM)
+    bool ReportingComponent::addMarshaller( Marshaller* headerM, Marshaller* bodyM)
     {
-        boost::shared_ptr<RTT::Marshaller> header(headerM);
-        boost::shared_ptr<RTT::Marshaller> body(bodyM);
+        boost::shared_ptr<Marshaller> header(headerM);
+        boost::shared_ptr<Marshaller> body(bodyM);
         if ( !header && !body)
             return false;
         if ( !header )
-            header.reset( new RTT::EmptyMarshaller() );
+            header.reset( new EmptyMarshaller() );
         if ( !body)
-            body.reset( new RTT::EmptyMarshaller());
+            body.reset( new EmptyMarshaller());
 
         marshallers.push_back( std::make_pair( header, body ) );
         return true;
@@ -231,7 +209,7 @@ namespace Orocos
             return false;
         }
         output << "Screening Component '"<< comp << "' : "<< endl << endl;
-        PropertyBag* bag = c->attributes()->properties();
+        PropertyBag* bag = c->properties();
         if (bag) {
             output << "Properties :" << endl;
             for (PropertyBag::iterator it= bag->begin(); it != bag->end(); ++it)
@@ -262,8 +240,7 @@ namespace Orocos
         Logger::In in("ReportingComponent");
         // Users may add own data sources, so avoid duplicates
         //std::vector<std::string> sources                = comp->data()->getNames();
-        RTT::TaskContext* comp = this->getPeer(component);
-        using namespace ORO_CoreLib;
+        TaskContext* comp = this->getPeer(component);
         if ( !comp ) {
             Logger::log() <<Logger::Error << "Could not report Component " << component <<" : no such peer."<<Logger::endl;
             return false;
@@ -278,26 +255,24 @@ namespace Orocos
 
             
     bool ReportingComponent::unreportComponent( const std::string& component ) {
-        RTT::TaskContext* comp = this->getPeer(component);
-        using namespace ORO_CoreLib;
+        TaskContext* comp = this->getPeer(component);
         if ( !comp ) {
             Logger::log() <<Logger::Error << "Could not unreport Component " << component <<" : no such peer."<<Logger::endl;
             return false;
         }
         Ports ports   = comp->ports()->getPorts();
         for (Ports::iterator it = ports.begin(); it != ports.end() ; ++it) {
-            this->unreportData( component + "." + (*it)->getName() );
+            this->unreportDataSource( component + "." + (*it)->getName() );
             if ( this->ports()->getPort( (*it)->getName() ) ) {
             }
         }
+        return true;
     }
 
     // report a specific connection.
     bool ReportingComponent::reportPort(const std::string& component, const std::string& port ) {
         Logger::In in("ReportingComponent");
-        RTT::TaskContext* comp = this->getPeer(component);
-        using namespace ORO_CoreLib;
-        using namespace RTT;
+        TaskContext* comp = this->getPeer(component);
         if ( !comp ) {
             Logger::log() <<Logger::Error << "Could not report Component " << component <<" : no such peer."<<Logger::endl;
             return false;
@@ -333,15 +308,14 @@ namespace Orocos
     }
 
     bool ReportingComponent::unreportPort(const std::string& component, const std::string& port ) {
-        return this->unreportData( component + "." + port );
+        return this->unreportDataSource( component + "." + port );
     }
 
     // report a specific datasource, property,...
     bool ReportingComponent::reportData(const std::string& component,const std::string& dataname) 
     { 
         Logger::In in("ReportingComponent");
-        RTT::TaskContext* comp = this->getPeer(component);
-        using namespace ORO_CoreLib;
+        TaskContext* comp = this->getPeer(component);
         if ( !comp ) {
             Logger::log() <<Logger::Error << "Could not report Component " << component <<" : no such peer."<<Logger::endl;
             return false;
@@ -351,9 +325,9 @@ namespace Orocos
             return this->reportDataSource( component + "." + dataname, "Data",
                                            comp->attributes()->getValue( dataname )->getDataSource() );
         // Is it a property ?
-        if ( comp->attributes()->properties() && comp->attributes()->properties()->find( dataname ) )
+        if ( comp->properties() && comp->properties()->find( dataname ) )
             return this->reportDataSource( component + "." + dataname, "Data",
-                                           comp->attributes()->properties()->find( dataname )->getDataSource() );
+                                           comp->properties()->find( dataname )->getDataSource() );
         // Is it a datasource ?
         if ( comp->datasources()->hasMember("this",dataname) ) {
             if (comp->datasources()->getObjectFactory("this")->getArity( dataname ) == 0)
@@ -366,29 +340,28 @@ namespace Orocos
     }
 
     bool ReportingComponent::unreportData(const std::string& component,const std::string& datasource) { 
-        return this->unreportData( component +"." + datasource); 
+        return this->unreportDataSource( component +"." + datasource); 
     }
 
     void ReportingComponent::snapshot() {
-        timestamp = RTT::TimeService::Instance()->secondsSince( starttime );
+        timestamp = TimeService::Instance()->secondsSince( starttime );
             
         // execute the copy commands (fast).
         for(Reports::iterator it = root.begin(); it != root.end(); ++it )
             (it->get<2>())->execute();
     }
 
-    bool ReportingComponent::reportDataSource(std::string tag, std::string type, RTT::DataSourceBase::shared_ptr orig)
+    bool ReportingComponent::reportDataSource(std::string tag, std::string type, DataSourceBase::shared_ptr orig)
     {
         // creates a copy of the data and an update command to
         // update the copy from the original.
-        RTT::DataSourceBase::shared_ptr clone = orig->getTypeInfo()->buildValue();
-        using namespace ORO_CoreLib;
+        DataSourceBase::shared_ptr clone = orig->getTypeInfo()->buildValue();
         if ( !clone ) {
             Logger::log() <<Logger::Error << "Could not report '"<< tag <<"' : unknown type." << Logger::endl;
             return false;
         }
         try {
-            boost::shared_ptr<RTT::CommandInterface> comm( clone->updateCommand( orig.get() ) );
+            boost::shared_ptr<CommandInterface> comm( clone->updateCommand( orig.get() ) );
             assert( comm );
             root.push_back( boost::make_tuple( tag, orig, comm, clone, type ) );
         } catch ( bad_assignment& ba ) {
@@ -398,7 +371,7 @@ namespace Orocos
         return true;
     }
 
-    bool ReportingComponent::unreportData(std::string tag)
+    bool ReportingComponent::unreportDataSource(std::string tag)
     {
         for (Reports::iterator it = root.begin();
              it != root.end(); ++it)
@@ -425,13 +398,12 @@ namespace Orocos
             }
             this->cleanReport();
         }
-        starttime = RTT::TimeService::Instance()->getTicks();
+        starttime = TimeService::Instance()->getTicks();
+        return true;
     }
 
     void ReportingComponent::makeReport()
     {
-        using namespace ORO_CoreLib;
-            
         report.add( timestamp.clone() );
         for(Reports::iterator it = root.begin(); it != root.end(); ++it ) {
             DataSourceBase::shared_ptr clone = it->get<3>();
