@@ -6,7 +6,7 @@ ADD_DEFINITIONS( "-Wall" )
 
 #
 # Components should add themselves by calling 'GLOBAL_ADD_COMPONENT' 
-# instead of 'ADD_COMPONENT' in CMakeLists.txt.
+# instead of 'ADD_LIBRARY' in CMakeLists.txt.
 #
 # This gives a centralised location where all components are registered
 # and lets us add various things to all components in just one place.

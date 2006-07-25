@@ -1,3 +1,29 @@
+******                                                 ******
+  This file is for developer's writing CMakeLists.txt files
+******                                                 ******
+
+ Getting HELP
+##############
+
+Use: 
+$ man cmake
+
+or after generating the Makefiles:
+$ make help
+
+The generated Makefiles are documented as well.
+
+ VERBOSE OUTPUT
+################
+
+In order to 'see' what 'make' is doing, use:
+$ make VERBOSE=1
+
+This can be issued from the top level or every subdirectory.
+
+ MACROS
+########
+
 The macros in the component subdirs are used from
 
 config/component_rules.cmake:
