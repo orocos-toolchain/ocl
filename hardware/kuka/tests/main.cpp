@@ -1,13 +1,13 @@
 //hardware interfaces
 
-#include "Kuka160nAxesVelocityController.hpp"
-#include "Kuka361nAxesVelocityController.hpp"
+#include "hardware/kuka/Kuka160nAxesVelocityController.hpp"
+#include "hardware/kuka/Kuka361nAxesVelocityController.hpp"
 
 //User interface
-#include "../../taskbrowser/TaskBrowser.hpp"
+#include "taskbrowser/TaskBrowser.hpp"
 
 //Reporting
-#include "../../reporting/FileReporting.hpp"
+#include "reporting/FileReporting.hpp"
 
 //#include <rtt/Activities.hpp>
 //#include <rtt/GenericTaskContext.hpp>
@@ -23,15 +23,15 @@ class EmergencyStop
 public:
   EmergencyStop(GenericTaskContext *axes)
     : _axes(axes) {
-    _stop = _axes->commands()->create("this", "stopAxis").arg(_axis).arg(_value);
-    _lock = _axes->commands()->create("this", "lockAxis").arg(_axis).arg(_value);
+    _stop = _axes->commands()->getCommand<bool(int,double)>("stopAxis");
+    _lock = _axes->commands()->getCommand<bool(int,double)>("lockAxis");
   };
   ~EmergencyStop(){};
   void callback(int axis, double value) {
     _axis = axis;
     _value = value;
-    _stop.execute();
-    _lock.execute();
+    _stop(axis,value);
+    _lock(axis,value);
     cout << "---------------------------------------------" << endl;
     cout << "--------- EMERGENCY STOP --------------------" << endl;
     cout << "---------------------------------------------" << endl;
@@ -39,8 +39,8 @@ public:
   };
 private:
   GenericTaskContext *_axes;
-  CommandC _stop;
-  CommandC _lock;
+  Command<bool(int,double)> _stop;
+  Command<bool(int,double)> _lock;
   int _axis;
   double _value;
 }; // class

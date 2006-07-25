@@ -18,14 +18,15 @@
 #include <rtt/RTT.hpp>
 #include <rtt/NonPreemptibleActivity.hpp>
 
-#include "KryptonK600Sensor.hpp"
 #include <rtt/os/main.h>
 
+#include "hardware/krypton/KryptonK600Sensor.hpp"
+
 //User interface
-#include "../../taskbrowser/TaskBrowser.hpp"
+#include "taskbrowser/TaskBrowser.hpp"
 
 //Reporting
-#include "../../reporting/FileReporting.hpp"
+#include "reporting/FileReporting.hpp"
 
 
 

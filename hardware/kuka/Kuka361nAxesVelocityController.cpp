@@ -29,6 +29,7 @@
 #include <rtt/TemplateFactories.hpp>
 #include <rtt/Logger.hpp>
 #include <rtt/Attribute.hpp>
+#include <rtt/Command.hpp>
 
 namespace Orocos
 {
@@ -153,10 +154,10 @@ namespace Orocos
      */
     typedef Kuka361nAxesVelocityController MyType;
 
-    this->commands()->addCommand( command( "startAxis", &MyType::startAxis,         &MyType::startAxisCompleted, this), "start axis, initializes drive value to zero and starts updating the drive-value with the drive-port (only possible if axis is unlocked","axis","axis to start" ) );
-    this->commands()->addCommand( command( "stopAxis", &MyType::stopAxis,          &MyType::stopAxisCompleted, this), "stop axis, sets drive value to zero and disables the update of the drive-port, (only possible if axis is started","axis","axis to stop" ) );
-    this->commands()->addCommand( command( "lockAxis", &MyType::lockAxis,          &MyType::lockAxisCompleted, this), "lock axis, enables the brakes (only possible if axis is stopped","axis","axis to lock" ) );
-    this->commands()->addCommand( command( "unlockAxis", &MyType::unlockAxis,        &MyType::unlockAxisCompleted, this), "unlock axis, disables the brakes and enables the drive (only possible if axis is locked","axis","axis to unlock" ) );
+    this->commands()->addCommand( command( "startAxis", &MyType::startAxis,         &MyType::startAxisCompleted, this), "start axis, initializes drive value to zero and starts updating the drive-value with the drive-port (only possible if axis is unlocked","axis","axis to start" );
+    this->commands()->addCommand( command( "stopAxis", &MyType::stopAxis,          &MyType::stopAxisCompleted, this), "stop axis, sets drive value to zero and disables the update of the drive-port, (only possible if axis is started","axis","axis to stop" );
+    this->commands()->addCommand( command( "lockAxis", &MyType::lockAxis,          &MyType::lockAxisCompleted, this), "lock axis, enables the brakes (only possible if axis is stopped","axis","axis to lock" );
+    this->commands()->addCommand( command( "unlockAxis", &MyType::unlockAxis,        &MyType::unlockAxisCompleted, this), "unlock axis, disables the brakes and enables the drive (only possible if axis is locked","axis","axis to unlock" );
     this->commands()->addCommand( command( "startAllAxes", &MyType::startAllAxes,      &MyType::startAllAxesCompleted, this), "start all axes"  );
     this->commands()->addCommand( command( "stopAllAxes", &MyType::stopAllAxes,       &MyType::stopAllAxesCompleted, this), "stops all axes"  );
     this->commands()->addCommand( command( "lockAllAxes", &MyType::lockAllAxes,       &MyType::lockAllAxesCompleted, this), "locks all axes"  );

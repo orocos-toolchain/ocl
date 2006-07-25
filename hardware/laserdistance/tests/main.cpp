@@ -18,14 +18,14 @@
 #include <rtt/RTT.hpp>
 #include <rtt/NonPreemptibleActivity.hpp>
 
-#include "LaserSensor.hpp"
 #include <rtt/os/main.h>
 
+#include "hardware/laserdistance/LaserSensor.hpp"
 //User interface
-#include "../../taskbrowser/TaskBrowser.hpp"
+#include "taskbrowser/TaskBrowser.hpp"
 
 //Reporting
-#include "../../reporting/FileReporting.hpp"
+#include "reporting/FileReporting.hpp"
 
 
 
