@@ -20,7 +20,7 @@ SET( INSTALL_DIR $ENV{OROCOS_INSTALL} )
 IF( INSTALL_DIR )
   SET( CMAKE_INSTALL_PREFIX $ENV{OROCOS_INSTALL} CACHE PATH "Installation directory" FORCE)
 ELSE( INSTALL_DIR )
-  SET( CMAKE_INSTALL_PREFIX /usr/local/orocos CACHE PATH "Installation directory" FORCE)
+  SET( CMAKE_INSTALL_PREFIX /usr/local/orocos CACHE PATH "Installation directory" )
 ENDIF( INSTALL_DIR )
 MESSAGE( "Setting installation directory to ${CMAKE_INSTALL_PREFIX}" )
 
