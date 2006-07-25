@@ -115,6 +115,7 @@ LINK_DIRECTORIES( ${PROJ_BINARY_DIR}/taskbrowser ${PROJ_BINARY_DIR}/reporting ${
 ADD_SUBDIRECTORY( taskbrowser )
 ADD_SUBDIRECTORY( reporting )
 ADD_SUBDIRECTORY( hardware )
+ADD_SUBDIRECTORY( viewer )
 ###########################################################
 #                                                         #
 # Enable testing by including the Dart module             #

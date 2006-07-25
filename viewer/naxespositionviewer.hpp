@@ -1,12 +1,11 @@
 #ifndef OROCOS_COMP_NAXESPOSITIONVIEWER_HPP
 #define OROCOS_COMP_NAXESPOSITIONVIEWER_HPP
 #include <vector>
-#include <corelib/RTT.hpp>
+#include <rtt/RTT.hpp>
 
-#include <execution/GenericTaskContext.hpp>
-#include <execution/Ports.hpp>
-//#include <corelib/Event.hpp>
-#include <corelib/Properties.hpp>
+#include <rtt/GenericTaskContext.hpp>
+#include <rtt/Ports.hpp>
+#include <rtt/Properties.hpp>
 
 
 

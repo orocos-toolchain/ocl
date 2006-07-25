@@ -1,27 +1,21 @@
-//viewer 
-#include "naxespositionviewer.hpp"
+#include <rtt/ZeroTimeThread.hpp>
+#include <rtt/Activities.hpp>
+#include <rtt/GenericTaskContext.hpp>
+#include <rtt/Logger.hpp>
+#include <rtt/TemplateFactories.hpp>
+#include <rtt/os/main.h>
 
-//hardware interfaces
-#include <corelib/ZeroTimeThread.hpp>
-#include "../hardware/lias/LiASnAxesVelocityController.hpp"
+#include "viewer/naxespositionviewer.hpp"
+//#include "hardware/lias/LiASnAxesVelocityController.hpp"
+#include "hardware/kuka/Kuka160nAxesVelocityController.hpp"
+#include "taskbrowser/TaskBrowser.hpp"
+#include "reporting/FileReporting.hpp"
 
-//User interface
-#include "../taskbrowser/TaskBrowser.hpp"
-
-//Reporting
-#include "../reporting/FileReporting.hpp"
-
-#include <corelib/Activities.hpp>
-#include <execution/GenericTaskContext.hpp>
-#include <corelib/Logger.hpp>
-#include <os/main.h>
-
-#include <execution/TemplateFactories.hpp>
 #include <string>
 
-using namespace Orocos;
 using namespace RTT;
 using namespace std;
+using namespace Orocos;
 
 
 class Supervisor : public GenericTaskContext
@@ -34,17 +28,14 @@ public:
     driveValue(_nrofaxes),
 	reference(_nrofaxes)
 	{
-  		TemplateMethodFactory<Supervisor>* cmeth = newMethodFactory( this );
-  		cmeth->add( "message",  method( &Supervisor::message,  "give a message to the user","msg","msg to display" ) );
-  		cmeth->add( "setDriveValue",  method( &Supervisor::setDriveValue,  
+  		this->methods()->addMethod( method("message",  &Supervisor::message,this),  "give a message to the user","msg","msg to display" );
+  		this->methods()->addMethod( method( "setDriveValue",&Supervisor::setDriveValue, this), 
 					"sets the value of a driveValue port",
 					"axis","the driveValue port for this axis",
-					"value","the drive value in rad/s" ) );
-		cmeth->add( "getReference",  method( &Supervisor::getReference,
+					"value","the drive value in rad/s" );
+		this->methods()->addMethod( method("getReference",  &Supervisor::getReference,this),
 					"gets the reference switch value from a reference port",
-					"axis","the reference port corresponding to this axis") );
-
-  		this->methods()->registerObject("this", cmeth);
+					"axis","the reference port corresponding to this axis");
 		char buf[80];
 		for (int i=0;i<_nrofaxes;++i) {
 			sprintf(buf,"driveValue%d",i);
@@ -71,6 +62,7 @@ public:
 			return reference[axis]->Get();
 		} else {
   			Logger::log()<< Logger::Error << "parameter axis out of range" << Logger::endl;
+            return false;
 		}
    }
 
@@ -88,8 +80,8 @@ public:
 		}
    }
 
-	std::vector<ORO_Execution::WriteDataPort<double>*> driveValue;	
-	std::vector<ORO_Execution::ReadDataPort<bool>*>  reference;	
+	std::vector<RTT::WriteDataPort<double>*> driveValue;	
+	std::vector<RTT::ReadDataPort<bool>*>  reference;	
 };
 
 
@@ -98,8 +90,8 @@ class EmergencyStop
 public:
   EmergencyStop(GenericTaskContext *axes)
     : _axes(axes) {
-    _stop = _axes->commands()->create("this", "stopAxis").arg(_axis).arg(_value);
-    _lock = _axes->commands()->create("this", "lockAxis").arg(_axis).arg(_value);
+    _stop = _axes->commands()->getCommand<bool(int,double)>("stopAxis");
+    _lock = _axes->commands()->getCommand<bool(int,double)>("lockAxis");
   };
   ~EmergencyStop(){};
   void callback(int axis, double value) {
@@ -139,8 +131,8 @@ int ORO_main(int argc, char* argv[])
     Logger::log().setLogLevel( Logger::Info );
               Logger::log() << Logger::Info << argv[0] << " manually raises LogLevel to 'Info' (5). See also file 'orocos.log'."<<Logger::endl;
   }
-  
-  GenericTaskContext* my_robot = new LiASnAxesVelocityController("lias");
+  GenericTaskContext* my_robot = new Kuka160nAxesVelocityController("lias"); 
+  //GenericTaskContext* my_robot = new LiASnAxesVelocityController("lias");
   NAxesPositionViewer viewer("viewer","cpf/viewer.cpf");
   EmergencyStop _emergency(my_robot);
   Supervisor supervisor;

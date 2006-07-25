@@ -27,10 +27,10 @@
 
 #include "naxespositionviewer.hpp"
 
-#include <execution/GenericTaskContext.hpp>
-#include <corelib/Logger.hpp>
-#include <corelib/Attribute.hpp>
-#include <execution/DataPort.hpp>
+#include <rtt/GenericTaskContext.hpp>
+#include <rtt/Logger.hpp>
+#include <rtt/Attribute.hpp>
+#include <rtt/DataPort.hpp>
 
 #include <ace/Reactor.h>
 #include <ace/Svc_Handler.h>
@@ -111,6 +111,7 @@ public:
 		}
 		reactor_instance->register_handler(this, ACE_Event_Handler::READ_MASK);
 		clients.push_back(this);
+        return 0;
 	}
 	virtual int	handle_close (ACE_HANDLE, ACE_Reactor_Mask) {
 		for (ClientHandlers::iterator it=clients.begin();it!=clients.end();it++) {
@@ -121,6 +122,7 @@ public:
 		}
   		Logger::log() << Logger::Info << "(Viewer)Connection closed" << Logger::endl;
 		delete this;
+        return 0;
 	}
 };
 
@@ -148,8 +150,8 @@ NAxesPositionViewer::NAxesPositionViewer(const std::string& name,const std::stri
   /**
    * Adding properties
    */
-  attributes()->addProperty( &portnumber );
-  attributes()->addProperty( &num_axes );
+  properties()->addProperty( &portnumber );
+  properties()->addProperty( &num_axes );
  
   if (!readProperties(_propertyfile)) {
     Logger::log() << Logger::Error << "Failed to read the property file, continue with default values." << Logger::endl;
@@ -200,7 +202,7 @@ void NAxesPositionViewer::update() {
 	  state=2;
 	}
 	if (state==2) {
-		for (int i=0;i<jointvec.size();i++) {
+		for (unsigned int i=0;i<jointvec.size();i++) {
 			jointvec[i] = positionValue[i]->Get();
 		}
 		ACE_Time_Value dt; 
