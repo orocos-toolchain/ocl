@@ -31,8 +31,8 @@ SET( OROCOS_TARGET gnulinux CACHE STRING "The Operating System target.")
 SET( OROCOS_INSTALL ${CMAKE_INSTALL_PREFIX} CACHE PATH "The Orocos installation directory.")
 
 # The name of the resulting library.
-SET( COMPONENTS_LIBRARY orocos-components CACHE STRING "Name of the resulting library")
-INSTALL_TARGETS( /lib ${COMPONENTS_LIBRARY} )
+#SET( COMPONENTS_LIBRARY orocos-components CACHE STRING "Name of the resulting library")
+#INSTALL_TARGETS( /lib ${COMPONENTS_LIBRARY} )
 
 # The dependencies of the COMPONENTS_LIBRARY
 SET( COMPONENTS_LIBRARY_DEPS "" CACHE STRING "Dependencies of the resulting library")
@@ -111,10 +111,10 @@ INCLUDE(config/check_depend.cmake)
 INCLUDE(config/component_rules.cmake)
 
 
-LINK_DIRECTORIES( ${PROJ_BINARY_DIR}/taskbrowser ${PROJ_BINARY_DIR}/reporting )
+LINK_DIRECTORIES( ${PROJ_BINARY_DIR}/taskbrowser ${PROJ_BINARY_DIR}/reporting ${PROJ_BINARY_DIR}/hardware)
 ADD_SUBDIRECTORY( taskbrowser )
 ADD_SUBDIRECTORY( reporting )
-
+ADD_SUBDIRECTORY( hardware )
 ###########################################################
 #                                                         #
 # Enable testing by including the Dart module             #

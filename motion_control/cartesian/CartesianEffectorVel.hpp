@@ -27,7 +27,7 @@
 #include <rtt/GenericTaskContext.hpp>
 #include <rtt/Ports.hpp>
 
-#include <geometry/GeometryToolkit.hpp>
+#include <kdl/GeometryToolkit.hpp>
 
 namespace Orocos
 {
@@ -46,17 +46,17 @@ namespace Orocos
   private:
     unsigned int _num_axes;
         
-    std::vector<double>                                 _velocity_joint_local, _position_joint_local;
-    ORO_Geometry::Twist                                 _velocity_cartesian_local;
-    ORO_Geometry::Frame                                 _position_cartesian_local;
-    RTT::ReadDataPort< ORO_Geometry::Twist >  _velocity_cartesian;
-    RTT::ReadDataPort< ORO_Geometry::Frame >  _position_cartesian;
+    std::vector<double>                        _velocity_joint_local, _position_joint_local;
+    KDL::Twist                                 _velocity_cartesian_local;
+    KDL::Frame                                 _position_cartesian_local;
+    RTT::ReadDataPort< KDL::Twist >            _velocity_cartesian;
+    RTT::ReadDataPort< KDL::Frame >            _position_cartesian;
     RTT::ReadDataPort< std::vector<double> >  _position_joint;
-    std::vector<RTT::WriteDataPort<double>*>            _velocity_drives;
+    std::vector<RTT::WriteDataPort<double>*>   _velocity_drives;
 
-    std::string                                         _kine_comp_name;
+    std::string                                _kine_comp_name;
     
-    RTT::MethodC                                        _velocityInverse;
+    RTT::Method<bool(std::vector<double>,KDL::Twist,std::vector<double> >  _velocityInverse;
     
   }; // class
 }//namespace

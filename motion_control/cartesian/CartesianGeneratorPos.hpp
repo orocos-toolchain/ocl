@@ -26,10 +26,10 @@
 #include <rtt/GenericTaskContext.hpp>
 #include <rtt/Properties.hpp>
 #include <rtt/Ports.hpp>
-#include <geometry/velocityprofile_trap.h>
+#include <kdl/motion/velocityprofile_trap.h>
 #include <rtt/TimeService.hpp>
 
-#include <geometry/GeometryToolkit.hpp>
+#include <kdl/GeometryToolkit.hpp>
 
 namespace Orocos
 {
@@ -47,26 +47,26 @@ namespace Orocos
     virtual void shutdown();
   
   private:
-    bool moveTo(ORO_Geometry::Frame frame, double time=0);
+    bool moveTo(KDL::Frame frame, double time=0);
     bool moveFinished() const;
     void reset();
   
-    const std::string                    _propertyfile;
+    const std::string                 _propertyfile;
   
-    ORO_Geometry::Frame                                  _traject_end, _traject_begin;
-    ORO_Geometry::Frame                                  _position_desi_local;
-    ORO_Geometry::Twist                                  _velocity_desi_local, _velocity_begin_end, _velocity_delta;
-    RTT::ReadDataPort< ORO_Geometry::Frame >   _position_meas;
-    RTT::WriteDataPort< ORO_Geometry::Frame >  _position_desi;
-    RTT::WriteDataPort< ORO_Geometry::Twist >  _velocity_desi;
+    KDL::Frame                        _traject_end, _traject_begin;
+    KDL::Frame                        _position_desi_local;
+    KDL::Twist                        _velocity_desi_local, _velocity_begin_end, _velocity_delta;
+    RTT::ReadDataPort< KDL::Frame >   _position_meas;
+    RTT::WriteDataPort< KDL::Frame >  _position_desi;
+    RTT::WriteDataPort< KDL::Twist >  _velocity_desi;
   
-    std::vector<ORO_Geometry::VelocityProfile_Trap*>     _motion_profile;
-    RTT::TimeService::ticks                      _time_begin;
-    RTT::TimeService::Seconds                    _time_passed;
-    double                                               _max_duration;
+    std::vector<KDL::VelocityProfile_Trap*>     _motion_profile;
+    RTT::TimeService::ticks                     _time_begin;
+    RTT::TimeService::Seconds                   _time_passed;
+    double                                      _max_duration;
     
-    bool                                                 _is_moving;
-    RTT::Property< std::vector<double> >         _maximum_velocity, _maximum_acceleration;
+    bool                                        _is_moving;
+    RTT::Property< std::vector<double> >        _maximum_velocity, _maximum_acceleration;
     
   }; // class
 }//namespace

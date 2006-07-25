@@ -54,16 +54,15 @@ namespace Orocos
     //Adding properties
     this->properties()->addProperty(&_controller_gain);
   
+    if(!this->readProperties(_propertyfile))
+      Logger::log()<<Logger::Error<<"(nAxesControllerPosVel) Reading Properties from "<<_propertyfile<<" failed!!"<<Logger::endl;
+    
   }
   
   nAxesControllerPosVel::~nAxesControllerPosVel(){};
   
   bool nAxesControllerPosVel::startup()
   {
-    if(!this->readProperties(_propertyfile)){
-      Logger::log()<<Logger::Error<<"(nAxesControllerPosVel) Reading Properties from "<<_propertyfile<<" failed!!"<<Logger::endl;
-      return false;
-    }
     
     // check size of properties
     if(_controller_gain.value().size() != _num_axes)

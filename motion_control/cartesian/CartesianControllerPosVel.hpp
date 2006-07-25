@@ -27,7 +27,8 @@
 #include <rtt/Properties.hpp>
 #include <rtt/Ports.hpp>
 
-#include <geometry/GeometryToolkit.hpp>
+#include <kdl/GeometryToolkit.hpp>
+
 namespace Orocos
 {
   class CartesianControllerPosVel : public RTT::GenericTaskContext
@@ -43,12 +44,12 @@ namespace Orocos
   private:
     const std::string                    _propertyfile;
     
-    ORO_Geometry::Frame                  _position_meas_local, _position_desi_local;
-    ORO_Geometry::Twist                  _velocity_out_local, _velocity_desi_local, _velocity_feedback;
+    KDL::Frame                  _position_meas_local, _position_desi_local;
+    KDL::Twist                  _velocity_out_local, _velocity_desi_local, _velocity_feedback;
       
-    RTT::ReadDataPort< ORO_Geometry::Frame >    _position_meas, _position_desi;
-    RTT::ReadDataPort< ORO_Geometry::Twist >    _velocity_desi;
-    RTT::WriteDataPort< ORO_Geometry::Twist >   _velocity_out;
+    RTT::ReadDataPort< KDL::Frame >    _position_meas, _position_desi;
+    RTT::ReadDataPort< KDL::Twist >    _velocity_desi;
+    RTT::WriteDataPort< KDL::Twist >   _velocity_out;
   
     RTT::Property< std::vector<double> >        _controller_gain;
   

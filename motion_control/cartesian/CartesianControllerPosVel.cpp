@@ -25,7 +25,7 @@
 namespace Orocos
 {
   using namespace RTT;
-  using namespace ORO_Geometry;
+  using namespace KDL;
   using namespace std;
   
   CartesianControllerPosVel::CartesianControllerPosVel(string name,string propertyfile)
@@ -48,7 +48,10 @@ namespace Orocos
    
       //Adding Properties
       this->properties()->addProperty(&_controller_gain);
-  
+
+      if(!readProperties(_propertyfile))
+	Logger::log()<<Logger::Error<<"(CartesianControllerPosVel) Reading Properties from "<<_propertyfile<<" failed!!"<<Logger::endl;
+xs  
   }
   
   
@@ -57,11 +60,6 @@ namespace Orocos
   
   bool CartesianControllerPosVel::startup()
   {
-    if(!readProperties(_propertyfile)){
-      Logger::log()<<Logger::Error<<"(CartesianControllerPosVel) Reading Properties from "<<_propertyfile<<" failed!!"<<Logger::endl;
-      return false;
-    }
-    
     // check size of properties
     if(_controller_gain.value().size() != 6)
       return false;

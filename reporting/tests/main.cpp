@@ -5,9 +5,9 @@
 #include <rtt/PeriodicActivity.hpp>
 #include <rtt/Ports.hpp>
 
-
 using namespace std;
 using namespace Orocos;
+using namespace RTT;
 
 class TestTaskContext
     : public GenericTaskContext

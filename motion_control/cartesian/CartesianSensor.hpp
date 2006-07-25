@@ -18,9 +18,9 @@
 #ifndef __CARTESIAN_SENSOR_POS_H__
 #define __CARTESIAN_SENSOR_POS_H__
 
-#include "../naxes/nAxesSensor.hpp"
+#include "motion_control/naxes/nAxesSensor.hpp"
 
-#include <geometry/GeometryToolkit.hpp>
+#include <kdl/GeometryToolkit.hpp>
 
 namespace Orocos
 {
@@ -38,14 +38,15 @@ namespace Orocos
     virtual void shutdown();
   
   private:
-    ORO_Geometry::Frame                         _frame_local;
-    ORO_Geometry::Twist                         _twist_local;
-    RTT::WriteDataPort< ORO_Geometry::Frame >   _frame;
-    RTT::WriteDataPort< ORO_Geometry::Twist >   _twist;
+    KDL::Frame                         _frame_local;
+    KDL::Twist                         _twist_local;
+    RTT::WriteDataPort< KDL::Frame >   _frame;
+    RTT::WriteDataPort< KDL::Twist >   _twist;
 
-    std::string                                 _kine_comp_name;
+    std::string                        _kine_comp_name;
         
-    RTT::MethodC                                _positionForward, _velocityForward;
+    RTT::Method<bool(std::vector<double>,KDL::Frame)>      _positionForward;
+    RTT::Method<bool(std::vector<double>,KDL::Frame,std::vector<double>,KDL::Twist)> _velocityForward;
           
   }; // class
 }//namespace

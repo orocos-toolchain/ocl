@@ -60,13 +60,14 @@ namespace Orocos
     this->commands()->addCommand( command( "moveTo",&MyType::moveTo,&MyType::moveFinished, this),"Set the position setpoint",
 					       "setpoint", "joint setpoint for all axes",
 					       "time", "minimum time to complete trajectory" );
-    commands()->registerObject("this",_my_commandfactory);
 
     //Adding Methods
 
     this->methods()->addMethod( method( "reset", &MyType::reset, this), "Reset generator" );  
-    methods()->registerObject("this",_my_methodfactory);
-  
+
+    if(!readProperties(_propertyfile))
+      Logger::log()<<Logger::Error<<"(nAxesGeneratorPos) Reading Properties from "<<_propertyfile<<" failed!!"<<Logger::endl;
+
     // Instantiate Motion Profiles
     for( unsigned int i=0; i<_num_axes; i++)
       _motion_profile[i] = new VelocityProfile_Trap( 0, 0 );
@@ -80,10 +81,6 @@ namespace Orocos
   
   bool nAxesGeneratorPos::startup()
   {
-    if(!readProperties(_propertyfile)){
-      Logger::log()<<Logger::Error<<"(nAxesGeneratorPos) Reading Properties from "<<_propertyfile<<" failed!!"<<Logger::endl;
-      return false;
-    }
 
     //Check if readPort is connected
     if (!_position_meas.connected())

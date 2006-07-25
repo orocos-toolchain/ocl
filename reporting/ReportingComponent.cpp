@@ -40,9 +40,10 @@
 
 namespace Orocos
 {
-    using namespace std;
+  using namespace std;
+  using namespace RTT;
 
-    ReportingComponent::ReportingComponent( std::string name /*= "Reporting" */ ) 
+  ReportingComponent::ReportingComponent( std::string name /*= "Reporting" */ ) 
         : GenericTaskContext( name ),
           report("Report"),
           autotrigger("AutoTrigger","When set to 1, the data is taken upon each update(), "

@@ -46,8 +46,8 @@ namespace Orocos
   bool CartesianSensor::startup()
   {
     try{
-      _positionForward = getPeer(_kine_comp_name)->methods()->create("this","positionForward").arg(_position_local).arg(_frame_local);
-      _velocityForward = getPeer(_kine_comp_name)->methods()->create("this","velocityForward").arg(_position_local).arg(_velocity_local).arg(_frame_local).arg(_twist_local);
+      _positionForward = getPeer(_kine_comp_name)->methods()->getMethod<bool(vector<double>,Frame)>("positionForward");
+      _velocityForward = getPeer(_kine_comp_name)->methods()->getMethod<bool(vector<double>,Frame,vector<double>,Twist)>("velocityForward");
     }
     catch(...){
       return false;
@@ -59,8 +59,8 @@ namespace Orocos
     //initialize values
     succes &= nAxesSensor::startup();
         
-    succes &=_positionForward.execute();
-    succes &= _velocityForward.execute();
+    succes &=_positionForward(_position_local,_frame_local);
+    succes &=_velocityForward(_position_local,_velocity_local,_frame_local,_twist_local);
     
     _frame.Set(_frame_local);
     _twist.Set(_twist_local);
@@ -73,8 +73,8 @@ namespace Orocos
   {
     nAxesSensor::update();
         
-    _positionForward.execute();
-    _velocityForward.execute();
+    _positionForward(_position_local,_frame_local);
+    _velocityForward(_position_local,_velocity_local,_frame_local,_twist_local);
         
     _frame.Set(_frame_local);
     _twist.Set(_twist_local);

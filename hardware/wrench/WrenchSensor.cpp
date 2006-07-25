@@ -1,6 +1,8 @@
 #include "WrenchSensor.hpp"
 #include <rtt/Attribute.hpp>
-#include <rtt/TemplateFactories.hpp>
+//#include <rtt/TemplateFactories.hpp>
+#include <rtt/Command.hpp>
+#include <rtt/Method.hpp>
 #include <geometry/frames.h>
 
 #define CUTOFF_FREQUENCY_FILTER1 500.0

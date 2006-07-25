@@ -78,7 +78,6 @@ namespace Orocos
 						      "axis", "selected axis",
 						      "velocity", "joint velocity for axis",
 						      "duration", "duration of movement" );
-    commands()->registerObject("this",_my_commandfactory);
   
     //Creating Methods
 
@@ -87,15 +86,15 @@ namespace Orocos
 						       "velocity", "velocity to set" );
     this->methods()->addMethod( method( "setInitVelocities", &MyType::setInitVelocities, this), "set initial velocity", 
 							 "velocities", "velocities to set" );
-    methods()->registerObject("this",_my_methodfactory);
     
     // Instantiate Motion Profiles
     for( unsigned int i=0; i<_num_axes; i++)
       _vel_profile[i] = new VelocityProfile_Trap( 0,0);
     
+    if(!readProperties(_propertyfile))
+      Logger::log()<<Logger::Error<<"(nAxesGeneratorVel) Reading Properties from "<<_propertyfile<<" failed!!"<<Logger::endl;
+
   }
-  
-  
   
   nAxesGeneratorVel::~nAxesGeneratorVel()
   {
@@ -106,12 +105,6 @@ namespace Orocos
   
   bool nAxesGeneratorVel::startup()
   {
-  
-    if(!readProperties(_propertyfile)){
-      Logger::log()<<Logger::Error<<"(nAxesGeneratorVel) Reading Properties from "<<_propertyfile<<" failed!!"<<Logger::endl;
-      return false;
-    }
-    
     // check size of properties
     if(_max_acc.value().size() != _num_axes || _max_jerk.value().size() != _num_axes)
       return false;

@@ -26,7 +26,7 @@ namespace Orocos
 {
     
   using namespace RTT;
-  using namespace ORO_Geometry;
+  using namespace KDL;
   using namespace std;
   
   
@@ -62,8 +62,7 @@ namespace Orocos
   bool CartesianEffectorVel::startup()
   {
     try{
-      _velocityInverse = getPeer(_kine_comp_name)->methods()->create("this","velocityInverse").
-	arg(_position_joint_local).arg(_velocity_cartesian_local).arg(_velocity_joint_local);
+      _velocityInverse = getPeer(_kine_comp_name)->methods()->getMethod<bool(std::vector<double>,KDL::Twist,std::vector<double> >("velocityInverse"));
     }
     catch(...){
       return false;
@@ -73,7 +72,8 @@ namespace Orocos
     SetToZero(_velocity_cartesian_local);
     _position_joint_local = _position_joint.Get();
 
-    return _velocityInverse.execute();
+    return _velocityInverse(_position_joint_local,_velocity_cartesian_local,_velocity_joint_local);
+    
   }
   
   void CartesianEffectorVel::update()
@@ -84,7 +84,7 @@ namespace Orocos
     _position_joint_local = _position_joint.Get();
     
     // inverse velocity kinematics
-    _velocityInverse.execute();
+    _velocityInverse(_position_joint_local,_velocity_cartesian_local,_velocity_joint_local);
 
     for (unsigned int i=0; i<_num_axes; i++)
       _velocity_drives[i]->Set(_velocity_joint_local[i]);

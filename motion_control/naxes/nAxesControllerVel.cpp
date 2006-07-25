@@ -59,8 +59,10 @@ namespace Orocos
 
     this->methods()->addMethod( method( "reset", &nAxesControllerVel::reset, this), "reset the controller");
     this->methods()->addMethod( method( "resetAxis", &nAxesControllerVel::reset, this), "reset the controller","axis","axis to reset");  
-    methods()->registerObject("this",_my_methodfactory);
   
+    if(!readProperties(_propertyfile))
+      Logger::log()<<Logger::Error<<"(nAxesControllerVel) Reading Properties from "<<_propertyfile<<" failed!!"<<Logger::endl;
+
   }
   
   
@@ -68,10 +70,6 @@ namespace Orocos
   
   bool nAxesControllerVel::startup()
   {
-    if(!readProperties(_propertyfile)){
-      Logger::log()<<Logger::Error<<"(nAxesControllerVel) Reading Properties from "<<_propertyfile<<" failed!!"<<Logger::endl;
-      return false;
-    }
   
     // check size of properties
     if(_controller_gain.value().size() != _num_axes)

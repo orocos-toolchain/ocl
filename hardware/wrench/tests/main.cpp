@@ -10,14 +10,14 @@
 //#include <rtt/ConnectionC.hpp>
 #include <rtt/Ports.hpp>
 
-#include "WrenchSensor.hpp"
+#include "hardware/wrench/WrenchSensor.hpp"
 #include <rtt/os/main.h>
 
 //User interface
-#include "../../taskbrowser/TaskBrowser.hpp"
+#include "taskbrowser/TaskBrowser.hpp"
 
 //Reporting
-#include "../../reporting/FileReporting.hpp"
+#include "reporting/FileReporting.hpp"
 
 
 

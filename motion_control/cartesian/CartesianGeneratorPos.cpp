@@ -26,7 +26,7 @@ namespace Orocos
 {
   
   using namespace RTT;
-  using namespace ORO_Geometry;
+  using namespace KDL;
   using namespace std;
     
   CartesianGeneratorPos::CartesianGeneratorPos(string name,string propertyfile)
@@ -68,6 +68,12 @@ namespace Orocos
     // Instantiate Motion Profiles
     for( unsigned int i=0; i<6; i++)
       _motion_profile[i] = new VelocityProfile_Trap( 0, 0 );
+
+    //Read properties
+    if(!readProperties(_propertyfile))
+      Logger::log()<<Logger::Error<<"(CartesianGeneratorPos) Reading Properties from "<<_propertyfile<<" failed!!"<<Logger::endl;
+
+
   }
   
   CartesianGeneratorPos::~CartesianGeneratorPos()
@@ -82,11 +88,6 @@ namespace Orocos
     if (!_position_meas.connected())
       Logger::log()<<Logger::Warning<<"(CartesianGeneratorPos) Port "<<_position_desi.getName()<<"not connected"<<Logger::endl;
 
-    //Read properties
-    if(!readProperties(_propertyfile)){
-      Logger::log()<<Logger::Error<<"(CartesianGeneratorPos) Reading Properties from "<<_propertyfile<<" failed!!"<<Logger::endl;
-      return false;
-    }
     // check size of properties
     if(_maximum_velocity.value().size() != 6 || _maximum_acceleration.value().size() != 6)
       return false;
@@ -139,7 +140,7 @@ namespace Orocos
   }
   
   
-  bool CartesianGeneratorPos::moveTo(ORO_Geometry::Frame frame, double time)
+  bool CartesianGeneratorPos::moveTo(Frame frame, double time)
   {
 
     // if previous movement is finished

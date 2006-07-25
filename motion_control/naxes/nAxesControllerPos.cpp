@@ -61,24 +61,21 @@ namespace Orocos
 						       "calculate the velocity offset on the axes",
 						       "time_sleep", "time to wait before starting measurement",
 						       "num_samples", "number of samples to take");
-    commands()->registerObject("this",_my_commandfactory);
-  
     //Adding Methods
 
     this->methods()->addMethod( method( "getOffset", &MyType::getMeasurementOffsets, this),
 						 "Get offset measurements");
-    methods()->registerObject("this",_my_methodfactory);
-  
+
+    if(!readProperties(_propertyfile)){
+      Logger::log()<<Logger::Error<<"(nAxesControllerPos) Reading Properties from "<<_propertyfile<<" failed!!"<<Logger::endl;
+    }
+
   }
   
   nAxesControllerPos::~nAxesControllerPos(){};
   
   bool nAxesControllerPos::startup()
   {
-    if(!readProperties(_propertyfile)){
-      Logger::log()<<Logger::Error<<"(nAxesControllerPos) Reading Properties from "<<_propertyfile<<" failed!!"<<Logger::endl;
-      return false;
-    }
     
     // check size of properties
     if(_controller_gain.value().size() != _num_axes)
