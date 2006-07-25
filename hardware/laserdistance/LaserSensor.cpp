@@ -72,7 +72,13 @@ namespace Orocos
       _LaserInput[i] = new AnalogInput<unsigned int>(_comediSubdevAIn, i+OFFSET); //channel number starting from 0
     }
 #endif
+    
+    if(!readProperties(_propertyfile))
+      log(Error)<<"Reading properties failed."<<endlog();
+    
     Logger::log()<<Logger::Debug<<this->getName()<<": constructed."<<Logger::endl;
+
+
   }
   
   LaserSensor::~LaserSensor()
@@ -87,9 +93,6 @@ namespace Orocos
   
   bool LaserSensor::startup()    
   {
-    if(!readProperties(_propertyfile))
-      return false;
-    
     if(_simulation_values.value().size()!=_nr_chan||
        _volt2m.value().size()!=_nr_chan||
        _offsets.value().size()!=_nr_chan||
