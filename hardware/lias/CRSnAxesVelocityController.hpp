@@ -32,11 +32,11 @@
 
 namespace Orocos {
 
-class LiASnAxesVelocityController : public RTT::GenericTaskContext
+class CRSnAxesVelocityController : public RTT::GenericTaskContext
 {
 public:
-   LiASnAxesVelocityController(const std::string& name,const std::string& propertyfilename="cpf/lias.cpf");
-  virtual ~LiASnAxesVelocityController();
+   CRSnAxesVelocityController(const std::string& name,const std::string& propertyfilename="cpf/crs.cpf");
+  virtual ~CRSnAxesVelocityController();
 
 protected:  
  //

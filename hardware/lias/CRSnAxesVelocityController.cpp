@@ -25,16 +25,18 @@
  *                                                                         *
  ***************************************************************************/ 
 
-#include "LiASnAxesVelocityController.hpp"
+#include <hardware/lias/CRSnAxesVelocityController.hpp>
 
 #include <rtt/GenericTaskContext.hpp>
-#include <rtt/NonPreemptibleActivity.hpp>
+//#include <rtt/NonPreemptibleActivity.hpp>
 #include <rtt/TemplateFactories.hpp>
-#include <rtt/BufferPort.hpp>
+//#include <rtt/BufferPort.hpp>
 #include <rtt/Event.hpp>
 #include <rtt/Logger.hpp>
-#include <rtt/Attribute.hpp>
+//#include <rtt/Attribute.hpp>
+#include <rtt/Command.hpp>
 #include <rtt/DataPort.hpp>
+
 #include <rtt/dev/IncrementalEncoderSensor.hpp>
 #include <rtt/dev/AnalogOutput.hpp>
 #include <rtt/dev/DigitalOutput.hpp>
@@ -79,7 +81,7 @@ namespace Orocos {
 using namespace Orocos;
 
 
-LiASnAxesVelocityController::LiASnAxesVelocityController(const std::string& name,const std::string& propertyfilename)
+CRSnAxesVelocityController::CRSnAxesVelocityController(const std::string& name,const std::string& propertyfilename)
   : GenericTaskContext(name),
     driveValue(NUM_AXES),
     reference(NUM_AXES),
@@ -92,7 +94,7 @@ LiASnAxesVelocityController::LiASnAxesVelocityController(const std::string& name
     initialPosition("initialPosition","Initial position (rad) for simulation or hardware"),
     signAxes("signAxes","Indicates the sign of each of the axes"),
  	offset  ("offset",  "offset to compensate for friction.  Should only partially compensate friction"),
-    _num_axes(NUM_AXES),
+    _num_axes("NUM_AXES",NUM_AXES),
 	_homed(NUM_AXES),
     servoGain("servoGain","gain of the servoloop (no units)"),
     _servoGain(NUM_AXES),
@@ -121,14 +123,14 @@ LiASnAxesVelocityController::LiASnAxesVelocityController(const std::string& name
   properties()->addProperty( &servoIntegrationFactor  );
   properties()->addProperty( &servoFFScale  );
   properties()->addProperty( &servoDerivTime  );
-  attributes()->addConstant( "NUM_AXES", &_num_axes);
+  attributes()->addConstant( &_num_axes);
  
   if (!readProperties(propertyfilename)) {
     Logger::log() << Logger::Error << "Failed to read the property file, continueing with default values." << Logger::endl;
     throw 0;
   }
 #if defined (OROPKG_OS_LXRT)
-    Logger::log() << Logger::Info << "LXRT version of LiASnAxesVelocityController has started" << Logger::endl;
+    Logger::log() << Logger::Info << "LXRT version of CRSnAxesVelocityController has started" << Logger::endl;
     
     _IP_Digital_24_DOut = new IP_Digital_24_DOutInterface("IP_Digital_24_DOut");
     // \TODO : Set this automatically to the correct value :
@@ -188,7 +190,7 @@ LiASnAxesVelocityController::LiASnAxesVelocityController(const std::string& name
         _axesInterface[i] = _axes[i];
     }
   #else  // ifndef   OROPKG_OS_LXRT
-    Logger::log() << Logger::Info << "GNU-Linux simulation version of LiASnAxesVelocityController has started" << Logger::endl;
+    Logger::log() << Logger::Info << "GNU-Linux simulation version of CRSnAxesVelocityController has started" << Logger::endl;
     /*_IP_Digital_24_DOut            = 0;
     _IP_Encoder_6_task             = 0;
     _IP_FastDac_AOut               = 0;
@@ -217,12 +219,20 @@ LiASnAxesVelocityController::LiASnAxesVelocityController(const std::string& name
   /*
    *  Command Interface
    */
-  typedef LiASnAxesVelocityController MyType;
+  typedef CRSnAxesVelocityController MyType;
 
-  this->commands()->addCommand( command( "startAxis", &MyType::startAxis,         &MyType::startAxisCompleted, this), "start axis, initializes drive value to zero and starts updating the drive-value with the drive-port (only possible if axis is unlocked","axis","axis to start" ) );
-  this->commands()->addCommand( command( "stopAxis", &MyType::stopAxis,          &MyType::stopAxisCompleted, this), "stop axis, sets drive value to zero and disables the update of the drive-port, (only possible if axis is started","axis","axis to stop" ) );
-  this->commands()->addCommand( command( "lockAxis", &MyType::lockAxis,          &MyType::lockAxisCompleted, this), "lock axis, enables the brakes (only possible if axis is stopped","axis","axis to lock" ) );
-  this->commands()->addCommand( command( "unlockAxis", &MyType::unlockAxis,        &MyType::unlockAxisCompleted, this), "unlock axis, disables the brakes and enables the drive (only possible if axis is locked","axis","axis to unlock" ) );
+  this->commands()->addCommand( 
+    command( "startAxis", &MyType::startAxis,         &MyType::startAxisCompleted, this), 
+    "start axis, initializes drive value to zero and starts updating the drive-value \
+     with the drive-port (only possible if axis is unlocked","axis","axis to start" );
+  this->commands()->addCommand( command( "stopAxis", &MyType::stopAxis,          &MyType::stopAxisCompleted, this), 
+    "stop axis, sets drive value to zero and disables the update of the drive-port, \
+    (only possible if axis is started","axis","axis to stop" );
+  this->commands()->addCommand( command( "lockAxis", &MyType::lockAxis,          &MyType::lockAxisCompleted, this), 
+    "lock axis, enables the brakes (only possible if axis is stopped","axis","axis to lock" );
+  this->commands()->addCommand( command( "unlockAxis", &MyType::unlockAxis,        &MyType::unlockAxisCompleted, this), 
+    "unlock axis, disables the brakes and enables the drive (only possible if \
+     axis is locked","axis","axis to unlock" );
   this->commands()->addCommand( command( "startAllAxes", &MyType::startAllAxes,      &MyType::startAllAxesCompleted, this), "start all axes"  );
   this->commands()->addCommand( command( "stopAllAxes", &MyType::stopAllAxes,       &MyType::stopAllAxesCompleted, this), "stops all axes"  );
   this->commands()->addCommand( command( "lockAllAxes", &MyType::lockAllAxes,       &MyType::lockAllAxesCompleted, this), "locks all axes"  );
@@ -281,7 +291,7 @@ LiASnAxesVelocityController::LiASnAxesVelocityController(const std::string& name
     }
 }
 
-LiASnAxesVelocityController::~LiASnAxesVelocityController()
+CRSnAxesVelocityController::~CRSnAxesVelocityController()
 {
    DBG;
   // make sure robot is shut down
@@ -311,7 +321,7 @@ LiASnAxesVelocityController::~LiASnAxesVelocityController()
 }
 
 bool
-LiASnAxesVelocityController::isDriven(int axis)
+CRSnAxesVelocityController::isDriven(int axis)
 {
   DBG;
   if (!(axis<0 || axis>NUM_AXES-1))
@@ -323,7 +333,7 @@ LiASnAxesVelocityController::isDriven(int axis)
 }
 
 bool
-LiASnAxesVelocityController::startAxis(int axis)
+CRSnAxesVelocityController::startAxis(int axis)
 {
   DBG;
   if (!(axis<0 || axis>NUM_AXES-1))
@@ -335,7 +345,7 @@ LiASnAxesVelocityController::startAxis(int axis)
 }
 
 bool 
-LiASnAxesVelocityController::startAxisCompleted(int axis) const {
+CRSnAxesVelocityController::startAxisCompleted(int axis) const {
     DBG;
     return _axes[axis]->isDriven();
     return true;
@@ -343,7 +353,7 @@ LiASnAxesVelocityController::startAxisCompleted(int axis) const {
 
 
 bool
-LiASnAxesVelocityController::startAllAxes()
+CRSnAxesVelocityController::startAllAxes()
 {
   DBG;
   bool result = true;
@@ -354,7 +364,7 @@ LiASnAxesVelocityController::startAllAxes()
 }
 
 
-bool LiASnAxesVelocityController::startAllAxesCompleted()const
+bool CRSnAxesVelocityController::startAllAxesCompleted()const
 {
   bool _return = true;
   for(unsigned int axis = 0;axis<NUM_AXES;axis++)
@@ -364,7 +374,7 @@ bool LiASnAxesVelocityController::startAllAxesCompleted()const
 
 
 bool
-LiASnAxesVelocityController::stopAxis(int axis)
+CRSnAxesVelocityController::stopAxis(int axis)
 {
    DBG;
   if (!(axis<0 || axis>NUM_AXES-1))
@@ -376,14 +386,14 @@ LiASnAxesVelocityController::stopAxis(int axis)
 }
 
 bool 
-LiASnAxesVelocityController::stopAxisCompleted(int axis) const {
+CRSnAxesVelocityController::stopAxisCompleted(int axis) const {
     DBG;
     return _axes[axis]->isStopped();
 }
 
 
 bool
-LiASnAxesVelocityController::stopAllAxes()
+CRSnAxesVelocityController::stopAllAxes()
 {
   DBG;
   bool result = true;
@@ -394,7 +404,7 @@ LiASnAxesVelocityController::stopAllAxes()
 }
 
 bool 
-LiASnAxesVelocityController::stopAllAxesCompleted() const
+CRSnAxesVelocityController::stopAllAxesCompleted() const
 {
   bool _return = true;
   for(unsigned int axis = 0;axis<NUM_AXES;++axis)
@@ -406,7 +416,7 @@ LiASnAxesVelocityController::stopAllAxesCompleted() const
 
 
 bool
-LiASnAxesVelocityController::unlockAxis(int axis)
+CRSnAxesVelocityController::unlockAxis(int axis)
 {
   DBG;
   if (!(axis<0 || axis>LiAS_NUM_AXIS-1))
@@ -420,14 +430,14 @@ LiASnAxesVelocityController::unlockAxis(int axis)
 }
 
 bool 
-LiASnAxesVelocityController::unlockAxisCompleted(int axis) const {
+CRSnAxesVelocityController::unlockAxisCompleted(int axis) const {
     DBG;
     return true;
 }
 
 
 bool
-LiASnAxesVelocityController::lockAxis(int axis)
+CRSnAxesVelocityController::lockAxis(int axis)
 {
   DBG;
   if (!(axis<0 || axis>LiAS_NUM_AXIS-1))
@@ -441,14 +451,14 @@ LiASnAxesVelocityController::lockAxis(int axis)
 }
 
 bool 
-LiASnAxesVelocityController::lockAxisCompleted(int axis) const {
+CRSnAxesVelocityController::lockAxisCompleted(int axis) const {
     DBG;
     return true;
 }
 
 
 bool
-LiASnAxesVelocityController::lockAllAxes() {
+CRSnAxesVelocityController::lockAllAxes() {
     DBG;
     bool result=true;
     for (int axis=0;axis<NUM_AXES;axis++) {
@@ -458,14 +468,14 @@ LiASnAxesVelocityController::lockAllAxes() {
 }
 
 bool 
-LiASnAxesVelocityController::lockAllAxesCompleted() const {
+CRSnAxesVelocityController::lockAllAxesCompleted() const {
     DBG;
     return true;
 }
 
 
 bool
-LiASnAxesVelocityController::unlockAllAxes() {
+CRSnAxesVelocityController::unlockAllAxes() {
     DBG;
     for (int axis=0;axis<NUM_AXES;axis++) {
          _axes[axis]->unlock();
@@ -475,13 +485,13 @@ LiASnAxesVelocityController::unlockAllAxes() {
 
 
 bool 
-LiASnAxesVelocityController::unlockAllAxesCompleted() const {
+CRSnAxesVelocityController::unlockAllAxesCompleted() const {
     DBG;
     return true;
 }
 
 bool
-LiASnAxesVelocityController::addDriveOffset(int axis, double offset)
+CRSnAxesVelocityController::addDriveOffset(int axis, double offset)
 { 
   DBG;
   if (!(axis<0 || axis>NUM_AXES-1)) {
@@ -496,14 +506,14 @@ LiASnAxesVelocityController::addDriveOffset(int axis, double offset)
 }
 
 bool 
-LiASnAxesVelocityController::addDriveOffsetCompleted(int axis, double ) const {
+CRSnAxesVelocityController::addDriveOffsetCompleted(int axis, double ) const {
     DBG;
     return true;
 }
 
 
 bool
-LiASnAxesVelocityController::initPosition(int axis)
+CRSnAxesVelocityController::initPosition(int axis)
 {
   DBG;
   if (!(axis<0 || axis>NUM_AXES-1)) {
@@ -522,13 +532,13 @@ LiASnAxesVelocityController::initPosition(int axis)
 }
 
 bool 
-LiASnAxesVelocityController::initPositionCompleted(int) const {
+CRSnAxesVelocityController::initPositionCompleted(int) const {
     DBG;
     return true;
 }
 
 
-bool LiASnAxesVelocityController::changeServo() {
+bool CRSnAxesVelocityController::changeServo() {
     for (int axis=0;axis<NUM_AXES;++axis) {
         servoIntVel[axis] *= _servoGain[axis] / servoGain.value()[axis];
         servoIntVel[axis] *= _servoIntegrationFactor[axis] / servoIntegrationFactor.value()[axis];
@@ -538,7 +548,7 @@ bool LiASnAxesVelocityController::changeServo() {
     return true;
 }
 
-bool LiASnAxesVelocityController::changeServoCompleted() const {
+bool CRSnAxesVelocityController::changeServoCompleted() const {
     DBG;
     return true;
 }
@@ -548,7 +558,7 @@ bool LiASnAxesVelocityController::changeServoCompleted() const {
  *  This function contains the application's startup code.
  *  Return false to abort startup.
  **/
-bool LiASnAxesVelocityController::startup() {
+bool CRSnAxesVelocityController::startup() {
     DBG;
     // Initialize the servo loop
   for (int axis=0;axis<NUM_AXES;++axis) {
@@ -561,7 +571,7 @@ bool LiASnAxesVelocityController::startup() {
 /**
  * This function is periodically called.
  */
-void LiASnAxesVelocityController::update() {
+void CRSnAxesVelocityController::update() {
 #if !defined (OROPKG_OS_LXRT)
 	for (int axis=0;axis<NUM_AXES;axis++) {
 		double measpos = signAxes.value()[axis]*_axes[axis]->getSensor("Position")->readSensor();
@@ -667,25 +677,25 @@ void LiASnAxesVelocityController::update() {
 	#endif
 }
  
-bool LiASnAxesVelocityController::prepareForUse() {
+bool CRSnAxesVelocityController::prepareForUse() {
     DBG;
     return true;
 }
 
 bool
-LiASnAxesVelocityController::prepareForUseCompleted() const {
+CRSnAxesVelocityController::prepareForUseCompleted() const {
     DBG;
     return true;
 }
 
 
-bool LiASnAxesVelocityController::prepareForShutdown() {
+bool CRSnAxesVelocityController::prepareForShutdown() {
     DBG;
     return true;
 }
 
 bool
-LiASnAxesVelocityController::prepareForShutdownCompleted() const {
+CRSnAxesVelocityController::prepareForShutdownCompleted() const {
     DBG;
     return true;
 }
@@ -694,7 +704,7 @@ LiASnAxesVelocityController::prepareForShutdownCompleted() const {
 /**
  * This function is called when the task is stopped.
  */
-void LiASnAxesVelocityController::shutdown() {
+void CRSnAxesVelocityController::shutdown() {
     DBG;
     prepareForShutdown();
     //writeProperties(_propertyfile);
