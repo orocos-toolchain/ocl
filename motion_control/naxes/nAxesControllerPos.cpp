@@ -20,7 +20,9 @@
 
 
 #include "nAxesControllerPos.hpp"
+#include <rtt/Command.hpp>
 #include <rtt/TemplateFactories.hpp>
+#include <rtt/Method.hpp>
 #include <assert.h>
 
 namespace Orocos
@@ -57,14 +59,14 @@ namespace Orocos
     typedef nAxesControllerPos MyType;
 
     this->commands()->addCommand( command( "measureOffset", &MyType::startMeasuringOffsets,
-						       &MyType::finishedMeasuringOffsets, this),
-						       "calculate the velocity offset on the axes",
-						       "time_sleep", "time to wait before starting measurement",
-						       "num_samples", "number of samples to take");
+							     &MyType::finishedMeasuringOffsets, this),
+				  "calculate the velocity offset on the axes",
+				  "time_sleep", "time to wait before starting measurement",
+				  "num_samples", "number of samples to take");
     //Adding Methods
 
     this->methods()->addMethod( method( "getOffset", &MyType::getMeasurementOffsets, this),
-						 "Get offset measurements");
+				"Get offset measurements");
 
     if(!readProperties(_propertyfile)){
       Logger::log()<<Logger::Error<<"(nAxesControllerPos) Reading Properties from "<<_propertyfile<<" failed!!"<<Logger::endl;

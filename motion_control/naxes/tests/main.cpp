@@ -1,15 +1,15 @@
 //hardware interfaces
-#include "../../hardware/kuka/Kuka160nAxesVelocityController.hpp"
-#include "../../hardware/kuka/Kuka361nAxesVelocityController.hpp"
+#include "hardware/kuka/Kuka160nAxesVelocityController.hpp"
+#include "hardware/kuka/Kuka361nAxesVelocityController.hpp"
 
 //User interface
-#include "../../taskbrowser/TaskBrowser.hpp"
+#include "taskbrowser/TaskBrowser.hpp"
 
 //Reporting
-#include "../../reporting/FileReporting.hpp"
+#include "reporting/FileReporting.hpp"
 
 //nAxes components
-#include "nAxesComponents.hpp"
+#include "motion_control/naxes/nAxesComponents.hpp"
 
 //#include <rtt/Activities.hpp>
 #include <rtt/GenericTaskContext.hpp>
@@ -23,35 +23,28 @@ using namespace std;
 class EmergencyStop
 {
 public:
-  EmergencyStop(GenericTaskContext *robot)
-    : _robot(robot),fired(6) {
-    _stop = _robot->commands()->create("this", "stopAxis").arg(_axis).arg(_value);
-    _lock = _robot->commands()->create("this", "lockAxis").arg(_axis).arg(_value);
-    for(int i=0;i<6;i++)
-      fired[i]=false;
+  EmergencyStop(GenericTaskContext *axes)
+    : _axes(axes) {
+    _stop = _axes->commands()->getCommand<bool(int,double)>("stopAxis");
+    _lock = _axes->commands()->getCommand<bool(int,double)>("lockAxis");
   };
   ~EmergencyStop(){};
   void callback(int axis, double value) {
     _axis = axis;
     _value = value;
-    if(!fired[axis]){
-      _stop.execute();
-      _lock.execute();
-      Logger::log()<<Logger::Error << "---------------------------------------------" << Logger::endl;
-      Logger::log()<<Logger::Error << "--------- EMERGENCY STOP --------------------" << Logger::endl;
-      Logger::log()<<Logger::Error << "---------------------------------------------" << Logger::endl;
-      Logger::log()<<Logger::Error << "Axis "<< _axis <<" drive value "<<_value<< " reached limitDriveValue"<<Logger::endl;
-      fired[axis] = true;
-    }
-    
+    _stop(axis,value);
+    _lock(axis,value);
+    cout << "---------------------------------------------" << endl;
+    cout << "--------- EMERGENCY STOP --------------------" << endl;
+    cout << "---------------------------------------------" << endl;
+    cout << "Axis "<< _axis <<" drive value "<<_value<< " reached limitDriveValue"<<endl;
   };
 private:
-  GenericTaskContext *_robot;
-  CommandC _stop;
-  CommandC _lock;
+  GenericTaskContext *_axes;
+  Command<bool(int,double)> _stop;
+  Command<bool(int,double)> _lock;
   int _axis;
   double _value;
-  vector<bool> fired;
 }; // class
 
 void PositionLimitCallBack(int axis, double value)

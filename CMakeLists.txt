@@ -111,10 +111,11 @@ INCLUDE(config/check_depend.cmake)
 INCLUDE(config/component_rules.cmake)
 
 
-LINK_DIRECTORIES( ${PROJ_BINARY_DIR}/taskbrowser ${PROJ_BINARY_DIR}/reporting ${PROJ_BINARY_DIR}/hardware)
+LINK_DIRECTORIES( ${PROJ_BINARY_DIR}/taskbrowser ${PROJ_BINARY_DIR}/reporting ${PROJ_BINARY_DIR}/hardware ${PROJ_BINARY_DIR}/motion_control)
 ADD_SUBDIRECTORY( taskbrowser )
 ADD_SUBDIRECTORY( reporting )
 ADD_SUBDIRECTORY( hardware )
+ADD_SUBDIRECTORY( motion_control ) 
 ADD_SUBDIRECTORY( viewer )
 ###########################################################
 #                                                         #

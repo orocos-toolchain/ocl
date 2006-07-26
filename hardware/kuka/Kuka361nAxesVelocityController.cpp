@@ -67,7 +67,7 @@ namespace Orocos
       _initialPosition("initialPosition","Initial position (rad) for simulation or hardware"),
       _driveOffset("driveOffset","offset (in rad/s) to the drive value."),
       _simulation("simulation","true if simulationAxes should be used"),
-      _num_axes(NUM_AXES),
+      _num_axes("NUM_AXES",NUM_AXES),
       _activated(false),
       _positionConvertFactor(NUM_AXES),
       _driveConvertFactor(NUM_AXES),
@@ -91,7 +91,7 @@ namespace Orocos
     properties()->addProperty( &_initialPosition  );
     properties()->addProperty( &_driveOffset  );
     properties()->addProperty( &_simulation  );
-    attributes()->addConstant( "NUM_AXES", &_num_axes);
+    attributes()->addConstant( &_num_axes);
     
     if (!readProperties(_propertyfile)) {
       Logger::log() << Logger::Error << "Failed to read the property file, continueing with default values." << Logger::endl;

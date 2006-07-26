@@ -44,7 +44,6 @@ namespace Orocos
       ports()->addPort(_velocity_drives[i]);
     }
     this->ports()->addPort(&_velocity_out);
-    
   }
   
   
@@ -52,6 +51,7 @@ namespace Orocos
   
   bool nAxesEffectorVel::startup()
   {
+    return true;
   }
   
   void nAxesEffectorVel::update()

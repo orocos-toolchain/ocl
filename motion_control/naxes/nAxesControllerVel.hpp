@@ -43,7 +43,7 @@ namespace Orocos
   
   private:
     void reset();
-    void reset(int axis);
+    void resetAxis(int axis);
   
     unsigned int                               _num_axes;
     std::string                                _propertyfile;
