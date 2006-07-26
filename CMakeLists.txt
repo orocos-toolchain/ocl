@@ -15,13 +15,8 @@ PROJECT(orocos-components)
 SET( VERSION 0.1 CACHE STRING "Version of Orocos Components" )
   MESSAGE( "Orocos Components version ${VERSION}" )
 
-# If environment variable OROCOS_INSTALL_DIR is not set, use /usr/local/orocos
-SET( INSTALL_DIR $ENV{OROCOS_INSTALL} )
-IF( INSTALL_DIR )
-  SET( CMAKE_INSTALL_PREFIX $ENV{OROCOS_INSTALL} CACHE PATH "Installation directory" FORCE)
-ELSE( INSTALL_DIR )
-  SET( CMAKE_INSTALL_PREFIX /usr/local/orocos CACHE PATH "Installation directory" )
-ENDIF( INSTALL_DIR )
+# Do not rely on environment variables to find the path, because that's confusing
+SET( CMAKE_INSTALL_PREFIX /usr/local/orocos CACHE PATH "Installation directory" )
 MESSAGE( "Setting installation directory to ${CMAKE_INSTALL_PREFIX}" )
 
 SET( PROJ_SOURCE_DIR ${orocos-components_SOURCE_DIR} )
