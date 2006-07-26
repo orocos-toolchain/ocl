@@ -1,3 +1,5 @@
+IF ( BUILD_TESTS)
+
 OPTION( BUILD_TASKBROWSER_TEST "Build TaskBrowser Test" ON )
 
 IF ( BUILD_TASKBROWSER_TEST )
@@ -10,5 +12,6 @@ IF ( BUILD_TASKBROWSER_TEST )
     # Use  TARGET_LINK_LIBRARIES( report libs... ) to add library deps.
     TARGET_LINK_LIBRARIES( taskb orocos-taskbrowser )
 
-
 ENDIF ( BUILD_TASKBROWSER_TEST )
+
+ENDIF ( BUILD_TESTS)

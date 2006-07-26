@@ -56,17 +56,15 @@ MACRO( GLOBAL_ADD_TEST TEST_NAME )
   # unless we have a good reason not to, 
   # build and install this component
   #
-IF(BUILD_TESTS)
-  ADD_EXECUTABLE( ${TEST_NAME} ${ARGN} )
-  #INSTALL_TARGETS( /bin ${TEST_NAME} )
-  TARGET_LINK_LIBRARIES( ${TEST_NAME} ${OROCOS_RTT_LIBS} )
+  IF(BUILD_TESTS)
+	ADD_EXECUTABLE( ${TEST_NAME} ${ARGN} )
+	#INSTALL_TARGETS( /bin ${TEST_NAME} )
+	TARGET_LINK_LIBRARIES( ${TEST_NAME} ${OROCOS_RTT_LIBS} )
 
-  MESSAGE( "Planning to build test: ${TEST_NAME}" )
-ELSE(BUILD_TESTS)
-  MESSAGE( "Not building test: ${TEST_NAME}" )
-ENDIF(BUILD_TESTS)
-
-
+	MESSAGE( "Planning to build test: ${TEST_NAME}" )
+  ELSE(BUILD_TESTS)
+	MESSAGE( "Not building test: ${TEST_NAME}" )
+  ENDIF(BUILD_TESTS)
 ENDMACRO( GLOBAL_ADD_TEST TEST_NAME )
 
 #

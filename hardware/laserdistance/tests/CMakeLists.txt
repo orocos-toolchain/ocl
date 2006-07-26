@@ -1,3 +1,4 @@
+IF ( BUILD_TESTS)
 OPTION( BUILD_LASER_TEST "Build Laser Distance Sensor Components Test" OFF )
 
 IF ( BUILD_LASER_TEST )
@@ -12,3 +13,4 @@ IF ( BUILD_LASER_TEST )
 
 
 ENDIF ( BUILD_LASER_TEST )
+ENDIF ( BUILD_TESTS)

@@ -1,3 +1,4 @@
+IF ( BUILD_TESTS)
 OPTION( BUILD_VIEWER_TEST "Build Viewer Test" ON )
 
 IF ( BUILD_VIEWER_TEST )
@@ -10,3 +11,4 @@ IF ( BUILD_VIEWER_TEST )
     TARGET_LINK_LIBRARIES( viewer orocos-taskbrowser orocos-reporting orocos-kuka orocos-gnulinux orocos-viewer)
 
 ENDIF ( BUILD_VIEWER_TEST )
+ENDIF ( BUILD_TESTS)
