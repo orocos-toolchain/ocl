@@ -8,5 +8,6 @@ IF ( BUILD_LASER )
     GLOBAL_ADD_COMPONENT( orocos-laser ${SRCS} )
 
     ADD_SUBDIRECTORY( tests )
+    ADD_SUBDIRECTORY( cpf )
 
 ENDIF ( BUILD_LASER )

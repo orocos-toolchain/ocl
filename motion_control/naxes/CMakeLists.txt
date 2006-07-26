@@ -8,5 +8,6 @@ IF ( BUILD_NAXES )
     GLOBAL_ADD_COMPONENT( orocos-naxes ${SRCS} )
 
     ADD_SUBDIRECTORY( tests )
+    ADD_SUBDIRECTORY( cpf )
 
 ENDIF ( BUILD_NAXES )

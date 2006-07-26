@@ -6,7 +6,7 @@ IF ( BUILD_KUKA )
     FILE( GLOB SRCS [^.]*.cpp )
 
     GLOBAL_ADD_COMPONENT( orocos-kuka ${SRCS} )
-
     ADD_SUBDIRECTORY( tests )
+    ADD_SUBDIRECTORY( cpf )
 
 ENDIF ( BUILD_KUKA )
