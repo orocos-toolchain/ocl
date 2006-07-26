@@ -1,10 +1,10 @@
 //hardware interfaces
 
-#include "CaptureCamera.hpp"
+#include "hardware/camera/CaptureCamera.hpp"
 //#include "ShowImages.hpp"
 
 //User interface
-#include "../../taskbrowser/TaskBrowser.hpp"
+#include "taskbrowser/TaskBrowser.hpp"
 
 #include <rtt/os/main.h>
 

@@ -17,6 +17,7 @@
 
 #include "CaptureCamera.hpp"
 #include <rtt/TemplateFactories.hpp>
+#include <rtt/Command.hpp>
 #include <libdc1394/dc1394_control.h>
 
 namespace Orocos
@@ -60,7 +61,6 @@ namespace Orocos
     //==============
 
     this->commands()->addCommand( command("updateImage",&CaptureCamera::updateImage,&CaptureCamera::updateImageFinished, this),"update image in port");
-    commands()->registerObject("this",_com_fact);
     
   }
   
