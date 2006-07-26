@@ -1236,11 +1236,11 @@ namespace Orocos
         bool found(false);
 
         // if program exists, display.
-        if ( context->scripting()->hasProgram( storedname ) ) {
-            ps = context->scripting()->getProgramStatus(storedname);
+        if ( context->scripting()->hasProgram( progname ) ) {
+            ps = context->scripting()->getProgramStatus(progname);
             s = toupper(ps[0]);
-            txtss.str( context->scripting()->getProgramText(storedname) );
-            ln = context->scripting()->getProgramLine(storedname);
+            txtss.str( context->scripting()->getProgramText(progname) );
+            ln = context->scripting()->getProgramLine(progname);
             if ( cl < 0 ) cl = ln;
             start = cl < 10 ? 1 : cl - 10;
             end   = cl + 10;
@@ -1249,19 +1249,21 @@ namespace Orocos
         }
 
         // If statemachine exists, display.
-        if ( context->scripting()->hasStateMachine( storedname ) ) {
-            ps = context->scripting()->getStateMachineStatus(storedname);
+        if ( context->scripting()->hasStateMachine( progname ) ) {
+            ps = context->scripting()->getStateMachineStatus(progname);
             s = toupper(ps[0]);
-            txtss.str( context->scripting()->getStateMachineText(storedname) );
-            ln = context->scripting()->getStateMachineLine(storedname);
+            txtss.str( context->scripting()->getStateMachineText(progname) );
+            ln = context->scripting()->getStateMachineLine(progname);
             if ( cl < 0 ) cl = ln;
             start = cl <= 10 ? 1 : cl - 10;
             end   = cl + 10;
             this->listText( txtss, start, end, ln, s);
             found = true;
         }
-        if ( !found )
-            cerr << "Error : No such program or state machine found : "<<progname<<endl;
+        if ( !found ) {
+            cerr << "Error : No such program or state machine found : "<<progname;
+            cerr << " in "<< context->getName() <<"."<<endl;
+        }
     }
 
     void TaskBrowser::printProgram(int cl) {
