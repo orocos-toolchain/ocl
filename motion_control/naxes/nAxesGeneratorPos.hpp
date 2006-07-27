@@ -26,7 +26,7 @@
 #include <rtt/GenericTaskContext.hpp>
 #include <rtt/Properties.hpp>
 #include <rtt/Ports.hpp>
-#include <geometry/velocityprofile_trap.h>
+#include <kdl/motion/velocityprofile_trap.h>
 #include <rtt/TimeService.hpp>
 
 namespace Orocos
@@ -56,7 +56,7 @@ namespace Orocos
     RTT::ReadDataPort< std::vector<double> >  _position_meas;
     RTT::WriteDataPort< std::vector<double> > _position_desi, _velocity_desi;
     
-    std::vector<ORO_Geometry::VelocityProfile_Trap*>    _motion_profile;
+    std::vector<KDL::VelocityProfile_Trap*>    _motion_profile;
     RTT::TimeService::ticks                   _time_begin;
     RTT::TimeService::Seconds                 _time_passed;
     double                                    _max_duration;

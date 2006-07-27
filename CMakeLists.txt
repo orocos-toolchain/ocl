@@ -25,6 +25,8 @@ SET( PROJ_BINARY_DIR ${orocos-components_BINARY_DIR} )
 SET( OROCOS_TARGET gnulinux CACHE STRING "The Operating System target.")
 SET( OROCOS_INSTALL ${CMAKE_INSTALL_PREFIX} CACHE PATH "The Orocos installation directory.")
 
+SET( KDL_INSTALL ${CMAKE_INSTALL_PREFIX} CACHE PATH "The KDL installation directory.")
+
 # The name of the resulting library.
 #SET( COMPONENTS_LIBRARY orocos-components CACHE STRING "Name of the resulting library")
 #INSTALL_TARGETS( /lib ${COMPONENTS_LIBRARY} )
@@ -68,6 +70,10 @@ INCLUDE(config/global_setup.cmake)
 ## Find Orocos RTT.
 
 INCLUDE (${PROJ_SOURCE_DIR}/config/FindOrocosRTT.cmake)
+
+## Find KDL
+
+INCLUDE (${PROJ_SOURCE_DIR}/config/FindKDL.cmake)
 
 ## Uninstall target
 CONFIGURE_FILE(

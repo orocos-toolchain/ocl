@@ -9,7 +9,7 @@ IF ( BUILD_WRENCH_TEST )
     # Add a test program
     GLOBAL_ADD_TEST( wrench ${SRCS} )
     # Use  TARGET_LINK_LIBRARIES( report libs... ) to add library deps.
-    TARGET_LINK_LIBRARIES( wrench orocos-taskbrowser orocos-reporting orocos-wrench orocos-gnulinux)
+    TARGET_LINK_LIBRARIES( wrench orocos-taskbrowser orocos-reporting orocos-wrench orocos-gnulinux kdltk kdl)
 
 
 ENDIF ( BUILD_WRENCH_TEST )

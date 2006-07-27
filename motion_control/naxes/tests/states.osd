@@ -51,25 +51,39 @@ StateMachine Default
         select StopRobotState
     }
     entry {
-      var double position0 = Robot.positionValue0.Get()      
-      var double position1 = Robot.positionValue1.Get()      
-      var double position2 = Robot.positionValue2.Get()      
-      var double position3 = Robot.positionValue3.Get()      
-      var double position4 = Robot.positionValue4.Get()      
-      var double position5 = Robot.positionValue5.Get() 
+      do nAxesSensor.start()
+      do nAxesGeneratorPos.start()
+      do nAxesControllerPosVel.start()
+      do nAxesEffectorVel.start()
 
-      set position0 = position0 + pi/4
-      set position3 = position3 + pi/2
-      set position4 = position4 + pi/4
-      set position5 = position5 + pi/2
-      do MoveToJoint(position0, position1, position2, position3, position4, position5)
-      set position0 = position0 - pi/4
-      set position3 = position3 - pi/2
-      set position4 = position4 - pi/4
-      set position5 = position5 - pi/2
-      do MoveToJoint(position0, position1, position2, position3, position4, position5)
+      var array MoveToPos(6)
+      set MoveToPos[0] = Robot.positionValue0.Get()
+      set MoveToPos[1] = Robot.positionValue1.Get()
+      set MoveToPos[2] = Robot.positionValue2.Get()
+      set MoveToPos[3] = Robot.positionValue3.Get()
+      set MoveToPos[4] = Robot.positionValue4.Get()
+      set MoveToPos[5] = Robot.positionValue5.Get()
+
+      set MoveToPos[0] = MoveToPos[0] + pi/4
+      set MoveToPos[3] = MoveToPos[3] + pi/2
+      set MoveToPos[4] = MoveToPos[4] + pi/4
+      set MoveToPos[5] = MoveToPos[5] + pi/2
+      
+      do nAxesGeneratorPos.moveTo(MoveToPos, 0.0)
+  
+      set MoveToPos[0] = MoveToPos[0] - pi/4
+      set MoveToPos[3] = MoveToPos[3] - pi/2
+      set MoveToPos[4] = MoveToPos[4] - pi/4
+      set MoveToPos[5] = MoveToPos[5] - pi/2
+
+      do nAxesGeneratorPos.moveTo(MoveToPos, 0.0)
+
     }
     exit {
+	 do nAxesEffectorVel.stop()
+	 do nAxesControllerPosVel.stop()
+	 do nAxesGeneratorPos.stop()
+	 do nAxesSensor.stop()
     }
     transitions {
       select StopRobotState

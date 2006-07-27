@@ -22,7 +22,7 @@
 #include <pkgconf/system.h> 
 
 #include <rtt/RTT.hpp>
-#include <geometry/GeometryToolkit.hpp>
+#include <kdl/toolkit.hpp>
 #include <rtt/GenericTaskContext.hpp>
 #include <rtt/Ports.hpp>
 
@@ -63,8 +63,8 @@ namespace Orocos
     bool interprete_K600_Msg();
 #endif
 
-    std::vector<ORO_Geometry::Vector> _ledPositions_local;
-    RTT::WriteDataPort<std::vector<ORO_Geometry::Vector> > _ledPositions;
+    std::vector<KDL::Vector> _ledPositions_local;
+    RTT::WriteDataPort<std::vector<KDL::Vector> > _ledPositions;
   };
 };//namespace
 

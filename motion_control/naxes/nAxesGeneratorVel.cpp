@@ -27,7 +27,7 @@ namespace Orocos
 {
   
     using namespace RTT;
-    using namespace ORO_Geometry;
+    using namespace KDL;
     using namespace std;
   
     nAxesGeneratorVel::nAxesGeneratorVel(string name,unsigned int num_axes,

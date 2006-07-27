@@ -6,8 +6,7 @@
 #include <rtt/Event.hpp>
 #include <rtt/TemplateFactories.hpp>
 #include <rtt/Ports.hpp>
-#include <geometry/frames.h>
-#include <geometry/GeometryToolkit.hpp>
+#include <kdl/toolkit.hpp>
 
 #include <pkgconf/system.h> 
 #if defined (OROPKG_OS_LXRT)
@@ -35,21 +34,21 @@ namespace Orocos
     virtual ~WrenchSensor();
     
   protected:
-    RTT::WriteDataPort<ORO_Geometry::Wrench> outdatPort;
+    RTT::WriteDataPort<KDL::Wrench> outdatPort;
     
     /**
      * Task's Methods.
      */
-    virtual ORO_Geometry::Wrench maxMeasurement() const;
-    virtual ORO_Geometry::Wrench minMeasurement() const;
-    virtual ORO_Geometry::Wrench zeroMeasurement() const;
+    virtual KDL::Wrench maxMeasurement() const;
+    virtual KDL::Wrench minMeasurement() const;
+    virtual KDL::Wrench zeroMeasurement() const;
     
     
     virtual bool chooseFilter(double period); 
     virtual bool chooseFilterDone() const;
     
-    virtual bool setOffset(ORO_Geometry::Wrench); 
-    virtual bool addOffset(ORO_Geometry::Wrench); 
+    virtual bool setOffset(KDL::Wrench); 
+    virtual bool addOffset(KDL::Wrench); 
     virtual bool setOffsetDone() const;
     
     RTT::Event<void(void)> maximumLoadEvent;
@@ -65,8 +64,8 @@ namespace Orocos
     std::string   _propertyfile;
     
     
-    ORO_Geometry::Wrench*  _writeBuffer;
-    RTT::Property<ORO_Geometry::Wrench>   _offset;  
+    KDL::Wrench*  _writeBuffer;
+    RTT::Property<KDL::Wrench>   _offset;  
     s16Forces              _write_struct,_full_scale;
     
   };

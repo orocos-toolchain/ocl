@@ -27,7 +27,7 @@
 namespace Orocos
 {
   using namespace RTT;
-  using namespace ORO_Geometry;
+  using namespace KDL;
   using namespace std;
   
   nAxesGeneratorPos::nAxesGeneratorPos(string name,unsigned int num_axes,
@@ -145,31 +145,31 @@ namespace Orocos
   
   bool nAxesGeneratorPos::moveTo(const vector<double>& position, double time)
   {
-    // if previous movement is finished
-    if (!_is_moving){
-      assert(position.size() == _num_axes);
-      _max_duration = 0;
-      // get current position/
-      _position_meas_local = _position_meas.Get();
-      for (unsigned int i=0; i<_num_axes; i++){
-	// Set motion profiles
-	_motion_profile[i]->SetProfileDuration( _position_meas_local[i], position[i], time );
-	// Find lengthiest trajectory
-	_max_duration = max( _max_duration, _motion_profile[i]->Duration() );
+      // if previous movement is finished
+      if (!_is_moving){
+          assert(position.size() == _num_axes);
+          _max_duration = 0;
+          // get current position/
+          _position_meas_local = _position_meas.Get();
+          for (unsigned int i=0; i<_num_axes; i++){
+              // Set motion profiles
+              _motion_profile[i]->SetProfileDuration( _position_meas_local[i], position[i], time );
+              // Find lengthiest trajectory
+              _max_duration = max( _max_duration, _motion_profile[i]->Duration() );
+          }
+          // Rescale trajectories to maximal duration
+          for(unsigned int i = 0; i < _num_axes; i++)
+              _motion_profile[i]->SetProfileDuration( _position_meas_local[i], position[i], _max_duration );
+          
+          _time_begin = TimeService::Instance()->getTicks();
+          _time_passed = 0;
+          
+          _is_moving = true;
+          return true;
       }
-      // Rescale trajectories to maximal duration
-      for(unsigned int i = 0; i < _num_axes; i++)
-	_motion_profile[i]->SetProfileDuration( _position_meas_local[i], position[i], _max_duration );
-      
-      _time_begin = TimeService::Instance()->getTicks();
-      _time_passed = 0;
-      
-      _is_moving = true;
-      return true;
-    }
-    // still moving
-    else
-      return false;
+      // still moving
+      else
+          return false;
   }
   
   bool nAxesGeneratorPos::moveFinished() const

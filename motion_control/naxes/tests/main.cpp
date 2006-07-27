@@ -143,11 +143,11 @@ int ORO_main(int argc, char* argv[])
   super.connectPeers(&effector);
 
   // Load programs in supervisor
-  super.loadProgram("cpf/program_calibrate_offsets.ops");
-  super.loadProgram("cpf/program_moveto.ops");
+  super.loadProgram("program_calibrate_offsets.ops");
+  super.loadProgram("program_moveto.ops");
   
   // Load StateMachine in supervisor
-  super.loadStateMachine("cpf/states.osd");
+  super.loadStateMachine("states.osd");
 
     // Creating Tasks
   NonPreemptibleActivity _kukaTask(0.01, my_robot->engine() ); 
@@ -159,7 +159,7 @@ int ORO_main(int argc, char* argv[])
   NonPreemptibleActivity _controllerVelTask(0.01, controllerVel.engine() ); 
   NonPreemptibleActivity _effectorTask(0.01, effector.engine() ); 
   PeriodicActivity reportingTask(2,0.1,reporter.engine());
-  NonPreemptibleActivity superTask(0.01,super.engine());
+  PeriodicActivity superTask(1,0.1,super.engine());
 
   TaskBrowser browser(&super);
   browser.setColorTheme( TaskBrowser::whitebg );
@@ -168,8 +168,8 @@ int ORO_main(int argc, char* argv[])
   _kukaTask.start();
   
   //Load Reporterconfiguration and start Reporter
-  reporter.load();
-  reportingTask.start();
+  //reporter.load();
+  //reportingTask.start();
   
   // Start the console reader.
   browser.loop();

@@ -3,7 +3,6 @@
 //#include <rtt/TemplateFactories.hpp>
 #include <rtt/Command.hpp>
 #include <rtt/Method.hpp>
-#include <geometry/frames.h>
 
 #define CUTOFF_FREQUENCY_FILTER1 500.0
 #define CUTOFF_FREQUENCY_FILTER2 125.0
@@ -20,7 +19,7 @@ namespace Orocos
 {
   using namespace RTT;
   using namespace std;
-  using namespace ORO_Geometry;
+  using namespace KDL;
   
   WrenchSensor::WrenchSensor(double samplePeriod,std::string name,unsigned int DSP,string propertyfile) 
     : RTT::GenericTaskContext(name),
@@ -30,34 +29,35 @@ namespace Orocos
       _propertyfile(propertyfile),
       _offset("offset","Offset for zero-measurement",Wrench::Zero())
   {
-    this->ports()->addPort( &outdatPort );
+      Toolkit::Import( KDLToolkit );
+      this->ports()->addPort( &outdatPort );
+      
+      this->properties()->addProperty(&_offset);
+      
 
-    this->properties()->addProperty(&_offset);
-    
-
-    /**
-     * Method Factory Interface.
-     */
-
-    _writeBuffer = new Wrench(Wrench::Zero());
-    _offset.value() = Wrench::Zero();
-    
-    this->methods()->addMethod( method( "minMeasurement", &WrenchSensor::minMeasurement, this), "Gets the minimum measurement value."  );
-    
-    this->methods()->addMethod( method( "maxMeasurement", &WrenchSensor::maxMeasurement, this), "Gets the maximum measurement value."  );
-    
-    this->methods()->addMethod( method( "zeroMeasurement", &WrenchSensor::zeroMeasurement, this), "Gets the zero measurement value."  );
-
+      /**
+       * Method Factory Interface.
+       */
+      
+      _writeBuffer = new Wrench(Wrench::Zero());
+      _offset.value() = Wrench::Zero();
+      
+      this->methods()->addMethod( method( "minMeasurement", &WrenchSensor::minMeasurement, this), "Gets the minimum measurement value."  );
+      
+      this->methods()->addMethod( method( "maxMeasurement", &WrenchSensor::maxMeasurement, this), "Gets the maximum measurement value."  );
+      
+      this->methods()->addMethod( method( "zeroMeasurement", &WrenchSensor::zeroMeasurement, this), "Gets the zero measurement value."  );
+      
     this->commands()->addCommand( command( "chooseFilter", &WrenchSensor::chooseFilter,
-			 &WrenchSensor::chooseFilterDone, this),
-			 "Command to choose a different filter","p","periodValue"  );	
+                                           &WrenchSensor::chooseFilterDone, this),
+                                  "Command to choose a different filter","p","periodValue"  );	
     
     this->commands()->addCommand( command( "setOffset", &WrenchSensor::setOffset,
-			 &WrenchSensor::setOffsetDone, this),
-			 "Command to set the zero offset","o","offset vector"  );	
+                                           &WrenchSensor::setOffsetDone, this),
+                                  "Command to set the zero offset","o","offset vector"  );	
     this->commands()->addCommand( command( "addOffset", &WrenchSensor::addOffset,
-			 &WrenchSensor::setOffsetDone, this),
-			 "Command to set the zero offset","o","offset vector"  );	
+                                           &WrenchSensor::setOffsetDone, this),
+                                  "Command to set the zero offset","o","offset vector"  );	
 
     this->events()->addEvent( "maximumLoadEvent", &maximumLoadEvent);
     
@@ -88,23 +88,23 @@ namespace Orocos
     
   }
   
-  ORO_Geometry::Wrench WrenchSensor::maxMeasurement() const
+    Wrench WrenchSensor::maxMeasurement() const
   {
-    return ORO_Geometry::Wrench( ORO_Geometry::Vector((double)_full_scale.Fx     , (double)_full_scale.Fy     , (double)_full_scale.Fz)
-				 , ORO_Geometry::Vector((double)_full_scale.Tx / 10, (double)_full_scale.Fy / 10, (double)_full_scale.Fz / 10) );
+    return Wrench( Vector((double)_full_scale.Fx     , (double)_full_scale.Fy     , (double)_full_scale.Fz)
+				 , Vector((double)_full_scale.Tx / 10, (double)_full_scale.Fy / 10, (double)_full_scale.Fz / 10) );
   }
   
   
-  ORO_Geometry::Wrench WrenchSensor::minMeasurement() const
+  Wrench WrenchSensor::minMeasurement() const
   {
-    return ORO_Geometry::Wrench( ORO_Geometry::Vector(-(double)_full_scale.Fx     , -(double)_full_scale.Fy     , -(double)_full_scale.Fz)
-				 , ORO_Geometry::Vector(-(double)_full_scale.Tx / 10, -(double)_full_scale.Fy / 10, -(double)_full_scale.Fz / 10) );
+    return Wrench( Vector(-(double)_full_scale.Fx     , -(double)_full_scale.Fy     , -(double)_full_scale.Fz)
+				 , Vector(-(double)_full_scale.Tx / 10, -(double)_full_scale.Fy / 10, -(double)_full_scale.Fz / 10) );
     
   }
   
-  ORO_Geometry::Wrench WrenchSensor::zeroMeasurement() const
+  Wrench WrenchSensor::zeroMeasurement() const
   {
-    return ORO_Geometry::Wrench(ORO_Geometry::Vector(0,0,0), ORO_Geometry::Vector(0,0,0));
+    return Wrench(Vector(0,0,0), Vector(0,0,0));
   }
   
   bool WrenchSensor::chooseFilter(double period)
@@ -133,13 +133,13 @@ namespace Orocos
   }
   
   
-  bool WrenchSensor::setOffset(ORO_Geometry::Wrench off)
+  bool WrenchSensor::setOffset(Wrench off)
   {
     
     _offset.value()=off;
     return true;
   }
-  bool WrenchSensor::addOffset(ORO_Geometry::Wrench off)
+  bool WrenchSensor::addOffset(Wrench off)
   {
     
     _offset.value()= _offset.value()+off;
