@@ -9,7 +9,7 @@ IF ( BUILD_LIAS_TEST )
 
     SET (SRCS_BASE base.cpp TestTcpTaskContext.cpp)
     GLOBAL_ADD_TEST( base ${SRCS_BASE} ) 
-    TARGET_LINK_LIBRARIES( base orocos-taskbrowser orocos-reporting orocos-lias orocos-wrench orocos-gnulinux kdl kdltk)
+    TARGET_LINK_LIBRARIES( base orocos-taskbrowser orocos-reporting orocos-lias orocos-wrench orocos-gnulinux kdltk kdl)
 
 ENDIF ( BUILD_LIAS_TEST )
 

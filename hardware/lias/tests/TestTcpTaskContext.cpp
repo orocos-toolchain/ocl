@@ -1,12 +1,12 @@
 #include "TestTcpTaskContext.hpp"
 #include <rtt/Attribute.hpp>
 #include <rtt/Ports.hpp>
-#include <kdl/frames.h>
-#include <kdl/toolkit.h>
+#include <kdl/frames.hpp>
+#include <kdl/toolkit.hpp>
 #include <math.h>
 
 using namespace RTT;
-using namespace KDL:
+using namespace KDL;
 using namespace std;
 
 TestTcpTaskContext::TestTcpTaskContext(std::string name) 
