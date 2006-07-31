@@ -329,14 +329,6 @@ namespace Orocos
         if ( comp->properties() && comp->properties()->find( dataname ) )
             return this->reportDataSource( component + "." + dataname, "Data",
                                            comp->properties()->find( dataname )->getDataSource() );
-        // Is it a datasource ?
-        if ( comp->datasources()->hasMember("this",dataname) ) {
-            if (comp->datasources()->getObjectFactory("this")->getArity( dataname ) == 0)
-                return this->reportDataSource( component + "." + dataname, "Data",
-                                               comp->datasources()->getObjectFactory("this")
-                                               ->create( dataname, std::vector<DataSourceBase::shared_ptr>() ) );
-            Logger::log() <<Logger::Error << "Could not report Data " << dataname <<" with arity != 0."<<Logger::endl;
-        }
         return false; 
     }
 
