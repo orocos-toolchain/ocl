@@ -26,7 +26,7 @@
 #include <rtt/GenericTaskContext.hpp>
 #include <rtt/Properties.hpp>
 #include <rtt/Ports.hpp>
-#include <kdl/velocityprofile_trap.h>
+#include <kdl/motion/velocityprofile_trap.h>
 #include <rtt/TimeService.hpp>
 
 namespace Orocos
