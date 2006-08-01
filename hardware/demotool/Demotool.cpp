@@ -41,44 +41,21 @@ namespace Orocos
     properties()->addProperty(&_demotool_fs);
 
     Logger::log()<<Logger::Debug<<this->getName()<<": adding Ports"<<Logger::endl;
-    ports()->addPort(&_distances);
-
-    Logger::log()<<Logger::Debug<<this->getName()<<": adding Events"<<Logger::endl;
-    events()->addEvent("distanceOutOfRange",&_distanceOutOfRange);
+    ports()->addPort(&_frame_camera_object);
+    ports()->addPort(&_num_visible_leds);
+    ports()->addPort(&_wrench_object_object);
     
-#if defined (OROPKG_DEVICE_DRIVERS_COMEDI)
-    if(_nr_chan>NR_CHAN){
-      Logger::log()<<Logger::Warning<<"Only 2 hardware sensors currently available, resetting nr of channels to 2"<<Logger::endl;
-      _nr_chan = NR_CHAN;
-    }
-    Logger::log()<<Logger::Debug<<this->getName()<<": Creating ComediDevice"<<Logger::endl;
-    _comediDev_NI6024  = new ComediDevice( 4 ); //NI-6024 for analog in
-    int subd;
-    subd = 0; // subdevice 0 is analog  in
-    Logger::log()<<Logger::Debug<<this->getName()<<": Creating ComediSubDevice"<<Logger::endl;
-    _comediSubdevAIn     = new ComediSubDeviceAIn( _comediDev_NI6024, "Laser", subd );
-    for(unsigned int i = 0; i < nr_chan;i++){
-      Logger::log()<<Logger::Debug<<this->getName()<<": Creating AnalogInput "<<i<<Logger::endl;
-      _LaserInput[i] = new AnalogInput<unsigned int>(_comediSubdevAIn, i+OFFSET); //channel number starting from 0
-    }
-#endif
+    Logger::log()<<Logger::Debug<<this->getName()<<": adding Events"<<Logger::endl;
+    //events()->addEvent("distanceOutOfRange",&_distanceOutOfRange);
     
     if(!readProperties(_propertyfile))
       log(Error)<<"Reading properties failed."<<endlog();
     
     Logger::log()<<Logger::Debug<<this->getName()<<": constructed."<<Logger::endl;
-
-
   }
   
   Demotool::~Demotool()
   {
-#if defined (OROPKG_DEVICE_DRIVERS_COMEDI)
-    delete _comediDev_NI6024;
-    delete _comediSubdevAIn;
-    for(unsigned int i=0; i<_LaserInput.size();i++)
-      delete _LaserInput[i];
-#endif
   }
   
   bool Demotool::startup()    
@@ -97,14 +74,6 @@ namespace Orocos
     
   void Demotool::update()
   {
-#if defined (OROPKG_DEVICE_DRIVERS_COMEDI)
-    for(unsigned int i = 0 ; i<_nr_chan;i++){
-      _measurement[i] = _LaserInput[i]->value();
-      _distances_local[i] = _volt2m.value()[i]*_measurement[i]+_offsets.value()[i];
-    }
-#else
-    _distances_local = _simulation_values.value();
-#endif
     _distances.Set(_distances_local);
   }
   

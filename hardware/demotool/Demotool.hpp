@@ -47,6 +47,10 @@ namespace Orocos
     RTT::Property<KDL::Frame> _demotool_obj;
     RTT::Property<KDL::Frame> _demotool_fs;
 
+    RTT::WriteDataPort<KDL::Frame> _frame_camera_object;
+    RTT::WriteDataPort<unsigned int> _num_visible_leds;
+    RTT::WriteDataPort<KDL::Wrench> _wrench_object_object;
+
     std::string _propertyfile;
     
     
