@@ -5,11 +5,11 @@ IF ( BUILD_LIAS_TEST )
 
     SET (SRCS_CRS crs.cpp)
     GLOBAL_ADD_TEST( crs ${SRCS_CRS} )
-    TARGET_LINK_LIBRARIES( crs orocos-taskbrowser orocos-reporting orocos-lias orocos-gnulinux)
+    TARGET_LINK_LIBRARIES( crs orocos-taskbrowser orocos-reporting orocos-lias ${OROCOS_RTT_LIBS})
 
     SET (SRCS_BASE base.cpp TestTcpTaskContext.cpp)
     GLOBAL_ADD_TEST( base ${SRCS_BASE} ) 
-    TARGET_LINK_LIBRARIES( base orocos-taskbrowser orocos-reporting orocos-lias orocos-wrench orocos-gnulinux kdltk kdl)
+    TARGET_LINK_LIBRARIES( base orocos-taskbrowser orocos-reporting orocos-lias orocos-wrench kdltk kdl ACE ${OROCOS_RTT_LIBS})
 
 ENDIF ( BUILD_LIAS_TEST )
 

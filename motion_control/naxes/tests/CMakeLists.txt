@@ -9,7 +9,7 @@ IF ( BUILD_NAXES_TEST )
     # Add a test program
     GLOBAL_ADD_TEST( naxes ${SRCS} )
     # Use  TARGET_LINK_LIBRARIES( report libs... ) to add library deps.
-    TARGET_LINK_LIBRARIES( naxes orocos-taskbrowser orocos-reporting orocos-naxes orocos-kuka orocos-gnulinux kdl)
+    TARGET_LINK_LIBRARIES( naxes orocos-taskbrowser orocos-reporting orocos-naxes orocos-kuka ${OROCOS_RTT_LIBS} kdl ${OROCOS_RTT_LIBS})
     INSTALL_FILES(/bin/naxes/ [^.]*.osd)  
     INSTALL_FILES(/bin/naxes/ [^.]*.ops)  
 
