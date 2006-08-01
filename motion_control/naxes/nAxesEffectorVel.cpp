@@ -37,7 +37,7 @@ namespace Orocos
     //Creating TaskContext
   
     //Adding ports
-    for (int i=0;i<_num_axes;++i) {
+    for (unsigned int i=0;i<_num_axes;++i) {
       char buf[80];
       sprintf(buf,"driveValue%d",i);
       _velocity_drives[i] = new WriteDataPort<double>(buf);

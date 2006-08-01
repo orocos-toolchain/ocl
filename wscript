@@ -13,7 +13,7 @@ blddir = '_build_'
 
 def build(bld):
 	# process subfolders from here
-	bld.add_subdirs('reporting motion_control/naxes motion_control/cartesian kinematics hardware/lias hardware/kuka hardware/camera hardware/wrench hardware/laserdistance hardware/krypton viewer') 
+	bld.add_subdirs('reporting motion_control/naxes motion_control/cartesian kinematics hardware/demtool hardware/lias hardware/kuka hardware/camera hardware/wrench hardware/laserdistance hardware/krypton viewer') 
 
 def configure(conf):
 	conf.checkTool(['g++'])

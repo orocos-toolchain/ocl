@@ -120,10 +120,11 @@ namespace Orocos
     else
       {
 	Logger::log() << Logger::Warning << "(WrenchSensor)  Sample to low to garantee no aliasing!" << Logger::endl;
+	return false;
       }
 #endif 
     Logger::log() << Logger::Info << "WrenchSensor - ChooseFilter: " << _filterToReadFrom << Logger::endl;
-    
+    return true;
   }
   
   bool WrenchSensor::chooseFilterDone() const

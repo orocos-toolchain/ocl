@@ -13,8 +13,9 @@ class TestTaskContext
     : public GenericTaskContext
 {
     Property<string> hello;
-    ReadDataPort<double> drport;
     WriteDataPort<std::vector<double> > dwport;
+    ReadDataPort<double> drport;
+
 public:
     TestTaskContext(std::string name)
         : GenericTaskContext(name),
@@ -36,8 +37,9 @@ class TestTaskContext2
     : public GenericTaskContext
 {
     Property<string> hello;
-    ReadDataPort<std::vector<double> > drport;
     WriteDataPort<double> dwport;
+    ReadDataPort<std::vector<double> > drport;
+
 public:
     TestTaskContext2(std::string name)
         : GenericTaskContext(name),

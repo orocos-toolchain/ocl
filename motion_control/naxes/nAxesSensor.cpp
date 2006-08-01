@@ -38,7 +38,7 @@ namespace Orocos
       _velocity_naxes("nAxesSensorVelocity")
   {
     
-    for(int i=0;i<_num_axes;i++){
+    for(unsigned int i=0;i<_num_axes;i++){
       char buf[80];
       sprintf(buf,"positionValue%d",i);
       _position_sensors[i] = new ReadDataPort<double>(buf);

@@ -26,7 +26,6 @@ SET( OROCOS_TARGET gnulinux CACHE STRING "The Operating System target.")
 SET( OROCOS_INSTALL ${CMAKE_INSTALL_PREFIX} CACHE PATH "The Orocos installation directory.")
 
 SET( KDL_INSTALL ${CMAKE_INSTALL_PREFIX} CACHE PATH "The KDL installation directory.")
-SET( BFL_INSTALL ${CMAKE_INSTALL_PREFIX} CACHE PATH "The BFL installation directory.")
 
 # The name of the resulting library.
 #SET( COMPONENTS_LIBRARY orocos-components CACHE STRING "Name of the resulting library")
