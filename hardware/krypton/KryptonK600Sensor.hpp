@@ -40,7 +40,7 @@ namespace Orocos
   {
     
   public:
-    KryptonK600Sensor(std::string name, int num_leds);
+    KryptonK600Sensor(std::string name, unsigned int num_leds);
     virtual ~KryptonK600Sensor();
     
     virtual bool startup();
@@ -49,7 +49,7 @@ namespace Orocos
     
   private:
 
-    int _num_leds;
+    unsigned int _num_leds;
 
 #if defined (OROPKG_OS_LXRT)
     unsigned short _length_msg, _type_msg, _nr_msg, _nr_answer_msg, _type_body_msg, _cycle_nr, _nr_markers;

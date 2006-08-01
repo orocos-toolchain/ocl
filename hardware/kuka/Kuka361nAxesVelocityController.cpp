@@ -79,7 +79,6 @@ namespace Orocos
   {
     double ticks2rad[NUM_AXES] = KUKA361_TICKS2RAD;
     double vel2volt[NUM_AXES] = KUKA361_RADproSEC2VOLT;
-    int encoderOffsets[NUM_AXES] = KUKA361_ENCODEROFFSETS;
     for(unsigned int i = 0;i<NUM_AXES;i++){
       _positionConvertFactor[i] = ticks2rad[i];
       _driveConvertFactor[i] = vel2volt[i];
@@ -98,6 +97,8 @@ namespace Orocos
     }  
     
 #if (defined OROPKG_OS_LXRT && defined OROPKG_DEVICE_DRIVERS_COMEDI&& defined (OROPKG_DEVICE_DRIVERS_APCI))
+    int encoderOffsets[NUM_AXES] = KUKA361_ENCODEROFFSETS;
+
     _comediDev        = new ComediDevice( 1 );
     _comediSubdevAOut = new ComediSubDeviceAOut( _comediDev, "Kuka361" );
     _apci1710         = new EncoderSSI_apci1710_board( 0, 1 );

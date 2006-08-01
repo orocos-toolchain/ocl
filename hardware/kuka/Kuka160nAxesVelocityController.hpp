@@ -252,8 +252,9 @@ namespace Orocos
     RTT::DigitalOutput*                   _brake[6];
     RTT::DigitalInput*                    _reference[6];  
 #endif
-    std::vector<RTT::SimulationAxis*>     _axes_simulation;
     std::vector<RTT::AxisInterface*>      _axes;
+    std::vector<RTT::SimulationAxis*>     _axes_simulation;
+
     
   };//class Kuka160nAxesVelocityController
 }//namespace Orocos

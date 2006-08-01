@@ -24,7 +24,7 @@ namespace Orocos
     using namespace KDL;
     using namespace std;
   
-    KryptonK600Sensor::KryptonK600Sensor(string name,int num_leds)
+    KryptonK600Sensor::KryptonK600Sensor(string name, unsigned int num_leds)
         : GenericTaskContext(name),
           _num_leds(num_leds),
           _ledPositions_local(num_leds),
@@ -56,7 +56,7 @@ namespace Orocos
                 return false;
             }
 #endif
-        for( unsigned int i =0; i<_num_leds;i++)
+        for(unsigned int i =0; i<_num_leds;i++)
             SetToZero(_ledPositions_local[i]);
         
         return true;
