@@ -16,7 +16,8 @@ class TestTcpTaskContext
     ~TestTcpTaskContext();
     
     protected:
-    RTT::WriteDataPort<std::string> outPort; //task writes to it
+    RTT::WriteDataPort<double> velocity;
+    RTT::WriteDataPort<double> rotvel;
     RTT::ReadDataPort<std::string> inpPort;
     RTT::ReadDataPort<KDL::Wrench> inWrenchPort;
  

@@ -38,7 +38,8 @@ using namespace std;
 
 BaseVelocityController::BaseVelocityController(const std::string& name,const std::string& propfile) 
         : RTT::GenericTaskContext(name),
-          indatPort("Velocity"),
+          velocity("basevelocity"),
+          rotvel  ("baserotvel"),
           outdatPort("Position"),
           hostname("hostname","The host name to connect to","10.33.172.172"),
           port("port","The port of the host computer", 9999 )
@@ -46,7 +47,8 @@ BaseVelocityController::BaseVelocityController(const std::string& name,const std
         /**
          * Export ports to interface:
          */
-        this->ports()->addPort( &indatPort );
+        this->ports()->addPort( &velocity );
+        this->ports()->addPort( &rotvel   );
         this->ports()->addPort( &outdatPort );
         this->properties()->addProperty( &hostname );
         this->properties()->addProperty( &port );
@@ -81,7 +83,7 @@ BaseVelocityController::BaseVelocityController(const std::string& name,const std
                              "Command to stop the laser scanner."  );
 
         cl=0;        
-                     
+        connected = false;
     }
   
     bool BaseVelocityController::initialise(double v1,double v2,double v3) 
@@ -101,7 +103,7 @@ BaseVelocityController::BaseVelocityController(const std::string& name,const std
     
     bool BaseVelocityController::initialiseDone(double v1,double v2,double v3) const
     { 
-      return initialiseC;
+      return true;
     }
 
     bool BaseVelocityController::setVelocity(double v1,double v2) 
@@ -113,13 +115,15 @@ BaseVelocityController::BaseVelocityController(const std::string& name,const std
       sstr << "SetVelocity "<<v1<<" "<<v2<<" \n" ; 
         
       cl->sendCommand(sstr.str());
-      if(cl->receiveData()!="") setVelocityC=true;    
-      return true; 
+      if(cl->receiveData()!="") 
+            return false;    
+      else
+            return true; 
     }
     
     bool BaseVelocityController::setVelocityDone() const
     {  				 
-        return setVelocityC;
+        return true;
     }
 
     bool BaseVelocityController::stopnow() 
@@ -131,13 +135,15 @@ BaseVelocityController::BaseVelocityController(const std::string& name,const std
        sstr << "Stop \n" ; 
         
        cl->sendCommand(sstr.str());
-       if(cl->receiveData()!="") stopnowC=true;
-       return true; 
+       if(cl->receiveData()!="")
+            return false;
+       else 
+            return true; 
     }
     
     bool BaseVelocityController::stopnowDone() const
     {
-        return stopnowC;
+        return true;
     }
         
     bool BaseVelocityController::startLaserScanner() 
@@ -149,14 +155,15 @@ BaseVelocityController::BaseVelocityController(const std::string& name,const std
        sstr << "StartScanner \n" ; 
         
        cl->sendCommand(sstr.str());
-       if(cl->receiveData()!="") startLaserScannerC=true;
-        
-       return startLaserScannerC; 
+       if(cl->receiveData()!="") 
+            return false;
+       else 
+            return true;
     }
     
     bool BaseVelocityController::startLaserScannerDone() const
     {
-        return startLaserScannerC;
+        return true;
     }
                   
     bool BaseVelocityController::stopLaserScanner() 
@@ -168,14 +175,15 @@ BaseVelocityController::BaseVelocityController(const std::string& name,const std
        sstr << "StartScanner \n" ; 
        
        cl->sendCommand(sstr.str());
-       if(cl->receiveData()!="") stopLaserScannerC=true;
-        
-       return stopLaserScannerC; 
+       if(cl->receiveData()!="") 
+            return false;
+       else 
+            return true; 
     }
     
     bool BaseVelocityController::stopLaserScannerDone() const
     {
-        return stopLaserScannerC;
+        return true;
     }
     /**
      * This function contains the application's startup code.
@@ -183,23 +191,20 @@ BaseVelocityController::BaseVelocityController(const std::string& name,const std
      */
     bool BaseVelocityController::startup() {
 
-       if ( ! indatPort.connected() || ! outdatPort.connected() ) {
+       /*if ( ! indatPort.connected() || ! outdatPort.connected() ) {
             Logger::log() << Logger::Error << "Not all ports were properly connected. Aborting.!!!!"<<Logger::endl;
             if ( !indatPort.connected() )
                 Logger::log() << indatPort.getName() << " not connected."<<Logger::endl;
             if ( !outdatPort.connected() )
                 Logger::log() << outdatPort.getName() << " not connected."<<Logger::endl;
                    return false;
-       }
+       }*/
        cl=new LiasClientN::Client;
 
-       if (cl->connect(hostname,port)!=-1) 
-       { 
+       if (cl->connect(hostname,port)!=-1) { 
            connected=true; 
            Logger::log() << "Connection to "<<hostname<<":"<<port<<" established."<<Logger::endl;
-       }
-       else 
-       { 
+       } else { 
            connected=false;
            Logger::log() << "Could not connect to "<<hostname<<":"<<port<<Logger::endl;
        }
@@ -212,49 +217,34 @@ BaseVelocityController::BaseVelocityController(const std::string& name,const std
      * This function is periodically called.
      */
     void BaseVelocityController::update() {
-        std::string str ;
         stringstream sstr;
          
         if (!connected) return;
+         
+        double v = velocity.Get()/100;  // v is expressed in [cm]
+        double w = rotvel.Get();        // w is expressed in [rad]
         
-        str  = indatPort.data()->Get(); //gets the velocity, double number
-        
-        
-        if (str!="")
-        {
-          sstr << "SetVelocityGetPosition "<<str<<" \n" ; 
-          str=sstr.str();
-        
-          cl->sendCommand(str);
-          str="";
-          str = cl->receiveData(); //receives the position, 2 double numbers
-          outdatPort.data()->Set( str );
-        }
-        
-           
-        
+        sstr << "SetVelocityGetPosition "<< v << " " << w << " \n" ; 
+        cl->sendCommand(sstr.str());
+        string str = cl->receiveData(); 
+        //  3 values are given back : x y theta
+        //  with x,y in [cm/sec]
+        //  jjjjjjj
+        outdatPort.data()->Set( str );
     }
 
     /**
      * This function is called when the task is stopped.
      */
     void BaseVelocityController::shutdown() {
-
-       	if (connected) 
-        {
-            
-            if(cl)
-            {
+       	if (connected) {
+            if (cl) {
                 delete cl;
                 cl=0;
             }
-            
             Logger::log() << "Disconnected."<<Logger::endl;
             connected=false;
         }
    }
     
-
-
-
 

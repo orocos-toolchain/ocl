@@ -48,7 +48,9 @@ class BaseVelocityController
     BaseVelocityController(const std::string& name="BaseVelocityController",const std::string& propfile="cpf/base.cpf");
     
     protected:
-    RTT::ReadDataPort<std::string> indatPort;
+    RTT::ReadDataPort<double> velocity;
+    RTT::ReadDataPort<double> rotvel;
+
     RTT::WriteDataPort<std::string> outdatPort;
 
     /**
