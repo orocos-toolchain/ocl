@@ -13,6 +13,7 @@ Libs: -L${libdir}/hardware/lias -lorocos-lias \
 	  -L${libdir}/motion_control/naxes -lorocos-naxes \
 	  -L${libdir}/motion_control/cartesian -lorocos-cartesian \
 	  -L${libdir}/kinematics  -lorocos-kinematics \
+	  -L${libdir}/hardware/demotool -lorocos-demotool \
 	  -L${libdir}/hardware/kuka -lorocos-kuka \
 	  -L${libdir}/hardware/wrench -lorocos-wrench \
 	  -L${libdir}/hardware/laserdistance -lorocos-laser \
