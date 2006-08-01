@@ -23,6 +23,7 @@
 #include <rtt/Ports.hpp>
 #include <rtt/Event.hpp>
 #include <rtt/Properties.hpp>
+#include <kdl/frames.hpp>
 
 namespace Orocos
 {

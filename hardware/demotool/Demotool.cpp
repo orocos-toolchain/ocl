@@ -25,12 +25,15 @@ namespace Orocos
   using namespace KDL;
   
   Demotool::Demotool(string name, string propertyfile):
-    GenericTaskContext(name)
+    GenericTaskContext(name),
     _pos_leds_demotool("pos_leds_demotool","XYZ positions of all LED markers, relative to demtool frame"),
     _mass_demotool("mass_demotool","mass of objects attached to force censor of demotool"),
     _center_gravity_demotool("center_gravity_demotool","center of gravity of mass attached to demotool"),
     _demotool_obj("demotool_obj","frame from demotool to object"),
     _demotool_fs("demotool_fs","frame from demotool to force sensor"),
+    _frame_camera_object("frame_camera_object"),
+    _num_visible_leds("num_visible_leds"),
+    _wrench_object_object("wrench_object_object"),
     _propertyfile(propertyfile)
   {
     Logger::log()<<Logger::Debug<<this->getName()<<": adding Properties"<<Logger::endl;
@@ -60,21 +63,12 @@ namespace Orocos
   
   bool Demotool::startup()    
   {
-    if(_simulation_values.value().size()!=_nr_chan||
-       _volt2m.value().size()!=_nr_chan||
-       _offsets.value().size()!=_nr_chan||
-       _upperLimits.value().size()!=_nr_chan||
-       _lowerLimits.value().size()!=_nr_chan)
-	{
-	  Logger::log()<<Logger::Error<<"size of Properties do not match nr of channels"<<Logger::endl;
-	  return false;
-	}
     return true;
   }
     
   void Demotool::update()
   {
-    _distances.Set(_distances_local);
+    _num_visible_leds.Set(6);
   }
   
   void Demotool::shutdown()
