@@ -15,40 +15,30 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 //  
 
-#include "LaserSensor.hpp"
+#include "Demotool.hpp"
 
-#if defined (OROPKG_DEVICE_DRIVERS_COMEDI)
-#define NR_CHAN 2
-#define OFFSET 0
-#endif
 
 namespace Orocos
 {
   using namespace RTT;
   using namespace std;
+  using namespace KDL;
   
-  LaserSensor::LaserSensor(string name,unsigned int nr_chan ,string propertyfile):
-    GenericTaskContext(name),
-    _nr_chan(nr_chan),
-#if defined (OROPKG_DEVICE_DRIVERS_COMEDI)    
-    _LaserInput(nr_chan),
-#endif
-    _simulation_values("sim_values","Value used for simulation"),
-    _volt2m("volt2m","Convert Factor from volt to m"),
-    _offsets("offsets","Offset in m"),
-    _lowerLimits("low_limits","LowerLimits of the distance sensor"),
-    _upperLimits("up_limits","UpperLimits of the distance sensor"),
-    _distances("LaserDistance"),
-    _measurement(nr_chan),
-    _distances_local(nr_chan),
+  Demotool::Demotool(string name, string propertyfile):
+    GenericTaskContext(name)
+    _pos_leds_demotool("pos_leds_demotool","XYZ positions of all LED markers, relative to demtool frame"),
+    _mass_demotool("mass_demotool","mass of objects attached to force censor of demotool"),
+    _center_gravity_demotool("center_gravity_demotool","center of gravity of mass attached to demotool"),
+    _demotool_obj("demotool_obj","frame from demotool to object"),
+    _demotool_fs("demotool_fs","frame from demotool to force sensor"),
     _propertyfile(propertyfile)
   {
     Logger::log()<<Logger::Debug<<this->getName()<<": adding Properties"<<Logger::endl;
-    properties()->addProperty(&_simulation_values);
-    properties()->addProperty(&_volt2m);
-    properties()->addProperty(&_offsets);
-    properties()->addProperty(&_upperLimits);
-    properties()->addProperty(&_lowerLimits);
+    properties()->addProperty(&_pos_leds_demotool);
+    properties()->addProperty(&_mass_demotool);
+    properties()->addProperty(&_center_gravity_demotool);
+    properties()->addProperty(&_demotool_obj);
+    properties()->addProperty(&_demotool_fs);
 
     Logger::log()<<Logger::Debug<<this->getName()<<": adding Ports"<<Logger::endl;
     ports()->addPort(&_distances);
@@ -81,7 +71,7 @@ namespace Orocos
 
   }
   
-  LaserSensor::~LaserSensor()
+  Demotool::~Demotool()
   {
 #if defined (OROPKG_DEVICE_DRIVERS_COMEDI)
     delete _comediDev_NI6024;
@@ -91,7 +81,7 @@ namespace Orocos
 #endif
   }
   
-  bool LaserSensor::startup()    
+  bool Demotool::startup()    
   {
     if(_simulation_values.value().size()!=_nr_chan||
        _volt2m.value().size()!=_nr_chan||
@@ -105,7 +95,7 @@ namespace Orocos
     return true;
   }
     
-  void LaserSensor::update()
+  void Demotool::update()
   {
 #if defined (OROPKG_DEVICE_DRIVERS_COMEDI)
     for(unsigned int i = 0 ; i<_nr_chan;i++){
@@ -118,7 +108,7 @@ namespace Orocos
     _distances.Set(_distances_local);
   }
   
-  void LaserSensor::shutdown()
+  void Demotool::shutdown()
   {
     writeProperties(_propertyfile);
   }

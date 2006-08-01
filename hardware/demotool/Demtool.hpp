@@ -1,4 +1,4 @@
-// Copyright (C) 2006 Ruben Smits <ruben dot smits at mech dot kuleuven dot be>
+// Copyright (C) 2006 Wim Meeussen <wim dot neeysseb at mech dot kuleuven dot be>
 //  
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -15,10 +15,8 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 //  
 
-#ifndef __LASER_HARDWARE__
-#define __LASER_HARDWARE__
-
-#include <pkgconf/system.h>
+#ifndef __DEMOTOOL_HARDWARE__
+#define __DEMOTOOL_HARDWARE__
 
 #include <rtt/RTT.hpp>
 #include <rtt/GenericTaskContext.hpp>
@@ -26,52 +24,29 @@
 #include <rtt/Event.hpp>
 #include <rtt/Properties.hpp>
 
-#if defined (OROPKG_DEVICE_DRIVERS_COMEDI)
-#include <rtt/dev/ComediDevice.hpp>
-#include <rtt/dev/ComediSubDeviceAIn.hpp>
-#include <rtt/dev/AnalogInput.hpp>
-#endif
-
 namespace Orocos
 {
     
-  class LaserSensor : public RTT::GenericTaskContext
+  class Demotool : public RTT::GenericTaskContext
   {
   public:
     /**
-     * Construct an interface to the automated Laser
-     * initialising a link to the digital IO PCI cards
+     * Construct an interface to the Demotool
      */
-    LaserSensor(std::string name,unsigned int nr_chan,std::string propertyfilename="cpf/LaserSensor.cpf");
-    virtual~LaserSensor();
+    Demotool(std::string name, std::string propertyfilename="cpf/Demotool.cpf");
+    virtual~Demotool();
     
     virtual bool startup();
     virtual void update();
     virtual void shutdown();
     
-    //double getDistance(int channel);
-        
   private:
-#if defined (OROPKG_DEVICE_DRIVERS_COMEDI)
-    RTT::ComediDevice* _comediDev_NI6024; //NI-6024 for analog in
-    RTT::ComediSubDeviceAIn* _comediSubdevAIn;
-    std::vector<RTT::AnalogInput<unsigned int>*> _LaserInput;
-#endif
-    
-    unsigned int _nr_chan;
-    
-    RTT::Property<std::vector<double> > _simulation_values;
-    RTT::Property<std::vector<double> > _volt2m;
-    RTT::Property<std::vector<double> > _offsets;
-    RTT::Property<std::vector<double> > _lowerLimits;
-    RTT::Property<std::vector<double> > _upperLimits;
-    
-    RTT::WriteDataPort<std::vector<double> > _distances;
-    
-    RTT::Event< void(int,double)>  _distanceOutOfRange;
-    RTT::EventC _outOfRangeEvent;
-    
-    std::vector<double> _measurement, _distances_local;
+    RTT::Property<std::vector<double> > _pos_leds_demotool;
+    RTT::Property<double> _mass_demotool;
+    RTT::Property<KDL::Vector> _center_gravity_demotool;
+    RTT::Property<KDL::Frame> _demotool_obj;
+    RTT::Property<KDL::Frame> _demotool_fs;
+
     std::string _propertyfile;
     
     
