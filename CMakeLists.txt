@@ -136,6 +136,11 @@ ADD_SUBDIRECTORY( viewer )
 #                                                         #
 ###########################################################
 
+# This only works in 2.4 or later
+IF("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}" EQUAL "2.4")
+
+MESSAGE("CMake 2.4 detected. Adding packaging support.")
+
 INCLUDE(InstallRequiredSystemLibraries)
 
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Orocos Components")
@@ -163,3 +168,6 @@ ENDIF(WIN32 AND NOT UNIX)
 #SET(CPACK_PACKAGE_EXECUTABLES "MyExecutable" "My Executable")
 INCLUDE(CPack)
 
+ELSE("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}" EQUAL "2.4")
+  MESSAGE("CMake 2.4 not detected. No packaging support.")
+ENDIF("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}" EQUAL "2.4")
