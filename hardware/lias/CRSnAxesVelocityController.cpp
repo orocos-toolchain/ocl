@@ -406,10 +406,7 @@ CRSnAxesVelocityController::stopAllAxes()
 bool 
 CRSnAxesVelocityController::stopAllAxesCompleted() const
 {
-  bool _return = true;
-  for(unsigned int axis = 0;axis<NUM_AXES;++axis)
-    _return &= _axes[axis]->isStopped();
-  return _return;
+  return true;
 }
 
 
