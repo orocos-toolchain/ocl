@@ -23,11 +23,13 @@ IF ( CMAKE_PKGCONFIG_EXECUTABLE )
 	INCLUDE_DIRECTORIES( ${OROCOS_RTT_INCLUDE_DIRS} )
         LINK_DIRECTORIES( ${OROCOS_RTT_LINK_DIRS} )
 
+    ELSE  ( OROCOS_RTT )
+        MESSAGE( FATAL_ERROR "Can't find Orocos Real-Time Toolkit")
     ENDIF ( OROCOS_RTT )
 
 ELSE  ( CMAKE_PKGCONFIG_EXECUTABLE )
 
     # Can't find pkg-config -- have to search manually
-    MESSAGE( FATAL_ERROR "Can't find Orocos Real-Time Tookit (RTT)")
+    MESSAGE( FATAL_ERROR "Can't find pkg-config ")
 
 ENDIF ( CMAKE_PKGCONFIG_EXECUTABLE )
