@@ -17,13 +17,14 @@ taskbrowser: [ready]
 
 viewer: [beta stage]
 
-hardware: [beta stage]
-	Components for various devices (like sensors) and hardware
-	platforms, the simulation devices can be used by everyone,
-	the hardware robot, krypton and lasersensor devices only in
-	our lab	(KULeuven/PMA/robotics), the wrenchsensor component by
-	everyone using the pci-interface to a JR3-sensor and the
-	camera components for everyone using opencv.
+hardware: [beta stage] Components for various devices (like sensors)
+	and hardware platforms, the simulation devices can be used by
+	everyone, the hardware robot, krypton and lasersensor devices
+	only in our lab (KULeuven/PMA/robotics), the wrenchsensor
+	component by everyone using the pci-interface to a JR3-sensor,
+	the camera components for everyone using opencv, and the
+	demotool components for everyone combining the wrench sensor
+	and the krypton kamera system.
 	
 
 motion_control: [beta stage]
