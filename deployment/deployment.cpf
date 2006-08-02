@@ -1,2 +1,8 @@
 
+// peer connection
 <simple name="Peer" type="string"><value>APeer</value></simple>
+
+// port connection
+<struct name="Ports">
+<simple name="PortA" type="string"><value>AConnection</value></simple>
+</struct>

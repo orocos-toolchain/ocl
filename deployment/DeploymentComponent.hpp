@@ -1,5 +1,9 @@
 
 #include "rtt/TaskContext.hpp"
+#include "rtt/PropertyBag.hpp"
+#include "rtt/Attribute.hpp"
+
+#include "rtt/PropertyLoader.hpp"
 
 
 namespace Orocos
@@ -20,18 +24,28 @@ namespace Orocos
         //         //         Property<std::string> property-source;
         
         //         Property<PropertyBag> ports;
-        //         //         Property<std::string> portname;
+        //         //         Property<std::string> portname; // value = connection_name
         
         //         Property<std::string> peername;
 
         Property<std::string> configurationfile;
-        
+        Attribute<bool> validConfig;
+
+        struct ConnectionData {
+            typedef std::vector<PortInterface*> Ports;
+            Ports ports;
+        };
+
+        typedef std::map<std::string, ConnectionData> ConMap;
+        ConMap conmap;
     public:
         DeploymentComponent(std::string name = "Configurator")
             : TaskContext(name),
-              configurationfile("ConfigFile", "Name of the configuration file.", name+".cpf")
+              configurationfile("ConfigFile", "Name of the configuration file.", name+".cpf"),
+              validConfig("Valid", false)
         {
             this->properties()->addProperty( &configurationfile );
+            this->attributes()->addAttribute( &configurationfile );
         }
 
         /** 
@@ -100,7 +114,10 @@ namespace Orocos
 #else
 
             Logger::log() <<Logger::Info << "Loading '" <<configurationfile.get()"'."<< Logger::endl;
-            bool failure = false;
+            // demarshalling failures:
+            bool failure = false;  
+            // semantic failures:
+            bool valid = validConfig;
             OROCLS_CORELIB_PROPERTIES_DEMARSHALLING_DRIVER* demarshaller = 0;
             try
                 {
@@ -115,7 +132,8 @@ namespace Orocos
 
                 if ( demarshaller->deserialize( root ) )
                     {
-                        bool valid = true;
+                        valid = true;
+                        conmap.clear();
                         Logger::Log() <<Logger::Info<<"Validating new configuration..."<<Logger::endl;
                         if ( root.empty() ) {
                             Logger::log() << Logger::Error
@@ -146,43 +164,46 @@ namespace Orocos
                                     valid = false;
                                 }
 
-                            // rename ports if necessary.
-                            if ( comp->get()->getProperty("PropFile") ) {
-                                Property<PropertyBag>* ports = comp->getProperty<PropertyBag>("Ports");
-                                if ( ports != 0 ) {
-                                    for (PropertyBag::Names::iterator pit= ports->begin(); ports->end()) {
-                                        PortInterface* p = comp->ports()->getPort(*pit);
-                                        if ( !p ) {
-                                            Logger::log() << Logger::Error
-                                                          << "Component '"<< comp->getName() <<"' does not have a Port '"<<*pit<<"'." << Logger::endl;
-                                            return false;
-                                        }
-                                        if ( ports->getProperty<std::string>(*pit) == 0) {
-                                            Logger::log() << Logger::Error
-                                                          << "Property '"<< *pit <<"' is not of type 'string'." << Logger::endl;
-                                            return false;
-                                        }
-                                        std::string pname = ports->getProperty<std::string>(*pit)->value();
+                            // connect ports.
+                            Property<PropertyBag>* ports = comp->getProperty<PropertyBag>("Ports");
+                            if ( ports != 0 ) {
+                                for (PropertyBag::Names::iterator pit= ports->begin(); ports->end()) {
+                                    PortInterface* p = comp->ports()->getPort(*pit);
+                                    if ( !p ) {
+                                        Logger::log() << Logger::Error
+                                                      << "Component '"<< comp->getName() <<"' does not have a Port '"<<*pit<<"'." << Logger::endl;
+                                        valid = false;
                                     }
-                                } else {
-                                    valid = false;
+                                    if ( ports->getProperty<std::string>(*pit) == 0) {
+                                        Logger::log() << Logger::Error
+                                                      << "Property '"<< *pit <<"' is not of type 'string'." << Logger::endl;
+                                        valid = false;
+                                    }
+                                    // store the port
+                                    conmap[ports->getProperty<std::string>(*pit)->get()].ports.push_back( p );
                                 }
+                            } else {
+                                valid = false;
                             }
 
                             // Setup the connections from this component to the others.
                             for (PropertyBag::Properties::iterator it= comp->begin(); comp->end()) {
                                 if ( (*it)->getName() == "Peer" ) {
                                     Property<std::string>* nm = Property<std::string>::narrow(*it);
-                                    if (nm)
-                                        this->addPeer( comp->getName(), nm->value() );
-                                    else {
+                                    if ( !nm ) {
                                         Logger::log()<<Logger::Error<<"Property 'Peer' does not have type 'string'."<<Logger::endl;
-                                        return false;
+                                        valid = false;
+                                    }
+                                    if ( this->getPeer( nm->value() ) == 0 ) {
+                                        Logger::log()<<Logger::Error<<"No such Peer:"<<nm->value()<<Logger::endl;
+                                        valid = false;
                                     }
                                 }
                             }
                 
                         }
+                        if ( !valid )
+                            deleteProperties( root );
                     }
                 else
                     {
@@ -190,6 +211,7 @@ namespace Orocos
                                       << "Some error occured while parsing "<< configurationfile.c_str() <<Logger::endl;
                         failure = true;
                         deleteProperties( root );
+                        conmap.clear();
                     }
             } catch (...)
                 {
@@ -198,7 +220,8 @@ namespace Orocos
                     failure = true;
                 }
             delete demarshaller;
-            return !failure;
+            validConfig.set( valid );
+            return !failure && valid;
 #endif // OROPKG_CORELIB_PROPERTIES_MARSHALLING
         }
 
@@ -217,65 +240,90 @@ namespace Orocos
             }
             PropertyBag::Names nams = root.list();
 
+            // Load all property files into the components.
             for (PropertyBag::Names::iterator it= nams.begin(); nams.end()) {
-                // Check if it is a propertybag.
                 Property<PropertyBag>* comp = root.getProperty<PropertyBag>(*it);
-                if ( comp == 0 ) {
-                    Logger::log() << Logger::Error
-                                  << "Property '"<< *it <<"' is not a PropertyBag." << Logger::endl;
-                    return false;
-                }
-                // Check if we know this component.
-                TaskContext* c = this->getPeer( *it );
-                if ( !c ) {
-                    Logger::log() << Logger::Warning
-                                  << "Could not configure '"<< *it <<"': No such peer."<< Logger::endl;
-                    continue;
-                }
+
                 // set PropFile name if present
                 string filename = *it + ".cpf";
                 if ( comp->get()->getProperty<string>("PropFile") )
                     filename = comp->get()->getProperty<string>("PropFile")->get();
 
                 PropertyLoader pl;
-                bool ret = pl.configure( filename, c, true ); // strict:true 
-                if (!ret)
-                    continue;
-
-                // rename ports if necessary.
-                Property<PropertyBag>* ports = comp->getProperty<PropertyBag>("Ports");
-                if ( ports != 0 ) {
-                    for (PropertyBag::Names::iterator pit= ports->begin(); ports->end()) {
-                        PortInterface* p = comp->ports()->getPort(*pit);
-                        if ( !p ) {
-                            Logger::log() << Logger::Error
-                                          << "Component '"<< comp->getName() <<"' does not have a Port '"<<*pit<<"'." << Logger::endl;
-                            return false;
-                        }
-                        if ( ports->getProperty<std::string>(*pit) == 0) {
-                            Logger::log() << Logger::Error
-                                          << "Property '"<< *pit <<"' is not of type 'string'." << Logger::endl;
-                            return false;
-                        }
-                        std::string pname = ports->getProperty<std::string>(*pit)->value();
-                        Logger::log() <<Logger::Info << "Renaming Port '" << p->getName()<< "' to '"<< pname<<"'." <<Logger::endl;
-                        p->setName( pname );
-                    }
-                    Logger::log() <<Logger::Info << "Reconnecting '" << comp->getName()<< "'." <<Logger::endl;
-                    // reconnect peer's ports.
-                    c->reconnect();
+                TaskContext* peer = this->getPeer( *it );
+                assert( peer );
+                bool ret = pl.configure( filename, peer, true ); // strict:true 
+                if (!ret) {
+                    log(Error) << "Failed to configure properties for component "<<*it<<endlog();
                 }
+                peer->disconnect();
+            }
 
-                // Setup the connections from this component to the others.
+            // Create data port connections:
+            for(ConMap::iterator it = conmap.begin(); it != conmap.end(); ++it) {
+                if ( it->second.ports.size() < 2 ){
+                    log(Error) << "Can not form connection "<<it->first<<" with only one Port."<< endlog();
+                    continue;
+                }
+                // first find a write and a read port.
+                PortInterface* writer = 0, reader = 0;
+                ConMap::Ports::iterator p = it->second.ports.begin();
+                while (p != it->second.ports.end() && (writer == 0 || reader == 0) ) {
+                    if ( (*p)->getPortType() == PortInterface::WritePort )
+                        writer = (*p)->clone();
+                    else
+                        if ( (*p)->getPortType() == PortInterface::ReadPort )
+                            reader = (*p)->clone();
+                    else
+                        if ( (*p)->getPortType() == PortInterface::ReadWritePort )
+                            if (reader == 0)
+                                reader = (*p)->clone();
+                            else
+                                writer = (*p)->clone();
+                    ++p;
+                }
+                // Idea is: create a clone or anticlone of a port
+                // use that one to setup the connection object
+                // then dispose it again.
+                if ( writer == 0 ) {
+                    log(Warning) << "Connecting only read-ports in connection " << it->first << endlog();
+                    // solve this issue by using a temporary anti-port.
+                    writer = it->second.ports.front()->antiPort();
+                }
+                if ( reader == 0 ) {
+                    log(Warning) << "Connecting only write-ports in connection " << it->first << endlog();
+                    // make an anticlone of a writer
+                    reader = it->second.ports.front()->antiPort();
+                }
+                
+                log(Info) << "Creating Connection "<<it->first<<":"<<endlog();
+                log(Info) << "Connecting Port "<< writer->getName() <<" to Port " << reader->getName()<<endlog();
+                ConnectionInterface::shared_ptr con = writer->createConnection( reader );
+                // connect all ports to connection
+                p = it->second.ports.begin();
+                while (p != it->second.ports.end() ) {
+                    if ((*p)->connectTo( con ) == false) {
+                        log(Error) << "Could not connect Port "<< (*p)->getName() << " to connection " <<it->first<<endlog();
+                        if ((*p)->connected())
+                            log(Error) << "Port "<< (*p)->getName() << " already connected !"<<endlog();
+                        else
+                            log(Error) << "Port "<< (*p)->getName() << " has wrong type !"<<endlog();
+                    } else
+                        log(Info) << "Connected Port "<< (*p)->getName() <<" to connection " << it->first <<endlog();
+
+                }
+                // writer,reader was a clone or anticlone.
+                delete writer;
+                delete reader;
+            }
+
+            // Setup the connections from each component to the others.
+            for (PropertyBag::Names::iterator nit= nams.begin(); nams.end()) {
+                Property<PropertyBag>* comp = root.getProperty<PropertyBag>(*nit);
                 for (PropertyBag::Properties::iterator it= comp->begin(); comp->end()) {
                     if ( (*it)->getName() == "Peer" ) {
                         Property<std::string>* nm = Property<std::string>::narrow(*it);
-                        if (nm)
-                            this->addPeer( comp->getName(), nm->value() );
-                        else {
-                            Logger::log()<<Logger::Error<<"Property 'Peer' does not have type 'string'."<<Logger::endl;
-                            return false;
-                        }
+                        this->addPeer( comp->getName(), nm->value() );
                     }
                 }
                 
@@ -283,7 +331,29 @@ namespace Orocos
             return true;
         }
 
-        bool configureComponent(std::string name)
+        /**
+         * Configure a component by loading the property file 'name.cpf' for component with
+         * name \a name.
+         * @param name The name of the component to configure.
+         * The file used will be 'name.cpf'.
+         * @return true if the component is known and the file could be
+         * read.
+         */
+        bool configure(std::string name)
+        {
+            return configureComponent( name,  name + ".cpf" );
+        }
+
+        /** 
+         * Configure a component by loading a property file.
+         * 
+         * @param name The name of the component to configure
+         * @param filename The filename where the configuration is in.
+         * 
+         * @return true if the component is known and the file could be
+         * read.
+         */
+        bool configureFromFile(std::string name, std::string filename)
         {
             TaskContext* c = this->getPeer(name);
             if (!c) {
@@ -291,17 +361,10 @@ namespace Orocos
                 return false;
             }
             
-            this->setProperties( c, name + ".cpf" );
+            PropertyLoader pl;
+            return pl.configure( filename, c, true ); // strict:true 
         }
 
-        bool startup()
-        {}
-
-        void update()
-        {}
-
-        void shutdown()
-        {}
     };
 
 
