@@ -1,0 +1,34 @@
+  Orocos Components
+  =================
+
+This directory consists of a series of independent Orocos
+components which can be used to build a control application.
+
+Structure:
+
+reporting: [ready]
+	Components for real-time data capturing. Currently console
+	and file reporting is supported.
+
+taskbrowser: [ready]
+	A Component for online interaction with any other component.
+	Your main tool during component development, testing or
+	experimenting.
+
+viewer: [beta stage]
+
+hardware: [beta stage]
+	Components for various devices (like sensors) and hardware
+	platforms (like robots).
+
+motion_control: [beta stage]
+	Components for path interpolation, cartesian and joint space
+	control
+
+deployment: [alfa stage]
+	Component for connecting and configuring an application.
+
+kinematics: [alfa stage]
+	Component for forward and reverse kinematics. Needs to
+	be adapted to the KDL.
+
