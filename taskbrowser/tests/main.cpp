@@ -62,8 +62,6 @@ int ORO_main( int argc, char** argv)
         Logger::log() << Logger::Info << argv[0] << " manually raises LogLevel to 'Info' (5). See also file 'orocos.log'."<<Logger::endl;
     }
 
-    PeriodicActivity act(10, 1.0);
-
     TestTaskContext gtc("MyPeer");
     TestTaskContext2 gtc2("MyPeer2");
 
@@ -78,6 +76,8 @@ int ORO_main( int argc, char** argv)
     Logger::log()<<Logger::Info << "  The inside interface shows the methods and ports of the visited component," <<Logger::endl;
     Logger::log()<<Logger::Info << "  the outside interface show the methods and ports of the TaskBrowser."<<Logger::endl;
         
+    PeriodicActivity act(10, 1.0, gtc.engine());
+
     tb.loop();
 
     act.stop();
