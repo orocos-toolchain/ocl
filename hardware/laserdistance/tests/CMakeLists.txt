@@ -9,7 +9,7 @@ IF ( BUILD_LASER_TEST )
     # Add a test program
     GLOBAL_ADD_TEST( laser ${SRCS} )
     # Use  TARGET_LINK_LIBRARIES( report libs... ) to add library deps.
-    TARGET_LINK_LIBRARIES( laser orocos-taskbrowser orocos-reporting orocos-laser orocos-gnulinux)
+    TARGET_LINK_LIBRARIES( laser orocos-taskbrowser orocos-reporting orocos-laser orocos-${OROCOS_TARGET})
 
 
 ENDIF ( BUILD_LASER_TEST )

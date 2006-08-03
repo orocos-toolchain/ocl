@@ -9,7 +9,7 @@ IF ( BUILD_DEMOTOOL_TEST )
     # Add a test program
     GLOBAL_ADD_TEST( demotool ${SRCS} )
     # Use  TARGET_LINK_LIBRARIES( report libs... ) to add library deps.
-    TARGET_LINK_LIBRARIES( demotool orocos-wrench orocos-krypton kdltk kdl orocos-taskbrowser orocos-reporting orocos-demotool orocos-gnulinux ${BFL_LIBS})
+    TARGET_LINK_LIBRARIES( demotool orocos-wrench orocos-krypton kdltk kdl orocos-taskbrowser orocos-reporting orocos-demotool orocos-${OROCOS_TARGET} ${BFL_LIBS})
 
 
 ENDIF ( BUILD_DEMOTOOL_TEST )
