@@ -129,9 +129,10 @@ namespace Orocos
             return true;
         }
     else {
-        Logger::log() << Logger::Error << "K600PositionInterface: How many Leds?????" << Logger::endl;
-        Logger::log() << Logger::Error << "K600PositionInterface: Prepare for Segfault :-)" << Logger::endl;
-        return false;
+      Logger::log() << Logger::Error << "K600PositionInterface: The Krypton system has " << _nr_markers 
+		    << " leds registered, but you said there are " << _num_leds << " leds" << Logger::endl;
+      Logger::log() << Logger::Error << "K600PositionInterface: Prepare for Segfault :-)" << Logger::endl;
+      return false;
     }
     }
 #endif
