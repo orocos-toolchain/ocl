@@ -1,16 +1,16 @@
 IF ( BUILD_TESTS)
-OPTION( BUILD_LASER_TEST "Build Laser Distance Sensor Components Test" OFF )
+OPTION( BUILD_DEMOTOOL_TEST "Build Demotool Sensor Components Test" OFF )
 
-IF ( BUILD_LASER_TEST )
+IF ( BUILD_DEMOTOOL_TEST )
 
     # This gathers all the .cpp files into the variable 'SRCS'
     FILE( GLOB SRCS [^.]*.cpp )
 
     # Add a test program
-    GLOBAL_ADD_TEST( laser ${SRCS} )
+    GLOBAL_ADD_TEST( demotool ${SRCS} )
     # Use  TARGET_LINK_LIBRARIES( report libs... ) to add library deps.
-    TARGET_LINK_LIBRARIES( laser orocos-taskbrowser orocos-reporting orocos-laser orocos-gnulinux)
+    TARGET_LINK_LIBRARIES( demotool orocos-wrench orocos-krypton kdltk kdl orocos-taskbrowser orocos-reporting orocos-demotool orocos-gnulinux ${BFL_LIBS})
 
 
-ENDIF ( BUILD_LASER_TEST )
+ENDIF ( BUILD_DEMOTOOL_TEST )
 ENDIF ( BUILD_TESTS)

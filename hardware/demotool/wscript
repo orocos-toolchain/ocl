@@ -11,9 +11,9 @@ def build(bld):
 	main.cpp
 	'''
 	#obj.includes='.'
-	obj.useliblocal='./orocos-laser.a ../../taskbrowser/orocos-taskbrowser.a ../../reporting/orocos-reporting.a'
+	obj.useliblocal='./orocos-demotool.a ../../taskbrowser/orocos-taskbrowser.a ../../reporting/orocos-reporting.a'
 	obj.uselib='OROCOS'
-	obj.target='laser-test'
+	obj.target='demotool-test'
 
 	# 2. A shared library
 	# The extension (.so) is added automatically
@@ -28,10 +28,10 @@ def build(bld):
 	# The extension (.a) is added automatically
 	obj = bld.createObj('cpp', 'staticlib')
 	obj.source='''
-	LaserSensor.cpp
+	Demotool.cpp
 	'''
 	obj.uselib='OROCOS'
-	obj.target='orocos-laser'
+	obj.target='orocos-demotool'
 
 def set_options(opt):
 	# options defined if src/ was to be compiled as a standalone module

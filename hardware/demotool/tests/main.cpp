@@ -17,21 +17,18 @@
 
 #include <rtt/RTT.hpp>
 #include <rtt/NonPreemptibleActivity.hpp>
-
 #include <rtt/os/main.h>
-
-#include "hardware/laserdistance/LaserSensor.hpp"
-//User interface
+#include "hardware/demotool/Demotool.hpp"
+#include "hardware/krypton/KryptonK600Sensor.hpp"
+#include "hardware/wrench/WrenchSensor.hpp"
 #include "taskbrowser/TaskBrowser.hpp"
-
-//Reporting
 #include "reporting/FileReporting.hpp"
-
 
 
 using namespace std;
 using namespace RTT;
 using namespace Orocos;
+
 
 /**
  * main() function
@@ -42,21 +39,33 @@ int ORO_main(int arc, char* argv[])
     // such that we can see output :
     if ( Logger::log().getLogLevel() < Logger::Info ) {
         Logger::log().setLogLevel( Logger::Info );
-        Logger::log() << Logger::Info << argv[0] << " manually raises LogLevel to 'Info' (5). See also file 'orocos.log'."<<Logger::endl;
+        Logger::log() << Logger::Info << argv[0] << " manually raises LogLevel to 'Info' (5). "
+		      << "See also file 'orocos.log'."<<Logger::endl;
     }
 
-    LaserSensor laser("LaserSensor",2);
-    
-    NonPreemptibleActivity laserTask(0.1, laser.engine() );
-    //FileReporting reporter("Reporting");
-    //reporter.connectPeers(&a_task);
- 
-    
-    TaskBrowser browser( &laser );
+    // krypton
+    KryptonK600Sensor krypton("Krypton",6);
+    NonPreemptibleActivity kryptonTask(0.1, krypton.engine() );
 
+    // wrench sensor
+    WrenchSensor wrenchsensor(0.01, "Wrenchsensor", 0);
+    NonPreemptibleActivity wrenchsensorTask(0.1, wrenchsensor.engine() );
+
+    // demotool task
+    Demotool demotool("Demtool");
+    NonPreemptibleActivity demotoolTask(0.1, demotool.engine() );
+    demotool.connectPeers(&krypton);
+    demotool.connectPeers(&wrenchsensor);
+
+    // reporter
+    FileReporting reporter("Reporting");
+    reporter.connectPeers(&demotool);
+ 
+    TaskBrowser browser( &demotool );
     browser.loop();
 
-    laserTask.stop();
-    
+    demotoolTask.stop();
+    kryptonTask.stop();
+    wrenchsensorTask.stop();
     return 0;
 }
