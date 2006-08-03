@@ -11,7 +11,7 @@
 #include <pkgconf/system.h> 
 #if defined (OROPKG_OS_LXRT)
 
-#include "driver/JR3_lxrt_user.h"
+#include "driver/jr3_lxrt_user.h"
 
 #else
 
