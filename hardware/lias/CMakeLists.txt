@@ -12,8 +12,10 @@ IF ( BUILD_LIAS )
         IP_OptoInput_DInInterface.cpp  
         liasclient.cpp
     )
+    FILE( GLOB HPPS [^.]*.hpp )
 
     GLOBAL_ADD_COMPONENT( orocos-lias ${SRCS} )
+    GLOBAL_ADD_INCLUDE( hardware/lias ${HPPS})
 
     ADD_SUBDIRECTORY( tests )
     ADD_SUBDIRECTORY( cpf )
