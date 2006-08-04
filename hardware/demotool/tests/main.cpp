@@ -45,7 +45,6 @@ int ORO_main(int arc, char* argv[])
 
     // krypton
     KryptonK600Sensor krypton("Krypton",6);
-    NonPreemptibleActivity kryptonTask(0.1, krypton.engine() );
 
     // wrench sensor
     WrenchSensor wrenchsensor(0.01, "Wrenchsensor", 0);
@@ -65,7 +64,6 @@ int ORO_main(int arc, char* argv[])
     browser.loop();
 
     demotoolTask.stop();
-    kryptonTask.stop();
     wrenchsensorTask.stop();
     return 0;
 }

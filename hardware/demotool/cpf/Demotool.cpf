@@ -31,27 +31,66 @@
      <simple name="Z" type="double"><description>Z Value</description><value>-0.17806</value></simple>
   </struct>
   <struct name="demotool_obj" type="MotCon::Frame">
+     <description>frame from demotool to object</description>
      <struct name="Position" type="MotCon::Vector">
         <simple name="X" type="double"><description>X Value</description><value>0</value></simple>
         <simple name="Y" type="double"><description>Y Value</description><value>0</value></simple>
         <simple name="Z" type="double"><description>Z Value</description><value>-0.199</value></simple>
      </struct>
-     <struct name="Rotation" type="MotCon::RPY">
+     <struct name="Rotation" type="MotCon::Rotation">
         <simple name="R" type="double"><description>First rotate around X with R(oll) in radians</description><value>0</value></simple>
         <simple name="P" type="double"><description>Next rotate around old Y with P(itch) in radians</description><value>0</value></simple>
         <simple name="Y" type="double"><description>Next rotate around old Z with Y(aw) in radians</description><value>0</value></simple>
+        <simple name="X_x" type="double"><value>1</value></simple>
+        <simple name="X_y" type="double"><value>0</value></simple>
+        <simple name="X_z" type="double"><value>0</value></simple>
+        <simple name="Y_x" type="double"><value>0</value></simple>
+        <simple name="Y_y" type="double"><value>1</value></simple>
+        <simple name="Y_z" type="double"><value>0</value></simple>
+        <simple name="Z_x" type="double"><value>-0</value></simple>
+        <simple name="Z_y" type="double"><value>0</value></simple>
+        <simple name="Z_z" type="double"><value>1</value></simple>
      </struct>
   </struct>
   <struct name="demotool_fs" type="MotCon::Frame">
+     <description>frame from demotool to force sensor</description>
      <struct name="Position" type="MotCon::Vector">
         <simple name="X" type="double"><description>X Value</description><value>0</value></simple>
         <simple name="Y" type="double"><description>Y Value</description><value>0</value></simple>
         <simple name="Z" type="double"><description>Z Value</description><value>-0.0275</value></simple>
      </struct>
-     <struct name="Rotation" type="MotCon::RPY">
+     <struct name="Rotation" type="MotCon::Rotation">
         <simple name="R" type="double"><description>First rotate around X with R(oll) in radians</description><value>-3.14159</value></simple>
         <simple name="P" type="double"><description>Next rotate around old Y with P(itch) in radians</description><value>0</value></simple>
         <simple name="Y" type="double"><description>Next rotate around old Z with Y(aw) in radians</description><value>2.3561</value></simple>
+        <simple name="X_x" type="double"><value>-0.70704</value></simple>
+        <simple name="X_y" type="double"><value>0.707174</value></simple>
+        <simple name="X_z" type="double"><value>-1.87655e-06</value></simple>
+        <simple name="Y_x" type="double"><value>0.707174</value></simple>
+        <simple name="Y_y" type="double"><value>0.70704</value></simple>
+        <simple name="Y_z" type="double"><value>-1.87619e-06</value></simple>
+        <simple name="Z_x" type="double"><value>-0</value></simple>
+        <simple name="Z_y" type="double"><value>-2.65359e-06</value></simple>
+        <simple name="Z_z" type="double"><value>-1</value></simple>
+     </struct>
+  </struct>
+  <struct name="world_camera" type="MotCon::Frame">
+     <description>frame from world to camera</description>
+     <struct name="Position" type="MotCon::Vector">
+        <simple name="X" type="double"><description>X Value</description><value>0</value></simple>
+        <simple name="Y" type="double"><description>Y Value</description><value>0</value></simple>
+        <simple name="Z" type="double"><description>Z Value</description><value>0</value></simple>
+     </struct>
+     <struct name="Rotation" type="MotCon::Rotation">
+        <simple name="X_x" type="double"><value>1</value></simple>
+        <simple name="X_y" type="double"><value>0</value></simple>
+        <simple name="X_z" type="double"><value>0</value></simple>
+        <simple name="Y_x" type="double"><value>0</value></simple>
+        <simple name="Y_y" type="double"><value>1</value></simple>
+        <simple name="Y_z" type="double"><value>0</value></simple>
+        <simple name="Z_x" type="double"><value>0</value></simple>
+        <simple name="Z_y" type="double"><value>0</value></simple>
+        <simple name="Z_z" type="double"><value>1</value></simple>
      </struct>
   </struct>
 </properties>

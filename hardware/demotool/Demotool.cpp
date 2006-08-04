@@ -17,7 +17,7 @@
 
 #include "Demotool.hpp"
 #include <matrix_wrapper.h>
-
+#include <kdl/frames_io.hpp>
 
 #define GRAVITY_CONSTANT    9.81
 #define MM_TO_M             0.001
@@ -74,7 +74,7 @@ namespace Orocos
     // foce component of gravity
     _Wrench_gravity_world_world.force  = KDL::Vector(0, 0, (-1 * _mass_demotool * GRAVITY_CONSTANT));
 
-    // number of leds
+    // number of leds as found in property file
     _num_leds = (int) (_pos_leds_demotool.value().size()/3);
     assert( _pos_leds_demotool.size() = 3*_num_leds);
     _visible_leds.resize(_num_leds);
@@ -118,12 +118,12 @@ namespace Orocos
     // -------------------------
     _num_visible_leds = 0;
     _Vector_led_camera = _Vector_led_camera_port.Get();
-    assert(_Vector_led_camera.size() == _Vector_led_demotool);
+    assert(_Vector_led_camera.size() == _Vector_led_demotool.size());
     for (unsigned int i=0; i<_num_leds; i++){
       bool visible = true;
       for (unsigned int j=0; j<3; j++){
 	double temp_double = _Vector_led_camera[i](j);
-	if (temp_double == -99999 || temp_double == 0)  visible = false;
+	if (temp_double == -99999 || temp_double == 0) visible = false;
       }
       _visible_leds[i] = visible;
       if (visible) _num_visible_leds++;
