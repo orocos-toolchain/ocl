@@ -1,8 +1,8 @@
 #include "WrenchSensor.hpp"
 #include <rtt/Attribute.hpp>
-//#include <rtt/TemplateFactories.hpp>
 #include <rtt/Command.hpp>
 #include <rtt/Method.hpp>
+#include <kdl/frames_io.hpp>
 
 #define CUTOFF_FREQUENCY_FILTER1 500.0
 #define CUTOFF_FREQUENCY_FILTER2 125.0
@@ -29,36 +29,40 @@ namespace Orocos
       _propertyfile(propertyfile),
       _offset("offset","Offset for zero-measurement",Wrench::Zero())
   {
-      Toolkit::Import( KDLToolkit );
-      this->ports()->addPort( &outdatPort );
-      
-      this->properties()->addProperty(&_offset);
+    Toolkit::Import( KDLToolkit );
+    this->ports()->addPort( &outdatPort );
+    
+    this->properties()->addProperty(&_offset);
       
 
-      /**
-       * Method Factory Interface.
-       */
-      
-      _writeBuffer = new Wrench(Wrench::Zero());
-      _offset.value() = Wrench::Zero();
-      
-      this->methods()->addMethod( method( "minMeasurement", &WrenchSensor::minMeasurement, this), "Gets the minimum measurement value."  );
-      
-      this->methods()->addMethod( method( "maxMeasurement", &WrenchSensor::maxMeasurement, this), "Gets the maximum measurement value."  );
-      
-      this->methods()->addMethod( method( "zeroMeasurement", &WrenchSensor::zeroMeasurement, this), "Gets the zero measurement value."  );
-      
+    /**
+     * Method Factory Interface.
+     */
+    
+    _writeBuffer = new Wrench(Wrench::Zero());
+    _offset.value() = Wrench::Zero();
+    
+    this->methods()->addMethod( method( "minMeasurement", &WrenchSensor::minMeasurement, this), 
+				"Gets the minimum measurement value."  );
+    
+    this->methods()->addMethod( method( "maxMeasurement", &WrenchSensor::maxMeasurement, this), 
+				"Gets the maximum measurement value."  );
+    
+    this->methods()->addMethod( method( "zeroMeasurement", &WrenchSensor::zeroMeasurement, this), 
+				"Gets the zero measurement value."  );
+    
     this->commands()->addCommand( command( "chooseFilter", &WrenchSensor::chooseFilter,
-                                           &WrenchSensor::chooseFilterDone, this),
-                                  "Command to choose a different filter","p","periodValue"  );	
+					   &WrenchSensor::chooseFilterDone, this),
+				  "Command to choose a different filter","p","periodValue"  );	
     
     this->commands()->addCommand( command( "setOffset", &WrenchSensor::setOffset,
-                                           &WrenchSensor::setOffsetDone, this),
-                                  "Command to set the zero offset","o","offset vector"  );	
+					   &WrenchSensor::setOffsetDone, this),
+				  "Command to set the zero offset","o","offset vector"  );	
+    
     this->commands()->addCommand( command( "addOffset", &WrenchSensor::addOffset,
-                                           &WrenchSensor::setOffsetDone, this),
-                                  "Command to set the zero offset","o","offset vector"  );	
-
+					   &WrenchSensor::setOffsetDone, this),
+				  "Command to set the zero offset","o","offset vector"  );	
+    
     this->events()->addEvent( "maximumLoadEvent", &maximumLoadEvent);
     
 #if defined (OROPKG_OS_LXRT)            
@@ -67,10 +71,11 @@ namespace Orocos
     JR3DSP_set_units(1, _dsp);
     
     JR3DSP_get_full_scale(&_full_scale, _dsp);
-    
+      
     Logger::log() << Logger::Info << "WrenchSensor -  Full scale: ("
   		  << (double) _full_scale.Fx << ", " << (double) _full_scale.Fy << ", " << (double) _full_scale.Fz
-  		  << (double) _full_scale.Tx << ", " << (double) _full_scale.Ty << ", " << (double) _full_scale.Tz << ")" << Logger::endl;
+  		  << (double) _full_scale.Tx << ", " << (double) _full_scale.Ty << ", " << (double) _full_scale.Tz 
+		  << ")" << Logger::endl;
 #else
     _full_scale.Fx=100;
     _full_scale.Fy=100;
@@ -90,15 +95,15 @@ namespace Orocos
   
     Wrench WrenchSensor::maxMeasurement() const
   {
-    return Wrench( Vector((double)_full_scale.Fx     , (double)_full_scale.Fy     , (double)_full_scale.Fz)
-				 , Vector((double)_full_scale.Tx / 10, (double)_full_scale.Fy / 10, (double)_full_scale.Fz / 10) );
+    return Wrench( Vector((double)_full_scale.Fx     , (double)_full_scale.Fy     , (double)_full_scale.Fz),
+		   Vector((double)_full_scale.Tx / 10, (double)_full_scale.Fy / 10, (double)_full_scale.Fz / 10) );
   }
   
   
   Wrench WrenchSensor::minMeasurement() const
   {
-    return Wrench( Vector(-(double)_full_scale.Fx     , -(double)_full_scale.Fy     , -(double)_full_scale.Fz)
-				 , Vector(-(double)_full_scale.Tx / 10, -(double)_full_scale.Fy / 10, -(double)_full_scale.Fz / 10) );
+    return Wrench( Vector(-(double)_full_scale.Fx     , -(double)_full_scale.Fy     , -(double)_full_scale.Fz),
+		   Vector(-(double)_full_scale.Tx / 10, -(double)_full_scale.Fy / 10, -(double)_full_scale.Fz / 10) );
     
   }
   
@@ -134,22 +139,20 @@ namespace Orocos
   }
   
   
-  bool WrenchSensor::setOffset(Wrench off)
+  bool WrenchSensor::setOffset(const Wrench& off)
   {
-    
     _offset.value()=off;
     return true;
   }
-  bool WrenchSensor::addOffset(Wrench off)
+
+  bool WrenchSensor::addOffset(const Wrench& off)
   {
-    
     _offset.value()= _offset.value()+off;
     return true;
   }
   
   bool WrenchSensor::setOffsetDone() const
   {
-    
     return true;
   } 
   
