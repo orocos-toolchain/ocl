@@ -40,6 +40,8 @@ namespace Orocos
     virtual bool startup();
     virtual void update();
     virtual void shutdown();
+
+    bool resetPosition();
     
   private:
     // property

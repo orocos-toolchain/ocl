@@ -67,7 +67,10 @@ namespace Orocos
     
     Logger::log()<<Logger::Debug<<this->getName()<<": adding Events"<<Logger::endl;
     //events()->addEvent("distanceOutOfRange",&_distanceOutOfRange);
-    
+
+    Logger::log()<<Logger::Debug<<this->getName()<<": adding Methods"<<Logger::endl;
+    methods()->addMethod(method("resetPosition", &Demotool::resetPosition, "set world frame to current object frame"));
+
     if (!readProperties(_propertyfile))
       log(Error)<<"Reading properties failed."<<endlog();
     
@@ -204,5 +207,16 @@ namespace Orocos
   {
     writeProperties(_propertyfile);
   }
+
+
+  bool Demotool::resetPosition()
+  {
+    // set frame world_camera to obj_camera ==> world frame in current object frame
+    _Frame_world_camera.value() = _Frame_demotool_obj.value().Inverse() * _Frame_camera_demotool.Inverse();
+
+    return true;
+  }
+
+
 }//namespace
 
