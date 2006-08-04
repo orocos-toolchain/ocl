@@ -1,4 +1,6 @@
-// Copyright (C) 2006 Ruben Smits <ruben dot smits at mech dot kuleuven dot be>
+// Copyright (C) 2006 Klaas Gadeyne <klaas dot gadeyne at mech dot kuleuven dot be>
+//                    Ruben Smits <ruben dot smits at mech dot kuleuven dot be>
+//                    Wim Meeussen <wim dot meeussen at mech dot kuleuven dot be>
 //  
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,6 +19,7 @@
 
 #include "KryptonK600Sensor.hpp"
 #include <rtt/Logger.hpp>
+#include <kdl/frames_io.hpp>
 
 namespace Orocos
 {
@@ -24,117 +27,113 @@ namespace Orocos
     using namespace KDL;
     using namespace std;
   
-    KryptonK600Sensor::KryptonK600Sensor(string name, unsigned int num_leds)
-        : GenericTaskContext(name),
-          _num_leds(num_leds),
-          _ledPositions_local(num_leds),
-          _ledPositions("LedPositions")
+
+  // constructor
+    KryptonK600Sensor::KryptonK600Sensor(string name, unsigned int num_leds, unsigned int priority)
+      : GenericTaskContext(name),
+#if defined (OROPKG_OS_LXRT)
+	NonPeriodicActivity(priority),
+	_keep_running(true),
+#endif
+	_num_leds(num_leds),
+	_ledPositions_local(num_leds),
+	_ledPositions("LedPositions")
     {
         Toolkit::Import( KDLToolkit );
         ports()->addPort(&_ledPositions);
 #if defined (OROPKG_OS_LXRT)
-        _msg = new char[MAX_MESSAGE_LENGTH];
+        // If kernel Module is not loaded yet, Print error message
+        if (! ((udp_message_arrived = (SEM *) rt_get_adr(nam2num("KEDSEM"))) && 
+               (udp_message = (MBX *) rt_get_adr(nam2num("KEDMBX")))	      ))
+	  Logger::log() << Logger::Info << "KryptonK600Sensor: Can't find sem/mbx" << Logger::endl;
+
+        for (unsigned int i =0; i<_num_leds;i++)
+	  _ledPositions_local[i] = Vector(-99999, -99999, -99999);
+        
+	this->NonPeriodicActivity::start();
 #endif
     }
     
+
+
+  // destructor
     KryptonK600Sensor::~KryptonK600Sensor()
     {
+#if defined (OROPKG_OS_LXRT)
+      _keep_running = false;
+
+      // In update, we might be waiting for the sem, so first post it...
+      SEM * udp_message_arrived;
+      udp_message_arrived = (SEM *) rt_get_adr(nam2num("KEDSEM"));
+      rt_sem_signal (udp_message_arrived);
+
+      this->NonPeriodicActivity::stop();
+#endif
     }
+
+
   
     
-    
-    bool KryptonK600Sensor::startup()
-    {
 #if defined (OROPKG_OS_LXRT)
-        // If kernel Module is not loaded yet, Print error message and
-        // wait for one second
-        if (! ((udp_message_arrived = (SEM *) rt_get_adr(nam2num("KEDSEM"))) && 
-               (udp_message = (MBX *) rt_get_adr(nam2num("KEDMBX")))	      )
-            )
-            {
-                Logger::log() << Logger::Info << "K600PositionInterface: Can't find sem/mbx" << Logger::endl;
-                return false;
-            }
-#endif
-        for(unsigned int i =0; i<_num_leds;i++)
-            SetToZero(_ledPositions_local[i]);
-        
-        return true;
-    }
-    
-    
-    void KryptonK600Sensor::update()
+    void KryptonK600Sensor::loop()
     {
-#if defined (OROPKG_OS_LXRT)
+      char msg[MAX_MESSAGE_LENGTH];
+
+      while (_keep_running){
+	// Wait until kernel Module posts semaphore
+	rt_sem_wait(udp_message_arrived);
         
-        Logger::log() << Logger::Debug << "K600PositionInterface: update" << Logger::endl;
-        
-        // Wait until kernel Module posts semaphore
-        rt_sem_wait(udp_message_arrived);
-        
-        unsigned int ret;
-        if ((ret = rt_mbx_receive_if(udp_message,(void *) &_msg, MAX_MESSAGE_LENGTH)) < 0 )
-            Logger::log() << Logger::Info << "K600PositionInterface: Error rcv message from mbx" << Logger::endl;
-        else{
-            // Interprete Message
-            if ( interprete_K600_Msg()){
-                Logger::log() << Logger::Debug << "K600PositionInterface: Received message from mbx" << Logger::endl;
-                // Copy Data into write buffer
-                _ledPositions.Set(_ledPositions_local);
-            }
-            else Logger::log() << Logger::Info << "K600PositionInterface: Bad message, or something went wrong in decoding" << Logger::endl;
-        }
-#endif
-        _ledPositions.Set(_ledPositions_local);
-    }
-    
-    void KryptonK600Sensor::shutdown()
-    {
-        Logger::log() << Logger::Info << "KryptonK600Sensor: shutdown" << Logger::endl;
-#if defined (OROPKG_OS_LXRT)
-        // In update, we might be waiting for the sem, so first
-        // post it...
-        SEM * udp_message_arrived;
-        udp_message_arrived = (SEM *) rt_get_adr(nam2num("KEDSEM"));
-        rt_sem_signal (udp_message_arrived);
-#endif
-    }
-    
-#if defined (OROPKG_OS_LXRT)
-    bool KryptonK600Sensor::interprete_K600_Msg()
-    {
-        unsigned short i;
+	int ret = rt_mbx_receive_if(udp_message,(void *) &msg, MAX_MESSAGE_LENGTH);
+	if (ret != 0 && ret !=MAX_MESSAGE_LENGTH)
+	  Logger::log() << Logger::Info << "KryptonK600Sensor: Error receiving message from mbx: error " 
+			<< ret << " EINVAL is " << EINVAL << Logger::endl;
+	else{
+	  // Interprete Message
+	  if ( interprete_K600_Msg(msg))
+	    // Copy Data into write buffer
+	    _ledPositions.Set(_ledPositions_local);
+	  else Logger::log() << Logger::Info << "KryptonK600Sensor: Bad message, "
+			     << "or something went wrong in decoding" << Logger::endl;
+	}
+	_ledPositions.Set(_ledPositions_local);
+      }
+    }    
+  
+  
+    bool KryptonK600Sensor::interprete_K600_Msg(char* msg)
+      {
         unsigned int index = 15;
-        
-        _length_msg    = (unsigned short)_msg[0];
-        _type_msg      = (unsigned short)_msg[2];
-        _nr_msg        = (unsigned short)_msg[4];
-        _nr_answer_msg = (unsigned short)_msg[6];
-        
-        _msg_valid     = _msg[8];
-        
-        _type_body_msg = (unsigned short)_msg[9];
-        _cycle_nr      = (unsigned short)_msg[11];
-        _nr_markers    = (unsigned short)_msg[13];
-        
-        if (_nr_markers < MAX_NUM_LEDS && _nr_markers!=_num_leds){
-            for (i = 0; i < _num_leds ; i++){
-                _ledPositions_local[i].x((double)_msg[index]);
-                index += 8; // A double is 8 bytes (chars)
-                _ledPositions_local[i].y((double)_msg[index]);
-                index += 8; // A double is 8 bytes (chars)
-                _ledPositions_local[i].z((double)_msg[index]);
-                index += 8; // A double is 8 bytes (chars)
-            }
-            return true;
+	double* temp_double;
+	unsigned short* temp_short;
+
+	temp_short = (unsigned short*)&msg[0]; _length_msg = *temp_short;
+        temp_short = (unsigned short*)&msg[2]; _type_msg = *temp_short;
+        temp_short = (unsigned short*)&msg[4]; _nr_msg= *temp_short;
+        temp_short = (unsigned short*)&msg[6]; _type_body_msg = *temp_short;
+        _msg_valid     = msg[8];
+        temp_short = (unsigned short*)&msg[9]; _type_body_msg = *temp_short;
+        temp_short = (unsigned short*)&msg[11]; _cycle_nr = *temp_short;
+        temp_short = (unsigned short*)&msg[13]; _nr_markers = *temp_short;
+
+
+        if (_nr_markers < MAX_NUM_LEDS && _nr_markers==_num_leds){
+	  for (unsigned int i = 0; i < _num_leds ; i++){
+	    for (unsigned int j=0; j<3; j++){
+	      temp_double = (double*)&msg[index];
+	      _ledPositions_local[i](j) = *temp_double;
+	      index += 8; // double is 8 bytes (chars)
+	    }
+	  }
+	  return true;
         }
-    else {
-      Logger::log() << Logger::Error << "K600PositionInterface: The Krypton system has " << _nr_markers 
-		    << " leds registered, but you said there are " << _num_leds << " leds" << Logger::endl;
-      Logger::log() << Logger::Error << "K600PositionInterface: Prepare for Segfault :-)" << Logger::endl;
-      return false;
-    }
-    }
+	else {
+	  Logger::log() << Logger::Error << "K600PositionInterface: The Krypton system has " << _nr_markers 
+			<< " leds registered, but you said there are " << _num_leds << " leds" << Logger::endl;
+	  Logger::log() << Logger::Error << "K600PositionInterface: Prepare for Segfault :-)" << Logger::endl;
+	  return false;
+	}
+      }
 #endif
+
 }//namespace
 

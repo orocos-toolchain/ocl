@@ -1,4 +1,6 @@
-// Copyright (C) 2006 Ruben Smits <ruben dot smits at mech dot kuleuven dot be>
+// Copyright (C) 2006 Klaas Gadeyne <klaas dot gadeyne at mech dot kuleuven dot be>
+//                    Ruben Smits <ruben dot smits at mech dot kuleuven dot be>
+//                    Wim Meeussen <wim dot meeussen at mech dot kuleuven dot be>
 //  
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -24,6 +26,7 @@
 #include <rtt/RTT.hpp>
 #include <kdl/toolkit.hpp>
 #include <rtt/GenericTaskContext.hpp>
+#include <rtt/NonPeriodicActivity.hpp>
 #include <rtt/Ports.hpp>
 
 #if defined (OROPKG_OS_LXRT)
@@ -36,20 +39,22 @@
 
 namespace Orocos
 {
-  class KryptonK600Sensor : public RTT::GenericTaskContext
+  class KryptonK600Sensor 
+    :public RTT::GenericTaskContext
+#if defined (OROPKG_OS_LXRT)
+    ,public RTT::NonPeriodicActivity
+#endif
   {
     
   public:
-    KryptonK600Sensor(std::string name, unsigned int num_leds);
+    KryptonK600Sensor(std::string name, unsigned int num_leds, unsigned int priority=0);
     virtual ~KryptonK600Sensor();
     
-    virtual bool startup();
-    virtual void update();
-    virtual void shutdown();
+    virtual bool startup(){return true;};
+    virtual void update(){};
+    virtual void shutdown(){};
     
   private:
-
-    unsigned int _num_leds;
 
 #if defined (OROPKG_OS_LXRT)
     unsigned short _length_msg, _type_msg, _nr_msg, _nr_answer_msg, _type_body_msg, _cycle_nr, _nr_markers;
@@ -58,10 +63,13 @@ namespace Orocos
     SEM * udp_message_arrived;
     MBX * udp_message;
 
-    char* _msg;
+    bool _keep_running;
 
-    bool interprete_K600_Msg();
+    bool interprete_K600_Msg(char* msg);
+    void loop();
 #endif
+
+    unsigned int _num_leds;
 
     std::vector<KDL::Vector> _ledPositions_local;
     RTT::WriteDataPort<std::vector<KDL::Vector> > _ledPositions;

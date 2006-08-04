@@ -16,16 +16,9 @@
 //  
 
 #include <rtt/RTT.hpp>
-#include <rtt/NonPreemptibleActivity.hpp>
-
 #include <rtt/os/main.h>
-
 #include "hardware/krypton/KryptonK600Sensor.hpp"
-
-//User interface
 #include "taskbrowser/TaskBrowser.hpp"
-
-//Reporting
 #include "reporting/FileReporting.hpp"
 
 
@@ -42,22 +35,21 @@ int ORO_main(int arc, char* argv[])
     // Set log level more verbose than default,
     // such that we can see output :
     if ( Logger::log().getLogLevel() < Logger::Info ) {
-        Logger::log().setLogLevel( Logger::Info );
-        Logger::log() << Logger::Info << argv[0] << " manually raises LogLevel to 'Info' (5). See also file 'orocos.log'."<<Logger::endl;
+      Logger::log().setLogLevel( Logger::Info );
+      Logger::log() << Logger::Info << argv[0] << " manually raises LogLevel to 'Info' (5). "
+		    << "See also file 'orocos.log'."<<Logger::endl;
     }
 
-    KryptonK600Sensor krypton("KryptonSensor",2);
-    
-    NonPreemptibleActivity kryptonTask(0.1, krypton.engine() );
-    //FileReporting reporter("Reporting");
-    //reporter.connectPeers(&a_task);
- 
-    
-    TaskBrowser browser( &krypton );
+    Logger::log() << Logger::Info << "creating krypton sensor" << Logger::endl;
+    KryptonK600Sensor krypton("KryptonSensor",6);
 
+    //Logger::log() << Logger::Info << "creating reporter" << Logger::endl;
+    //FileReporting reporter("Reporting");
+    //reporter.connectPeers(&krypton);
+ 
+    Logger::log() << Logger::Info << "start task browser" << Logger::endl;
+    TaskBrowser browser( &krypton );
     browser.loop();
 
-    kryptonTask.stop();
-    
     return 0;
 }
