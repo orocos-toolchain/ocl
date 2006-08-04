@@ -5,9 +5,14 @@
 ADD_DEFINITIONS( "-Wall" )
 
 
+#
+# Components supply header files which should be included when 
+# using these components. Each component should use this macro
+# to supply its header-files.
+#
+# Usage: GLOBAL_ADD_INCLUDE( RELATIVE_LOCATION hpp1, hpp2 ...)
+
 MACRO( GLOBAL_ADD_INCLUDE COMPONENT_LOCATION )
-  MESSAGE("COMPONENT_LOCATION :${COMPONENT_LOCATION}")
-  MESSAGE("ARGN :${ARGN}")
   INSTALL_FILES( /include/${COMPONENT_LOCATION} FILES ${ARGN})
 ENDMACRO( GLOBAL_ADD_INCLUDE COMPONENT_LOCATION )
 
