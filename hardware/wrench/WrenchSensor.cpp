@@ -90,7 +90,9 @@ namespace Orocos
       Logger::log() << Logger::Error << "Failed to read the property file. Offsets are set to zero" << Logger::endl;
     }
     
-    
+
+    // set default value on port
+    outdatPort.Set( _offset.value() );    
   }
   
     Wrench WrenchSensor::maxMeasurement() const
