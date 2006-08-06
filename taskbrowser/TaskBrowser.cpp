@@ -51,10 +51,6 @@
 #include <boost/lambda/lambda.hpp>
 
 #include <pkgconf/system.h>
-#ifdef OROPKG_GEOMETRY
-#include <geometry/GeometryToolkit.hpp>
-#endif
-
 #include <signal.h>
 
 namespace Orocos
