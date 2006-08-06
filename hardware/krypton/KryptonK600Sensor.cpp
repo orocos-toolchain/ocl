@@ -39,8 +39,13 @@ namespace Orocos
 	_ledPositions_local(num_leds),
 	_ledPositions("LedPositions")
     {
-        Toolkit::Import( KDLToolkit );
         ports()->addPort(&_ledPositions);
+
+	// set ledpositions to zero
+	for (unsigned int i=0; i<_num_leds; i++)
+	  _ledPositions_local[i] = Vector(1.0,1.0,1.0);  
+	_ledPositions.Set(_ledPositions_local);
+
 #if defined (OROPKG_OS_LXRT)
         // If kernel Module is not loaded yet, Print error message
         if (! ((udp_message_arrived = (SEM *) rt_get_adr(nam2num("KEDSEM"))) && 

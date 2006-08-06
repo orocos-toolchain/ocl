@@ -17,6 +17,7 @@
 
 #include <rtt/RTT.hpp>
 #include <rtt/os/main.h>
+#include <kdl/toolkit.hpp>
 #include "hardware/krypton/KryptonK600Sensor.hpp"
 #include "taskbrowser/TaskBrowser.hpp"
 #include "reporting/FileReporting.hpp"
@@ -25,6 +26,7 @@
 
 using namespace std;
 using namespace RTT;
+using namespace KDL;
 using namespace Orocos;
 
 /**
@@ -39,13 +41,15 @@ int ORO_main(int arc, char* argv[])
       Logger::log() << Logger::Info << argv[0] << " manually raises LogLevel to 'Info' (5). "
 		    << "See also file 'orocos.log'."<<Logger::endl;
     }
+    // import kdl toolkit
+    Toolkit::Import( KDLToolkit );
 
     Logger::log() << Logger::Info << "creating krypton sensor" << Logger::endl;
     KryptonK600Sensor krypton("KryptonSensor",6);
 
-    //Logger::log() << Logger::Info << "creating reporter" << Logger::endl;
-    //FileReporting reporter("Reporting");
-    //reporter.connectPeers(&krypton);
+    Logger::log() << Logger::Info << "creating reporter" << Logger::endl;
+    FileReporting reporter("Reporting");
+    reporter.connectPeers(&krypton);
  
     Logger::log() << Logger::Info << "start task browser" << Logger::endl;
     TaskBrowser browser( &krypton );

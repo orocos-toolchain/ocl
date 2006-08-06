@@ -22,9 +22,8 @@
 #define __KRYTON_K600_SENSOR__
 
 #include <pkgconf/system.h> 
-
+#include <kdl/frames.hpp>
 #include <rtt/RTT.hpp>
-#include <kdl/toolkit.hpp>
 #include <rtt/GenericTaskContext.hpp>
 #include <rtt/NonPeriodicActivity.hpp>
 #include <rtt/Ports.hpp>

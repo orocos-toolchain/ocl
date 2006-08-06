@@ -69,7 +69,7 @@ namespace Orocos
     //events()->addEvent("distanceOutOfRange",&_distanceOutOfRange);
 
     Logger::log()<<Logger::Debug<<this->getName()<<": adding Methods"<<Logger::endl;
-    methods()->addMethod(method("resetPosition", &Demotool::resetPosition, "set world frame to current object frame"));
+    methods()->addMethod(method("resetPosition", &Demotool::resetPosition, this), "set world frame to current object frame");
 
     if (!readProperties(_propertyfile))
       log(Error)<<"Reading properties failed."<<endlog();

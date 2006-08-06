@@ -18,6 +18,7 @@
 #include <rtt/RTT.hpp>
 #include <rtt/NonPreemptibleActivity.hpp>
 #include <rtt/os/main.h>
+#include <kdl/toolkit.hpp>
 #include "hardware/demotool/Demotool.hpp"
 #include "hardware/krypton/KryptonK600Sensor.hpp"
 #include "hardware/wrench/WrenchSensor.hpp"
@@ -27,6 +28,7 @@
 
 using namespace std;
 using namespace RTT;
+using namespace KDL;
 using namespace Orocos;
 
 
@@ -42,6 +44,8 @@ int ORO_main(int arc, char* argv[])
         Logger::log() << Logger::Info << argv[0] << " manually raises LogLevel to 'Info' (5). "
 		      << "See also file 'orocos.log'."<<Logger::endl;
     }
+    // import kdl toolkit
+    Toolkit::Import( KDLToolkit );
 
     // krypton
     KryptonK600Sensor krypton("Krypton",6);
@@ -51,7 +55,7 @@ int ORO_main(int arc, char* argv[])
     NonPreemptibleActivity wrenchsensorTask(0.1, wrenchsensor.engine() );
 
     // demotool task
-    Demotool demotool("Demtool");
+    Demotool demotool("Demotool");
     NonPreemptibleActivity demotoolTask(0.1, demotool.engine() );
     demotool.connectPeers(&krypton);
     demotool.connectPeers(&wrenchsensor);
