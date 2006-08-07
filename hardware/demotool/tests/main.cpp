@@ -40,7 +40,7 @@ int ORO_main(int arc, char* argv[])
     // Set log level more verbose than default,
     // such that we can see output :
     if ( Logger::log().getLogLevel() < Logger::Info ) {
-        Logger::log().setLogLevel( Logger::Info );
+        Logger::log().setLogLevel( Logger::Debug );
         Logger::log() << Logger::Info << argv[0] << " manually raises LogLevel to 'Info' (5). "
 		      << "See also file 'orocos.log'."<<Logger::endl;
     }
@@ -57,17 +57,27 @@ int ORO_main(int arc, char* argv[])
     // demotool task
     Demotool demotool("Demotool");
     NonPreemptibleActivity demotoolTask(0.1, demotool.engine() );
-    demotool.connectPeers(&krypton);
-    demotool.connectPeers(&wrenchsensor);
 
     // reporter
     FileReporting reporter("Reporting");
+    NonRealTimeActivity reporterTask(0.01, reporter.engine() );
+
+    // connect tasks
+    demotool.connectPeers(&krypton);
+    demotool.connectPeers(&wrenchsensor);
     reporter.connectPeers(&demotool);
  
+    // start tasks
+    wrenchsensorTask.start();
+    demotoolTask.start();
+
+    // task browser
     TaskBrowser browser( &demotool );
     browser.loop();
 
+    // stop tasks
     demotoolTask.stop();
     wrenchsensorTask.stop();
+    reporterTask.stop();
     return 0;
 }

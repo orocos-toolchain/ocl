@@ -23,6 +23,8 @@
 #include <rtt/Ports.hpp>
 #include <rtt/Event.hpp>
 #include <rtt/Properties.hpp>
+#include <rtt/Method.hpp>
+#include <rtt/Command.hpp>
 #include <kdl/frames.hpp>
 
 namespace Orocos
@@ -41,7 +43,8 @@ namespace Orocos
     virtual void update();
     virtual void shutdown();
 
-    bool resetPosition();
+    void resetPosition();
+    void resetForce();
     
   private:
     // property
@@ -59,6 +62,12 @@ namespace Orocos
     RTT::WriteDataPort<KDL::Twist>   _Twist_obj_world_port;
     RTT::WriteDataPort<KDL::Frame>   _Frame_world_obj_port;
     RTT::WriteDataPort<unsigned int> _num_visible_leds_port;
+
+    // commands
+    RTT::Command<bool(KDL::Wrench)>  _add_offset;
+
+    // methods
+    RTT::Method<void(void)>          _reset_position, _reset_force;
 
     std::string _propertyfile;
     std::vector<KDL::Vector> _Vector_led_demotool, _Vector_led_camera;

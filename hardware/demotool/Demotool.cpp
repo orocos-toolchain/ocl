@@ -46,6 +46,8 @@ namespace Orocos
     _Twist_obj_world_port("twit_obj_world"),
     _Frame_world_obj_port("frame_world_obj"),
     _num_visible_leds_port("num_visible_leds"),
+    _reset_position("resetPosition", &Demotool::resetPosition, this),
+    _reset_force("resetForce", &Demotool::resetForce, this),
     _propertyfile(propertyfile)
   {
     Logger::log()<<Logger::Debug<<this->getName()<<": adding Properties"<<Logger::endl;
@@ -69,7 +71,8 @@ namespace Orocos
     //events()->addEvent("distanceOutOfRange",&_distanceOutOfRange);
 
     Logger::log()<<Logger::Debug<<this->getName()<<": adding Methods"<<Logger::endl;
-    methods()->addMethod(method("resetPosition", &Demotool::resetPosition, this), "set world frame to current object frame");
+    methods()->addMethod(_reset_position, "set world frame to current object frame");
+    methods()->addMethod(_reset_force, "set wrench sensor offset to measure zero force");
 
     if (!readProperties(_propertyfile))
       log(Error)<<"Reading properties failed."<<endlog();
@@ -101,6 +104,13 @@ namespace Orocos
 
   bool Demotool::startup()    
   {
+    // get command from wrench component, to add offset
+    TaskContext* wrench_sensor = getPeer("Wrenchsensor");
+    if (!wrench_sensor) Logger::log()<<Logger::Error<<this->getName()<<": peer Wrenchsensor not found."<<Logger::endl;
+ 
+    _add_offset = wrench_sensor->commands()->getCommand<bool(Wrench)>("addOffset");
+    if (!_add_offset.ready()) Logger::log()<<Logger::Error<<this->getName()<<": command addOffset not found."<<Logger::endl;
+
     // set _Twist_obj_world to zero
     SetToZero(_Twist_obj_world);
 
@@ -113,10 +123,6 @@ namespace Orocos
     
   void Demotool::update()
   {
-    // get force sensor measurement
-    // ----------------------------
-    _Wrench_fs_fs = _Wrench_fs_fs_port.Get();
-    
     // get krypton LED positions
     // -------------------------
     _num_visible_leds = 0;
@@ -186,12 +192,14 @@ namespace Orocos
     _Frame_world_obj_old = _Frame_world_obj;
 
     
+    // get force sensor measurement
+    // ----------------------------
+    _Wrench_fs_fs = _Wrench_fs_fs_port.Get();
     // mass compensation for force sensor
-    // ----------------------------------
     _Frame_world_fs = _Frame_world_demotool * _Frame_demotool_fs.value();
     _Wrench_gravity_world_world.torque = (_Frame_world_demotool * _center_gravity_demotool.value())
                                          * _Wrench_gravity_world_world.force;
-    _Wrench_world_world = _Frame_world_fs * _Wrench_fs_fs;
+    _Wrench_world_world = (_Frame_world_fs * _Wrench_fs_fs) - _Wrench_gravity_world_world;
 
 
     // copy data to ports
@@ -209,13 +217,17 @@ namespace Orocos
   }
 
 
-  bool Demotool::resetPosition()
+  void Demotool::resetPosition()
   {
     // set frame world_camera to obj_camera ==> world frame in current object frame
     _Frame_world_camera.value() = _Frame_demotool_obj.value().Inverse() * _Frame_camera_demotool.Inverse();
-
-    return true;
   }
+
+  void Demotool::resetForce()
+  {
+    _add_offset( _Frame_world_fs.Inverse() * _Wrench_world_world );
+  }
+
 
 
 }//namespace
