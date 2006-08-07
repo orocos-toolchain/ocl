@@ -40,7 +40,9 @@ BaseVelocityController::BaseVelocityController(const std::string& name,const std
         : RTT::GenericTaskContext(name),
           velocity("basevelocity"),
           rotvel  ("baserotvel"),
-          outdatPort("Position"),
+          x_world_pf("x_world_pf"),
+          y_world_pf("y_world_pf"),
+          theta_world_pf("theta_world_pf"),
           hostname("hostname","The host name to connect to","10.33.172.172"),
           port("port","The port of the host computer", 9999 )
     {
@@ -49,7 +51,9 @@ BaseVelocityController::BaseVelocityController(const std::string& name,const std
          */
         this->ports()->addPort( &velocity );
         this->ports()->addPort( &rotvel   );
-        this->ports()->addPort( &outdatPort );
+        this->ports()->addPort( &x_world_pf );
+        this->ports()->addPort( &y_world_pf );
+        this->ports()->addPort( &theta_world_pf );
         this->properties()->addProperty( &hostname );
         this->properties()->addProperty( &port );
         
@@ -217,20 +221,26 @@ BaseVelocityController::BaseVelocityController(const std::string& name,const std
      * This function is periodically called.
      */
     void BaseVelocityController::update() {
-        stringstream sstr;
          
         if (!connected) return;
          
         double v = velocity.Get()/100;  // v is expressed in [cm]
         double w = rotvel.Get();        // w is expressed in [rad]
         
+        stringstream sstr;
         sstr << "SetVelocityGetPosition "<< v << " " << w << " \n" ; 
         cl->sendCommand(sstr.str());
         string str = cl->receiveData(); 
+        stringstream sstr2(str);
+        double x,y,theta;
+        sstr2 >> x;
+        sstr2 >> y;
+        sstr2 >> theta;
         //  3 values are given back : x y theta
         //  with x,y in [cm/sec]
-        //  jjjjjjj
-        outdatPort.data()->Set( str );
+        x_world_pf.Set(x/100.0);
+        y_world_pf.Set(y/100.0);
+        theta_world_pf.Set(theta/180.0*3.14159265358979);
     }
 
     /**
