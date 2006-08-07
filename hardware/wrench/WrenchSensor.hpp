@@ -43,12 +43,11 @@ namespace Orocos
     virtual KDL::Wrench minMeasurement() const;
     virtual KDL::Wrench zeroMeasurement() const;
     
-    
     virtual bool chooseFilter(double period); 
     virtual bool chooseFilterDone() const;
     
-    virtual bool setOffset(const KDL::Wrench&); 
-    virtual bool addOffset(const KDL::Wrench&); 
+    virtual bool setOffset(KDL::Wrench); 
+    virtual bool addOffset(KDL::Wrench); 
     virtual bool setOffsetDone() const;
     
     RTT::Event<void(void)> maximumLoadEvent;

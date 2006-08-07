@@ -141,13 +141,13 @@ namespace Orocos
   }
   
   
-  bool WrenchSensor::setOffset(const Wrench& off)
+  bool WrenchSensor::setOffset(Wrench off)
   {
     _offset.value()=off;
     return true;
   }
 
-  bool WrenchSensor::addOffset(const Wrench& off)
+  bool WrenchSensor::addOffset(Wrench off)
   {
     _offset.value()= _offset.value()+off;
     return true;
