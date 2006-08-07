@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE properties SYSTEM "cpf.dtd">
 <properties>
-  <simple name="PortNumber" type="long"><description>Port number to listen to for clients</description><value>9999</value></simple>
-  <simple name="NumAxes" type="long"><description>Number of axes to observe</description><value>6</value></simple>
+  <simple name="portnumber" type="long"><description>Port number to listen to for clients</description><value>9999</value></simple>
+  <simple name="numaxes" type="long"><description>Number of axes to observe</description><value>6</value></simple>
+  <simple name="seperate_ports" type="boolean"><description>If it is true the input is of the form name0...nameN, otherwise it is a std::vector</description><value>1</value></simple>
+  <simple name="port_name" type="string"><description>base name of the input</description><value>positionValue</value></simple>
 </properties>

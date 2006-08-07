@@ -135,8 +135,10 @@ ACE_Reactor* ClientHandler::reactor_instance = 0;
 NAxesPositionViewer::NAxesPositionViewer(const std::string& name,const std::string& propertyfilename)
   : GenericTaskContext(name),
     _propertyfile(propertyfilename),
-	portnumber("PortNumber","Port number to listen to for clients"),
-	num_axes("NumAxes","Number of axes to observe"),
+	portnumber("portnumber","Port number to listen to for clients"),
+	num_axes("numaxes","Number of axes to observe"),
+    seperate_ports("seperate_ports","If it is true the input is of the form name0...nameN, otherwise it is a std::vector"),
+    port_name("port_name","base name of the input"),
 	clientacceptor(0),
 	state(0)
 {
@@ -152,23 +154,29 @@ NAxesPositionViewer::NAxesPositionViewer(const std::string& name,const std::stri
    */
   properties()->addProperty( &portnumber );
   properties()->addProperty( &num_axes );
+  properties()->addProperty( &seperate_ports);
+  properties()->addProperty( &port_name);
  
   if (!readProperties(_propertyfile)) {
     Logger::log() << Logger::Error << "Failed to read the property file, continue with default values." << Logger::endl;
   }
   _num_axes = num_axes.value();
 
-  Logger::log() << Logger::Debug << "creating dataports" << Logger::endl;
+  Logger::log() << Logger::Debug << "creating dataport(s) with base name : " << port_name.value() << Logger::endl;
   /**
    * Creating and adding the data-ports
    */
-  positionValue.resize(_num_axes);
-  jointvec.resize(_num_axes);
-  for (int i=0;i<_num_axes;++i) {
-      char buf[80];
-      sprintf(buf,"positionValue%d",i);
-      positionValue[i]  = new ReadDataPort<double>(buf);
-      ports()->addPort(positionValue[i]);
+  if (seperate_ports.value()) {
+    seperateValues.resize(_num_axes);
+    jointvec.resize(_num_axes);
+    for (int i=0;i<_num_axes;++i) {
+        char buf[80];
+        sprintf(buf,"%s%d",port_name.value().c_str(),i);
+        seperateValues[i]  = new ReadDataPort<double>(buf);
+        ports()->addPort(seperateValues[i]);
+    }
+  } else {
+    vectorValue = new RTT::ReadDataPort<std::vector<double> >(port_name.value()); 
   }
 
   Logger::log() << Logger::Debug << "Leaving NAxesPositionViewer::NAxesPositionViewer" << Logger::endl;
@@ -202,9 +210,15 @@ void NAxesPositionViewer::update() {
 	  state=2;
 	}
 	if (state==2) {
-		for (unsigned int i=0;i<jointvec.size();i++) {
-			jointvec[i] = positionValue[i]->Get();
-		}
+        if (seperate_ports.value()) {
+		    for (unsigned int i=0;i<jointvec.size();i++) {
+			    jointvec[i] = seperateValues[i]->Get();
+		    }
+        } else {
+    	    for (unsigned int i=0;i<jointvec.size();i++) {
+			    jointvec[i] = vectorValue->Get()[i];
+		    }
+        }
 		ACE_Time_Value dt; 
 		dt.set(0.01);
 		ClientHandler::reactor_instance->handle_events(dt);

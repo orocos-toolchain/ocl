@@ -44,8 +44,11 @@ protected:
    
    RTT::Property<int>               		           portnumber;
    RTT::Property<int>                                  num_axes;
+   RTT::Property<bool>                                 seperate_ports;
+   RTT::Property<std::string>                          port_name;
    int                                                 _num_axes;
-   std::vector<RTT::ReadDataPort<double>*>             positionValue;
+   std::vector<RTT::ReadDataPort<double>*>             seperateValues;
+   RTT::ReadDataPort<std::vector<double> >*            vectorValue;
    std::vector<double>                                 jointvec;
    void*                                     		   clientacceptor;
    int												   state;
