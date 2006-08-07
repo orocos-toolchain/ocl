@@ -59,7 +59,8 @@ int ORO_main( int argc, char** argv)
     // such that we can see output :
     if ( Logger::log().getLogLevel() < Logger::Info ) {
         Logger::log().setLogLevel( Logger::Info );
-        Logger::log() << Logger::Info << argv[0] << " manually raises LogLevel to 'Info' (5). See also file 'orocos.log'."<<Logger::endl;
+        Logger::log() << Logger::Info << argv[0] 
+		      << " manually raises LogLevel to 'Info' (5). See also file 'orocos.log'."<<Logger::endl;
     }
 
 
