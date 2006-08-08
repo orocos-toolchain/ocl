@@ -10,6 +10,5 @@ IF ( BUILD_CAMERA )
     GLOBAL_ADD_INCLUDE( hardware/camera ${HPPS})
 
     ADD_SUBDIRECTORY( tests )
-    ADD_SUBDIRECTORY( cpf )
 
 ENDIF ( BUILD_CAMERA )
