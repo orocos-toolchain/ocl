@@ -27,30 +27,114 @@
  
  
 
-#include "KinematicsComponent.hpp"
-#include "rtt/Logger.hpp"
+#include <kinematics/KinematicsComponent.hpp>
+#include <rtt/Logger.hpp>
 
 namespace Orocos
 {
-    using namespace ORO_KinDyn;
+    using namespace KDL;
     using namespace RTT;
-    KinematicsComponent::KinematicsComponent(const std::string& name)
+    
+    KinematicsComponent::KinematicsComponent(const std::string& name,KinematicFamily* _kf)
         : GenericTaskContext(name),
-          kinarch("Architecture", "The Kinematic Architecture name, for example, Kuka160 or Kuka361.", "none"),
-          mykin(0),
-          mykincomp(0),
+          kf(_kf),
+          jnt2cartpos(_kf->createJnt2CartPos()),
+          cartpos2jnt(_kf->createCartPos2Jnt()),
+          jnt2jac(_kf->createJnt2Jac()),
+          jnt2CartVel(_kf->createJnt2CartVel()),
+          CartVel2Jnt(_kf->createCartVel2Jnt()),
+          kinarch("Architecture", "The Kinematic Architecture name", _kf->getTypeName()),
           qPort("JointPositions"), 
           qdotPort("JointVelocities")
     {
         attributes()->addProperty(&kinarch);
-        methods()->registerObject("this",createMethodFactory());
+        /*
+        methods()->addMethod(method("setDelta", &ORO_KinDyn::KinematicsComponent::setDelta,
+                                      "Change the delta radial movement this class can track "
+                                      "inbetween calls to its interface. Defaults to 0.5 radians.",
+                                      "deltaRad","Trackable change in position in radians"));
+
+        methods()->addMethod("getDelta",method( &ORO_KinDyn::KinematicsComponent::getDelta,
+                                      "Get the delta radial movement this class can track "
+                                      "inbetween calls to its interface. Defaults to 0.5 radians."));
+        */
+        typedef KinematicsComponent KC;
+        
+        methods()->addMethod(method("setPlanningMode", &KC::setPlanningMode,
+                                    "Use the kinematics component for planning, do not implicitly update the joint state."));
+            
+        methods()->addMethod(method("setTrackingMode", &KC::setTrackingMode,
+                                    "Use the kinematics component for tracking, try to implicitly update the joint state."));
+
+        methods()->addMethod(method("isPlanning", &KC::isPlanning,
+                                    "Returns true if calculations do not implicitly update the joint state."));
+
+        methods()->addMethod(method("isTracking", &KC::isTracking,
+                                    "Returns true if calculations implicitly (try to) update the joint state."));
+            
+        methods()->addMethod(method("jacobianForward", &KC::jacobianForward,
+                                    "Calculate the forward Jacobian at a given position.",
+                                    "q", "Current position of the robot in radians.",
+                                    "jac", "The resulting Jacobian at position q."));
+        /*
+        methods()->addMethod(method("jacobianInverse", &KC::jacobianInverse,
+                                    "Calculate the inverse Jacobian at a given position.",
+                                    "q", "Current position of the robot in radians.",
+                                    "jac", "The resulting Jacobian at position q."));
+        */
+        
+        methods()->addMethod(method("positionForward",  &KC::positionForward,
+                                    "Calculate the end frame of the robot.",
+                                    "q", "Current position of the robot in radians.",
+                                    "mp_base", "The resulting endpoint frame at position q."));
+
+        methods()->addMethod(method("positionInverse",  &KC::positionInverse,
+                                    "Calculate the joint positions of the robot.",
+                                    "mp_base", "The current endpoint frame of the robot.",
+                                    "q", "Resulting position of the robot in radians."));
+
+        methods()->addMethod(method("velocityForward",  &KC::velocityForward,
+                                    "Calculate the end frame and end velocity of the robot.",
+                                    "q", "Current position of the robot in radians.",
+                                    "qdot", "Current velocity of the robot in radians/second.",
+                                    "mp_base", "The resulting endpoint frame at position q.",
+                                    "vel_base", "The resulting endpoint velocity at position q."));
+
+        methods()->addMethod(method("velocityInverse",  &KC::velocityInverse,
+                                    "Calculate the joint velocities of the robot.",
+                                    "mp_base", "The current endpoint frame of the robot.",
+                                    "vel_base", "The current endpoint velocity at position q.",
+                                    "q", "Resulting position of the robot joints in radians.",
+                                    "qdot", "Resulting velocity of the robot joints in radians/second."));
+
+        methods()->addMethod(method("velocityInverse",  &KC::velocityInverse,
+                                    "Calculate the joint velocities of the robot.",
+                                    "q", "Current position of the robot in radians.",
+                                    "vel_base", "The current endpoint velocity at position q.",
+                                    "qdot", "Resulting velocity of the robot joints in radians/second."));
+
+        methods()->addMethod(method("setPosition",  &KC::setPosition,
+                                    "Update component state with new joint positions.",
+                                    "qnew", "The new joint positions of the robot."));
+
+        methods()->addMethod(method("getPosition",  &KC::getPosition,
+                                    "Get current joint positions.",
+                                    "qcur", "The current joint positions of the robot."));
+
+        methods()->addMethod(method("getFrame",  &KC::getFrame,
+                                    "Get current end effector frame."));
+        
+        methods()->addMethod(method("getTwist",  &KC::getTwist,
+                                    "Get current end effector twist."));
+
+        
     }
 
     const std::string& KinematicsComponent::getArchitecture() const {
-        return kinarch.rvalue();
+        return kf->getTypeName();
     }
 
-    ORO_KinDyn::KinematicsComponent* KinematicsComponent::getKinematics() {
+    KDL::* KinematicsComponent::getKinematics() {
         return &mykincomp;
     }
 
@@ -97,81 +181,6 @@ namespace Orocos
              tmppos = qdotPort.Get( );
             mykincomp.setVelocity(tmppos);
         }
-    }
-
-    RTT::MethodFactoryInterface* KinematicsComponent::createMethodFactory()
-    {
-        TemplateMethodFactory<ORO_KinDyn::KinematicsComponent>* kfact =
-            new TemplateMethodFactory<ORO_KinDyn::KinematicsComponent>(&mykincomp);
-
-        kfact->add("setDelta",method( &ORO_KinDyn::KinematicsComponent::setDelta,
-                                      "Change the delta radial movement this class can track "
-                                      "inbetween calls to its interface. Defaults to 0.5 radians.",
-                                      "deltaRad","Trackable change in position in radians"));
-        kfact->add("getDelta",method( &ORO_KinDyn::KinematicsComponent::getDelta,
-                                      "Get the delta radial movement this class can track "
-                                      "inbetween calls to its interface. Defaults to 0.5 radians."));
-
-        kfact->add("setPlanningMode",method( &ORO_KinDyn::KinematicsComponent::setPlanningMode,
-                                             "Use the kinematics component for planning, do not implicitly update the joint state."));
-            
-        kfact->add("setTrackingMode",method( &ORO_KinDyn::KinematicsComponent::setTrackingMode,
-                                             "Use the kinematics component for tracking, try to implicitly update the joint state."));
-        kfact->add("isPlanning",method( &ORO_KinDyn::KinematicsComponent::isPlanning,
-                                        "Returns true if calculations do not implicitly update the joint state."));
-        kfact->add("isTracking",method( &ORO_KinDyn::KinematicsComponent::isTracking,
-                                        "Returns true if calculations implicitly (try to) update the joint state."));
-            
-        kfact->add("jacobianForward",method( &ORO_KinDyn::KinematicsComponent::jacobianForward,
-                                             "Calculate the forward Jacobian at a given position.",
-                                             "q", "Current position of the robot in radians.",
-                                             "jac", "The resulting Jacobian at position q."));
-        kfact->add("jacobianInverse",method( &ORO_KinDyn::KinematicsComponent::jacobianInverse,
-                                             "Calculate the inverse Jacobian at a given position.",
-                                             "q", "Current position of the robot in radians.",
-                                             "jac", "The resulting Jacobian at position q."));
-            
-        kfact->add("positionForward", method( &ORO_KinDyn::KinematicsComponent::positionForward,
-                                              "Calculate the end frame of the robot.",
-                                              "q", "Current position of the robot in radians.",
-                                              "mp_base", "The resulting endpoint frame at position q."));
-
-        kfact->add("positionInverse", method( &ORO_KinDyn::KinematicsComponent::positionInverse,
-                                              "Calculate the joint positions of the robot.",
-                                              "mp_base", "The current endpoint frame of the robot.",
-                                              "q", "Resulting position of the robot in radians."));
-
-        kfact->add("velocityForward", method( &ORO_KinDyn::KinematicsComponent::velocityForward,
-                                              "Calculate the end frame and end velocity of the robot.",
-                                              "q", "Current position of the robot in radians.",
-                                              "qdot", "Current velocity of the robot in radians/second.",
-                                              "mp_base", "The resulting endpoint frame at position q.",
-                                              "vel_base", "The resulting endpoint velocity at position q."));
-
-        kfact->add("velocityInverse", method( &ORO_KinDyn::KinematicsComponent::velocityInverse,
-                                              "Calculate the joint velocities of the robot.",
-                                              "mp_base", "The current endpoint frame of the robot.",
-                                              "vel_base", "The current endpoint velocity at position q.",
-                                              "q", "Resulting position of the robot joints in radians.",
-                                              "qdot", "Resulting velocity of the robot joints in radians/second."));
-        kfact->add("velocityInverse", method( &ORO_KinDyn::KinematicsComponent::velocityInverse,
-                                              "Calculate the joint velocities of the robot.",
-                                              "q", "Current position of the robot in radians.",
-                                              "vel_base", "The current endpoint velocity at position q.",
-                                              "qdot", "Resulting velocity of the robot joints in radians/second."));
-
-        kfact->add("setPosition", method( &ORO_KinDyn::KinematicsComponent::setPosition,
-                                          "Update component state with new joint positions.",
-                                          "qnew", "The new joint positions of the robot."));
-        kfact->add("getPosition", method( &ORO_KinDyn::KinematicsComponent::getPosition,
-                                          "Get current joint positions.",
-                                          "qcur", "The current joint positions of the robot."));
-        kfact->add("getFrame", method( &ORO_KinDyn::KinematicsComponent::getFrame,
-                                       "Get current end effector frame."));
-        kfact->add("getTwist", method( &ORO_KinDyn::KinematicsComponent::getTwist,
-                                       "Get current end effector twist."));
-
-        return kfact;
     }
 
 }

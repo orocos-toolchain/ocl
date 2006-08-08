@@ -24,67 +24,65 @@
 
 namespace Orocos
 {
-  using namespace RTT;
-  using namespace ORO_Geometry;
-  using namespace std;
-  
-  CartesianSensor::CartesianSensor(string name,unsigned int num_axes,
-					       string kine_comp_name)
-    : nAxesSensor(name,num_axes),
-      _frame("CartesianSensorPosition"),
-      _twist("CartesianSensorVelocity"),
-      _kine_comp_name(kine_comp_name)
-  {
-    Toolkit::Import( GeometryToolkit );
-    ports()->addPort(&_frame);
-    ports()->addPort(&_twist);
+    using namespace RTT;
+    using namespace std;
+    using namespace KDL;
     
-  }
   
-  CartesianSensor::~CartesianSensor(){};
-  
-  bool CartesianSensor::startup()
-  {
-    try{
-      _positionForward = getPeer(_kine_comp_name)->methods()->getMethod<bool(vector<double>,Frame)>("positionForward");
-      _velocityForward = getPeer(_kine_comp_name)->methods()->getMethod<bool(vector<double>,Frame,vector<double>,Twist)>("velocityForward");
-    }
-    catch(...){
-      return false;
+    CartesianSensor::CartesianSensor(string name,
+                                     KinematicFamily* kf)
+        : nAxesSensor(name,kf->nrOfJoints()),
+          _frame("CartesianSensorPosition"),
+          _twist("CartesianSensorVelocity"),
+          _kf(kf),
+          //_jnt2cartpos(kf->createJnt2CartPos()),
+          _jnt2cartvel(kf->createJnt2CartVel())
+    {
+        ports()->addPort(&_frame);
+        ports()->addPort(&_twist);
     }
     
+    CartesianSensor::~CartesianSensor(){
+        //delete _jnt2cartpos;
+        delete _jnt2cartvel;
+    };
     
-    bool succes = true;
+    bool CartesianSensor::startup()
+    {
+        bool succes = true;
 
-    //initialize values
-    succes &= nAxesSensor::startup();
+        //initialize values
+        succes &= nAxesSensor::startup();
         
-    succes &=_positionForward(_position_local,_frame_local);
-    succes &=_velocityForward(_position_local,_velocity_local,_frame_local,_twist_local);
+        //_jnt2cartpos->evaluate(_position_local);
+        //_jnt2cartpos->getFrame(_frame_local);
+        _jnt2cartvel->evaluate(_position_local,_velocity_local);
+        _jnt2cartvel->getFrameVel(_FV_local);
     
-    _frame.Set(_frame_local);
-    _twist.Set(_twist_local);
+        _frame.Set(_FV_local.value());
+        _twist.Set(_FV_local.deriv());
+        
+        return succes;
+    }
+  
+  
+    void CartesianSensor::update()
+    {
+        nAxesSensor::update();
+        
+        _jnt2cartvel->evaluate(_position_local,_velocity_local);
+        _jnt2cartvel->getFrameVel(_FV_local);
+        
+        _frame.Set(_FV_local.value());
+        _twist.Set(_FV_local.deriv());
+        
+    }
+  
+    void CartesianSensor::shutdown()
+    {
+        nAxesSensor::shutdown();
+    }
     
-    return succes;
-  }
-  
-  
-  void CartesianSensor::update()
-  {
-    nAxesSensor::update();
-        
-    _positionForward(_position_local,_frame_local);
-    _velocityForward(_position_local,_velocity_local,_frame_local,_twist_local);
-        
-    _frame.Set(_frame_local);
-    _twist.Set(_twist_local);
-  }
-  
-  void CartesianSensor::shutdown()
-  {
-    nAxesSensor::shutdown();
-  }
-  
 }//namespace
 
 

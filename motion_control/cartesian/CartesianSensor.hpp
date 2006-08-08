@@ -20,34 +20,34 @@
 
 #include "motion_control/naxes/nAxesSensor.hpp"
 
-#include <kdl/GeometryToolkit.hpp>
+#include <kdl/kdl.hpp>
+#include <kdl/frames.hpp>
+#include <kdl/kinfam/kinematicfamily.hpp>
 
 namespace Orocos
 {
-  class CartesianSensor : public nAxesSensor
-  {
-  public:
-    CartesianSensor(std::string name,unsigned int num_axes,
-			  std::string kine_comp_name);
-    
-    virtual ~CartesianSensor();
-  
-    // Redefining virtual members
-    virtual bool startup();
-    virtual void update();
-    virtual void shutdown();
-  
-  private:
-    KDL::Frame                         _frame_local;
-    KDL::Twist                         _twist_local;
-    RTT::WriteDataPort< KDL::Frame >   _frame;
-    RTT::WriteDataPort< KDL::Twist >   _twist;
-
-    std::string                        _kine_comp_name;
+    class CartesianSensor : public nAxesSensor
+    {
+    public:
+        CartesianSensor(std::string name,
+                        KDL::KinematicFamily* kf);
         
-    RTT::Method<bool(std::vector<double>,KDL::Frame)>      _positionForward;
-    RTT::Method<bool(std::vector<double>,KDL::Frame,std::vector<double>,KDL::Twist)> _velocityForward;
-          
-  }; // class
+        virtual ~CartesianSensor();
+        
+        // Redefining virtual members
+        virtual bool startup();
+        virtual void update();
+        virtual void shutdown();
+  
+    private:
+        KDL::FrameVel                      _FV_local;
+        RTT::WriteDataPort< KDL::Frame >   _frame;
+        RTT::WriteDataPort< KDL::Twist >   _twist;
+        
+        KDL::KinematicFamily*              _kf;
+        //KDL::Jnt2CartPos*                  _jnt2cartpos;
+        KDL::Jnt2CartVel*                  _jnt2cartvel;
+        
+    }; // class
 }//namespace
 #endif // __CARTESIAN_SENSOR_H__

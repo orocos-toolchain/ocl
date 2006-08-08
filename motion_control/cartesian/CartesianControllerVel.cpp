@@ -38,7 +38,6 @@ namespace Orocos
       _controller_gain("K", "Proportional Gain"),
       _is_initialized(false)
   {
-    Toolkit::Import( GeometryToolkit );
     //Creating TaskContext
 
     //Adding Ports

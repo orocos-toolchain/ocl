@@ -10,6 +10,7 @@
 
 //nAxes components
 #include "motion_control/naxes/nAxesComponents.hpp"
+#include <viewer/naxespositionviewer.hpp>
 
 //#include <rtt/Activities.hpp>
 #include <rtt/GenericTaskContext.hpp>
@@ -24,27 +25,27 @@ class EmergencyStop
 {
 public:
   EmergencyStop(GenericTaskContext *axes)
-    : _axes(axes) {
-    _stop = _axes->commands()->getCommand<bool(int,double)>("stopAxis");
-    _lock = _axes->commands()->getCommand<bool(int,double)>("lockAxis");
+      : _axes(axes),fired(6,false) {
+      _stop = _axes->commands()->getCommand<bool(int,double)>("stopAxis");
+      _lock = _axes->commands()->getCommand<bool(int,double)>("lockAxis");
   };
   ~EmergencyStop(){};
   void callback(int axis, double value) {
-    _axis = axis;
-    _value = value;
-    _stop(axis,value);
-    _lock(axis,value);
-    cout << "---------------------------------------------" << endl;
-    cout << "--------- EMERGENCY STOP --------------------" << endl;
-    cout << "---------------------------------------------" << endl;
-    cout << "Axis "<< _axis <<" drive value "<<_value<< " reached limitDriveValue"<<endl;
+    if(!fired[axis]){
+        _stop(axis,value);
+        _lock(axis,value);
+        cout << "---------------------------------------------" << endl;
+        cout << "--------- EMERGENCY STOP --------------------" << endl;
+        cout << "---------------------------------------------" << endl;
+        cout << "Axis "<< axis <<" drive value "<<value<< " reached limitDriveValue"<<endl;
+        fired[axis]=true;
+    }
   };
 private:
-  GenericTaskContext *_axes;
-  Command<bool(int,double)> _stop;
-  Command<bool(int,double)> _lock;
-  int _axis;
-  double _value;
+    GenericTaskContext *_axes;
+    Command<bool(int,double)> _stop;
+    Command<bool(int,double)> _lock;
+    vector<bool> fired;
 }; // class
 
 void PositionLimitCallBack(int axis, double value)
@@ -101,10 +102,12 @@ int ORO_main(int argc, char* argv[])
   nAxesControllerPosVel controllerPosVel("nAxesControllerPosVel",6);
   nAxesControllerVel controllerVel("nAxesControllerVel",6);
   nAxesEffectorVel effector("nAxesEffectorVel",6);
-
+  NAxesPositionViewer viewer("Viewer");
+  
   //connecting sensor and effector to hardware
   my_robot->connectPeers(&sensor);
   my_robot->connectPeers(&effector);
+  my_robot->connectPeers(&viewer);
   
   //connection naxes components to each other
   generatorPos.connectPeers(&sensor);
@@ -142,7 +145,8 @@ int ORO_main(int argc, char* argv[])
   super.connectPeers(&controllerPosVel);
   super.connectPeers(&controllerVel);
   super.connectPeers(&effector);
-
+  super.connectPeers(&viewer);
+  
   // Load programs in supervisor
   super.loadProgram("program_calibrate_offsets.ops");
   super.loadProgram("program_moveto.ops");
@@ -161,12 +165,14 @@ int ORO_main(int argc, char* argv[])
   NonPreemptibleActivity _effectorTask(0.01, effector.engine() ); 
   PeriodicActivity reportingTask(2,0.1,reporter.engine());
   PeriodicActivity superTask(1,0.1,super.engine());
-
+  PeriodicActivity _viewerTask(1,0.01,viewer.engine());
+  
   TaskBrowser browser(&super);
   browser.setColorTheme( TaskBrowser::whitebg );
   
   superTask.start();
   _kukaTask.start();
+  _viewerTask.start();
   
   //Load Reporterconfiguration and start Reporter
   //reporter.load();

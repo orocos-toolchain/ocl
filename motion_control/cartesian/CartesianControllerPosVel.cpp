@@ -37,7 +37,6 @@ namespace Orocos
       _velocity_out("CartesianOutputVelocity"),
       _controller_gain("K", "Proportional Gain")
     {
-      Toolkit::Import( GeometryToolkit );
       //Creating TaskContext
 
       //Adding Ports
@@ -51,7 +50,6 @@ namespace Orocos
 
       if(!readProperties(_propertyfile))
 	Logger::log()<<Logger::Error<<"(CartesianControllerPosVel) Reading Properties from "<<_propertyfile<<" failed!!"<<Logger::endl;
-xs  
   }
   
   

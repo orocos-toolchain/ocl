@@ -1,4 +1,4 @@
-prefix=/src/orocos-components/install
+prefix=/home/rsmits/orocos/orocos-components/install
 libdir=${prefix}/lib
 includedir=${prefix}/include
 
@@ -6,18 +6,16 @@ Name: orocos-components
 Description: Orocos components 
 Requires: 
 Version: 0.1.0
-Libs: -L${libdir}/hardware/lias -lorocos-lias \
-	  -L${libdir}/taskbrowser -lorocos-taskbrowser \
-	  -L${libdir}/reporting -lorocos-reporting \
-	  -L${libdir}/viewer -lorocos-viewer \
-	  -L${libdir}/motion_control/naxes -lorocos-naxes \
-	  -L${libdir}/motion_control/cartesian -lorocos-cartesian \
-	  -L${libdir}/kinematics  -lorocos-kinematics \
-	  -L${libdir}/hardware/demotool -lorocos-demotool \
-	  -L${libdir}/hardware/kuka -lorocos-kuka \
-	  -L${libdir}/hardware/wrench -lorocos-wrench \
-	  -L${libdir}/hardware/laserdistance -lorocos-laser \
-	  -L${libdir}/hardware/krypton -lorocos-krypton \
-	  -L${libdir}/viewer -lorocos-viewer
+Libs: -L${libdir} -lorocos-lias \
+	   -lorocos-taskbrowser \
+	   -lorocos-reporting \
+	   -lorocos-viewer \
+	   -lorocos-naxes \
+	   -lorocos-demotool \
+	   -lorocos-kuka \
+	   -lorocos-wrench \
+	   -lorocos-laser \
+	   -lorocos-krypton \
+	   -lorocos-viewer
 Cflags: -I${includedir}
 

@@ -38,8 +38,6 @@ namespace Orocos
       _velocity_out("CartesianOutputVelocity"),
       _controller_gain("K", "Proportional Gain")
   {
-    Toolkit::Import( GeometryToolkit );
-    
     //Creating TaskContext
     
     //Adding Ports

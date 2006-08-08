@@ -27,7 +27,8 @@
 #include <rtt/Properties.hpp>
 #include <rtt/Ports.hpp>
 
-#include <kdl/GeometryToolkit.hpp>
+#include <kdl/kdl.hpp>
+#include <kdl/frames.hpp>
 
 namespace Orocos
 {
@@ -52,8 +53,8 @@ namespace Orocos
     KDL::Frame                       _position_meas_local, _position_desi_local;
     KDL::Twist                       _velocity_out_local;
   
-    RTT::ReadDataPort< ORO_Geometry::Frame >  _position_meas,  _position_desi;
-    RTT::WriteDataPort< ORO_Geometry::Twist > _velocity_out;
+    RTT::ReadDataPort< KDL::Frame >  _position_meas,  _position_desi;
+    RTT::WriteDataPort< KDL::Twist > _velocity_out;
   
     RTT::Property< std::vector<double> >      _controller_gain;
   

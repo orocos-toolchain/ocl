@@ -25,74 +25,72 @@
 namespace Orocos
 {
     
-  using namespace RTT;
-  using namespace KDL;
-  using namespace std;
-  
-  
-  CartesianEffectorVel::CartesianEffectorVel(string name,unsigned int num_axes, 
-					     string kine_comp_name)
-    : GenericTaskContext(name),
-      _num_axes(num_axes),
-      _velocity_joint_local(num_axes),
-      _position_joint_local(num_axes),
-      _velocity_cartesian("CartesianOutputVelocity"),
-      _position_cartesian("CartesianSensorPosition"),
-      _position_joint("nAxesSensorPosition"),
-      _velocity_drives(num_axes),
-      _kine_comp_name(kine_comp_name)
-  {
-    Toolkit::Import( GeometryToolkit );
+    using namespace RTT;
+    using namespace KDL;
+    using namespace std;
     
-    //Adding ports
-    for (int i=0;i<_num_axes;++i) {
-      char buf[80];
-      sprintf(buf,"driveValue%d",i);
-      _velocity_drives[i] = new WriteDataPort<double>(buf);
-      ports()->addPort(_velocity_drives[i]);
+    
+    CartesianEffectorVel::CartesianEffectorVel(string name, 
+                                               KinematicFamily* kf)
+        : GenericTaskContext(name),
+          _velocity_joint_local(kf->nrOfJoints()),
+          _position_joint_local(kf->nrOfJoints()),
+          _velocity_cartesian("CartesianOutputVelocity"),
+          _position_cartesian("CartesianSensorPosition"),
+          _position_joint("nAxesSensorPosition"),
+          _velocity_drives(kf->nrOfJoints()),
+          _kf(kf),
+          _cartvel2jnt(kf->createCartVel2Jnt())
+    {
+        //Adding ports
+        for (int i=0;i<_kf->nrOfJoints();++i) {
+            char buf[80];
+            sprintf(buf,"driveValue%d",i);
+            _velocity_drives[i] = new WriteDataPort<double>(buf);
+            ports()->addPort(_velocity_drives[i]);
+        }
+        this->ports()->addPort(&_velocity_cartesian);
+        this->ports()->addPort(&_position_cartesian);
+        this->ports()->addPort(&_position_joint);
     }
-    this->ports()->addPort(&_velocity_cartesian);
-    this->ports()->addPort(&_position_cartesian);
-    this->ports()->addPort(&_position_joint);
-  }
-  
-  
-  CartesianEffectorVel::~CartesianEffectorVel(){};
-  
-  bool CartesianEffectorVel::startup()
-  {
-    try{
-      _velocityInverse = getPeer(_kine_comp_name)->methods()->getMethod<bool(std::vector<double>,KDL::Twist,std::vector<double> >("velocityInverse"));
+    
+    CartesianEffectorVel::~CartesianEffectorVel()
+    {
+        delete _cartvel2jnt;
     }
-    catch(...){
-      return false;
-    }
-    //Initialize
-    _position_cartesian_local = _position_cartesian.Get();
-    SetToZero(_velocity_cartesian_local);
-    _position_joint_local = _position_joint.Get();
+    
+    bool CartesianEffectorVel::startup()
+    {
 
-    return _velocityInverse(_position_joint_local,_velocity_cartesian_local,_velocity_joint_local);
+        //Initialize
+        _position_cartesian_local = _position_cartesian.Get();
+        SetToZero(_velocity_cartesian_local);
+        _position_joint_local = _position_joint.Get();
+        
+        _cartvel2jnt->setTwist(_velocity_cartesian_local);
+        bool retval =_cartvel2jnt->evaluate(_position_joint_local,_velocity_joint_local);
+        for (int i=0; i<_kf->nrOfJoints(); i++)
+            _velocity_drives[i]->Set(_velocity_joint_local[i]);
+        return true;
+    }
     
-  }
-  
-  void CartesianEffectorVel::update()
-  {
-    // copy to local values
-    _velocity_cartesian_local = _velocity_cartesian.Get().RefPoint(_position_cartesian_local.p * -1);
-    _position_cartesian_local = _position_cartesian.Get();
-    _position_joint_local = _position_joint.Get();
+    void CartesianEffectorVel::update()
+    {
+        // copy to local values
+        _velocity_cartesian_local = _velocity_cartesian.Get().RefPoint(_position_cartesian_local.p * -1);
+        _position_cartesian_local = _position_cartesian.Get();
+        _position_joint_local = _position_joint.Get();
     
-    // inverse velocity kinematics
-    _velocityInverse(_position_joint_local,_velocity_cartesian_local,_velocity_joint_local);
-
-    for (unsigned int i=0; i<_num_axes; i++)
-      _velocity_drives[i]->Set(_velocity_joint_local[i]);
-  }
-  
-  void CartesianEffectorVel::shutdown()
-  {
-  }
+        _cartvel2jnt->setTwist(_velocity_cartesian_local);
+        _cartvel2jnt->evaluate(_position_joint_local,_velocity_joint_local);
+        
+        for (int i=0; i<_kf->nrOfJoints(); i++)
+            _velocity_drives[i]->Set(_velocity_joint_local[i]);
+    }
+    
+    void CartesianEffectorVel::shutdown()
+    {
+    }
 }//namespace
   
 

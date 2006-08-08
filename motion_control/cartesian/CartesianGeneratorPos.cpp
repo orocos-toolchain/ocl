@@ -19,7 +19,8 @@
 //  
 
 #include "CartesianGeneratorPos.hpp"
-#include <rtt/TemplateFactories.hpp>
+#include <rtt/Command.hpp>
+#include <rtt/Method.hpp>
 #include <assert.h>
 
 namespace Orocos
@@ -39,7 +40,6 @@ namespace Orocos
       _maximum_velocity("max_vel", "Maximum Velocity in Trajectory"),
       _maximum_acceleration("max_acc", "Maximum Acceleration in Trajectory")
   {
-    Toolkit::Import( GeometryToolkit );
     //Creating TaskContext
 
     //Adding Ports
@@ -54,17 +54,15 @@ namespace Orocos
     //Adding Commands
 
     this->commands()->addCommand( command( "moveTo", &CartesianGeneratorPos::moveTo,
-  					      &CartesianGeneratorPos::moveFinished, this),
-  					      "Set the position setpoint",
-  					      "setpoint", "position setpoint for end effector",
-  					      "time", "minimum time to execute trajectory" );
-    commands()->registerObject("this",_my_commandfactory);
+                                           &CartesianGeneratorPos::moveFinished, this),
+                                  "Set the position setpoint",
+                                  "setpoint", "position setpoint for end effector",
+                                  "time", "minimum time to execute trajectory" );
     
     //Adding Methods
 
     this->methods()->addMethod( method( "reset", &CartesianGeneratorPos::reset, this), "Reset generator" );  
-    methods()->registerObject("this",_my_methodfactory);
-    
+        
     // Instantiate Motion Profiles
     for( unsigned int i=0; i<6; i++)
       _motion_profile[i] = new VelocityProfile_Trap( 0, 0 );

@@ -1,5 +1,6 @@
 /***************************************************************************
-  tag: Peter Soetens  Wed Jan 18 14:11:40 CET 2006  KinematicProcess.hpp 
+  tag: Peter Soetens  Wed Jan 18 14:11:40 CET 2006
+  KinematicProcess.hpp 
 
                         KinematicProcess.hpp -  description
                            -------------------
@@ -26,14 +27,13 @@
  ***************************************************************************/
  
  
-#ifndef ORO_CONTROL_KERNEL_KINEMATIC_PROCESS_HPP
-#define ORO_CONTROL_KERNEL_KINEMATIC_PROCESS_HPP
+#ifndef _KINEMATIC_COMPONENT_HPP_
+#define _KINEMATIC_COMPONENT_HPP_
 
 
 #include <rtt/GenericTaskContext.hpp>
 #include <rtt/Ports.hpp>
-#include <kindyn/KinematicsComponent.hpp>
-#include <kindyn/KinematicsFactory.hpp>
+#include <kdl/kinfam/kinematicfamily.hpp>
 #include <rtt/PropertyComposition.hpp>
 #include <rtt/RTT.hpp>
 
@@ -48,42 +48,31 @@ namespace Orocos
      * algorithm to use.
      *
 	 *   In the likely case that your robot type is not supported,
-	 *   you can load your own kinematic algorithm implemented
-	 *   using the KinematicsInterface, into 
-	 *   the framework by invoking:
-     * @verbatim
-  KinematicsComponent kproc("Kinematics");
-
-  ORO_KinDyn::KinematicsInterface* newKine = ... // create your algorithm
-
-// initialise positive joint directions to 1.0
-  ORO_KinDyn::JointVelocities joint_signs(newKine->maxNumberOfJoints(), 1.0);
-
-// initialise positive joint offsets to 0.0
-  ORO_KinDyn::JointPositions joint_offsets(newKine->maxNumberOfJoints(), 0.0);
-
-// load now algorithm:
-  kproc.getKinematics()->setKinematics( newKine, joint_signs, joint_offsets );
-       @endverbatim
+	 *   you can create your own type using KDL. For information look
+	 *   at www.orocos.org/kdl
      */
     class KinematicsComponent
         : public RTT::GenericTaskContext
     {
+        KDL::KinematicFamily*      kf;
+        KDL::Jnt2CartPos*          jnt2cartpos;
+        KDL::CartPos2Jnt*          cartpos2jnt;
+        KDL::Jnt2Jac*              jnt2jac;
+        KDL::Jnt2CartVel*          jnt2CartVel;
+        KDL::CartVel2Jnt*          CartVel2Jnt;
+        
         RTT::Property<std::string> kinarch;
-        ORO_KinDyn::KinematicsInterface* mykin;
-        ORO_KinDyn::KinematicsComponent  mykincomp;
+        RTT::ReadDataPort<KDL::JointVector>  qPort;
+        RTT::ReadDataPort<KDL::JointVector> qdotPort;
 
-        RTT::ReadDataPort<ORO_KinDyn::JointPositions>  qPort;
-        RTT::ReadDataPort<ORO_KinDyn::JointVelocities> qdotPort;
-
-        ORO_KinDyn::JointPositions tmppos;
+        KDL::JointVector tmppos;
     public:
         /**
          * A Component which reads joint positions and velocities and converts
          * them into an end effector frame and twist using a kinematic algorithm.
          * @param name The name of this component in the control kernel.
          */
-        KinematicsComponent(const std::string& name);
+        KinematicsComponent(const std::string& name, KDL::KinematicFamily* _kf);
 
         /**
          * Returns the name of the current architecture.
@@ -96,20 +85,19 @@ namespace Orocos
          * Use also this method if you want to manually load a new
          * kinematics algorithm into the KinematicsComponent.
          */
-        ORO_KinDyn::KinematicsComponent* getKinematics();
+        KDL::KinematicFamily* getKinematics();
 
         /**
          * Set the Kinematic Algorithm to use and optional axis velocity conversions and axis position offsets.
          */
-        void setAlgorithm( ORO_KinDyn::KinematicsInterface *kin,
-                           const ORO_KinDyn::JointVelocities& _signs = ORO_KinDyn::JointVelocities(), 
-                           const ORO_KinDyn::JointPositions&  _offsets = ORO_KinDyn::JointPositions() );
+        void setKinematics( KDL::KinematicFamily *_kf);
 
         bool startup();
-
+        
         void update();
 
-        RTT::MethodFactoryInterface* createMethodFactory();
+        
+        
     };
 
 }

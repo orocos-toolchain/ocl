@@ -27,7 +27,8 @@
 #include <rtt/Properties.hpp>
 #include <rtt/Ports.hpp>
 
-#include <kdl/GeometryToolkit.hpp>
+#include <kdl/kdl.hpp>
+#include <kdl/frames.hpp>
 
 namespace Orocos
 {

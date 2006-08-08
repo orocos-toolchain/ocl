@@ -27,37 +27,37 @@
 #include <rtt/GenericTaskContext.hpp>
 #include <rtt/Ports.hpp>
 
-#include <kdl/GeometryToolkit.hpp>
+#include <kdl/kdl.hpp>
+#include <kdl/frames.hpp>
+#include <kdl/kinfam/kinematicfamily.hpp>
 
 namespace Orocos
 {
     
-  class CartesianEffectorVel : public RTT::GenericTaskContext
-  {
-  public:
-    CartesianEffectorVel(std::string name, unsigned int num_axes, std::string kine_comp_name);
-    
-    virtual ~CartesianEffectorVel();
-  
-    virtual bool startup();
-    virtual void update();
-    virtual void shutdown();
-  
-  private:
-    unsigned int _num_axes;
+    class CartesianEffectorVel : public RTT::GenericTaskContext
+    {
+    public:
+        CartesianEffectorVel(std::string name, KDL::KinematicFamily* kf);
         
-    std::vector<double>                        _velocity_joint_local, _position_joint_local;
-    KDL::Twist                                 _velocity_cartesian_local;
-    KDL::Frame                                 _position_cartesian_local;
-    RTT::ReadDataPort< KDL::Twist >            _velocity_cartesian;
-    RTT::ReadDataPort< KDL::Frame >            _position_cartesian;
-    RTT::ReadDataPort< std::vector<double> >  _position_joint;
-    std::vector<RTT::WriteDataPort<double>*>   _velocity_drives;
-
-    std::string                                _kine_comp_name;
-    
-    RTT::Method<bool(std::vector<double>,KDL::Twist,std::vector<double> >  _velocityInverse;
-    
-  }; // class
+        virtual ~CartesianEffectorVel();
+        
+        virtual bool startup();
+        virtual void update();
+        virtual void shutdown();
+  
+    private:
+        
+        JointVector                                _velocity_joint_local, _position_joint_local;
+        KDL::Twist                                 _velocity_cartesian_local;
+        KDL::Frame                                 _position_cartesian_local;
+        RTT::ReadDataPort< KDL::Twist >            _velocity_cartesian;
+        RTT::ReadDataPort< KDL::Frame >            _position_cartesian;
+        RTT::ReadDataPort< std::vector<double> >   _position_joint;
+        std::vector<RTT::WriteDataPort<double>*>   _velocity_drives;
+        
+        KDL::KinematicFamily*                      _kf;
+        KDL::CartVel2Jnt*                          _cartvel2jnt;
+        
+    }; // class
 }//namespace
 #endif // __N_AXES_EFFECTOR_CARTESIAN_VEL_H__
