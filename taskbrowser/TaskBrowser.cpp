@@ -89,9 +89,9 @@ namespace Orocos
     // catch ctrl+c signal
     void ctrl_c_catcher(int sig)
     {
-        signal(sig, SIG_IGN);
+        ::signal(sig, SIG_IGN);
         cerr <<nl<<"TaskBrowser intercepted Ctrl-C. Type 'quit' to exit."<<endl;
-        signal(SIGINT, ctrl_c_catcher);
+        ::signal(SIGINT, ctrl_c_catcher);
     }
 
     char *TaskBrowser::rl_gets ()
@@ -532,7 +532,7 @@ namespace Orocos
         using boost::lambda::_1;
 
         // Intercept Ctrl-C
-        signal( SIGINT, ctrl_c_catcher );
+        ::signal( SIGINT, ctrl_c_catcher );
 
         cout << nl<<
             coloron <<
@@ -575,7 +575,7 @@ namespace Orocos
                 cout << coloroff;
                 if ( command == "quit" ) {
                     // Intercept no Ctrl-C
-                    signal( SIGINT, SIG_DFL );
+                    ::signal( SIGINT, SIG_DFL );
                     cout << endl;
                     return;
                 } else if ( command == "help") {
@@ -1045,7 +1045,7 @@ namespace Orocos
         }
 
         if ( command->dispatch() == false ) {
-            cerr << "Command not accepted by"<<context->getName()<<"'s Processor !" << nl;
+            cerr << "Command not accepted by "<<context->getName()<<"'s Processor !" << nl;
             delete command;
             delete condition;
             command = 0;
