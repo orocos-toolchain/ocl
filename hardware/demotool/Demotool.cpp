@@ -47,8 +47,8 @@ namespace Orocos
     _Twist_obj_world_port("twit_obj_world"),
     _Frame_world_obj_port("frame_world_obj"),
     _num_visible_leds_port("num_visible_leds"),
-    _reset_position("resetPosition", &Demotool::resetPosition, this),
-    _reset_force("resetForce", &Demotool::resetForce, this),
+    _calibrate_world_to_obj("calibrateWorldToObj", &Demotool::calibrateWorldToObj, this),
+    _calibrate_wrench_sensor("calibrateWrenchSensor", &Demotool::calibrateWrenchSensor, this),
     _propertyfile(propertyfile)
   {
     Logger::log()<<Logger::Debug<<this->getName()<<": adding Properties"<<Logger::endl;
@@ -73,8 +73,8 @@ namespace Orocos
     //events()->addEvent("distanceOutOfRange",&_distanceOutOfRange);
 
     Logger::log()<<Logger::Debug<<this->getName()<<": adding Methods"<<Logger::endl;
-    methods()->addMethod(_reset_position, "set world frame to current object frame");
-    methods()->addMethod(_reset_force, "set wrench sensor offset to measure zero force");
+    methods()->addMethod(_calibrate_world_to_obj, "set world frame to current object frame");
+    methods()->addMethod(_calibrate_wrench_sensor, "set wrench sensor offset to measure zero force");
 
     if (!readProperties(_propertyfile))
       log(Error)<<"Reading properties failed."<<endlog();
@@ -220,13 +220,13 @@ namespace Orocos
   }
 
 
-  void Demotool::resetPosition()
+  void Demotool::calibrateWorldToObj()
   {
     // set frame world_camera to obj_camera ==> world frame in current object frame
     _Frame_world_camera.value() = _Frame_demotool_obj.value().Inverse() * _Frame_camera_demotool.Inverse();
   }
 
-  void Demotool::resetForce()
+  void Demotool::calibrateWrenchSensor()
   {
     _add_offset( _Frame_world_fs.Inverse() * _Wrench_world_world );
   }

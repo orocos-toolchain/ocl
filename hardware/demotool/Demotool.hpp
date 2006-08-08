@@ -43,8 +43,8 @@ namespace Orocos
     virtual void update();
     virtual void shutdown();
 
-    void resetPosition();
-    void resetForce();
+    void calibrateWorldToObj();
+    void calibrateWrenchSensor();
     
   private:
     // property
@@ -67,7 +67,7 @@ namespace Orocos
     RTT::Command<bool(KDL::Wrench)>  _add_offset;
 
     // methods
-    RTT::Method<void(void)>          _reset_position, _reset_force;
+    RTT::Method<void(void)>          _calibrate_world_to_obj, _calibrate_wrench_sensor;
 
     std::string _propertyfile;
     std::vector<KDL::Vector> _Vector_led_demotool, _Vector_led_camera;
