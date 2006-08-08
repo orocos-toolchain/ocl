@@ -43,6 +43,14 @@ SET( LOCAL_LIBRARY ON ) # CACHE BOOL "Build a library for each component.")
 # Toggle if an executable must be built.
 #Broken: SET( STANDALONE_COMPONENTS OFF CACHE BOOL "Build an executable for each component.")
 
+# Set the default build type to debug.
+IF(NOT CMAKE_BUILD_TYPE)
+  SET(CMAKE_BUILD_TYPE Debug CACHE STRING
+      "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
+      FORCE)
+ENDIF(NOT CMAKE_BUILD_TYPE)
+MESSAGE( "Build type has been set to ${CMAKE_BUILD_TYPE}" )
+
 ###################################################
 #                                                 #
 #       End project customization section         #
