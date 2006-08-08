@@ -23,7 +23,7 @@
      <simple name="16" type="double"><description>Y</description><value>-0.055678</value></simple>
      <simple name="17" type="double"><description>Z</description><value>-0.056463</value></simple>
   </struct>
-  <simple name="mass_demotool" type="double"><description>Mass attached to force sensor</description><value>2.947</value></simple>
+  <simple name="mass_demotool" type="double"><description>Mass attached to force sensor</description><value>3.7</value></simple>
   <struct name="center_gravity_demotool" type="MotCon::Vector">
      <description>Center of gravity from mass attached to force sensor, expressed in demotool</description>
      <simple name="X" type="double"><description>X Value</description><value>0</value></simple>
@@ -43,11 +43,11 @@
         <simple name="Y" type="double"><description>Next rotate around old Z with Y(aw) in radians</description><value>0</value></simple>
         <simple name="X_x" type="double"><value>1</value></simple>
         <simple name="X_y" type="double"><value>0</value></simple>
-        <simple name="X_z" type="double"><value>0</value></simple>
+        <simple name="X_z" type="double"><value>-0</value></simple>
         <simple name="Y_x" type="double"><value>0</value></simple>
         <simple name="Y_y" type="double"><value>1</value></simple>
         <simple name="Y_z" type="double"><value>0</value></simple>
-        <simple name="Z_x" type="double"><value>-0</value></simple>
+        <simple name="Z_x" type="double"><value>0</value></simple>
         <simple name="Z_y" type="double"><value>0</value></simple>
         <simple name="Z_z" type="double"><value>1</value></simple>
      </struct>
@@ -65,32 +65,32 @@
         <simple name="Y" type="double"><description>Next rotate </description><value>0.7853</value></simple>
         <simple name="X_x" type="double"><value>0.707176</value></simple>
         <simple name="X_y" type="double"><value>0.707037</value></simple>
-        <simple name="X_z" type="double"><value>-0</value></simple>
+        <simple name="X_z" type="double"><value>-1.87619e-06</value></simple>
         <simple name="Y_x" type="double"><value>0.707037</value></simple>
         <simple name="Y_y" type="double"><value>-0.707176</value></simple>
-        <simple name="Y_z" type="double"><value>-2.65359e-06</value></simple>
-        <simple name="Z_x" type="double"><value>-1.87619e-06</value></simple>
-        <simple name="Z_y" type="double"><value>1.87656e-06</value></simple>
+        <simple name="Y_z" type="double"><value>1.87656e-06</value></simple>
+        <simple name="Z_x" type="double"><value>-0</value></simple>
+        <simple name="Z_y" type="double"><value>-2.65359e-06</value></simple>
         <simple name="Z_z" type="double"><value>-1</value></simple>
      </struct>
   </struct>
   <struct name="world_camera" type="MotCon::Frame">
      <description>frame from world to camera</description>
      <struct name="Position" type="MotCon::Vector">
-        <simple name="X" type="double"><description>X Value</description><value>2.48444</value></simple>
-        <simple name="Y" type="double"><description>Y Value</description><value>-0.351208</value></simple>
-        <simple name="Z" type="double"><description>Z Value</description><value>0.380003</value></simple>
+        <simple name="X" type="double"><description>X Value</description><value>1.87801</value></simple>
+        <simple name="Y" type="double"><description>Y Value</description><value>-1.63054</value></simple>
+        <simple name="Z" type="double"><description>Z Value</description><value>0.40084</value></simple>
      </struct>
      <struct name="Rotation" type="MotCon::Rotation">
-        <simple name="X_x" type="double"><value>-0.16755</value></simple>
-        <simple name="X_y" type="double"><value>-0.985718</value></simple>
-        <simple name="X_z" type="double"><value>-0.0169292</value></simple>
-        <simple name="Y_x" type="double"><value>-0.0314688</value></simple>
-        <simple name="Y_y" type="double"><value>0.0225106</value></simple>
-        <simple name="Y_z" type="double"><value>-0.999251</value></simple>
-        <simple name="Z_x" type="double"><value>0.985361</value></simple>
-        <simple name="Z_y" type="double"><value>-0.166891</value></simple>
-        <simple name="Z_z" type="double"><value>-0.0347911</value></simple>
+        <simple name="X_x" type="double"><value>-0.683625</value></simple>
+        <simple name="X_y" type="double"><value>-0.00954828</value></simple>
+        <simple name="X_z" type="double"><value>0.729771</value></simple>
+        <simple name="Y_x" type="double"><value>-0.729698</value></simple>
+        <simple name="Y_y" type="double"><value>0.0281966</value></simple>
+        <simple name="Y_z" type="double"><value>-0.683188</value></simple>
+        <simple name="Z_x" type="double"><value>-0.0140538</value></simple>
+        <simple name="Z_y" type="double"><value>-0.999557</value></simple>
+        <simple name="Z_z" type="double"><value>-0.0262432</value></simple>
      </struct>
   </struct>
 </properties>
