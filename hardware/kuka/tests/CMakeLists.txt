@@ -11,6 +11,7 @@ IF ( BUILD_KUKA_TEST )
     # Use  TARGET_LINK_LIBRARIES( report libs... ) to add library deps.
     TARGET_LINK_LIBRARIES( kuka orocos-taskbrowser orocos-reporting orocos-kuka ${OROCOS_RTT_LIBS})
 
+    ADD_SUBDIRECTORY( cpf )
 
 ENDIF ( BUILD_KUKA_TEST )
 ENDIF ( BUILD_TESTS)
