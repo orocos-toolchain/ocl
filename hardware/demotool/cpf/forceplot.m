@@ -28,6 +28,10 @@ Wrench_obj_obj = input(:,counter:counter+5);
 Wrench_obj_obj_filter = lowpass(B, A, resample_factor, Wrench_obj_obj);
 counter = counter +6;
 
+Twist_world_world = input(:,counter:counter+5);
+Twist_world_world_filter = lowpass(B, A, resample_factor, Twist_world_world);
+counter = counter +6;
+
 Twist_obj_world = input(:,counter:counter+5);
 Twist_obj_world_filter = lowpass(B, A, resample_factor, Twist_obj_world);
 counter = counter +6;
