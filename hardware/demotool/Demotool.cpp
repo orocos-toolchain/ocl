@@ -84,7 +84,7 @@ namespace Orocos
 
     // number of leds as found in property file
     _num_leds = (int) (_pos_leds_demotool.value().size()/3);
-    assert( _pos_leds_demotool.size() = 3*_num_leds);
+    assert( _pos_leds_demotool.value()size() = 3*_num_leds);
     _visible_leds.resize(_num_leds);
     _Vector_led_demotool.resize(_num_leds);
 
