@@ -52,11 +52,11 @@ int ORO_main(int arc, char* argv[])
 
     // wrench sensor
     WrenchSensor wrenchsensor(0.01, "Wrenchsensor", 0);
-    NonPreemptibleActivity wrenchsensorTask(0.1, wrenchsensor.engine() );
+    NonPreemptibleActivity wrenchsensorTask(0.01, wrenchsensor.engine() );
 
     // demotool task
     Demotool demotool("Demotool");
-    NonPreemptibleActivity demotoolTask(0.1, demotool.engine() );
+    NonPreemptibleActivity demotoolTask(0.01, demotool.engine() );
 
     // reporter
     FileReporting reporter("Reporting");
