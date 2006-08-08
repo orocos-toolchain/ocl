@@ -11,6 +11,7 @@ IF ( BUILD_LASER_TEST )
     # Use  TARGET_LINK_LIBRARIES( report libs... ) to add library deps.
     TARGET_LINK_LIBRARIES( laser orocos-taskbrowser orocos-reporting orocos-laser orocos-${OROCOS_TARGET})
 
+    ADD_SUBDIRECTORY( cpf )
 
 ENDIF ( BUILD_LASER_TEST )
 ENDIF ( BUILD_TESTS)
