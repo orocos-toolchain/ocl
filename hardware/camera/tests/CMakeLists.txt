@@ -11,7 +11,6 @@ IF ( BUILD_CAMERA_TEST )
     # Use  TARGET_LINK_LIBRARIES( report libs... ) to add library deps.
     TARGET_LINK_LIBRARIES( camera orocos-taskbrowser orocos-camera orocos-gnulinux)
 
-    ADD_SUBDIRECTORY( cpf )
 
 ENDIF ( BUILD_CAMERA_TEST )
 ENDIF ( BUILD_TESTS)

@@ -10,5 +10,6 @@ IF ( BUILD_DEMOTOOL )
     GLOBAL_ADD_INCLUDE( hardware/demotool ${HPPS})
 
     ADD_SUBDIRECTORY( tests )
+    ADD_SUBDIRECTORY( cpf )
 
 ENDIF ( BUILD_DEMOTOOL )

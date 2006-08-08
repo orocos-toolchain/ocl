@@ -10,5 +10,6 @@ IF ( BUILD_WRENCH )
     GLOBAL_ADD_INCLUDE( hardware/wrench ${HPPS})
 
     ADD_SUBDIRECTORY( tests )
+    ADD_SUBDIRECTORY( cpf )
 
 ENDIF ( BUILD_WRENCH )

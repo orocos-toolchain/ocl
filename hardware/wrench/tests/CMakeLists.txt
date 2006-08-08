@@ -11,7 +11,5 @@ IF ( BUILD_WRENCH_TEST )
     # Use  TARGET_LINK_LIBRARIES( report libs... ) to add library deps.
     TARGET_LINK_LIBRARIES( wrench orocos-taskbrowser orocos-reporting orocos-wrench ${OROCOS_RTT_LIBS} kdltk kdl ${OROCOS_RTT_LIBS})
 
-    ADD_SUBDIRECTORY( cpf )
-
 ENDIF ( BUILD_WRENCH_TEST )
 ENDIF ( BUILD_TESTS)

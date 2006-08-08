@@ -10,5 +10,6 @@ IF ( BUILD_KUKA )
     GLOBAL_ADD_INCLUDE( hardware/kuka ${HPPS})
 
     ADD_SUBDIRECTORY( tests )
+    ADD_SUBDIRECTORY( cpf )
 
 ENDIF ( BUILD_KUKA )
