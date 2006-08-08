@@ -170,6 +170,9 @@ namespace Orocos
 
       // check error on frame_camera-demotool
       double error = 0;  Vector vec_temp;
+      for (unsigned int i=0; i<3; i++)
+	for (unsigned int j=0; j<3; j++)
+	  trans_camera_demotool(i+1,j+1) = _Frame_camera_demotool.M(i,j);
       Matrix residu = (trans_camera_demotool * matrix_leds_demotool) - matrix_leds_camera;
       for (unsigned int i=0; i<_num_visible_leds; i++)
 	for (unsigned int j=0; j<3; j++)
@@ -228,6 +231,9 @@ namespace Orocos
 
   void Demotool::calibrateWrenchSensor()
   {
+    Logger::log()<<Logger::Debug<<this->getName()<<": calibrate with " << _Frame_world_fs.Inverse() * _Wrench_world_world 
+		 <<Logger::endl;
+
     _add_offset( _Frame_world_fs.Inverse() * _Wrench_world_world );
   }
 
