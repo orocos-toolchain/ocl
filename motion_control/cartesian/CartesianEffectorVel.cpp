@@ -68,10 +68,10 @@ namespace Orocos
         _position_joint_local = _position_joint.Get();
         
         _cartvel2jnt->setTwist(_velocity_cartesian_local);
-        bool retval =_cartvel2jnt->evaluate(_position_joint_local,_velocity_joint_local);
+        int retval =_cartvel2jnt->evaluate(_position_joint_local,_velocity_joint_local);
         for (int i=0; i<_kf->nrOfJoints(); i++)
             _velocity_drives[i]->Set(_velocity_joint_local[i]);
-        return true;
+        return (retval == 0);
     }
     
     void CartesianEffectorVel::update()
