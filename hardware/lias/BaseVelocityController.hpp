@@ -61,6 +61,7 @@ class BaseVelocityController
     
     RTT::Property<std::string> hostname;
     RTT::Property<int> port;
+    RTT::Property<bool> logging;
 
     LiasClientN::Client *cl;
     bool connected, initialiseC, setVelocityC, stopnowC, startLaserScannerC, stopLaserScannerC;

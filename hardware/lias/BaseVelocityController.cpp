@@ -44,7 +44,8 @@ BaseVelocityController::BaseVelocityController(const std::string& name,const std
           y_world_pf("y_world_pf"),
           theta_world_pf("theta_world_pf"),
           hostname("hostname","The host name to connect to","10.33.172.172"),
-          port("port","The port of the host computer", 9999 )
+          port("port","The port of the host computer", 9999 ),
+          logging("log","Enable logging",false)
     {
         /**
          * Export ports to interface:
@@ -56,6 +57,7 @@ BaseVelocityController::BaseVelocityController(const std::string& name,const std
         this->ports()->addPort( &theta_world_pf );
         this->properties()->addProperty( &hostname );
         this->properties()->addProperty( &port );
+        this->properties()->addProperty( &logging );
         
         if (!readProperties(propfile)) {
                      Logger::log() << Logger::Error << "Failed to read the property file." << Logger::endl;
@@ -224,13 +226,19 @@ BaseVelocityController::BaseVelocityController(const std::string& name,const std
          
         if (!connected) return;
          
-        double v = velocity.Get()/100;  // v is expressed in [cm]
-        double w = rotvel.Get();        // w is expressed in [rad]
+        double v = velocity.Get()*100;  // v is expressed in [cm]
+        double w = rotvel.Get()*180.0/3.14159265358979;        // w is expressed in [rad]
         
         stringstream sstr;
         sstr << "SetVelocityGetPosition "<< v << " " << w << " \n" ; 
+        if (logging.value()) {
+           Logger::log() << "(BaseVelocityController) Sending "<< sstr.str() <<Logger::endl;
+        } 
         cl->sendCommand(sstr.str());
         string str = cl->receiveData(); 
+        if (logging.value()) {
+           Logger::log() << "(BaseVelocityController) Receiving "<< str <<Logger::endl;
+        } 
         stringstream sstr2(str);
         double x,y,theta;
         sstr2 >> x;
