@@ -59,7 +59,7 @@ namespace Orocos
 
     // write ports
     RTT::WriteDataPort<KDL::Wrench>  _Wrench_world_world_port, _Wrench_obj_obj_port;
-    RTT::WriteDataPort<KDL::Twist>   _Twist_obj_world_port;
+    RTT::WriteDataPort<KDL::Twist>   _Twist_world_world_port, _Twist_obj_world_port;
     RTT::WriteDataPort<KDL::Frame>   _Frame_world_obj_port;
     RTT::WriteDataPort<unsigned int> _num_visible_leds_port;
 

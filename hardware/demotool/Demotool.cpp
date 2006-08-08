@@ -43,6 +43,7 @@ namespace Orocos
     _Vector_led_camera_port("LedPositions"),
     _Wrench_world_world_port("wrench_world_world"),
     _Wrench_obj_obj_port("wrench_obj_obj"),
+    _Twist_world_world_port("twit_world_world"),
     _Twist_obj_world_port("twit_obj_world"),
     _Frame_world_obj_port("frame_world_obj"),
     _num_visible_leds_port("num_visible_leds"),
@@ -63,6 +64,7 @@ namespace Orocos
     ports()->addPort(&_Vector_led_camera_port);
     ports()->addPort(&_Wrench_world_world_port);
     ports()->addPort(&_Wrench_obj_obj_port);
+    ports()->addPort(&_Twist_world_world_port);
     ports()->addPort(&_Twist_obj_world_port);
     ports()->addPort(&_Frame_world_obj_port);
     ports()->addPort(&_num_visible_leds_port);
@@ -207,6 +209,7 @@ namespace Orocos
     _Frame_world_obj_port.Set(_Frame_world_obj);
     _Wrench_world_world_port.Set(_Wrench_world_world);
     _Wrench_obj_obj_port.Set(_Frame_world_obj.Inverse() * _Wrench_world_world);
+    _Twist_world_world_port.Set(_Twist_obj_world.RefPoint(-(_Frame_world_obj.p)));
     _Twist_obj_world_port.Set(_Twist_obj_world);
     _num_visible_leds_port.Set(_num_visible_leds);
   }
