@@ -1,7 +1,7 @@
 #
 # Test CMake version
 #
-#CMAKE_MINIMUM_REQUIRED(VERSION 2.2)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.2)
 #MARK_AS_ADVANCED( FORCE CMAKE_BACKWARDS_COMPATIBILITY )
 
 ###################################################
@@ -16,16 +16,23 @@ SET( VERSION 0.1 CACHE STRING "Version of Orocos Components" )
   MESSAGE( "Orocos Components version ${VERSION}" )
 
 # Do not rely on environment variables to find the path, because that's confusing
-SET( CMAKE_INSTALL_PREFIX /usr/local/orocos CACHE PATH "Installation directory" )
-MESSAGE( "Setting installation directory to ${CMAKE_INSTALL_PREFIX}" )
+IF(NOT CMAKE_INSTALL_PREFIX)
+  SET( CMAKE_INSTALL_PREFIX /usr/local/orocos CACHE PATH "Installation directory" FORCE)
+  MESSAGE( "Setting installation directory to ${CMAKE_INSTALL_PREFIX}" )
+ENDIF(NOT CMAKE_INSTALL_PREFIX)
 
 SET( PROJ_SOURCE_DIR ${orocos-components_SOURCE_DIR} )
 SET( PROJ_BINARY_DIR ${orocos-components_BINARY_DIR} )
 
 SET( OROCOS_TARGET gnulinux CACHE STRING "The Operating System target.")
-SET( OROCOS_INSTALL ${CMAKE_INSTALL_PREFIX} CACHE PATH "The Orocos installation directory.")
 
-SET( KDL_INSTALL ${CMAKE_INSTALL_PREFIX} CACHE PATH "The KDL installation directory.")
+IF(NOT OROCOS_INSTALL)
+  SET( OROCOS_INSTALL ${CMAKE_INSTALL_PREFIX}/orocos CACHE PATH "The RTT installation directory.")
+ENDIF(NOT OROCOS_INSTALL)
+
+IF(NOT KDL_INSTALL)
+  SET( KDL_INSTALL ${CMAKE_INSTALL_PREFIX} CACHE PATH "The KDL installation directory.")
+ENDIF(NOT KDL_INSTALL)
 
 # The name of the resulting library.
 #SET( COMPONENTS_LIBRARY orocos-components CACHE STRING "Name of the resulting library")
