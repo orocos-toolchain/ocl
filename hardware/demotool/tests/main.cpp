@@ -60,6 +60,7 @@ int ORO_main(int arc, char* argv[])
 
     // reporter
     FileReporting reporter("Reporting");
+    reporter.load();
     NonRealTimeActivity reporterTask(0.01, reporter.engine() );
 
     // connect tasks
