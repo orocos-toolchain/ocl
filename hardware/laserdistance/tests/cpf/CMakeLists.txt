@@ -1,6 +1,8 @@
-IF ( BUILD_LASER )
+IF ( BUILD_TESTS)
+IF ( BUILD_LASER_TEST )
 
     INSTALL_FILES( /cpf [^.]*.cpf)  
     INSTALL_FILES( /cpf [^.]*.dtd)  
 
-ENDIF ( BUILD_LASER )
+ENDIF ( BUILD_LASER_TEST )
+ENDIF ( BUILD_TESTS )
