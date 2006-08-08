@@ -60,7 +60,6 @@ int ORO_main(int arc, char* argv[])
 
     // reporter
     FileReporting reporter("Reporting");
-    reporter.load();
     NonRealTimeActivity reporterTask(0.01, reporter.engine() );
 
     // connect tasks
@@ -73,7 +72,8 @@ int ORO_main(int arc, char* argv[])
     demotoolTask.start();
 
     // task browser
-    TaskBrowser browser( &demotool );
+    reporter.load();
+     TaskBrowser browser( &demotool );
     browser.loop();
 
     // stop tasks
