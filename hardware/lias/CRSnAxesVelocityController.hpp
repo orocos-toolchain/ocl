@@ -167,9 +167,6 @@ private:
     *  The component will continue with a saturated value.
     */
   RTT::Event< void(int,double) > driveOutOfRange;
-  RTT::EventC                    driveOutOfRange_eventc;
-  int                                    driveOutOfRange_axis;
-  double 								 driveOutOfRange_value;
 
    /**
     *  parameters to this event are the axis and the position that is out of range.
@@ -178,9 +175,6 @@ private:
     *  event is not handled.
     */ 
   RTT::Event< void(int,double) > positionOutOfRange;
-  RTT::EventC				     positionOutOfRange_eventc;
-  int									 positionOutOfRange_axis;
-  double							     positionOutOfRange_value;
 
    /**
     *  This function contains the application's startup code.

@@ -29,7 +29,6 @@
 #include <rtt/Logger.hpp>
 
 // Impl.
-#include <rtt/TemplateFactories.hpp>
 #include <rtt/marsh/EmptyMarshaller.hpp>
 
 #ifdef OROINT_OS_STDIOSTREAM

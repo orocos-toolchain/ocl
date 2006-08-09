@@ -26,7 +26,6 @@
 
 #include "Kuka361nAxesVelocityController.hpp"
 
-#include <rtt/TemplateFactories.hpp>
 #include <rtt/Logger.hpp>
 #include <rtt/Attribute.hpp>
 #include <rtt/Command.hpp>
@@ -68,6 +67,8 @@ namespace Orocos
       _driveOffset("driveOffset","offset (in rad/s) to the drive value."),
       _simulation("simulation","true if simulationAxes should be used"),
       _num_axes("NUM_AXES",NUM_AXES),
+      _driveOutOfRange("driveOutOfRange"),
+      _positionOutOfRange("positionOutOfRange"),
       _activated(false),
       _positionConvertFactor(NUM_AXES),
       _driveConvertFactor(NUM_AXES),
@@ -183,14 +184,9 @@ namespace Orocos
     /**
      * Adding the events :
      */
-    events()->addEvent( "driveOutOfRange", &_driveOutOfRange );
-    events()->addEvent( "positionOutOfRange", &_positionOutOfRange );
+    events()->addEvent( &_driveOutOfRange, "Each axis that is out of range throws a seperate event.", "A", "Axis", "V", "Value" );
+    events()->addEvent( &_positionOutOfRange, "Each axis that is out of range throws a seperate event.", "A", "Axis", "P", "Position"  );
     
-    /**
-     * Connecting EventC to Event make c++-emit possible
-     */
-    _driveOutOfRange_event = events()->setupEmit("driveOutOfRange").arg(_driveOutOfRange_axis).arg(_driveOutOfRange_value);
-    _positionOutOfRange_event = events()->setupEmit("positionOutOfRange").arg(_positionOutOfRange_axis).arg(_positionOutOfRange_value);
   }
   
   Kuka361nAxesVelocityController::~Kuka361nAxesVelocityController()
@@ -228,9 +224,7 @@ namespace Orocos
       if((_positionValue[axis]->Get() < _lowerPositionLimits.value()[axis]) 
          ||(_positionValue[axis]->Get() > _upperPositionLimits.value()[axis])
          ) {
-        _positionOutOfRange_axis = axis;
-	_positionOutOfRange_value = _positionValue[axis]->Get();
-	_positionOutOfRange_event.emit();
+          _positionOutOfRange(axis, _positionValue[axis]->Get());
       }
       
       // send the drive value to hw and performs checks
@@ -238,12 +232,10 @@ namespace Orocos
         if ((_driveValue[axis]->Get() < -_driveLimits.value()[axis]) 
   	  || (_driveValue[axis]->Get() >  _driveLimits.value()[axis]))
   	{
-	  _driveOutOfRange_axis = axis;
-	  _driveOutOfRange_value = _driveValue[axis]->Get();
-	  _driveOutOfRange_event.emit();
+	  _driveOutOfRange(axis, _driveValue[axis]->Get());
   	}
         else{
-  	_axes[axis]->drive(_driveValue[axis]->Get());
+            _axes[axis]->drive(_driveValue[axis]->Get());
         }
       }
     }

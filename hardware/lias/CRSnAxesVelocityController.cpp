@@ -94,6 +94,8 @@ CRSnAxesVelocityController::CRSnAxesVelocityController(const std::string& name,c
     initialPosition("initialPosition","Initial position (rad) for simulation or hardware"),
     signAxes("signAxes","Indicates the sign of each of the axes"),
  	offset  ("offset",  "offset to compensate for friction.  Should only partially compensate friction"),
+    driveOutOfRange("driveOutOfRange"),
+    positionOutOfRange("positionOutOfRange"),
     _num_axes("NUM_AXES",NUM_AXES),
 	_homed(NUM_AXES),
     servoGain("servoGain","gain of the servoloop (no units)"),
@@ -267,14 +269,8 @@ CRSnAxesVelocityController::CRSnAxesVelocityController(const std::string& name,c
   /**
    * Adding the events :
    */
-   events()->addEvent( "driveOutOfRange", &driveOutOfRange );
-   events()->addEvent( "positionOutOfRange", &positionOutOfRange );
-
-   /**
-	* Connecting EventC to Events making c++-emit possible
-	*/
-	driveOutOfRange_eventc = events()->setupEmit("driveOutOfRange").arg(driveOutOfRange_axis).arg(driveOutOfRange_value);
-	positionOutOfRange_eventc = events()->setupEmit("positionOutOfRange").arg(positionOutOfRange_axis).arg(positionOutOfRange_value);
+   events()->addEvent( &driveOutOfRange, "Each axis that is out of range throws a seperate event.", "A", "Axis", "V", "Value" );
+   events()->addEvent( &positionOutOfRange, "Each axis that is out of range throws a seperate event.", "A", "Axis", "P", "Position"  );
 
    /**
     * Initializing servoloop
@@ -577,9 +573,7 @@ void CRSnAxesVelocityController::update() {
           ||(measpos > upperPositionLimits.value()[axis])
           ) && _homed[axis]) {
             // emit event.
-			positionOutOfRange_axis  = axis;
-			positionOutOfRange_value = measpos;
-			positionOutOfRange_eventc.emit();
+			positionOutOfRange(axis, measpos);
         }*/
 		double setpoint = signAxes.value()[axis]*driveValue[axis]->Get();
         _axes[axis]->drive(setpoint);
@@ -614,9 +608,7 @@ void CRSnAxesVelocityController::update() {
           ||(measpos > upperPositionLimits.value()[axis])
           ) && _homed[axis]) {
             // emit event.
-			positionOutOfRange_axis  = axis;
-			positionOutOfRange_value = measpos;
-			positionOutOfRange_eventc.emit();
+			positionOutOfRange(axis, measpos);
         }
         if (_axes[axis]->isDriven()) {
             setpoint = driveValue[axis]->Get();
@@ -652,17 +644,13 @@ void CRSnAxesVelocityController::update() {
         // send the drive value to hw and performs checks
         if (outputvel[axis] < -driveLimits.value()[axis])  {
             // emit event.
-			driveOutOfRange_axis  = axis;
-			driveOutOfRange_value = outputvel[axis];
-			//driveOutOfRange_eventc.emit();
+			//driveOutOfRange(axis, outputvel[axis]);
 			// saturate
             outputvel[axis] = -driveLimits.value()[axis];
         }
         if (outputvel[axis] >  driveLimits.value()[axis]) {
             // emit event.
-    		driveOutOfRange_axis  = axis;
-			driveOutOfRange_value = outputvel[axis];
-			//driveOutOfRange_eventc.emit();
+			//driveOutOfRange(axis, outputvel[axis]);
 			// saturate
             outputvel[axis] = driveLimits.value()[axis];
         }

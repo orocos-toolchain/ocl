@@ -19,7 +19,6 @@
 //  
 
 #include "nAxesGeneratorPos.hpp"
-#include <rtt/TemplateFactories.hpp>
 #include <rtt/Command.hpp>
 #include <rtt/Method.hpp>
 #include <assert.h>

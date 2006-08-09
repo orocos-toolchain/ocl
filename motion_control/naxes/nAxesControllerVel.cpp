@@ -20,7 +20,6 @@
 
 #include "nAxesControllerVel.hpp"
 
-#include <rtt/TemplateFactories.hpp>
 #include <rtt/Method.hpp>
 #include <assert.h>
 

@@ -175,9 +175,6 @@ namespace Orocos
      *  The component will continue with the previous value.
      */
     RTT::Event< void(int,double) > _driveOutOfRange;
-    RTT::EventC _driveOutOfRange_event;
-    int _driveOutOfRange_axis;
-    double _driveOutOfRange_value;
         
     /**
      *  parameters to this event are the axis and the position that is out of range.
@@ -186,9 +183,6 @@ namespace Orocos
      *  event is not handled.
      */ 
     RTT::Event< void(int,double) > _positionOutOfRange;
-    RTT::EventC _positionOutOfRange_event;
-    int _positionOutOfRange_axis;
-    double _positionOutOfRange_value;
     
   private:
     /**

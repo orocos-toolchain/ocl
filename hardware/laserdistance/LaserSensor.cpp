@@ -29,16 +29,17 @@ namespace Orocos
   
   LaserSensor::LaserSensor(string name,unsigned int nr_chan ,string propertyfile):
     GenericTaskContext(name),
-    _nr_chan(nr_chan),
 #if defined (OROPKG_DEVICE_DRIVERS_COMEDI)    
     _LaserInput(nr_chan),
 #endif
+    _nr_chan(nr_chan),
     _simulation_values("sim_values","Value used for simulation"),
     _volt2m("volt2m","Convert Factor from volt to m"),
     _offsets("offsets","Offset in m"),
     _lowerLimits("low_limits","LowerLimits of the distance sensor"),
     _upperLimits("up_limits","UpperLimits of the distance sensor"),
     _distances("LaserDistance"),
+    _distanceOutOfRange("distanceOutOfRange"),
     _measurement(nr_chan),
     _distances_local(nr_chan),
     _propertyfile(propertyfile)
@@ -54,7 +55,7 @@ namespace Orocos
     ports()->addPort(&_distances);
 
     Logger::log()<<Logger::Debug<<this->getName()<<": adding Events"<<Logger::endl;
-    events()->addEvent("distanceOutOfRange",&_distanceOutOfRange);
+    events()->addEvent(&_distanceOutOfRange, "Distance out of Range", "C", "Channel", "V", "Value");
     
 #if defined (OROPKG_DEVICE_DRIVERS_COMEDI)
     if(_nr_chan>NR_CHAN){

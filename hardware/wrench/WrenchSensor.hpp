@@ -4,7 +4,6 @@
 #include <rtt/GenericTaskContext.hpp>
 #include <rtt/Attribute.hpp>
 #include <rtt/Event.hpp>
-#include <rtt/TemplateFactories.hpp>
 #include <rtt/Ports.hpp>
 #include <kdl/toolkit.hpp>
 

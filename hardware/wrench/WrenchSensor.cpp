@@ -24,6 +24,7 @@ namespace Orocos
   WrenchSensor::WrenchSensor(double samplePeriod,std::string name,unsigned int DSP,string propertyfile) 
     : RTT::GenericTaskContext(name),
       outdatPort("WrenchData"),
+      maximumLoadEvent("maximumLoadEvent"), 
       _filterToReadFrom(6),
       _dsp(DSP),
       _propertyfile(propertyfile),
@@ -63,7 +64,7 @@ namespace Orocos
 					   &WrenchSensor::setOffsetDone, this),
 				  "Command to set the zero offset","o","offset vector"  );	
     
-    this->events()->addEvent( "maximumLoadEvent", &maximumLoadEvent);
+    this->events()->addEvent(&maximumLoadEvent, "Maximum Load");
     
 #if defined (OROPKG_OS_LXRT)            
     chooseFilter(samplePeriod);
@@ -185,9 +186,7 @@ namespace Orocos
 	  || (_write_struct.Tz > MAX_LOAD) || (_write_struct.Tz < -MAX_LOAD) )
       {
 	
-	//EventC maxLoadEvent  = this.events()->setupEmit( "maximumLoadEvent" );
-	//maxLoadEvent.emit();				       
-	maximumLoadEvent.emit();
+	maximumLoadEvent();
       }
 #else
     _write_struct.Fx = 0;
