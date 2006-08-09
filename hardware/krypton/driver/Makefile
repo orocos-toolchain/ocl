@@ -8,7 +8,10 @@ CFLAGS+=-march=pentium4 -mcpu=pentium4
 obj-m := krypton_handler.o
 
 
-all:
+default:
+	@cat README
+
+driver:
 	make -C $(KERNEL_DIR) M=$(PWD) modules
 
 clean:
