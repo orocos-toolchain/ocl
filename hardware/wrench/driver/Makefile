@@ -6,8 +6,10 @@ CFLAGS+=-march=pentium4 -mcpu=pentium4
 
 obj-m := jr3dsp.o jr3_lxrt_kernel.o
 
+default:
+	@cat Readme
 
-all:
+driver:
 	make -C $(KERNEL_DIR) M=$(PWD) modules
 
 clean:
