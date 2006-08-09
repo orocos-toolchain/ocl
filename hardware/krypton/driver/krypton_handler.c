@@ -70,7 +70,6 @@ static MBX * UDP_mbx;
 int echo_rcv(int s,void *arg)
 {
   int			ret=0;
-  int                   i=0;
   struct msghdr		msg;
   struct iovec		iov;
   struct sockaddr_in	addr;

@@ -33,7 +33,6 @@
 #include "TaskBrowser.hpp"
 
 #include "rtt/TryCommand.hpp"
-#include <rtt/TemplateFactories.hpp>
 #include <rtt/TaskContext.hpp>
 #include <rtt/Parser.hpp>
 #include <rtt/ProgramLoader.hpp>
