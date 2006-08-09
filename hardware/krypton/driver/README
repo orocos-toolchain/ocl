@@ -1,2 +1,9 @@
-place this file in your rtnet/drivers directory so it will be build
-along with the other drivers
+This directory contains a driver for rtnet communication with the Krypton K600
+measurement system.
+
+The provided makefile assumes a 2.6 kernel.
+
+You should edit the Makefile and change the values of KERNEL_DIR,
+RTAI_INSTALL_DIR and RTNET_INSTALL_DIR.
+
+Then 'make' should build the driver.
