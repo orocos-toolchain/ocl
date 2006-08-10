@@ -10,6 +10,8 @@ IF ( BUILD_KUKA_TEST )
     GLOBAL_ADD_TEST( kuka ${SRCS} )
     # Use  TARGET_LINK_LIBRARIES( report libs... ) to add library deps.
     TARGET_LINK_LIBRARIES( kuka orocos-taskbrowser orocos-reporting orocos-kuka ${OROCOS_RTT_LIBS})
-
+    
+    #EXEC_PROGRAM(ln ./hardware/kuka/tests ARGS -s ../cpf )
+    
 ENDIF ( BUILD_KUKA_TEST )
 ENDIF ( BUILD_TESTS)

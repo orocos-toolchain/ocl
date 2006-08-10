@@ -35,7 +35,6 @@ namespace Orocos
           _frame("CartesianSensorPosition"),
           _twist("CartesianSensorVelocity"),
           _kf(kf),
-          //_jnt2cartpos(kf->createJnt2CartPos()),
           _jnt2cartvel(kf->createJnt2CartVel())
     {
         ports()->addPort(&_frame);
@@ -43,7 +42,6 @@ namespace Orocos
     }
     
     CartesianSensor::~CartesianSensor(){
-        //delete _jnt2cartpos;
         delete _jnt2cartvel;
     };
     
@@ -54,8 +52,6 @@ namespace Orocos
         //initialize values
         succes &= nAxesSensor::startup();
         
-        //_jnt2cartpos->evaluate(_position_local);
-        //_jnt2cartpos->getFrame(_frame_local);
         _jnt2cartvel->evaluate(_position_local,_velocity_local);
         _jnt2cartvel->getFrameVel(_FV_local);
     

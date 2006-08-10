@@ -10,8 +10,6 @@ IF ( BUILD_CARTESIAN_TEST )
     GLOBAL_ADD_TEST( cartesian ${SRCS} )
     # Use  TARGET_LINK_LIBRARIES( report libs... ) to add library deps.
     TARGET_LINK_LIBRARIES( cartesian orocos-taskbrowser orocos-reporting orocos-viewer orocos-cartesian orocos-naxes orocos-kuka ${KDL_LIBS} ${OROCOS_RTT_LIBS})
-    INSTALL_FILES(/bin/cartesian/ [^.]*.osd)  
-    INSTALL_FILES(/bin/cartesian/ [^.]*.ops)  
 
 ENDIF ( BUILD_CARTESIAN_TEST )
 ENDIF ( BUILD_TESTS)

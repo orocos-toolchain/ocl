@@ -58,7 +58,7 @@ namespace Orocos
     
     bool CartesianEffectorVel::startup()
     {
-      return true;
+        return true;
     }
     
     void CartesianEffectorVel::update()

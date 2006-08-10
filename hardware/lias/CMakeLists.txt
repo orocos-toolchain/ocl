@@ -18,7 +18,6 @@ IF ( BUILD_LIAS )
     GLOBAL_ADD_INCLUDE( hardware/lias ${HPPS})
 
     ADD_SUBDIRECTORY( tests )
-    ADD_SUBDIRECTORY( cpf )
 
 ENDIF ( BUILD_LIAS )
 

@@ -10,6 +10,5 @@ IF ( BUILD_CARTESIAN )
     GLOBAL_ADD_INCLUDE( motion_control/cartesian ${HPPS})
 
     ADD_SUBDIRECTORY( tests )
-    ADD_SUBDIRECTORY( cpf )
 
 ENDIF ( BUILD_CARTESIAN )

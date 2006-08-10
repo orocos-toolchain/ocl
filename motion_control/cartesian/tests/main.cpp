@@ -126,10 +126,10 @@ int ORO_main(int argc, char* argv[])
     //
     //// Load programs in supervisor
     //super.loadProgram("cpf/program_calibrate_offsets.ops");
-    super.loadProgram("program_moveto.ops");
+    super.loadProgram("cpf/program_moveto.ops");
     //
     //// Load StateMachine in supervisor
-    super.loadStateMachine("states.osd");
+    super.loadStateMachine("cpf/states.osd");
 
     // Creating Tasks
     NonPreemptibleActivity _kukaTask(0.01, my_robot.engine() ); 

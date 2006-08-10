@@ -10,6 +10,5 @@ IF ( BUILD_LASER )
     GLOBAL_ADD_INCLUDE( hardware/laser ${HPPS})
 
     ADD_SUBDIRECTORY( tests )
-    ADD_SUBDIRECTORY( cpf )
 
 ENDIF ( BUILD_LASER )

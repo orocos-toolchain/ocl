@@ -8,12 +8,12 @@ namespace Orocos
         {
             _stop = axes->commands()->getCommand<bool(void)>("stopAllAxes");
             _lock = axes->commands()->getCommand<bool(void)>("lockAllAxes");
-            if(!_stop.ready()&&!_lock.ready()){
+            if(!_stop.ready()||!_lock.ready()){
                 log(Error)<<"(EmergencyStop) Stop and Lock Command are not ready"<<endlog();
             }
         };
         ~EmergencyStop(){};
-        bool addEvent(RTT::GenericTaskContext* task,const std::string& eventname)
+        bool addEvent(RTT::TaskContext* task,const std::string& eventname)
         {
             Handle handle;
             try{

@@ -10,6 +10,5 @@ IF ( BUILD_NAXES )
     GLOBAL_ADD_INCLUDE( motion_control/naxes ${HPPS})
 
     ADD_SUBDIRECTORY( tests )
-    ADD_SUBDIRECTORY( cpf )
 
 ENDIF ( BUILD_NAXES )
