@@ -1,0 +1,105 @@
+StateMachine Default
+{
+
+  var bool calibrate_offsets     = true
+  var bool move_to               = true
+
+  const double pi = 3.14159265358979
+
+  initial state StartRobotState {
+    entry {
+      do Robot.prepareForUse()
+    }
+    exit {
+      do Robot.unlockAllAxes()
+      do Robot.startAllAxes()
+    }
+    transitions {
+      select CalibrateOffsetsState
+    }
+  }
+
+
+
+  state CalibrateOffsetsState {
+    preconditions {
+      if (calibrate_offsets == false) then
+        select MoveToState
+    }
+    entry {
+      do nAxesSensor.start()
+      do nAxesGeneratorPos.start()
+      do nAxesControllerPos.start()
+      do nAxesEffectorVel.start()
+      do programs.CalibrateOffsetsProg.start()
+    }
+    exit {
+      do nAxesSensor.stop()
+      do nAxesGeneratorPos.stop()
+      do nAxesControllerPos.stop()
+      do nAxesEffectorVel.stop()
+    }
+    transitions {
+      if !programs.CalibrateOffsetsProg.isRunning then
+       select MoveToState
+    }
+  }      
+
+  state MoveToState {
+    preconditions {
+      if (move_to == false) then
+        select StopRobotState
+    }
+    entry {
+      do nAxesSensor.start()
+      do nAxesGeneratorPos.start()
+      do nAxesControllerPosVel.start()
+      do nAxesEffectorVel.start()
+
+      var array MoveToPos(6)
+      set MoveToPos[0] = Robot.positionValue0.Get()
+      set MoveToPos[1] = Robot.positionValue1.Get()
+      set MoveToPos[2] = Robot.positionValue2.Get()
+      set MoveToPos[3] = Robot.positionValue3.Get()
+      set MoveToPos[4] = Robot.positionValue4.Get()
+      set MoveToPos[5] = Robot.positionValue5.Get()
+
+      set MoveToPos[0] = MoveToPos[0] + pi/4
+      set MoveToPos[3] = MoveToPos[3] + pi/2
+      set MoveToPos[4] = MoveToPos[4] + pi/4
+      set MoveToPos[5] = MoveToPos[5] + pi/2
+      
+      do nAxesGeneratorPos.moveTo(MoveToPos, 0.0)
+  
+      set MoveToPos[0] = MoveToPos[0] - pi/4
+      set MoveToPos[3] = MoveToPos[3] - pi/2
+      set MoveToPos[4] = MoveToPos[4] - pi/4
+      set MoveToPos[5] = MoveToPos[5] - pi/2
+
+      do nAxesGeneratorPos.moveTo(MoveToPos, 0.0)
+
+    }
+    exit {
+	 do nAxesEffectorVel.stop()
+	 do nAxesControllerPosVel.stop()
+	 do nAxesGeneratorPos.stop()
+	 do nAxesSensor.stop()
+    }
+    transitions {
+      select StopRobotState
+    }
+  }
+
+
+  final state StopRobotState {
+    entry {
+        do Robot.stopAllAxes()
+        do Robot.lockAllAxes()
+    }
+    exit {
+      do Robot.prepareForShutdown()
+    }
+  }
+}
+
+RootMachine Default Default
