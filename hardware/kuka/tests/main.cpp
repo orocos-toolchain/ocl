@@ -21,28 +21,36 @@ using namespace std;
 class EmergencyStop
 {
 public:
-  EmergencyStop(GenericTaskContext *axes)
-    : _axes(axes) {
-    _stop = _axes->commands()->getCommand<bool(int,double)>("stopAxis");
-    _lock = _axes->commands()->getCommand<bool(int,double)>("lockAxis");
+  EmergencyStop(GenericTaskContext* axes)
+    : _axes(axes),fired(6,false) {
+      try{
+          _stop = axes->commands()->getCommand<bool(int)>("stopAxis");
+          _lock = axes->commands()->getCommand<bool(int)>("lockAxis");
+      }catch(...){
+          log(Error)<<"EmergencyStop: Failed to construct stop and lock Commands"<<endl;
+          exit(-1);
+      }
   };
-  ~EmergencyStop(){};
-  void callback(int axis, double value) {
-    _axis = axis;
-    _value = value;
-    _stop(axis,value);
-    _lock(axis,value);
-    cout << "---------------------------------------------" << endl;
-    cout << "--------- EMERGENCY STOP --------------------" << endl;
-    cout << "---------------------------------------------" << endl;
-    cout << "Axis "<< _axis <<" drive value "<<_value<< " reached limitDriveValue"<<endl;
+    ~EmergencyStop(){};
+    void callback(int axis, double value) {
+      if(!fired[axis]){
+          _stop(axis);
+          _lock(axis);
+          cout << "---------------------------------------------" << endl;
+          cout << "--------- EMERGENCY STOP --------------------" << endl;
+          cout << "---------------------------------------------" << endl;
+          cout << "Axis "<< axis <<" drive value "<<value<< " reached limitDriveValue"<<endl;
+          fired[axis] = true;
+      }
   };
 private:
   GenericTaskContext *_axes;
-  Command<bool(int,double)> _stop;
-  Command<bool(int,double)> _lock;
+  Command<bool(int)> _stop;
+  Command<bool(int)> _lock;
   int _axis;
   double _value;
+    std::vector<bool> fired;
+    
 }; // class
 
 void PositionLimitCallBack(int axis, double value)
