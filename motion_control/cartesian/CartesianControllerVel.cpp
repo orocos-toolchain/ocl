@@ -49,7 +49,7 @@ namespace Orocos
     this->properties()->addProperty(&_controller_gain);
 
     if(!readProperties(_propertyfile))
-      Logger::log()<<Logger::Error<<"(CartesianControllerVel) Reading Properties from "<<_propertyfile<<" failed!!"<<Logger::endl;
+      log(Error)<<"(CartesianControllerVel) Reading Properties from "<<_propertyfile<<" failed!!"<<endlog();
 
   }
   
