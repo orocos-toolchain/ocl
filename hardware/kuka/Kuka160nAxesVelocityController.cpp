@@ -94,7 +94,7 @@ namespace Orocos{
         attributes()->addConstant( &_num_axes);
         
         if (!readProperties(_propertyfile)) {
-            Logger::log() << Logger::Error << "Failed to read the property file, continueing with default values." << Logger::endl;
+            log(Error) << "Failed to read the property file, continueing with default values." << endlog();
         }  
         
 #if (defined OROPKG_OS_LXRT && defined OROPKG_DEVICE_DRIVERS_COMEDI)
@@ -102,6 +102,7 @@ namespace Orocos{
         _comediDevDInOut     = new ComediDevice( 3 );
         _comediDevEncoder    = new ComediDevice( 2 );
         
+
         int subd;
         subd = 1; // subdevice 1 is analog out
         _comediSubdevAOut    = new ComediSubDeviceAOut( _comediDevAOut, "Kuka160", subd );
@@ -140,7 +141,9 @@ namespace Orocos{
         
 #endif
         for (unsigned int i = 0; i <NUM_AXES; i++){
-            _axes_simulation[i] = new RTT::SimulationAxis(_initialPosition.value()[i],_lowerPositionLimits.value()[i],_upperPositionLimits.value()[i]);
+            _axes_simulation[i] = new RTT::SimulationAxis(_initialPosition.value()[i],
+                                                          _lowerPositionLimits.value()[i],
+                                                          _upperPositionLimits.value()[i]);
             _axes_simulation[i]->setMaxDriveValue( _driveLimits.value()[i] );
         }
     
@@ -148,17 +151,17 @@ namespace Orocos{
         if(!_simulation.value()){
             for (unsigned int i = 0; i <NUM_AXES; i++)
                 _axes[i] = _axes_hardware[i];
-            Logger::log() << Logger::Info << "LXRT version of LiASnAxesVelocityController has started" << Logger::endl;
+            log(Info) << "LXRT version of Kuka160nAxesVelocityController has started" << endlog();
         }
         else{
             for (unsigned int i = 0; i <NUM_AXES; i++)
                 _axes[i] = _axes_simulation[i];
-            Logger::log() << Logger::Info << "LXRT simulation version of Kuka160nAxesVelocityController has started" << Logger::endl;
+            log(Info) << "LXRT simulation version of Kuka160nAxesVelocityController has started" << endlog();
         }
 #else
         for (unsigned int i = 0; i <NUM_AXES; i++)
             _axes[i] = _axes_simulation[i];
-        Logger::log() << Logger::Info << "GNULINUX simulation version of Kuka160nAxesVelocityController has started" << Logger::endl;
+        log(Info) << "GNULINUX simulation version of Kuka160nAxesVelocityController has started" << endlog();
 #endif
         
         // make task context

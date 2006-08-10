@@ -21,6 +21,12 @@ using namespace std;
 
 int ORO_main(int argc, char* argv[])
 {
+  if ( Logger::log().getLogLevel() < Logger::Debug ) {
+    Logger::log().setLogLevel( Logger::Debug );
+    log(Info) << argv[0] << " manually raises LogLevel to 'Debug'."
+              << " See also file 'orocos.log'." << endlog();
+  }
+
   GenericTaskContext* my_robot = NULL;
   if (argc > 1)
     {
@@ -37,11 +43,6 @@ int ORO_main(int argc, char* argv[])
   else{
     Logger::log()<<Logger::Warning<<"Using Default Kuka160"<<Logger::endl;
     my_robot = new Kuka160nAxesVelocityController("Kuka160");
-  }
-  
-  if ( Logger::log().getLogLevel() < Logger::Info ) {
-    Logger::log().setLogLevel( Logger::Info );
-              Logger::log() << Logger::Info << argv[0] << " manually raises LogLevel to 'Info' (5). See also file 'orocos.log'."<<Logger::endl;
   }
   
   EmergencyStop _emergency(my_robot);
