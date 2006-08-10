@@ -1,15 +1,17 @@
+
 //hardware interfaces
-#include "hardware/kuka/Kuka160nAxesVelocityController.hpp"
-#include "hardware/kuka/Kuka361nAxesVelocityController.hpp"
+#include <hardware/kuka/Kuka160nAxesVelocityController.hpp>
+#include <hardware/kuka/Kuka361nAxesVelocityController.hpp>
+#include <hardware/kuka/EmergencyStop.hpp>
 
 //User interface
-#include "taskbrowser/TaskBrowser.hpp"
+#include <taskbrowser/TaskBrowser.hpp>
 
 //Reporting
-#include "reporting/FileReporting.hpp"
+#include <reporting/FileReporting.hpp>
 
 //nAxes components
-#include "motion_control/naxes/nAxesComponents.hpp"
+#include <motion_control/naxes/nAxesComponents.hpp>
 #include <viewer/naxespositionviewer.hpp>
 
 //#include <rtt/Activities.hpp>
@@ -20,39 +22,6 @@
 using namespace Orocos;
 using namespace RTT;
 using namespace std;
-
-class EmergencyStop
-{
-public:
-  EmergencyStop(GenericTaskContext *axes)
-      : _axes(axes),fired(6,false) {
-      _stop = _axes->commands()->getCommand<bool(int,double)>("stopAxis");
-      _lock = _axes->commands()->getCommand<bool(int,double)>("lockAxis");
-  };
-  ~EmergencyStop(){};
-  void callback(int axis, double value) {
-    if(!fired[axis]){
-        _stop(axis,value);
-        _lock(axis,value);
-        cout << "---------------------------------------------" << endl;
-        cout << "--------- EMERGENCY STOP --------------------" << endl;
-        cout << "---------------------------------------------" << endl;
-        cout << "Axis "<< axis <<" drive value "<<value<< " reached limitDriveValue"<<endl;
-        fired[axis]=true;
-    }
-  };
-private:
-    GenericTaskContext *_axes;
-    Command<bool(int,double)> _stop;
-    Command<bool(int,double)> _lock;
-    vector<bool> fired;
-}; // class
-
-void PositionLimitCallBack(int axis, double value)
-{
-  Logger::log()<<Logger::Warning<< "-------------Warning----------------"<<Logger::endl;
-  Logger::log()<<Logger::Warning<< "Axis "<<axis<<" moving passed software position limit, current value: "<<value<<Logger::endl;
-}
 
 // main() function
 
@@ -84,16 +53,10 @@ int ORO_main(int argc, char* argv[])
   
   EmergencyStop _emergency(my_robot);
   
-  // Creating Event Handlers
-  Handle _emergencyHandle = my_robot->events()->setupConnection("driveOutOfRange").
-    callback(&_emergency,&EmergencyStop::callback).handle();
-  Handle _positionWarning = my_robot->events()->setupConnection("positionOutOfRange").
-    callback(&PositionLimitCallBack).handle();
+  /// Creating Event Handlers
+  _emergency.addEvent(my_robot,"driveOutOfRange");
+  _emergency.addEvent(my_robot,"positionOutOfRange");
 
-  // Connecting Event Handlers
-  _emergencyHandle.connect();
-  _positionWarning.connect();
-  
   //nAxesComponents
   nAxesSensor sensor("nAxesSensor",6);
   nAxesGeneratorPos generatorPos("nAxesGeneratorPos",6);

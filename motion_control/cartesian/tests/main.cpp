@@ -1,5 +1,6 @@
 //hardware interfaces
 #include <hardware/kuka/Kuka160nAxesVelocityController.hpp>
+#include <hardware/kuka/EmergencyStop.hpp>
 
 //User interface
 #include <taskbrowser/TaskBrowser.hpp>
@@ -26,39 +27,6 @@ using namespace RTT;
 using namespace KDL;
 using namespace std;
 
-class EmergencyStop
-{
-public:
-    EmergencyStop(GenericTaskContext *robot)
-        : _robot(robot),fired(6,false) {
-        _stop = _robot->commands()->getCommand<bool(int,double)>("stopAxis");
-        _lock = _robot->commands()->getCommand<bool(int,double)>("lockAxis");
-    };
-    ~EmergencyStop(){};
-    void callback(int axis, double value) {
-        if(!fired[axis]){
-            _stop(axis,value);
-            _lock(axis,value);
-            Logger::log()<<Logger::Error << "---------------------------------------------" << Logger::endl;
-            Logger::log()<<Logger::Error << "--------- EMERGENCY STOP --------------------" << Logger::endl;
-            Logger::log()<<Logger::Error << "---------------------------------------------" << Logger::endl;
-            Logger::log()<<Logger::Error << "Axis "<< axis <<" drive value "<<value<< " reached limitDriveValue"<<Logger::endl;
-            fired[axis] = true;
-        }
-    };
-private:
-    GenericTaskContext *_robot;
-    Command<bool(int,double)> _stop;
-    Command<bool(int,double)> _lock;
-    vector<bool> fired;
-}; // class
-
-void PositionLimitCallBack(int axis, double value)
-{
-    Logger::log()<<Logger::Warning<< "-------------Warning----------------"<<Logger::endl;
-    Logger::log()<<Logger::Warning<< "Axis "<<axis<<" moving passed software position limit, current value: "<<value<<Logger::endl;
-}
-
 // main() function
 
 int ORO_main(int argc, char* argv[])
@@ -71,20 +39,13 @@ int ORO_main(int argc, char* argv[])
     
     EmergencyStop _emergency(&my_robot);
     
-    // Creating Event Handlers
-    Handle _emergencyHandle = my_robot.events()->setupConnection("driveOutOfRange").
-        callback(&_emergency,&EmergencyStop::callback).handle();
-    Handle _positionWarning = my_robot.events()->setupConnection("positionOutOfRange").
-        callback(&PositionLimitCallBack).handle();
+    /// Creating Event Handlers
+    _emergency.addEvent(&my_robot,"driveOutOfRange");
+    _emergency.addEvent(&my_robot,"positionOutOfRange");
 
-    // Connecting Event Handlers
-    _emergencyHandle.connect();
-    _positionWarning.connect();
   
     //KinematicsComponents
     KinematicFamily* kukakf = new Kuka160();
-    
-    std::cout<<kukakf<<std::endl;
     
     //CartesianComponents
     CartesianSensor sensor("CartesianSensor",kukakf);
