@@ -121,7 +121,6 @@ namespace Orocos
       
       _axes_hardware[i] = new RTT::Axis( _drive[i] );
       _axes_hardware[i]->limitDrive( _driveLimits.value()[i] );
-      //_axes[i]->setLimitDriveEvent( maximumDrive );
       _axes_hardware[i]->setBrake( _brake[i] );
       _axes_hardware[i]->setSensor( "Position", _encoder[i] );
     }
@@ -184,8 +183,10 @@ namespace Orocos
     /**
      * Adding the events :
      */
-    events()->addEvent( &_driveOutOfRange, "Each axis that is out of range throws a seperate event.", "A", "Axis", "V", "Value" );
-    events()->addEvent( &_positionOutOfRange, "Each axis that is out of range throws a seperate event.", "A", "Axis", "P", "Position"  );
+    events()->addEvent( &_driveOutOfRange, "Each axis that is out of range throws a seperate event.", 
+			"A", "Axis", "V", "Value" );
+    events()->addEvent( &_positionOutOfRange, "Each axis that is out of range throws a seperate event.", 
+			"A", "Axis", "P", "Position"  );
     
   }
   
