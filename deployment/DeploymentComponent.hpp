@@ -45,7 +45,7 @@ namespace Orocos
               validConfig("Valid", false)
         {
             this->properties()->addProperty( &configurationfile );
-            this->attributes()->addAttribute( &configurationfile );
+            this->attributes()->addAttribute( &validConfig );
         }
 
         /** 

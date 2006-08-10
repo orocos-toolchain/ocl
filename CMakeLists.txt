@@ -137,6 +137,7 @@ ADD_SUBDIRECTORY( reporting )
 ADD_SUBDIRECTORY( hardware )
 ADD_SUBDIRECTORY( motion_control ) 
 ADD_SUBDIRECTORY( viewer )
+ADD_SUBDIRECTORY( deployment )
 ###########################################################
 #                                                         #
 # Enable testing by including the Dart module             #
