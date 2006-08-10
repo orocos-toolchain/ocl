@@ -90,6 +90,7 @@ public:
 			data.jointvalues[i] = q[i];
 		}
 		data.stop = stop;
+  		//Logger::log() << Logger::Info << "(Viewer) sending " << data.jointvalues[2] << " for thirth joint " << Logger::endl;
 		for (ClientHandlers::iterator it=clients.begin();it!=clients.end();it++) {
 			(*it)->peer().send_n(&data,sizeof(data));
 		}
@@ -177,6 +178,8 @@ NAxesPositionViewer::NAxesPositionViewer(const std::string& name,const std::stri
     }
   } else {
     vectorValue = new RTT::ReadDataPort<std::vector<double> >(port_name.value()); 
+    jointvec.resize(_num_axes);
+    ports()->addPort(vectorValue);
   }
 
   Logger::log() << Logger::Debug << "Leaving NAxesPositionViewer::NAxesPositionViewer" << Logger::endl;
@@ -215,7 +218,10 @@ void NAxesPositionViewer::update() {
 			    jointvec[i] = seperateValues[i]->Get();
 		    }
         } else {
-    	    for (unsigned int i=0;i<jointvec.size();i++) {
+            unsigned int minsize = jointvec.size();
+            if (vectorValue->Get().size() < minsize) 
+                minsize=vectorValue->Get().size();
+    	    for (unsigned int i=0;i<minsize;i++) {
 			    jointvec[i] = vectorValue->Get()[i];
 		    }
         }

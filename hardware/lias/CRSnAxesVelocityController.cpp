@@ -107,8 +107,8 @@ CRSnAxesVelocityController::CRSnAxesVelocityController(const std::string& name,c
     servoDerivTime(      "servoDerivTime","Derivative time for the servo loop "),
     servoIntVel(NUM_AXES),
     servoIntError(NUM_AXES),
-	previousPos(NUM_AXES),
     servoInitialized(false),
+	previousPos(NUM_AXES),
     _axes(NUM_AXES),
     _axesInterface(NUM_AXES)
 {
