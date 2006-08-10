@@ -34,9 +34,7 @@ namespace Orocos
                                                KinematicFamily* kf)
         : GenericTaskContext(name),
           _velocity_joint_local(kf->nrOfJoints()),
-          _position_joint_local(kf->nrOfJoints()),
           _velocity_cartesian("CartesianOutputVelocity"),
-          _position_cartesian("CartesianSensorPosition"),
           _position_joint("nAxesSensorPosition"),
           _velocity_drives(kf->nrOfJoints()),
           _kf(kf),
@@ -46,11 +44,10 @@ namespace Orocos
         for (int i=0;i<_kf->nrOfJoints();++i) {
             char buf[80];
             sprintf(buf,"driveValue%d",i);
-            _velocity_drives[i] = new WriteDataPort<double>(buf);
+            _velocity_drives[i] = new WriteDataPort<double>(buf,0);
             ports()->addPort(_velocity_drives[i]);
         }
         this->ports()->addPort(&_velocity_cartesian);
-        this->ports()->addPort(&_position_cartesian);
         this->ports()->addPort(&_position_joint);
     }
     
@@ -61,28 +58,13 @@ namespace Orocos
     
     bool CartesianEffectorVel::startup()
     {
-
-        //Initialize
-        _position_cartesian_local = _position_cartesian.Get();
-        SetToZero(_velocity_cartesian_local);
-        _position_joint_local = _position_joint.Get();
-        
-        _cartvel2jnt->setTwist(_velocity_cartesian_local);
-        int retval =_cartvel2jnt->evaluate(_position_joint_local,_velocity_joint_local);
-        for (int i=0; i<_kf->nrOfJoints(); i++)
-            _velocity_drives[i]->Set(_velocity_joint_local[i]);
-        return (retval == 0);
+      return true;
     }
     
     void CartesianEffectorVel::update()
     {
-        // copy to local values
-        _velocity_cartesian_local = _velocity_cartesian.Get().RefPoint(_position_cartesian_local.p * -1);
-        _position_cartesian_local = _position_cartesian.Get();
-        _position_joint_local = _position_joint.Get();
-    
-        _cartvel2jnt->setTwist(_velocity_cartesian_local);
-        _cartvel2jnt->evaluate(_position_joint_local,_velocity_joint_local);
+        _cartvel2jnt->setTwist(_velocity_cartesian.Get());
+        _cartvel2jnt->evaluate(_position_joint.Get(),_velocity_joint_local);
         
         for (int i=0; i<_kf->nrOfJoints(); i++)
             _velocity_drives[i]->Set(_velocity_joint_local[i]);

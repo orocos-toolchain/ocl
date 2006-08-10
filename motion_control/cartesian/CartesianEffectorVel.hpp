@@ -47,11 +47,8 @@ namespace Orocos
   
     private:
         
-        JointVector                                _velocity_joint_local, _position_joint_local;
-        KDL::Twist                                 _velocity_cartesian_local;
-        KDL::Frame                                 _position_cartesian_local;
+        JointVector                                _velocity_joint_local;
         RTT::ReadDataPort< KDL::Twist >            _velocity_cartesian;
-        RTT::ReadDataPort< KDL::Frame >            _position_cartesian;
         RTT::ReadDataPort< std::vector<double> >   _position_joint;
         std::vector<RTT::WriteDataPort<double>*>   _velocity_drives;
         
