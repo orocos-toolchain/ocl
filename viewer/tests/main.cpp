@@ -2,7 +2,6 @@
 #include <rtt/Activities.hpp>
 #include <rtt/GenericTaskContext.hpp>
 #include <rtt/Logger.hpp>
-#include <rtt/TemplateFactories.hpp>
 #include <rtt/os/main.h>
 
 #include "viewer/naxespositionviewer.hpp"

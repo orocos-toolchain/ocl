@@ -4,12 +4,12 @@
   <struct name="driveLimits" type="std::vector&lt;double&gt;">
      <description>velocity limits of the axes, (rad/s)</description>
      <simple name="Size" type="long"><description>Dimension of the Vector</description><value>6</value></simple>
-     <simple name="0" type="double"><value>1</value></simple>
-     <simple name="1" type="double"><value>1</value></simple>
-     <simple name="2" type="double"><value>2</value></simple>
-     <simple name="3" type="double"><value>2</value></simple>
-     <simple name="4" type="double"><value>2</value></simple>
-     <simple name="5" type="double"><value>3</value></simple>
+     <simple name="0" type="double"><value>0.5</value></simple>
+     <simple name="1" type="double"><value>0.5</value></simple>
+     <simple name="2" type="double"><value>0.5</value></simple>
+     <simple name="3" type="double"><value>0.5</value></simple>
+     <simple name="4" type="double"><value>0.5</value></simple>
+     <simple name="5" type="double"><value>0.5</value></simple>
   </struct>
   <struct name="LowerPositionLimits" type="std::vector&lt;double&gt;">
      <description>Lower position limits (rad)</description>

@@ -4,14 +4,15 @@ OPTION( BUILD_KUKA_TEST "Build Kuka Components Test" OFF )
 IF ( BUILD_KUKA_TEST )
 
     # This gathers all the .cpp files into the variable 'SRCS'
-    FILE( GLOB SRCS [^.]*.cpp )
+    # FILE( GLOB SRCS [^.]*.cpp )
 
     # Add a test program
-    GLOBAL_ADD_TEST( kuka ${SRCS} )
+    GLOBAL_ADD_TEST( kuka main.cpp )
     # Use  TARGET_LINK_LIBRARIES( report libs... ) to add library deps.
     TARGET_LINK_LIBRARIES( kuka orocos-taskbrowser orocos-reporting orocos-kuka ${OROCOS_RTT_LIBS})
     
-    #EXEC_PROGRAM(ln ./hardware/kuka/tests ARGS -s ../cpf )
-    
+    GLOBAL_ADD_TEST( encoderTest encoderKuka361Test.cpp )
+    TARGET_LINK_LIBRARIES( encoderTest ${OROCOS_RTT_LIBS})
+
 ENDIF ( BUILD_KUKA_TEST )
 ENDIF ( BUILD_TESTS)

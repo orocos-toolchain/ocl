@@ -2,7 +2,7 @@ StateMachine Default
 {
 
   var bool calibrate_offsets     = true
-  var bool move_to               = true
+  var bool move_to               = false
 
   const double pi = 3.14159265358979
 
@@ -64,17 +64,17 @@ StateMachine Default
       set MoveToPos[4] = Robot.positionValue4.Get()
       set MoveToPos[5] = Robot.positionValue5.Get()
 
-      set MoveToPos[0] = MoveToPos[0] + pi/4
-      set MoveToPos[3] = MoveToPos[3] + pi/2
-      set MoveToPos[4] = MoveToPos[4] + pi/4
-      set MoveToPos[5] = MoveToPos[5] + pi/2
+      //set MoveToPos[0] = MoveToPos[0] + pi/4
+      set MoveToPos[3] = MoveToPos[3] + pi/4
+      //set MoveToPos[4] = MoveToPos[4] + pi/4
+      //set MoveToPos[5] = MoveToPos[5] + pi/2
       
       do nAxesGeneratorPos.moveTo(MoveToPos, 0.0)
   
-      set MoveToPos[0] = MoveToPos[0] - pi/4
-      set MoveToPos[3] = MoveToPos[3] - pi/2
-      set MoveToPos[4] = MoveToPos[4] - pi/4
-      set MoveToPos[5] = MoveToPos[5] - pi/2
+      //set MoveToPos[0] = MoveToPos[0] - pi/4
+      set MoveToPos[3] = MoveToPos[3] - pi/4
+      //set MoveToPos[4] = MoveToPos[4] - pi/4
+      //set MoveToPos[5] = MoveToPos[5] - pi/2
 
       do nAxesGeneratorPos.moveTo(MoveToPos, 0.0)
 

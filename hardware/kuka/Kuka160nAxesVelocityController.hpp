@@ -230,21 +230,21 @@ namespace Orocos
     // Members implementing the interface to the hardware
     //
 #if  (defined (OROPKG_OS_LXRT) && defined (OROPKG_DEVICE_DRIVERS_COMEDI))
-    std::vector<RTT::Axis*>  _axes_hardware;
-    RTT::ComediDevice*                    _comediDevAOut;
-    RTT::ComediDevice*                    _comediDevEncoder;
-    RTT::ComediDevice*                    _comediDevDInOut;
-    RTT::ComediSubDeviceAOut*             _comediSubdevAOut;
-    RTT::ComediSubDeviceDIn*              _comediSubdevDIn;
-    RTT::ComediSubDeviceDOut*             _comediSubdevDOut;
-    RTT::EncoderInterface*                _encoderInterface[6];
+      RTT::ComediDevice*                    _comediDevAOut;
+      RTT::ComediDevice*                    _comediDevEncoder;
+      RTT::ComediDevice*                    _comediDevDInOut;
+      RTT::ComediSubDeviceAOut*             _comediSubdevAOut;
+      RTT::ComediSubDeviceDIn*              _comediSubdevDIn;
+      RTT::ComediSubDeviceDOut*             _comediSubdevDOut;
+      std::vector<RTT::EncoderInterface*>   _encoderInterface;
   
-    RTT::AnalogOutput<unsigned int>*      _vref[6];
-    RTT::IncrementalEncoderSensor*        _encoder[6];
-    RTT::DigitalOutput*                   _enable[6];
-    RTT::AnalogDrive*                     _drive[6];
-    RTT::DigitalOutput*                   _brake[6];
-    RTT::DigitalInput*                    _reference[6];  
+    std::vector<RTT::AnalogOutput<unsigned int>*> _vref;
+    std::vector<RTT::IncrementalEncoderSensor*>   _encoder;
+    std::vector<RTT::DigitalOutput*>      _enable;
+    std::vector<RTT::AnalogDrive*>        _drive;
+    std::vector<RTT::DigitalOutput*>      _brake;
+    std::vector<RTT::DigitalInput*>       _reference;  
+    std::vector<RTT::Axis*>               _axes_hardware;
 #endif
     std::vector<RTT::AxisInterface*>      _axes;
     std::vector<RTT::SimulationAxis*>     _axes_simulation;

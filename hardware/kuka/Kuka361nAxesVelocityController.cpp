@@ -120,7 +120,6 @@ namespace Orocos
       _drive[i] = new AnalogDrive( _vref[i], _enable[i], 1.0 / vel2volt[i], _driveOffset.value()[i]);
       
       _axes_hardware[i] = new RTT::Axis( _drive[i] );
-      _axes_hardware[i]->limitDrive( _driveLimits.value()[i] );
       _axes_hardware[i]->setBrake( _brake[i] );
       _axes_hardware[i]->setSensor( "Position", _encoder[i] );
     }
@@ -261,9 +260,9 @@ namespace Orocos
   {
 #if (defined OROPKG_OS_LXRT&& defined OROPKG_DEVICE_DRIVERS_COMEDI&& defined (OROPKG_DEVICE_DRIVERS_APCI))
     if(!_simulation.value()){
-      _apci2200->switchOn( 12 );
-      _apci2200->switchOn( 14 );
-      Logger::log()<<Logger::Warning<<"Release Emergency stop and push button to start ...."<<Logger::endl;
+        _apci2200->switchOn( 12 );
+        _apci2200->switchOn( 14 );
+        Logger::log()<<Logger::Warning<<"Release Emergency stop and push button to start ...."<<Logger::endl;
     }
 #endif
     _activated = true;
@@ -273,8 +272,9 @@ namespace Orocos
   bool Kuka361nAxesVelocityController::prepareForUseCompleted()const
   {
 #if (defined OROPKG_OS_LXRT&& defined OROPKG_DEVICE_DRIVERS_COMEDI&& defined (OROPKG_DEVICE_DRIVERS_APCI))
-    if(!_simulation.rvalue())
-      if (_apci1032->isOn(12) && _apci1032->isOn(14));
+      if(!_simulation.rvalue())
+          return (_apci1032->isOn(12) && _apci1032->isOn(14));
+      else
 #endif
     return true;
   }
