@@ -126,6 +126,8 @@ namespace Orocos
     //std::vector<RTT::WriteDataPort<bool>*>    _homed;
     
   private:
+    // drive axis and check if driveValue is inside boundaries
+    bool driveAxis(int axis, double driveValue);
     
     /**
      * A local copy of the name of the propertyfile so we can store
@@ -179,19 +181,17 @@ namespace Orocos
      *  Each axis that is out of range throws a seperate event.
      *  The component will continue with the previous value.
      */
-    RTT::Event< void(int,double) > _driveOutOfRange;
-    RTT::EventC _driveOutOfRange_event;
-    int _driveOutOfRange_axis;
-    double _driveOutOfRange_value;
-        
+      RTT::Event< void(std::string) > _driveOutOfRange;
+      int _driveOutOfRange_axis;
+      double _driveOutOfRange_value;
+      
     /**
      *  parameters to this event are the axis and the position that is out of range.
      *  Each axis that is out of range throws a seperate event.
      *  The component will continue.  The hardware limit switches can be reached when this
      *  event is not handled.
      */ 
-    RTT::Event< void(int,double) > _positionOutOfRange;
-    RTT::EventC _positionOutOfRange_event;
+    RTT::Event< void(std::string) > _positionOutOfRange;
     int _positionOutOfRange_axis;
     double _positionOutOfRange_value;
     

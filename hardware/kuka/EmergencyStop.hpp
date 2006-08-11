@@ -35,9 +35,10 @@ namespace Orocos
             }
             return retval;
         };
-        void callback() {
+        void callback(std::string message) {
             _stop();
             _lock();
+            log(Error) << message <<endlog();
             log(Error) << "---------------------------------------------" << endlog();
             log(Error) << "--------- EMERGENCY STOP --------------------" << endlog();
             log(Error) << "---------------------------------------------" << endlog();

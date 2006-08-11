@@ -60,12 +60,12 @@ namespace Orocos
       _driveValue(KUKA361_NUM_AXES),
       _positionValue(KUKA361_NUM_AXES),
       _propertyfile(propertyfile),
-      _driveLimits("driveLimits","velocity limits of the axes, (rad/s)"),
-      _lowerPositionLimits("LowerPositionLimits","Lower position limits (rad)"),
-      _upperPositionLimits("UpperPositionLimits","Upper position limits (rad)"),
-      _initialPosition("initialPosition","Initial position (rad) for simulation or hardware"),
-      _driveOffset("driveOffset","offset (in rad/s) to the drive value."),
-      _simulation("simulation","true if simulationAxes should be used"),
+      _driveLimits("driveLimits","velocity limits of the axes, (rad/s)",vector<double>(KUKA361_NUM_AXES,0)),
+      _lowerPositionLimits("LowerPositionLimits","Lower position limits (rad)",vector<double>(KUKA361_NUM_AXES,0)),
+      _upperPositionLimits("UpperPositionLimits","Upper position limits (rad)",vector<double>(KUKA361_NUM_AXES,0)),
+      _initialPosition("initialPosition","Initial position (rad) for simulation or hardware",vector<double>(KUKA361_NUM_AXES,0)),
+      _driveOffset("driveOffset","offset (in rad/s) to the drive value.",vector<double>(KUKA361_NUM_AXES,0)),
+      _simulation("simulation","true if simulationAxes should be used",true),
       _num_axes("NUM_AXES",KUKA361_NUM_AXES),
       _driveOutOfRange("driveOutOfRange"),
       _positionOutOfRange("positionOutOfRange"),
@@ -84,7 +84,6 @@ namespace Orocos
       _positionConvertFactor[i] = ticks2rad[i];
       _driveConvertFactor[i] = vel2volt[i];
     }
-    
     properties()->addProperty( &_driveLimits );
     properties()->addProperty( &_lowerPositionLimits );
     properties()->addProperty( &_upperPositionLimits  );
@@ -94,7 +93,7 @@ namespace Orocos
     attributes()->addConstant( &_num_axes);
     
     if (!readProperties(_propertyfile)) {
-      Logger::log() << Logger::Error << "Failed to read the property file, continueing with default values." << Logger::endl;
+      log(Error) << "Failed to read the property file, continueing with default values." << endlog();
     }  
     
 #if (defined OROPKG_OS_LXRT && defined OROPKG_DEVICE_DRIVERS_COMEDI&& defined (OROPKG_DEVICE_DRIVERS_APCI))
@@ -117,35 +116,36 @@ namespace Orocos
       
       _vref[i]   = new AnalogOutput<unsigned int>( _comediSubdevAOut, i );
       _enable[i] = new DigitalOutput( _apci2200, i );
-      _drive[i] = new AnalogDrive( _vref[i], _enable[i], 1.0 / vel2volt[i], _driveOffset.value()[i]);
+      _drive[i]  = new AnalogDrive( _vref[i], _enable[i], 1.0 / vel2volt[i], _driveOffset.value()[i]);
       
       _axes_hardware[i] = new RTT::Axis( _drive[i] );
       _axes_hardware[i]->setBrake( _brake[i] );
       _axes_hardware[i]->setSensor( "Position", _encoder[i] );
+
+      _axes_hardware[i]->limitDrive(-_driveLimits.value()[i], _driveLimits.value()[i], _driveOutOfRange);
     }
     
 #endif
-    for (unsigned int i = 0; i <KUKA361_NUM_AXES; i++)
-      {
-  	_axes_simulation[i] = new RTT::SimulationAxis(_initialPosition.value()[i],_lowerPositionLimits.value()[i],_upperPositionLimits.value()[i]);
-  	_axes_simulation[i]->setMaxDriveValue( _driveLimits.value()[i] );
-      }
-
+    for (unsigned int i = 0; i <KUKA361_NUM_AXES; i++){
+        _axes_simulation[i] = new RTT::SimulationAxis(_initialPosition.value()[i],
+                                                      _lowerPositionLimits.value()[i],
+                                                      _upperPositionLimits.value()[i]);
+    }
 #if (defined OROPKG_OS_LXRT && defined OROPKG_DEVICE_DRIVERS_COMEDI&& defined (OROPKG_DEVICE_DRIVERS_APCI))
     if(!_simulation.value()){
       for (unsigned int i = 0; i <KUKA361_NUM_AXES; i++)
 	_axes[i] = _axes_hardware[i];
-      Logger::log() << Logger::Info << "LXRT version of LiASnAxesVelocityController has started" << Logger::endl;
+      log(Info) << "LXRT version of LiASnAxesVelocityController has started" << endlog();
     }
     else{
       for (unsigned int i = 0; i <KUKA361_NUM_AXES; i++)
 	_axes[i] = _axes_simulation[i];
-      Logger::log() << Logger::Info << "LXRT simulation version of Kuka361nAxesVelocityController has started" << Logger::endl;
+      log(Info) << "LXRT simulation version of Kuka361nAxesVelocityController has started" << endlog();
     }
 #else
     for (unsigned int i = 0; i <KUKA361_NUM_AXES; i++)
       _axes[i] = _axes_simulation[i];
-    Logger::log() << Logger::Info << "GNULINUX simulation version of Kuka361nAxesVelocityController has started" << Logger::endl;
+    log(Info) << "GNULINUX simulation version of Kuka361nAxesVelocityController has started" << endlog();
 #endif
     
     // make task context
@@ -154,17 +154,31 @@ namespace Orocos
      */
     typedef Kuka361nAxesVelocityController MyType;
 
-    this->commands()->addCommand( command( "startAxis", &MyType::startAxis,         &MyType::startAxisCompleted, this), "start axis, initializes drive value to zero and starts updating the drive-value with the drive-port (only possible if axis is unlocked","axis","axis to start" );
-    this->commands()->addCommand( command( "stopAxis", &MyType::stopAxis,          &MyType::stopAxisCompleted, this), "stop axis, sets drive value to zero and disables the update of the drive-port, (only possible if axis is started","axis","axis to stop" );
-    this->commands()->addCommand( command( "lockAxis", &MyType::lockAxis,          &MyType::lockAxisCompleted, this), "lock axis, enables the brakes (only possible if axis is stopped","axis","axis to lock" );
-    this->commands()->addCommand( command( "unlockAxis", &MyType::unlockAxis,        &MyType::unlockAxisCompleted, this), "unlock axis, disables the brakes and enables the drive (only possible if axis is locked","axis","axis to unlock" );
-    this->commands()->addCommand( command( "startAllAxes", &MyType::startAllAxes,      &MyType::startAllAxesCompleted, this), "start all axes"  );
-    this->commands()->addCommand( command( "stopAllAxes", &MyType::stopAllAxes,       &MyType::stopAllAxesCompleted, this), "stops all axes"  );
-    this->commands()->addCommand( command( "lockAllAxes", &MyType::lockAllAxes,       &MyType::lockAllAxesCompleted, this), "locks all axes"  );
-    this->commands()->addCommand( command( "unlockAllAxes", &MyType::unlockAllAxes,     &MyType::unlockAllAxesCompleted, this), "unlock all axes"  );
-    this->commands()->addCommand( command( "prepareForUse", &MyType::prepareForUse,     &MyType::prepareForUseCompleted, this), "prepares the robot for use"  );
-    this->commands()->addCommand( command( "prepareForShutdown", &MyType::prepareForShutdown,&MyType::prepareForShutdownCompleted, this), "prepares the robot for shutdown"  );
-    this->commands()->addCommand( command( "addDriveOffset"    , &MyType::addDriveOffset,    &MyType::addDriveOffsetCompleted, this),  "adds an offset to the drive value of axis","axis","axis to add offset to","offset","offset value in rad/s" );
+    this->commands()->addCommand( command( "startAxis", &MyType::startAxis, &MyType::startAxisCompleted, this),
+                                  "start axis, starts updating drive value, only possible after unlockAxis",
+                                  "axis","axis to start" );
+    this->commands()->addCommand( command( "stopAxis", &MyType::stopAxis, &MyType::stopAxisCompleted, this), 
+                                  "stop axis, sets drive value to zero and stops update","axis","axis to stop" );
+    this->commands()->addCommand( command( "lockAxis", &MyType::lockAxis, &MyType::lockAxisCompleted, this), 
+                                  "lock axis, enables the brakes, only possible afte stopAxis","axis","axis to lock" );
+    this->commands()->addCommand( command( "unlockAxis", &MyType::unlockAxis, &MyType::unlockAxisCompleted, this), 
+                                  "unlock axis, unlocks the brakes and enables the drive","axis","axis to unlock" );
+    this->commands()->addCommand( command( "startAllAxes", &MyType::startAllAxes, &MyType::startAllAxesCompleted, this), 
+                                  "start all axes"  );
+    this->commands()->addCommand( command( "stopAllAxes", &MyType::stopAllAxes, &MyType::stopAllAxesCompleted, this), 
+                                  "stops all axes"  );
+    this->commands()->addCommand( command( "lockAllAxes", &MyType::lockAllAxes, &MyType::lockAllAxesCompleted, this), 
+                                  "locks all axes"  );
+    this->commands()->addCommand( command( "unlockAllAxes", &MyType::unlockAllAxes, &MyType::unlockAllAxesCompleted, this), 
+                                  "unlock all axes"  );
+    this->commands()->addCommand( command( "prepareForUse", &MyType::prepareForUse, &MyType::prepareForUseCompleted, this), 
+                                  "prepares the robot for use"  );
+    this->commands()->addCommand( command( "prepareForShutdown", &MyType::prepareForShutdown,
+                                           &MyType::prepareForShutdownCompleted, this), 
+                                  "prepares the robot for shutdown"  );
+    this->commands()->addCommand( command( "addDriveOffset", &MyType::addDriveOffset, &MyType::addDriveOffsetCompleted, this),  
+                                  "adds an offset to the drive value of axis","axis",
+                                  "axis to add offset to","offset","offset value in rad/s" );
 
     /**
      * Creating and adding the data-ports
@@ -182,11 +196,8 @@ namespace Orocos
     /**
      * Adding the events :
      */
-    events()->addEvent( &_driveOutOfRange, "Each axis that is out of range throws a seperate event.", 
-			"A", "Axis", "V", "Value" );
-    events()->addEvent( &_positionOutOfRange, "Each axis that is out of range throws a seperate event.", 
-			"A", "Axis", "P", "Position"  );
-    
+    events()->addEvent( &_driveOutOfRange, "Velocity of an Axis is out of range","message","Information about event" );
+    events()->addEvent( &_positionOutOfRange, "Position of an Axis is out of range","message","Information about event");
   }
   
   Kuka361nAxesVelocityController::~Kuka361nAxesVelocityController()
@@ -216,42 +227,28 @@ namespace Orocos
   }
   
   void Kuka361nAxesVelocityController::update()
-  {
-    for (int axis=0;axis<KUKA361_NUM_AXES;axis++) {      
-      // Ask the position and perform checks in joint space.
+    {
+      for (int axis=0;axis<KUKA361_NUM_AXES;axis++) {      
+      // Set the position and perform checks in joint space.
       _positionValue[axis]->Set(_axes[axis]->getSensor("Position")->readSensor());
       
-      if((_positionValue[axis]->Get() < _lowerPositionLimits.value()[axis]) 
-         ||(_positionValue[axis]->Get() > _upperPositionLimits.value()[axis])
-         ) {
-          _positionOutOfRange(axis, _positionValue[axis]->Get());
-      }
+      // emit event when position is out of range
+      if( (_positionValue[axis]->Get() < _lowerPositionLimits.value()[axis]) ||
+          (_positionValue[axis]->Get() > _upperPositionLimits.value()[axis]) )
+          _positionOutOfRange("Position  of a Kuka361 Axis is out of range");
       
       // send the drive value to hw and performs checks
-      if (_axes[axis]->isDriven()) {
-        if ((_driveValue[axis]->Get() < -_driveLimits.value()[axis]) 
-  	  || (_driveValue[axis]->Get() >  _driveLimits.value()[axis]))
-  	{
-	  _driveOutOfRange(axis, _driveValue[axis]->Get());
-  	}
-        else{
-            _axes[axis]->drive(_driveValue[axis]->Get());
-        }
+      if (_axes[axis]->isDriven()) 
+          _axes[axis]->drive(_driveValue[axis]->Get());
       }
-    }
   }
-  
-  
+    
+    
   void Kuka361nAxesVelocityController::shutdown()
   {
     //Make sure machine is shut down
     prepareForShutdown();
     //Write properties back to file
-#if (defined OROPKG_OS_LXRT&& defined OROPKG_DEVICE_DRIVERS_COMEDI&& defined (OROPKG_DEVICE_DRIVERS_APCI))
-    if(!_simulation.value())
-      for(unsigned int i = 0;i<KUKA361_NUM_AXES;i++)    
-	_driveOffset.set()[i] = ((Axis*)_axes[i])->getDrive()->getOffset();  
-#endif
     writeProperties(_propertyfile);
   }
   
@@ -322,18 +319,18 @@ namespace Orocos
   
   bool Kuka361nAxesVelocityController::stopAxis(int axis)
   {
-    if (!(axis<0 || axis>KUKA361_NUM_AXES-1))
-      return _axes[axis]->stop();
-    else{
-      Logger::log()<<Logger::Error<<"Axis "<< axis <<"doesn't exist!!"<<Logger::endl;
-      return false;
-    }
+      if (!(axis<0 || axis>KUKA361_NUM_AXES-1))
+          return _axes[axis]->stop();
+      else{
+          Logger::log()<<Logger::Error<<"Axis "<< axis <<"doesn't exist!!"<<Logger::endl;
+          return false;
+      }
   }
   
   bool Kuka361nAxesVelocityController::startAxis(int axis)
   {
     if (!(axis<0 || axis>KUKA361_NUM_AXES-1))
-      return _axes[axis]->drive(0.0);
+        return _axes[axis]->drive(0.0);
     else{
       Logger::log()<<Logger::Error<<"Axis "<< axis <<"doesn't exist!!"<<Logger::endl;
       return false;
@@ -434,9 +431,11 @@ namespace Orocos
   
   bool Kuka361nAxesVelocityController::addDriveOffset(int axis, double offset)
   {
+    _driveOffset.value()[axis] += offset;
+
 #if (defined OROPKG_OS_LXRT&& defined OROPKG_DEVICE_DRIVERS_COMEDI&& defined (OROPKG_DEVICE_DRIVERS_APCI))
-    if(!_simulation.value())
-      ((Axis*)_axes[axis])->getDrive()->addOffset(offset);  
+    if (!_simulation.value())
+        ((Axis*)(_axes[axis]))->getDrive()->addOffset(offset);
 #endif
     return true;
   }
