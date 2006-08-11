@@ -35,7 +35,7 @@ namespace Orocos
   using namespace RTT;
   using namespace std;
   
-#define NUM_AXES 6
+#define KUKA361_NUM_AXES 6
 
 #define KUKA361_ENCODEROFFSETS { 1000004, 1000000, 1000002, 999995, 999048, 1230656 }
 
@@ -57,8 +57,8 @@ namespace Orocos
   
   Kuka361nAxesVelocityController::Kuka361nAxesVelocityController(string name,string propertyfile)
     : GenericTaskContext(name),
-      _driveValue(NUM_AXES),
-      _positionValue(NUM_AXES),
+      _driveValue(KUKA361_NUM_AXES),
+      _positionValue(KUKA361_NUM_AXES),
       _propertyfile(propertyfile),
       _driveLimits("driveLimits","velocity limits of the axes, (rad/s)"),
       _lowerPositionLimits("LowerPositionLimits","Lower position limits (rad)"),
@@ -66,21 +66,21 @@ namespace Orocos
       _initialPosition("initialPosition","Initial position (rad) for simulation or hardware"),
       _driveOffset("driveOffset","offset (in rad/s) to the drive value."),
       _simulation("simulation","true if simulationAxes should be used"),
-      _num_axes("NUM_AXES",NUM_AXES),
+      _num_axes("NUM_AXES",KUKA361_NUM_AXES),
       _driveOutOfRange("driveOutOfRange"),
       _positionOutOfRange("positionOutOfRange"),
       _activated(false),
-      _positionConvertFactor(NUM_AXES),
-      _driveConvertFactor(NUM_AXES),
+      _positionConvertFactor(KUKA361_NUM_AXES),
+      _driveConvertFactor(KUKA361_NUM_AXES),
 #if (defined OROPKG_OS_LXRT && defined OROPKG_DEVICE_DRIVERS_COMEDI&& defined (OROPKG_DEVICE_DRIVERS_APCI))
-      _axes_hardware(NUM_AXES),
+      _axes_hardware(KUKA361_NUM_AXES),
 #endif
-      _axes(NUM_AXES),
-      _axes_simulation(NUM_AXES)
+      _axes(KUKA361_NUM_AXES),
+      _axes_simulation(KUKA361_NUM_AXES)
   {
-    double ticks2rad[NUM_AXES] = KUKA361_TICKS2RAD;
-    double vel2volt[NUM_AXES] = KUKA361_RADproSEC2VOLT;
-    for(unsigned int i = 0;i<NUM_AXES;i++){
+    double ticks2rad[KUKA361_NUM_AXES] = KUKA361_TICKS2RAD;
+    double vel2volt[KUKA361_NUM_AXES] = KUKA361_RADproSEC2VOLT;
+    for(unsigned int i = 0;i<KUKA361_NUM_AXES;i++){
       _positionConvertFactor[i] = ticks2rad[i];
       _driveConvertFactor[i] = vel2volt[i];
     }
@@ -98,7 +98,7 @@ namespace Orocos
     }  
     
 #if (defined OROPKG_OS_LXRT && defined OROPKG_DEVICE_DRIVERS_COMEDI&& defined (OROPKG_DEVICE_DRIVERS_APCI))
-    int encoderOffsets[NUM_AXES] = KUKA361_ENCODEROFFSETS;
+    int encoderOffsets[KUKA361_NUM_AXES] = KUKA361_ENCODEROFFSETS;
 
     _comediDev        = new ComediDevice( 1 );
     _comediSubdevAOut = new ComediSubDeviceAOut( _comediDev, "Kuka361" );
@@ -107,12 +107,12 @@ namespace Orocos
     _apci1032         = new SwitchDigitalInapci1032( "Kuka361" );
         
         
-    for (unsigned int i = 0; i < NUM_AXES; i++){
+    for (unsigned int i = 0; i < KUKA361_NUM_AXES; i++){
       //Setting up encoders
       _encoderInterface[i] = new EncoderSSI_apci1710( i + 1, _apci1710 );
       _encoder[i]          = new AbsoluteEncoderSensor( _encoderInterface[i], 1.0 / ticks2rad[i], encoderOffsets[i], -10, 10 );
       
-      _brake[i] = new DigitalOutput( _apci2200, i + NUM_AXES );
+      _brake[i] = new DigitalOutput( _apci2200, i + KUKA361_NUM_AXES );
       _brake[i]->switchOn();
       
       _vref[i]   = new AnalogOutput<unsigned int>( _comediSubdevAOut, i );
@@ -126,7 +126,7 @@ namespace Orocos
     }
     
 #endif
-    for (unsigned int i = 0; i <NUM_AXES; i++)
+    for (unsigned int i = 0; i <KUKA361_NUM_AXES; i++)
       {
   	_axes_simulation[i] = new RTT::SimulationAxis(_initialPosition.value()[i],_lowerPositionLimits.value()[i],_upperPositionLimits.value()[i]);
   	_axes_simulation[i]->setMaxDriveValue( _driveLimits.value()[i] );
@@ -134,17 +134,17 @@ namespace Orocos
 
 #if (defined OROPKG_OS_LXRT && defined OROPKG_DEVICE_DRIVERS_COMEDI&& defined (OROPKG_DEVICE_DRIVERS_APCI))
     if(!_simulation.value()){
-      for (unsigned int i = 0; i <NUM_AXES; i++)
+      for (unsigned int i = 0; i <KUKA361_NUM_AXES; i++)
 	_axes[i] = _axes_hardware[i];
       Logger::log() << Logger::Info << "LXRT version of LiASnAxesVelocityController has started" << Logger::endl;
     }
     else{
-      for (unsigned int i = 0; i <NUM_AXES; i++)
+      for (unsigned int i = 0; i <KUKA361_NUM_AXES; i++)
 	_axes[i] = _axes_simulation[i];
       Logger::log() << Logger::Info << "LXRT simulation version of Kuka361nAxesVelocityController has started" << Logger::endl;
     }
 #else
-    for (unsigned int i = 0; i <NUM_AXES; i++)
+    for (unsigned int i = 0; i <KUKA361_NUM_AXES; i++)
       _axes[i] = _axes_simulation[i];
     Logger::log() << Logger::Info << "GNULINUX simulation version of Kuka361nAxesVelocityController has started" << Logger::endl;
 #endif
@@ -170,7 +170,7 @@ namespace Orocos
     /**
      * Creating and adding the data-ports
      */
-    for (int i=0;i<NUM_AXES;++i) {
+    for (int i=0;i<KUKA361_NUM_AXES;++i) {
         char buf[80];
         sprintf(buf,"driveValue%d",i);
         _driveValue[i] = new ReadDataPort<double>(buf);
@@ -196,11 +196,11 @@ namespace Orocos
     prepareForShutdown();
     
     // brake, drive, sensors and switches are deleted by each axis
-    for (unsigned int i = 0; i < NUM_AXES; i++)
+    for (unsigned int i = 0; i < KUKA361_NUM_AXES; i++)
       delete _axes_simulation[i];
     
 #if (defined OROPKG_OS_LXRT && defined OROPKG_DEVICE_DRIVERS_COMEDI&& defined (OROPKG_DEVICE_DRIVERS_APCI))
-    for (unsigned int i = 0; i < NUM_AXES; i++)
+    for (unsigned int i = 0; i < KUKA361_NUM_AXES; i++)
       delete _axes_hardware[i];
     delete _comediDev;
     delete _comediSubdevAOut;
@@ -218,7 +218,7 @@ namespace Orocos
   
   void Kuka361nAxesVelocityController::update()
   {
-    for (int axis=0;axis<NUM_AXES;axis++) {      
+    for (int axis=0;axis<KUKA361_NUM_AXES;axis++) {      
       // Ask the position and perform checks in joint space.
       _positionValue[axis]->Set(_axes[axis]->getSensor("Position")->readSensor());
       
@@ -250,7 +250,7 @@ namespace Orocos
     //Write properties back to file
 #if (defined OROPKG_OS_LXRT&& defined OROPKG_DEVICE_DRIVERS_COMEDI&& defined (OROPKG_DEVICE_DRIVERS_APCI))
     if(!_simulation.value())
-      for(unsigned int i = 0;i<NUM_AXES;i++)    
+      for(unsigned int i = 0;i<KUKA361_NUM_AXES;i++)    
 	_driveOffset.set()[i] = ((Axis*)_axes[i])->getDrive()->getOffset();  
 #endif
     writeProperties(_propertyfile);
@@ -322,7 +322,7 @@ namespace Orocos
   
   bool Kuka361nAxesVelocityController::stopAxis(int axis)
   {
-    if (!(axis<0 || axis>NUM_AXES-1))
+    if (!(axis<0 || axis>KUKA361_NUM_AXES-1))
       return _axes[axis]->stop();
     else{
       Logger::log()<<Logger::Error<<"Axis "<< axis <<"doesn't exist!!"<<Logger::endl;
@@ -332,7 +332,7 @@ namespace Orocos
   
   bool Kuka361nAxesVelocityController::startAxis(int axis)
   {
-    if (!(axis<0 || axis>NUM_AXES-1))
+    if (!(axis<0 || axis>KUKA361_NUM_AXES-1))
       return _axes[axis]->drive(0.0);
     else{
       Logger::log()<<Logger::Error<<"Axis "<< axis <<"doesn't exist!!"<<Logger::endl;
@@ -343,7 +343,7 @@ namespace Orocos
   bool Kuka361nAxesVelocityController::unlockAxis(int axis)
   {
     if(_activated){
-      if (!(axis<0 || axis>NUM_AXES-1))
+      if (!(axis<0 || axis>KUKA361_NUM_AXES-1))
         return _axes[axis]->unlock();
       else{
         Logger::log()<<Logger::Error<<"Axis "<< axis <<"doesn't exist!!"<<Logger::endl;
@@ -356,7 +356,7 @@ namespace Orocos
   
   bool Kuka361nAxesVelocityController::lockAxis(int axis)
   {
-    if (!(axis<0 || axis>NUM_AXES-1))
+    if (!(axis<0 || axis>KUKA361_NUM_AXES-1))
       return _axes[axis]->lock();
     else{
       Logger::log()<<Logger::Error<<"Axis "<< axis <<"doesn't exist!!"<<Logger::endl;
@@ -367,7 +367,7 @@ namespace Orocos
   bool Kuka361nAxesVelocityController::stopAllAxes()
   {
     bool _return = true;
-    for(unsigned int i = 0;i<NUM_AXES;i++){
+    for(unsigned int i = 0;i<KUKA361_NUM_AXES;i++){
       _return &= stopAxis(i);
     }
     return _return;
@@ -376,7 +376,7 @@ namespace Orocos
   bool Kuka361nAxesVelocityController::startAllAxes()
   {
     bool _return = true;
-    for(unsigned int i = 0;i<NUM_AXES;i++){
+    for(unsigned int i = 0;i<KUKA361_NUM_AXES;i++){
       _return &= startAxis(i);
     }
     return _return;
@@ -385,7 +385,7 @@ namespace Orocos
   bool Kuka361nAxesVelocityController::unlockAllAxes()
   {
     bool _return = true;
-    for(unsigned int i = 0;i<NUM_AXES;i++){
+    for(unsigned int i = 0;i<KUKA361_NUM_AXES;i++){
       _return &= unlockAxis(i);
       }
       return _return;
@@ -394,7 +394,7 @@ namespace Orocos
   bool Kuka361nAxesVelocityController::lockAllAxes()
   {
     bool _return = true;
-    for(unsigned int i = 0;i<NUM_AXES;i++){
+    for(unsigned int i = 0;i<KUKA361_NUM_AXES;i++){
       _return &= lockAxis(i);
     }
     return _return;
@@ -403,7 +403,7 @@ namespace Orocos
   bool Kuka361nAxesVelocityController::stopAllAxesCompleted()const
   {
     bool _return = true;
-    for(unsigned int i = 0;i<NUM_AXES;i++)
+    for(unsigned int i = 0;i<KUKA361_NUM_AXES;i++)
       _return &= stopAxisCompleted(i);
     return _return;
   }
@@ -411,7 +411,7 @@ namespace Orocos
   bool Kuka361nAxesVelocityController::startAllAxesCompleted()const
   {
     bool _return = true;
-    for(unsigned int i = 0;i<NUM_AXES;i++)
+    for(unsigned int i = 0;i<KUKA361_NUM_AXES;i++)
      _return &= startAxisCompleted(i);
     return _return;
   }
@@ -419,7 +419,7 @@ namespace Orocos
   bool Kuka361nAxesVelocityController::lockAllAxesCompleted()const
   {
     bool _return = true;
-    for(unsigned int i = 0;i<NUM_AXES;i++)
+    for(unsigned int i = 0;i<KUKA361_NUM_AXES;i++)
       _return &= lockAxisCompleted(i);
     return _return;
   }
@@ -427,7 +427,7 @@ namespace Orocos
   bool Kuka361nAxesVelocityController::unlockAllAxesCompleted()const
   {
     bool _return = true;
-    for(unsigned int i = 0;i<NUM_AXES;i++)
+    for(unsigned int i = 0;i<KUKA361_NUM_AXES;i++)
       _return &= unlockAxisCompleted(i);
     return _return;
   }
