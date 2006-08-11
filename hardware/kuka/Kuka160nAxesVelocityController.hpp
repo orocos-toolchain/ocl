@@ -1,6 +1,7 @@
 #ifndef KUKA160_NAXES_VELOCITY_CONTROLLER_HPP
 #define KUKA160_NAXES_VELOCITY_CONTROLLER_HPP
 
+#include <pkgconf/system.h> 
 
 #include <vector>
 #include <rtt/RTT.hpp>
@@ -9,8 +10,6 @@
 #include <rtt/Ports.hpp>
 #include <rtt/Event.hpp>
 #include <rtt/Properties.hpp>
-
-#include <pkgconf/system.h> 
 
 #if (defined (OROPKG_OS_LXRT) && defined (OROPKG_DEVICE_DRIVERS_COMEDI))
 #include <rtt/dev/ComediDevice.hpp>
@@ -113,15 +112,9 @@ namespace Orocos
      */
     
     std::vector<RTT::ReadDataPort<double>*>   _driveValue;
-    
-    //
     std::vector<RTT::WriteDataPort<bool>*>    _references;
     std::vector<RTT::WriteDataPort<double>*>  _positionValue;
-    //
-    //std::vector<RTT::WriteDataPort<bool>*>    _homed;
-    
-  private:
-    
+
     /**
      * A local copy of the name of the propertyfile so we can store
      * changed properties.
@@ -174,7 +167,7 @@ namespace Orocos
      *  Each axis that is out of range throws a seperate event.
      *  The component will continue with the previous value.
      */
-    RTT::Event< void(int,double) > _driveOutOfRange;
+    RTT::Event< void(std::string) > _driveOutOfRange;
         
     /**
      *  parameters to this event are the axis and the position that is out of range.
@@ -182,12 +175,7 @@ namespace Orocos
      *  The component will continue.  The hardware limit switches can be reached when this
      *  event is not handled.
      */ 
-    RTT::Event< void(int,double) > _positionOutOfRange;
-    
-  private:
-    /**
-     * Extra private variables
-     */
+    RTT::Event< void(std::string) > _positionOutOfRange;
     
     /**
      * Activation state of robot
@@ -238,16 +226,16 @@ namespace Orocos
       RTT::ComediSubDeviceDOut*             _comediSubdevDOut;
       std::vector<RTT::EncoderInterface*>   _encoderInterface;
   
-    std::vector<RTT::AnalogOutput<unsigned int>*> _vref;
-    std::vector<RTT::IncrementalEncoderSensor*>   _encoder;
-    std::vector<RTT::DigitalOutput*>      _enable;
-    std::vector<RTT::AnalogDrive*>        _drive;
-    std::vector<RTT::DigitalOutput*>      _brake;
-    std::vector<RTT::DigitalInput*>       _reference;  
-    std::vector<RTT::Axis*>               _axes_hardware;
+      std::vector<RTT::AnalogOutput<unsigned int>*> _vref;
+      std::vector<RTT::IncrementalEncoderSensor*>   _encoder;
+      std::vector<RTT::DigitalOutput*>      _enable;
+      std::vector<RTT::AnalogDrive*>        _drive;
+      std::vector<RTT::DigitalOutput*>      _brake;
+      std::vector<RTT::DigitalInput*>       _reference;  
+      std::vector<RTT::Axis*>               _axes_hardware;
 #endif
-    std::vector<RTT::AxisInterface*>      _axes;
-    std::vector<RTT::SimulationAxis*>     _axes_simulation;
+      std::vector<RTT::AxisInterface*>      _axes;
+      std::vector<RTT::SimulationAxis*>     _axes_simulation;
 
     
   };//class Kuka160nAxesVelocityController

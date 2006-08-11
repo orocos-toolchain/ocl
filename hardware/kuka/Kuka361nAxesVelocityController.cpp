@@ -74,6 +74,12 @@ namespace Orocos
       _driveConvertFactor(KUKA361_NUM_AXES),
 #if (defined OROPKG_OS_LXRT && defined OROPKG_DEVICE_DRIVERS_COMEDI&& defined (OROPKG_DEVICE_DRIVERS_APCI))
       _axes_hardware(KUKA361_NUM_AXES),
+      _encoderInterface(KUKA361_NUM_AXES),
+      _encoder(KUKA361_NUM_AXES),
+      _vref(KUKA361_NUM_AXES),
+      _enable(KUKA361_NUM_AXES),
+      _drive(KUKA361_NUM_AXES),
+      _brake(KUKA361_NUM_AXES),
 #endif
       _axes(KUKA361_NUM_AXES),
       _axes_simulation(KUKA361_NUM_AXES)

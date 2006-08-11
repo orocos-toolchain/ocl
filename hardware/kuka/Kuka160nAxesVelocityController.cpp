@@ -130,40 +130,20 @@ namespace Orocos{
             _encoder[i] = new IncrementalEncoderSensor( _encoderInterface[i], 1.0 / _positionConvertFactor[i], 
                                                         _initialPosition.value()[i]*_positionConvertFactor[i], 
                                                         _lowerPositionLimits.value()[i], _upperPositionLimits.value()[i],KUKA160_ENC_RES);
-            log(Debug)<<"Kuka160 Hardware Encoder Created"<<endlog();
-            
             _brake[i] = new DigitalOutput( _comediSubdevDOut, 23 - i,true);
             _brake[i]->switchOn();
-            log(Debug)<<"Kuka160 Hardware Brake Signal Created"<<endlog();
 
             _vref[i]   = new AnalogOutput<unsigned int>( _comediSubdevAOut, i + 1 );
-            log(Debug)<<"Kuka160 Hardware Velocity Signal Created"<<endlog();
-
             _enable[i] = new DigitalOutput( _comediSubdevDOut, 13 - i );
-            log(Debug)<<"Kuka160 Hardware Enable Signal Created"<<endlog();
-            
             _reference[i] = new DigitalInput( _comediSubdevDIn, 23 - i);
-            log(Debug)<<"Kuka160 Hardware Reference Signal Created"<<endlog();
-            
-            _drive[i] = new AnalogDrive( _vref[i], _enable[i], 1.0 / _driveConvertFactor[i], 
-                                         _driveOffset.value()[i]);
-            log(Debug)<<"Kuka160 Hardware Drive Created"<<endlog();
-            
-            try{
-                _axes_hardware[i] = new Axis( _drive[i] );
-            }catch(...){
-                log(Error)<<"Creating Axis Failed!!"<<endlog();
-            }
-            
-            log(Debug)<<"Kuka160 Hardware Axis Setting Brake"<<endlog();
-            _axes_hardware[i]->setBrake( _brake[i] );
-            
-            log(Debug)<<"Kuka160 Hardware Axis Setting PositionSensor"<<endlog();
-            _axes_hardware[i]->setSensor( "Position", _encoder[i] );
+            _drive[i]  = new AnalogDrive( _vref[i], _enable[i], 1.0 / vel2volt[i], _driveOffset.value()[i]);
 
-            log(Debug)<<"Kuka160 Hardware Axis Setting ReferenceSensor"<<endlog();
+            _axes_hardware[i] = new Axis( _drive[i] );
+            _axes_hardware[i]->setBrake( _brake[i] );
+            _axes_hardware[i]->setSensor( "Position", _encoder[i] );
             _axes_hardware[i]->setSwitch( "Reference", _reference[i]);
-            log(Debug)<<"Kuka160 Hardware Axes Created"<<endlog();
+
+            _axes_hardware[i]->limitDrive(-_driveLimits.value()[i], _driveLimits.value()[i], _driveOutOfRange);
         }
         
 #endif
@@ -171,7 +151,6 @@ namespace Orocos{
             _axes_simulation[i] = new RTT::SimulationAxis(_initialPosition.value()[i],
                                                           _lowerPositionLimits.value()[i],
                                                           _upperPositionLimits.value()[i]);
-            _axes_simulation[i]->setMaxDriveValue( _driveLimits.value()[i] );
         }
     
 #if (defined OROPKG_OS_LXRT && defined OROPKG_DEVICE_DRIVERS_COMEDI)
@@ -198,7 +177,7 @@ namespace Orocos{
         typedef Kuka160nAxesVelocityController MyType;
         
         this->commands()->addCommand( command( "startAxis", &MyType::startAxis,&MyType::startAxisCompleted, this),
-                                      "start axis, initializes drive value to zero and starts updating the drive-value with the drive-port (only possible if axis is unlocked","axis","axis to start" );
+                                      "start axis, starts updating the drive-value (only possible after unlockAxis)","axis","axis to start" );
         this->commands()->addCommand( command( "stopAxis", &MyType::stopAxis,&MyType::stopAxisCompleted, this),
                                       "stop axis, sets drive value to zero and disables the update of the drive-port, (only possible if axis is started","axis","axis to stop");
         this->commands()->addCommand( command( "lockAxis", &MyType::lockAxis,&MyType::lockAxisCompleted, this),
@@ -236,8 +215,8 @@ namespace Orocos{
         /**
          * Adding the events :
          */
-        events()->addEvent( &_driveOutOfRange, "Each axis that is out of range throws a seperate event.", "A", "Axis", "V", "Value" );
-        events()->addEvent( &_positionOutOfRange, "Each axis that is out of range throws a seperate event.", "A", "Axis", "P", "Position"  );
+        events()->addEvent( &_driveOutOfRange, "Velocity of an Axis is out of range","message","Information about event" );
+        events()->addEvent( &_positionOutOfRange, "Position of an Axis is out of range","message","Information about event");
     
     }
     
@@ -271,26 +250,17 @@ namespace Orocos{
     void Kuka160nAxesVelocityController::update()
     {
         for (int axis=0;axis<KUKA160_NUM_AXES;axis++) {      
-            // Ask the position and perform checks in joint space.
+            // Set the position and perform checks in joint space.
             _positionValue[axis]->Set(_axes[axis]->getSensor("Position")->readSensor());
             
-            if((_positionValue[axis]->Get() < _lowerPositionLimits.value()[axis]) 
-               ||(_positionValue[axis]->Get() > _upperPositionLimits.value()[axis])
-               ) {
-                _positionOutOfRange(axis, _positionValue[axis]->Get());
-            }
+            // emit event when position is out of range
+            if( (_positionValue[axis]->Get() < _lowerPositionLimits.value()[axis]) ||
+                (_positionValue[axis]->Get() > _upperPositionLimits.value()[axis]) )
+                _positionOutOfRange("Position  of a Kuka160 Axis is out of range");
             
             // send the drive value to hw and performs checks
-            if (_axes[axis]->isDriven()) {
-                if ((_driveValue[axis]->Get() < -_driveLimits.value()[axis]) 
-                    || (_driveValue[axis]->Get() >  _driveLimits.value()[axis]))
-                    {
-                        _driveOutOfRange(axis, _driveValue[axis]->Get() );
-                    }
-                else{
-                    _axes[axis]->drive(_driveValue[axis]->Get());
-                }
-            }
+            if (_axes[axis]->isDriven()) 
+                _axes[axis]->drive(_driveValue[axis]->Get());
             
             // ask the reference value from the hw 
 #if (defined OROPKG_OS_LXRT&& defined OROPKG_DEVICE_DRIVERS_COMEDI)
@@ -302,17 +272,11 @@ namespace Orocos{
         }
     }
   
-  
     void Kuka160nAxesVelocityController::shutdown()
     {
         //Make sure machine is shut down
         prepareForShutdown();
         //Write properties back to file
-#if (defined OROPKG_OS_LXRT&& defined OROPKG_DEVICE_DRIVERS_COMEDI)
-        if(!_simulation.value())
-            for(unsigned int i = 0;i<KUKA160_NUM_AXES;i++)    
-                _driveOffset.set()[i] = ((Axis*)_axes[i])->getDrive()->getOffset();  
-#endif
         writeProperties(_propertyfile);
     }
   
@@ -395,7 +359,7 @@ namespace Orocos{
             return false;
         }
     }
-  
+    
     bool Kuka160nAxesVelocityController::unlockAxis(int axis)
     {
         if(_activated){
@@ -490,9 +454,11 @@ namespace Orocos{
     
     bool Kuka160nAxesVelocityController::addDriveOffset(int axis, double offset)
     {
-#if (defined OROPKG_OS_LXRT&& defined OROPKG_DEVICE_DRIVERS_COMEDI)
-        if(!_simulation.value())
-            ((Axis*)_axes[axis])->getDrive()->addOffset(offset);  
+        _driveOffset.value()[axis] += offset;
+
+#if (defined OROPKG_OS_LXRT&& defined OROPKG_DEVICE_DRIVERS_COMEDI&& defined (OROPKG_DEVICE_DRIVERS_APCI))
+        if (!_simulation.value())
+            ((Axis*)(_axes[axis]))->getDrive()->addOffset(offset);
 #endif
         return true;
     }

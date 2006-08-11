@@ -116,18 +116,8 @@ namespace Orocos
      */
     
     std::vector<RTT::ReadDataPort<double>*>   _driveValue;
-    
-    /*
-     *Kuka361 does has no reference signals
-    */
-    //std::vector<RTT::WriteDataPort<bool>*>    _references;
+
     std::vector<RTT::WriteDataPort<double>*>  _positionValue;
-    //
-    //std::vector<RTT::WriteDataPort<bool>*>    _homed;
-    
-  private:
-    // drive axis and check if driveValue is inside boundaries
-    bool driveAxis(int axis, double driveValue);
     
     /**
      * A local copy of the name of the propertyfile so we can store
@@ -182,8 +172,6 @@ namespace Orocos
      *  The component will continue with the previous value.
      */
       RTT::Event< void(std::string) > _driveOutOfRange;
-      int _driveOutOfRange_axis;
-      double _driveOutOfRange_value;
       
     /**
      *  parameters to this event are the axis and the position that is out of range.
@@ -192,13 +180,6 @@ namespace Orocos
      *  event is not handled.
      */ 
     RTT::Event< void(std::string) > _positionOutOfRange;
-    int _positionOutOfRange_axis;
-    double _positionOutOfRange_value;
-    
-  private:
-    /**
-     * Extra private variables
-     */
     
     /**
      * Activation state of robot
@@ -250,12 +231,12 @@ namespace Orocos
     RTT::RelayCardapci2200*               _apci2200;
     RTT::SwitchDigitalInapci1032*         _apci1032;
 
-    RTT::EncoderInterface*                _encoderInterface[6];
-    RTT::AbsoluteEncoderSensor*           _encoder[6];
-    RTT::AnalogOutput<unsigned int>*      _vref[6];
-    RTT::DigitalOutput*                   _enable[6];
-    RTT::AnalogDrive*                     _drive[6];
-    RTT::DigitalOutput*                   _brake[6];
+    std::vector<RTT::EncoderInterface*>           _encoderInterface;
+    std::vector<RTT::AbsoluteEncoderSensor*>      _encoder;
+    std::vector<RTT::AnalogOutput<unsigned int>*> _vref;
+    std::vector<RTT::DigitalOutput*>              _enable;
+    std::vector<RTT::AnalogDrive*>                _drive;
+    std::vector<RTT::DigitalOutput*>              _brake;
     
 #endif
     std::vector<RTT::AxisInterface*>      _axes;
