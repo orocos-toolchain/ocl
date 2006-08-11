@@ -1,5 +1,5 @@
 //hardware interfaces
-#include <hardware/kuka/Kuka160nAxesVelocityController.hpp>
+#include <hardware/kuka/Kuka361nAxesVelocityController.hpp>
 #include <hardware/kuka/EmergencyStop.hpp>
 
 //User interface
@@ -15,7 +15,7 @@
 #include <motion_control/cartesian/CartesianComponents.hpp>
 
 //Kinematics component
-#include <kdl/kinfam/kuka160.hpp>
+#include <kdl/kinfam/kuka361.hpp>
 #include <kdl/toolkit.hpp>
 #include <kdl/kinfam/kinematicfamily_io.hpp>
 
@@ -33,7 +33,7 @@ int ORO_main(int argc, char* argv[])
 {
     Toolkit::Import( KDLToolkit );
     
-    Kuka160nAxesVelocityController my_robot("Robot");
+    Kuka361nAxesVelocityController my_robot("Robot");
     
     NAxesPositionViewer viewer("viewer");
     
@@ -41,11 +41,11 @@ int ORO_main(int argc, char* argv[])
     
     /// Creating Event Handlers
     _emergency.addEvent(&my_robot,"driveOutOfRange");
-    _emergency.addEvent(&my_robot,"positionOutOfRange");
+    //_emergency.addEvent(&my_robot,"positionOutOfRange");
 
   
     //KinematicsComponents
-    KinematicFamily* kukakf = new Kuka160();
+    KinematicFamily* kukakf = new Kuka361();
     
     //CartesianComponents
     CartesianSensor sensor("CartesianSensor",kukakf);
