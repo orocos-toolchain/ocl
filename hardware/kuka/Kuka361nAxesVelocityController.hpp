@@ -1,6 +1,7 @@
 #ifndef KUKA361_NAXES_VELOCITY_CONTROLLER_HPP
 #define KUKA361_NAXES_VELOCITY_CONTROLLER_HPP
 
+#include <pkgconf/system.h> 
 
 #include <vector>
 #include <rtt/RTT.hpp>
@@ -9,8 +10,6 @@
 #include <rtt/Ports.hpp>
 #include <rtt/Event.hpp>
 #include <rtt/Properties.hpp>
-
-#include <pkgconf/system.h> 
 
 #if (defined (OROPKG_OS_LXRT) && defined (OROPKG_DEVICE_DRIVERS_COMEDI)) && defined (OROPKG_DEVICE_DRIVERS_APCI)
 #include <rtt/dev/SwitchDigitalInapci1032.hpp>

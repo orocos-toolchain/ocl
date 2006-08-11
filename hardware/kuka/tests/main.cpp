@@ -1,17 +1,17 @@
 //hardware interfaces
 
-#include "hardware/kuka/Kuka160nAxesVelocityController.hpp"
-#include "hardware/kuka/Kuka361nAxesVelocityController.hpp"
+#include <hardware/kuka/Kuka160nAxesVelocityController.hpp>
+#include <hardware/kuka/Kuka361nAxesVelocityController.hpp>
+#include <hardware/kuka/EmergencyStop.hpp>
+
 
 //User interface
-#include "taskbrowser/TaskBrowser.hpp"
+#include <taskbrowser/TaskBrowser.hpp>
 
 //Reporting
-#include "reporting/FileReporting.hpp"
+#include <reporting/FileReporting.hpp>
 
 #include <rtt/os/main.h>
-
-#include "EmergencyStop.hpp"
 
 using namespace Orocos;
 using namespace RTT;

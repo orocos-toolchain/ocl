@@ -1,3 +1,6 @@
+#include <rtt/Command.hpp>
+#include <rtt/Event.hpp>
+
 namespace Orocos
 {
     class EmergencyStop
@@ -31,8 +34,7 @@ namespace Orocos
                 log(Error)<<"Could not connect event"<<eventname<<" to handler"<<endlog();
             }
             return retval;
-        }
-        
+        };
         void callback() {
             _stop();
             _lock();
@@ -45,6 +47,5 @@ namespace Orocos
         RTT::Command<bool(void)> _stop;
         RTT::Command<bool(void)> _lock;
         std::vector<RTT::Handle> _handlers;
-        
     }; // class
 }//namespace
