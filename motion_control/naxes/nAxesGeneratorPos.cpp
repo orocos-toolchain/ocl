@@ -85,7 +85,7 @@ namespace Orocos
 
     //Check if readPort is connected
     if (!_position_meas.connected())
-      Logger::log()<<Logger::Warning<<"(nAxesGeneratorPos) Port "<<_position_desi.getName()<<"not connected"<<Logger::endl;
+      Logger::log()<<Logger::Warning<<"(nAxesGeneratorPos) Port "<<_position_meas.getName()<<" not connected"<<Logger::endl;
     
     
     // check size of properties
