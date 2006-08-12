@@ -84,7 +84,7 @@ namespace Orocos
   {
     //Check if readPort is connected
     if (!_position_meas.connected())
-      Logger::log()<<Logger::Warning<<"(CartesianGeneratorPos) Port "<<_position_desi.getName()<<"not connected"<<Logger::endl;
+      Logger::log()<<Logger::Warning<<"(CartesianGeneratorPos) Port "<<_position_meas.getName()<<" not connected"<<Logger::endl;
 
     // check size of properties
     if(_maximum_velocity.value().size() != 6 || _maximum_acceleration.value().size() != 6)
