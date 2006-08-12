@@ -1,4 +1,4 @@
-prefix=/home/rsmits/orocos/orocos-components/install
+prefix=/usr/local/
 libdir=${prefix}/lib
 includedir=${prefix}/include
 
