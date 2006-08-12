@@ -4,6 +4,10 @@
 #include <rtt/Method.hpp>
 #include <kdl/frames_io.hpp>
 
+#if defined (OROPKG_OS_LXRT)
+#include "driver/jr3_lxrt_user.h"
+#endif
+
 #define CUTOFF_FREQUENCY_FILTER1 500.0
 #define CUTOFF_FREQUENCY_FILTER2 125.0
 #define CUTOFF_FREQUENCY_FILTER3  31.25
