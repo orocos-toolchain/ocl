@@ -43,7 +43,7 @@ namespace Orocos
     virtual void update();
     virtual void shutdown();
 
-    void calibrateWorldToObj();
+    void calibrateWorldToManip();
     void calibrateWrenchSensor();
     
   private:
@@ -51,30 +51,30 @@ namespace Orocos
     RTT::Property<std::vector<double> > _pos_leds_demotool;
     RTT::Property<double>               _mass_demotool;
     RTT::Property<KDL::Vector>          _center_gravity_demotool;
-    RTT::Property<KDL::Frame>           _Frame_demotool_obj, _Frame_demotool_fs, _Frame_world_camera;
+    RTT::Property<KDL::Frame>           _Frame_demotool_manip, _Frame_demotool_fs, _Frame_world_camera;
 
     // read ports
     RTT::ReadDataPort<KDL::Wrench>               _Wrench_fs_fs_port;
     RTT::ReadDataPort<std::vector<KDL::Vector> > _Vector_led_camera_port;
 
     // write ports
-    RTT::WriteDataPort<KDL::Wrench>  _Wrench_world_world_port, _Wrench_obj_obj_port;
-    RTT::WriteDataPort<KDL::Twist>   _Twist_world_world_port, _Twist_obj_world_port;
-    RTT::WriteDataPort<KDL::Frame>   _Frame_world_obj_port;
+    RTT::WriteDataPort<KDL::Wrench>  _Wrench_world_world_port, _Wrench_manip_manip_port;
+    RTT::WriteDataPort<KDL::Twist>   _Twist_world_world_port, _Twist_world_manip_port;
+    RTT::WriteDataPort<KDL::Frame>   _Frame_world_manip_port;
     RTT::WriteDataPort<unsigned int> _num_visible_leds_port;
 
     // commands
     RTT::Command<bool(KDL::Wrench)>  _add_offset;
 
     // methods
-    RTT::Method<void(void)>          _calibrate_world_to_obj, _calibrate_wrench_sensor;
+    RTT::Method<void(void)>          _calibrate_world_to_manip, _calibrate_wrench_sensor;
 
     std::string _propertyfile;
     std::vector<KDL::Vector> _Vector_led_demotool, _Vector_led_camera;
     
-    KDL::Twist   _Twist_obj_world;
+    KDL::Twist   _Twist_world_manip;
     KDL::Wrench  _Wrench_fs_fs, _Wrench_world_world, _Wrench_gravity_world_world;
-    KDL::Frame   _Frame_world_demotool, _Frame_camera_demotool, _Frame_world_obj, _Frame_world_obj_old, _Frame_world_fs;
+    KDL::Frame   _Frame_world_demotool, _Frame_camera_demotool, _Frame_world_manip, _Frame_world_manip_old, _Frame_world_fs;
     unsigned int _num_visible_leds, _num_leds;
     std::vector<bool> _visible_leds;
     bool _is_initialized;

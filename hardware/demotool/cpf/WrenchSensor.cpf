@@ -5,15 +5,15 @@
      <description>Offset on wrench measurement</description>
      <struct name="Force" type="MotCon::Vector">
         <description>Axial Force</description>
-        <simple name="X" type="double"><description>X Value</description><value>0.275594</value></simple>
-        <simple name="Y" type="double"><description>Y Value</description><value>1.02342</value></simple>
-        <simple name="Z" type="double"><description>Z Value</description><value>1.8591</value></simple>
+        <simple name="X" type="double"><description>X Value</description><value>0.135103</value></simple>
+        <simple name="Y" type="double"><description>Y Value</description><value>0.605843</value></simple>
+        <simple name="Z" type="double"><description>Z Value</description><value>-34.2195</value></simple>
      </struct>
      <struct name="Torque" type="MotCon::Vector">
         <description>Axial Torque</description>
-        <simple name="X" type="double"><description>X Value</description><value>-0.111994</value></simple>
-        <simple name="Y" type="double"><description>Y Value</description><value>0.0323069</value></simple>
-        <simple name="Z" type="double"><description>Z Value</description><value>0.0342224</value></simple>
+        <simple name="X" type="double"><description>X Value</description><value>-0.0299814</value></simple>
+        <simple name="Y" type="double"><description>Y Value</description><value>-0.00219831</value></simple>
+        <simple name="Z" type="double"><description>Z Value</description><value>0.0569092</value></simple>
      </struct>
   </struct>
 </properties>

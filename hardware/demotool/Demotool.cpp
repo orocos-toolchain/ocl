@@ -36,18 +36,18 @@ namespace Orocos
     _pos_leds_demotool("pos_leds_demotool","XYZ positions of all LED markers, relative to demtool frame"),
     _mass_demotool("mass_demotool","mass of objects attached to force censor of demotool"),
     _center_gravity_demotool("center_gravity_demotool","center of gravity of mass attached to demotool"),
-    _Frame_demotool_obj("demotool_obj","frame from demotool to object"),
+    _Frame_demotool_manip("demotool_manip","frame from demotool to manip"),
     _Frame_demotool_fs("demotool_fs","frame from demotool to force sensor"),
     _Frame_world_camera("world_camera","frame from world to camera"),
     _Wrench_fs_fs_port("WrenchData"),
     _Vector_led_camera_port("LedPositions"),
     _Wrench_world_world_port("wrench_world_world"),
-    _Wrench_obj_obj_port("wrench_obj_obj"),
+    _Wrench_manip_manip_port("wrench_manip_manip"),
     _Twist_world_world_port("twit_world_world"),
-    _Twist_obj_world_port("twit_obj_world"),
-    _Frame_world_obj_port("frame_world_obj"),
+    _Twist_world_manip_port("twist_world_manip"),
+    _Frame_world_manip_port("frame_world_manip"),
     _num_visible_leds_port("num_visible_leds"),
-    _calibrate_world_to_obj("calibrateWorldToObj", &Demotool::calibrateWorldToObj, this),
+    _calibrate_world_to_manip("calibrateWorldToManip", &Demotool::calibrateWorldToManip, this),
     _calibrate_wrench_sensor("calibrateWrenchSensor", &Demotool::calibrateWrenchSensor, this),
     _propertyfile(propertyfile)
   {
@@ -55,7 +55,7 @@ namespace Orocos
     properties()->addProperty(&_pos_leds_demotool);
     properties()->addProperty(&_mass_demotool);
     properties()->addProperty(&_center_gravity_demotool);
-    properties()->addProperty(&_Frame_demotool_obj);
+    properties()->addProperty(&_Frame_demotool_manip);
     properties()->addProperty(&_Frame_demotool_fs);
     properties()->addProperty(&_Frame_world_camera);
 
@@ -63,17 +63,14 @@ namespace Orocos
     ports()->addPort(&_Wrench_fs_fs_port);
     ports()->addPort(&_Vector_led_camera_port);
     ports()->addPort(&_Wrench_world_world_port);
-    ports()->addPort(&_Wrench_obj_obj_port);
+    ports()->addPort(&_Wrench_manip_manip_port);
     ports()->addPort(&_Twist_world_world_port);
-    ports()->addPort(&_Twist_obj_world_port);
-    ports()->addPort(&_Frame_world_obj_port);
+    ports()->addPort(&_Twist_world_manip_port);
+    ports()->addPort(&_Frame_world_manip_port);
     ports()->addPort(&_num_visible_leds_port);
     
-    Logger::log()<<Logger::Debug<<this->getName()<<": adding Events"<<Logger::endl;
-    //events()->addEvent("distanceOutOfRange",&_distanceOutOfRange);
-
     Logger::log()<<Logger::Debug<<this->getName()<<": adding Methods"<<Logger::endl;
-    methods()->addMethod(_calibrate_world_to_obj, "set world frame to current object frame");
+    methods()->addMethod(_calibrate_world_to_manip, "set world frame to current manip frame");
     methods()->addMethod(_calibrate_wrench_sensor, "set wrench sensor offset to measure zero force");
 
     if (!readProperties(_propertyfile))
@@ -113,8 +110,8 @@ namespace Orocos
     _add_offset = wrench_sensor->commands()->getCommand<bool(Wrench)>("addOffset");
     if (!_add_offset.ready()) Logger::log()<<Logger::Error<<this->getName()<<": command addOffset not found."<<Logger::endl;
 
-    // set _Twist_obj_world to zero
-    SetToZero(_Twist_obj_world);
+    // set _Twist_world_manip to zero
+    SetToZero(_Twist_world_manip);
 
     // re-initialize twist calculation
     _is_initialized = false;
@@ -185,16 +182,16 @@ namespace Orocos
     }
     
 
-    // twist of obj expressed in world, refpoint obj
+    // twist of manip expressed in world, refpoint manip
     // ---------------------------------------------
     _period = TimeService::Instance()->secondsSince(_time_begin);
-    _Frame_world_obj = _Frame_world_demotool * _Frame_demotool_obj.value();
+    _Frame_world_manip = _Frame_world_demotool * _Frame_demotool_manip.value();
     if (_is_initialized)
-      _Twist_obj_world = diff(_Frame_world_obj_old, _Frame_world_obj, _period);
+      _Twist_world_manip = diff(_Frame_world_manip_old, _Frame_world_manip, _period);
     else
       _is_initialized = true;
     _time_begin = TimeService::Instance()->getTicks();
-    _Frame_world_obj_old = _Frame_world_obj;
+    _Frame_world_manip_old = _Frame_world_manip;
 
     
     // get force sensor measurement
@@ -209,11 +206,11 @@ namespace Orocos
 
     // copy data to ports
     // ------------------
-    _Frame_world_obj_port.Set(_Frame_world_obj);
+    _Frame_world_manip_port.Set(_Frame_world_manip);
     _Wrench_world_world_port.Set(_Wrench_world_world);
-    _Wrench_obj_obj_port.Set(_Frame_world_obj.Inverse() * _Wrench_world_world);
-    _Twist_world_world_port.Set(_Twist_obj_world.RefPoint(-(_Frame_world_obj.p)));
-    _Twist_obj_world_port.Set(_Twist_obj_world);
+    _Wrench_manip_manip_port.Set(_Frame_world_manip.Inverse() * _Wrench_world_world);
+    _Twist_world_world_port.Set(_Twist_world_manip.RefPoint(-(_Frame_world_manip.p)));
+    _Twist_world_manip_port.Set(_Twist_world_manip);
     _num_visible_leds_port.Set(_num_visible_leds);
   }
   
@@ -223,10 +220,10 @@ namespace Orocos
   }
 
 
-  void Demotool::calibrateWorldToObj()
+  void Demotool::calibrateWorldToManip()
   {
-    // set frame world_camera to obj_camera ==> world frame in current object frame
-    _Frame_world_camera.value() = _Frame_demotool_obj.value().Inverse() * _Frame_camera_demotool.Inverse();
+    // set frame world_camera to manip_camera ==> world frame in current manip frame
+    _Frame_world_camera.value() = _Frame_demotool_manip.value().Inverse() * _Frame_camera_demotool.Inverse();
   }
 
   void Demotool::calibrateWrenchSensor()
