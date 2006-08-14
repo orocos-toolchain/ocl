@@ -1,10 +1,12 @@
-
-#include "rtt/TaskContext.hpp"
-#include "rtt/PropertyBag.hpp"
-#include "rtt/Attribute.hpp"
-
-#include "rtt/PropertyLoader.hpp"
-
+#include <rtt/RTT.hpp>
+#include <rtt/TaskContext.hpp>
+#include <rtt/Properties.hpp>
+#include <rtt/Attribute.hpp>
+#include <rtt/Ports.hpp>
+#include <rtt/Logger.hpp>
+#include <rtt/PropertyLoader.hpp>
+#include <pkgconf/corelib_properties_marshalling.h>
+#include <rtt/marsh/CPFDemarshaller.hpp>
 
 namespace Orocos
 {
@@ -113,11 +115,11 @@ namespace Orocos
     
 #else
 
-            Logger::log() <<Logger::Info << "Loading '" <<configurationfile.get()"'."<< Logger::endl;
+            Logger::log() <<Logger::Info << "Loading '" <<configurationfile.get()<<"'."<< Logger::endl;
             // demarshalling failures:
             bool failure = false;  
             // semantic failures:
-            bool valid = validConfig;
+            bool valid = validConfig.get();
             OROCLS_CORELIB_PROPERTIES_DEMARSHALLING_DRIVER* demarshaller = 0;
             try
                 {
@@ -128,13 +130,13 @@ namespace Orocos
                     return false;
                 }
             try {
-                vector<CommandInterface*> assignComs;
+                std::vector<CommandInterface*> assignComs;
 
                 if ( demarshaller->deserialize( root ) )
                     {
                         valid = true;
                         conmap.clear();
-                        Logger::Log() <<Logger::Info<<"Validating new configuration..."<<Logger::endl;
+                        Logger::log() <<Logger::Info<<"Validating new configuration..."<<Logger::endl;
                         if ( root.empty() ) {
                             Logger::log() << Logger::Error
                                           << "Configuration was empty !" <<Logger::endl;
@@ -142,7 +144,7 @@ namespace Orocos
                         }
                         PropertyBag::Names nams = root.list();
 
-                        for (PropertyBag::Names::iterator it= nams.begin(); nams.end()) {
+                        for (PropertyBag::Names::iterator it= nams.begin();it != nams.end();it++) {
                             // Check if it is a propertybag.
                             Property<PropertyBag>* comp = root.getProperty<PropertyBag>(*it);
                             if ( comp == 0 ) {
@@ -158,49 +160,53 @@ namespace Orocos
                                 valid = false;
                             }
                             // set PropFile name if present
-                            string filename = *it + ".cpf";
-                            if ( comp->get()->getProperty("PropFile") )
-                                if ( !comp->get()->getProperty<string>("PropFile") ) {
+                            std::string filename = *it + ".cpf";
+                            if ( comp->get().getProperty<std::string>("PropFile") )
+                                if ( !comp->get().getProperty<std::string>("PropFile") ) {
                                     valid = false;
                                 }
-
+                            
                             // connect ports.
-                            Property<PropertyBag>* ports = comp->getProperty<PropertyBag>("Ports");
+                            Property<PropertyBag>* ports = comp->get().getProperty<PropertyBag>("Ports");
                             if ( ports != 0 ) {
-                                for (PropertyBag::Names::iterator pit= ports->begin(); ports->end()) {
-                                    PortInterface* p = comp->ports()->getPort(*pit);
+                                PropertyBag::Names pnams = ports->get().list();
+                                for (PropertyBag::Names::iterator pit= pnams.begin(); pit !=pnams.end(); pit++) {
+                                    PortInterface* p = c->ports()->getPort(*pit);
                                     if ( !p ) {
                                         Logger::log() << Logger::Error
-                                                      << "Component '"<< comp->getName() <<"' does not have a Port '"<<*pit<<"'." << Logger::endl;
+                                                      << "Component '"<< c->getName() <<"' does not have a Port '"<<*pit<<"'." << Logger::endl;
                                         valid = false;
                                     }
-                                    if ( ports->getProperty<std::string>(*pit) == 0) {
+                                    if ( ports->get().getProperty<std::string>(*pit) == 0) {
                                         Logger::log() << Logger::Error
                                                       << "Property '"<< *pit <<"' is not of type 'string'." << Logger::endl;
                                         valid = false;
                                     }
                                     // store the port
-                                    conmap[ports->getProperty<std::string>(*pit)->get()].ports.push_back( p );
+                                    conmap[ports->get().getProperty<std::string>(*pit)->get()].ports.push_back( p );
                                 }
                             } else {
                                 valid = false;
                             }
 
-                            // Setup the connections from this component to the others.
-                            for (PropertyBag::Properties::iterator it= comp->begin(); comp->end()) {
-                                if ( (*it)->getName() == "Peer" ) {
-                                    Property<std::string>* nm = Property<std::string>::narrow(*it);
-                                    if ( !nm ) {
-                                        Logger::log()<<Logger::Error<<"Property 'Peer' does not have type 'string'."<<Logger::endl;
-                                        valid = false;
-                                    }
-                                    if ( this->getPeer( nm->value() ) == 0 ) {
-                                        Logger::log()<<Logger::Error<<"No such Peer:"<<nm->value()<<Logger::endl;
-                                        valid = false;
+                            // Setup the connections from this
+                            // component to the others.
+                            Property<PropertyBag>* peers = comp->get().getProperty<PropertyBag>("Peers");
+                            if ( peers != 0 ) {
+                                for (PropertyBag::Properties::iterator it= peers->get().getProperties().begin(); it != peers->get().getProperties().end();it++) {
+                                    if ( (*it)->getName() == "Peer" ) {
+                                        Property<std::string>* nm = Property<std::string>::narrow(*it);
+                                        if ( !nm ) {
+                                            Logger::log()<<Logger::Error<<"Property 'Peer' does not have type 'string'."<<Logger::endl;
+                                            valid = false;
+                                        }
+                                        if ( this->getPeer( nm->value() ) == 0 ) {
+                                            Logger::log()<<Logger::Error<<"No such Peer:"<<nm->value()<<Logger::endl;
+                                            valid = false;
+                                        }
                                     }
                                 }
                             }
-                
                         }
                         if ( !valid )
                             deleteProperties( root );
@@ -208,7 +214,7 @@ namespace Orocos
                 else
                     {
                         Logger::log() << Logger::Error
-                                      << "Some error occured while parsing "<< configurationfile.c_str() <<Logger::endl;
+                                      << "Some error occured while parsing "<< configurationfile.rvalue() <<Logger::endl;
                         failure = true;
                         deleteProperties( root );
                         conmap.clear();
@@ -241,14 +247,14 @@ namespace Orocos
             PropertyBag::Names nams = root.list();
 
             // Load all property files into the components.
-            for (PropertyBag::Names::iterator it= nams.begin(); nams.end()) {
+            for (PropertyBag::Names::iterator it= nams.begin(); it!=nams.end();it++) {
                 Property<PropertyBag>* comp = root.getProperty<PropertyBag>(*it);
 
                 // set PropFile name if present
-                string filename = *it + ".cpf";
-                if ( comp->get()->getProperty<string>("PropFile") )
-                    filename = comp->get()->getProperty<string>("PropFile")->get();
-
+                std::string filename = *it + ".cpf";
+                if ( comp->get().getProperty<std::string>("PropFile") )
+                    filename = comp->get().getProperty<std::string>("PropFile")->get();
+                
                 PropertyLoader pl;
                 TaskContext* peer = this->getPeer( *it );
                 assert( peer );
@@ -266,8 +272,8 @@ namespace Orocos
                     continue;
                 }
                 // first find a write and a read port.
-                PortInterface* writer = 0, reader = 0;
-                ConMap::Ports::iterator p = it->second.ports.begin();
+                PortInterface* writer = 0, *reader = 0;
+                ConnectionData::Ports::iterator p = it->second.ports.begin();
                 while (p != it->second.ports.end() && (writer == 0 || reader == 0) ) {
                     if ( (*p)->getPortType() == PortInterface::WritePort )
                         writer = (*p)->clone();
@@ -288,12 +294,12 @@ namespace Orocos
                 if ( writer == 0 ) {
                     log(Warning) << "Connecting only read-ports in connection " << it->first << endlog();
                     // solve this issue by using a temporary anti-port.
-                    writer = it->second.ports.front()->antiPort();
+                    writer = it->second.ports.front()->antiClone();
                 }
                 if ( reader == 0 ) {
                     log(Warning) << "Connecting only write-ports in connection " << it->first << endlog();
                     // make an anticlone of a writer
-                    reader = it->second.ports.front()->antiPort();
+                    reader = it->second.ports.front()->antiClone();
                 }
                 
                 log(Info) << "Creating Connection "<<it->first<<":"<<endlog();
@@ -318,9 +324,9 @@ namespace Orocos
             }
 
             // Setup the connections from each component to the others.
-            for (PropertyBag::Names::iterator nit= nams.begin(); nams.end()) {
+            for (PropertyBag::Names::iterator nit= nams.begin(); nit!=nams.end();nit++) {
                 Property<PropertyBag>* comp = root.getProperty<PropertyBag>(*nit);
-                for (PropertyBag::Properties::iterator it= comp->begin(); comp->end()) {
+                for (PropertyBag::Properties::iterator it= comp->get().getProperties().begin(); it!=comp->get().getProperties().end();it++) {
                     if ( (*it)->getName() == "Peer" ) {
                         Property<std::string>* nm = Property<std::string>::narrow(*it);
                         this->addPeer( comp->getName(), nm->value() );
@@ -341,7 +347,7 @@ namespace Orocos
          */
         bool configure(std::string name)
         {
-            return configureComponent( name,  name + ".cpf" );
+            return configureFromFile( name,  name + ".cpf" );
         }
 
         /** 
