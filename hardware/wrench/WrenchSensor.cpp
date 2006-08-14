@@ -68,7 +68,7 @@ namespace Orocos
 					   &WrenchSensor::setOffsetDone, this),
 				  "Command to set the zero offset","o","offset vector"  );	
     
-    this->events()->addEvent(&maximumLoadEvent, "Maximum Load");
+    this->events()->addEvent(&maximumLoadEvent, "Maximum Load","message","Information about event");
     
 #if defined (OROPKG_OS_LXRT)            
     chooseFilter(samplePeriod);
@@ -190,7 +190,7 @@ namespace Orocos
 	  || (_write_struct.Tz > MAX_LOAD) || (_write_struct.Tz < -MAX_LOAD) )
       {
 	
-	maximumLoadEvent();
+	maximumLoadEvent("Maximum load of wrench sensor exceeded");
       }
 #else
     _write_struct.Fx = 0;

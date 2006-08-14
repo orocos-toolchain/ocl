@@ -49,7 +49,7 @@ namespace Orocos
     virtual bool addOffset(KDL::Wrench); 
     virtual bool setOffsetDone() const;
     
-    RTT::Event<void(void)> maximumLoadEvent;
+    RTT::Event<void(std::string)> maximumLoadEvent;
     
     virtual bool startup();
     virtual void update();
