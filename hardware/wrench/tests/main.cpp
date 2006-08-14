@@ -3,6 +3,7 @@
 
 #include "hardware/wrench/WrenchSensor.hpp"
 #include <rtt/os/main.h>
+#include <kdl/toolkit.hpp>
 
 //User interface
 #include "taskbrowser/TaskBrowser.hpp"
@@ -14,6 +15,7 @@
 
 using namespace std;
 using namespace RTT;
+using namespace KDL;
 using namespace Orocos;
 
 /**
@@ -27,6 +29,8 @@ int ORO_main(int arc, char* argv[])
         Logger::log().setLogLevel( Logger::Info );
         Logger::log() << Logger::Info << argv[0] << " manually raises LogLevel to 'Info' (5). See also file 'orocos.log'."<<Logger::endl;
     }
+    // import kdl toolkit
+    Toolkit::Import( KDLToolkit );
 
     WrenchSensor a_task(0.1,"ATask",0);
     
