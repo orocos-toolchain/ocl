@@ -177,6 +177,7 @@ namespace Orocos
                                         valid = false;
                                     }
                                     // store the port
+                                    log(Debug)<<"storing Port: "<<ports->get().getProperty<std::string>(*pit)->get()<<endlog();
                                     conmap[ports->get().getProperty<std::string>(*pit)->get()].ports.push_back( p );
                                 }
                             } else {
@@ -230,6 +231,7 @@ namespace Orocos
          */
         bool configureComponents()
         {
+            Logger::In in("DeploymentComponent::configureComponents");
             if ( root.empty() ) {
                 Logger::log() << Logger::Error
                               << "No configuration loaded !" <<endlog();
