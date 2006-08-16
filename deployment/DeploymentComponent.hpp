@@ -13,9 +13,9 @@ namespace Orocos
 
     /**
      * A Component for deploying (configuring) other components in an
-     * application. It allows to create connections between components,
-     * load the properties for components and rename the ports of components,
-     * such that automatic port connection can take place.
+     * application. It allows to create connections between components and
+     * load the properties for components,
+     * such that connection of ports with different names can take place.
      */
     class DeploymentComponent
         : public TaskContext
@@ -177,7 +177,7 @@ namespace Orocos
                                         valid = false;
                                     }
                                     // store the port
-                                    log(Debug)<<"storing Port: "<<ports->get().getProperty<std::string>(*pit)->get()<<endlog();
+                                    log(Debug)<<"storing Port: "<<c->getName()"."<<ports->get().getProperty<std::string>(*pit)->get()<<" in " << ports->get().getProperty<std::string>(*pit)->get() <<endlog();
                                     conmap[ports->get().getProperty<std::string>(*pit)->get()].ports.push_back( p );
                                 }
                             } else {
@@ -254,6 +254,8 @@ namespace Orocos
                 bool ret = pl.configure( filename, peer, true ); // strict:true 
                 if (!ret) {
                     log(Error) << "Failed to configure properties for component "<<*it<<endlog();
+                } else {
+                    log(Info) << "Configured Properties of "<<*it<<endlog();
                 }
                 //peer->disconnect();
             }
@@ -314,6 +316,8 @@ namespace Orocos
                 // writer,reader was a clone or anticlone.
                 delete writer;
                 delete reader;
+
+                con->connect();
             }
 
             // Setup the connections from each component to the
