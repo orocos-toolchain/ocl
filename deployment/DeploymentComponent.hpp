@@ -43,7 +43,7 @@ namespace Orocos
     public:
         DeploymentComponent(std::string name = "Configurator")
             : TaskContext(name),
-              configurationfile("ConfigFile", "Name of the configuration file.", name+".cpf"),
+              configurationfile("ConfigFile", "Name of the configuration file.", "cpf/"+name+".cpf"),
               validConfig("Valid", false)
         {
             this->properties()->addProperty( &configurationfile );
@@ -64,11 +64,11 @@ namespace Orocos
             TaskContext* t1 = this->getPeer(one);
             TaskContext* t2 = this->getPeer(other);
             if (!t1) {
-                Logger::log() <<Logger::Error<< "No such peer: "<<one<<Logger::endl;
+                log(Error)<< "No such peer: "<<one<<endlog();
                 return false;
             }
             if (!t2) {
-                Logger::log() <<Logger::Error<< "No such peer: "<<other<<Logger::endl;
+                Logger::log() <<Logger::Error<< "No such peer: "<<other<<endlog();
                 return false;
             }
             return t1->connectPeers(t2);
@@ -87,11 +87,11 @@ namespace Orocos
             TaskContext* t1 = this->getPeer(from);
             TaskContext* t2 = this->getPeer(to);
             if (!t1) {
-                Logger::log() <<Logger::Error<< "No such peer: "<<from<<Logger::endl;
+                log(Error)<< "No such peer: "<<from<<endlog();
                 return false;
             }
             if (!t2) {
-                Logger::log() <<Logger::Error<< "No such peer: "<<to<<Logger::endl;
+                log(Error)<< "No such peer: "<<to<<endlog();
                 return false;
             }
             return t1->addPeer(t2);
@@ -110,12 +110,12 @@ namespace Orocos
         {
             Logger::In in("DeploymentComponent::loadConfiguration");
 #ifndef OROPKG_CORELIB_PROPERTIES_MARSHALLING
-            Logger::log() <<Logger::Error << "No Property Demarshaller configured !" << Logger::endl;
+            log(Error) << "No Property Demarshaller configured !" << endlog();
             return false;
     
 #else
 
-            Logger::log() <<Logger::Info << "Loading '" <<configurationfile.get()<<"'."<< Logger::endl;
+            log(Info) << "Loading '" <<configurationfile.get()<<"'."<< endlog();
             // demarshalling failures:
             bool failure = false;  
             // semantic failures:
@@ -125,8 +125,7 @@ namespace Orocos
                 {
                     demarshaller = new OROCLS_CORELIB_PROPERTIES_DEMARSHALLING_DRIVER (configurationfile);
                 } catch (...) {
-                    Logger::log() << Logger::Error
-                                  << "Could not open file "<< configurationfile << Logger::endl;
+                    log(Error)<< "Could not open file "<< configurationfile << endlog();
                     return false;
                 }
             try {
@@ -136,10 +135,9 @@ namespace Orocos
                     {
                         valid = true;
                         conmap.clear();
-                        Logger::log() <<Logger::Info<<"Validating new configuration..."<<Logger::endl;
+                        log(Info)<<"Validating new configuration..."<<endlog();
                         if ( root.empty() ) {
-                            Logger::log() << Logger::Error
-                                          << "Configuration was empty !" <<Logger::endl;
+                            log(Error)<< "Configuration was empty !" <<endlog();
                             valid = false;
                         }
                         PropertyBag::Names nams = root.list();
@@ -148,15 +146,13 @@ namespace Orocos
                             // Check if it is a propertybag.
                             Property<PropertyBag>* comp = root.getProperty<PropertyBag>(*it);
                             if ( comp == 0 ) {
-                                Logger::log() << Logger::Error
-                                              << "Property '"<< *it <<"' is not a PropertyBag." << Logger::endl;
+                                log(Error)<< "Property '"<< *it <<"' is not a PropertyBag." << endlog();
                                 valid = false;
                             }
                             // Check if we know this component.
                             TaskContext* c = this->getPeer( *it );
                             if ( !c ) {
-                                Logger::log() << Logger::Warning
-                                              << "Could not configure '"<< *it <<"': No such peer."<< Logger::endl;
+                                log(Warning)<< "Could not configure '"<< *it <<"': No such peer."<< endlog();
                                 valid = false;
                             }
                             // set PropFile name if present
@@ -173,13 +169,11 @@ namespace Orocos
                                 for (PropertyBag::Names::iterator pit= pnams.begin(); pit !=pnams.end(); pit++) {
                                     PortInterface* p = c->ports()->getPort(*pit);
                                     if ( !p ) {
-                                        Logger::log() << Logger::Error
-                                                      << "Component '"<< c->getName() <<"' does not have a Port '"<<*pit<<"'." << Logger::endl;
+                                        log(Error)<< "Component '"<< c->getName() <<"' does not have a Port '"<<*pit<<"'." << endlog();
                                         valid = false;
                                     }
                                     if ( ports->get().getProperty<std::string>(*pit) == 0) {
-                                        Logger::log() << Logger::Error
-                                                      << "Property '"<< *pit <<"' is not of type 'string'." << Logger::endl;
+                                        log(Error)<< "Property '"<< *pit <<"' is not of type 'string'." << endlog();
                                         valid = false;
                                     }
                                     // store the port
@@ -191,38 +185,35 @@ namespace Orocos
 
                             // Setup the connections from this
                             // component to the others.
-                            Property<PropertyBag>* peers = comp->get().getProperty<PropertyBag>("Peers");
-                            if ( peers != 0 ) {
-                                for (PropertyBag::Properties::iterator it= peers->get().getProperties().begin(); it != peers->get().getProperties().end();it++) {
-                                    if ( (*it)->getName() == "Peer" ) {
-                                        Property<std::string>* nm = Property<std::string>::narrow(*it);
-                                        if ( !nm ) {
-                                            Logger::log()<<Logger::Error<<"Property 'Peer' does not have type 'string'."<<Logger::endl;
-                                            valid = false;
-                                        }
-                                        if ( this->getPeer( nm->value() ) == 0 ) {
-                                            Logger::log()<<Logger::Error<<"No such Peer:"<<nm->value()<<Logger::endl;
-                                            valid = false;
-                                        }
+                            for (PropertyBag::iterator it= comp->value().begin(); it != comp->value().end();it++) {
+                                if ( (*it)->getName() == "Peer" ) {
+                                    Property<std::string>* nm = Property<std::string>::narrow(*it);
+                                    if ( !nm ) {
+                                        log(Error)<<"Property 'Peer' does not have type 'string'."<<endlog();
+                                        valid = false;
+                                    }
+                                    if ( this->getPeer( nm->value() ) == 0 ) {
+                                        log(Error)<<"No such Peer:"<<nm->value()<<endlog();
+                                        valid = false;
                                     }
                                 }
                             }
                         }
+                        
+                        
                         if ( !valid )
                             deleteProperties( root );
                     }
                 else
                     {
-                        Logger::log() << Logger::Error
-                                      << "Some error occured while parsing "<< configurationfile.rvalue() <<Logger::endl;
+                        log(Error)<< "Some error occured while parsing "<< configurationfile.rvalue() <<endlog();
                         failure = true;
                         deleteProperties( root );
                         conmap.clear();
                     }
             } catch (...)
                 {
-                    Logger::log() << Logger::Error
-                                  << "Uncaught exception in deserialise !"<< Logger::endl;
+                    log(Error)<< "Uncaught exception in deserialise !"<< endlog();
                     failure = true;
                 }
             delete demarshaller;
@@ -241,7 +232,7 @@ namespace Orocos
         {
             if ( root.empty() ) {
                 Logger::log() << Logger::Error
-                              << "No configuration loaded !" <<Logger::endl;
+                              << "No configuration loaded !" <<endlog();
                 return false;
             }
             PropertyBag::Names nams = root.list();
@@ -249,7 +240,7 @@ namespace Orocos
             // Load all property files into the components.
             for (PropertyBag::Names::iterator it= nams.begin(); it!=nams.end();it++) {
                 Property<PropertyBag>* comp = root.getProperty<PropertyBag>(*it);
-
+                
                 // set PropFile name if present
                 std::string filename = *it + ".cpf";
                 if ( comp->get().getProperty<std::string>("PropFile") )
@@ -262,7 +253,7 @@ namespace Orocos
                 if (!ret) {
                     log(Error) << "Failed to configure properties for component "<<*it<<endlog();
                 }
-                peer->disconnect();
+                //peer->disconnect();
             }
 
             // Create data port connections:
@@ -280,12 +271,12 @@ namespace Orocos
                     else
                         if ( (*p)->getPortType() == PortInterface::ReadPort )
                             reader = (*p)->clone();
-                    else
-                        if ( (*p)->getPortType() == PortInterface::ReadWritePort )
-                            if (reader == 0)
+                        else
+                            if ( (*p)->getPortType() == PortInterface::ReadWritePort )
+                                if (reader == 0)
                                 reader = (*p)->clone();
-                            else
-                                writer = (*p)->clone();
+                                else
+                                    writer = (*p)->clone();
                     ++p;
                 }
                 // Idea is: create a clone or anticlone of a port
@@ -316,24 +307,25 @@ namespace Orocos
                             log(Error) << "Port "<< (*p)->getName() << " has wrong type !"<<endlog();
                     } else
                         log(Info) << "Connected Port "<< (*p)->getName() <<" to connection " << it->first <<endlog();
-
+                    ++p;
                 }
                 // writer,reader was a clone or anticlone.
                 delete writer;
                 delete reader;
             }
 
-            // Setup the connections from each component to the others.
+            // Setup the connections from each component to the
+            // others.
             for (PropertyBag::Names::iterator nit= nams.begin(); nit!=nams.end();nit++) {
                 Property<PropertyBag>* comp = root.getProperty<PropertyBag>(*nit);
-                for (PropertyBag::Properties::iterator it= comp->get().getProperties().begin(); it!=comp->get().getProperties().end();it++) {
-                    if ( (*it)->getName() == "Peer" ) {
+                for (PropertyBag::iterator it= comp->value().begin(); it != comp->value().end();it++) {
+                    if((*it)->getName() == "Peer"){
                         Property<std::string>* nm = Property<std::string>::narrow(*it);
                         this->addPeer( comp->getName(), nm->value() );
                     }
                 }
-                
             }
+            
             return true;
         }
 
@@ -363,7 +355,7 @@ namespace Orocos
         {
             TaskContext* c = this->getPeer(name);
             if (!c) {
-                Logger::log()<<Logger::Error<<"No such peer to configure: "<<name<<Logger::endl;
+                log(Error)<<"No such peer to configure: "<<name<<endlog();
                 return false;
             }
             
