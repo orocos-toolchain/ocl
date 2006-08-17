@@ -66,7 +66,7 @@
       component in a given network, query it, send it commands,
       run programs etc.
     </para>
-    <section>Principle</section>
+    <section><title>Principle</title>
     <para>
       Each Orocos component has a standard interface of properties,
       events, commands etc. It is possible to query and use this interface
@@ -104,5 +104,6 @@
       maximum interactivity. In both views, the component network can be
       browsed.
     </para>
+  </section>
   </section>
 </article>

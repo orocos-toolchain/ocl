@@ -507,7 +507,7 @@ namespace Orocos
 
     TaskBrowser::TaskBrowser( TaskContext* _c )
         : GenericTaskContext("TaskBrowser"),
-          condition(0), command(0),
+          command(0),
           debug(0),
           line_read(0),
           lastc(0), storedname(""), storedline(-1)
@@ -556,7 +556,7 @@ namespace Orocos
                 cout << "Task "<<green<< taskcontext->getName() <<coloroff<< ". (Status of last Command : ";
                 if ( command == 0 )
                     cout << "none";
-                else if ( condition == 0 || condition->evaluate() ) // disposed or done
+                else if ( command->done() ) // disposed or done
                      cout <<green + "done";
                 else if ( command->valid() )
                     cout << blue+"busy";
@@ -565,13 +565,6 @@ namespace Orocos
                 else if ( command->accepted() )
                     cout << blue+"queued";
                 cout << coloroff << " )"; 
-                if ( condition != 0 && condition->evaluate() ) {
-                    // at this point the command is out of the Processor queue...
-                    // dispose condition, condition might evaluate an invalidated object,
-                    // like a deleted program or state machine.
-                    delete condition;
-                    condition = 0;
-                }
                 // This 'endl' is important because it flushes the whole output to screen of all
                 // processing that previously happened, which was using 'nl'.
                 cout << endl;
@@ -654,13 +647,9 @@ namespace Orocos
                          << " Can not track command status across tasks."<< Logger::endl;
             // memleak command...
             command = 0;
-            delete condition;
-            condition = 0;
         } else {
             delete command;
-            delete condition;
             command = 0;
-            condition = 0;
         }
         this->switchTaskContext( taskHistory.front() );
         lastc = 0;
@@ -749,13 +738,9 @@ namespace Orocos
                          << " Can not track command status across tasks."<< Logger::endl;
             // memleak it...
             command = 0;
-            delete condition;
-            condition = 0;
         } else {
             delete command;
-            delete condition;
             command = 0;
-            condition = 0;
         }
 
         // disconnect from current peers.
@@ -922,7 +907,7 @@ namespace Orocos
     {
         cout << "      Got :"<< comm <<nl;
 
-        OperationInterface* ops = taskcontext->getObject( comm );
+        OperationInterface* ops = context->getObject( comm );
         if ( ops ) // only object name was typed
             {
                 std::vector<std::string> methods = ops->commands()->getNames();
@@ -947,7 +932,6 @@ namespace Orocos
             return;
                     
         Parser _parser;
-        std::pair< CommandInterface*, ConditionInterface*> comcon;
 
         if (debug)
             cerr << "Trying ValueChange..."<<nl;
@@ -1028,25 +1012,21 @@ namespace Orocos
         if (debug)
             cerr << "Trying Command..."<<nl;
         try {
-            comcon = _parser.parseCommand( comm, context, true ); // create a dispatch command.
+            CommandInterface* com = _parser.parseCommand( comm, context, true ).first; // create a dispatch command.
             // check if it is a plain Action:
-            if ( comcon.first && dynamic_cast<DispatchInterface*>(comcon.first) == 0 ) {
+            if ( com && dynamic_cast<DispatchInterface*>(com) == 0 ) {
                 string prompt =" = ";
                 cout <<prompt<< setw(20)<<left;
-                cout << comcon.first->execute() << right;
-                delete comcon.first;
-                delete comcon.second;
+                cout << com->execute() << right;
+                delete com;
                 return;
             }
-           if ( condition && !condition->evaluate() ) {
+            if ( command && !command->executed() ) {
                 cerr << "Warning : previous command is not yet processed by Processor." <<nl;
-                delete condition;
             } else {
                 delete command;
-                delete condition;
             }
-            command = dynamic_cast<DispatchInterface*>(comcon.first);
-            condition = comcon.second;
+            command = dynamic_cast<DispatchInterface*>(com);
         } catch ( parse_exception& pe ) {
             if (debug)
                 cerr << "CommandParser parse_exception :"<<nl;
@@ -1065,9 +1045,7 @@ namespace Orocos
         if ( command->dispatch() == false ) {
             cerr << "Command not accepted by "<<context->getName()<<"'s Processor !" << nl;
             delete command;
-            delete condition;
             command = 0;
-            condition = 0;
             accepted = 0;
         }
     }
@@ -1166,10 +1144,15 @@ namespace Orocos
         cout << "  To switch to another task, type "<<comcol("cd <path-to-taskname>")<<nl;
         cout << "  and type "<<comcol("cd ..")<<" to go back to the previous task (History size is 20)."<<nl;
         cout << "  Pressing "<<keycol("tab")<<" multiple times helps you to complete your command."<<nl;
-        cout << "  It is not mandatory to switch to a task to interact with it, you can type the"<<nl;;
+        cout << "  It is not mandatory to switch to a task to interact with it, you can type the"<<nl;
         cout << "  peer-path to the task (dot-separated) and then type command or expression :"<<nl;
         cout << "     PeerTask.OtherTask.FinalTask.countTo(3) [enter] "<<nl;
         cout << "  Where 'countTo' is a method of 'FinalTask'."<<nl;
+        cout << "  The TaskBrowser starts by default 'In' the current component. In order to watch"<<nl;
+        cout << "  the TaskBrowser itself, type "<<comcol("leave")<<" You will notice that it"<<nl;
+        cout << "  has connected to the data ports of the visited component. Use "<<comcol("enter")<<" to enter"<<nl;
+        cout << "  the visited component again. The "<<comcol("cd")<<" command works transparantly in both"<<nl;
+        cout << "  modi."<<nl;
 
         cout << "  "<<titlecol("Task Context Info")<<nl;
         cout << "  To see the contents of a task, type "<<comcol("ls")<<nl;
@@ -1179,7 +1162,7 @@ namespace Orocos
         cout <<"  Command    : bool factor( int number )" <<nl;
         cout <<"   Factor a value into its primes." <<nl;
         cout <<"   number : The number to factor in primes." <<nl;
-        cout <<"  DataSource : bool isRunning( )" <<nl;
+        cout <<"  Method     : bool isRunning( )" <<nl;
         cout <<"   Is this GenericTaskContext started ?" <<nl;
         cout <<"  Method     : bool loadProgram( const& std::string Filename )" <<nl;
         cout <<"   Load an Orocos Program Script from a file." <<nl;
@@ -1210,8 +1193,8 @@ namespace Orocos
         cout << "  The prompt will inform you about the status of the last command you entered. "<<nl;
         cout << "  It is allowed to enter a new command while the previous is still busy. "<<nl;
 
-        cout <<titlecol("Methods and DataSources")<<nl;
-        cout << "  Methods and DataSources 'look' the same as commands, but they are evaluated"<<nl;
+        cout <<titlecol("Methods")<<nl;
+        cout << "  Methods 'look' the same as commands, but they are evaluated"<<nl;
         cout << "  immediately and print the result. An example could be :"<<nl;
         cout << "     someTask.bar.getNumberOfBeers(\"Palm\") [enter] "<<nl;
         cout << "   = 99" <<nl;
@@ -1382,25 +1365,42 @@ namespace Orocos
         } else {
             cout <<coloron<< "(none)" << coloroff<<nl;
         }
-
-        objlist = peer->getObjectList();
-        cout <<nl<< " Objects      : "<<coloron;
+        
+        // Print "this" interface (without detail) and then list objects...
+        cout <<nl<< " Interface    : "<<coloron;
+        
+        cout <<coloroff<<nl<< "  Methods      : "<<coloron;
+        objlist = peer->methods()->getNames();
         if ( !objlist.empty() ) {
             copy(objlist.begin(), objlist.end(), std::ostream_iterator<std::string>(cout, " "));
         } else {
-            cout << "(none)" <<coloroff <<nl;
+            cout << "(none)";
         }
-
-        cout <<coloroff<<nl<< " Events       : "<<coloron;
+        cout <<coloroff<<nl<< "  Commands     : "<<coloron;
+        objlist = peer->commands()->getNames();
+        if ( !objlist.empty() ) {
+            copy(objlist.begin(), objlist.end(), std::ostream_iterator<std::string>(cout, " "));
+        } else {
+            cout << "(none)";
+        }
+        cout <<coloroff<<nl<< "  Events       : "<<coloron;
         objlist = peer->events()->getEvents();
         if ( !objlist.empty() ) {
             copy(objlist.begin(), objlist.end(), std::ostream_iterator<std::string>(cout, " "));
         } else {
             cout << "(none)";
         }
-        cout << coloroff << nl;
 
-        cout << " Ports        : "<<coloron;
+        objlist = peer->getObjectList();
+        cout <<coloroff<<nl<<nl<< " Objects      : "<<nl;
+        if ( !objlist.empty() ) {
+            for(vector<string>::iterator it = objlist.begin(); it != objlist.end(); ++it)
+                cout <<coloron<< "  " << setw(14) << *it <<coloroff<< " ( "<< peer->getObject(*it)->getDescription() << " ) "<<nl;
+        } else {
+            cout <<coloron<< "(none)" <<coloroff <<nl;
+        }
+
+        cout <<coloroff<<nl<< " Ports        : "<<coloron;
         objlist = peer->ports()->getPortNames();
         if ( !objlist.empty() ) {
             copy(objlist.begin(), objlist.end(), std::ostream_iterator<std::string>(cout, " "));
@@ -1408,7 +1408,6 @@ namespace Orocos
             cout << "(none)";
         }
         cout << coloroff << nl;
-
 
         objlist = peer->scripting()->getPrograms();
         if ( !objlist.empty() ) {
