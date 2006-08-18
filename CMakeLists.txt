@@ -10,7 +10,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.2)
 #                                                 #
 ###################################################
 
-PROJECT(orocos-components)
+PROJECT(Orocos-Components)
 
 SET( VERSION 0.1 CACHE STRING "Version of Orocos Components" )
   MESSAGE( "Orocos Components version ${VERSION}" )
@@ -144,6 +144,9 @@ ADD_SUBDIRECTORY( deployment )
 MESSAGE("Selected Libraries: $ENV{LOCAL_LIBRARIES}")
 CONFIGURE_FILE( orocos-components.pc.in orocos-components.pc @ONLY)
 INSTALL_FILES( /lib/pkgconfig FILES orocos-components.pc)
+
+CONFIGURE_FILE(doxyFile.in doxyFile @ONLY)
+
 ###########################################################
 #                                                         #
 # Enable testing by including the Dart module             #
@@ -152,3 +155,13 @@ INSTALL_FILES( /lib/pkgconfig FILES orocos-components.pc)
 
 #INCLUDE(Dart)
 
+#############################
+#			    #
+# Building Doxygen documents#
+#                           #
+#############################
+
+IF(GENERATE_DOCUMENTATION)
+  EXEC_PROGRAM(doxygen ARGS doxyFile)
+ENDIF(GENERATE_DOCUMENTATION)
+  
