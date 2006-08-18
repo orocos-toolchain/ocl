@@ -131,7 +131,7 @@ INCLUDE(config/check_depend.cmake)
 INCLUDE(config/component_rules.cmake)
 
 #First unset the LOCAL_LIBRARIES
-SET(ENV{LOCAL_LIBRARIES} "")
+SET(ENV{SELECTED_LIBS} "")
 #LINK_DIRECTORIES( ${PROJ_BINARY_DIR}/taskbrowser ${PROJ_BINARY_DIR}/reporting ${PROJ_BINARY_DIR}/hardware ${PROJ_BINARY_DIR}/motion_control)
 ADD_SUBDIRECTORY( taskbrowser )
 ADD_SUBDIRECTORY( helloworld )
@@ -141,7 +141,8 @@ ADD_SUBDIRECTORY( motion_control )
 ADD_SUBDIRECTORY( viewer )
 ADD_SUBDIRECTORY( deployment )
 
-MESSAGE("Selected Libraries: $ENV{LOCAL_LIBRARIES}")
+MESSAGE("Selected Libraries: $ENV{SELECTED_LIBS}")
+SET(SELECTED_LIBS $ENV{SELECTED_LIBS})
 CONFIGURE_FILE( orocos-components.pc.in orocos-components.pc @ONLY)
 INSTALL_FILES( /lib/pkgconfig FILES orocos-components.pc)
 

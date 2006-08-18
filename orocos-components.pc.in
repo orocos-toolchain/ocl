@@ -7,5 +7,5 @@ Description: Orocos components
 Requires: 
 Version: 0.1.0
 Libs: -L${libdir} 
-      @LOCAL_LIBRARIES@
+      @SELECTED_LIBS@
 Cflags: -I${includedir}
