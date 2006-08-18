@@ -177,7 +177,8 @@ namespace Orocos
                                         valid = false;
                                     }
                                     // store the port
-                                    log(Debug)<<"storing Port: "<<c->getName()"."<<ports->get().getProperty<std::string>(*pit)->get()<<" in " << ports->get().getProperty<std::string>(*pit)->get() <<endlog();
+                                    log(Debug)<<"storing Port: "<<c->getName()<<"."<<ports->get().getProperty<std::string>(*pit)->get();
+                                    log(Debug)<<" in " << ports->get().getProperty<std::string>(*pit)->get() <<endlog();
                                     conmap[ports->get().getProperty<std::string>(*pit)->get()].ports.push_back( p );
                                 }
                             } else {
