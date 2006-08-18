@@ -29,6 +29,16 @@
 
 namespace Orocos
 {
+    /**
+     * This class implements a GenericTaskContext to use with the
+     * Kuka160 robot in the RoboticLab, PMA, dept. Mechanical
+     * Engineering, KULEUVEN. Since the hardware part is very specific
+     * for our setup, other people can only use the simulation
+     * version. But it can be a good starting point to create your own
+     * Robot Software Interface.
+     * 
+     */
+
   class Kuka160nAxesVelocityController : public RTT::GenericTaskContext
   {
   public:

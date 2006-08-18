@@ -1,0 +1,11 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+Name: orocos-components 
+Description: Orocos components 
+Requires: 
+Version: 0.1.0
+Libs: -L${libdir} 
+      @LOCAL_LIBRARIES@
+Cflags: -I${includedir}
