@@ -1,4 +1,5 @@
 //hardware interfaces
+#include <hardware/kuka/Kuka160nAxesVelocityController.hpp>
 #include <hardware/kuka/Kuka361nAxesVelocityController.hpp>
 #include <hardware/kuka/EmergencyStop.hpp>
 
@@ -15,6 +16,7 @@
 #include <motion_control/cartesian/CartesianComponents.hpp>
 
 //Kinematics component
+#include <kdl/kinfam/kuka160.hpp>
 #include <kdl/kinfam/kuka361.hpp>
 #include <kdl/toolkit.hpp>
 #include <kdl/kinfam/kinematicfamily_io.hpp>
@@ -32,21 +34,40 @@ using namespace std;
 int ORO_main(int argc, char* argv[])
 {
     Toolkit::Import( KDLToolkit );
-    
-    Kuka361nAxesVelocityController my_robot("Robot");
+
+    GenericTaskContext* my_robot = NULL;
+    KinematicFamily* kukakf = NULL;
+    if (argc > 1)
+        {
+            string s = argv[1];
+            if(s == "Kuka361"){
+                Logger::log()<<Logger::Warning<<"Choosing Kuka361"<<Logger::endl;
+                my_robot = new Kuka361nAxesVelocityController("Robot");
+                kukakf = new Kuka361();
+            }
+            else if(s == "Kuka160"){
+                Logger::log()<<Logger::Warning<<"Choosing Kuka160"<<Logger::endl;
+                my_robot = new Kuka160nAxesVelocityController("Robot");
+                kukakf = new Kuka160();
+            }
+        }
+    else{
+        Logger::log()<<Logger::Warning<<"Using Default Kuka160"<<Logger::endl;
+        my_robot = new Kuka160nAxesVelocityController("Robot");
+        kukakf = new Kuka160();
+    }
     
     NAxesPositionViewer viewer("viewer");
     
-    EmergencyStop _emergency(&my_robot);
+    EmergencyStop _emergency(my_robot);
     
     /// Creating Event Handlers
-    _emergency.addEvent(&my_robot,"driveOutOfRange");
+    _emergency.addEvent(my_robot,"driveOutOfRange");
     //_emergency.addEvent(&my_robot,"positionOutOfRange");
 
   
     //KinematicsComponents
-    KinematicFamily* kukakf = new Kuka361();
-    
+        
     //CartesianComponents
     CartesianSensor sensor("CartesianSensor",kukakf);
     CartesianGeneratorPos generator("CartesianGenerator");
@@ -54,8 +75,8 @@ int ORO_main(int argc, char* argv[])
     CartesianEffectorVel effector("CartesianEffector",kukakf);
   
     //connecting sensor and effector to hardware
-    my_robot.connectPeers(&sensor);
-    my_robot.connectPeers(&effector);
+    my_robot->connectPeers(&sensor);
+    my_robot->connectPeers(&effector);
 
     //connecting components to eachother
     sensor.connectPeers(&generator);
@@ -63,7 +84,7 @@ int ORO_main(int argc, char* argv[])
     sensor.connectPeers(&effector);
     controller.connectPeers(&generator);
     controller.connectPeers(&effector);
-    viewer.connectPeers(&my_robot);
+    viewer.connectPeers(my_robot);
     
     //Reporting
     FileReporting reporter("Reporting");
@@ -76,7 +97,7 @@ int ORO_main(int argc, char* argv[])
     GenericTaskContext super("CartesianTest");
     
     // Link components to supervisor
-    super.connectPeers(&my_robot);
+    super.connectPeers(my_robot);
     super.connectPeers(&reporter);
     super.connectPeers(&sensor);    
     super.connectPeers(&generator); 
@@ -93,7 +114,7 @@ int ORO_main(int argc, char* argv[])
     super.loadStateMachine("cpf/states.osd");
 
     // Creating Tasks
-    NonPreemptibleActivity _kukaTask(0.01, my_robot.engine() ); 
+    NonPreemptibleActivity _kukaTask(0.01, my_robot->engine() ); 
     NonPreemptibleActivity _sensorTask(0.01, sensor.engine() ); 
     NonPreemptibleActivity _generatorTask(0.01, generator.engine() ); 
     NonPreemptibleActivity _controllerTask(0.01, controller.engine() ); 
@@ -113,6 +134,8 @@ int ORO_main(int argc, char* argv[])
     browser.loop();
     
     delete kukakf;
+    delete my_robot;
+    
     
     return 0;
 }

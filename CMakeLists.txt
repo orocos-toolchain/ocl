@@ -130,8 +130,9 @@ ENDIF ( NOT WROTE_CONFIG_H )
 INCLUDE(config/check_depend.cmake)
 INCLUDE(config/component_rules.cmake)
 
-
-LINK_DIRECTORIES( ${PROJ_BINARY_DIR}/taskbrowser ${PROJ_BINARY_DIR}/reporting ${PROJ_BINARY_DIR}/hardware ${PROJ_BINARY_DIR}/motion_control)
+#First unset the LOCAL_LIBRARIES
+SET(ENV{LOCAL_LIBRARIES} "")
+#LINK_DIRECTORIES( ${PROJ_BINARY_DIR}/taskbrowser ${PROJ_BINARY_DIR}/reporting ${PROJ_BINARY_DIR}/hardware ${PROJ_BINARY_DIR}/motion_control)
 ADD_SUBDIRECTORY( taskbrowser )
 ADD_SUBDIRECTORY( helloworld )
 ADD_SUBDIRECTORY( reporting )
@@ -139,6 +140,10 @@ ADD_SUBDIRECTORY( hardware )
 ADD_SUBDIRECTORY( motion_control ) 
 ADD_SUBDIRECTORY( viewer )
 ADD_SUBDIRECTORY( deployment )
+
+MESSAGE("Selected Libraries: $ENV{LOCAL_LIBRARIES}")
+CONFIGURE_FILE( orocos-components.pc.in orocos-components.pc @ONLY)
+INSTALL_FILES( /lib/pkgconfig FILES orocos-components.pc)
 ###########################################################
 #                                                         #
 # Enable testing by including the Dart module             #
