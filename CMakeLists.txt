@@ -145,7 +145,7 @@ MESSAGE("Selected Libraries: $ENV{LOCAL_LIBRARIES}")
 CONFIGURE_FILE( orocos-components.pc.in orocos-components.pc @ONLY)
 INSTALL_FILES( /lib/pkgconfig FILES orocos-components.pc)
 
-CONFIGURE_FILE(doxyFile.in doxyFile @ONLY)
+CONFIGURE_FILE(Doxyfile.in Doxyfile @ONLY)
 
 ###########################################################
 #                                                         #
@@ -162,6 +162,6 @@ CONFIGURE_FILE(doxyFile.in doxyFile @ONLY)
 #############################
 
 IF(GENERATE_DOCUMENTATION)
-  EXEC_PROGRAM(doxygen ARGS doxyFile)
+  EXEC_PROGRAM(doxygen ARGS Doxyfile)
 ENDIF(GENERATE_DOCUMENTATION)
   
