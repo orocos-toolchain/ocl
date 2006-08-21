@@ -7,7 +7,7 @@ namespace Orocos
     {
     public:
         EmergencyStop(RTT::GenericTaskContext* axes)
-            : _axes(axes)
+            : _axes(axes),fired(false)
         {
             _stop = axes->commands()->getCommand<bool(void)>("stopAllAxes");
             _lock = axes->commands()->getCommand<bool(void)>("lockAllAxes");
@@ -36,17 +36,21 @@ namespace Orocos
             return retval;
         };
         void callback(std::string message) {
-            _stop();
-            _lock();
-            log(Error) << message <<endlog();
-            log(Error) << "---------------------------------------------" << endlog();
-            log(Error) << "--------- EMERGENCY STOP --------------------" << endlog();
-            log(Error) << "---------------------------------------------" << endlog();
+            if(!fired){
+                _stop();
+                _lock();
+                log(Error) << message <<endlog();
+                log(Error) << "---------------------------------------------" << endlog();
+                log(Error) << "--------- EMERGENCY STOP --------------------" << endlog();
+                log(Error) << "---------------------------------------------" << endlog();
+                fired=true;
+            }
         };
     private:
         RTT::GenericTaskContext *_axes;
         RTT::Command<bool(void)> _stop;
         RTT::Command<bool(void)> _lock;
         std::vector<RTT::Handle> _handlers;
+        bool fired;
     }; // class
 }//namespace
