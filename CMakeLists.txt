@@ -21,8 +21,8 @@ IF(NOT CMAKE_INSTALL_PREFIX)
   MESSAGE( "Setting installation directory to ${CMAKE_INSTALL_PREFIX}" )
 ENDIF(NOT CMAKE_INSTALL_PREFIX)
 
-SET( PROJ_SOURCE_DIR ${orocos-components_SOURCE_DIR} )
-SET( PROJ_BINARY_DIR ${orocos-components_BINARY_DIR} )
+SET( PROJ_SOURCE_DIR ${Orocos-Components_SOURCE_DIR} )
+SET( PROJ_BINARY_DIR ${Orocos-Components_BINARY_DIR} )
 
 SET( OROCOS_TARGET gnulinux CACHE STRING "The Operating System target.")
 
