@@ -910,6 +910,7 @@ namespace Orocos
         OperationInterface* ops = context->getObject( comm );
         if ( ops ) // only object name was typed
             {
+                cout << nl << "Printing Interface of '"<< coloron << ops->getName() <<coloroff <<"' :"<<nl<<nl;
                 std::vector<std::string> methods = ops->commands()->getNames();
                 std::for_each( methods.begin(), methods.end(), boost::bind(&TaskBrowser::printCommand, this, _1, ops) );
                 methods = ops->methods()->getNames();
