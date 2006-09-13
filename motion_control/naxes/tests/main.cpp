@@ -12,7 +12,6 @@
 
 //nAxes components
 #include <motion_control/naxes/nAxesComponents.hpp>
-#include <viewer/naxespositionviewer.hpp>
 
 //#include <rtt/Activities.hpp>
 #include <rtt/GenericTaskContext.hpp>
@@ -65,50 +64,47 @@ int ORO_main(int argc, char* argv[])
   nAxesControllerPosVel controllerPosVel("nAxesControllerPosVel",6);
   nAxesControllerVel controllerVel("nAxesControllerVel",6);
   nAxesEffectorVel effector("nAxesEffectorVel",6);
-  NAxesPositionViewer viewer("Viewer");
   
   //connecting sensor and effector to hardware
-  my_robot->connectPeers(&sensor);
-  my_robot->connectPeers(&effector);
-  my_robot->connectPeers(&viewer);
+  connectPorts(&sensor,my_robot);
+  connectPorts(&effector,my_robot);
   
   //connection naxes components to each other
-  generatorPos.connectPeers(&sensor);
-  generatorVel.connectPeers(&sensor);
-  controllerPos.connectPeers(&sensor);
-  controllerPosVel.connectPeers(&sensor);
-  controllerVel.connectPeers(&sensor);
-  controllerPos.connectPeers(&generatorPos);
-  controllerPosVel.connectPeers(&generatorPos);
-  controllerVel.connectPeers(&generatorVel);
-  effector.connectPeers(&controllerPos);
-  effector.connectPeers(&controllerPosVel);
-  effector.connectPeers(&controllerVel);
+  connectPorts(&sensor,&generatorPos);
+  connectPorts(&sensor,&generatorVel);
+  connectPorts(&sensor,&controllerPos);
+  connectPorts(&sensor,&controllerPosVel);
+  connectPorts(&sensor,&controllerVel);
+  connectPorts(&generatorPos,&controllerPos);
+  connectPorts(&generatorPos,&controllerPosVel);
+  connectPorts(&generatorVel,&controllerVel);
+  connectPorts(&controllerPos,&effector);
+  connectPorts(&controllerPosVel,&effector);
+  connectPorts(&controllerVel,&effector);
     
   //Reporting
   FileReporting reporter("Reporting");
-  reporter.connectPeers(&sensor);
-  reporter.connectPeers(&generatorPos);
-  reporter.connectPeers(&generatorVel);
-  reporter.connectPeers(&controllerPos);
-  reporter.connectPeers(&controllerPosVel);
-  reporter.connectPeers(&controllerVel);
-  reporter.connectPeers(&effector);  
+  connectPorts(&reporter,&sensor);
+  connectPorts(&reporter,&generatorPos);
+  connectPorts(&reporter,&generatorVel);
+  connectPorts(&reporter,&controllerPos);
+  connectPorts(&reporter,&controllerPosVel);
+  connectPorts(&reporter,&controllerVel);
+  connectPorts(&reporter,&effector);  
 
   //Create supervising TaskContext
   GenericTaskContext super("nAxes");
   
   // Link components to supervisor
-  super.connectPeers(my_robot);
-  super.connectPeers(&reporter);
-  super.connectPeers(&sensor);    
-  super.connectPeers(&generatorPos); 
-  super.connectPeers(&generatorVel); 
-  super.connectPeers(&controllerPos);
-  super.connectPeers(&controllerPosVel);
-  super.connectPeers(&controllerVel);
-  super.connectPeers(&effector);
-  super.connectPeers(&viewer);
+  super.addPeer(my_robot);
+  super.addPeer(&reporter);
+  super.addPeer(&sensor);    
+  super.addPeer(&generatorPos); 
+  super.addPeer(&generatorVel); 
+  super.addPeer(&controllerPos);
+  super.addPeer(&controllerPosVel);
+  super.addPeer(&controllerVel);
+  super.addPeer(&effector);
   
   // Load programs in supervisor
   super.loadProgram("cpf/program_calibrate_offsets.ops");
@@ -117,8 +113,14 @@ int ORO_main(int argc, char* argv[])
   // Load StateMachine in supervisor
   super.loadStateMachine("cpf/states.osd");
 
-    // Creating Tasks
+  // Creating Tasks
+#if (defined OROPKG_OS_LXRT)
   NonPreemptibleActivity _kukaTask(0.002, my_robot->engine() ); 
+  PeriodicActivity superTask(1,0.002,super.engine());
+#else
+  NonPreemptibleActivity _kukaTask(0.01, my_robot->engine() ); 
+  PeriodicActivity superTask(1,0.01,super.engine());
+#endif
   NonPreemptibleActivity _sensorTask(0.01, sensor.engine() ); 
   NonPreemptibleActivity _generatorPosTask(0.01, generatorPos.engine() ); 
   NonPreemptibleActivity _generatorVelTask(0.01, generatorVel.engine() ); 
@@ -127,15 +129,12 @@ int ORO_main(int argc, char* argv[])
   NonPreemptibleActivity _controllerVelTask(0.01, controllerVel.engine() ); 
   NonPreemptibleActivity _effectorTask(0.01, effector.engine() ); 
   PeriodicActivity reportingTask(2,0.1,reporter.engine());
-  PeriodicActivity superTask(1,0.002,super.engine());
-  PeriodicActivity _viewerTask(1,0.01,viewer.engine());
   
   TaskBrowser browser(&super);
   browser.setColorTheme( TaskBrowser::whitebg );
   
   superTask.start();
   _kukaTask.start();
-  _viewerTask.start();
   
   //Load Reporterconfiguration and start Reporter
   //reporter.load();

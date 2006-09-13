@@ -94,6 +94,7 @@ namespace Orocos
                 log(Error)<< "No such peer: "<<to<<endlog();
                 return false;
             }
+            t1->connectPorts(t2);
             return t1->addPeer(t2);
         }
 
