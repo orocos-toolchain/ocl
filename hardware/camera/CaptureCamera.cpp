@@ -16,7 +16,6 @@
 //  
 
 #include "CaptureCamera.hpp"
-#include <rtt/TemplateFactories.hpp>
 #include <rtt/Command.hpp>
 #include <libdc1394/dc1394_control.h>
 
@@ -137,8 +136,8 @@ namespace Orocos
       _timestamp = TimeService::Instance()->ticksGet();
     }
     
-    _capture_time.data()->Set(TimeService::Instance()->ticksGet());
-    _image.data()->Set(*cvQueryFrame(_capture));
+    _capture_time.Set(TimeService::Instance()->ticksGet());
+    _image.Set(*cvQueryFrame(_capture));
     
     if(_show_image.value())
       cvShowImage(_image.getName().c_str(),&_image.Get());

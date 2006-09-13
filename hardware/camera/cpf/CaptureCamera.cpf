@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE properties SYSTEM "cpf.dtd">
 <properties>
-  <simple name="mode" type="long"><description>Capture Mode</description><value>69</value></simple>
+  <simple name="mode" type="long"><description>Capture Mode</description><value>70</value></simple>
   <simple name="shutter" type="long"><description>Capture Shutter</description><value>500</value></simple>
   <simple name="gain" type="long"><description>Capture Gain</description><value>200</value></simple>
-  <simple name="convert" type="long"><description>Capture Convert</description><value>0</value></simple>
-  <simple name="fps" type="double"><description>Capture Framerate</description><value>60</value></simple>
+  <simple name="convert" type="long"><description>Capture Convert</description><value>1</value></simple>
+  <simple name="fps" type="double"><description>Capture Framerate</description><value>15</value></simple>
   <simple name="show_time" type="boolean"><description>Show Capture times</description><value>1</value></simple>
   <simple name="show_image" type="boolean"><description>Show Captured image</description><value>1</value></simple>
 </properties>

@@ -71,7 +71,7 @@ ELSE ( HIGHGUI )
 ENDIF ( HIGHGUI )
 
 # Check for OpenCV-0.9.7
-INCLUDE (${PROJ_SOURCE_DIR}/config/FindOpencv7.cmake)
+INCLUDE (${PROJ_SOURCE_DIR}/config/FindOpenCV.cmake)
 IF ( OPENCV7 )
     MESSAGE("-- Looking for OpenCV-0.9.7 - found")
 ELSE ( OPENCV7 )
