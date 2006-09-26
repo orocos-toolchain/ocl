@@ -75,16 +75,16 @@ int ORO_main(int argc, char* argv[])
     CartesianEffectorVel effector("CartesianEffector",kukakf);
   
     //connecting sensor and effector to hardware
-    my_robot->connectPeers(&sensor);
-    my_robot->connectPeers(&effector);
+    my_robot->connectPorts(&sensor);
+    my_robot->connectPorts(&effector);
 
     //connecting components to eachother
-    sensor.connectPeers(&generator);
-    sensor.connectPeers(&controller);
-    sensor.connectPeers(&effector);
-    controller.connectPeers(&generator);
-    controller.connectPeers(&effector);
-    viewer.connectPeers(my_robot);
+    sensor.connectPorts(&generator);
+    sensor.connectPorts(&controller);
+    sensor.connectPorts(&effector);
+    controller.connectPorts(&generator);
+    controller.connectPorts(&effector);
+    viewer.connectPorts(my_robot);
     
     //Reporting
     FileReporting reporter("Reporting");
@@ -132,10 +132,13 @@ int ORO_main(int argc, char* argv[])
     
     // Start the console reader.
     browser.loop();
-    
+
+    viewerTask.stop();
+    _kukaTask.stop();
+    superTask.stop();
+        
     delete kukakf;
     delete my_robot;
-    
-    
+   
     return 0;
 }
