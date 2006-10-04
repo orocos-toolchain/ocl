@@ -27,9 +27,9 @@ namespace Orocos
   
   CaptureCamera::CaptureCamera(string name,string propertyfile)
     :GenericTaskContext(name),
-     _propertyfile(propertyfile),
      _image("RawImage"),
      _capture_time("CaptureTimestamp"),
+     _newImage("updateImage",&CaptureCamera::updateImage,&CaptureCamera::updateImageFinished, this),
      _capture_mode("mode","Capture Mode",MODE_640x480_MONO),
      _capture_shutter("shutter","Capture Shutter",500),
      _capture_gain("gain","Capture Gain",200),
@@ -37,6 +37,7 @@ namespace Orocos
      _capture_fps("fps","Capture Framerate",30),
      _show_time("show_time","True if i have to log capture times",false),
      _show_image("show_image","True if i have to show captured image",false),
+     _propertyfile(propertyfile),
      _update(false)
   {
     //    TemplateMethodFactory<CaptureCamera> _my_methodfactory = newMethodFactory( this );
@@ -59,8 +60,8 @@ namespace Orocos
     //Adding command
     //==============
 
-    this->commands()->addCommand( command("updateImage",&CaptureCamera::updateImage,&CaptureCamera::updateImageFinished, this),"update image in port");
-    
+    this->commands()->addCommand( &_newImage,"Grab new image and store in DataPort");
+        
   }
   
   CaptureCamera::~CaptureCamera()

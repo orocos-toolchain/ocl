@@ -33,12 +33,12 @@ namespace Orocos
     _LaserInput(nr_chan),
 #endif
     _nr_chan(nr_chan),
-    _simulation_values("sim_values","Value used for simulation"),
-    _volt2m("volt2m","Convert Factor from volt to m"),
-    _offsets("offsets","Offset in m"),
-    _lowerLimits("low_limits","LowerLimits of the distance sensor"),
-    _upperLimits("up_limits","UpperLimits of the distance sensor"),
-    _distances("LaserDistance"),
+    _simulation_values("sim_values","Value used for simulation",vector<double>(nr_chan,0)),
+    _volt2m("volt2m","Convert Factor from volt to m",vector<double>(nr_chan,0)),
+    _offsets("offsets","Offset in m",vector<double>(nr_chan,0)),
+    _lowerLimits("low_limits","LowerLimits of the distance sensor",vector<double>(nr_chan,0)),
+    _upperLimits("up_limits","UpperLimits of the distance sensor",vector<double>(nr_chan,0)),
+    _distances("LaserDistance",vector<double>(nr_chan,0)),
     _distanceOutOfRange("distanceOutOfRange"),
     _measurement(nr_chan),
     _distances_local(nr_chan),
@@ -106,22 +106,25 @@ namespace Orocos
     return true;
   }
     
-  void LaserSensor::update()
-  {
+    void LaserSensor::update()
+    {
 #if defined (OROPKG_DEVICE_DRIVERS_COMEDI)
-    for(unsigned int i = 0 ; i<_nr_chan;i++){
-      _measurement[i] = _LaserInput[i]->value();
-      _distances_local[i] = _volt2m.value()[i]*_measurement[i]+_offsets.value()[i];
-    }
+        for(unsigned int i = 0 ; i<_nr_chan;i++){
+            _measurement[i] = _LaserInput[i]->value();
+            _distances_local[i] = _volt2m.value()[i]*_measurement[i]+_offsets.value()[i];
+            if(_distances_local[i]<_lowerLimits.value()[i]||
+               _distances_local[i]>_upperLimits.value()[i])
+                _distanceOutOfRange(i,_distances_local[i]);
+        }
 #else
-    _distances_local = _simulation_values.value();
+        _distances_local = _simulation_values.value();
 #endif
-    _distances.Set(_distances_local);
-  }
-  
-  void LaserSensor::shutdown()
-  {
-    writeProperties(_propertyfile);
-  }
+        _distances.Set(_distances_local);
+    }
+    
+    void LaserSensor::shutdown()
+    {
+        writeProperties(_propertyfile);
+    }
 }//namespace
 

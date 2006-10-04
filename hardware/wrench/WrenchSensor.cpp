@@ -29,6 +29,15 @@ namespace Orocos
     : RTT::GenericTaskContext(name),
       outdatPort("WrenchData"),
       maximumLoadEvent("maximumLoadEvent"), 
+      _maxMeasurement( "maxMeasurement", &WrenchSensor::maxMeasurement, this),
+      _minMeasurement( "minMeasurement", &WrenchSensor::minMeasurement, this),
+      _zeroMeasurement( "zeroMeasurement", &WrenchSensor::zeroMeasurement, this),
+      _chooseFilter( "chooseFilter", &WrenchSensor::chooseFilter,
+                     &WrenchSensor::chooseFilterDone, this),
+      _setOffset( "setOffset", &WrenchSensor::setOffset,
+                  &WrenchSensor::setOffsetDone, this),
+      _addOffset( "addOffset", &WrenchSensor::addOffset,
+                  &WrenchSensor::setOffsetDone, this),
       _filterToReadFrom(6),
       _dsp(DSP),
       _propertyfile(propertyfile),
@@ -47,26 +56,13 @@ namespace Orocos
     _writeBuffer = new Wrench(Wrench::Zero());
     _offset.value() = Wrench::Zero();
     
-    this->methods()->addMethod( method( "minMeasurement", &WrenchSensor::minMeasurement, this), 
-				"Gets the minimum measurement value."  );
-    
-    this->methods()->addMethod( method( "maxMeasurement", &WrenchSensor::maxMeasurement, this), 
-				"Gets the maximum measurement value."  );
-    
-    this->methods()->addMethod( method( "zeroMeasurement", &WrenchSensor::zeroMeasurement, this), 
-				"Gets the zero measurement value."  );
-    
-    this->commands()->addCommand( command( "chooseFilter", &WrenchSensor::chooseFilter,
-					   &WrenchSensor::chooseFilterDone, this),
-				  "Command to choose a different filter","p","periodValue"  );	
-    
-    this->commands()->addCommand( command( "setOffset", &WrenchSensor::setOffset,
-					   &WrenchSensor::setOffsetDone, this),
-				  "Command to set the zero offset","o","offset vector"  );	
-    
-    this->commands()->addCommand( command( "addOffset", &WrenchSensor::addOffset,
-					   &WrenchSensor::setOffsetDone, this),
-				  "Command to set the zero offset","o","offset vector"  );	
+    this->methods()->addMethod( &_minMeasurement, "Gets the minimum measurement value."  );
+    this->methods()->addMethod( &_maxMeasurement, "Gets the maximum measurement value."  );
+    this->methods()->addMethod( &_zeroMeasurement, "Gets the zero measurement value."  );
+
+    this->commands()->addCommand( &_chooseFilter, "Command to choose a different filter","p","periodValue"  );	
+    this->commands()->addCommand( &_setOffset, "Command to set the zero offset","o","offset wrench"  );	
+    this->commands()->addCommand( &_addOffset, "Command to add an offset","o","offset wrench"  );	
     
     this->events()->addEvent(&maximumLoadEvent, "Maximum Load","message","Information about event");
     

@@ -32,50 +32,60 @@
 #include <rtt/dev/AnalogInput.hpp>
 #endif
 
-namespace Orocos
-{
-    
-  class LaserSensor : public RTT::GenericTaskContext
-  {
-  public:
+namespace Orocos {
     /**
-     * Construct an interface to the automated Laser
-     * initialising a link to the digital IO PCI cards
+     * This class implements a TaskContext which construct an
+     * interface to the automated Laser initialising a link to the
+     * digital IO PCI cards. It can also be used in simulation if the
+     * comedi-device drivers were not available during compilation of orocos.
      */
-    LaserSensor(std::string name,unsigned int nr_chan,std::string propertyfilename="cpf/LaserSensor.cpf");
-    virtual~LaserSensor();
-    
-    virtual bool startup();
-    virtual void update();
-    virtual void shutdown();
-    
-    //double getDistance(int channel);
+    class LaserSensor : public RTT::GenericTaskContext {
+    public:
+        /** 
+         * Constructor of the class
+         * 
+         * @param name name of the TaskContext
+         * @param nr_chan nr of channels that should be read
+         * @param propertyfilename location of the
+         * propertyfile. Default: cpf/LaserSensor.cpf
+         * 
+         */
+        LaserSensor(std::string name,unsigned int nr_chan,std::string propertyfilename="cpf/LaserSensor.cpf");
+        virtual~LaserSensor();
         
-  private:
+        virtual bool startup();
+        virtual void update();
+        virtual void shutdown();
+    
+        //double getDistance(int channel);
+        
+    private:
 #if defined (OROPKG_DEVICE_DRIVERS_COMEDI)
-    RTT::ComediDevice* _comediDev_NI6024; //NI-6024 for analog in
-    RTT::ComediSubDeviceAIn* _comediSubdevAIn;
-    std::vector<RTT::AnalogInput<unsigned int>*> _LaserInput;
+        RTT::ComediDevice* _comediDev_NI6024; //NI-6024 for analog in
+        RTT::ComediSubDeviceAIn* _comediSubdevAIn;
+        std::vector<RTT::AnalogInput<unsigned int>*> _LaserInput;
 #endif
     
-    unsigned int _nr_chan;
-    
-    RTT::Property<std::vector<double> > _simulation_values;
-    RTT::Property<std::vector<double> > _volt2m;
-    RTT::Property<std::vector<double> > _offsets;
-    RTT::Property<std::vector<double> > _lowerLimits;
-    RTT::Property<std::vector<double> > _upperLimits;
-    
-    RTT::WriteDataPort<std::vector<double> > _distances;
-    
-    RTT::Event< void(int,double)>  _distanceOutOfRange;
-    RTT::EventC _outOfRangeEvent;
-    
-    std::vector<double> _measurement, _distances_local;
-    std::string _propertyfile;
-    
-    
-   }; // class
+        unsigned int _nr_chan;
+    protected:
+        /// values which should be used in simulation
+        RTT::Property<std::vector<double> > _simulation_values;
+        /// Conversion factor from volts to meters
+        RTT::Property<std::vector<double> > _volt2m;
+        /// Offset of measurement in meters
+        RTT::Property<std::vector<double> > _offsets;
+        /// lower limits of measurements, fires _distanceOutOfRange event
+        RTT::Property<std::vector<double> > _lowerLimits;
+        /// upper limits of measurements, fires _distanceOutOfRange event
+        RTT::Property<std::vector<double> > _upperLimits;
+        /// Dataport which contains the measurements
+        RTT::WriteDataPort<std::vector<double> > _distances;
+        /// Event which is fired if the distance is out of range
+        RTT::Event< void(int,double)>  _distanceOutOfRange;
+    private:
+        std::vector<double> _measurement, _distances_local;
+        std::string _propertyfile;
+    }; // class
 } // namespace
 
 #endif

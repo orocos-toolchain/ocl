@@ -9,6 +9,7 @@
 #include <rtt/GenericTaskContext.hpp>
 #include <rtt/Ports.hpp>
 #include <rtt/Event.hpp>
+#include <rtt/Command.hpp>
 #include <rtt/Properties.hpp>
 
 #if (defined (OROPKG_OS_LXRT) && defined (OROPKG_DEVICE_DRIVERS_COMEDI))
@@ -53,16 +54,11 @@ namespace Orocos
       Kuka160nAxesVelocityController(std::string name,std::string propertyfilename="cpf/Kuka160nAxesVelocityController.cpf");
       virtual ~Kuka160nAxesVelocityController();
     
-  protected:  
-      //
-      // Members implementing the component interface
-      //
-    
-      //
-      // COMMANDS :
-      //
-    
+
+  protected:
       /** 
+       * Command to start an axis .
+       *
        * Sets the axis in the DRIVEN state. Only possible if the axis
        * is int the STOPPED state. If succesfull the drive value of
        * the axis is setted to zero and will be updated periodically
@@ -72,18 +68,20 @@ namespace Orocos
        * 
        * @return Can only succeed if the axis was in the DRIVEN state
        */
-      virtual bool startAxis(int axis);
-      virtual bool startAxisCompleted(int axis) const;
-    
-      /** 
+      Command<bool(int)> _startAxis; 
+      
+      /**
+       * Command to start all axes .
+       *
        * Identical to calling startAxis(int axis) on all axes.
        *  
        * @return true if all Axes could be started.
        */
-      virtual bool startAllAxes();
-      virtual bool startAllAxesCompleted() const;
-    
+      Command<bool(void)> _startAllAxes; 
+      
       /**
+       * Command to stop an axis .
+       *
        * Sets the drive value to zero and changes to the STOP
        * state. Only possible if axis is in the DRIVEN state. In the
        * stop state, the axis does not listen and write to its 
@@ -93,32 +91,35 @@ namespace Orocos
        *
        * @return false if in wrong state or already stopped.
        */
-      virtual bool stopAxis(int axis);
-      virtual bool stopAxisCompleted(int axis) const;
+      Command<bool(int)> _stopAxis; 
       
-      /**
+      /** Command to stop all axes.
+       *
        * Identical to calling stopAxis(int axis) on all axes.
        */
-      virtual bool stopAllAxes();
-      virtual bool stopAllAxesCompleted() const;
-    
+      Command<bool(void)> _stopAllAxes; 
+      
       /** 
+       * Command to unlock an axis .
+       *
        * Activates the brake of the axis.  Only possible in the STOPPED state.
        * 
        * @param axis nr of the axis to lock
        * 
        * @return false if in wrong state or already locked.
        */
-      virtual bool lockAxis(int axis);
-      virtual bool lockAxisCompleted(int axis) const;
-    
-      /**
+      Command<bool(int)> _unlockAxis; 
+
+      /** 
+       * Command to unlock all axes 
+       *
        * identical to calling lockAxis(int axis) on all axes
        */
-      virtual bool lockAllAxes();
-      virtual bool lockAllAxesCompleted() const;
-    
-      /**
+      Command<bool(void)> _unlockAllAxes;
+      
+      /** 
+       * Command to lock an axis.
+       *
        * Releases the brake of the axis.  Only possible in the LOCKED
        * state.
        * 
@@ -126,16 +127,36 @@ namespace Orocos
        * 
        * @return false if in wrong state or already locked.
        */
-      virtual bool unlockAxis(int axis);
-      virtual bool unlockAxisCompleted(int axis) const;
-    
-      /**
+      Command<bool(int)> _lockAxis; 
+
+      /** 
+       * Command to lock all axes .
+       *
        * identical to unlockAxis(int axis) on all axes;
        */
-      virtual bool unlockAllAxes();
-      virtual bool unlockAllAxesCompleted() const;
-    
+      Command<bool(void)> _lockAllAxes; 
+
+      /**
+       * Command to prepare robot for use.
+       *
+       * It is needed to activate the hardware controller of the
+       * robot. 
+       * 
+       * @return Will only be true if the hardware controller is ready
+       * and the emergency stops are released. 
+       *
+       */
+      Command<bool(void)> _prepareForUse; 
+
       /** 
+       * Command to Shutdown the hardware controller of the robot.
+       * 
+       */
+      Command<bool(void)> _prepareForShutdown;
+
+      /**
+       * Command to add a drive offset to an axis.
+       *
        * Adds an offset to the _driveValue of axis and updates the
        * _driveOffset value.
        * 
@@ -143,42 +164,19 @@ namespace Orocos
        * @param offset offset value in fysical units
        * 
        */
-      virtual bool addDriveOffset(int axis,double offset);
-      virtual bool addDriveOffsetCompleted(int axis) const;
-      
-      /** 
+      Command<bool(int,double)> _addDriveOffset;
+
+      /**
+       * Command to set the position of an axis to its initial
+       * position.
+       *
        * Sets the _positionValue to the _initialPosition from the
        * property-file. This is needed because the Kuka160 needs to be homed.
        * 
        * @param axis nr of axis
        */
-      virtual bool initPosition(int axis);
-      virtual bool initPositionCompleted(int axis) const;
-    
-      /** 
-       * Command to prepare the robot for use. It is needed to
-       * activate the hardware controller of the robot.
-       * 
-       */
-      virtual bool prepareForUse();
-      /** 
-       * Completion Condition of prepareForUse(). Will only be true if
-       * the hardware controller is ready and the emergency stops are released.
-       *
-       */
-      virtual bool prepareForUseCompleted() const;
-      /** 
-       * Command to Shutdown the hardware controller of the robot.
-       * 
-       */
-      virtual bool prepareForShutdown();
-      virtual bool prepareForShutdownCompleted() const;
-    
-  private:
-      /**
-       * The Dataports: 
-       */
-    
+      Command<bool(int)>  _initPosition; 
+
       /**
        * vector of ReadDataPorts which contain the output velocities
        * of the axes.  
@@ -199,11 +197,6 @@ namespace Orocos
        */
       std::vector<RTT::WriteDataPort<double>*>  _positionValue;
       
-      /**
-       * A local copy of the name of the propertyfile so we can store
-       * changed properties.
-       */
-      const std::string _propertyfile;
     
       /**
        * The absolute value of the velocity will be limited to this property.  
@@ -261,6 +254,59 @@ namespace Orocos
        */ 
       RTT::Event< void(std::string) > _positionOutOfRange;
       
+  private:  
+      //
+      // Members implementing the component interface
+      //
+    
+      //
+      // COMMANDS :
+      //
+    
+      virtual bool startAxis(int axis);
+      virtual bool startAxisCompleted(int axis) const;
+    
+      virtual bool startAllAxes();
+      virtual bool startAllAxesCompleted() const;
+    
+      virtual bool stopAxis(int axis);
+      virtual bool stopAxisCompleted(int axis) const;
+      
+      virtual bool stopAllAxes();
+      virtual bool stopAllAxesCompleted() const;
+    
+      virtual bool lockAxis(int axis);
+      virtual bool lockAxisCompleted(int axis) const;
+    
+      virtual bool lockAllAxes();
+      virtual bool lockAllAxesCompleted() const;
+    
+      virtual bool unlockAxis(int axis);
+      virtual bool unlockAxisCompleted(int axis) const;
+    
+      virtual bool unlockAllAxes();
+      virtual bool unlockAllAxesCompleted() const;
+    
+      virtual bool addDriveOffset(int axis,double offset);
+      virtual bool addDriveOffsetCompleted(int axis) const;
+      
+      virtual bool initPosition(int axis);
+      virtual bool initPositionCompleted(int axis) const;
+    
+      virtual bool prepareForUse();
+      virtual bool prepareForUseCompleted() const;
+
+      virtual bool prepareForShutdown();
+      virtual bool prepareForShutdownCompleted() const;
+    
+  private:
+
+      /**
+       * A local copy of the name of the propertyfile so we can store
+       * changed properties.
+       */
+      const std::string _propertyfile;
+      
       /**
        * Activation state of robot
        */
@@ -280,7 +326,6 @@ namespace Orocos
       
       std::vector<double>     _driveConvertFactor;
     
-  public:
       /**
        *  This function contains the application's startup code.
        *  Return false to abort startup.
@@ -297,7 +342,6 @@ namespace Orocos
        */
       virtual void shutdown();
       
-  private:
       // 
       // Members implementing the interface to the hardware
       //

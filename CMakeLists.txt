@@ -132,7 +132,6 @@ INCLUDE(config/component_rules.cmake)
 
 #First unset the LOCAL_LIBRARIES
 SET(ENV{SELECTED_LIBS} "")
-#LINK_DIRECTORIES( ${PROJ_BINARY_DIR}/taskbrowser ${PROJ_BINARY_DIR}/reporting ${PROJ_BINARY_DIR}/hardware ${PROJ_BINARY_DIR}/motion_control)
 ADD_SUBDIRECTORY( taskbrowser )
 ADD_SUBDIRECTORY( helloworld )
 ADD_SUBDIRECTORY( reporting )
@@ -196,7 +195,5 @@ INCLUDE(CPack)
 #                           #
 #############################
 
-IF(GENERATE_DOCUMENTATION)
-  EXEC_PROGRAM(doxygen ARGS Doxyfile)
-ENDIF(GENERATE_DOCUMENTATION)
+ADD_CUSTOM_TARGET(docs "doxygen" "Doxyfile")
   

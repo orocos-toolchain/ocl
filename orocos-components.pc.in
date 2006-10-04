@@ -4,8 +4,8 @@ includedir=${prefix}/include
 
 Name: orocos-components 
 Description: Orocos components 
-Requires: 
-Version: 0.1.0
+Requires: kdl orocos-@OROCOS_TARGET@
+Version: @VERSION@
 Libs: -L${libdir} \
       @SELECTED_LIBS@
 Cflags: -I${includedir}

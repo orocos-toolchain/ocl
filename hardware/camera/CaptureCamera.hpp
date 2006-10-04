@@ -23,6 +23,7 @@
 #include <rtt/GenericTaskContext.hpp>
 #include <rtt/Ports.hpp>
 #include <rtt/Properties.hpp>
+#include <rtt/Command.hpp>
 
 #include <rtt/TimeService.hpp>
 #include <rtt/Time.hpp>
@@ -31,42 +32,73 @@
 #include <opencv/highgui.h>
 namespace Orocos
 {
-  
-  class CaptureCamera : public RTT::GenericTaskContext 
-  {
     
-  public:
-    CaptureCamera(std::string name,std::string propertyfile="cpf/CaptureCamera");
-    virtual ~CaptureCamera();
-    virtual bool startup();
-    virtual void update();
-    virtual void shutdown();
+    /**
+     * This class implements a TaskContext that grabs
+     * images from a firewire-camera using OpenCV. The component
+     * can be executed a periodic as well as by a non-periodic
+     * activity.
+     *
+     */
+    
+    class CaptureCamera : public RTT::GenericTaskContext 
+    {
+    
+    public:
+        /** 
+         * Constructor of the CaptureCamera component.
+         * 
+         * @param name Name of the component
+         * @param propertyfile name of the propertyfile. Defaults to cpf/CaptureCamera
+         * 
+         * @return
+         */
+        CaptureCamera(std::string name,std::string propertyfile="cpf/CaptureCamera");
+        virtual ~CaptureCamera();
+        virtual bool startup();
+        virtual void update();
+        virtual void shutdown();
         
-  private:
+    protected:
+        /// Dataport which contains grabbed image
+        RTT::WriteDataPort<IplImage> _image;
+        /// Dataport which contains grabbing timestamp
+        RTT::WriteDataPort<RTT::TimeService::ticks> _capture_time;
+        /// Command to grab image
+        RTT::Command<bool(void)>                    _newImage;
 
-    virtual bool updateImage();
-    virtual bool updateImageFinished()const;
-    
+        /// capturing mode, check dc1394 for values
+        RTT::Property<int>                  _capture_mode;
+        /// shutter time in micro seconds
+        RTT::Property<int>                  _capture_shutter;
+        /// capturing gain
+        RTT::Property<int>                  _capture_gain;
+        /// set true if opencv should convert the grabbed image to RGB
+        RTT::Property<int>                  _capture_convert;
+        /// framerate of camera
+        RTT::Property<double>               _capture_fps;
+        /// boolean whether to print capturing time information
+        RTT::Property<bool>                 _show_time;
+        /// boolean whether to show the captured image in a window
+        RTT::Property<bool>                 _show_image;
 
-    std::string                          _propertyfile;
-    
-    CvCapture                            *_capture;
-      
-    RTT::WriteDataPort<IplImage> _image;
-    RTT::WriteDataPort<RTT::TimeService::ticks> _capture_time;
+    private:
+        virtual bool updateImage();
+        virtual bool updateImageFinished()const;
         
-    RTT::TimeService::ticks             _timestamp;
-    RTT::Seconds                        _elapsed;
-  
-    RTT::Property<int>                  _capture_mode, _capture_shutter,_capture_gain,_capture_convert;
-    RTT::Property<double>               _capture_fps;
-    RTT::Property<bool>                 _show_time;
-    RTT::Property<bool>                 _show_image;
-    
-    IplImage* _empty;
-    bool _update;
-    
-  };
+       
+        std::string                          _propertyfile;
+        
+        CvCapture                            *_capture;
+        
+        
+        
+        RTT::TimeService::ticks             _timestamp;
+        RTT::Seconds                        _elapsed;
+        
+        IplImage* _empty;
+        bool _update;
+    };
 }//namespace
 
 #endif // CAPTURECAMERA_HPP
