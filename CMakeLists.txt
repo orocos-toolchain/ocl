@@ -147,47 +147,39 @@ INSTALL_FILES( /lib/pkgconfig FILES orocos-components.pc)
 
 CONFIGURE_FILE(Doxyfile.in Doxyfile @ONLY)
 
-###########################################################
-#                                                         #
-# Enable testing by including the Dart module             #
-#                                                         #
-###########################################################
-
-#INCLUDE(Dart)
-
-###########################################################
-#                                                         #
-# Setup PACKAGING                                         #
-#                                                         #
-###########################################################
-
-INCLUDE(InstallRequiredSystemLibraries)
-
-# ATTENTION: There is sometimes a _SOURCE_ version of an
-# option as well, set both if necessary !
-
-# Create .tar.gz and .tar.tbz2 files:
-SET(CPACK_GENERATOR "TBZ2")
-SET(CPACK_SOURCE_GENERATOR "TBZ2")
-
-# The plain 'package' target works correctly.
-#SET(CPACK_IGNORE_FILES        "/CVS/;/\\.svn/;\\.swp$;\\.#;/#;/build/")
-# Since the 'package_source' target does a bold copy, define a list of
-# files which should be excluded. Note that 'subpattern' matching is used,
-# thus to exclude a directory use /mydir/
-SET(CPACK_SOURCE_IGNORE_FILES "/CVS/;/.svn/;.swp$;.#;/#;/build/;~")
-
-SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Orocos Components")
-SET(CPACK_PACKAGE_VENDOR "The Orocos Community")
-SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README")
-SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
-SET(CPACK_PACKAGE_VERSION_MAJOR "0")
-SET(CPACK_PACKAGE_VERSION_MINOR "1")
-SET(CPACK_PACKAGE_VERSION_PATCH "1")
-SET(CPACK_PACKAGE_INSTALL_DIRECTORY "CMake ${CMake_VERSION_MAJOR}.${CMake_VERSION_MINOR}")
-#SET(CPACK_STRIP_FILES "bin/cmake")
-SET(CPACK_PACKAGE_EXECUTABLES "OrocosExec" "Orocos Executable")
-INCLUDE(CPack)
+############################################################
+##                                                         #
+## Setup PACKAGING                                         #
+##                                                         #
+############################################################
+#
+#INCLUDE(InstallRequiredSystemLibraries)
+#
+## ATTENTION: There is sometimes a _SOURCE_ version of an
+## option as well, set both if necessary !
+#
+## Create .tar.gz and .tar.tbz2 files:
+#SET(CPACK_GENERATOR "TBZ2")
+#SET(CPACK_SOURCE_GENERATOR "TBZ2")
+#
+## The plain 'package' target works correctly.
+##SET(CPACK_IGNORE_FILES        "/CVS/;/\\.svn/;\\.swp$;\\.#;/#;/build/")
+## Since the 'package_source' target does a bold copy, define a list of
+## files which should be excluded. Note that 'subpattern' matching is used,
+## thus to exclude a directory use /mydir/
+#SET(CPACK_SOURCE_IGNORE_FILES "/CVS/;/.svn/;.swp$;.#;/#;/build/;~")
+#
+#SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Orocos Components")
+#SET(CPACK_PACKAGE_VENDOR "The Orocos Community")
+#SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README")
+#SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
+#SET(CPACK_PACKAGE_VERSION_MAJOR "0")
+#SET(CPACK_PACKAGE_VERSION_MINOR "1")
+#SET(CPACK_PACKAGE_VERSION_PATCH "1")
+#SET(CPACK_PACKAGE_INSTALL_DIRECTORY "CMake ${CMake_VERSION_MAJOR}.${CMake_VERSION_MINOR}")
+##SET(CPACK_STRIP_FILES "bin/cmake")
+#SET(CPACK_PACKAGE_EXECUTABLES "OrocosExec" "Orocos Executable")
+#INCLUDE(CPack)
 
 #############################
 #			    #
