@@ -26,46 +26,99 @@
 #include <rtt/GenericTaskContext.hpp>
 #include <rtt/Properties.hpp>
 #include <rtt/Ports.hpp>
+#include <rtt/Command.hpp>
+#include <rtt/Method.hpp>
+
 #include <kdl/motion/velocityprofile_trap.h>
 #include <rtt/TimeService.hpp>
 
 namespace Orocos
 {
-  
-  class nAxesGeneratorPos : public RTT::GenericTaskContext
-  {
-  public:
-    
-    nAxesGeneratorPos(std::string name,unsigned int num_axes, 
-  		    std::string propertyfile="cpf/nAxesGeneratorPos.cpf");
-    virtual ~nAxesGeneratorPos();
-  
-    virtual bool startup();
-    virtual void update();
-    virtual void shutdown();
-  
-  private:
-    bool moveTo(const std::vector<double>& position, double time=0);
-    bool moveFinished() const;
-    void reset();
-  
-    unsigned int                              _num_axes;
-    std::string                               _propertyfile;
-    
-    std::vector<double>                       _position_meas_local,  _position_desi_local, _velocity_desi_local;
-    RTT::ReadDataPort< std::vector<double> >  _position_meas;
-    RTT::WriteDataPort< std::vector<double> > _position_desi, _velocity_desi;
-    
-    std::vector<KDL::VelocityProfile_Trap*>    _motion_profile;
-    RTT::TimeService::ticks                   _time_begin;
-    RTT::TimeService::Seconds                 _time_passed;
-    double                                    _max_duration;
-    
-    bool                                      _is_moving;
-    RTT::Property< std::vector<double> >      _maximum_velocity, _maximum_acceleration;
-  
-    
-  
-  }; // class
+    /**
+     * This class implements a TaskContext that generates a path
+     * between the current positions and new desired positions of a
+     * number of axes. It uses KDL for the time interpolation. The
+     * paths of all joints are synchronised, this means that all axes
+     * movements are scaled in time to the longest axes-movements. The
+     * interpolation uses a trapezoidal velocity profile using a
+     * maximum acceleration and a maximum velocity. It takes the
+     * current position from a dataport shared with
+     * Orocos::nAxesSensor and generates position and velocity
+     * setpoints which can be use by Orocos::nAxesControllerPos,
+     * Orocos::nAxesControllerPosVel or Orocos::nAxesControllerVel.
+     * 
+     */
+
+    class nAxesGeneratorPos : public RTT::GenericTaskContext
+    {
+    public:
+        /** 
+         * Constructor of the class.
+         * 
+         * @param name name of the TaskContext
+         * @param num_axes number of axes
+         * @param propertyfile location of the propertyfile. Default:
+         * cpf/nAxesGeneratorPos.cpf 
+         * 
+         */
+        nAxesGeneratorPos(std::string name,unsigned int num_axes, 
+                          std::string propertyfile="cpf/nAxesGeneratorPos.cpf");
+        virtual ~nAxesGeneratorPos();
+        
+        virtual bool startup();
+        virtual void update();
+        virtual void shutdown();
+        
+    private:
+        bool moveTo(const std::vector<double>& position, double time=0);
+        bool moveFinished() const;
+        void reset();
+        
+        unsigned int                              _num_axes;
+        std::string                               _propertyfile;
+        
+        std::vector<double>                       _position_meas_local,  _position_desi_local, _velocity_desi_local;
+    protected:
+        /**
+         * Command that generates the motion. The command waits until
+         * the movement is finished.
+         * 
+         * @param position a vector with the desired positions of the
+         * axes
+         * @param time the minimum time duration of the movement, if
+         * zero the movement will be as fast as possible.
+         * 
+         * @return false if another motion is still going on, true otherwise.
+         */
+        RTT::Command<bool(std::vector<double>,double)> _moveTo;
+        /**
+         * Method that resets the generators desired position to the
+         * measured position and the desired velocity to zero
+         */
+        RTT::Method<void(void)>                   _reset;
+        /// DataPort containing the current measured position, shared
+        /// with Orocos::nAxesSensor.
+        RTT::ReadDataPort< std::vector<double> >  _position_meas;
+        /// DataPort containing the current desired position, shared
+        /// with Orocos::nAxesControllerPos and Orocos::nAxesControllerPosVel.
+        RTT::WriteDataPort< std::vector<double> > _position_desi;
+        /// DataPort containing the current desired velocity, shared
+        /// with Orocos::nAxesControllerPosVel and Orocos::nAxesControllerVel.
+        RTT::WriteDataPort< std::vector<double> > _velocity_desi;
+    private:
+        std::vector<KDL::VelocityProfile_Trap*>    _motion_profile;
+        RTT::TimeService::ticks                   _time_begin;
+        RTT::TimeService::Seconds                 _time_passed;
+        double                                    _max_duration;
+        
+        bool                                      _is_moving;
+    protected:
+        /// Property containing a vector with the maximum velocity of
+        /// each axis
+        RTT::Property< std::vector<double> >      _maximum_velocity;
+        /// Property containing a vector with the maximum acceleration of
+        /// each axis
+        RTT::Property< std::vector<double> >      _maximum_acceleration;
+    }; // class
 }//namespace
 #endif // __N_AXES_GENERATOR_POS_H__

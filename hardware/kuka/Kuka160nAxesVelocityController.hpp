@@ -62,7 +62,7 @@ namespace Orocos
        * Sets the axis in the DRIVEN state. Only possible if the axis
        * is int the STOPPED state. If succesfull the drive value of
        * the axis is setted to zero and will be updated periodically
-       * from the ReadDataPort _driveValue
+       * from the ReadDataPort Kuka160nAxesVelocityController::_driveValue
        * 
        * @param axis nr of the axis to start
        * 
@@ -73,7 +73,9 @@ namespace Orocos
       /**
        * Command to start all axes .
        *
-       * Identical to calling startAxis(int axis) on all axes.
+       * Identical to calling
+       * Kuka160nAxesVelocityController::startAxis(int axis) on all
+       * axes. 
        *  
        * @return true if all Axes could be started.
        */
@@ -85,7 +87,7 @@ namespace Orocos
        * Sets the drive value to zero and changes to the STOP
        * state. Only possible if axis is in the DRIVEN state. In the
        * stop state, the axis does not listen and write to its 
-       * ReadDataPort _driveValue.
+       * ReadDataPort Kuka160nAxesVelocityController::_driveValue.
        *
        * @param axis nr of the axis to stop
        *
@@ -95,7 +97,9 @@ namespace Orocos
       
       /** Command to stop all axes.
        *
-       * Identical to calling stopAxis(int axis) on all axes.
+       * Identical to calling
+       * Kuka160nAxesVelocityController::stopAxis(int axis) on all
+       * axes. 
        */
       Command<bool(void)> _stopAllAxes; 
       
@@ -113,7 +117,8 @@ namespace Orocos
       /** 
        * Command to unlock all axes 
        *
-       * identical to calling lockAxis(int axis) on all axes
+       * identical to calling
+       * Kuka160nAxesVelocityController::lockAxis(int axis) on all axes 
        */
       Command<bool(void)> _unlockAllAxes;
       
@@ -132,7 +137,8 @@ namespace Orocos
       /** 
        * Command to lock all axes .
        *
-       * identical to unlockAxis(int axis) on all axes;
+       * identical to Kuka160nAxesVelocityController::unlockAxis(int
+       *axis) on all axes; 
        */
       Command<bool(void)> _lockAllAxes; 
 
@@ -157,8 +163,9 @@ namespace Orocos
       /**
        * Command to add a drive offset to an axis.
        *
-       * Adds an offset to the _driveValue of axis and updates the
-       * _driveOffset value.
+       * Adds an offset to the
+       * Kuka160nAxesVelocityController::_driveValue of axis and
+       * updates the Kuka160nAxesVelocityController::_driveOffset value.
        * 
        * @param axis nr of Axis
        * @param offset offset value in fysical units
@@ -170,7 +177,8 @@ namespace Orocos
        * Command to set the position of an axis to its initial
        * position.
        *
-       * Sets the _positionValue to the _initialPosition from the
+       * Sets the Kuka160nAxesVelocityController::_positionValue to
+       * the Kuka160nAxesVelocityController::_initialPosition from the 
        * property-file. This is needed because the Kuka160 needs to be homed.
        * 
        * @param axis nr of axis
@@ -201,7 +209,8 @@ namespace Orocos
       /**
        * The absolute value of the velocity will be limited to this property.  
        * Used to fire an event if necessary and to saturate the velocities.
-       * It is a good idea to set this property to a low value when using experimental code.
+       * It is a good idea to set this property to a low value when
+       * using experimental code. 
        */
       RTT::Property<std::vector <double> >     _driveLimits;
       
@@ -240,17 +249,17 @@ namespace Orocos
       RTT::Constant<unsigned int> _num_axes;
       
       /**
-       *  parameters to this event are the axis and the velocity that is out of range.
-       *  Each axis that is out of range throws a seperate event.
+       *  parameters to this event is the message that has to be shown.
+       *  Each axis that is out of range throws this event.
        *  The component will continue with the previous value.
        */
       RTT::Event< void(std::string) > _driveOutOfRange;
       
       /**
-       *  parameters to this event are the axis and the position that is out of range.
-       *  Each axis that is out of range throws a seperate event.
-       *  The component will continue.  The hardware limit switches can be reached when this
-       *  event is not handled.
+       *  parameters to this event is the message that has to be
+       *  shown.  Each axis that is out of range throws this event.
+       *  The component will continue.  The hardware limit switches
+       *  can be reached when this event is not handled.
        */ 
       RTT::Event< void(std::string) > _positionOutOfRange;
       

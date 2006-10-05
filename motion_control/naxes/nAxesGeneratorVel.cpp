@@ -24,11 +24,11 @@
 
 namespace Orocos
 {
-  
     using namespace RTT;
     using namespace KDL;
     using namespace std;
-  
+    typedef nAxesGeneratorVel MyType;
+    
     nAxesGeneratorVel::nAxesGeneratorVel(string name,unsigned int num_axes,
                                          string propertyfile)
         : GenericTaskContext(name),
@@ -41,6 +41,16 @@ namespace Orocos
           _time_begin(num_axes),
           _time_passed(num_axes),
           _vel_profile(num_axes),
+          _applyVelocity( "applyVelocity", &MyType::applyVelocity,
+                          &MyType::velocityFinished, this),
+          _applyVelocities( "applyVelocities", &MyType::applyVelocities,
+                            &MyType::velocitiesFinished, this),
+          _gotoVelocity( "gotoVelocity", &MyType::gotoVelocity,
+                         &MyType::velocityFinished, this),
+          _gotoVelocities( "gotoVelocities", &MyType::gotoVelocities,
+                           &MyType::velocitiesFinished, this),
+          _setInitVelocity( "setInitVelocity", &MyType::setInitVelocity, this),
+          _setInitVelocities( "setInitVelocities", &MyType::setInitVelocities, this),
           _velocity_desi("nAxesDesiredVelocity"),
           _max_acc("max_acc", "Maximum Acceleration in Trajectory"),
           _max_jerk("max_jerk", "Maximum Jerk in Trajectory")
@@ -55,39 +65,27 @@ namespace Orocos
         this->ports()->addPort(&_velocity_desi);
     
         //Creating commands
-        typedef nAxesGeneratorVel MyType;
-        
-        this->commands()->addCommand( command( "applyVelocities", &MyType::applyVelocities,
-                                               &MyType::velocitiesFinished, this),
-                                      "Set the velocity",
+        this->commands()->addCommand( &_applyVelocities,"Set the velocity",
                                       "velocity", "joint velocity for all axes",
                                       "duration", "duration of movement" );
-        this->commands()->addCommand( command( "applyVelocity", &MyType::applyVelocity,
-                                               &MyType::velocityFinished, this),
-                                      "Set the velocity for one axis",
+        this->commands()->addCommand( &_applyVelocity,"Set the velocity for one axis",
                                       "axis", "selected axis",
                                       "velocity", "joint velocity for axis",
                                       "duration", "duration of movement" );
-        this->commands()->addCommand( command( "gotoVelocities", &MyType::gotoVelocities,
-                                               &MyType::velocitiesFinished, this),
-                                      "Set the velocities",
+        this->commands()->addCommand( &_gotoVelocities,"Set the velocities",
                                       "velocities", "joint velocities for all axes",
                                       "duration", "duration of movement" );
-        this->commands()->addCommand( command( "gotoVelocity", &MyType::gotoVelocity,
-                                               &MyType::velocityFinished, this),
-                                      "Set the velocity for one axis",
+        this->commands()->addCommand( &_gotoVelocity,"Set the velocity for one axis",
                                       "axis", "selected axis",
                                       "velocity", "joint velocity for axis",
                                       "duration", "duration of movement" );
   
         //Creating Methods
         
-        this->methods()->addMethod( method( "setInitVelocity", &MyType::setInitVelocity, this),
-                                    "set initial velocity", 
+        this->methods()->addMethod( &_setInitVelocity,"set initial velocity", 
                                     "axis", "axis where to set velocity",
                                     "velocity", "velocity to set" );
-        this->methods()->addMethod( method( "setInitVelocities", &MyType::setInitVelocities, this),
-                                    "set initial velocity", 
+        this->methods()->addMethod( &_setInitVelocities,"set initial velocity", 
                                     "velocities", "velocities to set" );
         
         // Instantiate Motion Profiles
@@ -197,14 +195,13 @@ namespace Orocos
     }
   
     
-    bool nAxesGeneratorVel::gotoVelocities(const vector<double>& velocity, const vector<double>& duration)
+    bool nAxesGeneratorVel::gotoVelocities(const vector<double>& velocity, double duration)
     {
         assert(velocity.size() == _num_axes);
-        assert(duration.size() == _num_axes);
   
         bool success = true;
         for (unsigned int i=0; i<_num_axes; i++)
-            if (!gotoVelocity(i, velocity[i], duration[i]))
+            if (!gotoVelocity(i, velocity[i], duration))
                 success = false;
         return success;
     }
@@ -230,14 +227,13 @@ namespace Orocos
     }
     
     
-    bool nAxesGeneratorVel::applyVelocities(const vector<double>& velocity, const vector<double>& duration)
+    bool nAxesGeneratorVel::applyVelocities(const vector<double>& velocity, double duration)
     {
         assert(velocity.size() == _num_axes);
-        assert(duration.size() == _num_axes);
         
         bool success = true;
         for (unsigned int i=0; i<_num_axes; i++)
-            if (!applyVelocity(i, velocity[i], duration[i]))
+            if (!applyVelocity(i, velocity[i], duration))
                 success = false;
         return success;
     }

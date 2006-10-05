@@ -20,7 +20,7 @@
 namespace Orocos
 {
     /**
-     * This class implements a TaskContext that can be used as
+     * This class implements a a
      * software Emergency Stop. It has a pointer to a
      * nAxesVelocityController and will call stopAllAxes and
      * lockAllAxes if needed.

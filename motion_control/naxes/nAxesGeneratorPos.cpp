@@ -25,46 +25,46 @@
 
 namespace Orocos
 {
-  using namespace RTT;
-  using namespace KDL;
-  using namespace std;
-  
-  nAxesGeneratorPos::nAxesGeneratorPos(string name,unsigned int num_axes,
-				       string propertyfile)
-    : GenericTaskContext(name),
-      _num_axes(num_axes), 
-      _propertyfile(propertyfile),
-      _position_meas_local(num_axes),
-      _position_desi_local(num_axes),
-      _velocity_desi_local(num_axes),
-      _position_meas("nAxesSensorPosition"),
-      _position_desi("nAxesDesiredPosition"),
-      _velocity_desi("nAxesDesiredVelocity"),
-      _motion_profile(num_axes),
-      _maximum_velocity("max_vel", "Maximum Velocity in Trajectory"),
-      _maximum_acceleration("max_acc", "Maximum Acceleration in Trajectory")
-  {
-    //Creating TaskContext
-
-    //Adding properties
-    this->properties()->addProperty(&_maximum_velocity);
-    this->properties()->addProperty(&_maximum_acceleration);
-    
-    //Adding ports
-    this->ports()->addPort(&_position_meas);
-    this->ports()->addPort(&_position_desi);
-    this->ports()->addPort(&_velocity_desi);
-    
-    //Adding Commands
+    using namespace RTT;
+    using namespace KDL;
+    using namespace std;
     typedef nAxesGeneratorPos MyType;
 
-    this->commands()->addCommand( command( "moveTo",&MyType::moveTo,&MyType::moveFinished, this),"Set the position setpoint",
-					       "setpoint", "joint setpoint for all axes",
-					       "time", "minimum time to complete trajectory" );
+    nAxesGeneratorPos::nAxesGeneratorPos(string name,unsigned int num_axes,
+                                         string propertyfile)
+        : GenericTaskContext(name),
+          _num_axes(num_axes), 
+          _propertyfile(propertyfile),
+          _position_meas_local(num_axes),
+          _position_desi_local(num_axes),
+          _velocity_desi_local(num_axes),
+          _moveTo( "moveTo",&MyType::moveTo,&MyType::moveFinished, this),
+          _reset( "reset", &MyType::reset, this),
+          _position_meas("nAxesSensorPosition"),
+          _position_desi("nAxesDesiredPosition"),
+          _velocity_desi("nAxesDesiredVelocity"),
+          _motion_profile(num_axes),
+          _maximum_velocity("max_vel", "Maximum Velocity in Trajectory"),
+          _maximum_acceleration("max_acc", "Maximum Acceleration in Trajectory")
+    {
+        //Creating TaskContext
+        
+        //Adding properties
+        this->properties()->addProperty(&_maximum_velocity);
+        this->properties()->addProperty(&_maximum_acceleration);
+        
+        //Adding ports
+        this->ports()->addPort(&_position_meas);
+        this->ports()->addPort(&_position_desi);
+        this->ports()->addPort(&_velocity_desi);
+    
+        //Adding Commands
+        this->commands()->addCommand( &_moveTo,"Set the position setpoint",
+                                      "setpoint", "joint setpoint for all axes",
+                                      "time", "minimum time to complete trajectory" );
 
-    //Adding Methods
-
-    this->methods()->addMethod( method( "reset", &MyType::reset, this), "Reset generator" );  
+        //Adding Methods
+        this->methods()->addMethod( &_reset, "Reset generator" );  
 
     if(!readProperties(_propertyfile))
       Logger::log()<<Logger::Error<<"(nAxesGeneratorPos) Reading Properties from "<<_propertyfile<<" failed!!"<<Logger::endl;

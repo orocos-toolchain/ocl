@@ -27,28 +27,53 @@
 
 namespace Orocos
 {
-  class nAxesSensor : public RTT::GenericTaskContext
-  {
-  public:
-    nAxesSensor(std::string name,unsigned int num_axes);
+    /**
+     * This class implements a TaskContext that reads out the
+     * positionValue and driveValue dataports of a
+     * nAxesVelocityController. It collects these values and stores
+     * them as a vector in a dataport, available for other nAxes or
+     * your own components.
+     * 
+     */
+    class nAxesSensor : public RTT::GenericTaskContext
+    {
+    public:
+        /** 
+         * The contructor of the class 
+         * 
+         * @param name name of the Taskcontext
+         * @param num_axes number of axes that should be read
+         * 
+         */
+        nAxesSensor(std::string name,unsigned int num_axes);
     
-    virtual ~nAxesSensor();
+        virtual ~nAxesSensor();
   
-    // Redefining virtual members
-    virtual bool startup();
-    virtual void update();
-    virtual void shutdown();
+        // Redefining virtual members
+        virtual bool startup();
+        virtual void update();
+        virtual void shutdown();
   
-  private:
-    unsigned int                                _num_axes;
-  protected:
-    std::vector<double>                         _position_local;
-    std::vector<double>                         _velocity_local;
-    std::vector< RTT::ReadDataPort<double>* >   _position_sensors;
-    std::vector< RTT::ReadDataPort<double>* >   _velocity_sensors;
-    RTT::WriteDataPort< std::vector<double> >   _position_naxes;
-    RTT::WriteDataPort< std::vector<double> >   _velocity_naxes;
-      
-  }; // class
+    private:
+        unsigned int                                _num_axes;
+        std::vector<double>                         _position_local;
+        std::vector<double>                         _velocity_local;
+    protected:
+        /// vector of dataports which read from the
+        /// nAxesVelocityController. Default looks for ports with
+        /// names positionValue0, positionValue1, ...
+        std::vector< RTT::ReadDataPort<double>* >   _position_sensors;
+        /// vector of dataports which read from the
+        /// nAxesVelocityController. Default looks for ports with
+        /// names driveValue0, driveValue1, ...
+        std::vector< RTT::ReadDataPort<double>* >   _velocity_sensors;
+        /// Dataport with a vector that contains the collected the
+        /// position values 
+        RTT::WriteDataPort< std::vector<double> >   _position_naxes;
+        /// Dataport with a vector that contains the collected the
+        /// drive/velocity values 
+        RTT::WriteDataPort< std::vector<double> >   _velocity_naxes;
+        
+    }; // class
 }//namespace
 #endif // __N_AXES_SENSOR_POS_H__

@@ -220,7 +220,7 @@ namespace Orocos{
         /**
          * Adding the events :
          */
-        events()->addEvent( &_driveOutOfRange, "Velocity of an Axis is out of range","message","Information about event" );
+        events()->addEvent( &_driveOutOfRange, "Velocity of Axis is out of range","message","Information about event" );
         events()->addEvent( &_positionOutOfRange, "Position of an Axis is out of range","message","Information about event");
     
     }
@@ -260,9 +260,11 @@ namespace Orocos{
             
             // emit event when position is out of range
             if( (_positionValue[axis]->Get() < _lowerPositionLimits.value()[axis]) ||
-                (_positionValue[axis]->Get() > _upperPositionLimits.value()[axis]) )
-                _positionOutOfRange("Position  of a Kuka160 Axis is out of range");
-            
+                (_positionValue[axis]->Get() > _upperPositionLimits.value()[axis]) ){
+                char msg[80];
+                sprintf(msg,"Position of Kuka160 Axis %d is out of range: value: %f",axis,_positionValue[axis]->Get());
+                _positionOutOfRange(msg);
+            }
             // send the drive value to hw and performs checks
             if (_axes[axis]->isDriven()) 
                 _axes[axis]->drive(_driveValue[axis]->Get());
