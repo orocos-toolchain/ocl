@@ -52,8 +52,8 @@ namespace Orocos
           _setInitVelocity( "setInitVelocity", &MyType::setInitVelocity, this),
           _setInitVelocities( "setInitVelocities", &MyType::setInitVelocities, this),
           _velocity_desi("nAxesDesiredVelocity"),
-          _max_acc("max_acc", "Maximum Acceleration in Trajectory"),
-          _max_jerk("max_jerk", "Maximum Jerk in Trajectory")
+          _max_acc("max_acc", "Maximum Acceleration in Trajectory",vector<double>(num_axes,0)),
+          _max_jerk("max_jerk", "Maximum Jerk in Trajectory",vector<double>(num_axes,0))
     {
         //Creating TaskContext
         

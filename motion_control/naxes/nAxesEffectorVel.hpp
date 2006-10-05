@@ -28,22 +28,45 @@
 
 namespace Orocos
 {
-  class nAxesEffectorVel : public RTT::GenericTaskContext
-  {
-  public:
-    nAxesEffectorVel(std::string name,unsigned int num_axes);
-    virtual ~nAxesEffectorVel();
+    /**
+     * This class implements a TaskContext that reads out the
+     * output velocity dataports of Orocos::nAxesControllerPos,
+     * Orocos::nAxesControllerPosVel or Orocos::nAxesControllerVel and
+     * puts these output values in the driveValue dataports of an
+     * nAxesVelocityController. 
+     * 
+     */
+
+    class nAxesEffectorVel : public RTT::GenericTaskContext
+    {
+    public:
+                /** 
+         * The contructor of the class 
+         * 
+         * @param name name of the Taskcontext
+         * @param num_axes number of axes that should be read
+         * 
+         */
+        nAxesEffectorVel(std::string name,unsigned int num_axes);
+        virtual ~nAxesEffectorVel();
+        
+        virtual bool startup();
+        virtual void update();
+        virtual void shutdown();
     
-    virtual bool startup();
-    virtual void update();
-    virtual void shutdown();
-    
-  private:
-    unsigned int                                       _num_axes;
-    
-    std::vector<double>                                _velocity_out_local;
-    RTT::ReadDataPort< std::vector<double> >           _velocity_out;
-    std::vector<RTT::WriteDataPort<double>*>           _velocity_drives;
+    private:
+        unsigned int                                       _num_axes;
+        
+        std::vector<double>                                _velocity_out_local;
+    protected:
+        /// DataPort containing the output velocities, shared with
+        /// Orocos::nAxesControllerPos, Orocos::nAxesControllerPosVel
+        /// or Orocos::nAxesControllerVel 
+        RTT::ReadDataPort< std::vector<double> >           _velocity_out;
+        /// vector of dataports which write to the
+        /// nAxesVelocityController. Default looks for ports with
+        /// names driveValue0, driveValue1, ...
+        std::vector<RTT::WriteDataPort<double>*>           _velocity_drives;
     
   }; // class
 }//namespace

@@ -27,7 +27,8 @@ namespace Orocos{
   
     using namespace RTT;
     using namespace std;
-  
+    typedef nAxesControllerVel MyType;
+    
     nAxesControllerVel::nAxesControllerVel(string name, unsigned int num_axes, 
                                            string propertyfile)
         : GenericTaskContext(name),
@@ -37,12 +38,14 @@ namespace Orocos{
           _position_desi_local(num_axes),
           _velocity_desi_local(num_axes),
           _velocity_out_local(num_axes),
+          _reset( "reset", &MyType::reset, this),
+          _resetAxis( "resetAxis", &MyType::resetAxis, this),
           _position_meas("nAxesSensorPosition"),
           _velocity_desi("nAxesDesiredVelocity"),
           _velocity_out("nAxesOutputVelocity"),
+          _controller_gain("K", "Proportional Gain"),
           _is_initialized(num_axes),
-          _time_begin(num_axes),
-          _controller_gain("K", "Proportional Gain")
+          _time_begin(num_axes)
     {
         //Creating TaskContext
         
@@ -55,11 +58,9 @@ namespace Orocos{
         this->properties()->addProperty(&_controller_gain);
   
         //Adding Methods
-        typedef nAxesControllerVel MyType;
-        this->methods()->addMethod( method( "reset", &MyType::reset, this),
-                                    "reset the controller");
-        this->methods()->addMethod( method( "resetAxis", &MyType::resetAxis, this),
-                                    "reset the controller","axis","axis to reset");  
+        this->methods()->addMethod( &_reset,"reset the controller");
+        this->methods()->addMethod( &_resetAxis,"reset the controller",
+                                    "axis","axis to reset");  
         
         if(!readProperties(_propertyfile))
             Logger::log()<<Logger::Error<<"(nAxesControllerVel) Reading Properties from "<<_propertyfile<<" failed!!"<<Logger::endl;

@@ -34,10 +34,32 @@
 
 namespace Orocos
 {
+    /**
+     * This class implements a TaskContext that generates a path
+     * between the current velocities and the new desired velocities of a
+     * number of axes, this velocity can be maintained or stopped.
+     * It uses KDL for the time interpolation. The
+     * interpolation uses a trapezoidal acceleration profile using a
+     * maximum acceleration and a maximum jerk. It takes the
+     * current velocity from a dataport shared with
+     * Orocos::nAxesSensor and generates velocity
+     * setpoints which can be use by Orocos::nAxesControllerVel.
+     * 
+     */
     
     class nAxesGeneratorVel : public RTT::GenericTaskContext
     {
     public:
+        /** 
+         * Constructor of the class
+         * 
+         * @param name name of the TaskContext
+         * @param num_axes number of axes
+         * @param propertyfile location of propertyfile. Default:
+         * cpf/nAxesGeneratorVel.cpf 
+         * 
+         * @return 
+         */
         nAxesGeneratorVel(std::string name,unsigned int num_axes, 
                           std::string propertyfile="cpf/nAxesGeneratorVel.cpf");
         virtual ~nAxesGeneratorVel();
@@ -75,18 +97,18 @@ namespace Orocos
          * 
          * @return false if duration < 0, or axis does not exist, true otherwise
          */
-        RTT::Command<bool(int,double,double)          _applyVelocity;
+        RTT::Command<bool(int,double,double)>          _applyVelocity;
 
         /** 
          * Same as nAxesGeneratorVel::_applyVelocity but for all axes
-         * at the same time. The motion is synchronised.
+         * at the same time.
          * 
-         * @param velocity vector with desired velocity
+         * @param velocity vector with desired velocities
          * @param duration duration of the movement
          * 
          * @return false if duration < 0, true otherwise
          */
-        RTT::Command<bool(std::vector<double>,double) _applyVelocities;
+        RTT::Command<bool(std::vector<double>,double)> _applyVelocities;
 
         /** 
          * Command to accelerate to a certain velocity and maintain
@@ -96,41 +118,52 @@ namespace Orocos
          * @param velocity desired velocity
          * @param duration minimum duration of acceleration
          * 
-         * @return 
+         * @return false if axis does not exist or duration < 0, true
+         *otherwise 
          */
-        RTT::Command<bool(int,double,double)          _gotoVelocity;
+        RTT::Command<bool(int,double,double)>          _gotoVelocity;
 
         /** 
+         * Same as nAxesGeneratorVel::_gotoVelocity but for all axes
+         * at the same time.
+
          * 
+         * @param velocity vector with desired velocities
+         * @param duration minimum duration of the acceleration
          * 
-         * @param velocity 
-         * @param duration 
-         * 
-         * @return 
+         * @return false if duration<0, true otherwise
          */
-        RTT::Command<bool(std::vector<double>,double) _gotoVelocities;
+        RTT::Command<bool(std::vector<double>,double)> _gotoVelocities;
 
         /** 
-         * 
+         * Maybe Wim should explain what this Method does
          * 
          * @param axis 
          * @param velocity 
          * 
          * @return 
          */
-        RTT::Method<void(int,double)                  _setInitVelocity;
+        RTT::Method<void(int,double)>                  _setInitVelocity;
         
         /** 
-         * 
+         * Same as nAxesGeneratorVel::_setInitVelocity but for all
+         * axes at the same time
          * 
          * @param velocity 
          * 
          * @return 
          */
-        RTT::Method<void(std::vector<double>)         _setInitVelocities;
-        
-        RTT::WriteDataPort< std::vector<double> >  _velocity_desi;
-        
+        RTT::Method<void(std::vector<double>)>         _setInitVelocities;
+
+        /// DataPort containing the current desired velocities, shared
+        /// with Orocos::nAxesControllerVel 
+        RTT::WriteDataPort< std::vector<double> >     _velocity_desi;
+        /// Property with a vector of the maximum accelerations of
+        /// each axes to be used in the interpolation
+        RTT::Property<std::vector<double> >           _max_acc;
+        /// Property with a vector of the maximum jerks of
+        /// each axes to be used in the interpolation
+        RTT::Property<std::vector<double> >           _max_jerk;
         
     }; // class
 }//namespace

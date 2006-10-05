@@ -8,10 +8,10 @@ namespace Orocos
     ReferenceSensor::ReferenceSensor(string name,int _nrofaxes):
         GenericTaskContext(name),
         nrofaxes(_nrofaxes),
+        _getReference("getReference",&ReferenceSensor::getReference,this),
         reference(_nrofaxes)
     {
-        this->methods()->addMethod( method("getReference",&ReferenceSensor::getReference,this),
-                                    "gets the reference switch value from a reference port",
+        this->methods()->addMethod( &_getReference,"gets the reference switch value from a reference port",
                                     "axis","the reference port corresponding to this axis");
         char buf[80];
         for (int i=0;i<_nrofaxes;++i) {

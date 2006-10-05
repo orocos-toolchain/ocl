@@ -44,8 +44,8 @@ namespace Orocos
           _position_desi("nAxesDesiredPosition"),
           _velocity_desi("nAxesDesiredVelocity"),
           _motion_profile(num_axes),
-          _maximum_velocity("max_vel", "Maximum Velocity in Trajectory"),
-          _maximum_acceleration("max_acc", "Maximum Acceleration in Trajectory")
+          _maximum_velocity("max_vel", "Maximum Velocity in Trajectory",vector<double>(num_axes,0)),
+          _maximum_acceleration("max_acc", "Maximum Acceleration in Trajectory",vector<double>(num_axes,0))
     {
         //Creating TaskContext
         

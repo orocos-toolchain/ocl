@@ -29,34 +29,75 @@
 
 namespace Orocos
 {
+    /**
+     * This class implements a TaskContext that controlls the
+     * velocities of an axis. It uses a simple position-feedback
+     * and velocity feedforward to calculate an output velocity. 
+     * velocity_out = K_gain * ( position_desired - position_measured)
+     * + velocity_desired.
+     * The desired position is calculated by integrating the desired velocity
+     * It can share dataports with
+     * Orocos::nAxesSensor to get the measured positions, with
+     * Orocos::nAxesGeneratorVel to get its desired velocities and with
+     * Orocos::nAxesEffectorVel to send its output velocities to the
+     * hardware/simulation axes.
+     * 
+     */
   
-  class nAxesControllerVel : public RTT::GenericTaskContext
-  {
-  public:
-    nAxesControllerVel(std::string name,unsigned int num_axes, 
-  		     std::string propertyfile="cpf/nAxesControllerVel.cpf");
-    virtual ~nAxesControllerVel();
-  
-    virtual bool startup();
-    virtual void update();
-    virtual void shutdown();
-  
-  private:
-    void reset();
-    void resetAxis(int axis);
-  
-    unsigned int                               _num_axes;
-    std::string                                _propertyfile;
+    class nAxesControllerVel : public RTT::GenericTaskContext
+    {
+    public:
+        /** 
+         * Constructor of the class
+         * 
+         * @param name name of the TaskContext
+         * @param num_axes number of axes
+         * @param propertyfile location of the propertyfile. Default:
+         * cpf/nAxesControllerPosVel.cpf 
+         * 
+         */
+        nAxesControllerVel(std::string name,unsigned int num_axes, 
+                           std::string propertyfile="cpf/nAxesControllerVel.cpf");
+        virtual ~nAxesControllerVel();
+        
+        virtual bool startup();
+        virtual void update();
+        virtual void shutdown();
+        
+    private:
+        void reset();
+        void resetAxis(int axis);
+        
+        unsigned int                               _num_axes;
+        std::string                                _propertyfile;
   					       
-    std::vector<double>                        _position_meas_local, _position_desi_local, _velocity_desi_local, _velocity_out_local;
-
-    RTT::ReadDataPort< std::vector<double> >   _position_meas, _velocity_desi;
-    RTT::WriteDataPort< std::vector<double> >  _velocity_out;
-  					       
-    std::vector<bool>                          _is_initialized;
-    std::vector<RTT::TimeService::ticks>       _time_begin;
-    RTT::Property< std::vector<double> >       _controller_gain;
-  
+        std::vector<double>                        _position_meas_local, _position_desi_local, _velocity_desi_local, _velocity_out_local;
+    protected:
+        /// Method to reset the controller of all axes
+        RTT::Method<void(void)>                    _reset;
+        /**
+         * Method to reset the controller of axis
+         * 
+         * @param axis axis controller to be reset
+         */
+        RTT::Method<void(int)>                     _resetAxis;
+        
+        /// DataPort containing the measured positions, shared with
+        /// Orocos::nAxesSensor 
+        RTT::ReadDataPort< std::vector<double> >   _position_meas;
+        /// DataPort containing the desired velocities, shared with
+        /// Orocos::nAxesGeneratorVel
+        RTT::ReadDataPort< std::vector<double> >   _velocity_desi;
+        /// DataPort containing the output velocities, shared with
+        /// Orocos::nAxesEffectorVel 
+        RTT::WriteDataPort< std::vector<double> >  _velocity_out;
+        /// Vector with the control gain value for each axis.
+        RTT::Property< std::vector<double> >       _controller_gain;
+        
+    private:
+        std::vector<bool>                          _is_initialized;
+        std::vector<RTT::TimeService::ticks>       _time_begin;
+        
     
   }; // class
 }//namespace
