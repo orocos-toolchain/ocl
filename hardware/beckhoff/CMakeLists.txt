@@ -1,4 +1,4 @@
-OPTION( BUILD_BECKHOFF "Build Beckhoff Component" ON )
+OPTION( BUILD_BECKHOFF "Build Beckhoff Component" OFF )
 
 IF ( BUILD_BECKHOFF )
 

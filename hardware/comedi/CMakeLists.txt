@@ -1,4 +1,4 @@
-OPTION( BUILD_COMEDI "Build Comedi Component" ON )
+OPTION( BUILD_COMEDI "Build Comedi Component" OFF )
 
 IF ( BUILD_COMEDI )
 

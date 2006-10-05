@@ -1,4 +1,4 @@
-OPTION( BUILD_CANPIE "Build Canpie Component" ON )
+OPTION( BUILD_CANPIE "Build Canpie Component" OFF )
 
 IF ( BUILD_CANPIE )
 
