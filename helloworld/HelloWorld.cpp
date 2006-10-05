@@ -6,7 +6,7 @@
 
 #include <rtt/os/main.h>
 
-#include <rtt/GenericTaskContext.hpp>
+#include <rtt/TaskContext.hpp>
 #include <taskbrowser/TaskBrowser.hpp>
 #include <rtt/Logger.hpp>
 #include <rtt/Property.hpp>
@@ -22,11 +22,9 @@ using namespace RTT;
 using namespace Orocos;
 
 /**
- * Every component inherits from 'TaskContext'
- * or from 'GenericTaskContext'. These base classes
- * allow a user to add a primitive to the interface
- * and contain an ExecutionEngine which executes
- * application code.
+ * Every component inherits from the 'TaskContext' class.  This base
+ * class allow a user to add a primitive to the interface and contain
+ * an ExecutionEngine which executes application code.
  */
 class HelloWorld
     : public TaskContext
@@ -138,14 +136,14 @@ public:
      */
     HelloWorld(std::string name)
         : TaskContext(name),
-          property("Property", "Hello World Description", "Hello World"),
-          attribute("Attribute", "Hello World"),
-          constant("Constant", "Hello World"),
-          dataport("DataPort","World"),
-          bufferport("BufferPort",13, "World"),
-          method("Method", &HelloWorld::mymethod, this),
-          command("Command", &HelloWorld::mycommand, &HelloWorld::mycomplete, this),
-          event("Event")
+          property("the_property", "Hello World Description", "Hello World"),
+          attribute("the_attribute", "Hello World"),
+          constant("the_constant", "Hello World"),
+          dataport("the_data_port","World"),
+          bufferport("the_buffer_port",13, "World"),
+          method("the_method", &HelloWorld::mymethod, this),
+          command("the_command", &HelloWorld::mycommand, &HelloWorld::mycomplete, this),
+          event("the_event")
     {
         // Check if all initialisation was ok:
         assert( property.ready() );
@@ -164,16 +162,16 @@ public:
         this->ports()->addPort(&dataport);
         this->ports()->addPort(&bufferport);
 
-        this->methods()->addMethod(&method, "Hello Method Description");
+        this->methods()->addMethod(&method, "'the_method' Description");
         
-        this->commands()->addCommand(&command, "Hello Command Description",
-                                     "Hello", "Use 'World' as argument to make the command succeed.");
+        this->commands()->addCommand(&command, "'the_command' Description",
+                                     "the_arg", "Use 'World' as argument to make the command succeed.");
 
-        this->events()->addEvent(&event, "Hello Event Description",
-                                 "Hello", "The data of this event.");
+        this->events()->addEvent(&event, "'the_event' Description",
+                                 "the_data", "The data of this event.");
 
         // Adding an asynchronous callback:
-        h = this->events()->setupConnection("Event").callback(this, &HelloWorld::mycallback, this->engine()->events() ).handle();
+        h = this->events()->setupConnection("the_event").callback(this, &HelloWorld::mycallback, this->engine()->events() ).handle();
         h.connect();
     }
 };
@@ -206,22 +204,22 @@ int ORO_main(int argc, char** argv)
 
     // Do some 'client' calls :
     log(Info) << "**** Reading a Property:            ****" <<endlog();
-    Property<std::string> p = hello.properties()->getProperty<std::string>("Property");
+    Property<std::string> p = hello.properties()->getProperty<std::string>("the_property");
     assert( p.ready() );
     log(Info) << "     "<<p.getName() << " = " << p.value() <<endlog();
 
     log(Info) << "**** Sending a Command:             ****" <<endlog();
-    Command<bool(std::string)> c = hello.commands()->getCommand<bool(std::string)>("Command");
+    Command<bool(std::string)> c = hello.commands()->getCommand<bool(std::string)>("the_command");
     assert( c.ready() );
     log(Info) << "     Sending Command : " << c("World")<<endlog();
 
     log(Info) << "**** Calling a Method:              ****" <<endlog();
-    Method<std::string(void)> m = hello.methods()->getMethod<std::string(void)>("Method");
+    Method<std::string(void)> m = hello.methods()->getMethod<std::string(void)>("the_method");
     assert( m.ready() );
     log(Info) << "     Calling Method : " << m() << endlog();
 
     log(Info) << "**** Emitting an Event:             ****" <<endlog();
-    Event<void(std::string)> e = hello.events()->getEvent<void(std::string)>("Event");
+    Event<void(std::string)> e = hello.events()->getEvent<void(std::string)>("the_event");
     assert( e.ready() );
 
     e("Hello World");
