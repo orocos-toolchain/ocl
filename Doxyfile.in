@@ -336,7 +336,7 @@ SORT_BRIEF_DOCS        = NO
 # Note: This option applies only to the class list, not to the 
 # alphabetical list.
 
-SORT_BY_SCOPE_NAME     = NO
+SORT_BY_SCOPE_NAME     = YES
 
 # The GENERATE_TODOLIST tag can be used to enable (YES) or 
 # disable (NO) the todo list. This list is created by putting \todo 
@@ -459,7 +459,15 @@ WARN_LOGFILE           =
 # directories like "/usr/src/myproject". Separate the files or directories 
 # with spaces.
 
-INPUT                  = @PROJ_SOURCE_DIR@
+INPUT                  = @PROJ_SOURCE_DIR@/usage.hpp \
+	@PROJ_SOURCE_DIR@/taskbrowser \
+	@PROJ_SOURCE_DIR@/hardware \
+	@PROJ_SOURCE_DIR@/deployment \
+	@PROJ_SOURCE_DIR@/reporting \
+	@PROJ_SOURCE_DIR@/motion_control \
+	@PROJ_SOURCE_DIR@/helloworld \
+	@PROJ_SOURCE_DIR@/kinematics \
+	@PROJ_SOURCE_DIR@/viewer
 
 # If the value of the INPUT tag contains directories, you can use the 
 # FILE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp 
@@ -480,7 +488,7 @@ RECURSIVE              = YES
 # excluded from the INPUT source files. This way you can easily exclude a 
 # subdirectory from a directory tree whose root is specified with the INPUT tag.
 
-EXCLUDE                = 
+EXCLUDE                =
 
 # The EXCLUDE_SYMLINKS tag can be used select whether or not files or 
 # directories that are symbolic links (a Unix filesystem feature) are excluded 
@@ -494,7 +502,7 @@ EXCLUDE_SYMLINKS       = NO
 # against the file with absolute path, so to exclude all test directories 
 # for example use the pattern */test/*
 
-EXCLUDE_PATTERNS       = 
+EXCLUDE_PATTERNS       = */driver/* */tests/*
 
 # The EXAMPLE_PATH tag can be used to specify one or more files or 
 # directories that contain example code fragments that are included (see 
