@@ -18,7 +18,7 @@ SET( VERSION 0.1 CACHE STRING "Version of Orocos Components" )
 # Do not rely on environment variables to find the path, because that's confusing
 IF(NOT CMAKE_INSTALL_PREFIX)
   SET( CMAKE_INSTALL_PREFIX /usr/local/orocos CACHE PATH "Installation directory" FORCE)
-  MESSAGE( "Setting installation directory to ${CMAKE_INSTALL_PREFIX}" )
+  MESSAGE( STATUS "Setting installation directory to ${CMAKE_INSTALL_PREFIX}" )
 ENDIF(NOT CMAKE_INSTALL_PREFIX)
 
 SET( PROJ_SOURCE_DIR ${Orocos-Components_SOURCE_DIR} )
@@ -56,7 +56,6 @@ IF(NOT CMAKE_BUILD_TYPE)
       "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
       FORCE)
 ENDIF(NOT CMAKE_BUILD_TYPE)
-MESSAGE( "Build type has been set to ${CMAKE_BUILD_TYPE}" )
 
 ###################################################
 #                                                 #
@@ -69,9 +68,9 @@ MESSAGE( "Build type has been set to ${CMAKE_BUILD_TYPE}" )
 #
 IF ( NOT CMAKE_BUILD_TYPE )
   SET( CMAKE_BUILD_TYPE Release )
-  MESSAGE( "Setting build type to '${CMAKE_BUILD_TYPE}'" )
+  MESSAGE( STATUS "Setting build type to '${CMAKE_BUILD_TYPE}'" )
 ELSE ( NOT CMAKE_BUILD_TYPE )
-  MESSAGE( "Build type set to '${CMAKE_BUILD_TYPE}' by user." )
+  MESSAGE( STATUS "Build type set to '${CMAKE_BUILD_TYPE}' by user." )
 ENDIF ( NOT CMAKE_BUILD_TYPE )
 
 ###################################################
@@ -113,12 +112,12 @@ INCLUDE_DIRECTORIES( ${PROJ_SOURCE_DIR} )
 
 # Only do this once.
 IF ( NOT WROTE_CONFIG_H )
-  MESSAGE( "Writing config.h" )
+  MESSAGE( STATUS "Writing config.h" )
   INCLUDE(config/write_config_h.cmake)
   SET( WROTE_CONFIG_H TRUE CACHE INTERNAL 
        "Remember that we've already written config.h" )
 ELSE ( NOT WROTE_CONFIG_H )
-  MESSAGE( "Not writing config.h -- wrote it previously" )
+  MESSAGE( STATUS "Not writing config.h -- wrote it previously" )
 ENDIF ( NOT WROTE_CONFIG_H )
 
 ###########################################################
