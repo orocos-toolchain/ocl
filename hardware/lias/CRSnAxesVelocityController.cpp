@@ -29,7 +29,6 @@
 
 #include <rtt/GenericTaskContext.hpp>
 //#include <rtt/NonPreemptibleActivity.hpp>
-#include <rtt/TemplateFactories.hpp>
 //#include <rtt/BufferPort.hpp>
 #include <rtt/Event.hpp>
 #include <rtt/Logger.hpp>

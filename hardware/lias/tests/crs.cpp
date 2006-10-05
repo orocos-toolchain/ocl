@@ -13,7 +13,6 @@
 #include <rtt/Logger.hpp>
 #include <rtt/os/main.h>
 
-#include <rtt/TemplateFactories.hpp>
 #include <string>
 
 using namespace Orocos;

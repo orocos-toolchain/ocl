@@ -1,0 +1,8 @@
+# FIXME: Remove these absolute paths
+#CPPFLAGS+=-I/usr/realtime/rtai3.2_linux-2.6.9_adeos-r9c3/include
+CPPFLAGS+=-I~/src/orocos-trunk/build/packages/install/include
+CPPFLAGS+=-I/usr/src/linux/
+obj-m := apci_lxrt.o
+
+
+# type "make -C /usr/src/linux/ SUBDIRS=$PWD modules"
