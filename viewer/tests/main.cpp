@@ -1,6 +1,6 @@
 #include <rtt/ZeroTimeThread.hpp>
 #include <rtt/Activities.hpp>
-#include <rtt/GenericTaskContext.hpp>
+#include <rtt/TaskContext.hpp>
 #include <rtt/Logger.hpp>
 #include <rtt/os/main.h>
 
@@ -17,12 +17,12 @@ using namespace std;
 using namespace Orocos;
 
 
-class Supervisor : public GenericTaskContext
+class Supervisor : public TaskContext
 {
 	int nrofaxes;
 public:
    Supervisor(int _nrofaxes=6):
-	GenericTaskContext("supervisor") ,
+	TaskContext("supervisor") ,
 	nrofaxes(_nrofaxes),
     driveValue(_nrofaxes),
 	reference(_nrofaxes)
@@ -98,10 +98,10 @@ public:
     _value = value;
     _stop.execute();
     _lock.execute();
-    cout << "---------------------------------------------" << endl;
-    cout << "--------- EMERGENCY STOP --------------------" << endl;
-    cout << "---------------------------------------------" << endl;
-    cout << "Axis "<< _axis <<" drive value "<<_value<< " reached limitDriveValue"<<endl;
+    log(Error) << "---------------------------------------------" << endlog();
+    log(Error) << "--------- EMERGENCY STOP --------------------" << endlog();
+    log(Error) << "---------------------------------------------" << endlog();
+    log(Error) << "Axis "<< _axis <<" drive value "<<_value<< " reached limitDriveValue"<<endlog();
   };
 private:
   GenericTaskContext *_axes;
@@ -113,8 +113,8 @@ private:
 
 void PositionLimitCallBack(int axis, double value)
 {
-  cout<< "-------------Warning----------------"<<endl;
-  cout<< "Axis "<<axis<<" moving passed software position limit, current value: "<<value<<endl;
+  log(Warning)<< "-------------Warning----------------"<<endlog();
+  log(Warning)<< "Axis "<<axis<<" moving passed software position limit, current value: "<<value<<endlog();
 }
 
 /// main() function

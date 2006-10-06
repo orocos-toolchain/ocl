@@ -59,7 +59,7 @@ int ORO_main(int argc, char* argv[])
   my_robot->scripting()->loadPrograms("program.ops");
 
   /// Creating Tasks
-  NonPreemptibleActivity _kukaTask(0.01, my_robot->engine() );  
+  PeriodicActivity _kukaTask(0,0.01, my_robot->engine() );  
   
   /// Start the console reader.
   _kukaTask.start();

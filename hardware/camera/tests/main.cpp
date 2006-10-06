@@ -1,5 +1,5 @@
 //hardware interfaces
-
+#include <rtt/PeriodicActivity.hpp>
 #include "hardware/camera/CaptureCamera.hpp"
 //#include "ShowImages.hpp"
 
@@ -27,7 +27,7 @@ int ORO_main(int argc, char* argv[])
   browser.setColorTheme( TaskBrowser::whitebg );
 
   /// Creating Tasks
-  NonPreemptibleActivity cameraTask(0.2, camera.engine() );  
+  PeriodicActivity cameraTask(0,0.2, camera.engine() );  
   
   /// Start the console reader.
   browser.loop();

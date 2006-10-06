@@ -34,8 +34,8 @@ namespace Orocos
       _velocity_local(num_axes),
       _position_sensors(num_axes),
       _velocity_sensors(num_axes),
-      _position_naxes("nAxesSensorPosition"),
-      _velocity_naxes("nAxesSensorVelocity")
+      _position_naxes("nAxesSensorPosition",vector<double>(num_axes,0)),
+      _velocity_naxes("nAxesSensorVelocity",vector<double>(num_axes,0))
   {
     
     for(unsigned int i=0;i<_num_axes;i++){

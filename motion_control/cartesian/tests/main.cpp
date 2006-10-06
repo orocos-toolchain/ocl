@@ -114,11 +114,11 @@ int ORO_main(int argc, char* argv[])
     super.scripting()->loadStateMachines("cpf/states.osd");
 
     // Creating Tasks
-    NonPreemptibleActivity _kukaTask(0.01, my_robot->engine() ); 
-    NonPreemptibleActivity _sensorTask(0.01, sensor.engine() ); 
-    NonPreemptibleActivity _generatorTask(0.01, generator.engine() ); 
-    NonPreemptibleActivity _controllerTask(0.01, controller.engine() ); 
-    NonPreemptibleActivity _effectorTask(0.01, effector.engine() ); 
+    PeriodicActivity _kukaTask(0,0.01, my_robot->engine() ); 
+    PeriodicActivity _sensorTask(0,0.01, sensor.engine() ); 
+    PeriodicActivity _generatorTask(0,0.01, generator.engine() ); 
+    PeriodicActivity _controllerTask(0,0.01, controller.engine() ); 
+    PeriodicActivity _effectorTask(0,0.01, effector.engine() ); 
     PeriodicActivity reportingTask(3,0.02,reporter.engine());
     PeriodicActivity superTask(1,0.1,super.engine());
     PeriodicActivity viewerTask(3,0.1,viewer.engine());

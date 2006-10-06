@@ -68,7 +68,7 @@ namespace Orocos
         std::vector< RTT::ReadDataPort<double>* >   _velocity_sensors;
         /// Dataport with a vector that contains the collected the
         /// position values 
-        RTT::WriteDataPort< std::vector<double> >   _position_naxes;
+        RTT::DataPort< std::vector<double> >        _position_naxes;
         /// Dataport with a vector that contains the collected the
         /// drive/velocity values 
         RTT::WriteDataPort< std::vector<double> >   _velocity_naxes;

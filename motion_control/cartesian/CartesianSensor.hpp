@@ -61,7 +61,7 @@ namespace Orocos
         KDL::FrameVel                      _FV_local;
     protected:
         /// DataPort containing the end-effector frame
-        RTT::WriteDataPort< KDL::Frame >   _frame;
+        RTT::DataPort< KDL::Frame >        _frame;
         /// DataPort constaining the end-effector twist, represented
         /// in the base frame with end-effector reference point.
         RTT::WriteDataPort< KDL::Twist >   _twist;

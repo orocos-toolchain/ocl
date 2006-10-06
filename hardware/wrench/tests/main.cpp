@@ -1,4 +1,4 @@
-#include <rtt/NonPreemptibleActivity.hpp>
+#include <rtt/PeriodicActivity.hpp>
 #include <rtt/Ports.hpp>
 
 #include "hardware/wrench/WrenchSensor.hpp"
@@ -34,7 +34,7 @@ int ORO_main(int arc, char* argv[])
 
     WrenchSensor a_task(0.1,"ATask",0);
     
-    NonPreemptibleActivity periodicActivityA(0.1, a_task.engine() );
+    PeriodicActivity periodicActivityA(0,0.1, a_task.engine() );
     FileReporting reporter("Reporting");
     reporter.connectPeers(&a_task);
  

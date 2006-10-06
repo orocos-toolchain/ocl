@@ -16,7 +16,7 @@
 //  
 
 #include <rtt/RTT.hpp>
-#include <rtt/NonPreemptibleActivity.hpp>
+#include <rtt/PeriodicActivity.hpp>
 
 #include <rtt/os/main.h>
 
@@ -47,7 +47,7 @@ int ORO_main(int arc, char* argv[])
 
     LaserSensor laser("LaserSensor",2);
     
-    NonPreemptibleActivity laserTask(0.1, laser.engine() );
+    PeriodicActivity laserTask(0,0.1, laser.engine() );
     //FileReporting reporter("Reporting");
     //reporter.connectPeers(&a_task);
  

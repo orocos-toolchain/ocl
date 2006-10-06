@@ -131,19 +131,19 @@ int ORO_main(int argc, char* argv[])
 
   // Creating Tasks
 #if (defined OROPKG_OS_LXRT)
-  NonPreemptibleActivity _kukaTask(0.002, my_robot->engine() ); 
+  PeriodicActivity _kukaTask(0,0.002, my_robot->engine() ); 
   PeriodicActivity superTask(1,0.002,super.engine());
 #else
-  NonPreemptibleActivity _kukaTask(0.01, my_robot->engine() ); 
+  PeriodicActivity _kukaTask(0,0.01, my_robot->engine() ); 
   PeriodicActivity superTask(1,0.01,super.engine());
 #endif
-  NonPreemptibleActivity _sensorTask(0.01, sensor.engine() ); 
-  NonPreemptibleActivity _generatorPosTask(0.01, generatorPos.engine() ); 
-  NonPreemptibleActivity _generatorVelTask(0.01, generatorVel.engine() ); 
-  NonPreemptibleActivity _controllerPosTask(0.01, controllerPos.engine() ); 
-  NonPreemptibleActivity _controllerPosVelTask(0.01, controllerPosVel.engine() ); 
-  NonPreemptibleActivity _controllerVelTask(0.01, controllerVel.engine() ); 
-  NonPreemptibleActivity _effectorTask(0.01, effector.engine() ); 
+  PeriodicActivity _sensorTask(0,0.01, sensor.engine() ); 
+  PeriodicActivity _generatorPosTask(0,0.01, generatorPos.engine() ); 
+  PeriodicActivity _generatorVelTask(0,0.01, generatorVel.engine() ); 
+  PeriodicActivity _controllerPosTask(0,0.01, controllerPos.engine() ); 
+  PeriodicActivity _controllerPosVelTask(0,0.01, controllerPosVel.engine() ); 
+  PeriodicActivity _controllerVelTask(0,0.01, controllerVel.engine() ); 
+  PeriodicActivity _effectorTask(0,0.01, effector.engine() ); 
   PeriodicActivity reportingTask(2,0.1,reporter.engine());
   
   TaskBrowser browser(&super);
