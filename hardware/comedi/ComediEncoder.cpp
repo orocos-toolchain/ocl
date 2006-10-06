@@ -54,7 +54,7 @@ namespace RTT
       _turn(0), _upcounting(true)
   {
     init();
-    rtos_printf("Comedi Counter configured as encoder now\n");
+    Log(Info) << "Comedi Counter configured as encoder now\n" << endlog();
   }
 
   ComediEncoder::ComediEncoder(ComediDevice * cd, unsigned int subd, 
@@ -63,23 +63,24 @@ namespace RTT
       _turn(0), _upcounting(true)
   {
     init();
-    rtos_printf( "Comedi Counter configured as encoder now\n");
+    Log(Info) << "Comedi Counter configured as encoder now\n" << endlog();
   }
 
   void ComediEncoder::init()
   {
-    rtos_printf( "Creating ComediEncoder\n" );
+    Log(Info) << "Creating ComediEncoder\n" << endlog();
     // Check if subd is counter...
     if ( _myCard->getSubDeviceType( _subDevice ) != COMEDI_SUBD_COUNTER )
       {
-	rtos_printf( "ERROR: Comedi Counter : subdev is not a counter\n" );
-	rtos_printf( "ERROR: Type = %d \n", _myCard->getSubDeviceType( _subDevice ));
+	log(Error) << "Comedi Counter : subdev is not a counter, type = "  
+		   << _myCard->getSubDeviceType(_subDevice) << endlog();
       }
     // Check how many counters this subdevice actually has
     unsigned int nchan = comedi_get_n_channels(_myCard->getDevice(),_subDevice);
     if ( nchan <= _channel )
       {
-      	rtos_printf( "ERROR: Comedi Counter : Only %d channels on this counter subdevice \n", nchan);
+      	log(Error) << "Comedi Counter : Only " << nchan 
+		   << " channels on this counter subdevice" << endlog()
       }
     _resolution = (int) comedi_get_maxdata(_myCard->getDevice(),_subDevice, 
 					   _channel);
@@ -104,12 +105,9 @@ namespace RTT
     insn.data=config_data;
     insn.subdev=_subDevice;
     insn.chanspec=CR_PACK(_channel,0,0);
-    // rtos_printf("just before insn->insn = 0x%x\n",insn.insn);
     int ret=comedi_do_insn(_myCard->getDevice(),&insn);
     if(ret<0)
-      {
-	rtos_printf("Comedi Counter : Instruction to configure counter -> encoder failed\n");
-      }
+      Log(Error) << "Comedi Counter : Instruction to configure counter -> encoder failed" << endlog();
   }
   
   ComediEncoder::~ComediEncoder(){}
