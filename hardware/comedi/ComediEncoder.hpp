@@ -35,14 +35,14 @@ namespace RTT
    * abstraction layer.  Based on the comedi API of the home
    * written driver for the NI660X card.
    * @todo Currently this wrapper does not support all functionality.
-   * It allways uses X4 encoding (maximum resolution), you cannot choose
+   * It always uses X4 encoding (maximum resolution), you cannot choose
    * when to take into account the indexpulse or reset the counter
    * when the index pulse arrives.  Also see the comments of the
    * encodertest.c program 
    * See <http://people.mech.kuleuven.ac.be/~kgadeyne/linux/> for more
    * information about all this stuff
    * @todo subdevice locking
-   * @bug upcounting is allways true
+   * @bug upcounting is always true
    * @bug The current implementation does not consider the _turn
    * parameter, since an overflow of the 32 bit register is unlikely
    * to occur in our case.
