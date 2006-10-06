@@ -80,7 +80,7 @@
 *         </ul>
 *
 * 	  <li>camera: Implementation for use with firewire camera's and
-*        OpenCV. Can be used be everyone.
+*        OpenCV. Can be used by everyone.
 *        <ul>
 *        <li> Orocos::CaptureCamera
 *        </ul>
