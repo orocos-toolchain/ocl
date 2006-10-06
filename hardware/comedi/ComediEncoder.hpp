@@ -42,6 +42,8 @@ namespace RTT
    * See <http://people.mech.kuleuven.ac.be/~kgadeyne/linux/> for more
    * information about all this stuff
    * @todo subdevice locking
+   * @todo Throw exception when constructor fails instead of just
+   * printing an error
    * @bug upcounting is always true
    * @bug The current implementation does not consider the _turn
    * parameter, since an overflow of the 32 bit register is unlikely
