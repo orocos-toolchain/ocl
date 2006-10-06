@@ -30,7 +30,7 @@ namespace Orocos
   
   
   CartesianControllerVel::CartesianControllerVel(string name,string propertyfile)
-    : GenericTaskContext(name),
+    : TaskContext(name),
       _propertyfile(propertyfile),
       _position_meas("CartesianSensorPosition"),
       _velocity_desi("CartesianDesiredVelocity"),
@@ -48,7 +48,7 @@ namespace Orocos
     //Adding Properties
     this->properties()->addProperty(&_controller_gain);
 
-    if(!readProperties(_propertyfile))
+    if(!marshalling()->readProperties(_propertyfile))
       log(Error)<<"(CartesianControllerVel) Reading Properties from "<<_propertyfile<<" failed!!"<<endlog();
 
   }

@@ -19,8 +19,6 @@
 //  
 
 #include "nAxesGeneratorPos.hpp"
-#include <rtt/Command.hpp>
-#include <rtt/Method.hpp>
 #include <assert.h>
 
 namespace Orocos
@@ -32,7 +30,7 @@ namespace Orocos
 
     nAxesGeneratorPos::nAxesGeneratorPos(string name,unsigned int num_axes,
                                          string propertyfile)
-        : GenericTaskContext(name),
+        : TaskContext(name),
           _num_axes(num_axes), 
           _propertyfile(propertyfile),
           _position_meas_local(num_axes),
@@ -66,7 +64,7 @@ namespace Orocos
         //Adding Methods
         this->methods()->addMethod( &_reset, "Reset generator" );  
 
-    if(!readProperties(_propertyfile))
+    if(!marshalling()->readProperties(_propertyfile))
       Logger::log()<<Logger::Error<<"(nAxesGeneratorPos) Reading Properties from "<<_propertyfile<<" failed!!"<<Logger::endl;
 
     // Instantiate Motion Profiles

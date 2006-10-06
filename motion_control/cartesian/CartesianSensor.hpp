@@ -26,9 +26,27 @@
 
 namespace Orocos
 {
+    /**
+     * This class implements a TaskContext that reads out the
+     * positionValue and driveValue dataports of a
+     * nAxesVelocityController. It collects these values and stores
+     * them as a vector in a dataport. It also uses a
+     * KDL::KinematicFamily to calculate the end-effector frame and
+     * the end-effector twist.
+     * 
+     */
+
     class CartesianSensor : public nAxesSensor
     {
     public:
+        /** 
+         * Constructor of the class
+         * 
+         * @param name name of the TaskContext
+         * @param kf pointer to the KDL::KinematicFamily to use for
+         * kinematic calculations
+         * 
+         */
         CartesianSensor(std::string name,
                         KDL::KinematicFamily* kf);
         
@@ -41,9 +59,13 @@ namespace Orocos
   
     private:
         KDL::FrameVel                      _FV_local;
+    protected:
+        /// DataPort containing the end-effector frame
         RTT::WriteDataPort< KDL::Frame >   _frame;
+        /// DataPort constaining the end-effector twist, represented
+        /// in the base frame with end-effector reference point.
         RTT::WriteDataPort< KDL::Twist >   _twist;
-        
+    private:
         KDL::KinematicFamily*              _kf;
         //KDL::Jnt2CartPos*                  _jnt2cartpos;
         KDL::Jnt2CartVel*                  _jnt2cartvel;

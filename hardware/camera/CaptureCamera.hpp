@@ -20,7 +20,7 @@
 
 #include <rtt/RTT.hpp>
 
-#include <rtt/GenericTaskContext.hpp>
+#include <rtt/TaskContext.hpp>
 #include <rtt/Ports.hpp>
 #include <rtt/Properties.hpp>
 #include <rtt/Command.hpp>
@@ -41,7 +41,7 @@ namespace Orocos
      *
      */
     
-    class CaptureCamera : public RTT::GenericTaskContext 
+    class CaptureCamera : public RTT::TaskContext 
     {
     
     public:
@@ -61,11 +61,11 @@ namespace Orocos
         
     protected:
         /// Dataport which contains grabbed image
-        RTT::WriteDataPort<IplImage> _image;
+        RTT::DataPort<IplImage>             _image;
         /// Dataport which contains grabbing timestamp
         RTT::WriteDataPort<RTT::TimeService::ticks> _capture_time;
         /// Command to grab image
-        RTT::Command<bool(void)>                    _newImage;
+        RTT::Command<bool(void)>            _newImage;
 
         /// capturing mode, check dc1394 for values
         RTT::Property<int>                  _capture_mode;

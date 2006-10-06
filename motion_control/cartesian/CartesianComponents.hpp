@@ -15,6 +15,10 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 //  
 
+/**
+ * Header that collects all CartesianComponents headers.
+ * 
+ */
 #include "CartesianSensor.hpp"
 #include "CartesianGeneratorPos.hpp"
 #include "CartesianControllerPos.hpp"

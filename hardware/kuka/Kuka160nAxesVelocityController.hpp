@@ -6,7 +6,7 @@
 #include <vector>
 #include <rtt/RTT.hpp>
 
-#include <rtt/GenericTaskContext.hpp>
+#include <rtt/TaskContext.hpp>
 #include <rtt/Ports.hpp>
 #include <rtt/Event.hpp>
 #include <rtt/Command.hpp>
@@ -31,7 +31,7 @@
 namespace Orocos
 {
     /**
-     * This class implements a GenericTaskContext to use with the
+     * This class implements a TaskContext to use with the
      * Kuka160 robot in the RoboticLab, PMA, dept. Mechanical
      * Engineering, KULEUVEN. Since the hardware part is very specific
      * for our setup, other people can only use the simulation
@@ -40,7 +40,7 @@ namespace Orocos
      * 
      */
 
-  class Kuka160nAxesVelocityController : public RTT::GenericTaskContext
+  class Kuka160nAxesVelocityController : public RTT::TaskContext
   {
   public:/** 
           * The contructor of the class.
@@ -198,12 +198,12 @@ namespace Orocos
        */
       std::vector<RTT::WriteDataPort<bool>*>    _references;
       /**
-       * vector of WriteDataPorts which contain the values of the
+       * vector of DataPorts which contain the values of the
        * position sensors. It is used by other components who need this
        * value for control ;)
        * 
        */
-      std::vector<RTT::WriteDataPort<double>*>  _positionValue;
+      std::vector<RTT::DataPort<double>*>       _positionValue;
       
     
       /**

@@ -20,8 +20,6 @@
 
 
 #include "nAxesControllerPos.hpp"
-#include <rtt/Command.hpp>
-#include <rtt/Method.hpp>
 #include <assert.h>
 
 namespace Orocos
@@ -34,7 +32,7 @@ namespace Orocos
   
     nAxesControllerPos::nAxesControllerPos(string name,unsigned int num_axes, 
                                            string propertyfile)
-        : GenericTaskContext(name),
+        : TaskContext(name),
           _num_axes(num_axes), 
           _propertyfile(propertyfile),
           _position_meas_local(num_axes),
@@ -68,7 +66,7 @@ namespace Orocos
         
         this->methods()->addMethod( &_getOffset,"Get offset measurements");
 
-        if(!readProperties(_propertyfile)){
+        if(!marshalling()->readProperties(_propertyfile)){
             Logger::log()<<Logger::Error<<"(nAxesControllerPos) Reading Properties from "<<_propertyfile<<" failed!!"<<Logger::endl;
         }
         

@@ -16,7 +16,6 @@
 //  
 
 #include "CaptureCamera.hpp"
-#include <rtt/Command.hpp>
 #include <libdc1394/dc1394_control.h>
 
 namespace Orocos
@@ -26,7 +25,7 @@ namespace Orocos
   using namespace std;
   
   CaptureCamera::CaptureCamera(string name,string propertyfile)
-    :GenericTaskContext(name),
+    :TaskContext(name),
      _image("RawImage"),
      _capture_time("CaptureTimestamp"),
      _newImage("updateImage",&CaptureCamera::updateImage,&CaptureCamera::updateImageFinished, this),
@@ -72,7 +71,7 @@ namespace Orocos
   bool CaptureCamera::startup()
   {
     
-    readProperties("cpf/CaptureCamera.cpf");
+    marshalling()->readProperties("cpf/CaptureCamera.cpf");
           
     //Initialize capturing
     //=====================

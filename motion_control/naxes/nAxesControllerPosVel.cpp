@@ -30,7 +30,7 @@ namespace Orocos
 
   nAxesControllerPosVel::nAxesControllerPosVel(string name,unsigned int num_axes, 
   					     string propertyfile)
-    : GenericTaskContext(name),
+    : TaskContext(name),
       _num_axes(num_axes), 
       _propertyfile(propertyfile),
       _position_meas_local(num_axes),
@@ -54,7 +54,7 @@ namespace Orocos
     //Adding properties
     this->properties()->addProperty(&_controller_gain);
   
-    if(!this->readProperties(_propertyfile))
+    if(!marshalling()->readProperties(_propertyfile))
       Logger::log()<<Logger::Error<<"(nAxesControllerPosVel) Reading Properties from "<<_propertyfile<<" failed!!"<<Logger::endl;
     
   }

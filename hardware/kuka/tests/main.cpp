@@ -27,7 +27,7 @@ int ORO_main(int argc, char* argv[])
               << " See also file 'orocos.log'." << endlog();
   }
 
-  GenericTaskContext* my_robot = NULL;
+  TaskContext* my_robot = NULL;
   if (argc > 1)
     {
       string s = argv[1];
@@ -56,7 +56,7 @@ int ORO_main(int argc, char* argv[])
   browser.setColorTheme( TaskBrowser::whitebg );
 
   //Loading program in browser
-  my_robot->loadProgram("program.ops");
+  my_robot->scripting()->loadPrograms("program.ops");
 
   /// Creating Tasks
   NonPreemptibleActivity _kukaTask(0.01, my_robot->engine() );  

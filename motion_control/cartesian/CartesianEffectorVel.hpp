@@ -24,7 +24,7 @@
 
 #include <rtt/RTT.hpp>
 
-#include <rtt/GenericTaskContext.hpp>
+#include <rtt/TaskContext.hpp>
 #include <rtt/Ports.hpp>
 
 #include <kdl/kdl.hpp>
@@ -33,10 +33,26 @@
 
 namespace Orocos
 {
-    
-    class CartesianEffectorVel : public RTT::GenericTaskContext
+    /**
+     * This class implements a TaskContext that reads out the
+     * output twist dataports of Orocos::CartesianControllerPos,
+     * Orocos::CartesianControllerPosVel or Orocos::CartesianControllerVel and
+     * converts them to axis output velocities using a
+     * KDL::KinematicFamily and puts these output values in the
+     * driveValue dataports of an nAxesVelocityController. 
+     * 
+     */
+    class CartesianEffectorVel : public RTT::TaskContext
     {
     public:
+        /** 
+         * Constructor of the class
+         * 
+         * @param name name of the TaskContext
+         * @param kf pointer to the KDL::KinematicFamily to use for
+         * kinematic calculations
+         * 
+         */
         CartesianEffectorVel(std::string name, KDL::KinematicFamily* kf);
         
         virtual ~CartesianEffectorVel();
@@ -46,12 +62,22 @@ namespace Orocos
         virtual void shutdown();
   
     private:
-        
         JointVector                                _velocity_joint_local;
+    protected:
+        /// DataPort containing the output twist, shared with
+        /// Orocos::CartesianControllerPos,
+        /// Orocos::CartesianControllerPosVel or
+        /// Orocos::CartesianControllerVel  
         RTT::ReadDataPort< KDL::Twist >            _velocity_cartesian;
+        /// vector of dataports which read from the
+        /// nAxesVelocityController. Default looks for ports with
+        /// names positionValue0, positionValue1, ...
         RTT::ReadDataPort< std::vector<double> >   _position_joint;
+        /// vector of dataports which write to the
+        /// nAxesVelocityController. Default looks for ports with
+        /// names driveValue0, driveValue1, ...
         std::vector<RTT::WriteDataPort<double>*>   _velocity_drives;
-        
+    private:
         KDL::KinematicFamily*                      _kf;
         KDL::CartVel2Jnt*                          _cartvel2jnt;
         

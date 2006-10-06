@@ -1,7 +1,7 @@
 #ifndef WRENCH_SENSOR_H
 #define WRENCH_SENSOR_H
 
-#include <rtt/GenericTaskContext.hpp>
+#include <rtt/TaskContext.hpp>
 #include <rtt/Attribute.hpp>
 #include <rtt/Event.hpp>
 #include <rtt/Method.hpp>
@@ -33,7 +33,7 @@ namespace Orocos
      * running in lxrt and the jr3-driver is succesfully loaded.
      */
 
-    class WrenchSensor : public RTT::GenericTaskContext
+    class WrenchSensor : public RTT::TaskContext
     {
         /**
          * Task's Data Ports.

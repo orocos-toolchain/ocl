@@ -20,7 +20,6 @@
 
 #include "nAxesControllerVel.hpp"
 
-#include <rtt/Method.hpp>
 #include <assert.h>
 
 namespace Orocos{
@@ -31,7 +30,7 @@ namespace Orocos{
     
     nAxesControllerVel::nAxesControllerVel(string name, unsigned int num_axes, 
                                            string propertyfile)
-        : GenericTaskContext(name),
+        : TaskContext(name),
           _num_axes(num_axes), 
           _propertyfile(propertyfile),
           _position_meas_local(num_axes),
@@ -62,7 +61,7 @@ namespace Orocos{
         this->methods()->addMethod( &_resetAxis,"reset the controller",
                                     "axis","axis to reset");  
         
-        if(!readProperties(_propertyfile))
+        if(!marshalling()->readProperties(_propertyfile))
             Logger::log()<<Logger::Error<<"(nAxesControllerVel) Reading Properties from "<<_propertyfile<<" failed!!"<<Logger::endl;
         
     }

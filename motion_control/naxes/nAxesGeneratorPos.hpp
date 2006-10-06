@@ -23,7 +23,7 @@
 
 #include <rtt/RTT.hpp>
 
-#include <rtt/GenericTaskContext.hpp>
+#include <rtt/TaskContext.hpp>
 #include <rtt/Properties.hpp>
 #include <rtt/Ports.hpp>
 #include <rtt/Command.hpp>
@@ -49,7 +49,7 @@ namespace Orocos
      * 
      */
 
-    class nAxesGeneratorPos : public RTT::GenericTaskContext
+    class nAxesGeneratorPos : public RTT::TaskContext
     {
     public:
         /** 

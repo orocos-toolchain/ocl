@@ -1,7 +1,4 @@
 #include "WrenchSensor.hpp"
-#include <rtt/Attribute.hpp>
-#include <rtt/Command.hpp>
-#include <rtt/Method.hpp>
 #include <kdl/frames_io.hpp>
 
 #if defined (OROPKG_OS_LXRT)
@@ -26,7 +23,7 @@ namespace Orocos
   using namespace KDL;
   
   WrenchSensor::WrenchSensor(double samplePeriod,std::string name,unsigned int DSP,string propertyfile) 
-    : RTT::GenericTaskContext(name),
+    : RTT::TaskContext(name),
       outdatPort("WrenchData"),
       maximumLoadEvent("maximumLoadEvent"), 
       _maxMeasurement( "maxMeasurement", &WrenchSensor::maxMeasurement, this),
@@ -87,7 +84,7 @@ namespace Orocos
 #endif				
     
     
-    if (!readProperties(_propertyfile)) {
+    if (!marshalling()->readProperties(_propertyfile)) {
       Logger::log() << Logger::Error << "Failed to read the property file. Offsets are set to zero" << Logger::endl;
     }
     
@@ -216,7 +213,7 @@ namespace Orocos
    * This function is called when the task is stopped.
    */
   void WrenchSensor::shutdown() {
-    writeProperties(_propertyfile);
+    marshalling()->writeProperties(_propertyfile);
   }
   
   WrenchSensor::~WrenchSensor() {

@@ -23,7 +23,7 @@
 
 #include <rtt/RTT.hpp>
 
-#include <rtt/GenericTaskContext.hpp>
+#include <rtt/TaskContext.hpp>
 #include <rtt/Properties.hpp>
 #include <rtt/Ports.hpp>
 
@@ -32,28 +32,60 @@
 
 namespace Orocos
 {
-  class CartesianControllerPosVel : public RTT::GenericTaskContext
-  {
-  public:
-    CartesianControllerPosVel(std::string name,std::string propertyfile="cpf/CartesianControllerPosVel.cpf");
-    virtual ~CartesianControllerPosVel();
-    
-    virtual bool startup();
-    virtual void update();
-    virtual void shutdown();
-  
-  private:
-    const std::string                    _propertyfile;
-    
-    KDL::Frame                  _position_meas_local, _position_desi_local;
-    KDL::Twist                  _velocity_out_local, _velocity_desi_local, _velocity_feedback;
-      
-    RTT::ReadDataPort< KDL::Frame >    _position_meas, _position_desi;
-    RTT::ReadDataPort< KDL::Twist >    _velocity_desi;
-    RTT::WriteDataPort< KDL::Twist >   _velocity_out;
-  
-    RTT::Property< std::vector<double> >        _controller_gain;
-  
-  }; // class
+    /**
+     * This class implements a TaskContext that controlls the
+     * end-effector frame of a robot. It uses a simple
+     * position-feedback and velocity-feedforward to calculate an
+     * output twist.  
+     * twist_out = K_gain * ( frame_desired - frame_measured) + 
+     *             twist_desired.
+     * It can share dataports with
+     * Orocos::CartesianSensor to get the measured frame, with
+     * Orocos::CartesianGeneratorPos to get its desired frame and with
+     * Orocos::CartesianEffectorVel to convert the output twist to
+     * output velocities and send them to the hardware/simulation
+     * axes.
+     * 
+     */
+    class CartesianControllerPosVel : public RTT::TaskContext
+    {
+    public:
+        /** 
+         * Constructor of the class
+         * 
+         * @param name name of the TaskContext
+         * @param propertyfile location of the propertyfile. Default:
+         * cpf/CartesianControllerPosVel.cpf 
+         * 
+         */
+        CartesianControllerPosVel(std::string name,std::string propertyfile="cpf/CartesianControllerPosVel.cpf");
+        virtual ~CartesianControllerPosVel();
+        
+        virtual bool startup();
+        virtual void update();
+        virtual void shutdown();
+        
+    private:
+        const std::string           _propertyfile;
+        KDL::Frame                  _position_meas_local, _position_desi_local;
+        KDL::Twist                  _velocity_out_local, _velocity_desi_local, _velocity_feedback;
+
+    protected:
+        /// DataPort containing the measured frame, shared with
+        /// Orocos::CartesianSensor 
+        RTT::ReadDataPort< KDL::Frame >    _position_meas;
+        /// DataPort containing the desired frame, shared with
+        /// Orocos::CartesianGeneratorPos  
+        RTT::ReadDataPort< KDL::Frame >    _position_desi;
+        /// DataPort containing the desired twist, shared with
+        /// Orocos::CartesianGeneratorPos 
+        RTT::ReadDataPort< KDL::Twist >    _velocity_desi;
+        /// DataPort containing the output twist, shared with
+        /// Orocos::CartesianEffectorVel 
+        RTT::WriteDataPort< KDL::Twist >   _velocity_out;
+        /// Vector with the control gain value for each dof.
+        RTT::Property< std::vector<double> >        _controller_gain;
+        
+    }; // class
 }//namespace
 #endif // __N_AXES_CARTESIAN_POS_VEL_CONTROLLER_H__

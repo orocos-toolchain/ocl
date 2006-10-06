@@ -6,7 +6,7 @@
 #include <vector>
 #include <rtt/RTT.hpp>
 
-#include <rtt/GenericTaskContext.hpp>
+#include <rtt/TaskContext.hpp>
 #include <rtt/Ports.hpp>
 #include <rtt/Event.hpp>
 #include <rtt/Properties.hpp>
@@ -31,7 +31,7 @@
 namespace Orocos
 {
     /**
-     * This class implements a GenericTaskContext to use with the
+     * This class implements a TaskContext to use with the
      * Kuka361 robot in the RoboticLab, PMA, dept. Mechanical
      * Engineering, KULEUVEN. Since the hardware part is very specific
      * for our setup, other people can only use the simulation
@@ -40,7 +40,7 @@ namespace Orocos
      * 
      */
     
-    class Kuka361nAxesVelocityController : public RTT::GenericTaskContext
+    class Kuka361nAxesVelocityController : public RTT::TaskContext
     {
     public:
         /** 
@@ -178,7 +178,7 @@ namespace Orocos
          * value for control ;)
          * 
          */
-        std::vector<RTT::WriteDataPort<double>*>  _positionValue;
+        std::vector<RTT::DataPort<double>*>       _positionValue;
 
         /**
          * The absolute value of the velocity will be limited to this property.  

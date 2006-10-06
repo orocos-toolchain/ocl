@@ -24,7 +24,7 @@
 #include <pkgconf/system.h> 
 #include <kdl/frames.hpp>
 #include <rtt/RTT.hpp>
-#include <rtt/GenericTaskContext.hpp>
+#include <rtt/TaskContext.hpp>
 #include <rtt/NonPeriodicActivity.hpp>
 #include <rtt/Ports.hpp>
 
@@ -39,7 +39,7 @@
 namespace Orocos
 {
   class KryptonK600Sensor 
-    :public RTT::GenericTaskContext
+    :public RTT::TaskContext
 #if defined (OROPKG_OS_LXRT)
     ,public RTT::NonPeriodicActivity
 #endif

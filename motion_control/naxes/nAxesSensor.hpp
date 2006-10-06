@@ -22,7 +22,7 @@
 #define __N_AXES_SENSOR_POS_H__
 
 #include <rtt/RTT.hpp>
-#include <rtt/GenericTaskContext.hpp>
+#include <rtt/TaskContext.hpp>
 #include <rtt/Ports.hpp>
 
 namespace Orocos
@@ -35,7 +35,7 @@ namespace Orocos
      * your own components.
      * 
      */
-    class nAxesSensor : public RTT::GenericTaskContext
+    class nAxesSensor : public RTT::TaskContext
     {
     public:
         /** 
@@ -54,11 +54,10 @@ namespace Orocos
         virtual void update();
         virtual void shutdown();
   
-    private:
+    protected:
         unsigned int                                _num_axes;
         std::vector<double>                         _position_local;
         std::vector<double>                         _velocity_local;
-    protected:
         /// vector of dataports which read from the
         /// nAxesVelocityController. Default looks for ports with
         /// names positionValue0, positionValue1, ...

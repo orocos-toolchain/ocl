@@ -27,10 +27,7 @@
 
 #include "naxespositionviewer.hpp"
 
-#include <rtt/GenericTaskContext.hpp>
 #include <rtt/Logger.hpp>
-#include <rtt/Attribute.hpp>
-#include <rtt/DataPort.hpp>
 
 #include <ace/Reactor.h>
 #include <ace/Svc_Handler.h>
@@ -134,7 +131,7 @@ ACE_Reactor* ClientHandler::reactor_instance = 0;
 
 	
 NAxesPositionViewer::NAxesPositionViewer(const std::string& name,const std::string& propertyfilename)
-  : GenericTaskContext(name),
+  : TaskContext(name),
     _propertyfile(propertyfilename),
 	portnumber("portnumber","Port number to listen to for clients"),
 	num_axes("numaxes","Number of axes to observe"),
@@ -158,7 +155,7 @@ NAxesPositionViewer::NAxesPositionViewer(const std::string& name,const std::stri
   properties()->addProperty( &seperate_ports);
   properties()->addProperty( &port_name);
  
-  if (!readProperties(_propertyfile)) {
+  if (!marshalling()->readProperties(_propertyfile)) {
     Logger::log() << Logger::Error << "Failed to read the property file, continue with default values." << Logger::endl;
   }
   _num_axes = num_axes.value();

@@ -3,7 +3,7 @@
 #include <vector>
 #include <rtt/RTT.hpp>
 
-#include <rtt/GenericTaskContext.hpp>
+#include <rtt/TaskContext.hpp>
 #include <rtt/Ports.hpp>
 #include <rtt/Properties.hpp>
 
@@ -14,10 +14,11 @@ namespace Orocos {
     /**
      * This class implements a TaskContext that sends position values
      * to the KDLViewer using an ACE-socket.
-     * 
+     *
+     * Singlethreaded reactive server that can handle multiple clients.
      */
 
-class NAxesPositionViewer : public RTT::GenericTaskContext
+class NAxesPositionViewer : public RTT::TaskContext
 {
 public:
     /** 

@@ -27,8 +27,6 @@
 #include "Kuka361nAxesVelocityController.hpp"
 
 #include <rtt/Logger.hpp>
-#include <rtt/Attribute.hpp>
-#include <rtt/Command.hpp>
 
 namespace Orocos
 {
@@ -57,7 +55,7 @@ namespace Orocos
     typedef Kuka361nAxesVelocityController MyType;
     
     Kuka361nAxesVelocityController::Kuka361nAxesVelocityController(string name,string propertyfile)
-        : GenericTaskContext(name),
+        : TaskContext(name),
           _startAxis( "startAxis", &MyType::startAxis,&MyType::startAxisCompleted, this),
           _startAllAxes( "startAllAxes", &MyType::startAllAxes,&MyType::startAllAxesCompleted, this),
           _stopAxis( "stopAxis", &MyType::stopAxis,&MyType::stopAxisCompleted, this),
@@ -110,7 +108,7 @@ namespace Orocos
         properties()->addProperty( &_simulation  );
         attributes()->addConstant( &_num_axes);
     
-        if (!readProperties(_propertyfile)) {
+        if (!marshalling()->readProperties(_propertyfile)) {
             log(Error) << "Failed to read the property file, continueing with default values." << endlog();
         }  
         
@@ -193,7 +191,7 @@ namespace Orocos
             _driveValue[i] = new ReadDataPort<double>(buf);
             ports()->addPort(_driveValue[i]);
             sprintf(buf,"positionValue%d",i);
-            _positionValue[i]  = new WriteDataPort<double>(buf);
+            _positionValue[i]  = new DataPort<double>(buf);
             ports()->addPort(_positionValue[i]);
         }
         
@@ -253,7 +251,7 @@ namespace Orocos
         //Make sure machine is shut down
         prepareForShutdown();
         //Write properties back to file
-        writeProperties(_propertyfile);
+        marshalling()->writeProperties(_propertyfile);
     }
   
     

@@ -21,7 +21,7 @@
 #include <kdl/toolkit.hpp>
 #include <kdl/kinfam/kinematicfamily_io.hpp>
 
-#include <rtt/GenericTaskContext.hpp>
+#include <rtt/TaskContext.hpp>
 #include <rtt/os/main.h>
 
 using namespace Orocos;
@@ -35,7 +35,7 @@ int ORO_main(int argc, char* argv[])
 {
     Toolkit::Import( KDLToolkit );
 
-    GenericTaskContext* my_robot = NULL;
+    TaskContext* my_robot = NULL;
     KinematicFamily* kukakf = NULL;
     if (argc > 1)
         {
@@ -94,7 +94,7 @@ int ORO_main(int argc, char* argv[])
     reporter.connectPeers(&effector);  
     
     //Create supervising TaskContext
-    GenericTaskContext super("CartesianTest");
+    TaskContext super("CartesianTest");
     
     // Link components to supervisor
     super.connectPeers(my_robot);
@@ -108,10 +108,10 @@ int ORO_main(int argc, char* argv[])
     //
     //// Load programs in supervisor
     //super.loadProgram("cpf/program_calibrate_offsets.ops");
-    super.loadProgram("cpf/program_moveto.ops");
+    super.scripting()->loadPrograms("cpf/program_moveto.ops");
     //
     //// Load StateMachine in supervisor
-    super.loadStateMachine("cpf/states.osd");
+    super.scripting()->loadStateMachines("cpf/states.osd");
 
     // Creating Tasks
     NonPreemptibleActivity _kukaTask(0.01, my_robot->engine() ); 

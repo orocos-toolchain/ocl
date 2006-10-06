@@ -6,7 +6,7 @@ namespace Orocos
     using namespace RTT;
     
     ReferenceSensor::ReferenceSensor(string name,int _nrofaxes):
-        GenericTaskContext(name),
+        TaskContext(name),
         nrofaxes(_nrofaxes),
         _getReference("getReference",&ReferenceSensor::getReference,this),
         reference(_nrofaxes)

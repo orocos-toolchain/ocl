@@ -28,7 +28,7 @@ namespace Orocos
   using namespace std;
   
   LaserSensor::LaserSensor(string name,unsigned int nr_chan ,string propertyfile):
-    GenericTaskContext(name),
+    TaskContext(name),
 #if defined (OROPKG_DEVICE_DRIVERS_COMEDI)    
     _LaserInput(nr_chan),
 #endif
@@ -74,7 +74,7 @@ namespace Orocos
     }
 #endif
     
-    if(!readProperties(_propertyfile))
+    if(!marshalling()->readProperties(_propertyfile))
       log(Error)<<"Reading properties failed."<<endlog();
     
     Logger::log()<<Logger::Debug<<this->getName()<<": constructed."<<Logger::endl;
@@ -124,7 +124,7 @@ namespace Orocos
     
     void LaserSensor::shutdown()
     {
-        writeProperties(_propertyfile);
+        marshalling()->writeProperties(_propertyfile);
     }
 }//namespace
 

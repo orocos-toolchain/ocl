@@ -18,8 +18,6 @@
 //  
 
 #include "nAxesGeneratorVel.hpp"
-#include <rtt/Command.hpp>
-#include <rtt/Method.hpp>
 #include <assert.h>
 
 namespace Orocos
@@ -31,7 +29,7 @@ namespace Orocos
     
     nAxesGeneratorVel::nAxesGeneratorVel(string name,unsigned int num_axes,
                                          string propertyfile)
-        : GenericTaskContext(name),
+        : TaskContext(name),
           _num_axes(num_axes), 
           _propertyfile(propertyfile),
           _duration_desired(num_axes),      
@@ -92,7 +90,7 @@ namespace Orocos
         for( unsigned int i=0; i<_num_axes; i++)
             _vel_profile[i] = new VelocityProfile_Trap( 0,0);
         
-        if(!readProperties(_propertyfile))
+        if(!marshalling()->readProperties(_propertyfile))
             Logger::log()<<Logger::Error<<"(nAxesGeneratorVel) Reading Properties from "<<_propertyfile<<" failed!!"<<Logger::endl;
 
     }

@@ -19,8 +19,6 @@
 //  
 
 #include "CartesianGeneratorPos.hpp"
-#include <rtt/Command.hpp>
-#include <rtt/Method.hpp>
 #include <assert.h>
 
 namespace Orocos
@@ -31,14 +29,17 @@ namespace Orocos
   using namespace std;
     
   CartesianGeneratorPos::CartesianGeneratorPos(string name,string propertyfile)
-    : GenericTaskContext(name),
+    : TaskContext(name),
       _propertyfile(propertyfile),
+      _moveTo( "moveTo", &CartesianGeneratorPos::moveTo,
+               &CartesianGeneratorPos::moveFinished, this),
+      _reset( "reset", &CartesianGeneratorPos::reset, this),
       _position_meas("CartesianSensorPosition"),
       _position_desi("CartesianDesiredPosition"),
       _velocity_desi("CartesianDesiredVelocity"),
-      _motion_profile(6),
       _maximum_velocity("max_vel", "Maximum Velocity in Trajectory"),
-      _maximum_acceleration("max_acc", "Maximum Acceleration in Trajectory")
+      _maximum_acceleration("max_acc", "Maximum Acceleration in Trajectory"),
+      _motion_profile(6)
   {
     //Creating TaskContext
 
@@ -52,23 +53,19 @@ namespace Orocos
     this->properties()->addProperty(&_maximum_acceleration);
   
     //Adding Commands
-
-    this->commands()->addCommand( command( "moveTo", &CartesianGeneratorPos::moveTo,
-                                           &CartesianGeneratorPos::moveFinished, this),
-                                  "Set the position setpoint",
+    this->commands()->addCommand( &_moveTo,"Set the position setpoint",
                                   "setpoint", "position setpoint for end effector",
                                   "time", "minimum time to execute trajectory" );
     
     //Adding Methods
-
-    this->methods()->addMethod( method( "reset", &CartesianGeneratorPos::reset, this), "Reset generator" );  
+    this->methods()->addMethod( &_reset, "Reset generator" );  
         
     // Instantiate Motion Profiles
     for( unsigned int i=0; i<6; i++)
       _motion_profile[i] = new VelocityProfile_Trap( 0, 0 );
 
     //Read properties
-    if(!readProperties(_propertyfile))
+    if(!marshalling()->readProperties(_propertyfile))
       Logger::log()<<Logger::Error<<"(CartesianGeneratorPos) Reading Properties from "<<_propertyfile<<" failed!!"<<Logger::endl;
 
 

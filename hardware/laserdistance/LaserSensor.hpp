@@ -21,7 +21,7 @@
 #include <pkgconf/system.h>
 
 #include <rtt/RTT.hpp>
-#include <rtt/GenericTaskContext.hpp>
+#include <rtt/TaskContext.hpp>
 #include <rtt/Ports.hpp>
 #include <rtt/Event.hpp>
 #include <rtt/Properties.hpp>
@@ -39,7 +39,7 @@ namespace Orocos {
      * digital IO PCI cards. It can also be used in simulation if the
      * comedi-device drivers were not available during compilation of orocos.
      */
-    class LaserSensor : public RTT::GenericTaskContext {
+    class LaserSensor : public RTT::TaskContext {
     public:
         /** 
          * Constructor of the class

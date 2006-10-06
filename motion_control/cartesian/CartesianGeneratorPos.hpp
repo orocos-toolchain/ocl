@@ -23,9 +23,12 @@
 
 #include <rtt/RTT.hpp>
 
-#include <rtt/GenericTaskContext.hpp>
+#include <rtt/TaskContext.hpp>
 #include <rtt/Properties.hpp>
 #include <rtt/Ports.hpp>
+#include <rtt/Command.hpp>
+#include <rtt/Method.hpp>
+
 #include <kdl/motion/velocityprofile_trap.h>
 #include <rtt/TimeService.hpp>
 
@@ -34,40 +37,88 @@
 
 namespace Orocos
 {
-  class CartesianGeneratorPos : public RTT::GenericTaskContext
-  {
-  public:
     /**
-     * @brief Create a GeneratorPos.
+     * This class implements a TaskContext that creates a path in
+     * Cartesian space between the current cartesian position and a
+     * new desired cartesian position. It uses trapezoidal
+     * velocity-profiles for every dof using a maximum velocity and a
+     * maximum acceleration. It generates frame and twist setpoints
+     * which can be used by Orocos::CartesianControllerPos,
+     * Orocos::CartesianControllerPosVel or Orocos::CartesianControllerVel.
+     * 
      */
-    CartesianGeneratorPos(std::string name,std::string propertyfile="cpf/CartesianGeneratorPos.cpf");
-    virtual ~CartesianGeneratorPos();
+    class CartesianGeneratorPos : public RTT::TaskContext
+    {
+    public:
+        /** 
+         * Constructor of the class.
+         * 
+         * @param name name of the TaskContext
+         * @param propertyfile location of the propertyfile. Default:
+         * cpf/CartesianGeneratorPos.cpf 
+         * 
+         */
+        CartesianGeneratorPos(std::string name,std::string propertyfile="cpf/CartesianGeneratorPos.cpf");
+        virtual ~CartesianGeneratorPos();
+        
+        virtual bool startup();
+        virtual void update();
+        virtual void shutdown();
   
-    virtual bool startup();
-    virtual void update();
-    virtual void shutdown();
+    private:
+        bool moveTo(KDL::Frame frame, double time=0);
+        bool moveFinished() const;
+        void reset();
   
-  private:
-    bool moveTo(KDL::Frame frame, double time=0);
-    bool moveFinished() const;
-    void reset();
-  
-    const std::string                 _propertyfile;
-  
-    KDL::Frame                        _traject_end, _traject_begin;
-    KDL::Frame                        _position_desi_local;
-    KDL::Twist                        _velocity_desi_local, _velocity_begin_end, _velocity_delta;
-    RTT::ReadDataPort< KDL::Frame >   _position_meas;
-    RTT::WriteDataPort< KDL::Frame >  _position_desi;
-    RTT::WriteDataPort< KDL::Twist >  _velocity_desi;
-  
-    std::vector<KDL::VelocityProfile_Trap*>     _motion_profile;
-    RTT::TimeService::ticks                     _time_begin;
-    RTT::TimeService::Seconds                   _time_passed;
-    double                                      _max_duration;
-    
-    bool                                        _is_moving;
-    RTT::Property< std::vector<double> >        _maximum_velocity, _maximum_acceleration;
+        const std::string                 _propertyfile;
+        
+        KDL::Frame                        _traject_end, _traject_begin;
+        KDL::Frame                        _position_desi_local;
+        KDL::Twist                        _velocity_desi_local, _velocity_begin_end, _velocity_delta;
+
+    protected:
+        /** 
+         * Command to generate the motion. Command stops when the
+         * movement is finished.
+         * 
+         * @param frame the desired frame
+         * @param time the minimum time duration of the movement.
+         * 
+         * @return false if a previous motion is still going on, true otherwise
+         */
+        RTT::Command<bool(KDL::Frame,double)> _moveTo;
+        
+        /**
+         * Method that resets the generators desired frame tho the
+         *current measured frame and the desired twist to zero.
+         */
+        RTT::Method<void(void)>           _reset;
+        /// Dataport containing the current measured end-effector
+        /// frame, shared with Orocos::CartesianSensor
+        RTT::ReadDataPort< KDL::Frame >   _position_meas;
+        /// Dataport containing the current desired end-effector
+        /// frame, shared with Orocos::CartesianControllerPos,
+        /// Orocos::CartesianControllerPosVel 
+        RTT::WriteDataPort< KDL::Frame >  _position_desi;
+        /// Dataport containing the current desired end-effector
+        /// twist, shared with Orocos::CartesianControllerPosVel,
+        /// Orocos::CartesianControllerVel 
+        RTT::WriteDataPort< KDL::Twist >  _velocity_desi;
+        /// Property containing a vector with the maximum velocity of
+        /// each dof
+        RTT::Property< std::vector<double> >  _maximum_velocity;
+        /// Property containing a vector with the maximum acceleration of
+        /// each dof
+        RTT::Property< std::vector<double> >  _maximum_acceleration;
+
+    private:  
+        std::vector<KDL::VelocityProfile_Trap*>     _motion_profile;
+        RTT::TimeService::ticks                     _time_begin;
+        RTT::TimeService::Seconds                   _time_passed;
+        double                                      _max_duration;
+        
+        bool                                        _is_moving;
+
     
   }; // class
 }//namespace

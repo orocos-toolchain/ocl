@@ -28,7 +28,7 @@ namespace Orocos
   using namespace std;
   
   nAxesSensor::nAxesSensor(string name,unsigned int num_axes)
-    : GenericTaskContext(name),
+    : TaskContext(name),
       _num_axes(num_axes), 
       _position_local(num_axes),
       _velocity_local(num_axes),

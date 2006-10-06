@@ -1,7 +1,7 @@
 #ifndef _REFERENCESENSOR_HPP_
 #define _REFERENCESENSOR_HPP_
 
-#include <rtt/GenericTaskContext.hpp>
+#include <rtt/TaskContext.hpp>
 #include <rtt/Logger.hpp>
 #include <rtt/Ports.hpp>
 #include <rtt/Method.hpp>
@@ -15,7 +15,7 @@ namespace Orocos
      * 
      */
 
-    class ReferenceSensor : public RTT::GenericTaskContext
+    class ReferenceSensor : public RTT::TaskContext
     {
         int nrofaxes;
     public:

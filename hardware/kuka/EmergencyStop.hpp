@@ -36,9 +36,9 @@ namespace Orocos
         /** 
          * Constructor of the EmergencyStop
          * 
-         * @param axes pointer to an nAxesVelocityController (GenericTaskContext)
+         * @param axes pointer to an nAxesVelocityController (TaskContext)
          */
-        EmergencyStop(RTT::GenericTaskContext* axes)
+        EmergencyStop(RTT::TaskContext* axes)
             : _axes(axes),fired(false)
         {
             _stop = axes->commands()->getCommand<bool(void)>("stopAllAxes");
@@ -94,7 +94,7 @@ namespace Orocos
             }
         };
     private:
-        RTT::GenericTaskContext *_axes;
+        RTT::TaskContext *_axes;
         RTT::Command<bool(void)> _stop;
         RTT::Command<bool(void)> _lock;
         std::vector<RTT::Handle> _handlers;

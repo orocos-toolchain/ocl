@@ -30,7 +30,7 @@ namespace Orocos
 
   // constructor
     KryptonK600Sensor::KryptonK600Sensor(string name, unsigned int num_leds, unsigned int priority)
-      : GenericTaskContext(name),
+      : TaskContext(name),
 #if defined (OROPKG_OS_LXRT)
 	NonPeriodicActivity(priority),
 	_keep_running(true),

@@ -32,7 +32,7 @@ namespace Orocos
     
     CartesianEffectorVel::CartesianEffectorVel(string name, 
                                                KinematicFamily* kf)
-        : GenericTaskContext(name),
+        : TaskContext(name),
           _velocity_joint_local(kf->nrOfJoints()),
           _velocity_cartesian("CartesianOutputVelocity"),
           _position_joint("nAxesSensorPosition"),

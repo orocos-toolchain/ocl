@@ -28,7 +28,7 @@ namespace Orocos
   using namespace std;
   
   nAxesEffectorVel::nAxesEffectorVel(string name,unsigned int num_axes)
-    : GenericTaskContext(name),
+    : TaskContext(name),
       _num_axes(num_axes), 
       _velocity_out_local(num_axes),
       _velocity_out("nAxesOutputVelocity"),
