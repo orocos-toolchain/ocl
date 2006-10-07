@@ -34,6 +34,10 @@ IF(NOT KDL_INSTALL)
   SET( KDL_INSTALL ${CMAKE_INSTALL_PREFIX} CACHE PATH "The KDL installation directory.")
 ENDIF(NOT KDL_INSTALL)
 
+IF(NOT COMEDI_INSTALL)
+  SET( COMEDI_INSTALL ${CMAKE_INSTALL_PREFIX} CACHE PATH "The COMEDI installation directory.")
+ENDIF(NOT COMEDI_INSTALL)
+
 # The name of the resulting library.
 #SET( COMPONENTS_LIBRARY orocos-components CACHE STRING "Name of the resulting library")
 #INSTALL_TARGETS( /lib ${COMPONENTS_LIBRARY} )
@@ -57,6 +61,9 @@ IF(NOT CMAKE_BUILD_TYPE)
       FORCE)
 ENDIF(NOT CMAKE_BUILD_TYPE)
 
+# Make compilation verbose by default
+SET(CMAKE_VERBOSE_MAKEFILE TRUE)
+
 ###################################################
 #                                                 #
 #       End project customization section         #
@@ -79,6 +86,12 @@ ENDIF ( NOT CMAKE_BUILD_TYPE )
 #                                                 #
 ###################################################
 
+# Put your 'flags' inhere if you want them to apear in the
+# orocos-components.pc file. Various .cmake scripts below do
+# this.
+SET( ENV{OROCOS_COMPONENTS_CFLAGS} "")
+SET( ENV{OROCOS_COMPONENTS_LINKFLAGS} "")
+
 INCLUDE(config/global_setup.cmake)
 
 ## Find Orocos RTT.
@@ -92,6 +105,10 @@ INCLUDE (${PROJ_SOURCE_DIR}/config/FindKDL.cmake)
 ## Find BFL
 
 INCLUDE (${PROJ_SOURCE_DIR}/config/FindBFL.cmake)
+
+## Find Comedi
+
+INCLUDE (${PROJ_SOURCE_DIR}/config/FindComedi.cmake)
 
 ## Uninstall target
 CONFIGURE_FILE(
@@ -152,6 +169,7 @@ CONFIGURE_FILE(Doxyfile.in Doxyfile @ONLY)
 ##                                                         #
 ############################################################
 
+IF ( "${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}" STREQUAL "2.4" )
 OPTION( CPACK_PACKAGES "Set to ON to build the packages. Requires cmake >2.4" OFF )
 IF (CPACK_PACKAGES)
 
@@ -175,14 +193,19 @@ SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Orocos Components")
 SET(CPACK_PACKAGE_VENDOR "The Orocos Community")
 SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README")
 SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
-SET(CPACK_PACKAGE_VERSION_MAJOR "0")
-SET(CPACK_PACKAGE_VERSION_MINOR "1")
+SET(CPACK_PACKAGE_MAJOR_VERSION "0")
+SET(CPACK_PACKAGE_MINOR_VERSION "1")
 SET(CPACK_PACKAGE_VERSION_PATCH "1")
-SET(CPACK_PACKAGE_INSTALL_DIRECTORY "CMake ${CMake_VERSION_MAJOR}.${CMake_VERSION_MINOR}")
+SET(CPACK_PACKAGE_INSTALL_DIRECTORY "CMAKE ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}")
 SET(CPACK_STRIP_FILES "bin/cmake")
 SET(CPACK_PACKAGE_EXECUTABLES "OrocosExec" "Orocos Executable")
 INCLUDE(CPack)
 ENDIF (CPACK_PACKAGES)
+ELSE ( "${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}" STREQUAL "2.4" )
+
+   MESSAGE ( "Disabling packaging for version ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}")
+
+ENDIF ( "${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}" STREQUAL "2.4" )
 
 #############################
 #			    #

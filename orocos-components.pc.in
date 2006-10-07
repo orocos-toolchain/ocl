@@ -7,5 +7,5 @@ Description: Orocos components
 Requires: kdl orocos-@OROCOS_TARGET@
 Version: @VERSION@
 Libs: -L${libdir} \
-      @SELECTED_LIBS@
-Cflags: -I${includedir}
+      @SELECTED_LIBS@ @OROCOS_COMPONENTS_LINKFLAGS@
+Cflags: -I${includedir} @OROCOS_COMPONENTS_CFLAGS@
