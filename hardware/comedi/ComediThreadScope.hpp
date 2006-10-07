@@ -29,9 +29,8 @@
 #ifndef ORO_COMEDI_THREAD_SCOPE_HPP
 #define ORO_COMEDI_THREAD_SCOPE_HPP
 
-#include <pkgconf/device_drivers_comedi.h>
-#include "comedi/ComediDevice.hpp"
-#include "comedi/ComediSubDeviceDOut.hpp"
+#include "ComediDevice.hpp"
+#include "ComediSubDeviceDOut.hpp"
 
 namespace RTT
 {

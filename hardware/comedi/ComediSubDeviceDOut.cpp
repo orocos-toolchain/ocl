@@ -27,7 +27,7 @@
  
  
 
-#include "rtt/dev/ComediSubDeviceDOut.hpp"
+#include "ComediSubDeviceDOut.hpp"
 #include "rtt/os/fosi.h"
 
 #include <pkgconf/system.h>
@@ -64,23 +64,23 @@ namespace RTT
 	}
       rtos_printf("Setting all dio on subdevice %d to output\n",subDevice);
 
-      channels = comedi_get_n_channels(myCard->getDevice(), subDevice);
+      channels = comedi_get_n_channels(myCard->getDevice()->it, subDevice);
 
       for (unsigned int i=0; i<channels; ++i)
-	comedi_dio_config(myCard->getDevice(), subDevice, i, COMEDI_OUTPUT);
+	comedi_dio_config(myCard->getDevice()->it, subDevice, i, COMEDI_OUTPUT);
 
     }
 
     void ComediSubDeviceDOut::switchOn( unsigned int bit)
     {
       if (bit < channels)
-	comedi_dio_write( myCard->getDevice(),subDevice,bit,1);
+	comedi_dio_write( myCard->getDevice()->it,subDevice,bit,1);
     }
 
     void ComediSubDeviceDOut::switchOff( unsigned int bit)
     {
       if (bit < channels)
-	comedi_dio_write( myCard->getDevice(),subDevice,bit,0);
+	comedi_dio_write( myCard->getDevice()->it,subDevice,bit,0);
     }
 
     void ComediSubDeviceDOut::setBit( unsigned int bit, bool value)
@@ -88,9 +88,9 @@ namespace RTT
       if (bit < channels)
 	{
 	  if (value == true)
-	    comedi_dio_write( myCard->getDevice(),subDevice,bit,1);
+	    comedi_dio_write( myCard->getDevice()->it,subDevice,bit,1);
 	  else
-	    comedi_dio_write( myCard->getDevice(),subDevice,bit,0);
+	    comedi_dio_write( myCard->getDevice()->it,subDevice,bit,0);
 	}
     }
 
@@ -112,12 +112,12 @@ namespace RTT
 	    }
 	  // Shift Value startbits to the left
 	  value = value << start_bit;
-	  comedi_dio_bitfield(myCard->getDevice(), subDevice, write_mask, &value);
+	  comedi_dio_bitfield(myCard->getDevice()->it, subDevice, write_mask, &value);
 	}
       // FIXME: why is this needed ??? does bitfield change DIO mode ?
       // Make sure every bit is back to output
       for (unsigned int i=0; i<channels; ++i)
-	comedi_dio_config(myCard->getDevice(), subDevice, i, COMEDI_OUTPUT);
+	comedi_dio_config(myCard->getDevice()->it, subDevice, i, COMEDI_OUTPUT);
     }
 
     bool ComediSubDeviceDOut::checkBit( unsigned int bit) const
@@ -131,7 +131,7 @@ namespace RTT
 	  return true;
 	}
       // Read all channels
-      comedi_dio_bitfield(myCard->getDevice(), subDevice, 0x0, &value);
+      comedi_dio_bitfield(myCard->getDevice()->it, subDevice, 0x0, &value);
       // Filter data from these channels
       unsigned int write_mask = (0x1 << bit);
       // Erase other bits that we read
@@ -141,7 +141,7 @@ namespace RTT
       // FIXME: Is this needed ??
       // Make sure every bit is back to output
       for (unsigned int i=0; i<channels; ++i)
-	comedi_dio_config(myCard->getDevice(), subDevice, i, COMEDI_OUTPUT);
+	comedi_dio_config(myCard->getDevice()->it, subDevice, i, COMEDI_OUTPUT);
       return value;
     }
 

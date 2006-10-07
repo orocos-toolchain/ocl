@@ -31,7 +31,7 @@
 #ifndef COMEDISUBDEVICEAOUT_HPP
 #define COMEDISUBDEVICEAOUT_HPP
 
-#include "AnalogOutInterface.hpp"
+#include "rtt/dev/AnalogOutInterface.hpp"
 #include "ComediDevice.hpp"
 
 namespace RTT

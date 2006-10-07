@@ -29,7 +29,7 @@
 #ifndef COMEDISUBDEVICEDIN_HPP
 #define COMEDISUBDEVICEDIN_HPP
 
-#include "DigitalInInterface.hpp"
+#include "rtt/dev/DigitalInInterface.hpp"
 #include "ComediDevice.hpp"
 
 namespace RTT

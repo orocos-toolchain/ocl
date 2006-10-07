@@ -46,3 +46,40 @@
     #include <comedilib.h>
 #endif
 
+#include <rtt/os/fosi.h>
+
+namespace RTT
+{
+	/**
+	 * D pointer: hide comedi implementation from header file.
+	 */
+    class ComediDevice::DeviceInfo
+    {
+    public:
+        DeviceInfo( unsigned int dm )
+            : devminor(dm), error(0), it(0)
+        {
+            char devString[ 15 ];
+            sprintf( devString, "/dev/comedi%d", devminor );
+
+            it = comedi_open( devString );
+
+            rtos_printf( "Trying to open %s\n", devString );
+
+            if ( it == 0 )
+                {
+                    rtos_printf( "comedi_open failed\n" );
+                    error = -1;
+                }
+        }
+
+        unsigned int devminor;
+        int error;
+        
+        comedi_t *it;
+    };
+
+
+	  
+
+}

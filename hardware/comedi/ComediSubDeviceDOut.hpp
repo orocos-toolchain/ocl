@@ -27,7 +27,7 @@
 #ifndef COMEDISUBDEVICEDOUT_HPP
 #define COMEDISUBDEVICEDOUT_HPP
 
-#include "DigitalOutInterface.hpp"
+#include "rtt/dev/DigitalOutInterface.hpp"
 #include "ComediDevice.hpp"
 
 namespace RTT

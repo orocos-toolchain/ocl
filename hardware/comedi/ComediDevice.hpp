@@ -22,21 +22,18 @@
 #ifndef COMEDIDEVICE_HPP
 #define COMEDIDEVICE_HPP
 
-#include <pkgconf/system.h>
-#ifdef OROPKG_OS_LXRT
-typedef void comedi_t;
-#else
-typedef struct comedi_t_struct comedi_t;
-#endif
+#include <boost/shared_ptr.hpp>
 
 namespace RTT
 {
-
   /**
    * Some small class for using comedi in C++.
    */
   class ComediDevice
   {
+  protected:
+      class DeviceInfo;
+      boost::shared_ptr<DeviceInfo> d;
   public:
     typedef unsigned int Data;
 
@@ -110,17 +107,10 @@ namespace RTT
     int getSubDeviceType(unsigned int subd);
 
     /**
-       Return a pointer to a comedi_t struct
-       @todo check if this shouldn't be a protected method
+       Return a pointer to a comedi device info.
     */
-    comedi_t* getDevice();
+    DeviceInfo* getDevice();
         
-  protected:
-    unsigned int devminor;
-    int error;
-
-    comedi_t *it;
-
   };
 
 

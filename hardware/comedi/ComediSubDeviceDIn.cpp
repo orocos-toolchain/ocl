@@ -27,7 +27,7 @@
  
  
 
-#include "rtt/dev/ComediSubDeviceDIn.hpp"
+#include "ComediSubDeviceDIn.hpp"
 #include <rtt/os/fosi.h>
 #include "comedi_internal.h"
 
@@ -61,13 +61,13 @@ namespace RTT
       rtos_printf("Setting all dio on subdevice %d to input\n",_subDevice);
       unsigned int num_chan = this->nbOfInputs();
       for (unsigned int i=0; i<num_chan; ++i)
-	comedi_dio_config(myCard->getDevice(), _subDevice, i, COMEDI_INPUT);
+	comedi_dio_config(myCard->getDevice()->it, _subDevice, i, COMEDI_INPUT);
     }
 
   bool ComediSubDeviceDIn::isOn( unsigned int bit /*= 0*/) const
     {
       unsigned int tmp;
-      comedi_dio_read( myCard->getDevice(),_subDevice,bit, &tmp );
+      comedi_dio_read( myCard->getDevice()->it,_subDevice,bit, &tmp );
       return (tmp == 1);
     }
 
@@ -83,7 +83,7 @@ namespace RTT
 
     unsigned int ComediSubDeviceDIn::nbOfInputs() const
     {
-      return comedi_get_n_channels(myCard->getDevice(), _subDevice);
+      return comedi_get_n_channels(myCard->getDevice()->it, _subDevice);
     }
 
     unsigned int ComediSubDeviceDIn::readSequence(unsigned int start_bit, unsigned int stop_bit) const
@@ -96,7 +96,7 @@ namespace RTT
       else
 	{
 	  // Read all channels
-	  comedi_dio_bitfield(myCard->getDevice(), _subDevice, 0x0, &value);
+	  comedi_dio_bitfield(myCard->getDevice()->it, _subDevice, 0x0, &value);
 	  // Filter data from these channels
 	  unsigned int write_mask = 0;
 	  // Can somebody check this cumbersome line please?

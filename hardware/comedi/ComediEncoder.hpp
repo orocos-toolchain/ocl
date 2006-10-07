@@ -20,10 +20,8 @@
 #define __COMEDI_ENCODER_INCREMENTAL_HPP
 
 
-#include <pkgconf/device_drivers_comedi.h>
-
-#include "SensorInterface.hpp"
-#include "EncoderInterface.hpp"
+#include "rtt/dev/SensorInterface.hpp"
+#include "rtt/dev/EncoderInterface.hpp"
 #include "ComediDevice.hpp"
 #include <string>
 

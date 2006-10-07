@@ -45,7 +45,7 @@
    Major rewrite of original file by Peter Soetens
 */
 
-#include "rtt/dev/ComediDevice.hpp"
+#include "ComediDevice.hpp"
 #include <rtt/os/fosi.h>
 
 #include "comedi_internal.h"
@@ -60,29 +60,15 @@ namespace RTT
   typedef unsigned int Data;
 
   ComediDevice::ComediDevice( unsigned int minor )
-    : devminor( minor ), error( 0 )
+      : d( new DeviceInfo( minor ) )
   {
-    it = 0;
-
-    char devString[ 15 ];
-    sprintf( devString, "/dev/comedi%d", devminor );
-
-    it = comedi_open( devString );
-
-    rtos_printf( "Trying to open %s\n", devString );
-
-    if ( it == 0 )
-      {
-	rtos_printf( "comedi_open failed\n" );
-	error = -EINVAL;
-      }
   }
 
   ComediDevice::~ComediDevice()
   {
-    if (comedi_close(it) < 0)
+    if (comedi_close(d->it) < 0)
       {
-	rtos_printf( "comedi_close failed\n" );
+          rtos_printf( "comedi_close failed\n" );
       }
   }
 
@@ -91,12 +77,12 @@ namespace RTT
   Data ComediDevice::getMaxData(unsigned int subd)
   {
     unsigned int channel = 0;
-    return (Data) comedi_get_maxdata( it, subd, channel );
+    return (Data) comedi_get_maxdata( d->it, subd, channel );
   }
 
   int ComediDevice::getSubDeviceType(unsigned int subd)
   {
-    return comedi_get_subdevice_type( it, subd );
+    return comedi_get_subdevice_type( d->it, subd );
   }
 
   int ComediDevice::read( unsigned int subd, unsigned int chanNr,
@@ -104,10 +90,10 @@ namespace RTT
 			  ComediDevice::Data& value )
   {
     value = 0;
-    if ( error )
+    if ( d->error )
       return -1;
 
-    comedi_data_read( it, subd, chanNr, range, aref, 
+    comedi_data_read( d->it, subd, chanNr, range, aref, 
 		      ( lsampl_t* ) & value );
 
     return 0;
@@ -117,19 +103,19 @@ namespace RTT
 			   unsigned int range, unsigned int aref,
 			   const ComediDevice::Data& value)
   {
-    if ( error )
+    if ( d->error )
       return -1;
 
     Data output = value; 
 
-    comedi_data_write( it, subd, chanNr, range, aref, output );
+    comedi_data_write( d->it, subd, chanNr, range, aref, output );
 
     return 0;
   }
 
-  comedi_t* ComediDevice::getDevice() 
-  { 
-    return it; 
-  }
+    ComediDevice::DeviceInfo* ComediDevice::getDevice() 
+    { 
+        return d.get(); 
+    }
 
 }

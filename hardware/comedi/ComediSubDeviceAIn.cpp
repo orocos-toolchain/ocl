@@ -27,7 +27,7 @@
  
  
 
-#include "rtt/dev/ComediSubDeviceAIn.hpp"
+#include "ComediSubDeviceAIn.hpp"
 #include "comedi_internal.h"
 #include <rtt/os/fosi.h>
 
@@ -64,7 +64,7 @@ namespace RTT
 	  rtos_printf( "comedi_get_subdevice_type failed\n" );
 	}
 
-      channels = comedi_get_n_channels(myCard->getDevice(), _subDevice);
+      channels = comedi_get_n_channels(myCard->getDevice()->it, _subDevice);
 
       _sd_range = new unsigned int[channels];
       _aref = new unsigned int[channels];
@@ -125,19 +125,19 @@ namespace RTT
 #ifdef __KERNEL__
       // See file:/usr/src/comedilib/doc/html/x3563.html#REF-TYPE-COMEDI-KRANGE
       comedi_krange range;
-      comedi_get_krange(myCard->getDevice(), _subDevice, chan, 
+      comedi_get_krange(myCard->getDevice()->it, _subDevice, chan, 
 			_sd_range[chan], &range);
       return (double) range.min / 1000000;
 #else
 #ifdef OROPKG_OS_LXRT
 //#define __KERNEL__
       comedi_krange range;
-      comedi_get_krange(myCard->getDevice(), _subDevice, chan, 
+      comedi_get_krange(myCard->getDevice()->it, _subDevice, chan, 
 			_sd_range[chan], &range);
       return (double) range.min / 1000000;
 #else // Userspace
       comedi_range * range_p;
-      if ((range_p = comedi_get_range(myCard->getDevice(), 
+      if ((range_p = comedi_get_range(myCard->getDevice()->it, 
 				      _subDevice, chan, 
 				      _sd_range[chan])) != 0)
 	{
@@ -161,19 +161,19 @@ namespace RTT
 #ifdef __KERNEL__
       // See file:/usr/src/comedilib/doc/html/x3563.html#REF-TYPE-COMEDI-KRANGE
       comedi_krange range;
-      comedi_get_krange(myCard->getDevice(), _subDevice, chan, 
+      comedi_get_krange(myCard->getDevice()->it, _subDevice, chan, 
 			_sd_range[chan], &range);
       return (double) range.max / 1000000;
 #else
 #ifdef OROPKG_OS_LXRT
 //#define __KERNEL__
       comedi_krange range;
-      comedi_get_krange(myCard->getDevice(), _subDevice, chan, 
+      comedi_get_krange(myCard->getDevice()->it, _subDevice, chan, 
 			_sd_range[chan], &range);
       return (double) range.max / 1000000;
 #else // Userspace
       comedi_range * range_p;
-      if ((range_p = comedi_get_range(myCard->getDevice(), 
+      if ((range_p = comedi_get_range(myCard->getDevice()->it, 
 				      _subDevice, chan, 
 				      _sd_range[chan])) != 0)
 	{
