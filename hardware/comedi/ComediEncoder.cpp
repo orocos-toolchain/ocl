@@ -48,118 +48,113 @@
 
 namespace RTT
 {
-  ComediEncoder::ComediEncoder(ComediDevice * cd, unsigned int subd, 
-			       unsigned int encNr, const std::string& name)
-    : _myCard(cd), _subDevice(subd), _channel(encNr),
-      _turn(0), _upcounting(true)
-  {
-    init();
-    Log(Info) << "Comedi Counter configured as encoder now\n" << endlog();
-  }
+    ComediEncoder::ComediEncoder(ComediDevice * cd, unsigned int subd, 
+                                 unsigned int encNr, const std::string& name)
+        : _myCard(cd), _subDevice(subd), _channel(encNr),
+          _turn(0), _upcounting(true)
+    {
+        init();
+    }
 
-  ComediEncoder::ComediEncoder(ComediDevice * cd, unsigned int subd, 
-			       unsigned int encNr)
-    :  _myCard(cd), _subDevice(subd), _channel(encNr),
-      _turn(0), _upcounting(true)
-  {
-    init();
-    Log(Info) << "Comedi Counter configured as encoder now\n" << endlog();
-  }
+    ComediEncoder::ComediEncoder(ComediDevice * cd, unsigned int subd, 
+                                 unsigned int encNr)
+        :  _myCard(cd), _subDevice(subd), _channel(encNr),
+           _turn(0), _upcounting(true)
+    {
+        init();
+    }
 
-  void ComediEncoder::init()
-  {
-    Log(Info) << "Creating ComediEncoder\n" << endlog();
-    // Check if subd is counter...
-    if ( _myCard->getSubDeviceType( _subDevice ) != COMEDI_SUBD_COUNTER )
-      {
-	log(Error) << "Comedi Counter : subdev is not a counter, type = "  
-		   << _myCard->getSubDeviceType(_subDevice) << endlog();
-      }
-    // Check how many counters this subdevice actually has
-    unsigned int nchan = comedi_get_n_channels(_myCard->getDevice(),_subDevice);
-    if ( nchan <= _channel )
-      {
-      	log(Error) << "Comedi Counter : Only " << nchan 
-		   << " channels on this counter subdevice" << endlog()
-      }
-    _resolution = (int) comedi_get_maxdata(_myCard->getDevice(),_subDevice, 
-					   _channel);
-    /* Configure the counter subdevice
-       Configure the GPCT for use as an encoder 
-    */
+    void ComediEncoder::init()
+    {
+        Log(Info) << "Creating ComediEncoder\n" << endlog();
+        // Check if subd is counter...
+        if ( _myCard->getSubDeviceType( _subDevice ) != COMEDI_SUBD_COUNTER )
+            {
+                log(Error) << "Comedi Counter : subdev is not a counter, type = "  
+                           << _myCard->getSubDeviceType(_subDevice) << endlog();
+            }
+        // Check how many counters this subdevice actually has
+        unsigned int nchan = comedi_get_n_channels(_myCard->getDevice(),_subDevice);
+        if ( nchan <= _channel )
+            {
+                log(Error) << "Comedi Counter : Only " << nchan 
+                           << " channels on this counter subdevice" << endlog();
+            }
+        _resolution = (int) comedi_get_maxdata(_myCard->getDevice(),_subDevice, 
+                                               _channel);
+        /* Configure the counter subdevice
+           Configure the GPCT for use as an encoder 
+        */
 #define ENCODER_CONFIG_DATA 4
-    typedef unsigned int Data;
+        typedef unsigned int Data;
     
-    comedi_insn insn;
-    Data config_data[ENCODER_CONFIG_DATA]; // Configuration data
+        comedi_insn insn;
+        Data config_data[ENCODER_CONFIG_DATA]; // Configuration data
 
-    insn.insn=INSN_CONFIG;
-    insn.n=1; // Irrelevant for config
-    config_data[0] = INSN_CONFIG_GPCT_QUADRATURE_ENCODER;
-    // Should become an option
-    config_data[1] = GPCT_X4;
-    config_data[2] = GPCT_IndexPhaseHighHigh;
+        insn.insn=INSN_CONFIG;
+        insn.n=1; // Irrelevant for config
+        config_data[0] = INSN_CONFIG_GPCT_QUADRATURE_ENCODER;
+        // Should become an option
+        config_data[1] = GPCT_X4;
+        config_data[2] = GPCT_IndexPhaseHighHigh;
 #define GPCT_CONTINU_COUNTING_WHEN_INDEX_ARRIVES 0;
-    config_data[3] = GPCT_CONTINU_COUNTING_WHEN_INDEX_ARRIVES;
+        config_data[3] = GPCT_CONTINU_COUNTING_WHEN_INDEX_ARRIVES;
 
-    insn.data=config_data;
-    insn.subdev=_subDevice;
-    insn.chanspec=CR_PACK(_channel,0,0);
-    int ret=comedi_do_insn(_myCard->getDevice(),&insn);
-    if(ret<0)
-      Log(Error) << "Comedi Counter : Instruction to configure counter -> encoder failed" << endlog();
-  }
+        insn.data=config_data;
+        insn.subdev=_subDevice;
+        insn.chanspec=CR_PACK(_channel,0,0);
+        int ret=comedi_do_insn(_myCard->getDevice(),&insn);
+        if(ret<0)
+            Log(Error) << "Comedi Counter : Instruction to configure counter -> encoder failed" << endlog();
+        else
+            Log(Info) << "Comedi Counter configured as encoder now\n" << endlog();
+    }
   
-  ComediEncoder::~ComediEncoder(){}
+    ComediEncoder::~ComediEncoder(){}
 
-  void ComediEncoder::positionSet(int p)
-  {
-    //int can be negative, by casting the int to lsampl_t(unsigned int)
-    // we write the right value to the encoderdevice     
-    comedi_data_write(_myCard->getDevice(), _subDevice,
-		      _channel, 0, 0, (lsampl_t) p);
+    void ComediEncoder::positionSet(int p)
+    {
+        //int can be negative, by casting the int to lsampl_t(unsigned int)
+        // we write the right value to the encoderdevice     
+        comedi_data_write(_myCard->getDevice(), _subDevice,
+                          _channel, 0, 0, (lsampl_t) p);
+    }
 
-  }
+    void ComediEncoder::turnSet(int t){ _turn = t;}
+    int ComediEncoder::turnGet() const { return _turn;}
 
-  void ComediEncoder::turnSet(int t){ _turn = t;}
-  int ComediEncoder::turnGet() const { return _turn;}
+    int ComediEncoder::positionGet() const
+    {
+        typedef unsigned int Data;
+        //int pos;
+        lsampl_t pos[20];
+        int ret=comedi_data_read(_myCard->getDevice(),_subDevice,_channel,0,0,pos);
+        //int ret=comedi_data_read(_myCard->getDevice(),_subDevice,_channel,0,0,(unsigned int *)&pos);
+        if(ret<0){
+            Log(Error) << "Comedi Counter : reading encoder failed, ret = " << ret << endlog();
+        }
+        // Other possibility for reading the data (with instruction)
+        /*    
+              comedi_insn insn;
+              Data readdata; // local data
+              insn.insn=INSN_READ;
+              insn.n=1; // Irrelevant for config
+              insn.data=&readdata;
+              insn.subdev=_subDevice;
+              insn.chanspec=CR_PACK(_channel,0,0);
+              //rtos_printf("just before insn->insn = 0x%x\n",insn.insn);
+              int ret=comedi_do_insn(_myCard->getDevice(),&insn);
+              if(ret<0)
+              {
+              rtos_printf("Comedi Counter : Reading counter -> encoder failed\n");
+              }
+              pos = readdata;
+        */
+        return pos[0];
+    } 
 
-  int ComediEncoder::positionGet() const
-  {
-    typedef unsigned int Data;
-    //int pos;
-    lsampl_t pos[20];
-    int ret=comedi_data_read(_myCard->getDevice(),_subDevice,_channel,0,0,pos);
-    //int ret=comedi_data_read(_myCard->getDevice(),_subDevice,_channel,0,0,(unsigned int *)&pos);
-    if(ret<0)
-      {
-	rtos_printf("ERROR: Comedi Counter : reading encoder failed\n");
-      }
-    //rtos_printf("comedi read pos: %i\n",pos[0]);
-    //rtos_printf("comedi read channel: %i\n",_channel);
-
-    // Other possibility for reading the data (with instruction)
-    /*    
-    comedi_insn insn;
-    Data readdata; // local data
-    insn.insn=INSN_READ;
-    insn.n=1; // Irrelevant for config
-    insn.data=&readdata;
-    insn.subdev=_subDevice;
-    insn.chanspec=CR_PACK(_channel,0,0);
-    //rtos_printf("just before insn->insn = 0x%x\n",insn.insn);
-    int ret=comedi_do_insn(_myCard->getDevice(),&insn);
-    if(ret<0)
-      {
-	rtos_printf("Comedi Counter : Reading counter -> encoder failed\n");
-      }
-    pos = readdata;
-    */
-    return pos[0];
-  } 
-
-  int ComediEncoder::resolution() const {return _resolution;}
+    int ComediEncoder::resolution() const {return _resolution;}
   
-  bool ComediEncoder::upcounting() const {return _upcounting;}
+    bool ComediEncoder::upcounting() const {return _upcounting;}
 
 }
