@@ -28,17 +28,17 @@
 #ifndef CANPIECONTROLLER_HPP
 #define CANPIECONTROLLER_HPP
 
-#include "rtt/can/CAN.hpp"
-#include "rtt/can/CANControllerInterface.hpp"
-#include "rtt/can/CANBusInterface.hpp"
-#include "rtt/can/CANMessage.hpp"
+#include "CAN.hpp"
+#include "CANControllerInterface.hpp"
+#include "CANBusInterface.hpp"
+#include "CANMessage.hpp"
 
 #include <pkgconf/system.h>
 #ifdef OROPKG_CORELIB_ACTIVITIES
 #include <rtt/NonPreemptibleActivity.hpp>
 #endif
 
-#include "driver/cpuser.h"
+#include "cpuser.h"
 
 namespace RTT
 {namespace CAN
