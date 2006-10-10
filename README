@@ -4,37 +4,12 @@
 This directory consists of a series of independent Orocos
 components which can be used to build a control application.
 
-Structure:
+* See doc/components.dox or the online documentation
+  to see the status of individual components.
 
-reporting: [ready]
-	Components for real-time data capturing. Currently console
-	and file reporting is supported.
+* See doc/CMAKE-HELP.txt if you want to add a new component
 
-taskbrowser: [ready]
-	A Component for online interaction with any other component.
-	Your main tool during component development, testing or
-	experimenting.
+* See doc/PACKAGING if you want to build a source/binary package
 
-viewer: [beta stage]
-
-hardware: [beta stage] Components for various devices (like sensors)
-	and hardware platforms, the simulation devices can be used by
-	everyone, the hardware robot, krypton and lasersensor devices
-	only in our lab (KULeuven/PMA/robotics), the wrenchsensor
-	component by everyone using the pci-interface to a JR3-sensor,
-	the camera components for everyone using opencv, and the
-	demotool components for everyone combining the wrench sensor
-	and the krypton kamera system.
-	
-
-motion_control: [beta stage]
-	Components for path interpolation, cartesian and joint space
-	control
-
-deployment: [alfa stage]
-	Component for connecting and configuring an application.
-
-kinematics: [alfa stage]
-	Component for forward and reverse kinematics. Needs to
-	be adapted to the KDL.
-
+* See doc/INSTALL if you want to build and install Orocos Components
+  on your system.

@@ -459,7 +459,7 @@ WARN_LOGFILE           =
 # directories like "/usr/src/myproject". Separate the files or directories 
 # with spaces.
 
-INPUT                  = @PROJ_SOURCE_DIR@/usage.hpp \
+INPUT                  = @PROJ_SOURCE_DIR@/usage.dox \
 	@PROJ_SOURCE_DIR@/taskbrowser \
 	@PROJ_SOURCE_DIR@/hardware \
 	@PROJ_SOURCE_DIR@/deployment \

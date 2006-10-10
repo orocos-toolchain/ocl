@@ -29,6 +29,17 @@
 * Examples for the usage of all components can be found in the
 * respective tests subdirectory 
 *
+* \section deps Dependencies
+*
+* Some Orocos Components requires a number of libraries in order
+* to build. These are:
+*
+* - Every component requires the Real-Time Toolkit (RTT).
+* - KDL for kinematics and path interpolation
+* - ncurses and readline for the Orocos::TaskBrowser
+* - Comedi for the hardware comedi support
+* - OpenCV for the Orocos::CaptureCamera firewire component.
+*
 * \section structure Structure:
 * 
 * \subsection reporting Reporting: [ready]
@@ -144,7 +155,7 @@
 *        </ul>
 *   </ul>  
 *
-* \subsection deployment Deployment: [alfa stage]                  
+* \subsection deployment Deployment: [beta stage]
 * 	Component for connecting and configuring an application.      
 *   <ul>
 *   <li>Orocos::DeploymentComponent
