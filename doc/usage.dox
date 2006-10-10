@@ -115,6 +115,16 @@
 *         <ul>
 *         <li>Orocos::LaserSensor
 *         </ul>
+*
+*     <li>io: Implementation to read/write the Orocos device interface.
+*        It can handle the RTT::AnalogInInterface, RTT::AnalogOutInterface,
+*        RTT::DigitalInInterface and RTT::DigitalOutInterface objects.
+*        The analog IO is made available as Data ports and methods, while the digital IO
+*        is available only through methods.
+* 	      <ul>
+*         <li>Orocos::IOComponent
+*         </ul> 
+*
 *     </ul>
 *
 * \subsection motion Motion_control: [ready]
