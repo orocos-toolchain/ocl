@@ -183,7 +183,7 @@ SET(CPACK_GENERATOR "TBZ2")
 SET(CPACK_SOURCE_GENERATOR "TBZ2")
 
 # The plain 'package' target works correctly.
-SET(CPACK_IGNORE_FILES        "/CVS/;/\\.svn/;\\.swp$;\\.#;/#;/build/")
+SET(CPACK_IGNORE_FILES        "/CVS/;/.svn/;.swp$;.#;/#;/build/")
 # Since the 'package_source' target does a bold copy, define a list of
 # files which should be excluded. Note that 'subpattern' matching is used,
 # thus to exclude a directory use /mydir/
