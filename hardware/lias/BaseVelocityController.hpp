@@ -33,13 +33,13 @@
 
 
 #include <rtt/RTT.hpp>
-#include <rtt/GenericTaskContext.hpp>
+#include <rtt/TaskContext.hpp>
 #include <rtt/Attribute.hpp>
 #include <rtt/Ports.hpp>
 #include "liasclient.hpp"
 
 class BaseVelocityController 
-    : public RTT::GenericTaskContext
+    : public RTT::TaskContext
 {
     /**
      * Task's Data Ports.

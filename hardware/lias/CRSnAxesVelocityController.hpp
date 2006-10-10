@@ -3,7 +3,7 @@
 #include <vector>
 #include <rtt/RTT.hpp>
 
-#include <rtt/GenericTaskContext.hpp>
+#include <rtt/TaskContext.hpp>
 #include <rtt/Ports.hpp>
 #include <rtt/Event.hpp>
 #include <rtt/Properties.hpp>
@@ -32,7 +32,7 @@
 
 namespace Orocos {
 
-class CRSnAxesVelocityController : public RTT::GenericTaskContext
+class CRSnAxesVelocityController : public RTT::TaskContext
 {
 public:
    CRSnAxesVelocityController(const std::string& name,const std::string& propertyfilename="cpf/crs.cpf");

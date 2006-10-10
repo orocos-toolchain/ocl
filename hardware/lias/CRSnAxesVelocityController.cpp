@@ -27,7 +27,6 @@
 
 #include <hardware/lias/CRSnAxesVelocityController.hpp>
 
-#include <rtt/GenericTaskContext.hpp>
 //#include <rtt/NonPreemptibleActivity.hpp>
 //#include <rtt/BufferPort.hpp>
 #include <rtt/Event.hpp>
@@ -81,7 +80,7 @@ using namespace Orocos;
 
 
 CRSnAxesVelocityController::CRSnAxesVelocityController(const std::string& name,const std::string& propertyfilename)
-  : GenericTaskContext(name),
+  : TaskContext(name),
     driveValue(NUM_AXES),
     reference(NUM_AXES),
     positionValue(NUM_AXES),
@@ -126,7 +125,7 @@ CRSnAxesVelocityController::CRSnAxesVelocityController(const std::string& name,c
   properties()->addProperty( &servoDerivTime  );
   attributes()->addConstant( &_num_axes);
  
-  if (!readProperties(propertyfilename)) {
+  if (!marshalling()->readProperties(propertyfilename)) {
     Logger::log() << Logger::Error << "Failed to read the property file, continueing with default values." << Logger::endl;
     throw 0;
   }
@@ -691,7 +690,7 @@ CRSnAxesVelocityController::prepareForShutdownCompleted() const {
 void CRSnAxesVelocityController::shutdown() {
     DBG;
     prepareForShutdown();
-    //writeProperties(_propertyfile);
+    //marshalling()->writeProperties(_propertyfile);
 }
 
 

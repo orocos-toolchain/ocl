@@ -10,7 +10,7 @@ using namespace Orocos;
 using namespace RTT;
 
 class TestTaskContext
-    : public GenericTaskContext
+    : public TaskContext
 {
     Property<string> hello;
     WriteDataPort<std::vector<double> > dwport;
@@ -18,7 +18,7 @@ class TestTaskContext
 
 public:
     TestTaskContext(std::string name)
-        : GenericTaskContext(name),
+        : TaskContext(name),
           hello("Hello", "The hello thing", "World"),
           dwport("D2Port"),
           drport("D1Port")
@@ -34,7 +34,7 @@ public:
 };
 
 class TestTaskContext2
-    : public GenericTaskContext
+    : public TaskContext
 {
     Property<string> hello;
     WriteDataPort<double> dwport;
@@ -42,7 +42,7 @@ class TestTaskContext2
 
 public:
     TestTaskContext2(std::string name)
-        : GenericTaskContext(name),
+        : TaskContext(name),
           hello("Hello", "The hello thing", "World"),
           dwport("D1Port"),
           drport("D2Port")

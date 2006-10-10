@@ -31,7 +31,7 @@
  
 
 #include <rtt/RTT.hpp>
-#include <rtt/GenericTaskContext.hpp>
+#include <rtt/TaskContext.hpp>
 #include "rtt/OperationInterface.hpp"
 #include "rtt/DispatchInterface.hpp"
 #include <deque>
@@ -53,7 +53,7 @@ namespace Orocos
      * execute a fixed set of commands prior to showng the prompt.
      */
     class TaskBrowser
-        : public RTT::GenericTaskContext
+        : public RTT::TaskContext
     {
         // the 'current' task context
         static RTT::TaskContext* taskcontext;

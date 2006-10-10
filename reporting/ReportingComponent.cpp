@@ -43,7 +43,7 @@ namespace Orocos
   using namespace RTT;
 
   ReportingComponent::ReportingComponent( std::string name /*= "Reporting" */ ) 
-        : GenericTaskContext( name ),
+        : TaskContext( name ),
           report("Report"),
           autotrigger("AutoTrigger","When set to 1, the data is taken upon each update(), "
                       "otherwise, the data is only taken when the user invokes 'snapshot()'.",

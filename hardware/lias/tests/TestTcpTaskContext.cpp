@@ -11,7 +11,7 @@ using namespace std;
 
 TestTcpTaskContext::TestTcpTaskContext(std::string name) 
         : 
-      RTT::GenericTaskContext(name),
+      RTT::TaskContext(name),
       velocity("basevelocity"),
       rotvel  ("baserotvel"),
       inpPort("Position"),
@@ -24,7 +24,7 @@ TestTcpTaskContext::TestTcpTaskContext(std::string name)
         this->ports()->addPort( &inpPort      );
         this->ports()->addPort( &velocity     );
         this->ports()->addPort( &rotvel       );
-	    this->ports()->addPort( &inWrenchPort );
+	this->ports()->addPort( &inWrenchPort );
         this->attributes()->addProperty( &kv  );
         this->attributes()->addProperty( &kw  );
         this->attributes()->addProperty( &dv  );

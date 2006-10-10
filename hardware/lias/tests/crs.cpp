@@ -9,7 +9,7 @@
 #include <reporting/FileReporting.hpp>
 
 #include <rtt/Activities.hpp>
-#include <rtt/GenericTaskContext.hpp>
+#include <rtt/TaskContext.hpp>
 #include <rtt/Logger.hpp>
 #include <rtt/os/main.h>
 
@@ -19,12 +19,12 @@ using namespace Orocos;
 using namespace RTT;
 using namespace std;
 
-class Supervisor : public GenericTaskContext
+class Supervisor : public TaskContext
 {
 	int nrofaxes;
 public:
    Supervisor(int _nrofaxes=6):
-	GenericTaskContext("supervisor") ,
+	TaskContext("supervisor") ,
 	nrofaxes(_nrofaxes),
     driveValue(_nrofaxes),
 	reference(_nrofaxes)
@@ -91,7 +91,7 @@ public:
 class EmergencyStop
 {
 public:
-  EmergencyStop(GenericTaskContext *axes)
+  EmergencyStop(TaskContext *axes)
     : _axes(axes) {
     _stop = _axes->commands()->getCommand<bool(int,double)>("stopAxis");
     _lock = _axes->commands()->getCommand<bool(int,double)>("lockAxis");
@@ -108,7 +108,7 @@ public:
     cout << "Axis "<< _axis <<" drive value "<<_value<< " reached limitDriveValue"<<endl;
   };
 private:
-  GenericTaskContext *_axes;
+  TaskContext *_axes;
   CommandC _stop;
   CommandC _lock;
   int _axis;
@@ -135,7 +135,7 @@ int ORO_main(int argc, char* argv[])
               Logger::log() << Logger::Info << argv[0] << " manually raises LogLevel to 'Info' (5). See also file 'orocos.log'."<<Logger::endl;
   }
   
-  GenericTaskContext* my_robot = new CRSnAxesVelocityController("lias");
+  TaskContext* my_robot = new CRSnAxesVelocityController("lias");
   EmergencyStop _emergency(my_robot);
   Supervisor supervisor;
 

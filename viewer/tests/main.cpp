@@ -87,7 +87,7 @@ public:
 class EmergencyStop
 {
 public:
-  EmergencyStop(GenericTaskContext *axes)
+  EmergencyStop(TaskContext *axes)
     : _axes(axes) {
     _stop = _axes->commands()->getCommand<bool(int,double)>("stopAxis");
     _lock = _axes->commands()->getCommand<bool(int,double)>("lockAxis");
@@ -104,7 +104,7 @@ public:
     log(Error) << "Axis "<< _axis <<" drive value "<<_value<< " reached limitDriveValue"<<endlog();
   };
 private:
-  GenericTaskContext *_axes;
+  TaskContext *_axes;
   CommandC _stop;
   CommandC _lock;
   int _axis;
@@ -130,8 +130,8 @@ int ORO_main(int argc, char* argv[])
     Logger::log().setLogLevel( Logger::Info );
               Logger::log() << Logger::Info << argv[0] << " manually raises LogLevel to 'Info' (5). See also file 'orocos.log'."<<Logger::endl;
   }
-  GenericTaskContext* my_robot = new Kuka160nAxesVelocityController("lias"); 
-  //GenericTaskContext* my_robot = new LiASnAxesVelocityController("lias");
+  TaskContext* my_robot = new Kuka160nAxesVelocityController("lias"); 
+  //TaskContext* my_robot = new LiASnAxesVelocityController("lias");
   NAxesPositionViewer viewer("viewer","cpf/viewer.cpf");
   EmergencyStop _emergency(my_robot);
   Supervisor supervisor;

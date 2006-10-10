@@ -2,14 +2,14 @@
 #define TEST_TCP_TASK_CONTEXT_H
 
 #include <rtt/RTT.hpp>
-#include <rtt/GenericTaskContext.hpp>
+#include <rtt/TaskContext.hpp>
 #include <rtt/Attribute.hpp>
 #include <rtt/Ports.hpp>
 #include <kdl/frames.hpp>
 
 
 class TestTcpTaskContext
-    : public RTT::GenericTaskContext
+    : public RTT::TaskContext
 {
     public:
     TestTcpTaskContext(std::string name="TestTcp");

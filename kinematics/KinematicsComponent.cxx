@@ -36,7 +36,7 @@ namespace Orocos
     using namespace RTT;
     
     KinematicsComponent::KinematicsComponent(const std::string& name,KinematicFamily* _kf)
-        : GenericTaskContext(name),
+        : TaskContext(name),
           kf(_kf),
           jnt2cartpos(_kf->createJnt2CartPos()),
           cartpos2jnt(_kf->createCartPos2Jnt()),

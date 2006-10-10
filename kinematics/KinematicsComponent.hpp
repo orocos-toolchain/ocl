@@ -31,7 +31,7 @@
 #define _KINEMATIC_COMPONENT_HPP_
 
 
-#include <rtt/GenericTaskContext.hpp>
+#include <rtt/TaskContext.hpp>
 #include <rtt/Ports.hpp>
 #include <kdl/kinfam/kinematicfamily.hpp>
 #include <rtt/PropertyComposition.hpp>
@@ -52,7 +52,7 @@ namespace Orocos
 	 *   at www.orocos.org/kdl
      */
     class KinematicsComponent
-        : public RTT::GenericTaskContext
+        : public RTT::TaskContext
     {
         KDL::KinematicFamily*      kf;
         KDL::Jnt2CartPos*          jnt2cartpos;

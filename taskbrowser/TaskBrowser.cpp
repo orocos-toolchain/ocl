@@ -506,7 +506,7 @@ namespace Orocos
     }
 
     TaskBrowser::TaskBrowser( TaskContext* _c )
-        : GenericTaskContext("TaskBrowser"),
+        : TaskContext("TaskBrowser"),
           command(0),
           debug(0),
           line_read(0),
@@ -1164,7 +1164,7 @@ namespace Orocos
         cout <<"   Factor a value into its primes." <<nl;
         cout <<"   number : The number to factor in primes." <<nl;
         cout <<"  Method     : bool isRunning( )" <<nl;
-        cout <<"   Is this GenericTaskContext started ?" <<nl;
+        cout <<"   Is this TaskContext started ?" <<nl;
         cout <<"  Method     : bool loadProgram( const& std::string Filename )" <<nl;
         cout <<"   Load an Orocos Program Script from a file." <<nl;
         cout <<"   Filename : An ops file." <<nl;

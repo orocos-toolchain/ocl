@@ -37,7 +37,7 @@ using namespace std;
 
 
 BaseVelocityController::BaseVelocityController(const std::string& name,const std::string& propfile) 
-        : RTT::GenericTaskContext(name),
+        : RTT::TaskContext(name),
           velocity("basevelocity"),
           rotvel  ("baserotvel"),
           x_world_pf("x_world_pf"),
@@ -59,7 +59,7 @@ BaseVelocityController::BaseVelocityController(const std::string& name,const std
         this->properties()->addProperty( &port );
         this->properties()->addProperty( &logging );
         
-        if (!readProperties(propfile)) {
+        if (!marshalling()->readProperties(propfile)) {
                      Logger::log() << Logger::Error << "Failed to read the property file." << Logger::endl;
                      assert(0);
          }

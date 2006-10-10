@@ -37,7 +37,7 @@
 #include <rtt/Marshaller.hpp>
 #include <rtt/TimeService.hpp>
 #include <rtt/CommandInterface.hpp>
-#include <rtt/GenericTaskContext.hpp>
+#include <rtt/TaskContext.hpp>
 #include <rtt/Method.hpp>
 #include <rtt/Command.hpp>
 
@@ -55,7 +55,7 @@ namespace Orocos
      * properties will be used to create default marshallers.
      */
     class ReportingComponent
-        : public RTT::GenericTaskContext
+        : public RTT::TaskContext
     {
     protected:
         /**
