@@ -19,7 +19,7 @@
 #define __DEMOTOOL_HARDWARE__
 
 #include <rtt/RTT.hpp>
-#include <rtt/GenericTaskContext.hpp>
+#include <rtt/TaskContext.hpp>
 #include <rtt/Ports.hpp>
 #include <rtt/Event.hpp>
 #include <rtt/Properties.hpp>
@@ -30,7 +30,7 @@
 namespace Orocos
 {
     
-  class Demotool : public RTT::GenericTaskContext
+  class Demotool : public RTT::TaskContext
   {
   public:
     /**
@@ -50,7 +50,7 @@ namespace Orocos
     // property
     RTT::Property<std::vector<double> > _pos_leds_demotool;
     RTT::Property<double>               _mass_demotool;
-    RTT::Property<KDL::Vector>          _center_gravity_demotool;
+    RTT::Property<KDL::Vector>          _center_gravity_demotool, _gravity_dir_world;
     RTT::Property<KDL::Frame>           _Frame_demotool_manip, _Frame_demotool_fs, _Frame_world_camera;
 
     // read ports

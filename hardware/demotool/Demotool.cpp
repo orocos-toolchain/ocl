@@ -21,7 +21,6 @@
 
 #define GRAVITY_CONSTANT    9.81
 #define MM_TO_M             0.001
-#define M_TO_MM             1000.0
 
 namespace Orocos
 {
@@ -32,10 +31,11 @@ namespace Orocos
   
   
   Demotool::Demotool(string name, string propertyfile):
-    GenericTaskContext(name),
+    TaskContext(name),
     _pos_leds_demotool("pos_leds_demotool","XYZ positions of all LED markers, relative to demtool frame"),
     _mass_demotool("mass_demotool","mass of objects attached to force censor of demotool"),
     _center_gravity_demotool("center_gravity_demotool","center of gravity of mass attached to demotool"),
+    _gravity_dir_world("gravity_dir_world",""),
     _Frame_demotool_manip("demotool_manip","frame from demotool to manip"),
     _Frame_demotool_fs("demotool_fs","frame from demotool to force sensor"),
     _Frame_world_camera("world_camera","frame from world to camera"),
@@ -55,6 +55,7 @@ namespace Orocos
     properties()->addProperty(&_pos_leds_demotool);
     properties()->addProperty(&_mass_demotool);
     properties()->addProperty(&_center_gravity_demotool);
+    properties()->addProperty(&_gravity_dir_world);
     properties()->addProperty(&_Frame_demotool_manip);
     properties()->addProperty(&_Frame_demotool_fs);
     properties()->addProperty(&_Frame_world_camera);
@@ -73,11 +74,12 @@ namespace Orocos
     methods()->addMethod(_calibrate_world_to_manip, "set world frame to current manip frame");
     methods()->addMethod(_calibrate_wrench_sensor, "set wrench sensor offset to measure zero force");
 
-    if (!readProperties(_propertyfile))
-      log(Error)<<"Reading properties failed."<<endlog();
+    if (!marshalling()->readProperties(_propertyfile)) {
+      log(Error) << "Failed to read the property file, continueing with default values." << endlog();
+    }  
     
     // foce component of gravity
-    _Wrench_gravity_world_world.force  = KDL::Vector(0, 0, (-1 * _mass_demotool * GRAVITY_CONSTANT));
+    _Wrench_gravity_world_world.force  = _gravity_dir_world.value() * (_mass_demotool.value() * GRAVITY_CONSTANT);
 
     // number of leds as found in property file
     _num_leds = (int) (_pos_leds_demotool.value().size()/3);
@@ -216,7 +218,7 @@ namespace Orocos
   
   void Demotool::shutdown()
   {
-    writeProperties(_propertyfile);
+    marshalling()->writeProperties(_propertyfile);
   }
 
 
