@@ -1,0 +1,44 @@
+Orocos Components can be packaged using cpack or using standard
+packaging tools.
+
+1. Using cpack
+==============
+
+* Make sure you have cmake 2.4 or newer, since older releases do
+  not include cpack
+* Enable the 'CPACK_PACKAGES' option in your cmake configuration
+* Generate the makefiles.
+* You have the following options:
+A. Do 'make package' to create a binary tar.bz2 package. It will have the
+  following structure:
+  Orocos-Components-Version
+    -> include
+        -> reporting/*.hpp
+        -> taskbrowser/*.hpp
+        -> ...
+    -> lib
+        -> liborocos-reporting.a
+        -> liborocos-taskbrowser.a
+        -> ...
+        -> pkgconfig/orocos-components.pc
+
+B. Do 'make package_source' to create a source tar.bz2 package.
+  It will have the following structure:
+  Orocos-Components-Version
+    -> exact reproduction of repository source dir
+
+C. do 'cpack -G TBZ2' or similar, which allows finer tuning.
+
+2. Using standard packaging tools
+=================================
+
+* cmake has DESTDIR support.
+* From your build directory, issue a 'make install DESTDIR=..."
+  It will install then in '${DESTDIR}/${CMAKE_INSTALL_PREFIX}/include' and
+  '${DESTDIR}/${CMAKE_INSTALL_PREFIX}/lib'. you can override the
+  CMAKE_INSTALL_PREFIX by using:
+
+    cmake .. -DCMAKE_INSTALL_PREFIX=/usr
+
+  before invoking 'make install'
+* Proceed as your packaging format requires.
