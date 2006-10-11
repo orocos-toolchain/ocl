@@ -9,7 +9,7 @@ IF ( BUILD_CAMERA_TEST )
     # Add a test program
     GLOBAL_ADD_TEST( camera ${SRCS} )
     # Use  TARGET_LINK_LIBRARIES( report libs... ) to add library deps.
-    TARGET_LINK_LIBRARIES( camera orocos-taskbrowser orocos-camera orocos-gnulinux ${OPENCV_LIBRARIES} libgthread-2.0.so.0 
+    TARGET_LINK_LIBRARIES( camera orocos-taskbrowser orocos-camera ${OROCOS_RTT_LIBS} ${OPENCV_LIBRARIES} libgthread-2.0.so.0 
         libgtk-x11-2.0.so.0 
         libgdk-x11-2.0.so.0 
         libatk-1.0.so.0 
