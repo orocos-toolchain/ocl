@@ -48,12 +48,11 @@ namespace Orocos
   public:
     KryptonK600Sensor(std::string name, unsigned int num_leds, unsigned int priority=0);
     virtual ~KryptonK600Sensor();
-    
-    virtual bool startup(){return true;};
-    virtual void update(){};
-    virtual void shutdown(){};
-    
+
   private:
+    virtual bool startup(){return true;}
+    virtual void update(){};  // taskcontext
+    virtual void shutdown(){};
 
 #if defined (OROPKG_OS_LXRT)
     unsigned short _length_msg, _type_msg, _nr_msg, _nr_answer_msg, _type_body_msg, _cycle_nr, _nr_markers;
@@ -65,7 +64,8 @@ namespace Orocos
     bool _keep_running;
 
     bool interprete_K600_Msg(char* msg);
-    void loop();
+
+    virtual void loop();  // nonperiodicactivity
 #endif
 
     unsigned int _num_leds;
