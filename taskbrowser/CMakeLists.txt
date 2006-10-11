@@ -3,12 +3,12 @@ OPTION( BUILD_TASKBROWSER "Build TaskBrowser" ON )
 IF ( BUILD_TASKBROWSER )
 
     INCLUDE( ${CMAKE_ROOT}/Modules/FindCurses.cmake )
-    IF( NOT CURSES_FOUND )
+    IF( NOT CURSES )
        MESSAGE( FATAL "Can not build TaskBrowser without the ncurses library." )
-    ELSE(NOT CURSES_FOUND )
+    ELSE(NOT CURSES )
        OROCOS_PKGCONFIG_LIBS("{CURSES_LIBS}")
        LINK_LIBRARIES( ncurses )
-    ENDIF(NOT CURSES_FOUND)
+    ENDIF(NOT CURSES )
 
     # This gathers all the .cpp files into the variable 'SRCS'
     FILE( GLOB HPPS [^.]*.hpp )
