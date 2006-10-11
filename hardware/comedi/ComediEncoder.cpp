@@ -42,6 +42,7 @@
 //  
 
 #include "ComediEncoder.hpp"
+#include <rtt/Logger.hpp>
 #include <rtt/os/fosi.h>
 
 #include "comedi_internal.h"
@@ -66,7 +67,7 @@ namespace RTT
 
     void ComediEncoder::init()
     {
-        Log(Info) << "Creating ComediEncoder\n" << endlog();
+        log(Info) << "Creating ComediEncoder\n" << endlog();
         // Check if subd is counter...
         if ( _myCard->getSubDeviceType( _subDevice ) != COMEDI_SUBD_COUNTER )
             {
@@ -105,9 +106,9 @@ namespace RTT
         insn.chanspec=CR_PACK(_channel,0,0);
         int ret=comedi_do_insn(_myCard->getDevice(),&insn);
         if(ret<0)
-            Log(Error) << "Comedi Counter : Instruction to configure counter -> encoder failed" << endlog();
+            log(Error) << "Comedi Counter : Instruction to configure counter -> encoder failed" << endlog();
         else
-            Log(Info) << "Comedi Counter configured as encoder now\n" << endlog();
+            log(Info) << "Comedi Counter configured as encoder now\n" << endlog();
     }
   
     ComediEncoder::~ComediEncoder(){}
@@ -131,7 +132,7 @@ namespace RTT
         int ret=comedi_data_read(_myCard->getDevice(),_subDevice,_channel,0,0,pos);
         //int ret=comedi_data_read(_myCard->getDevice(),_subDevice,_channel,0,0,(unsigned int *)&pos);
         if(ret<0){
-            Log(Error) << "Comedi Counter : reading encoder failed, ret = " << ret << endlog();
+            log(Error) << "Comedi Counter : reading encoder failed, ret = " << ret << endlog();
         }
         // Other possibility for reading the data (with instruction)
         /*    
