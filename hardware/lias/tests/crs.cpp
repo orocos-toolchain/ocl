@@ -51,20 +51,20 @@ public:
 	}
 
    virtual void message(const std::string& msg) {
-         Logger::log() << Logger::Info << msg <<Logger::endl;
+         log() << Info << msg <<endlog();
 	}
    virtual void setDriveValue(int axis,double value) {
 		if ((0<=axis)&&(axis<nrofaxes)) {
 			driveValue[axis]->Set( value);
 		} else {
-  			Logger::log()<< Logger::Error << "parameter axis out of range" << Logger::endl;
+  			log()<< Error << "parameter axis out of range" << endlog();
 		}
    }
    virtual bool getReference(int axis) {
 		if ((0<=axis)&&(axis<nrofaxes)) {
 			return reference[axis]->Get();
 		} else {
-  			Logger::log()<< Logger::Error << "parameter axis out of range" << Logger::endl;
+  			log()<< Error << "parameter axis out of range" << endlog();
             return false;
 		}
    }
@@ -102,10 +102,10 @@ public:
     _value = value;
     _stop.execute();
     _lock.execute();
-    cout << "---------------------------------------------" << endl;
-    cout << "--------- EMERGENCY STOP --------------------" << endl;
-    cout << "---------------------------------------------" << endl;
-    cout << "Axis "<< _axis <<" drive value "<<_value<< " reached limitDriveValue"<<endl;
+    log(Error) << "---------------------------------------------" << endlog();
+    log(Error) << "--------- EMERGENCY STOP --------------------" << endlog();
+    log(Error) << "---------------------------------------------" << endlog();
+    log(Error) << "Axis "<< _axis <<" drive value "<<_value<< " reached limitDriveValue"<<endlog();
   };
 private:
   TaskContext *_axes;
@@ -117,8 +117,8 @@ private:
 
 void PositionLimitCallBack(int axis, double value)
 {
-  cout<< "-------------Warning----------------"<<endl;
-  cout<< "Axis "<<axis<<" moving passed software position limit, current value: "<<value<<endl;
+  log(Error)<< "-------------Warning----------------"<<endlog();
+  log(Error)<< "Axis "<<axis<<" moving passed software position limit, current value: "<<value<<endlog();
 }
 
 /// main() function
@@ -132,7 +132,7 @@ int ORO_main(int argc, char* argv[])
 
   if ( Logger::log().getLogLevel() < Logger::Info ) {
     Logger::log().setLogLevel( Logger::Info );
-              Logger::log() << Logger::Info << argv[0] << " manually raises LogLevel to 'Info' (5). See also file 'orocos.log'."<<Logger::endl;
+              log(Info) << argv[0] << " manually raises LogLevel to 'Info' (5). See also file 'orocos.log'."<<endlog();
   }
   
   TaskContext* my_robot = new CRSnAxesVelocityController("lias");
@@ -167,14 +167,14 @@ int ORO_main(int argc, char* argv[])
   PeriodicActivity       reportingTask(10,0.01,reporter.engine());
 
   // Load some default programs :
-  my_robot->loadProgram("cpf/crs.ops"); 
+  my_robot->scripting()->loadPrograms("cpf/crs.ops"); 
   /// Start the console reader.
   browser.loop();
-  Logger::log()<< Logger::Info << "Browser ended " << Logger::endl;
+  log(Info) << "Browser ended " << endlog();
   
   _robotTask.stop();
-  Logger::log()<< Logger::Info << "Task stopped" << Logger::endl;
+  log(Info) << "Task stopped" << endlog();
   delete my_robot;
-  Logger::log()<< Logger::Info << "robot deleted" << Logger::endl;
+  log(Info) << "robot deleted" << endlog();
   return 0;
 }

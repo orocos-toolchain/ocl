@@ -36,7 +36,7 @@ int ORO_main(int arc, char* argv[])
  
     
     TaskBrowser browser( &b_task );
-    b_task.loadProgram("cpf/base.ops");
+    b_task.scripting()->loadPrograms("cpf/base.ops");
     
     browser.loop();
 
