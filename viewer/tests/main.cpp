@@ -166,7 +166,7 @@ int ORO_main(int argc, char* argv[])
   NonRealTimeActivity    _viewerTask(0.1,viewer.engine());
 
   // Load some default programs :
-  my_robot->loadProgram("cpf/program.ops"); 
+  my_robot->scripting()->loadPrograms("cpf/program.ops"); 
   /// Start the console reader.
   browser.loop();
   Logger::log()<< Logger::Info << "Browser ended " << Logger::endl;
