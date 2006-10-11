@@ -9,7 +9,7 @@ IF ( BUILD_REPORTING_TEST )
 
     GLOBAL_ADD_TEST( report ${SRCS} )
     # Use  TARGET_LINK_LIBRARIES( report libs... ) to add library deps.
-    TARGET_LINK_LIBRARIES( report orocos-taskbrowser orocos-reporting)
+    TARGET_LINK_LIBRARIES( report orocos-taskbrowser orocos-reporting  ${OROCOS_RTT_LIBS})
 
 ENDIF ( BUILD_REPORTING_TEST )
 
