@@ -48,6 +48,21 @@ namespace Orocos
         {
             this->properties()->addProperty( &configurationfile );
             this->attributes()->addAttribute( &validConfig );
+
+            this->methods()->addMethod( method("loadConfiguration", &DeploymentComponent::loadConfiguration, this),
+                                        "Load and store the configuration file 'ConfigFille'.");
+            this->methods()->addMethod( method("configureComponents", &DeploymentComponent::configureComponents, this),
+                                        "Apply a loaded configuration.");
+            // Work around compiler ambiguity:
+            typedef bool(DeploymentComponent::*DCFun)(const std::string&, const std::string&);
+            DCFun cp = &DeploymentComponent::connectPeers;
+            this->methods()->addMethod( method("connectPeers", cp, this),
+                                        "Connect two Components known to this Component.",
+                                        "One", "The first component.","Two", "The second component.");
+            cp = &DeploymentComponent::addPeer;
+            this->methods()->addMethod( method("addPeer", cp, this),
+                                        "Add a peer to a Component.",
+                                        "From", "The first component.","To", "The other component.");
         }
 
         /** 
@@ -99,6 +114,9 @@ namespace Orocos
             return t1->addPeer(t2);
         }
 
+        using TaskContext::addPeer;
+        using TaskContext::connectPeers;
+
         /** 
          * Load a configuration from disk. The 'ConfigFile' property is used to
          * locate the file. This does not apply the configuration yet on the
@@ -116,6 +134,7 @@ namespace Orocos
             return false;
     
 #else
+            root.clear();
 
             log(Info) << "Loading '" <<configurationfile.get()<<"'."<< endlog();
             // demarshalling failures:
@@ -164,7 +183,7 @@ namespace Orocos
                                     valid = false;
                                 }
                             
-                            // connect ports.
+                            // connect ports 'Ports' tag is optional.
                             Property<PropertyBag>* ports = comp->get().getProperty<PropertyBag>("Ports");
                             if ( ports != 0 ) {
                                 PropertyBag::Names pnams = ports->get().list();
@@ -179,12 +198,12 @@ namespace Orocos
                                         valid = false;
                                     }
                                     // store the port
-                                    log(Debug)<<"storing Port: "<<c->getName()<<"."<<p->getName();
-                                    log(Debug)<<" in " << ports->get().getProperty<std::string>(*pit)->get() <<endlog();
-                                    conmap[ports->get().getProperty<std::string>(*pit)->get()].ports.push_back( p );
+                                    if (valid) {
+                                        log(Debug)<<"storing Port: "<<c->getName()<<"."<<p->getName();
+                                        log(Debug)<<" in " << ports->get().getProperty<std::string>(*pit)->get() <<endlog();
+                                        conmap[ports->get().getProperty<std::string>(*pit)->get()].ports.push_back( p );
+                                    }
                                 }
-                            } else {
-                                valid = false;
                             }
 
                             // Setup the connections from this
@@ -302,10 +321,12 @@ namespace Orocos
                 log(Info) << "Creating Connection "<<it->first<<":"<<endlog();
                 log(Info) << "Connecting Port "<< writer->getName() <<" to Port " << reader->getName()<<endlog();
                 ConnectionInterface::shared_ptr con = writer->createConnection( reader );
+                assert( con );
+                con->connect();
                 // connect all ports to connection
                 p = it->second.ports.begin();
                 while (p != it->second.ports.end() ) {
-                    if ((*p)->connectTo( reader ) == false) {
+                    if ((*p)->connectTo( con ) == false) {
                         log(Error) << "Could not connect Port "<< (*p)->getName() << " to connection " <<it->first<<endlog();
                         if ((*p)->connected())
                             log(Error) << "Port "<< (*p)->getName() << " already connected !"<<endlog();
@@ -318,8 +339,6 @@ namespace Orocos
                 // writer,reader was a clone or anticlone.
                 delete writer;
                 delete reader;
-
-                //con->connect();
             }
 
             // Setup the connections from each component to the
