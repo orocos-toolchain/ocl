@@ -247,18 +247,19 @@ namespace Orocos
                 
                 // set PropFile name if present
                 std::string filename = *it + ".cpf";
-                if ( comp->get().getProperty<std::string>("PropFile") )
+                if ( comp->get().getProperty<std::string>("PropFile") ){
                     filename = comp->get().getProperty<std::string>("PropFile")->get();
-                
-                PropertyLoader pl;
-                TaskContext* peer = this->getPeer( *it );
-                assert( peer );
-                bool ret = pl.configure( filename, peer, true ); // strict:true 
-                if (!ret) {
-                    log(Error) << "Failed to configure properties for component "<<*it<<endlog();
-                } else {
-                    log(Info) << "Configured Properties of "<<*it<<endlog();
+                    PropertyLoader pl;
+                    TaskContext* peer = this->getPeer( *it );
+                    assert( peer );
+                    bool ret = pl.configure( filename, peer, true ); // strict:true 
+                    if (!ret) {
+                        log(Error) << "Failed to configure properties for component "<<*it<<endlog();
+                    } else {
+                        log(Info) << "Configured Properties of "<<*it<<endlog();
+                    }
                 }
+                
                 //peer->disconnect();
             }
 
@@ -301,11 +302,13 @@ namespace Orocos
                 
                 log(Info) << "Creating Connection "<<it->first<<":"<<endlog();
                 log(Info) << "Connecting Port "<< writer->getName() <<" to Port " << reader->getName()<<endlog();
-                ConnectionInterface::shared_ptr con = writer->createConnection( reader );
+                //ConnectionInterface::shared_ptr con =
+                //writer->createConnection( reader );
+                writer->connectTo(reader);
                 // connect all ports to connection
                 p = it->second.ports.begin();
                 while (p != it->second.ports.end() ) {
-                    if ((*p)->connectTo( con ) == false) {
+                    if ((*p)->connectTo( reader ) == false) {
                         log(Error) << "Could not connect Port "<< (*p)->getName() << " to connection " <<it->first<<endlog();
                         if ((*p)->connected())
                             log(Error) << "Port "<< (*p)->getName() << " already connected !"<<endlog();
@@ -319,7 +322,7 @@ namespace Orocos
                 delete writer;
                 delete reader;
 
-                con->connect();
+                //con->connect();
             }
 
             // Setup the connections from each component to the
