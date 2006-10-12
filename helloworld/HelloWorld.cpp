@@ -29,8 +29,10 @@ using namespace Orocos;
 class HelloWorld
     : public TaskContext
 {
+protected:
     /**
-     * Name-Value parameters:
+     * @defgroup params Name-Value parameters:
+     * @{
      */
     /**
      * Properties take a name, a value and a description
@@ -45,23 +47,27 @@ class HelloWorld
      * Constants take a name and contain a constant value.
      */
     Constant<std::string> constant;
+    /** @} */
 
     /**
-     * Input-Output ports:
+     * @defgroup ports Input-Output ports:
+     * @{
      */
     /**
      * DataPorts share data among readers and writers.
      * A reader always reads the most recent data.
      */
-    WriteDataPort<std::string> dataport;
+    DataPort<std::string> dataport;
     /**
      * BufferPorts buffer data among readers and writers.
      * A reader reads the data in a FIFO way.
      */
     BufferPort<std::string> bufferport;
+    /** @} */
 
     /**
-     * Methods:
+     * @defgroup methods Method:
+     * @{
      */
     /**
      * Methods take a number of arguments and
@@ -77,9 +83,11 @@ class HelloWorld
     std::string mymethod() {
         return "Hello World";
     }
+    /** @} */
 
     /**
-     * Commands:
+     * @defgroup comm Command:
+     * @{
      */
     /**
      * Commands take a number of arguments and
@@ -106,9 +114,11 @@ class HelloWorld
         log() << "Checking Command: "<< arg <<endlog();
         return true;
     }
+    /** @} */
 
     /**
-     * Events:
+     * @defgroup evnt Event:
+     * @{
      */
     /**
      * The event takes a payload which is distributed
@@ -129,6 +139,8 @@ class HelloWorld
     {
         log() << "Receiving Event: " << data << endlog();
     }
+    /** @} */
+
 public:
     /**
      * This example sets the interface up in the Constructor
@@ -136,13 +148,21 @@ public:
      */
     HelloWorld(std::string name)
         : TaskContext(name),
-          property("the_property", "Hello World Description", "Hello World"),
+          // Name, description, value
+          property("the_property", "the_property Description", "Hello World"),
+          // Name, value
           attribute("the_attribute", "Hello World"),
+          // Name, value
           constant("the_constant", "Hello World"),
+          // Name, initial value
           dataport("the_data_port","World"),
+          // Name, buffer size, initial value
           bufferport("the_buffer_port",13, "World"),
+          // Name, function pointer, object
           method("the_method", &HelloWorld::mymethod, this),
+          // Name, command function pointer, completion condition function pointer, object
           command("the_command", &HelloWorld::mycommand, &HelloWorld::mycomplete, this),
+          // Name
           event("the_event")
     {
         // Check if all initialisation was ok:
