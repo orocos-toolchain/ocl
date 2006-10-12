@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "cpf.dtd">
+<properties>
+
+  <!-- Component 1 -->
+  <struct name="t1" type="type_less">
+    <simple name="Peer" type="string"><value>t2</value></simple>
+
+    <struct name="Ports"  type="type_less">
+      <simple name="p1" type="string"><value>AConnection</value></simple>
+      <simple name="p2" type="string"><value>BConnection</value></simple>
+    </struct>
+  </struct>
+
+  <!-- Component 2 -->
+  <struct name="t2" type="type_less">
+    <simple name="Peer" type="string"><value>t1</value></simple>
+
+    <struct name="Ports"  type="type_less">
+      <simple name="p2" type="string"><value>AConnection</value></simple>
+      <simple name="p1" type="string"><value>BConnection</value></simple>
+    </struct>
+  </struct>
+
+</properties>
