@@ -43,7 +43,6 @@
 
 #include "ComediEncoder.hpp"
 #include <rtt/Logger.hpp>
-#include <rtt/os/fosi.h>
 
 #include "comedi_internal.h"
 
