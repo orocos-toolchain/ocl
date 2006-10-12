@@ -33,6 +33,9 @@
 // we use the signatures of the linux/comedilib.h
 // functions but _link_ against libkcomedilib_lxrt.so
 
+#ifndef _COMEDI_INTERNAL_HPP
+#define _COMEDI_INTERNAL_HPP
+
 #include <pkgconf/system.h>
 #ifdef OROPKG_OS_LXRT
     #define __KERNEL__
@@ -50,9 +53,9 @@
 
 namespace RTT
 {
-	/**
-	 * D pointer: hide comedi implementation from header file.
-	 */
+    /**
+     * D pointer: hide comedi implementation from header file.
+     */
     class ComediDevice::DeviceInfo
     {
     public:
@@ -83,3 +86,4 @@ namespace RTT
 	  
 
 }
+#endif
