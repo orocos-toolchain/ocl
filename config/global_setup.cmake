@@ -40,5 +40,5 @@ ENDIF ( DOXYGEN )
 #
 # An option for tests, to make it easy to turn off all tests
 #
-OPTION( BUILD_TESTS "Turn me off to disable compilation of all tests" ON )
+OPTION( BUILD_TESTS "Turn me off to disable compilation of all tests" OFF )
 

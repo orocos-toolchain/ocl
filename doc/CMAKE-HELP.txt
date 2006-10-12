@@ -21,6 +21,28 @@ $ make VERBOSE=1
 
 This can be issued from the top level or every subdirectory.
 
+ .cmake FILES
+##############
+The config/ directory has 'setup' files and 'Find' files.
+
+The setup files make sure the global build environment is
+correctly detected and setup.
+
+* check_depend.cmake:
+ Find installed libraries
+
+* global_setup.cmake:
+ Ugly catch-all cmake file, avoid/remove if possible
+
+* component_rules.cmake:
+ Orocos specific macros in order to register your 
+ Components to the build system. (see below)
+
+The Find* files are called from check_depend.cmake in
+order to find libraries for which no standard cmake files
+are available. Mainly to detect our own libraries, such as
+rtt, kdl and bfl.
+
  MACROS
 ########
 
@@ -57,6 +79,7 @@ In addition, you can use the traditional CMake commmands, knowing that
 COMPONENT_NAME is a library and TEST_NAME is an executable. Set your
 editor\'s mode to 'shell-script' highlighting for better syntax highlighting.
 
-To add a component\'s directory to the build system, see the bottom of
+To add a component's directory to the build system, see the bottom of
 the top-level CMakeLists.txt for adding it with ADD_SUBDIRECTORY and
 LINK_DIRECTORIES.
+

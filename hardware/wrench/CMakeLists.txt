@@ -1,4 +1,4 @@
-OPTION( BUILD_WRENCH "Build WrenchSensor Components" ON )
+OPTION( BUILD_WRENCH "Build WrenchSensor Components" OFF )
 
 IF ( BUILD_WRENCH )
 

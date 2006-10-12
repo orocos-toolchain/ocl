@@ -1,4 +1,4 @@
-OPTION( BUILD_HARDWARE "Build Hardware Components" ON )
+OPTION( BUILD_HARDWARE "Build Hardware Components" OFF )
 
 IF ( BUILD_HARDWARE )
 
