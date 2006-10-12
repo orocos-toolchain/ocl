@@ -71,6 +71,7 @@ namespace Orocos
                 Logger::log() <<Logger::Error<< "No such peer: "<<other<<endlog();
                 return false;
             }
+            t1->connectPorts(t2);
             return t1->connectPeers(t2);
         }
         /** 
@@ -178,7 +179,7 @@ namespace Orocos
                                         valid = false;
                                     }
                                     // store the port
-                                    log(Debug)<<"storing Port: "<<c->getName()<<"."<<ports->get().getProperty<std::string>(*pit)->get();
+                                    log(Debug)<<"storing Port: "<<c->getName()<<"."<<p->getName();
                                     log(Debug)<<" in " << ports->get().getProperty<std::string>(*pit)->get() <<endlog();
                                     conmap[ports->get().getProperty<std::string>(*pit)->get()].ports.push_back( p );
                                 }
@@ -280,10 +281,8 @@ namespace Orocos
                             reader = (*p)->clone();
                         else
                             if ( (*p)->getPortType() == PortInterface::ReadWritePort )
-                                if (reader == 0)
-                                reader = (*p)->clone();
-                                else
-                                    writer = (*p)->clone();
+                                writer = (*p)->clone();
+                    
                     ++p;
                 }
                 // Idea is: create a clone or anticlone of a port
@@ -302,9 +301,7 @@ namespace Orocos
                 
                 log(Info) << "Creating Connection "<<it->first<<":"<<endlog();
                 log(Info) << "Connecting Port "<< writer->getName() <<" to Port " << reader->getName()<<endlog();
-                //ConnectionInterface::shared_ptr con =
-                //writer->createConnection( reader );
-                writer->connectTo(reader);
+                ConnectionInterface::shared_ptr con = writer->createConnection( reader );
                 // connect all ports to connection
                 p = it->second.ports.begin();
                 while (p != it->second.ports.end() ) {
