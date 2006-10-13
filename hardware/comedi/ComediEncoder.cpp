@@ -92,7 +92,7 @@ namespace RTT
         Data config_data[ENCODER_CONFIG_DATA]; // Configuration data
 
         insn.insn=INSN_CONFIG;
-        insn.n=1; // Irrelevant for config
+        insn.n=1; /* Should be irrelevant for config, but is not for gnulinux! */
         config_data[0] = INSN_CONFIG_GPCT_QUADRATURE_ENCODER;
         // Should become an option
         config_data[1] = GPCT_X4;

@@ -91,7 +91,7 @@ namespace RTT
         Data config_data[PTG_CONFIG_DATA]; // Configuration data
 
         insn.insn=INSN_CONFIG;
-        insn.n=0; // Irrelevant for config
+        insn.n=1; /* Should be irrelevant for config, but is not for gnulinux! */
         config_data[0] = INSN_CONFIG_GPCT_PULSE_TRAIN_GENERATOR;
         config_data[1] = 0; // pulse_width
         config_data[2] = 0; // pulse_period
