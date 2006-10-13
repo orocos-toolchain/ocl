@@ -74,13 +74,13 @@ namespace RTT
                            << _myCard->getSubDeviceType(_subDevice) << endlog();
             }
         // Check how many counters this subdevice actually has
-        unsigned int nchan = comedi_get_n_channels(_myCard->getDevice(),_subDevice);
+        unsigned int nchan = comedi_get_n_channels(_myCard->getDevice()->it,_subDevice);
         if ( nchan <= _channel )
             {
                 log(Error) << "Comedi Counter : Only " << nchan 
                            << " channels on this counter subdevice" << endlog();
             }
-        _resolution = (int) comedi_get_maxdata(_myCard->getDevice(),_subDevice, 
+        _resolution = (int) comedi_get_maxdata(_myCard->getDevice()->it,_subDevice, 
                                                _channel);
         /* Configure the counter subdevice
            Configure the GPCT for use as an encoder 
@@ -103,7 +103,7 @@ namespace RTT
         insn.data=config_data;
         insn.subdev=_subDevice;
         insn.chanspec=CR_PACK(_channel,0,0);
-        int ret=comedi_do_insn(_myCard->getDevice(),&insn);
+        int ret=comedi_do_insn(_myCard->getDevice()->it,&insn);
         if(ret<0)
             log(Error) << "Comedi Counter : Instruction to configure counter -> encoder failed" << endlog();
         else
@@ -116,7 +116,7 @@ namespace RTT
     {
         //int can be negative, by casting the int to lsampl_t(unsigned int)
         // we write the right value to the encoderdevice     
-        comedi_data_write(_myCard->getDevice(), _subDevice,
+        comedi_data_write(_myCard->getDevice()->it, _subDevice,
                           _channel, 0, 0, (lsampl_t) p);
     }
 
@@ -128,7 +128,7 @@ namespace RTT
         typedef unsigned int Data;
         //int pos;
         lsampl_t pos[20];
-        int ret=comedi_data_read(_myCard->getDevice(),_subDevice,_channel,0,0,pos);
+        int ret=comedi_data_read(_myCard->getDevice()->it,_subDevice,_channel,0,0,pos);
         //int ret=comedi_data_read(_myCard->getDevice(),_subDevice,_channel,0,0,(unsigned int *)&pos);
         if(ret<0){
             log(Error) << "Comedi Counter : reading encoder failed, ret = " << ret << endlog();

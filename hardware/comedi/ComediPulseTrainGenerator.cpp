@@ -63,7 +63,7 @@ namespace RTT
                        << _myCard->getSubDeviceType(_subDevice) << endlog();
         }
         // Check how many counters this subdevice actually has
-        unsigned int nchan = comedi_get_n_channels(_myCard->getDevice(),_subDevice);
+        unsigned int nchan = comedi_get_n_channels(_myCard->getDevice()->it,_subDevice);
         /* Set timebase to maximum, ie. 20 MHz for the 6601 and 80 MHz
            for the 6602 board
            FIXME:  Make this more flexible if comedi driver supports
@@ -100,7 +100,7 @@ namespace RTT
         insn.subdev=_subDevice;
         insn.chanspec=CR_PACK(_channel,0,0);
 
-        int ret=comedi_do_insn(_myCard->getDevice(),&insn);
+        int ret=comedi_do_insn(_myCard->getDevice()->it,&insn);
         if (ret<0)
             log(Error) << "Comedi Counter : Instruction to configure counter -> Pulse Train Generator failed, ret = " << ret << endlog();
         else
@@ -118,7 +118,7 @@ namespace RTT
         insn.data=inttrig_data;
         insn.subdev=_subDevice;
         insn.chanspec=CR_PACK(_channel,0,0);
-        ret=comedi_do_insn(_myCard->getDevice(),&insn);
+        ret=comedi_do_insn(_myCard->getDevice()->it,&insn);
         if(ret<0){
             log(Error) << "Triggering reset on ComediPTG () failed, ret = " << ret << endlog();
         }
@@ -141,7 +141,7 @@ namespace RTT
             insn.subdev=_subDevice;
             insn.chanspec=CR_PACK(_channel,0,0);
 
-            int ret=comedi_do_insn(_myCard->getDevice(),&insn);
+            int ret=comedi_do_insn(_myCard->getDevice()->it,&insn);
             if (ret<0){
                 log(Error) << "Comedi Counter : Changing the PTG period failed, ret = " << ret << endlog();
                 return false;
@@ -170,7 +170,7 @@ namespace RTT
             insn.subdev=_subDevice;
             insn.chanspec=CR_PACK(_channel,0,0);
 
-            int ret=comedi_do_insn(_myCard->getDevice(),&insn);
+            int ret=comedi_do_insn(_myCard->getDevice()->it,&insn);
             if (ret<0){
                 log(Error) << "Comedi Counter : Changing the PTG period failed, ret = " << ret << endlog();
                 return false;
@@ -197,7 +197,7 @@ namespace RTT
             insn.data=config_data;
             insn.subdev=_subDevice;
             insn.chanspec=CR_PACK(_channel,0,0);
-            ret = comedi_do_insn(_myCard->getDevice(),&insn);
+            ret = comedi_do_insn(_myCard->getDevice()->it,&insn);
             if(ret<0){
                 log(Error) << "ComediPTG::start() failed, ret = " << ret << endlog();
                 return false;
@@ -221,7 +221,7 @@ namespace RTT
             insn.data=config_data;
             insn.subdev=_subDevice;
             insn.chanspec=CR_PACK(_channel,0,0);
-            ret = comedi_do_insn(_myCard->getDevice(),&insn);
+            ret = comedi_do_insn(_myCard->getDevice()->it,&insn);
             if(ret<0){
                 log(Error) << "ComediPTG::start() failed, ret = " << ret << endlog();
                 return false;
