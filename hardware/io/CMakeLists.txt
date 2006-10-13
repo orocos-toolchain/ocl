@@ -10,5 +10,6 @@ IF ( BUILD_IO )
     GLOBAL_ADD_INCLUDE( hardware/io ${HPPS} )
 
     #ADD_SUBDIRECTORY( tests )
+    ADD_SUBDIRECTORY( drivers )
 
 ENDIF ( BUILD_IO )
