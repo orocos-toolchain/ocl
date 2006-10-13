@@ -49,7 +49,7 @@
     #include <comedilib.h>
 #endif
 
-#include <rtt/os/fosi.h>
+#include <rtt/Logger.hpp>
 
 namespace RTT
 {
@@ -67,11 +67,11 @@ namespace RTT
 
             it = comedi_open( devString );
 
-            rtos_printf( "Trying to open %s\n", devString );
+            log(Info) << "Trying to open" << devString << endlog();
 
             if ( it == 0 )
                 {
-                    rtos_printf( "comedi_open failed\n" );
+                    log(Error) << "ComediDevice::DeviceInfo : comedi_open failed" << endlog();
                     error = -1;
                 }
         }
