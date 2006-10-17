@@ -24,7 +24,7 @@ ENDIF(NOT CMAKE_INSTALL_PREFIX)
 SET( PROJ_SOURCE_DIR ${Orocos-Components_SOURCE_DIR} )
 SET( PROJ_BINARY_DIR ${Orocos-Components_BINARY_DIR} )
 
-SET( OROCOS_TARGET gnulinux CACHE STRING "The Operating System target.")
+SET( OROCOS_TARGET gnulinux CACHE STRING "The Operating System target. One of [lxrt gnulinux xenomai]")
 
 IF(NOT OROCOS_INSTALL)
   SET( OROCOS_INSTALL ${CMAKE_INSTALL_PREFIX}/orocos CACHE PATH "The RTT installation directory.")
@@ -79,6 +79,9 @@ IF ( NOT CMAKE_BUILD_TYPE )
 ELSE ( NOT CMAKE_BUILD_TYPE )
   MESSAGE( STATUS "Build type set to '${CMAKE_BUILD_TYPE}' by user." )
 ENDIF ( NOT CMAKE_BUILD_TYPE )
+
+# MESSAGE("Looking for compiler:")
+INCLUDE (${CMAKE_ROOT}/Modules/CMakeDetermineCXXCompiler.cmake)
 
 ###################################################
 #                                                 #
