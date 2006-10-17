@@ -31,6 +31,7 @@ namespace Orocos
         //         Property<std::string> peername;
 
         Property<std::string> configurationfile;
+        Property<bool> autoConnect;
         Attribute<bool> validConfig;
 
         struct ConnectionData {
@@ -44,9 +45,11 @@ namespace Orocos
         DeploymentComponent(std::string name = "Configurator")
             : TaskContext(name),
               configurationfile("ConfigFile", "Name of the configuration file.", "cpf/"+name+".cpf"),
+              autoConnect("AutoConnect", "Should available ports with the same name be auto-connected between peers ?", true),
               validConfig("Valid", false)
         {
             this->properties()->addProperty( &configurationfile );
+            this->properties()->addProperty( &autoConnect );
             this->attributes()->addAttribute( &validConfig );
 
             this->methods()->addMethod( method("loadConfiguration", &DeploymentComponent::loadConfiguration, this),
@@ -64,6 +67,11 @@ namespace Orocos
                                         "Add a peer to a Component.",
                                         "From", "The first component.","To", "The other component.");
         }
+        
+        ~DeploymentComponent()
+        {
+            deletePropertyBag(root);
+        }
 
         /** 
          * Establish a bidirectional connection between two tasks.
@@ -76,6 +84,7 @@ namespace Orocos
          */
         bool connectPeers(const std::string& one, const std::string& other)
         {
+            Logger::In in("DeploymentComponent");
             TaskContext* t1 = this->getPeer(one);
             TaskContext* t2 = this->getPeer(other);
             if (!t1) {
@@ -86,7 +95,11 @@ namespace Orocos
                 Logger::log() <<Logger::Error<< "No such peer: "<<other<<endlog();
                 return false;
             }
-            t1->connectPorts(t2);
+            if ( autoConnect.get() ) {
+                log(Info) << "Automatically connecting data ports of "<<t1->getName() <<" and " << t2->getName() <<endlog();
+                log(Info) << "Disable with AutoConnect = false."<< endlog();
+                t1->connectPorts(t2);
+            }
             return t1->connectPeers(t2);
         }
         /** 
@@ -100,6 +113,7 @@ namespace Orocos
          */
         bool addPeer(const std::string& from, const std::string& to)
         {
+            Logger::In in("DeploymentComponent");
             TaskContext* t1 = this->getPeer(from);
             TaskContext* t2 = this->getPeer(to);
             if (!t1) {
@@ -110,7 +124,11 @@ namespace Orocos
                 log(Error)<< "No such peer: "<<to<<endlog();
                 return false;
             }
-            t1->connectPorts(t2);
+            if ( autoConnect.get() ) {
+                log(Info) << "Automatically connecting data ports of "<<t1->getName() <<" and " << t2->getName() <<endlog();
+                log(Info) << "Disable with AutoConnect = false."<< endlog();
+                t1->connectPorts(t2);
+            }
             return t1->addPeer(t2);
         }
 
@@ -134,7 +152,7 @@ namespace Orocos
             return false;
     
 #else
-            root.clear();
+            deletePropertyBag(root);
 
             log(Info) << "Loading '" <<configurationfile.get()<<"'."<< endlog();
             // demarshalling failures:
@@ -219,19 +237,20 @@ namespace Orocos
                                         log(Error)<<"No such Peer:"<<nm->value()<<endlog();
                                         valid = false;
                                     }
+                                    delete nm; // narrow() returns a clone()
                                 }
                             }
                         }
                         
                         
                         if ( !valid )
-                            deleteProperties( root );
+                            deletePropertyBag( root );
                     }
                 else
                     {
                         log(Error)<< "Some error occured while parsing "<< configurationfile.rvalue() <<endlog();
                         failure = true;
-                        deleteProperties( root );
+                        deletePropertyBag( root );
                         conmap.clear();
                     }
             } catch (...)
@@ -290,17 +309,29 @@ namespace Orocos
                     continue;
                 }
                 // first find a write and a read port.
+                // This is quite complex since a 'ReadWritePort' can act as both.
                 PortInterface* writer = 0, *reader = 0;
                 ConnectionData::Ports::iterator p = it->second.ports.begin();
                 while (p != it->second.ports.end() && (writer == 0 || reader == 0) ) {
-                    if ( (*p)->getPortType() == PortInterface::WritePort )
+                    if ( (*p)->getPortType() == PortInterface::WritePort ) {
+                        if (writer && writer->getPortType() == PortInterface::ReadWritePort )
+                            reader = writer;
                         writer = (*p)->clone();
+                    }
                     else
-                        if ( (*p)->getPortType() == PortInterface::ReadPort )
+                        if ( (*p)->getPortType() == PortInterface::ReadPort ) {
+                            if (reader && reader->getPortType() == PortInterface::ReadWritePort )
+                                writer = reader;
                             reader = (*p)->clone();
+                        }
                         else
                             if ( (*p)->getPortType() == PortInterface::ReadWritePort )
-                                writer = (*p)->clone();
+                                if (writer == 0) {
+                                    writer = (*p)->clone();
+                                }
+                                else {
+                                    reader = (*p)->clone();
+                                }
                     
                     ++p;
                 }
@@ -319,7 +350,6 @@ namespace Orocos
                 }
                 
                 log(Info) << "Creating Connection "<<it->first<<":"<<endlog();
-                log(Info) << "Connecting Port "<< writer->getName() <<" to Port " << reader->getName()<<endlog();
                 ConnectionInterface::shared_ptr con = writer->createConnection( reader );
                 assert( con );
                 con->connect();
@@ -349,6 +379,7 @@ namespace Orocos
                     if((*it)->getName() == "Peer"){
                         Property<std::string>* nm = Property<std::string>::narrow(*it);
                         this->addPeer( comp->getName(), nm->value() );
+                        delete nm; // was a clone.
                     }
                 }
             }
@@ -380,6 +411,7 @@ namespace Orocos
          */
         bool configureFromFile(std::string name, std::string filename)
         {
+            Logger::In in("DeploymentComponent");
             TaskContext* c = this->getPeer(name);
             if (!c) {
                 log(Error)<<"No such peer to configure: "<<name<<endlog();
