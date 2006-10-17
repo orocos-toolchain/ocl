@@ -28,12 +28,7 @@
  
 
 #include "CANPieController.hpp"
-
-#include <pkgconf/system.h>
-#ifdef OROPKG_CORELIB_ACTIVITIES
-#include <rtt/NonPreemptibleActivity.hpp>
 #include <rtt/Logger.hpp>
-#endif
 
 #include "driver/cpuser.h"
 #include <rtt/os/fosi.h>
@@ -41,14 +36,8 @@
 namespace RTT
 {namespace CAN
 {
-#ifdef OROPKG_CORELIB_ACTIVITIES
-    
-#endif
-
   CANPieController::CANPieController( double period,  bool interrupt ) :
-#ifdef OROPKG_CORELIB_ACTIVITIES
-    NonPreemptibleActivity( period ), 
-#endif
+    PeriodicActivity( RTT::OS::HighestPriority, period ), 
     CANPieChannel(0),  process_in_int(interrupt), 
     total_recv(0), total_trns(0), failed_recv(0), failed_trns(0)
   {

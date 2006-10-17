@@ -6,7 +6,11 @@ IF ( BUILD_CANPIE )
     FILE( GLOB SRCS [^.]*.cpp )
     FILE( GLOB HPPS [^.]*.hpp )
 
-    GLOBAL_ADD_COMPONENT( orocos-canpie ${SRCS} driver/canpie_lxrtlib.c)
+    IF ( OROCOS_TARGET STREQUAL lxrt )
+       SET( SRCS ${SRCS} driver/canpie_lxrtlib.c)
+    ENDIF ( OROCOS_TARGET STREQUAL lxrt )
+
+    GLOBAL_ADD_COMPONENT( orocos-canpie ${SRCS} )
     GLOBAL_ADD_INCLUDE( hardware/canpie ${HPPS} )
     #GLOBAL_ADD_INCLUDE( hardware/canpie/driver/ driver/jr3_lxrt_common.h )
 

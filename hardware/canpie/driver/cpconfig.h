@@ -27,8 +27,8 @@
  
  
 
-#include <pkgconf/device_drivers_canpie.h>
 
+#define OROBLD_DEVICE_DRIVERS_CANPIE_SJA1000
 #ifdef OROBLD_DEVICE_DRIVERS_CANPIE_SJA1000
 #include "cpconfig_sja.h"
 #else

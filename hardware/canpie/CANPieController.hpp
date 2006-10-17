@@ -33,12 +33,9 @@
 #include "CANBusInterface.hpp"
 #include "CANMessage.hpp"
 
-#include <pkgconf/system.h>
-#ifdef OROPKG_CORELIB_ACTIVITIES
-#include <rtt/NonPreemptibleActivity.hpp>
-#endif
-
-#include "cpuser.h"
+#include <rtt/PeriodicActivity.hpp>
+#include <rtt/os/threads.hpp>
+#include "driver/cpuser.h"
 
 namespace RTT
 {namespace CAN
@@ -49,10 +46,8 @@ namespace RTT
    * address the physical controller.
    */
   class CANPieController
-    : public CANControllerInterface
-#ifdef OROPKG_CORELIB_ACTIVITIES
-    ,public NonPreemptibleActivity
-#endif
+      : public CANControllerInterface,
+        public PeriodicActivity
   {
   public:
     /**
