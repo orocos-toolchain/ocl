@@ -31,7 +31,7 @@
 #include <rtt/dev/DigitalInInterface.hpp>
 #include <rtt/dev/EncoderInterface.hpp>
 #include <rtt/ConfigurationInterface.hpp>
-#include "CANRequest.hpp"
+#include "hardware/canpie/CANRequest.hpp"
 
 // rt_std :
 #include <rtt/os/rtstreams.hpp>

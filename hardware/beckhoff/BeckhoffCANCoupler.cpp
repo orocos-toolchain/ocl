@@ -27,8 +27,8 @@
  
  
 
-#include "rtt/can/BeckhoffCANCoupler.hpp"
-#include "rtt/Logger.hpp"
+#include "BeckhoffCANCoupler.hpp"
+#include <rtt/Logger.hpp>
 
 
 namespace RTT

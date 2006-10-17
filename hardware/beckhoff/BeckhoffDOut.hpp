@@ -28,7 +28,6 @@
 #ifndef BECKHOFFDOUT_HPP
 #define BECKHOFFDOUT_HPP
 
-#include "CAN.hpp"
 #include <rtt/dev/DigitalOutInterface.hpp>
 
 namespace RTT
