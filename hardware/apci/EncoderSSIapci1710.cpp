@@ -43,11 +43,12 @@
 
 
 #include <pkgconf/system.h>
+#include <rtt/os/threads.hpp>
 #include "hardware/apci/apci-config.h"
 
 // include lib first, if not present, include KM headers.
 #if defined(OROPKG_OS_LXRT)
-#include "driver/lxrt/apci_lxrt.h"
+#include "drivers/lxrt/apci_lxrt.h"
 #endif
 
 #include "EncoderSSIapci1710.hpp"
@@ -66,7 +67,7 @@ namespace RTT
 // Constructor for 1 module
 // --------------------------
 EncoderSSI_apci1710_board::EncoderSSI_apci1710_board( unsigned int mNr1 )
-  : NonPreemptibleActivity( 1./ORONUM_DEVICE_DRIVERS_APCI1710_SSI_UPDATE )
+  : PeriodicActivity(RTT::OS::HighestPriority, 1./ORONUM_DEVICE_DRIVERS_APCI1710_SSI_UPDATE )
   , nr_of_modules(1), moduleNr1( mNr1 )
 {
 
@@ -106,7 +107,7 @@ EncoderSSI_apci1710_board::EncoderSSI_apci1710_board( unsigned int mNr1 )
 // Constructor for 2 modules
 // --------------------------
 EncoderSSI_apci1710_board::EncoderSSI_apci1710_board( unsigned int mNr1, unsigned int mNr2 )
-  : NonPreemptibleActivity( 1./ORONUM_DEVICE_DRIVERS_APCI1710_SSI_UPDATE )
+  : PeriodicActivity( RTT::OS::HighestPriority, 1./ORONUM_DEVICE_DRIVERS_APCI1710_SSI_UPDATE )
   , nr_of_modules(2), moduleNr1( mNr1 ), moduleNr2( mNr2 )
 {
 
@@ -155,7 +156,7 @@ EncoderSSI_apci1710_board::EncoderSSI_apci1710_board( unsigned int mNr1, unsigne
 // Constructor for 3 modules
 // --------------------------
 EncoderSSI_apci1710_board::EncoderSSI_apci1710_board( unsigned int mNr1, unsigned int mNr2, unsigned int mNr3 )
-  : NonPreemptibleActivity( 1./ORONUM_DEVICE_DRIVERS_APCI1710_SSI_UPDATE )
+  : PeriodicActivity( RTT::OS::HighestPriority, 1./ORONUM_DEVICE_DRIVERS_APCI1710_SSI_UPDATE )
   , nr_of_modules(3), moduleNr1( mNr1 ), moduleNr2( mNr2 ), moduleNr3( mNr3 )
 {
 
@@ -212,7 +213,7 @@ EncoderSSI_apci1710_board::EncoderSSI_apci1710_board( unsigned int mNr1, unsigne
 // Constructor for 4 modules
 // --------------------------
 EncoderSSI_apci1710_board::EncoderSSI_apci1710_board( unsigned int mNr1, unsigned int mNr2, unsigned int mNr3, unsigned int mNr4 )
-  : NonPreemptibleActivity( 1./ORONUM_DEVICE_DRIVERS_APCI1710_SSI_UPDATE )
+  : PeriodicActivity(RTT::OS::HighestPriority, 1./ORONUM_DEVICE_DRIVERS_APCI1710_SSI_UPDATE )
   , nr_of_modules(3), moduleNr1( mNr1 ), moduleNr2( mNr2 ), moduleNr3( mNr3 ), moduleNr4( mNr4 )
 {
 

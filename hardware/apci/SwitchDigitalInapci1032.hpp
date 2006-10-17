@@ -30,30 +30,16 @@
 #ifndef SWITCHDIGITALINAPCI1032_HPP
 #define SWITCHDIGITALINAPCI1032_HPP
 
-#include "DigitalInInterface.hpp"
-
-#ifdef OROCLS_DEVICE_DRIVERS_APCI1032_EVENTS
-#include <rtt/PreemptibleActivity.hpp>
-#include <rtt/Event.hpp>
-#include <rtt/ListenerRegistration.hpp>
-#endif
+#include <rtt/dev/DigitalInInterface.hpp>
 
 namespace RTT
 {
-
-    
-    
-
     /**
      * A physical device class for reading our digital input card.
      * Fires an event when its state changed.
      */
     class SwitchDigitalInapci1032 :
           public DigitalInInterface
-#ifdef OROCLS_DEVICE_DRIVERS_APCI1032_EVENTS
-          ,public ListenerRegistration, 
-          public PreemptibleActivity // fast !
-#endif
     {
 
         public:
@@ -70,25 +56,11 @@ namespace RTT
             
             virtual unsigned int nbOfInputs() const { return 32; }
 
-#ifdef OROCLS_DEVICE_DRIVERS_APCI1032_EVENTS
-            //old and new value stored, to detect change and fire the inputEvent
-            unsigned long getNewValue();
-            unsigned long getOldValue();
-#endif
-
         private:
             int checkAndGetPCISlotNumber();
             int setBoardInformation();
             int getHardwareInformation( unsigned int * pui_BaseAddress, unsigned char * pb_InterruptNbr, unsigned char * pb_SlotNumber );
             int closeBoardHandle();
-#ifdef OROCLS_DEVICE_DRIVERS_APCI1032_EVENTS
-            void step();
-
-            Event inputEvent;
-
-            unsigned long new_InputValue;
-            unsigned long old_InputValue;
-#endif
 
             int BoardHandle;
             unsigned char SlotNumber;

@@ -25,44 +25,21 @@
  *                                                                         *
  ***************************************************************************/
 #include <pkgconf/system.h>
-#include <pkgconf/device_drivers_apci.h>
 
-#if defined(OROINT_DEVICE_DRIVERS_APCI1032) && defined(OROPKG_OS_LXRT)
-#include "apci_lxrt.h"
-#elif defined (OROINT_DEVICE_DRIVERS_APCI1032_IK)
-extern "C"
-{
-#define new _new
-#define class _class
-#define LINUX_PCI_H
-#include "apci1032/apci1032.h"
-#undef class
-#undef new
-}
-#endif
+#include "drivers/lxrt/apci_lxrt.h"
 
 #include <rtt/os/fosi.h>
-#include <rtt/dev/SwitchDigitalInapci1032.hpp>
+#include "SwitchDigitalInapci1032.hpp"
 
 namespace RTT
 {
 
     SwitchDigitalInapci1032::SwitchDigitalInapci1032( const std::string& name ) :
           DigitalInInterface( name )
-#ifdef OROCLS_DEVICE_DRIVERS_APCI1032_EVENTS
-          ,ListenerRegistration( &inputEvent ) // fires when state changed
-          ,PreemptibleActivity(0.1)
-          ,inputEvent( Event::SYNSYN )
-#endif
     {
         BoardHandle = bh;
         rtos_printf( "BoardHandle is %i\n", bh );
         bh++;
-#ifdef OROCLS_DEVICE_DRIVERS_APCI1032_EVENTS
-        old_InputValue = 0;
-        new_InputValue = 0;
-#endif
-
         //SlotNumber=checkAndGetPCISlotNumber();
     }
 
@@ -75,14 +52,12 @@ namespace RTT
     inline
     bool SwitchDigitalInapci1032::isOn( unsigned int bit) const
     {
-#ifdef OROINT_DEVICE_DRIVERS_APCI1032
         if ( bit >= 0 && bit < 32 )
         {
             unsigned long pb_ChannelValue;
             i_APCI1032_Read1DigitalInput( BoardHandle, bit, &pb_ChannelValue );
             return pb_ChannelValue == 1;
         }
-#endif
         return false;
     }
 
@@ -100,23 +75,9 @@ namespace RTT
     unsigned int SwitchDigitalInapci1032::readSequence(unsigned int start_bit, unsigned int stop_bit) const
     {
         unsigned long pul_InputValue=0;
-#ifdef OROINT_DEVICE_DRIVERS_APCI1032
         i_APCI1032_Read32DigitalInput( BoardHandle, &pul_InputValue );
-#endif
         return (pul_InputValue >> start_bit) & ( 1 << (stop_bit - start_bit + 1)) - 1;
     }
-
-#ifdef OROCLS_DEVICE_DRIVERS_APCI1032_EVENTS
-    unsigned long SwitchDigitalInapci1032::getNewValue()
-    {
-        return new_InputValue;
-    }
-
-    unsigned long SwitchDigitalInapci1032::getOldValue()
-    {
-        return old_InputValue;
-    }
-#endif
 
     int SwitchDigitalInapci1032::checkAndGetPCISlotNumber()
     {
@@ -142,21 +103,6 @@ namespace RTT
         //return i_APCI1032_CloseBoardHandle( BoardHandle );
         return -1;
     }
-
-#ifdef OROCLS_DEVICE_DRIVERS_APCI1032_EVENTS
-    void SwitchDigitalInapci1032::step( )
-    {
-#ifdef OROINT_DEVICE_DRIVERS_APCI1032
-        i_APCI1032_Read32DigitalInput( BoardHandle, &new_InputValue );
-#endif
-
-        if ( new_InputValue != old_InputValue )
-        {
-            inputEvent.fire();
-            old_InputValue = new_InputValue;
-        }
-    }
-#endif
 
     int SwitchDigitalInapci1032::SwitchDigitalInapci1032::bh = 0;
 };

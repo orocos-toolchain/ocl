@@ -20,7 +20,7 @@
 #define _EncoderSSI_apci1710_HPP
 
 #include <rtt/os/MutexLock.hpp>
-#include <rtt/NonPreemptibleActivity.hpp>
+#include <rtt/PeriodicActivity.hpp>
 #include "rtt/dev/EncoderInterface.hpp"
 #include <string>
 
@@ -59,7 +59,7 @@ namespace RTT
  *         Dependency on apci1710 package
  *        
  */
-class EncoderSSI_apci1710_board : public NonPreemptibleActivity
+class EncoderSSI_apci1710_board : public PeriodicActivity
 {
 public:
     EncoderSSI_apci1710_board( unsigned int mNr1 );

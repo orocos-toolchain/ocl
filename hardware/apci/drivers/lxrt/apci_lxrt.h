@@ -30,8 +30,6 @@
 #ifndef APCI_LXRT_H
 #define APCI_LXRT_H
 
-#include <pkgconf/device_drivers_apci.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -49,12 +47,7 @@ extern "C" {
 #include <asm/types.h>
 #endif
 
-
     
-    
-    
-#ifdef OROINT_DEVICE_DRIVERS_APCI1032
-
 #ifdef __KERNEL__
     /* APCI1032 Prototype functions */
     int i_APCI1032_CheckAndGetPCISlotNumber ( unsigned char *pb_SlotArray );
@@ -68,13 +61,6 @@ extern "C" {
     int i_APCI1032_Read32DigitalInput ( int i_BoardHandle, unsigned long * pul_InputValue );
 #endif
     
-#endif //OROINT_DEVICE_DRIVERS_APCI1032
-
-
-
-    
-    
-#ifdef OROINT_DEVICE_DRIVERS_APCI2200
 // we typedef to void since the address has no meaning in user space, it's just a number.
 typedef void apci2200_device;
 
@@ -94,13 +80,6 @@ typedef void apci2200_device;
     unsigned int apci2200_get_number_off_digital_outputs( void );
 #endif
     
-#endif //OROINT_DEVICE_DRIVERS_APCI2200
-
-    
-
-
-    
-#ifdef OROINT_DEVICE_DRIVERS_APCI1710
 // same as above
 typedef void apci1710_device;
 typedef void apci1710_module;
@@ -140,7 +119,7 @@ typedef void apci1710_module;
     int apci1710_incr_cleanup_module( apci1710_module* module );
 #endif
     
-#endif //OROINT_DEVICE_DRIVERS_APCI1710
+
 
 
 
@@ -220,11 +199,6 @@ typedef void apci1710_module;
 #define DECLARE static inline 
 
 
-
-
-
-
-#ifdef OROINT_DEVICE_DRIVERS_APCI1032
 DECLARE int i_APCI1032_Read1DigitalInput ( int i_BoardHandle, unsigned char b_Channel, unsigned long * pb_ChannelValue )
 {
   unsigned long pb_val; int retval;
@@ -260,13 +234,11 @@ DECLARE int i_APCI1032_Read32DigitalInput ( int i_BoardHandle, unsigned long * p
   memcpy(pul_InputValue, &pb_val, sizeof(unsigned long) );
   return retval;
 }
-#endif
 
 /***************************************************************************
  ***************************************************************************
  **************************************************************************/
 
-#ifdef OROINT_DEVICE_DRIVERS_APCI2200
 DECLARE apci2200_device* apci2200_get_device( void )
 {
   struct { int var; } arg = { 0 };
@@ -313,13 +285,11 @@ DECLARE unsigned int apci2200_get_number_off_digital_outputs( void )
   return rtai_lxrt(MYIDX, SIZARG, APCI2200_GETNUMBERDO, &arg).i[LOW];
 }
 
-#endif
 
 /***************************************************************************
  ***************************************************************************
  **************************************************************************/
 
-#ifdef OROINT_DEVICE_DRIVERS_APCI1710
 
 typedef void apci1710_device;
 
@@ -441,8 +411,6 @@ int apci1710_incr_set_digital_channel_on( apci1710_module* module );
 int apci1710_incr_set_digital_channel_off( apci1710_module* module );
 *
 **/
-
-#endif // OROINT_DEVICE_DRIVERS_APCI1710
 
 #endif /* __KERNEL__ */
 
