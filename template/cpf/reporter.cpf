@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "cpf.dtd">
+<properties>
+  <simple name="Port" type="string"><description></description><value>Execution.contact_formation_measured</value></simple>
+  <simple name="Port" type="string"><description></description><value>Execution.contact_formation_desired</value></simple>
+  <simple name="Port" type="string"><description></description><value>Execution.wrench_env_obj_meas</value></simple>
+  <simple name="Port" type="string"><description></description><value>Execution.twist_env_obj_meas</value></simple>
+  <simple name="Port" type="string"><description></description><value>Execution.wrench_env_obj_meas_proj</value></simple>
+  <simple name="Port" type="string"><description></description><value>Execution.twist_env_obj_meas_proj</value></simple>
+  <simple name="Port" type="string"><description></description><value>Execution.wrench_env_obj_desi</value></simple>
+  <simple name="Port" type="string"><description></description><value>Execution.twist_env_obj_desi</value></simple>
+  <simple name="Port" type="string"><description></description><value>Execution.wrench_env_obj_desi_proj</value></simple>
+  <simple name="Port" type="string"><description></description><value>Execution.twist_env_obj_desi_proj</value></simple>
+  <simple name="Port" type="string"><description></description><value>Execution.frame_env_obj</value></simple>
+  <simple name="Port" type="string"><description></description><value>Execution.wrench_gravity_env_obj</value></simple>
+  <simple name="Port" type="string"><description></description><value>Execution.wrench_fs_env_obj</value></simple>
+  <simple name="Port" type="string"><description></description><value>Execution.wrench_gravity_fs_fs</value></simple>
+  <simple name="Port" type="string"><description></description><value>Wrenchsensor.WrenchData</value></simple>
+</properties>
