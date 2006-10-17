@@ -44,6 +44,7 @@ ENDIF (OROCOS_TARGET STREQUAL "gnulinux")
     IF (OROCOS_TARGET STREQUAL "lxrt")
         # Try comedi/lxrt
         MESSAGE("Looking for comedi/LXRT headers in ${COMEDI_INSTALL}/include")
+	SET(COMEDI_INCLUDE_DIR INTERNAL)
 	FIND_PATH(COMEDI_INCLUDE_DIR linux/comedi.h "${COMEDI_INSTALL}/include")
 	#FIND_LIBRARY(COMEDI_LIBRARY NAMES kcomedilxrt PATH "/usr/realtime/lib") 
 	IF ( COMEDI_INCLUDE_DIR )
