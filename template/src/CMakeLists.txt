@@ -1,0 +1,5 @@
+OPTION( BUILD_TEMPLATE "Build TEMPLATE Components" ON )
+
+IF ( BUILD_TEMPLATE )
+    GLOBAL_ADD_COMPONENT( orocos-template task1.cpp )
+ENDIF ( BUILD_TEMPLATE )
