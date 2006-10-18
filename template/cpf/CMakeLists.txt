@@ -1,8 +1,0 @@
-IF ( BUILD_TESTS)
-IF ( BUILD_ESTIMATION_TEST )
-
-    INSTALL_FILES( /cpf [^.]*.cpf)  
-    INSTALL_FILES( /cpf [^.]*.dtd)  
-
-ENDIF ( BUILD_ESTIMATION_TEST )
-ENDIF ( BUILD_TESTS)
