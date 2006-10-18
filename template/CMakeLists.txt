@@ -10,17 +10,17 @@
 #                                                 #
 ###################################################
 
-PROJECT(template)
+PROJECT(estimation-execution)
 
-SET( VERSION 0.1 CACHE STRING "Version of Template" )
-  MESSAGE( "Template version ${VERSION}" )
+SET( VERSION 0.1 CACHE STRING "Version of Estimation-Execution" )
+  MESSAGE( "Estimation-Execution version ${VERSION}" )
 
 # Do not rely on environment variables to find the path, because that's confusing
 SET( CMAKE_INSTALL_PREFIX /usr/local/estimation CACHE PATH "Installation directory" )
 MESSAGE( "Setting installation directory to ${CMAKE_INSTALL_PREFIX}" )
 
-SET( PROJ_SOURCE_DIR ${template_SOURCE_DIR} )
-SET( PROJ_BINARY_DIR ${template_BINARY_DIR} )
+SET( PROJ_SOURCE_DIR ${estimation-execution_SOURCE_DIR} )
+SET( PROJ_BINARY_DIR ${estimation-execution_BINARY_DIR} )
 
 SET( OROCOS_TARGET gnulinux CACHE STRING "The Operating System target.")
 SET( OROCOS_INSTALL ${CMAKE_INSTALL_PREFIX} CACHE PATH "The Orocos installation directory.")
@@ -110,8 +110,12 @@ ENDIF ( NOT WROTE_CONFIG_H )
 INCLUDE(config/check_depend.cmake)
 INCLUDE(config/component_rules.cmake)
 
-LINK_DIRECTORIES( ${PROJ_BINARY_DIR}/src )
-ADD_SUBDIRECTORY( src )
+
+LINK_DIRECTORIES( ${PROJ_BINARY_DIR}/estimation )
+ADD_SUBDIRECTORY( estimation )
+
+LINK_DIRECTORIES( ${PROJ_BINARY_DIR}/execution )
+ADD_SUBDIRECTORY( execution )
 
 ADD_SUBDIRECTORY( tests )
 

@@ -8,11 +8,10 @@ INCLUDE (${PROJ_SOURCE_DIR}/config/FindPkgConfig.cmake)
 
 IF ( CMAKE_PKGCONFIG_EXECUTABLE )
 
-    MESSAGE( STATUS "Using pkgconfig" )
+    MESSAGE( "Using pkgconfig" )
     
     SET(ENV{PKG_CONFIG_PATH} "${OROCOS_INSTALL}/lib/pkgconfig:${OROCOS_INSTALL}/packages/install/lib/pkgconfig/")
-    #MESSAGE( "Setting environment of PKG_CONFIG_PATH to: $ENV{PKG_CONFIG_PATH}")
-    MESSAGE( STATUS "Searching in ${OROCOS_INSTALL}:" )
+    MESSAGE( "Setting environment of PKG_CONFIG_PATH to: $ENV{PKG_CONFIG_PATH}")
     PKGCONFIG( "orocos-${OROCOS_TARGET} >= 0.25" OROCOS_RTT OROCOS_RTT_INCLUDE_DIRS OROCOS_RTT_DEFINES OROCOS_RTT_LINK_DIRS OROCOS_RTT_LIBS )
 
     IF( OROCOS_RTT )
@@ -24,13 +23,11 @@ IF ( CMAKE_PKGCONFIG_EXECUTABLE )
 	INCLUDE_DIRECTORIES( ${OROCOS_RTT_INCLUDE_DIRS} )
         LINK_DIRECTORIES( ${OROCOS_RTT_LINK_DIRS} )
 
-    ELSE  ( OROCOS_RTT )
-        MESSAGE( FATAL_ERROR "Can't find Orocos Real-Time Toolkit for target '${OROCOS_TARGET}'")
     ENDIF ( OROCOS_RTT )
 
 ELSE  ( CMAKE_PKGCONFIG_EXECUTABLE )
 
     # Can't find pkg-config -- have to search manually
-    MESSAGE( FATAL_ERROR "Can't find pkg-config ")
+    MESSAGE( FATAL_ERROR "Can't find Orocos Real-Time Tookit (RTT)")
 
 ENDIF ( CMAKE_PKGCONFIG_EXECUTABLE )

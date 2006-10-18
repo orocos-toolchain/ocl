@@ -28,17 +28,17 @@ INCLUDE( ${CMAKE_ROOT}/Modules/CheckIncludeFile.cmake )
 #
 INCLUDE( ${CMAKE_ROOT}/Modules/FindDoxygen.cmake )
 IF ( DOXYGEN )
-  MESSAGE( STATUS "Found Doxygen -- documentation can be built" )
+  MESSAGE( "Found Doxygen -- documentation can be built" )
 
   OPTION( GENERATE_DOCUMENTATION "Build Documentation" OFF )
 
 ELSE ( DOXYGEN )
-  MESSAGE( STATUS "Doxygen not found -- unable to build documentation" )
+  MESSAGE( "Doxygen not found -- unable to build documentation" )
 ENDIF ( DOXYGEN )
 
 
 #
 # An option for tests, to make it easy to turn off all tests
 #
-OPTION( BUILD_TESTS "Turn me off to disable compilation of all tests" OFF )
+OPTION( BUILD_TESTS "Turn me off to disable compilation of all tests" ON )
 
