@@ -1,5 +1,5 @@
-IF ( BUILD_TESTS )
-OPTION( BUILD_TEMPLATE_TEST "Build template test" OFF )
+OPTION( BUILD_TEMPLATE_TEST "Build template test" ON )
+
 IF ( BUILD_TEMPLATE_TEST )
 
     # Add a test program
@@ -9,4 +9,3 @@ IF ( BUILD_TEMPLATE_TEST )
     TARGET_LINK_LIBRARIES( orocos-taskbrowser orocos-reporting ${OROCOS_RTT_LIBS})
 
 ENDIF ( BUILD_TEMPLATE_TEST )
-ENDIF ( BUILD_TESTS )
