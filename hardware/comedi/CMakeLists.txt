@@ -6,8 +6,8 @@ IF ( BUILD_COMEDI AND COMEDI_FOUND)
     FILE( GLOB DEVSRCS dev/[^.]*.cpp )
     FILE( GLOB DEVHPPS dev/[^.]*.hpp )
 
-    GLOBAL_ADD_COMPONENT( orocos-comedi-dev ${DEVSRCS} )
-    GLOBAL_ADD_INCLUDE( ocr/dev ${DEVHPPS} )
+    GLOBAL_ADD_COMPONENT( orocos-comedi ${DEVSRCS} )
+    GLOBAL_ADD_INCLUDE( ocl/dev ${DEVHPPS} )
 
     #ADD_SUBDIRECTORY( tests )
 

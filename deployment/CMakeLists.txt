@@ -7,7 +7,7 @@ IF ( BUILD_DEPLOYMENT )
     FILE( GLOB SRCS [^.]*.cpp )
 
     GLOBAL_ADD_COMPONENT( orocos-deployment ${SRCS} )
-    GLOBAL_ADD_INCLUDE( deployment ${HPPS})
+    GLOBAL_ADD_INCLUDE( ocl ${HPPS})
      
     ADD_SUBDIRECTORY( tests )
 

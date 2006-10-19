@@ -6,10 +6,9 @@ IF ( BUILD_BECKHOFF )
     FILE( GLOB DEVSRCS dev/[^.]*.cpp )
     FILE( GLOB DEVHPPS dev/[^.]*.hpp )
 
-    GLOBAL_ADD_COMPONENT( orocos-beckhoff-dev ${DEVSRCS} )
-    GLOBAL_ADD_INCLUDE( ocr/dev ${DEVHPPS} )
-
-    TARGET_USE_LIB( orocos-beckhoff-dev hardware/canpie orocos-canpie-dev)
+    INCLUDE_DIRECTORIES( ${PROJECT_SOURCE_DIR}/hardware/can )
+    GLOBAL_ADD_COMPONENT( orocos-beckhoff ${DEVSRCS} )
+    GLOBAL_ADD_INCLUDE( ocl/dev ${DEVHPPS} )
 
     #ADD_SUBDIRECTORY( tests )
 

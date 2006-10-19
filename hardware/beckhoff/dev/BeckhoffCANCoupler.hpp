@@ -28,7 +28,7 @@
 #ifndef BECKHOFFCANCOUPLER_HPP
 #define BECKHOFFCANCOUPLER_HPP
 
-#include <dev/CANDeviceInterface.hpp>
+#include <can/CANDeviceInterface.hpp>
 #include <rtt/ConfigurationInterface.hpp>
 #include <rtt/TimeService.hpp>
 
@@ -43,8 +43,6 @@ namespace RTT
 {namespace CAN
 {
     
-    using std::vector;
-
 	/**
      * An implementation of a CANDeviceInterface, which
      * represents a Beckhoff CAN Coupler.
@@ -53,7 +51,7 @@ namespace RTT
         : public CANDeviceInterface, 
           public ConfigurationInterface
     {
-        vector<CANRequest*> requests;
+        std::vector<CANRequest*> requests;
         CANMessage Resetmsg;
         CANMessage StartUpmsg;
         CANMessage Stopmsg;

@@ -12,7 +12,7 @@ IF ( BUILD_TASKBROWSER )
        FILE( GLOB SRCS [^.]*.cpp )
 
        GLOBAL_ADD_COMPONENT( orocos-taskbrowser ${SRCS} )
-       GLOBAL_ADD_INCLUDE( taskbrowser ${HPPS})
+       GLOBAL_ADD_INCLUDE( ocl ${HPPS})
      
        TARGET_LINK_LIBRARIES(orocos-taskbrowser ncurses readline )
 

@@ -52,38 +52,6 @@
 
 /*----------------------------------------------------------------------------*/
 /*!
-** \def     CP_MSG_TIME
-** \brief   CpStruct_CAN configuration
-**
-** This symbol defines if the element v_MsgTime is included in the structure
-** CpStruct_CAN. This structure member is only needed for CAN interfaces that
-** can handle time stamps.
-**
-** \li 0 = CAN message does not store time data
-** \li 1 = CAN message can store time data
-**
-*/
-#define  CP_MSG_TIME       0
-
-
-/*----------------------------------------------------------------------------*/
-/*!
-** \def     CP_USR_DATA
-** \brief   CpStruct_CAN configuration
-**
-** This symbol defines if the element v_UsrData is included in the structure
-** CpStruct_CAN. This structure member is only needed for CAN interfaces if
-** the application needs to store a 32-bit value for each message.
-**
-** \li 0 = CAN message does not store user data
-** \li 1 = CAN message can store user data
-**
-*/
-#define  CP_USR_DATA       0
-
-
-/*----------------------------------------------------------------------------*/
-/*!
 ** \def     CP_SW_FILTER
 ** \brief   Identifier filter for CANpie
 **

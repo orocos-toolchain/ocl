@@ -7,7 +7,7 @@ IF ( BUILD_DEMOTOOL )
     FILE( GLOB HPPS [^.]*.hpp )
 
     GLOBAL_ADD_COMPONENT( orocos-demotool ${SRCS} )
-    GLOBAL_ADD_INCLUDE( hardware/demotool ${HPPS})
+    GLOBAL_ADD_INCLUDE( ocl ${HPPS})
 
     ADD_SUBDIRECTORY( tests )
 

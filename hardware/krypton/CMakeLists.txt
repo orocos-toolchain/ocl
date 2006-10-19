@@ -7,7 +7,7 @@ IF ( BUILD_KRYPTON )
     FILE( GLOB HPPS [^.]*.hpp )
 
     GLOBAL_ADD_COMPONENT( orocos-krypton ${SRCS} )
-    GLOBAL_ADD_INCLUDE( hardware/krypton ${HPPS})
+    GLOBAL_ADD_INCLUDE( ocl ${HPPS})
 
     ADD_SUBDIRECTORY( tests )
 

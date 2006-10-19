@@ -7,7 +7,7 @@ IF ( BUILD_LASER )
     FILE( GLOB HPPS [^.]*.hpp )
 
     GLOBAL_ADD_COMPONENT( orocos-laser ${SRCS} )
-    GLOBAL_ADD_INCLUDE( hardware/laser ${HPPS})
+    GLOBAL_ADD_INCLUDE( ocl ${HPPS})
 
     ADD_SUBDIRECTORY( tests )
 

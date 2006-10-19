@@ -1,5 +1,5 @@
 
-IF ( OROCOS_TARGET STREQUAL lxrt )
+IF ( OS_LXRT )
 
 OPTION( BUILD_APCI "Build APCI 2200/1032/1710 drivers for LXRT" OFF )
 
@@ -11,8 +11,8 @@ IF ( BUILD_APCI )
 
     INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/dev ${CMAKE_CURRENT_BINARY_DIR}/dev)
 
-    GLOBAL_ADD_COMPONENT( orocos-apci-dev ${DEVSRCS} )
-    GLOBAL_ADD_INCLUDE( ocr/dev ${DEVHPPS} )
+    GLOBAL_ADD_COMPONENT( orocos-apci ${DEVSRCS} )
+    GLOBAL_ADD_INCLUDE( ocl/dev ${DEVHPPS} )
 
     #ADD_SUBDIRECTORY( tests )
 
@@ -29,8 +29,8 @@ IF ( BUILD_APCI )
 
 ENDIF ( BUILD_APCI )
 
-ELSE( OROCOS_TARGET STREQUAL lxrt )
+ELSE( OS_LXRT )
 
 MESSAGE( STATUS "Can not Build APCI drivers with gnulinux target. Use lxrt.")
 
-ENDIF( OROCOS_TARGET STREQUAL lxrt )
+ENDIF( OS_LXRT )

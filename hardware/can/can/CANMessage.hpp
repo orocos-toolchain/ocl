@@ -28,7 +28,8 @@
 #ifndef CANMESSAGE_HPP
 #define CANMESSAGE_HPP
 
-#include "../drivers/cpmacro.h"
+#include "cpstruct.h"
+#include "cpmacro.h"
 #include "CANDeviceInterface.hpp"
 #include <string.h>
 

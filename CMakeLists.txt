@@ -12,6 +12,9 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.2)
 
 PROJECT(Orocos-Components)
 
+SET(CMAKE_CXX_COMPILER g++ CACHE FILEPATH "C++ Compiler" )
+SET(CMAKE_C_COMPILER gcc CACHE FILEPATH "C Compiler" )
+
 SET( VERSION 0.1 CACHE STRING "Version of Orocos Components" )
   MESSAGE( "Orocos Components version ${VERSION}" )
 
@@ -222,3 +225,9 @@ ENDIF ( "${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}" STREQUAL "2.4" )
 
 ADD_CUSTOM_TARGET(docs "doxygen" "Doxyfile")
   
+
+## Debugging
+OPTION( DISPLAY_FLAGS "Display cmake variables at end of configure step." OFF)
+IF( DISPLAY_FLAGS )
+INCLUDE(config/cmake_logging.cmake)
+ENDIF( DISPLAY_FLAGS )

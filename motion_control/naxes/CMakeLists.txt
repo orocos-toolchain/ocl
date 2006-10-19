@@ -7,7 +7,7 @@ IF ( BUILD_NAXES )
     FILE( GLOB HPPS [^.]*.hpp )
 
     GLOBAL_ADD_COMPONENT( orocos-naxes ${SRCS} )
-    GLOBAL_ADD_INCLUDE( motion_control/naxes ${HPPS})
+    GLOBAL_ADD_INCLUDE( ocl ${HPPS})
 
     ADD_SUBDIRECTORY( tests )
 

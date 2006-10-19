@@ -7,7 +7,7 @@ IF ( BUILD_REPORTING )
     FILE( GLOB HPPS [^.]*.hpp )
 
     GLOBAL_ADD_COMPONENT( orocos-reporting ${SRCS} )
-    GLOBAL_ADD_INCLUDE( reporting ${HPPS})
+    GLOBAL_ADD_INCLUDE( ocl ${HPPS})
     
     ADD_SUBDIRECTORY( tests )
 ENDIF ( BUILD_REPORTING )

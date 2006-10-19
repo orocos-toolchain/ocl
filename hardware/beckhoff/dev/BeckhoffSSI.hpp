@@ -31,14 +31,9 @@
 #include <rtt/dev/DigitalInInterface.hpp>
 #include <rtt/dev/EncoderInterface.hpp>
 #include <rtt/ConfigurationInterface.hpp>
-#include "CANRequest.hpp"
-
-// rt_std :
-#include <rtt/os/rtstreams.hpp>
+#include "can/CANRequest.hpp"
 
 #include <vector>
-#include <iostream>
-#include <rtt/os/rtstreams.hpp>
 
 namespace RTT
 {namespace CAN

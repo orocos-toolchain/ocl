@@ -33,7 +33,7 @@
 #define  _CANpie_MacroSupport_
 
 
-#include "cpconst.h"
+#include "compiler.h"
 
 /*-----------------------------------------------------------------------------
 **    Online documentation for Doxygen
@@ -77,6 +77,65 @@
 ** \endcode
 */
 
+
+/*-----------------------------------------------------------------------------
+** CP_MASK_XXX
+** mask for CAN message (RTR, Extended CAN)
+*/
+
+
+/*-------------------------------------------------------------------*/
+/*!
+** \def  CP_MASK_STD_FRAME
+**
+** Mask for standard frame (11 bits)
+*/
+#define  CP_MASK_STD_FRAME 0x000007FF
+
+
+/*-------------------------------------------------------------------*/
+/*!
+** \def  CP_MASK_EXT_FRAME
+**
+** Mask for extended frame (29 bits)
+*/
+#define  CP_MASK_EXT_FRAME 0x1FFFFFFF
+
+
+/*-------------------------------------------------------------------*/
+/*!
+** \def  CP_MASK_EXT_BIT
+**
+** Set the EXT bit in the v_MsgId field
+*/
+#define  CP_MASK_EXT_BIT   0x80000000
+
+
+/*-------------------------------------------------------------------*/
+/*!
+** \def  CP_MASK_RTR_BIT
+**
+** Set the RTR bit in the v_MsgId field
+*/
+#define  CP_MASK_RTR_BIT   0x40000000
+
+
+/*-------------------------------------------------------------------*/
+/*!
+** \def  CP_MASK_DLC_BITS
+**
+** Mask for DLC field in v_MsgFlags
+*/
+#define  CP_MASK_DLC_BITS  0x0000000F
+
+
+/*-------------------------------------------------------------------*/
+/*!
+** \def  CP_MASK_BUF_BITS
+**
+** Mask for buffer field in v_MsgFlags
+*/
+#define  CP_MASK_BUF_BITS  0x000000F0
 
 
 /*!

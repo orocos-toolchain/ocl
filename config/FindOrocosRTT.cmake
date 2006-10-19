@@ -24,6 +24,25 @@ IF ( CMAKE_PKGCONFIG_EXECUTABLE )
 	INCLUDE_DIRECTORIES( ${OROCOS_RTT_INCLUDE_DIRS} )
         LINK_DIRECTORIES( ${OROCOS_RTT_LINK_DIRS} )
 
+	# Detect OS:
+	SET( CMAKE_REQUIRED_INCLUDES ${OROCOS_RTT_INCLUDE_DIRS})
+	CHECK_INCLUDE_FILE( rtt/os/gnulinux.h OS_GNULINUX)
+        IF(OS_GNULINUX)
+        MESSAGE( STATUS "Detected GNU/Linux installation." )
+        ENDIF(OS_GNULINUX)
+
+	SET( CMAKE_REQUIRED_INCLUDES ${OROCOS_RTT_INCLUDE_DIRS})
+	CHECK_INCLUDE_FILE( rtt/os/xenomai.h OS_XENOMAI)
+        IF(OS_XENOMAI)
+        MESSAGE( STATUS "Detected Xenomai installation." )
+        ENDIF(OS_XENOMAI)
+
+	SET( CMAKE_REQUIRED_INCLUDES ${OROCOS_RTT_INCLUDE_DIRS})
+	CHECK_INCLUDE_FILE( rtt/os/lxrt.h OS_LXRT)
+        IF(OS_LXRT)
+        MESSAGE( STATUS "Detected LXRT installation." )
+        ENDIF(OS_LXRT)
+
     ELSE  ( OROCOS_RTT )
         MESSAGE( FATAL_ERROR "Can't find Orocos Real-Time Toolkit (orocos-rtt.pc)")
     ENDIF ( OROCOS_RTT )

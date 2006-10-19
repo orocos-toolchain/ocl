@@ -7,7 +7,7 @@ IF ( BUILD_CARTESIAN )
     FILE( GLOB HPPS [^.]*.hpp )
 
     GLOBAL_ADD_COMPONENT( orocos-cartesian ${SRCS} )
-    GLOBAL_ADD_INCLUDE( motion_control/cartesian ${HPPS})
+    GLOBAL_ADD_INCLUDE( ocl ${HPPS})
 
     ADD_SUBDIRECTORY( tests )
 

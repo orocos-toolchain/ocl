@@ -7,8 +7,8 @@ IF ( BUILD_WRENCH )
     FILE( GLOB HPPS [^.]*.hpp )
 
     GLOBAL_ADD_COMPONENT( orocos-wrench ${SRCS} )
-    GLOBAL_ADD_INCLUDE( hardware/wrench ${HPPS} )
-    GLOBAL_ADD_INCLUDE( hardware/wrench/drivers/ drivers/jr3_lxrt_common.h )
+    GLOBAL_ADD_INCLUDE( ocl ${HPPS} )
+    GLOBAL_ADD_INCLUDE( ocl drivers/jr3_lxrt_common.h )
 
     ADD_SUBDIRECTORY( tests )
 

@@ -13,6 +13,6 @@ IF ( BUILD_AXES )
     FILE( GLOB DEVSRCS dev/[^.]*.cpp )
     FILE( GLOB DEVHPPS dev/[^.]*.hpp )
     GLOBAL_ADD_COMPONENT( orocos-axes ${DEVSRCS} )
-    GLOBAL_ADD_INCLUDE( ocl ${DEVHPPS} )
+    GLOBAL_ADD_INCLUDE( ocl/dev ${DEVHPPS} )
 
 ENDIF ( BUILD_AXES )

@@ -15,7 +15,7 @@ IF ( BUILD_LIAS )
     FILE( GLOB HPPS [^.]*.hpp )
 
     GLOBAL_ADD_COMPONENT( orocos-lias ${SRCS} )
-    GLOBAL_ADD_INCLUDE( hardware/lias ${HPPS})
+    GLOBAL_ADD_INCLUDE( ocl ${HPPS})
 
     ADD_SUBDIRECTORY( tests )
 

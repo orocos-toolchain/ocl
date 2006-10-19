@@ -8,7 +8,7 @@ IF ( BUILD_KUKA )
     FILE( GLOB HPPS [^.]*.hpp )
 
     GLOBAL_ADD_COMPONENT( orocos-kuka ${SRCS} )
-    GLOBAL_ADD_INCLUDE( dev ${HPPS})
+    GLOBAL_ADD_INCLUDE( ocl ${HPPS})
 
     ADD_SUBDIRECTORY( tests )
 
