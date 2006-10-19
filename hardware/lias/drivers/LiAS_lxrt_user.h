@@ -2,6 +2,7 @@
 #define LiAS_LXRT_USER_H
 
 
+#include <malloc.h>
 #include <rtai_lxrt.h>
 #include "LiAS_lxrt_common.h"
 

@@ -4,5 +4,5 @@
     FILE( GLOB HPPS [^.]*.hpp )
 
     GLOBAL_ADD_COMPONENT( orocos-axes-drivers ${SRCS} )
-    GLOBAL_ADD_INCLUDE( hardware/axes ${HPPS} )
+    GLOBAL_ADD_INCLUDE( hardware/axes/drivers ${HPPS} )
 

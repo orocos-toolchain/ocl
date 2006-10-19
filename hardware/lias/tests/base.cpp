@@ -30,9 +30,9 @@ int ORO_main(int arc, char* argv[])
     b_task.connectPeers( &c_task);
 
 
-    NonPreemptibleActivity periodicActivityA(0.1, a_task.engine() );
-    NonPreemptibleActivity periodicActivityB(0.1, b_task.engine() );
-    NonPreemptibleActivity periodicActivityC(0.1, c_task.engine() );
+    PeriodicActivity periodicActivityA(RTT::OS::HighestPriority, 0.1, a_task.engine() );
+    PeriodicActivity periodicActivityB(RTT::OS::HighestPriority, 0.1, b_task.engine() );
+    PeriodicActivity periodicActivityC(RTT::OS::HighestPriority, 0.1, c_task.engine() );
  
     
     TaskBrowser browser( &b_task );

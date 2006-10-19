@@ -267,7 +267,7 @@ namespace Orocos{
                 _axes[axis]->drive(_driveValue[axis]->Get());
             
             // ask the reference value from the hw 
-#if (defined OROPKG_OS_LXRT&& defined OROPKG_DEVICE_DRIVERS_COMEDI)
+#if (defined OROPKG_OS_LXRT && defined OROPKG_DEVICE_DRIVERS_COMEDI)
             if(!_simulation.value())
                 _references[axis]->Set( _axes[axis]->getSwitch("Reference")->isOn());
             else

@@ -12,19 +12,19 @@
 #include <pkgconf/system.h> 
 
 #include "IP_Encoder_6_EncInterface.hpp"
-#include <rtt/dev/SimulationAxis.hpp> 
+#include <hardware/axes/drivers/SimulationAxis.hpp> 
 
 
 #if defined (OROPKG_OS_LXRT)
 
     #include "CombinedDigitalOutInterface.hpp"
 
-    #include <rtt/dev/IncrementalEncoderSensor.hpp>
+    #include <hardware/axes/drivers/IncrementalEncoderSensor.hpp>
     #include <rtt/dev/AnalogOutput.hpp>
     #include <rtt/dev/DigitalOutput.hpp>
     #include <rtt/dev/DigitalInput.hpp>
-    #include <rtt/dev/AnalogDrive.hpp>
-    #include <rtt/dev/Axis.hpp>
+    #include <hardware/axes/drivers/AnalogDrive.hpp>
+    #include <hardware/axes/drivers/Axis.hpp>
     #include <rtt/dev/AxisInterface.hpp>
 #endif
 

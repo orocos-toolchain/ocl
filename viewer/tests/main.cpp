@@ -1,8 +1,10 @@
-#include <rtt/ZeroTimeThread.hpp>
+
 #include <rtt/Activities.hpp>
 #include <rtt/TaskContext.hpp>
 #include <rtt/Logger.hpp>
 #include <rtt/os/main.h>
+#include <rtt/os/threads.hpp>
+#include <rtt/PeriodicActivity.hpp>
 
 #include "viewer/naxespositionviewer.hpp"
 //#include "hardware/lias/LiASnAxesVelocityController.hpp"
@@ -121,10 +123,6 @@ void PositionLimitCallBack(int axis, double value)
 
 int ORO_main(int argc, char* argv[])
 {
-  ZeroTimeThread::Instance()->stop();
-  ZeroTimeThread::Instance()->setPeriod(0.002);
-  ZeroTimeThread::Instance()->start();
-
 
   if ( Logger::log().getLogLevel() < Logger::Info ) {
     Logger::log().setLogLevel( Logger::Info );
@@ -160,10 +158,12 @@ int ORO_main(int argc, char* argv[])
   
 
   /// Creating Task
-  NonPreemptibleActivity _robotTask(0.002, my_robot->engine() ); 
-  NonPreemptibleActivity _supervisorTask(0.002, supervisor.engine() ); 
+  PeriodicActivity       _robotTask(RTT::OS::HighestPriority, 0.002, my_robot->engine() ); 
+  PeriodicActivity       _supervisorTask(RTT::OS::HighestPriority, 0.002, supervisor.engine() ); 
   PeriodicActivity       _reportingTask(10,0.01,reporter.engine());
-  NonRealTimeActivity    _viewerTask(0.1,viewer.engine());
+
+  PeriodicActivity       _viewerTask(RTT::OS::LowestPriority,0.1,viewer.engine());
+  _viewerTask.thread()->setScheduler(ORO_SCHED_OTHER);
 
   // Load some default programs :
   my_robot->scripting()->loadPrograms("cpf/program.ops"); 

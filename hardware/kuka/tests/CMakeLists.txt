@@ -9,10 +9,15 @@ IF ( BUILD_KUKA_TEST )
     # Add a test program
     GLOBAL_ADD_TEST( kuka main.cpp )
     # Use  TARGET_LINK_LIBRARIES( report libs... ) to add library deps.
-    TARGET_LINK_LIBRARIES( kuka orocos-taskbrowser orocos-reporting orocos-kuka ${OROCOS_RTT_LIBS})
+    TARGET_LINK_LIBRARIES( kuka orocos-taskbrowser orocos-reporting orocos-kuka orocos-axes-drivers ${OROCOS_RTT_LIBS})
     
     GLOBAL_ADD_TEST( encoderTest encoderKuka361Test.cpp )
     TARGET_LINK_LIBRARIES( encoderTest ${OROCOS_RTT_LIBS})
+
+    IF ( OROCOS_TARGET STREQUAL lxrt )
+      TARGET_LINK_LIBRARIES( kuka orocos-apci )
+      TARGET_LINK_LIBRARIES( encoderTest orocos-apci )
+    ENDIF ( OROCOS_TARGET STREQUAL lxrt )
 
 ENDIF ( BUILD_KUKA_TEST )
 ENDIF ( BUILD_TESTS)

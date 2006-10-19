@@ -1,5 +1,4 @@
 //hardware interfaces
-#include <rtt/ZeroTimeThread.hpp>
 #include <hardware/lias/CRSnAxesVelocityController.hpp>
 
 //User interface
@@ -125,10 +124,6 @@ void PositionLimitCallBack(int axis, double value)
 
 int ORO_main(int argc, char* argv[])
 {
-  ZeroTimeThread::Instance()->stop();
-  ZeroTimeThread::Instance()->setPeriod(0.002);
-  ZeroTimeThread::Instance()->start();
-
 
   if ( Logger::log().getLogLevel() < Logger::Info ) {
     Logger::log().setLogLevel( Logger::Info );
@@ -162,9 +157,11 @@ int ORO_main(int argc, char* argv[])
   
 
   /// Creating Task
-  NonPreemptibleActivity _robotTask(0.002, my_robot->engine() ); 
-  NonPreemptibleActivity _supervisorTask(0.002, supervisor.engine() ); 
-  PeriodicActivity       reportingTask(10,0.01,reporter.engine());
+  PeriodicActivity _robotTask(RTT::OS::HighestPriority, 0.002, my_robot->engine() ); 
+  PeriodicActivity _supervisorTask(RTT::OS::HighestPriority, 0.002, supervisor.engine() ); 
+
+  PeriodicActivity reportingTask(RTT::OS::LowestPriority,0.01,reporter.engine());
+  reportingTask.thread()->setScheduler( ORO_SCHED_OTHER );
 
   // Load some default programs :
   my_robot->scripting()->loadPrograms("cpf/crs.ops"); 

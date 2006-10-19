@@ -2,7 +2,7 @@
 #include <kdl/frames_io.hpp>
 
 #if defined (OROPKG_OS_LXRT)
-#include "driver/jr3_lxrt_user.h"
+#include <hardware/wrench/drivers/jr3_lxrt_user.h>
 #endif
 
 #define CUTOFF_FREQUENCY_FILTER1 500.0

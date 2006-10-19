@@ -13,7 +13,7 @@
 #include <pkgconf/system.h> 
 #if defined (OROPKG_OS_LXRT)
 
-#include <hardware/wrench/driver/jr3_lxrt_common.h>
+#include <hardware/wrench/drivers/jr3_lxrt_common.h>
 
 #else
 

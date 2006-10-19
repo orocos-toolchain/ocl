@@ -2,12 +2,13 @@
 #include <pkgconf/system.h>
 #include <rtt/RTT.hpp>
 #include <rtt/os/main.h>
+#include <rtt/os/threads.hpp>
 #include <iostream>
 
 #if defined (OROPKG_OS_LXRT) 
 
-#include <rtt/NonRealTimeActivity.hpp>
-#include <rtt/dev/EncoderSSIapci1710.hpp>
+#include <rtt/PeriodicActivity.hpp>
+#include "hardware/apci/EncoderSSIapci1710.hpp"
 #include <fstream>
 #include <math.h>
 
@@ -33,12 +34,12 @@ using namespace RTT;
 
 
 
-class EncWriter : public NonPreemptibleActivity
+class EncWriter : public PeriodicActivity
 {
 /*1{{{*/
 public:
     EncWriter( EncoderSSI_apci1710_board& ssiBoard, bool radiants = false)
-        :  NonPreemptibleActivity( 0.001 ),  enc1( 1, &ssiBoard ),  enc2( 2, &ssiBoard ),  enc3( 3, &ssiBoard )
+        :  PeriodicActivity(RTT::OS::HighestPriority, 0.001 ),  enc1( 1, &ssiBoard ),  enc2( 2, &ssiBoard ),  enc3( 3, &ssiBoard )
                                       ,  enc4( 4, &ssiBoard ),  enc5( 5, &ssiBoard ),  enc6( 6, &ssiBoard )
                                       ,  output("encoderKuka361.txt", std::ios::out)
     {
@@ -114,12 +115,12 @@ private:
 
 
 
-class EncReader : public NonRealTimeActivity
+class EncReader : public PeriodicActivity
 {
 /*{{{*/
 public:
     EncReader( EncoderSSI_apci1710_board& ssiBoard, bool radiants = false)
-        :  NonRealTimeActivity( 0.1 ),  enc1( 1, &ssiBoard ),  enc2( 2, &ssiBoard ),  enc3( 3, &ssiBoard )
+        :  PeriodicActivity(RTT::OS::LowestPriority, 0.1 ),  enc1( 1, &ssiBoard ),  enc2( 2, &ssiBoard ),  enc3( 3, &ssiBoard )
                                  ,  enc4( 4, &ssiBoard ),  enc5( 5, &ssiBoard ),  enc6( 6, &ssiBoard )
     {
         rad = radiants;
@@ -131,6 +132,8 @@ public:
             offsets[i]   = temp_offsets[i];
             ticks2rad[i] = temp_ticks2rad[i];
         }
+
+        this->thread()->setScheduler(ORO_SCHED_OTHER);
     };
 
 

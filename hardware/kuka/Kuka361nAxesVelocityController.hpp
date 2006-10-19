@@ -12,20 +12,21 @@
 #include <rtt/Properties.hpp>
 #include <rtt/Command.hpp>
 
-#if (defined (OROPKG_OS_LXRT) && defined (OROPKG_DEVICE_DRIVERS_COMEDI)) && defined (OROPKG_DEVICE_DRIVERS_APCI)
-#include <rtt/dev/SwitchDigitalInapci1032.hpp>
-#include <rtt/dev/RelayCardapci2200.hpp>
-#include <rtt/dev/EncoderSSIapci1710.hpp>
-#include <rtt/dev/ComediDevice.hpp>
-#include <rtt/dev/ComediSubDeviceAOut.hpp>
-
-#include <rtt/dev/AbsoluteEncoderSensor.hpp>
+#if defined (OROPKG_OS_LXRT)
 #include <rtt/dev/AnalogOutput.hpp>
 #include <rtt/dev/DigitalOutput.hpp>
-#include <rtt/dev/AnalogDrive.hpp>
-#include <rtt/dev/Axis.hpp>
+
+#include <hardware/apci/SwitchDigitalInapci1032.hpp>
+#include <hardware/apci/RelayCardapci2200.hpp>
+#include <hardware/apci/EncoderSSIapci1710.hpp>
+#include <hardware/comedi/ComediDevice.hpp>
+#include <hardware/comedi/ComediSubDeviceAOut.hpp>
+
+#include <hardware/axes/drivers/AbsoluteEncoderSensor.hpp>
+#include <hardware/axes/drivers/AnalogDrive.hpp>
+#include <hardware/axes/drivers/Axis.hpp>
 #endif
-#include <rtt/dev/SimulationAxis.hpp>
+#include <hardware/axes/drivers/SimulationAxis.hpp>
 #include <rtt/dev/AxisInterface.hpp>
 
 namespace Orocos

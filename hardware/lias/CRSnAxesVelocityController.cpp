@@ -35,12 +35,12 @@
 #include <rtt/Command.hpp>
 #include <rtt/DataPort.hpp>
 
-#include <rtt/dev/IncrementalEncoderSensor.hpp>
+#include <hardware/axes/drivers/IncrementalEncoderSensor.hpp>
 #include <rtt/dev/AnalogOutput.hpp>
 #include <rtt/dev/DigitalOutput.hpp>
 #include <rtt/dev/DigitalInput.hpp>
-#include <rtt/dev/AnalogDrive.hpp>
-#include <rtt/dev/Axis.hpp>
+#include <hardware/axes/drivers/AnalogDrive.hpp>
+#include <hardware/axes/drivers/Axis.hpp>
 #include <rtt/dev/AxisInterface.hpp>
 
 
@@ -56,7 +56,7 @@
 
 #else
 
-#include <rtt/dev/SimulationAxis.hpp>
+#include <hardware/axes/drivers/SimulationAxis.hpp>
 
 #endif
 namespace Orocos {
@@ -175,7 +175,8 @@ CRSnAxesVelocityController::CRSnAxesVelocityController(const std::string& name,c
         
         
         _axes[i] = new RTT::Axis( _drive[i] );
-        _axes[i]->limitDrive( jointspeedlimits[i] );
+        log(Error) << "_axes[i]->limitDrive( jointspeedlimits[i] ) has been disabled." << endlog();
+        //_axes[i]->limitDrive( jointspeedlimits[i] );
         //_axes[i]->setLimitDriveEvent( maximumDrive );  \\TODO I prefere to handle this myself.
         _axes[i]->setSensor( "Position", _encoder[i] );
         // not used any more :_axes[i]->setSensor( "Velocity", new VelocityReaderLiAS( _axes[i], jointspeedlimits[i] ) );

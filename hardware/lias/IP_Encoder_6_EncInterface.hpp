@@ -2,14 +2,13 @@
 #define IP_ENCODER_6_ENCINTERFACE_HPP
 
 
-//#include <rtt/TaskNonPreemptible.hpp>
-#include <rtt/NonPreemptibleActivity.hpp>
+#include <rtt/PeriodicActivity.hpp>
 #include <rtt/DataObjectInterfaces.hpp>
 #include <rtt/dev/EncoderInterface.hpp>
 #include <vector>
 
 
-class IP_Encoder_6_Task : public RTT::NonPreemptibleActivity
+class IP_Encoder_6_Task : public RTT::PeriodicActivity
 {
 public:
     IP_Encoder_6_Task( RTT::Seconds period );
