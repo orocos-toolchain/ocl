@@ -13,19 +13,19 @@
 #include <rtt/Properties.hpp>
 
 #if defined (OROPKG_OS_LXRT)
-#include <hardware/comedi/ComediDevice.hpp>
-#include <hardware/comedi/ComediSubDeviceAOut.hpp>
-#include <hardware/comedi/ComediSubDeviceDIn.hpp>
-#include <hardware/comedi/ComediSubDeviceDOut.hpp>
-#include <hardware/comedi/ComediEncoder.hpp>
-#include <hardware/axes/drivers/IncrementalEncoderSensor.hpp>
+#include <dev/ComediDevice.hpp>
+#include <dev/ComediSubDeviceAOut.hpp>
+#include <dev/ComediSubDeviceDIn.hpp>
+#include <dev/ComediSubDeviceDOut.hpp>
+#include <dev/ComediEncoder.hpp>
+#include <dev/IncrementalEncoderSensor.hpp>
 #include <rtt/dev/AnalogOutput.hpp>
 #include <rtt/dev/DigitalOutput.hpp>
 #include <rtt/dev/DigitalInput.hpp>
-#include <hardware/axes/drivers/AnalogDrive.hpp>
-#include <hardware/axes/drivers/Axis.hpp>
+#include <dev/AnalogDrive.hpp>
+#include <dev/Axis.hpp>
 #endif
-#include <hardware/axes/drivers/SimulationAxis.hpp>
+#include <dev/SimulationAxis.hpp>
 #include <rtt/dev/AxisInterface.hpp>
 
 namespace Orocos

@@ -1,15 +1,14 @@
 OPTION( BUILD_COMEDI "Build Comedi Component" OFF )
 
-IF ( BUILD_COMEDI )
+IF ( BUILD_COMEDI AND COMEDI_FOUND)
 
     # This gathers all the .cpp files into the variable 'SRCS'
-    FILE( GLOB SRCS [^.]*.cpp )
-    FILE( GLOB HPPS [^.]*.hpp )
+    FILE( GLOB DEVSRCS dev/[^.]*.cpp )
+    FILE( GLOB DEVHPPS dev/[^.]*.hpp )
 
-    GLOBAL_ADD_COMPONENT( orocos-comedi ${SRCS} )
-    GLOBAL_ADD_INCLUDE( hardware/comedi ${HPPS} )
-    #GLOBAL_ADD_INCLUDE( hardware/comedi/driver/ driver/jr3_lxrt_common.h )
+    GLOBAL_ADD_COMPONENT( orocos-comedi-dev ${DEVSRCS} )
+    GLOBAL_ADD_INCLUDE( ocr/dev ${DEVHPPS} )
 
     #ADD_SUBDIRECTORY( tests )
 
-ENDIF ( BUILD_COMEDI )
+ENDIF ( BUILD_COMEDI AND COMEDI_FOUND)

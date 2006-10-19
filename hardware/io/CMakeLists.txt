@@ -7,9 +7,14 @@ IF ( BUILD_IO )
     FILE( GLOB HPPS [^.]*.hpp )
 
     GLOBAL_ADD_COMPONENT( orocos-io ${SRCS} )
-    GLOBAL_ADD_INCLUDE( hardware/io ${HPPS} )
+    GLOBAL_ADD_INCLUDE( ocr ${HPPS} )
+
+    FILE( GLOB DEVSRCS dev/[^.]*.cpp )
+    FILE( GLOB DEVHPPS dev/[^.]*.hpp )
+
+    GLOBAL_ADD_COMPONENT( orocos-io-dev ${DEVSRCS} )
+    GLOBAL_ADD_INCLUDE( ocr/dev ${DEVHPPS} )
 
     #ADD_SUBDIRECTORY( tests )
-    ADD_SUBDIRECTORY( drivers )
 
 ENDIF ( BUILD_IO )

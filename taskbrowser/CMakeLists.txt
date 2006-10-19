@@ -6,7 +6,6 @@ IF ( BUILD_TASKBROWSER )
        MESSAGE( FATAL "Can not build TaskBrowser without the ncurses library." )
     ELSE(NOT CURSES)
        OROCOS_PKGCONFIG_LIBS("${CURSES_LIBS}")
-       LINK_LIBRARIES( ncurses )
 
        # This gathers all the .cpp files into the variable 'SRCS'
        FILE( GLOB HPPS [^.]*.hpp )
@@ -15,6 +14,8 @@ IF ( BUILD_TASKBROWSER )
        GLOBAL_ADD_COMPONENT( orocos-taskbrowser ${SRCS} )
        GLOBAL_ADD_INCLUDE( taskbrowser ${HPPS})
      
+       TARGET_LINK_LIBRARIES(orocos-taskbrowser ncurses readline )
+
        ADD_SUBDIRECTORY( tests )
     ENDIF(NOT CURSES)
 

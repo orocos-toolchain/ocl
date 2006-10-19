@@ -35,7 +35,7 @@
 
 #include <rtt/PeriodicActivity.hpp>
 #include <rtt/os/threads.hpp>
-#include "driver/cpuser.h"
+#include "../drivers/cpuser.h"
 
 namespace RTT
 {namespace CAN

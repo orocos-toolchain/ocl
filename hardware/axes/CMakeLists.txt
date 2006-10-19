@@ -10,6 +10,9 @@ IF ( BUILD_AXES )
     #GLOBAL_ADD_INCLUDE( hardware/axes ${HPPS} )
 
     #ADD_SUBDIRECTORY( tests )
-    ADD_SUBDIRECTORY( drivers )
+    FILE( GLOB DEVSRCS dev/[^.]*.cpp )
+    FILE( GLOB DEVHPPS dev/[^.]*.hpp )
+    GLOBAL_ADD_COMPONENT( orocos-axes ${DEVSRCS} )
+    GLOBAL_ADD_INCLUDE( ocl ${DEVHPPS} )
 
 ENDIF ( BUILD_AXES )

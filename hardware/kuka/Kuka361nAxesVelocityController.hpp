@@ -16,17 +16,17 @@
 #include <rtt/dev/AnalogOutput.hpp>
 #include <rtt/dev/DigitalOutput.hpp>
 
-#include <hardware/apci/SwitchDigitalInapci1032.hpp>
-#include <hardware/apci/RelayCardapci2200.hpp>
-#include <hardware/apci/EncoderSSIapci1710.hpp>
-#include <hardware/comedi/ComediDevice.hpp>
-#include <hardware/comedi/ComediSubDeviceAOut.hpp>
+#include <dev/SwitchDigitalInapci1032.hpp>
+#include <dev/RelayCardapci2200.hpp>
+#include <dev/EncoderSSIapci1710.hpp>
+#include <dev/ComediDevice.hpp>
+#include <dev/ComediSubDeviceAOut.hpp>
 
-#include <hardware/axes/drivers/AbsoluteEncoderSensor.hpp>
-#include <hardware/axes/drivers/AnalogDrive.hpp>
-#include <hardware/axes/drivers/Axis.hpp>
+#include <dev/AbsoluteEncoderSensor.hpp>
+#include <dev/AnalogDrive.hpp>
+#include <dev/Axis.hpp>
 #endif
-#include <hardware/axes/drivers/SimulationAxis.hpp>
+#include <dev/SimulationAxis.hpp>
 #include <rtt/dev/AxisInterface.hpp>
 
 namespace Orocos

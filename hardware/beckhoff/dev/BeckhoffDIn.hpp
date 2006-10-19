@@ -29,8 +29,8 @@
 #define BECKHOFFDIN_HPP
 
 #include <rtt/dev/DigitalInInterface.hpp>
-#include "hardware/canpie/CANDeviceInterface.hpp"
-#include "hardware/canpie/CANMessage.hpp"
+#include "CANDeviceInterface.hpp"
+#include "CANMessage.hpp"
 
 namespace RTT
 {namespace CAN

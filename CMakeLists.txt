@@ -24,8 +24,6 @@ ENDIF(NOT CMAKE_INSTALL_PREFIX)
 SET( PROJ_SOURCE_DIR ${Orocos-Components_SOURCE_DIR} )
 SET( PROJ_BINARY_DIR ${Orocos-Components_BINARY_DIR} )
 
-SET( OROCOS_TARGET gnulinux CACHE STRING "The Operating System target. One of [lxrt gnulinux xenomai]")
-
 IF(NOT OROCOS_INSTALL)
   SET( OROCOS_INSTALL ${CMAKE_INSTALL_PREFIX}/orocos CACHE PATH "The RTT installation directory.")
 ENDIF(NOT OROCOS_INSTALL)
@@ -151,6 +149,7 @@ INCLUDE(config/component_rules.cmake)
 
 #First unset the LOCAL_LIBRARIES
 SET(ENV{SELECTED_LIBS} "")
+SET(ENV{SELECTED_DIRS} "")
 ADD_SUBDIRECTORY( taskbrowser )
 ADD_SUBDIRECTORY( helloworld )
 ADD_SUBDIRECTORY( reporting )
@@ -165,6 +164,9 @@ SET(OROCOS_COMPONENTS_LINKFLAGS "$ENV{OROCOS_COMPONENTS_LINKFLAGS}")
 SET(OROCOS_COMPONENTS_CFLAGS "$ENV{OROCOS_COMPONENTS_CFLAGS}")
 CONFIGURE_FILE( orocos-components.pc.in orocos-components.pc @ONLY)
 INSTALL_FILES( /lib/pkgconfig FILES orocos-components.pc)
+
+#MESSAGE("Selected dirs: $ENV{SELECTED_DIRS}")
+#SET(SELECTED_DIRS $ENV{SELECTED_DIRS})
 
 CONFIGURE_FILE(Doxyfile.in Doxyfile @ONLY)
 

@@ -29,8 +29,6 @@
 
 #include "CANPieController.hpp"
 #include <rtt/Logger.hpp>
-
-#include "driver/cpuser.h"
 #include <rtt/os/fosi.h>
 
 namespace RTT

@@ -26,7 +26,7 @@
  ***************************************************************************/
 #include <pkgconf/system.h>
 
-#include "drivers/lxrt/apci_lxrt.h"
+#include "../drivers/lxrt/apci_lxrt.h"
 
 #include <rtt/os/fosi.h>
 #include "SwitchDigitalInapci1032.hpp"

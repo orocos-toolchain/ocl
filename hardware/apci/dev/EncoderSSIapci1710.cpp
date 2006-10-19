@@ -44,19 +44,19 @@
 
 #include <pkgconf/system.h>
 #include <rtt/os/threads.hpp>
-#include "hardware/apci/apci-config.h"
+#include "apci-config.h"
 
 // include lib first, if not present, include KM headers.
 #if defined(OROPKG_OS_LXRT)
-#include "drivers/lxrt/apci_lxrt.h"
+#include "../drivers/lxrt/apci_lxrt.h"
 #endif
 
 #include "EncoderSSIapci1710.hpp"
-#include <iostream>
 
 #ifdef OROPKG_CORELIB_TIMING
 #include <rtt/TimeService.hpp>
 #endif
+#include <rtt/Logger.hpp>
 
 namespace RTT
 {
@@ -76,7 +76,7 @@ EncoderSSI_apci1710_board::EncoderSSI_apci1710_board( unsigned int mNr1 )
     readbuffer  = buffer1;
     writebuffer = buffer2;
     
-    std::cout << "(EncoderSSI_apci1710) Creating EncoderSSI..." << std::endl;
+    log() << "(EncoderSSI_apci1710) Creating EncoderSSI..." << endlog(Info);
     dev = apci1710_get_device();
     int res = 0;
     if ( 0 != (res = apci1710_ssi_init( dev, moduleNr1,
@@ -85,7 +85,7 @@ EncoderSSI_apci1710_board::EncoderSSI_apci1710_board( unsigned int mNr1 )
                                         ORONUM_DEVICE_DRIVERS_APCI1710_SSI_TURN_BITS,
                                         COUNTINGMODE_BINARY,
                                         ORONUM_DEVICE_DRIVERS_APCI1710_SSI_FREQ ) ) )      //in Hz (25kHz is ok)
-        std::cout << "\n(EncoderSSI_apci1710) Error "<< res << " : Module " << moduleNr1 << " is not ready for SSI\n" << std::endl;
+        log() << "\n(EncoderSSI_apci1710) Error "<< res << " : Module " << moduleNr1 << " is not ready for SSI\n" << endlog(Error);
 
 #ifdef OROPKG_CORELIB_TIMING
     // init one buffer, display some statistics
@@ -93,7 +93,7 @@ EncoderSSI_apci1710_board::EncoderSSI_apci1710_board( unsigned int mNr1 )
     readCard( readbuffer );
     t = TimeService::Instance()->ticksSince(t);
     TimeService::nsecs n = TimeService::ticks2nsecs(t);
-    std::cout << "(EncoderSSI_apci1710) Reading SSI module takes about " << long(n) << " nanoseconds" << std::endl;
+    log() << "(EncoderSSI_apci1710) Reading SSI module takes about " << long(n) << " nanoseconds" << endlog(Info);
 #endif
 
     this->start();
@@ -116,7 +116,7 @@ EncoderSSI_apci1710_board::EncoderSSI_apci1710_board( unsigned int mNr1, unsigne
     readbuffer  = buffer1;
     writebuffer = buffer2;
     
-    std::cout << "(EncoderSSI_apci1710) Creating EncoderSSI..." << std::endl;
+    log() << "(EncoderSSI_apci1710) Creating EncoderSSI..." << endlog(Info);
     dev = apci1710_get_device();
     int res = 0;
     if ( 0 != (res = apci1710_ssi_init( dev, moduleNr1,
@@ -125,7 +125,7 @@ EncoderSSI_apci1710_board::EncoderSSI_apci1710_board( unsigned int mNr1, unsigne
                                         ORONUM_DEVICE_DRIVERS_APCI1710_SSI_TURN_BITS,
                                         COUNTINGMODE_BINARY,
                                         ORONUM_DEVICE_DRIVERS_APCI1710_SSI_FREQ ) ) )      //in Hz (25kHz is ok)
-        std::cout << "\n(EncoderSSI_apci1710) Error "<< res << " : Module " << moduleNr1 << " is not ready for SSI\n" << std::endl;
+        log() << "\n(EncoderSSI_apci1710) Error "<< res << " : Module " << moduleNr1 << " is not ready for SSI\n" << endlog(Error);
 
     if ( 0 != (res = apci1710_ssi_init( dev, moduleNr2,
                                         ORONUM_DEVICE_DRIVERS_APCI1710_SSI_PROFILE,
@@ -133,7 +133,7 @@ EncoderSSI_apci1710_board::EncoderSSI_apci1710_board( unsigned int mNr1, unsigne
                                         ORONUM_DEVICE_DRIVERS_APCI1710_SSI_TURN_BITS,
                                         COUNTINGMODE_BINARY,
                                         ORONUM_DEVICE_DRIVERS_APCI1710_SSI_FREQ ) ) )      //in Hz (25kHz is ok)
-        std::cout << "\n(EncoderSSI_apci1710) Error "<< res << " : Module " << moduleNr2 << " is not ready for SSI\n" << std::endl;
+        log() << "\n(EncoderSSI_apci1710) Error "<< res << " : Module " << moduleNr2 << " is not ready for SSI\n" << endlog(Error);
 
 
 #ifdef OROPKG_CORELIB_TIMING
@@ -142,7 +142,7 @@ EncoderSSI_apci1710_board::EncoderSSI_apci1710_board( unsigned int mNr1, unsigne
     readCard( readbuffer );
     t = TimeService::Instance()->ticksSince(t);
     TimeService::nsecs n = TimeService::ticks2nsecs(t);
-    std::cout << "(EncoderSSI_apci1710) Reading SSI modules takes about " << long(n) << " nanoseconds" << std::endl;
+    log() << "(EncoderSSI_apci1710) Reading SSI modules takes about " << long(n) << " nanoseconds" << endlog(Info);
 #endif
 
     this->start();
@@ -165,7 +165,7 @@ EncoderSSI_apci1710_board::EncoderSSI_apci1710_board( unsigned int mNr1, unsigne
     readbuffer  = buffer1;
     writebuffer = buffer2;
     
-    std::cout << "(EncoderSSI_apci1710) Creating EncoderSSI..." << std::endl;
+    log() << "(EncoderSSI_apci1710) Creating EncoderSSI..." << endlog(Info);
     dev = apci1710_get_device();
     int res = 0;
     if ( 0 != (res = apci1710_ssi_init( dev, moduleNr1,
@@ -174,7 +174,7 @@ EncoderSSI_apci1710_board::EncoderSSI_apci1710_board( unsigned int mNr1, unsigne
                                         ORONUM_DEVICE_DRIVERS_APCI1710_SSI_TURN_BITS,
                                         COUNTINGMODE_BINARY,
                                         ORONUM_DEVICE_DRIVERS_APCI1710_SSI_FREQ ) ) )      //in Hz (25kHz is ok)
-        std::cout << "\n(EncoderSSI_apci1710) Error "<< res << " : Module " << moduleNr1 << " is not ready for SSI\n" << std::endl;
+        log() << "\n(EncoderSSI_apci1710) Error "<< res << " : Module " << moduleNr1 << " is not ready for SSI\n" << endlog(Error);
 
     if ( 0 != (res = apci1710_ssi_init( dev, moduleNr2,
                                         ORONUM_DEVICE_DRIVERS_APCI1710_SSI_PROFILE,
@@ -182,7 +182,7 @@ EncoderSSI_apci1710_board::EncoderSSI_apci1710_board( unsigned int mNr1, unsigne
                                         ORONUM_DEVICE_DRIVERS_APCI1710_SSI_TURN_BITS,
                                         COUNTINGMODE_BINARY,
                                         ORONUM_DEVICE_DRIVERS_APCI1710_SSI_FREQ ) ) )      //in Hz (25kHz is ok)
-        std::cout << "\n(EncoderSSI_apci1710) Error "<< res << " : Module " << moduleNr2 << " is not ready for SSI\n" << std::endl;
+        log() << "\n(EncoderSSI_apci1710) Error "<< res << " : Module " << moduleNr2 << " is not ready for SSI\n" << endlog(Error);
 
     if ( 0 != (res = apci1710_ssi_init( dev, moduleNr3,
                                         ORONUM_DEVICE_DRIVERS_APCI1710_SSI_PROFILE,
@@ -190,7 +190,7 @@ EncoderSSI_apci1710_board::EncoderSSI_apci1710_board( unsigned int mNr1, unsigne
                                         ORONUM_DEVICE_DRIVERS_APCI1710_SSI_TURN_BITS,
                                         COUNTINGMODE_BINARY,
                                         ORONUM_DEVICE_DRIVERS_APCI1710_SSI_FREQ ) ) )      //in Hz (25kHz is ok)
-        std::cout << "\n(EncoderSSI_apci1710) Error "<< res << " : Module " << moduleNr3 << " is not ready for SSI\n" << std::endl;
+        log() << "\n(EncoderSSI_apci1710) Error "<< res << " : Module " << moduleNr3 << " is not ready for SSI\n" << endlog(Error);
 
 
 #ifdef OROPKG_CORELIB_TIMING
@@ -199,7 +199,7 @@ EncoderSSI_apci1710_board::EncoderSSI_apci1710_board( unsigned int mNr1, unsigne
     readCard( readbuffer );
     t = TimeService::Instance()->ticksSince(t);
     TimeService::nsecs n = TimeService::ticks2nsecs(t);
-    std::cout << "(EncoderSSI_apci1710) Reading SSI modules takes about " << long(n) << " nanoseconds" << std::endl;
+    log() << "(EncoderSSI_apci1710) Reading SSI modules takes about " << long(n) << " nanoseconds" << endlog(Info);
 #endif
 
     this->start();
@@ -222,7 +222,7 @@ EncoderSSI_apci1710_board::EncoderSSI_apci1710_board( unsigned int mNr1, unsigne
     readbuffer  = buffer1;
     writebuffer = buffer2;
     
-    std::cout << "(EncoderSSI_apci1710) Creating EncoderSSI..." << std::endl;
+    log() << "(EncoderSSI_apci1710) Creating EncoderSSI..." << endlog(Info);
     dev = apci1710_get_device();
     int res = 0;
     if ( 0 != (res = apci1710_ssi_init( dev, moduleNr1,
@@ -231,7 +231,7 @@ EncoderSSI_apci1710_board::EncoderSSI_apci1710_board( unsigned int mNr1, unsigne
                                         ORONUM_DEVICE_DRIVERS_APCI1710_SSI_TURN_BITS,
                                         COUNTINGMODE_BINARY,
                                         ORONUM_DEVICE_DRIVERS_APCI1710_SSI_FREQ ) ) )      //in Hz (25kHz is ok)
-        std::cout << "\n(EncoderSSI_apci1710) Error "<< res << " : Module " << moduleNr1 << " is not ready for SSI\n" << std::endl;
+        log() << "\n(EncoderSSI_apci1710) Error "<< res << " : Module " << moduleNr1 << " is not ready for SSI\n" << endlog(Error);
 
     if ( 0 != (res = apci1710_ssi_init( dev, moduleNr2,
                                         ORONUM_DEVICE_DRIVERS_APCI1710_SSI_PROFILE,
@@ -239,7 +239,7 @@ EncoderSSI_apci1710_board::EncoderSSI_apci1710_board( unsigned int mNr1, unsigne
                                         ORONUM_DEVICE_DRIVERS_APCI1710_SSI_TURN_BITS,
                                         COUNTINGMODE_BINARY,
                                         ORONUM_DEVICE_DRIVERS_APCI1710_SSI_FREQ ) ) )      //in Hz (25kHz is ok)
-        std::cout << "\n(EncoderSSI_apci1710) Error "<< res << " : Module " << moduleNr2 << " is not ready for SSI\n" << std::endl;
+        log() << "\n(EncoderSSI_apci1710) Error "<< res << " : Module " << moduleNr2 << " is not ready for SSI\n" << endlog(Error);
 
     if ( 0 != (res = apci1710_ssi_init( dev, moduleNr3,
                                         ORONUM_DEVICE_DRIVERS_APCI1710_SSI_PROFILE,
@@ -247,7 +247,7 @@ EncoderSSI_apci1710_board::EncoderSSI_apci1710_board( unsigned int mNr1, unsigne
                                         ORONUM_DEVICE_DRIVERS_APCI1710_SSI_TURN_BITS,
                                         COUNTINGMODE_BINARY,
                                         ORONUM_DEVICE_DRIVERS_APCI1710_SSI_FREQ ) ) )      //in Hz (25kHz is ok)
-        std::cout << "\n(EncoderSSI_apci1710) Error "<< res << " : Module " << moduleNr3 << " is not ready for SSI\n" << std::endl;
+        log() << "\n(EncoderSSI_apci1710) Error "<< res << " : Module " << moduleNr3 << " is not ready for SSI\n" << endlog(Error);
 
     if ( 0 != (res = apci1710_ssi_init( dev, moduleNr4,
                                         ORONUM_DEVICE_DRIVERS_APCI1710_SSI_PROFILE,
@@ -255,7 +255,7 @@ EncoderSSI_apci1710_board::EncoderSSI_apci1710_board( unsigned int mNr1, unsigne
                                         ORONUM_DEVICE_DRIVERS_APCI1710_SSI_TURN_BITS,
                                         COUNTINGMODE_BINARY,
                                         ORONUM_DEVICE_DRIVERS_APCI1710_SSI_FREQ ) ) )      //in Hz (25kHz is ok)
-        std::cout << "\n(EncoderSSI_apci1710) Error "<< res << " : Module " << moduleNr4 << " is not ready for SSI\n" << std::endl;
+        log() << "\n(EncoderSSI_apci1710) Error "<< res << " : Module " << moduleNr4 << " is not ready for SSI\n" << endlog(Error);
 
 
 #ifdef OROPKG_CORELIB_TIMING
@@ -264,7 +264,7 @@ EncoderSSI_apci1710_board::EncoderSSI_apci1710_board( unsigned int mNr1, unsigne
     readCard( readbuffer );
     t = TimeService::Instance()->ticksSince(t);
     TimeService::nsecs n = TimeService::ticks2nsecs(t);
-    std::cout << "(EncoderSSI_apci1710) Reading SSI modules takes about " << long(n) << " nanoseconds" << std::endl;
+    log() << "(EncoderSSI_apci1710) Reading SSI modules takes about " << long(n) << " nanoseconds" << endlog(Info);
 #endif
 
     this->start();
@@ -287,7 +287,7 @@ EncoderSSI_apci1710_board::~EncoderSSI_apci1710_board()
 unsigned int EncoderSSI_apci1710_board::read( unsigned int encNr )
 {
 #ifdef DEBUG
-    if ( encNr < 1 || encNr > nr_of_modules * 3 ) std::cout << "(EncoderSSI_apci1710) ERROR: encNr < 1 or encNr > " << nr_of_modules * 3 << "!" << std::endl;
+    if ( encNr < 1 || encNr > nr_of_modules * 3 ) log() << "(EncoderSSI_apci1710) ERROR: encNr < 1 or encNr > " << nr_of_modules * 3 << "!" << endlog(Error);
 #endif    
     
     OS::MutexLock Locker( readLock );
