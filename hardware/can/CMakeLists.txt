@@ -7,7 +7,7 @@ IF ( BUILD_CANPIE )
     FILE( GLOB DEVHPPS dev/[^.]*.hpp )
 
     IF ( OROCOS_TARGET STREQUAL lxrt )
-       SET( SRCS ${SRCS} driver/canpie_lxrtlib.c)
+       SET( SRCS ${SRCS} drivers/canpie/canpie_lxrtlib.c)
     ENDIF ( OROCOS_TARGET STREQUAL lxrt )
 
     GLOBAL_ADD_COMPONENT( orocos-canpie-dev ${DEVSRCS} )
