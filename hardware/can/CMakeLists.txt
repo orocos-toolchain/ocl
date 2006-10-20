@@ -14,7 +14,7 @@ IF ( BUILD_CAN )
     # Build orocos-canpie lib. [HW specific]
     IF ( BUILD_CANPIE )
        GLOBAL_ADD_COMPONENT( orocos-canpie can/CANPieController.cpp drivers/canpie/canpie_lxrtlib.c)
-       GLOBAL_ADD_INCLUDE( ocl/can CANPieController.hpp )
+       GLOBAL_ADD_INCLUDE( ocl/can can/CANPieController.hpp )
     ENDIF ( BUILD_CANPIE )
 
     # Build orocos-can lib. [universal]
