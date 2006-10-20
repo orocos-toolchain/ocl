@@ -96,7 +96,7 @@ INCLUDE (${CMAKE_ROOT}/Modules/CMakeDetermineCXXCompiler.cmake)
 SET( ENV{OROCOS_COMPONENTS_CFLAGS} "")
 SET( ENV{OROCOS_COMPONENTS_LINKFLAGS} "")
 
-INCLUDE(config/global_setup.cmake)
+INCLUDE(${PROJ_SOURCE_DIR}/config/global_setup.cmake)
 
 ## Find Orocos RTT.
 
