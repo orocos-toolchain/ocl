@@ -10,7 +10,7 @@ IF ( BUILD_KUKA_TEST )
     GLOBAL_ADD_TEST( kuka main.cpp )
     # Use  TARGET_LINK_LIBRARIES( report libs... ) to add library deps.
 
-    INCLUDE_DIRECTORIES( ${PROJ_SOURCE_DIR}/hardware/axes )
+    INCLUDE_DIRECTORIES( ${PROJECT_SOURCE_DIR}/hardware/axes )
     TARGET_LINK_LIBRARIES( kuka orocos-taskbrowser orocos-reporting orocos-kuka orocos-axes ${OROCOS_RTT_LIBS})
     
     GLOBAL_ADD_TEST( encoderTest encoderKuka361Test.cpp )

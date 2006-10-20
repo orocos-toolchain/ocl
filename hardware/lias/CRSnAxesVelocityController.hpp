@@ -12,7 +12,7 @@
 #include <pkgconf/system.h> 
 
 #include "IP_Encoder_6_EncInterface.hpp"
-#include <hardware/axes/drivers/SimulationAxis.hpp> 
+#include <dev/SimulationAxis.hpp> 
 
 
 #if defined (OROPKG_OS_LXRT)

@@ -14,6 +14,7 @@ IF ( BUILD_LIAS )
     )
     FILE( GLOB HPPS [^.]*.hpp )
 
+    INCLUDE_DIRECTORIES( ${PROJECT_SOURCE_DIR}/hardware/axes/ )
     GLOBAL_ADD_COMPONENT( orocos-lias ${SRCS} )
     GLOBAL_ADD_INCLUDE( ocl ${HPPS})
 
