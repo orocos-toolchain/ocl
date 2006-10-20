@@ -4,6 +4,7 @@
 INCLUDE( ${CMAKE_ROOT}/Modules/CheckIncludeFileCXX.cmake )
 INCLUDE( ${CMAKE_ROOT}/Modules/CheckIncludeFile.cmake )
 
+INCLUDE( ${PROJ_SOURCE_DIR}/config/DependentOption.cmake )
 
 #
 # If we're using gcc, make sure the version is OK.

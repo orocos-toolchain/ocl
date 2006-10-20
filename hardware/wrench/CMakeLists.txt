@@ -1,4 +1,4 @@
-OPTION( BUILD_WRENCH "Build WrenchSensor Components" OFF )
+DEPENDENT_OPTION( BUILD_WRENCH "Build WrenchSensor Components" OFF "BUILD_HARDWARE" OFF)
 
 IF ( BUILD_WRENCH )
 
@@ -8,7 +8,9 @@ IF ( BUILD_WRENCH )
 
     GLOBAL_ADD_COMPONENT( orocos-wrench ${SRCS} )
     GLOBAL_ADD_INCLUDE( ocl ${HPPS} )
-    GLOBAL_ADD_INCLUDE( ocl drivers/jr3_lxrt_common.h )
+    IF (OS_LXRT)
+      GLOBAL_ADD_INCLUDE( ocl/drivers drivers/jr3_lxrt_common.h )
+    ENDIF (OS_LXRT)
 
     ADD_SUBDIRECTORY( tests )
 

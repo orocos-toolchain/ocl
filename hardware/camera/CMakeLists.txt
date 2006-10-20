@@ -1,4 +1,4 @@
-OPTION( BUILD_CAMERA "Build Camera Components" OFF )
+DEPENDENT_OPTION( BUILD_CAMERA "Build Camera Components" OFF "BUILD_HARDWARE" OFF)
 
 IF ( BUILD_CAMERA )
 

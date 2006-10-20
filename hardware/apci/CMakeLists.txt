@@ -1,7 +1,5 @@
 
-IF ( OS_LXRT )
-
-OPTION( BUILD_APCI "Build APCI 2200/1032/1710 drivers for LXRT" OFF )
+DEPENDENT_OPTION( BUILD_APCI "Build APCI 2200/1032/1710 drivers for LXRT" OFF "BUILD_HARDWARE;OS_LXRT" OFF )
 
 IF ( BUILD_APCI )
 
@@ -29,8 +27,3 @@ IF ( BUILD_APCI )
 
 ENDIF ( BUILD_APCI )
 
-ELSE( OS_LXRT )
-
-MESSAGE( STATUS "Can not Build APCI drivers with gnulinux target. Use lxrt.")
-
-ENDIF( OS_LXRT )

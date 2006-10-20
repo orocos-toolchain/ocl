@@ -1,8 +1,5 @@
-OPTION( BUILD_CAN "Build Can Component" OFF )
-
-IF ( OS_LXRT )
-  OPTION( BUILD_CANPIE "Build Canpie Controller (LXRT only)" OFF )
-ENDIF ( OS_LXRT )
+DEPENDENT_OPTION( BUILD_CAN "Build Can Component" OFF "BUILD_HARDWARE" OFF)
+DEPENDENT_OPTION( BUILD_CANPIE "Build Canpie Controller (LXRT only)" OFF "BUILD_CAN;OS_LXRT" OFF)
 
 
 IF ( BUILD_CAN )
@@ -15,10 +12,10 @@ IF ( BUILD_CAN )
     LIST( REMOVE_ITEM DEVHPPS ${CMAKE_CURRENT_SOURCE_DIR}/can/CANPieController.hpp)
 
     # Build orocos-canpie lib. [HW specific]
-    IF ( OS_LXRT AND BUILD_CANPIE)
+    IF ( BUILD_CANPIE )
        GLOBAL_ADD_COMPONENT( orocos-canpie can/CANPieController.cpp drivers/canpie/canpie_lxrtlib.c)
        GLOBAL_ADD_INCLUDE( ocl/can CANPieController.hpp )
-    ENDIF ( OS_LXRT AND BUILD_CANPIE )
+    ENDIF ( BUILD_CANPIE )
 
     # Build orocos-can lib. [universal]
     GLOBAL_ADD_COMPONENT( orocos-can ${DEVSRCS} )

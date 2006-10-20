@@ -1,4 +1,4 @@
-OPTION( BUILD_LASER "Build Laser Distance Sensor Components" OFF )
+DEPENDENT_OPTION( BUILD_LASER "Build Laser Distance Sensor Components" OFF "BUILD_HARDWARE" OFF)
 
 IF ( BUILD_LASER )
 

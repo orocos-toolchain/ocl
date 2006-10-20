@@ -1,6 +1,6 @@
 OPTION( BUILD_HARDWARE "Build Hardware Components" OFF )
 
-IF ( BUILD_HARDWARE )
+#IF ( BUILD_HARDWARE )
 
     # IMPORTANT: The order must be the same as the dependencies:
 
@@ -18,4 +18,4 @@ IF ( BUILD_HARDWARE )
     ADD_SUBDIRECTORY( kuka )
     ADD_SUBDIRECTORY( lias )
 
-ENDIF ( BUILD_HARDWARE )
+#ENDIF ( BUILD_HARDWARE )

@@ -1,4 +1,4 @@
-OPTION( BUILD_IO "Build IO Component" OFF )
+DEPENDENT_OPTION( BUILD_IO "Build IO Component" OFF "BUILD_HARDWARE" OFF)
 
 IF ( BUILD_IO )
 

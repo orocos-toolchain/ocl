@@ -1,4 +1,4 @@
-OPTION( BUILD_AXES "Build Axes Component" OFF )
+DEPENDENT_OPTION( BUILD_AXES "Build Axes Component" OFF "BUILD_HARDWARE" OFF)
 
 IF ( BUILD_AXES )
 

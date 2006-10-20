@@ -1,4 +1,4 @@
-OPTION( BUILD_BECKHOFF "Build Beckhoff Component" OFF )
+DEPENDENT_OPTION( BUILD_BECKHOFF "Build Beckhoff Component" OFF "BUILD_HARDWARE" OFF )
 
 IF ( BUILD_BECKHOFF )
 

@@ -1,4 +1,4 @@
-OPTION( BUILD_KRYPTON "Build Krypton Components" OFF )
+DEPENDENT_OPTION( BUILD_KRYPTON "Build Krypton Components" OFF "BUILD_HARDWARE" OFF)
 
 IF ( BUILD_KRYPTON )
 

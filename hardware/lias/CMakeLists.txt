@@ -1,4 +1,4 @@
-OPTION( BUILD_LIAS "Build LiAS Components" OFF )
+DEPENDENT_OPTION( BUILD_LIAS "Build LiAS Components" OFF "BUILD_HARDWARE" OFF)
 
 IF ( BUILD_LIAS )
     
