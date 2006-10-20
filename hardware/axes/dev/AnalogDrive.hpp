@@ -113,7 +113,7 @@ namespace RTT
             return !enableDevice->isOn();
         }
 
-        DigitalOutput* enableGet()
+        DigitalOutput* getEnable()
         {
             return enableDevice;
         }

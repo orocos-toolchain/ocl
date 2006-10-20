@@ -77,7 +77,7 @@ SimulationEncoder::setDrive(double velocity)
 
 SimulationAxis::SimulationAxis(double initial, double min, double max):
   _drive_value(0),
-  _enable(false),
+  _enable(false), _brake(true),
   _velocity(0),
   _max_drive_value(std::numeric_limits<double>::max()),
   _encoder( new SimulationEncoder( initial, min, max) ),
@@ -100,6 +100,13 @@ SimulationAxis::~SimulationAxis()
 bool 
 SimulationAxis::drive( double vel )
 {
+    // detect enable switch
+    if ( !_enable.isOn() )
+        return false;
+    // detect if brake is on.
+    if ( _brake.isOn() )
+        return false;
+
   if (_is_stopped || _is_driven){
     if ( (vel < -_max_drive_value) || (vel > _max_drive_value) ){
       //std::cerr << "(SimulationAxis)  Maximum drive value exceeded. Axis.disable()" << std::endl;
@@ -141,6 +148,8 @@ SimulationAxis::lock()
   if (_is_stopped){
     _is_locked  = true;
     _is_stopped = false;
+    _brake.switchOn();
+    _enable.switchOff();
     return true;
   }
   else if (_is_locked)
@@ -155,6 +164,8 @@ SimulationAxis::unlock()
   if (_is_locked){
     _is_locked  = false;
     _is_stopped = true;
+    _brake.switchOff();
+    _enable.switchOn();
     return true;
   }
   else if (_is_stopped)
@@ -179,6 +190,16 @@ bool
 SimulationAxis::isDriven() const
 {
   return _is_driven;
+}
+
+DigitalOutput* SimulationAxis::getBrake()
+{ 
+    return &_brake; 
+}
+
+DigitalOutput* SimulationAxis::getEnable()
+{ 
+    return &_enable; 
 }
 
 

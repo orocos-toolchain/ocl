@@ -91,11 +91,9 @@ namespace RTT
          */
         void setBrake( DigitalOutput* brk );
 
-        /**
-         * @brief Get the brake of the Axis,
-         * returns the inverse drive status (drive on -> brake off) if none present.
-         */
-        DigitalOutput* getBrake() const;
+        DigitalOutput* getBrake();
+
+        DigitalOutput* getEnable();
 
         /**
          * @brief Sets the drive used

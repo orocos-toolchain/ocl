@@ -19,7 +19,8 @@
 #ifndef _SIM_AXIS_HPP
 #define _SIM_AXIS_HPP
 
-#include "rtt/dev/AxisInterface.hpp"
+#include <rtt/dev/AxisInterface.hpp>
+#include <rtt/dev/DigitalOutput.hpp>
 #include <rtt/TimeService.hpp>
 
 namespace RTT
@@ -83,9 +84,14 @@ namespace RTT
 
 	double getDriveValue() const;
 	void   setMaxDriveValue( double v_max ) { _max_drive_value = v_max; }
+
+    DigitalOutput* getBrake();
+    DigitalOutput* getEnable();
+
     private:
 	double      _drive_value;
-	bool        _enable;
+	DigitalOutput  _enable;
+	DigitalOutput  _brake;
 	double      _velocity;
 	double      _max_drive_value;
 	SimulationEncoder*         _encoder;
