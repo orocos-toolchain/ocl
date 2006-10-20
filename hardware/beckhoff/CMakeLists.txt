@@ -7,6 +7,7 @@ IF ( BUILD_BECKHOFF )
     FILE( GLOB DEVHPPS dev/[^.]*.hpp )
 
     INCLUDE_DIRECTORIES( ${PROJECT_SOURCE_DIR}/hardware/can )
+    INCLUDE_DIRECTORIES( ${PROJECT_SOURCE_DIR}/hardware/can/can )
     GLOBAL_ADD_COMPONENT( orocos-beckhoff ${DEVSRCS} )
     GLOBAL_ADD_INCLUDE( ocl/dev ${DEVHPPS} )
 

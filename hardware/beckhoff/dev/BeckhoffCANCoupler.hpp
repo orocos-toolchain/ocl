@@ -28,7 +28,7 @@
 #ifndef BECKHOFFCANCOUPLER_HPP
 #define BECKHOFFCANCOUPLER_HPP
 
-#include <can/CANDeviceInterface.hpp>
+#include "../can/CANDeviceInterface.hpp"
 #include <rtt/ConfigurationInterface.hpp>
 #include <rtt/TimeService.hpp>
 

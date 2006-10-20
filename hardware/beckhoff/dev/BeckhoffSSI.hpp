@@ -31,7 +31,7 @@
 #include <rtt/dev/DigitalInInterface.hpp>
 #include <rtt/dev/EncoderInterface.hpp>
 #include <rtt/ConfigurationInterface.hpp>
-#include "can/CANRequest.hpp"
+#include "../can/CANRequest.hpp"
 
 #include <vector>
 
