@@ -12,9 +12,6 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.2)
 
 PROJECT(Orocos-Components)
 
-SET(CMAKE_CXX_COMPILER g++ CACHE FILEPATH "C++ Compiler" )
-SET(CMAKE_C_COMPILER gcc CACHE FILEPATH "C Compiler" )
-
 SET( VERSION 0.1 CACHE STRING "Version of Orocos Components" )
   MESSAGE( "Orocos Components version ${VERSION}" )
 
