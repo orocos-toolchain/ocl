@@ -27,10 +27,6 @@
 
 #include <rtt/RTT.hpp>
 
-namespace CAN {
-    using namespace RTT;
-}
-
 namespace RTT
 { 
     /**
@@ -40,8 +36,6 @@ namespace RTT
      * A controller based on the canpie package is provided.
      *
      */
-    namespace CAN {
-        using namespace ::CAN;
-    }
+    namespace CAN {}
 }
 
