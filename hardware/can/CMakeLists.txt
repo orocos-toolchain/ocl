@@ -6,7 +6,7 @@ IF ( BUILD_CAN )
 
     # This gathers all the .cpp files into the variable 'SRCS'
     FILE( GLOB DEVSRCS can/[^.]*.cpp )
-    FILE( GLOB DEVHPPS can/[^.]*.hpp )
+    FILE( GLOB DEVHPPS can/[^.]*.hpp can/[^.]*.h )
 
     LIST( REMOVE_ITEM DEVSRCS ${CMAKE_CURRENT_SOURCE_DIR}/can/CANPieController.cpp)
     LIST( REMOVE_ITEM DEVHPPS ${CMAKE_CURRENT_SOURCE_DIR}/can/CANPieController.hpp)
