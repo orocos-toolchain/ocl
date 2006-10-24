@@ -58,11 +58,11 @@ namespace RTT
     CANPieController( double period,  bool interrupt = false);
     virtual ~CANPieController();
 
-    bool initialise();
+    bool initialize();
 
     void step();
         
-    void finalise();
+    void finalize();
 
     virtual void addBus( unsigned int chan, CANBusInterface* _bus);
 

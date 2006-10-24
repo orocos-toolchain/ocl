@@ -50,7 +50,7 @@ namespace RTT
                 ".  Generic Transmit Errors: "<<generic_trns<<Logger::endl;
         }
 
-        bool CANPieController::initialise() 
+        bool CANPieController::initialize() 
         {
             return (CANPieStatus == CpErr_OK);
         }
@@ -64,7 +64,7 @@ namespace RTT
                 }
         }
         
-        void CANPieController::finalise() {}
+        void CANPieController::finalize() {}
 
         void CANPieController::addBus( unsigned int chan, CANBusInterface* _bus)
         {
