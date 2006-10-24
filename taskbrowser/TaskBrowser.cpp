@@ -767,6 +767,7 @@ namespace Orocos
 
         // connect data ports.
         this->connectPeers( taskcontext );
+        this->connectPorts( taskcontext );
 
         cerr << "   Switched to : " << taskcontext->getName() <<endl;
 
