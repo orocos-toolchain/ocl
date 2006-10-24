@@ -35,13 +35,10 @@ namespace Orocos
     AxesComponent::AxesComponent( int max_chan , const std::string& name ) 
         :  TaskContext(name),
            max_channels("MaximumChannels","The maximum number of virtual sensor/drive channels", max_chan),
+           chan_sensor("OutputValues"),
+           chan_drive("InputValues"),
            usingChannels(0)
     {
-        AxisInterface* _a = 0;
-        SensorInterface<double>* _d = 0;
-        channels.resize(max_chan, std::make_pair(_d,_a) );
-        chan_meas.resize(max_chan, 0.0);
-
         this->methods()->addMethod( method( "switchOn", &AxesComponent::switchOn, this),
                            "Switch A Digital Output on",
                            "Name","The Name of the DigitalOutput."
@@ -75,14 +72,6 @@ namespace Orocos
                         "Inspect the status of a Digital Input or Output.",
                         "Name", "The Name of the Digital IO."
                          );
-        this->methods()->addMethod( method( "position", &AxesComponent::position, this),
-                        "Inspect the status of the Position of an Axis.",
-                        "Name", "The Name of the Axis."
-                         );
-        this->methods()->addMethod( method( "readSensor", &AxesComponent::readSensor, this),
-                        "Inspect the status of a Sensor of an Axis.",
-                        "FullName", "The Name of the Axis followed by a '::' and the Sensor name (e.g. 'Position'."
-                        );
         this->methods()->addMethod( method( "isEnabled", &AxesComponent::isEnabled, this),
                         "Inspect if an Axis is not locked.",
                         "Name", "The Name of the Axis."
@@ -104,94 +93,62 @@ namespace Orocos
                          );
 
         this->commands()->addCommand( command( "calibrateSensor", &AxesComponent::calibrateSensor, &AxesComponent::isCalibrated, this),
-                        "Calibrate a Sensor of an Axis.",
-                        "FullName", "The Name of the Axis followed by a '::' and the Sensor name (e.g. 'Position'."
-                        );
-        this->commands()->addCommand( command( "resetSensor", &AxesComponent::resetSensor, &AxesComponent::isCalibrated, this),
-                        "UnCalibrate a Sensor of an Axis.",
-                        "FullName", "The Name of the Axis followed by a '::' and the Sensor name (e.g. 'Position'."
-                        ,true);
+                                      "Calibrate a Sensor of an Axis.",
+                                      "Axis", "The Name of the Axis.",
+                                      "Sensor", "The Name of the Sensor of that axis e.g. 'Position'."
+                                      );
+        this->commands()->addCommand( command( "resetSensor", &AxesComponent::resetSensor, &AxesComponent::isCalibrated, this, true),
+                                      "UnCalibrate a Sensor of an Axis.",
+                                      "Axis", "The Name of the Axis.",
+                                      "Sensor", "The Name of the Sensor of that axis e.g. 'Position'.");
+        this->methods()->addMethod( method( "isSensorCalibrated", &AxesComponent::isCalibrated, this),
+                                    "Check if a Sensor of an Axis is calibrated.",
+                                    "Axis", "The Name of the Axis.",
+                                    "Sensor", "The Name of the Sensor of that axis e.g. 'Position'.");
     }
 
-    bool AxesComponent::componentLoaded()
+    bool AxesComponent::startup()
     {
-        if ( !Input->dObj()->Get("ChannelValues",chan_DObj) )
-            return false;
-        // kind-of resize of the vector in the dataobject:
-        chan_DObj->Set(chan_meas); 
-
-        // Get All DataObjects of Added Axes
-        for(AxisMap::iterator ax= axes.begin(); ax != axes.end(); ++ax)
+        if ( chan_sensor.connected() )
             {
-                if ( axis_to_remove == ax->first )
-                    continue; // detect removal of axis...
-                DataObjectInterface<double>* d;
-                if ( this->Input->dObj()->Get( ax->first+"_Velocity", d) == false )
-                    std::cout << "AxesComponent::componentLoaded : Velocity of "+ax->first+" not found !"<<std::endl;
-
-                drive[ ax->first ] = std::make_pair( ax->second, d );
-
-                std::vector<std::string> res( ax->second->sensorList() );
-                for ( std::vector<std::string>::iterator it = res.begin(); it != res.end(); ++it)
+                for (AxisMap::iterator it = axes.begin(); it != axes.end(); ++it)
                     {
-                        std::string sname( ax->first+"_"+*it );
-                        if ( this->Input->dObj()->Get( sname, d ) == false )
-                            std::cout << "AxesComponent::componentLoaded : "+*it+" of "+ax->first+" not found !"<<std::endl;
+                        // if an axis was added on a channel and its data port is connected
+                        // as well, warn the user that the channel takes precedence.
+                        if ( it->second.axis && it->second.inport->connected() && it->second.channel != -1 ) {
+                            log(Warning) << "Axis: "<<it->second.name
+                                         << ": Ignoring input from connected Data Port "
+                                         << it->second.inport->getName() <<": using InputValues Data Port."<<endlog();
+                        }
                     }
             }
-
         return true;
-    }
-
-    void AxesComponent::componentUnloaded() {
-        // Delete all Data Objects is done by DataObject Server
-        // just cleanup stuff in opposite to componentLoaded
-        for(AxisMap::iterator ax= axes.begin(); ax != axes.end(); ++ax)
-            {
-                drive.erase( ax->first );
-
-                std::vector<std::string> res( ax->second->sensorList() );
-                for ( std::vector<std::string>::iterator it = res.begin(); it != res.end(); ++it)
-                    {
-                        std::string sname( ax->first + "_"+*it );
-                        sensor.erase( sname );
-                    }
-            }
     }
 
     void AxesComponent::update()
     {
         /*
-         * Access Sensor device drivers
-         */
-        std::for_each( sensor.begin(), sensor.end(), bind( &AxesComponent::sensor_to_do, this, _1 ) );
-
-        // Only write to channels if user requested so.
-        if ( usingChannels ) {
-            for (unsigned int i=0; i < channels.size(); ++i)
-                chan_meas[i] = channels[i].first ? channels[i].first->readSensor() : 0 ;
-
-            // writeout.
-            chan_sensor->Set( chan_meas );
-        }
-
-        /*
          * Access Drives, if a dataobject is present
          */
-        std::for_each( drive.begin(), drive.end(), bind( &AxesComponent::write_to_drive, this, _1 ) );
+        if (usingChannels )
+            chan_drive.Get( chan_out );
 
-        /* Access Drives if the user uses 'ChannelValues' */
-        if (usingChannels ) {
-            chan_drive->Get( chan_out );
+        /*
+         * Process each axis.
+         */
+        for (AxisMap::iterator it= axes.begin(); it != axes.end(); ++it)
+            this->to_axis( it->second );
 
-            // writeout.
-            for (unsigned int i=0; i < channels.size(); ++i) {
-                if ( channels[i].second ) {
-                    channels[i].second->drive( chan_out[i] );
-                }
-            }
-        }
+        // Only write to channels if user requested so.
+        if ( usingChannels )
+            chan_sensor.Set( chan_meas );
 
+    }
+
+    void AxesComponent::shutdown()
+    {
+        for (AxisMap::iterator it= axes.begin(); it != axes.end(); ++it)
+            it->second.axis->lock();
     }
 
     bool AxesComponent::addAxis( const std::string& name, AxisInterface* ax )
@@ -200,61 +157,74 @@ namespace Orocos
             log(Error) << "Can not add Axis "<<name<< " to running Component." <<endlog();
             return false;
         }
-        if ( axes[name] ) {
+        if ( axes.count(name) != 0 ) {
             log(Error) << "Can not add Axis "<<name<< " to Component: name already in use." <<endlog();
             return false;
         }
 
-        axes[name] = ax;
+        axes.insert( std::make_pair(name, AxisInfo(ax, name)));
 
-        d_out[ name + ".Enable" ] = ax->getDrive()->enableGet();
+        d_out[ name + ".Enable" ] = ax->getEnable();
         if ( ax->getBrake() )
             d_out[ name + ".Brake" ] = ax->getBrake();
         if ( ax->getSwitch("Home") )
            d_in[ name + ".Home" ] = ax->getSwitch("Home");
 
-
         // Add each sensor...
+        AxisInfo* axinfo = & axes.find(name)->second;
         std::vector<std::string> res( ax->sensorList() );
         for ( std::vector<std::string>::iterator it = res.begin(); it != res.end(); ++it)
             {
                 std::string sname( name+"_"+*it );
-                sensor[ sname ] = std::make_pair( ax->getSensor( *it ), new WriteDataPort<double>(sname) );
+                axinfo->sensors[ sname ] = std::make_pair( ax->getSensor( *it ), new WriteDataPort<double>(sname) );
+                this->ports()->addPort( axinfo->sensors[ sname ].second );
             }
 
-        drive[name + "_Drive" ] = make_pair( ax, new ReadDataPort<double>(name) );
+        axinfo->inport = new DataPort<double>(name+"_Drive");
+        this->ports()->addPort( axinfo->inport );
         return true;
     }
 
     bool AxesComponent::addAxisOnChannel(const std::string& axis_name, const std::string& sensor_name, int virtual_channel )
     {
-        if ( virtual_channel >= max_channels ||
-             channels[virtual_channel].first != 0 ||
-             axes.count(axis_name) != 1 ||
-             axes[axis_name]->getSensor( sensor_name ) == 0 ||
+        AxisInfo* axinfo = mhasAxis(axis_name);
+
+        if ( axinfo == 0 || 
+             virtual_channel >= max_channels ||
+             axinfo->channel != -1 ||
+             axinfo->axis->getSensor( sensor_name ) == 0 ||
              this->isRunning() )
             return false;
 
-        // The owner Axis is stored in the channel.
+        // the channel reads drive values and provides values of one sensor.
+        axinfo->channel = virtual_channel;
+        axinfo->sensor = axinfo->axis->getSensor( sensor_name );
+
         ++usingChannels;
-        channels[virtual_channel] = std::make_pair( axes[axis_name]->getSensor( sensor_name ), axes[axis_name] );
         return true;
     }
 
-    void AxesComponent::removeAxisFromChannel( int virtual_channel )
+    AxesComponent::AxisInfo* AxesComponent::mhasAxis(const std::string& axis_name)
     {
-        if ( virtual_channel >= max_channels ||
-             virtual_channel < 0 ||
-             channels[virtual_channel].first == 0 ||
+       AxisMap::iterator axit = axes.find(axis_name);
+        if ( axit == axes.end() ) {
+            log(Error) <<"No such axis present: "<< axis_name <<endlog();
+            return 0;
+        }
+        return &axit->second;
+    }
+
+    void AxesComponent::removeAxisFromChannel( const std::string& axis_name )
+    {
+        AxisInfo* axinfo = mhasAxis(axis_name);
+        if ( axinfo == 0 ||
+             axinfo->channel == -1 ||
              this->isRunning() )
             return;
 
+        axinfo->channel = -1;
+        axinfo->sensor = 0;
         --usingChannels;
-
-        AxisInterface* _a = 0;
-        SensorInterface<double>* _d = 0;
-        // Reset the channel
-        channels[virtual_channel] = std::make_pair( _d, _a);
     }
 
 
@@ -263,31 +233,23 @@ namespace Orocos
         if ( axes.count(name) != 1 || this->isRunning() )
             return false;
 
-        for ( std::vector< std::pair< const SensorInterface<double>*, AxisInterface* > >::iterator it = channels.begin();
-              it != channels.end();
-              ++it )
-            if ( it->second == axes[name] )
-                {
-                    it->first = 0; // clear the channel occupied by an axis sensor
-                    it->second = 0;
-                }
-
         // cleanup the rest...
         d_out.erase( name + ".Enable" );
         d_out.erase( name + ".Brake" );
         d_in.erase( name + ".Home" );
 
         // Delete drive port.
-        delete drive[name+"_Drive"].second;
-        drive.erase( name + "_Drive");
+        AxisInfo* axinfo = & axes.find(name)->second;
+        this->ports()->removePort(axinfo->inport->getName());
+        delete axinfo->inport;
 
         // Delete sensor ports.
-        std::vector<std::string> res( axes[name]->sensorList() );
+        std::vector<std::string> res( axinfo->axis->sensorList() );
         for ( std::vector<std::string>::iterator it = res.begin(); it != res.end(); ++it)
             {
                 std::string sname( name+"_"+*it );
-                delete sensor[sname].second;
-                sensor.erase(sname);
+                this->ports()->removePort(sname);
+                delete axinfo->sensors[sname].second;
             }
 
         // erase the axis as last.
@@ -299,21 +261,24 @@ namespace Orocos
     {
         if ( axes.count(name) != 1 )
             return false;
-        return axes[name].first->unlock();
+        AxisInfo* axinfo = & axes.find(name)->second;
+        return axinfo->axis->unlock();
     }
 
     bool AxesComponent::stopAxis( const std::string& name )
     {
         if ( axes.count(name) != 1 )
             return false;
-        return axes[name].first->stop();
+        AxisInfo* axinfo = & axes.find(name)->second;
+        return axinfo->axis->stop();
     }
 
     bool AxesComponent::disableAxis( const std::string& name )
     {
         if ( axes.count(name) != 1 )
             return false;
-        return axes[name].first->stop() && axes[name].first->lock();
+        AxisInfo* axinfo = & axes.find(name)->second;
+        return axinfo->axis->stop() && axinfo->axis->lock();
     }
 
     bool AxesComponent::switchOn( const std::string& name )
@@ -336,7 +301,7 @@ namespace Orocos
     {
         AxisMap::const_iterator it = axes.find(name);
         if ( it != axes.end() )
-            return ! it->second->isLocked(); // not locked == enabled
+            return ! it->second.axis->isLocked(); // not locked == enabled
         return false;
     }
 
@@ -344,7 +309,7 @@ namespace Orocos
     {
         AxisMap::const_iterator it = axes.find(name);
         if ( it != axes.end() )
-            return it->second->isLocked();
+            return it->second.axis->isLocked();
         return false;
     }
 
@@ -352,7 +317,7 @@ namespace Orocos
     {
         AxisMap::const_iterator it = axes.find(name);
         if ( it != axes.end() )
-            return it->second->isStopped(); 
+            return it->second.axis->isStopped(); 
         return false;
     }
 
@@ -360,29 +325,13 @@ namespace Orocos
     {
         AxisMap::const_iterator it = axes.find(name);
         if ( it != axes.end() )
-            return it->second->isDriven();
+            return it->second.axis->isDriven();
         return false;
     }
 
     int AxesComponent::getAxes() const
     {
         return axes.size();
-    }
-
-    double AxesComponent::position( const std::string& name ) const
-    {
-        SensorMap::const_iterator it = sensor.find(name+"_Position");
-        if ( it != sensor.end() )
-            return it->second.first->readSensor();
-        return 0;
-    }
-
-    double AxesComponent::readSensor( const std::string& name ) const
-    {
-        SensorMap::const_iterator it = sensor.find(name);
-        if ( it != sensor.end() )
-            return it->second.first->readSensor();
-        return 0;
     }
 
     bool AxesComponent::isOn( const std::string& name ) const
@@ -394,40 +343,60 @@ namespace Orocos
         return false;
     }
 
-    bool AxesComponent::calibrateSensor( const std::string& name )
+    bool AxesComponent::calibrateSensor( const std::string& axis, const std::string& name )
     {
-        SensorMap::iterator it = sensor.find(name);
-        if ( it != sensor.end() )
-            return it->second.first->calibrate(), true;
+        AxisMap::iterator axit = axes.find(axis);
+        if ( axit != axes.end() ) {
+            SensorMap::iterator it = axit->second.sensors.find(name);
+            if ( it != axit->second.sensors.end() )
+                return it->second.first->calibrate(), true;
+        }
         return false;
     }
 
-    bool AxesComponent::resetSensor( const std::string& name )
+    bool AxesComponent::resetSensor( const std::string& axis, const std::string& name )
     {
-        SensorMap::iterator it = sensor.find(name);
-        if ( it != sensor.end() )
-            return it->second.first->unCalibrate(), true;
+        AxisMap::iterator axit = axes.find(axis);
+        if ( axit != axes.end() ) {
+            SensorMap::iterator it = axit->second.sensors.find(name);
+            if ( it != axit->second.sensors.end() )
+                return it->second.first->unCalibrate(), true;
+        }
         return false;
     }
 
-    bool AxesComponent::isCalibrated( const std::string& name ) const
+    bool AxesComponent::isCalibrated( const std::string& axis, const std::string& name ) const
     {
-        SensorMap::const_iterator it = sensor.find(name);
-        if ( it != sensor.end() )
-            return it->second.first->isCalibrated();
+        AxisMap::const_iterator axit = axes.find(axis);
+        if ( axit != axes.end() ) {
+            SensorMap::const_iterator it = axit->second.sensors.find(name);
+            if ( it != axit->second.sensors.end() )
+                return it->second.first->isCalibrated(), true;
+        }
         return false;
     }
 
-    void AxesComponent::sensor_to_do( const std::pair<std::string,std::pair< const SensorInterface<double>*,
-                                      WriteDataPort<double>* > >& dd )
+    void AxesComponent::to_axis(const AxisInfo& dd )
     {
-        dd.second.second->Set( dd.second.first->readSensor() );
-    }
+        // first read all sensors.
+        SensorMap::const_iterator it = dd.sensors.begin();
+        while (it != dd.sensors.end() ) {
+            it->second.second->Set( it->second.first->readSensor() );
+            ++it;
+        }
 
-    void AxesComponent::write_to_drive( pair<std::string, pair<AxisInterface*, ReadDataPort<double>* > > dd )
-    {
-        if ( dd.second.second != 0)
-            dd.second.first->drive( dd.second.second->Get() );
-    }
+        // if a sensor was mapped to a channel, write that channel
+        if (dd.channel != -1)
+            chan_meas[dd.channel] = dd.sensor->readSensor();
 
+        // if a drive was mapped to a channel, use that channel,
+        // otherwise, read from data port.
+        if ( dd.axis->isLocked() == false ) {
+            if ( dd.channel == -1) {
+                dd.axis->drive( dd.inport->Get() );
+            }
+            else
+                dd.axis->drive( chan_out[dd.channel] );
+        }
+    }
 }

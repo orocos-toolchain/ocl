@@ -67,7 +67,21 @@ namespace Orocos
          */
         AxesComponent( int max_axes = 1, const std::string& name = "AxesComponent" );
 
+        /**
+         * Startup checks the axes/port/channel configuration and warns the user if
+         * it detects possible incorrect port connections.
+         */
+        virtual bool startup();
+
+        /**
+         * Reads all the sensors of each added axis and drives each enabled axis.
+         */
         virtual void update();
+
+        /**
+         * Shutdown will stop all enabled axes.
+         */
+        virtual void shutdown();
 
         /**
          * @brief Add an AxisInterface object with a name.
@@ -94,7 +108,7 @@ namespace Orocos
          * @param virtual_channel The channel to remove.
          * 
          */
-        void removeAxisFromChannel(int virtual_channel);
+        void removeAxisFromChannel(const std::string& axis_name);
 
         /**
          * @brief Remove a previously added Axis.
@@ -185,73 +199,61 @@ namespace Orocos
         /**
          * Calibrate a Sensor of the Axis.
          */
-        bool calibrateSensor( const std::string& name );
+        bool calibrateSensor( const std::string& axis, const std::string& name );
         
         /**
          * Reset (uncalibrate) a Sensor of the Axis.
          */
-        bool resetSensor( const std::string& name );
+        bool resetSensor( const std::string& axis, const std::string& name );
         
         /**
          * Checks if a Sensor is calibrated ( Completion Condition ).
          */
-        bool isCalibrated( const std::string& name ) const;
+        bool isCalibrated( const std::string& axis, const std::string& name ) const;
         /** @} */
     protected:
+        struct AxisInfo;
+
+        AxisInfo* mhasAxis(const std::string& axis_name);
 
         /////// SENSOR //////
-
-        /**
-         * Write Analog input to DataObject.
-         */
-        void drive_to_do( std::pair<std::string,std::pair<ORO_DeviceInterface::AxisInterface*,
-                          ReadDataPort<double>* > > dd );
-            
-        void sensor_to_do( std::pair<std::string,std::pair< const SensorInterface<double>*,
-                           WriteDataPort<double>* > > dd );
-            
         Property<int> max_channels;
 
-        std::vector< std::pair< const SensorInterface<double>*, ORO_DeviceInterface::AxisInterface* > > channels;
+        typedef std::map<std::string, std::pair<SensorInterface<double>*, WriteDataPort<double>* > > SensorMap;
+
+        struct AxisInfo
+        {
+            AxisInfo(AxisInterface* a, const std::string& thename)
+                : name(thename), axis(a),
+                  sensor(0), inport(0),
+                  channel(-1) {}
+            std::string name;
+            AxisInterface* axis;
+            SensorInterface<double>* sensor;
+            DataPort<double>* inport;
+            int channel;
+
+            // contains all the sensors of each added axis.
+            SensorMap sensors;
+        };
+
+
         ChannelType chan_meas;
         WriteDataPort<ChannelType> chan_sensor;
+        ChannelType chan_out;
+        ReadDataPort< ChannelType > chan_drive;
 
         std::map<std::string, const DigitalInput* > d_in;
         std::map<std::string, DigitalOutput* > d_out;
 
-        typedef
-        std::map<std::string, std::pair<ORO_DeviceInterface::AxisInterface*, DataObjectInterface<double>* > > DriveMap;
-        DriveMap drive;
-        typedef
-        std::map<std::string, std::pair< SensorInterface<double>*, DataObjectInterface<double>* > > SensorMap;
-        SensorMap sensor;
-        typedef
-        std::map<std::string, ORO_DeviceInterface::AxisInterface* > AxisMap;
+        typedef std::map<std::string, AxisInfo > AxisMap;
+
         AxisMap axes;
 
-        std::string axis_to_remove;
-        int usingChannels;
 
-        /////// EFFECTOR //////
+        void to_axis(const AxisInfo& dd );
 
-        /**
-         * Write to Data to AnalogDrives.
-         */
-        void write_to_drive( pair<std::string, pair<ORO_DeviceInterface::AxisInterface*, DataObjectInterface<double>* > > dd );
-
-        /**
-         * Check if the Output DataObject lacks a user requested AnalogDrive.
-         */
-        bool lacksDrive( pair<std::string,pair<ORO_DeviceInterface::AxisInterface*, DataObjectInterface<double>* > > dd );
-            
-        std::vector<double> chan_out;
-        ReadDataPort< std::vector<double> > chan_drive;
-
-        std::map<std::string, DigitalOutput* > d_out;
-
-        std::map<std::string, pair<ORO_DeviceInterface::AxisInterface*, DataObjectInterface<double>* > > drive;
-        std::map<std::string, pair<ORO_DeviceInterface::AxisInterface*, int> > axes;
-        
+        unsigned int usingChannels;
     };
 }
 
