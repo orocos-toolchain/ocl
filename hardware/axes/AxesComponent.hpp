@@ -41,6 +41,7 @@
 #include <rtt/TaskContext.hpp>
 #include <rtt/DataPort.hpp>
 #include <rtt/Property.hpp>
+#include <rtt/Attribute.hpp>
 #include <rtt/RTT.hpp>
 
 namespace Orocos
@@ -250,6 +251,7 @@ namespace Orocos
 
         AxisMap axes;
 
+        Attribute<ChannelType> testData;
 
         void to_axis(const AxisInfo& dd );
 

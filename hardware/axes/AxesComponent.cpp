@@ -35,10 +35,16 @@ namespace Orocos
     AxesComponent::AxesComponent( int max_chan , const std::string& name ) 
         :  TaskContext(name),
            max_channels("MaximumChannels","The maximum number of virtual sensor/drive channels", max_chan),
-           chan_sensor("OutputValues"),
+           chan_sensor("OutputValues",ChannelType(max_chan, 0.0) ),
            chan_drive("InputValues"),
+           testData("testData", ChannelType(max_chan, 0.0) ),
            usingChannels(0)
     {
+        this->attributes()->addAttribute(&testData);
+
+        chan_out.resize(max_chan);
+        chan_meas.resize(max_chan);
+
         this->methods()->addMethod( method( "switchOn", &AxesComponent::switchOn, this),
                            "Switch A Digital Output on",
                            "Name","The Name of the DigitalOutput."
@@ -200,6 +206,11 @@ namespace Orocos
         axinfo->channel = virtual_channel;
         axinfo->sensor = axinfo->axis->getSensor( sensor_name );
 
+        if (usingChannels == 0) {
+            this->ports()->addPort(&chan_sensor, "Sensor measurements.");
+            this->ports()->addPort(&chan_drive, "Drive values.");
+        }
+
         ++usingChannels;
         return true;
     }
@@ -225,6 +236,12 @@ namespace Orocos
         axinfo->channel = -1;
         axinfo->sensor = 0;
         --usingChannels;
+
+        if (usingChannels == 0) {
+            this->ports()->removePort("InputValues");
+            this->ports()->removePort("OutputValues");
+        }
+
     }
 
 
