@@ -45,8 +45,8 @@ MACRO( GLOBAL_ADD_COMPONENT COMPONENT_NAME )
     MESSAGE( STATUS "Building Stand-alone library ${COMPONENT_NAME}" )
     ADD_LIBRARY( ${COMPONENT_NAME} STATIC ${ARGN} )
     INSTALL_TARGETS( /lib ${COMPONENT_NAME} )
-    #This line does not work
-    SET (ENV{SELECTED_LIBS} "$ENV{SELECTED_LIBS} -l${COMPONENT_NAME}")
+    #The later a component is added, the earlier it apears in the -l list.
+    SET (ENV{SELECTED_LIBS} "-l${COMPONENT_NAME} $ENV{SELECTED_LIBS} ")
     #This is an ugly work around
     #FILE(APPEND ${PROJ_BINARY_DIR}/bibs.txt "-l${COMPONENT_NAME} ")
 
