@@ -18,7 +18,7 @@
 #ifndef __CARTESIAN_SENSOR_POS_H__
 #define __CARTESIAN_SENSOR_POS_H__
 
-#include "motion_control/naxes/nAxesSensor.hpp"
+#include "nAxesSensor.hpp"
 
 #include <kdl/kdl.hpp>
 #include <kdl/frames.hpp>
