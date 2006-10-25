@@ -4,7 +4,7 @@ includedir=${prefix}/include
 
 Name: orocos-components 
 Description: Orocos components 
-Requires: orocos-@OROCOS_TARGET@
+Requires: orocos-rtt
 Version: @VERSION@
 Libs: -L${libdir} \
       @SELECTED_LIBS@ @OROCOS_COMPONENTS_LINKFLAGS@
