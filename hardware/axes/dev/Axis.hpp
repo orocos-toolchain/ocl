@@ -61,7 +61,7 @@ namespace RTT
         /** 
          * @brief Create an Axis with an DriveInterface.
          * 
-         * @param adrive The Analog drive of this axis.
+         * @param adrive The drive of this axis.
          */
         Axis( DriveInterface* adrive );
 
