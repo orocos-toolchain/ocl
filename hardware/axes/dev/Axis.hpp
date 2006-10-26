@@ -143,7 +143,6 @@ namespace RTT
         /** 
          * @brief Add a counter to the Axis (position, turns,...).
          * The SensorInterface object is aggregated.
-         * is aggregated.
          * 
          * @param name The name of the counter.
          * @param _sens The counter.
