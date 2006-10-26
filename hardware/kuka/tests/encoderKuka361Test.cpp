@@ -8,7 +8,7 @@
 #if defined (OROPKG_OS_LXRT) 
 
 #include <rtt/PeriodicActivity.hpp>
-#include "hardware/apci/EncoderSSIapci1710.hpp"
+#include <dev/EncoderSSIapci1710.hpp>
 #include <fstream>
 #include <math.h>
 

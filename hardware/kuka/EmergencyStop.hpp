@@ -41,10 +41,10 @@ namespace Orocos
         EmergencyStop(RTT::TaskContext* axes)
             : _axes(axes),fired(false)
         {
-            _stop = axes->commands()->getCommand<bool(void)>("stopAllAxes");
-            _lock = axes->commands()->getCommand<bool(void)>("lockAllAxes");
+            _stop = axes->methods()->getMethod<bool(void)>("stopAllAxes");
+            _lock = axes->methods()->getMethod<bool(void)>("lockAllAxes");
             if(!_stop.ready()||!_lock.ready()){
-                log(Error)<<"(EmergencyStop) Stop and Lock Command are not ready"<<endlog();
+                log(Error)<<"(EmergencyStop) Stop and Lock Method are not ready"<<endlog();
             }
         };
         ~EmergencyStop(){};
@@ -95,8 +95,8 @@ namespace Orocos
         };
     private:
         RTT::TaskContext *_axes;
-        RTT::Command<bool(void)> _stop;
-        RTT::Command<bool(void)> _lock;
+        RTT::Method<bool(void)> _stop;
+        RTT::Method<bool(void)> _lock;
         std::vector<RTT::Handle> _handlers;
         bool fired;
     }; // class

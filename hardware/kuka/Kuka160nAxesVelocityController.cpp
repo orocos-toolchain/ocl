@@ -53,18 +53,18 @@ namespace Orocos{
     
     Kuka160nAxesVelocityController::Kuka160nAxesVelocityController(string name,string propertyfile)
         : TaskContext(name),
-          _startAxis( "startAxis", &MyType::startAxis,&MyType::startAxisCompleted, this),
-          _startAllAxes( "startAllAxes", &MyType::startAllAxes,&MyType::startAllAxesCompleted, this),
-          _stopAxis( "stopAxis", &MyType::stopAxis,&MyType::stopAxisCompleted, this),
-          _stopAllAxes( "stopAllAxes", &MyType::stopAllAxes,&MyType::stopAllAxesCompleted, this),
-          _unlockAxis( "unlockAxis", &MyType::unlockAxis,&MyType::unlockAxisCompleted, this),
-          _unlockAllAxes( "unlockAllAxes", &MyType::unlockAllAxes,&MyType::unlockAllAxesCompleted, this),
-          _lockAxis( "lockAxis", &MyType::lockAxis,&MyType::lockAxisCompleted, this),
-          _lockAllAxes( "lockAllAxes", &MyType::lockAllAxes,&MyType::lockAllAxesCompleted, this),
+          _startAxis( "startAxis", &MyType::startAxis, this),
+          _startAllAxes( "startAllAxes", &MyType::startAllAxes, this),
+          _stopAxis( "stopAxis", &MyType::stopAxis, this),
+          _stopAllAxes( "stopAllAxes", &MyType::stopAllAxes, this),
+          _unlockAxis( "unlockAxis", &MyType::unlockAxis, this),
+          _unlockAllAxes( "unlockAllAxes", &MyType::unlockAllAxes, this),
+          _lockAxis( "lockAxis", &MyType::lockAxis, this),
+          _lockAllAxes( "lockAllAxes", &MyType::lockAllAxes, this),
           _prepareForUse( "prepareForUse", &MyType::prepareForUse,&MyType::prepareForUseCompleted, this),
           _prepareForShutdown( "prepareForShutdown", &MyType::prepareForShutdown,&MyType::prepareForShutdownCompleted, this),
-          _addDriveOffset( "addDriveOffset", &MyType::addDriveOffset,&MyType::addDriveOffsetCompleted, this),
-          _initPosition( "initPosition", &MyType::initPosition,&MyType::initPositionCompleted, this),
+          _addDriveOffset( "addDriveOffset", &MyType::addDriveOffset, this),
+          _initPosition( "initPosition", &MyType::initPosition, this),
           _driveValue(KUKA160_NUM_AXES),
           _references(KUKA160_NUM_AXES),
           _positionValue(KUKA160_NUM_AXES),
@@ -185,18 +185,21 @@ namespace Orocos{
          *  Command Interface
          */
         
-        this->commands()->addCommand( &_startAxis, "start axis, starts updating the drive-value (only possible after unlockAxis)","axis","axis to start" );
-        this->commands()->addCommand( &_stopAxis,"stop axis, sets drive value to zero and disables the update of the drive-port, (only possible if axis is started","axis","axis to stop");
-        this->commands()->addCommand( &_lockAxis,"lock axis, enables the brakes (only possible if axis is stopped","axis","axis to lock" );
-        this->commands()->addCommand( &_unlockAxis,"unlock axis, disables the brakes and enables the drive (only possible if axis is locked","axis","axis to unlock" );
-        this->commands()->addCommand( &_startAllAxes, "start all axes"  );
-        this->commands()->addCommand( &_stopAllAxes, "stops all axes"  );
-        this->commands()->addCommand( &_lockAllAxes, "locks all axes"  );
-        this->commands()->addCommand( &_unlockAllAxes, "unlock all axes"  );
+        this->methods()->addMethod( &_startAxis, "start axis, starts updating the drive-value (only possible after unlockAxis)","axis","axis to start" );
+        this->methods()->addMethod( &_stopAxis,"stop axis, sets drive value to zero and disables the update of the drive-port, (only possible if axis is started","axis","axis to stop");
+        this->methods()->addMethod( &_lockAxis,"lock axis, enables the brakes (only possible if axis is stopped","axis","axis to lock" );
+        this->methods()->addMethod( &_unlockAxis,"unlock axis, disables the brakes and enables the drive (only possible if axis is locked","axis","axis to unlock" );
+        this->methods()->addMethod( &_startAllAxes, "start all axes"  );
+        this->methods()->addMethod( &_stopAllAxes, "stops all axes"  );
+        this->methods()->addMethod( &_lockAllAxes, "locks all axes"  );
+        this->methods()->addMethod( &_unlockAllAxes, "unlock all axes"  );
+        this->methods()->addMethod( &_addDriveOffset,"adds an offset to the drive value of axis","axis","axis to add offset to","offset","offset value in rad/s" );
+        this->methods()->addMethod( &_initPosition,"changes position value to the initial position","axis","axis to initialize" );
         this->commands()->addCommand( &_prepareForUse, "prepares the robot for use"  );
         this->commands()->addCommand( &_prepareForShutdown,"prepares the robot for shutdown"  );
-        this->commands()->addCommand( &_addDriveOffset,"adds an offset to the drive value of axis","axis","axis to add offset to","offset","offset value in rad/s" );
-        this->commands()->addCommand( &_initPosition,"changes position value to the initial position","axis","axis to initialize" );
+
+
+        
 
         /**
          * Creating and adding the data-ports

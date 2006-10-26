@@ -57,7 +57,7 @@ namespace Orocos
     
     protected:  
         /** 
-         * Command to start an axis .
+         * Method to start an axis .
          *
          * Sets the axis in the DRIVEN state. Only possible if the axis
          * is int the STOPPED state. If succesfull the drive value of
@@ -68,19 +68,19 @@ namespace Orocos
          * 
          * @return Can only succeed if the axis was in the DRIVEN state
          */
-        Command<bool(int)> _startAxis; 
+        Method<bool(int)> _startAxis; 
         
         /**
-         * Command to start all axes .
+         * Method to start all axes .
          *
          * Identical to calling startAxis(int axis) on all axes.
          *  
          * @return true if all Axes could be started.
          */
-        Command<bool(void)> _startAllAxes; 
+        Method<bool(void)> _startAllAxes; 
         
         /**
-         * Command to stop an axis .
+         * Method to stop an axis .
          *
          * Sets the drive value to zero and changes to the STOP
          * state. Only possible if axis is in the DRIVEN state. In the
@@ -91,16 +91,16 @@ namespace Orocos
          *
          * @return false if in wrong state or already stopped.
          */
-        Command<bool(int)> _stopAxis; 
+        Method<bool(int)> _stopAxis; 
       
-        /** Command to stop all axes.
+        /** Method to stop all axes.
          *
          * Identical to calling stopAxis(int axis) on all axes.
          */
-        Command<bool(void)> _stopAllAxes; 
+        Method<bool(void)> _stopAllAxes; 
         
         /** 
-         * Command to unlock an axis .
+         * Method to unlock an axis .
          *
          * Activates the brake of the axis.  Only possible in the STOPPED state.
          * 
@@ -108,17 +108,17 @@ namespace Orocos
          * 
          * @return false if in wrong state or already locked.
          */
-        Command<bool(int)> _unlockAxis; 
+        Method<bool(int)> _unlockAxis; 
         
         /** 
-         * Command to unlock all axes 
+         * Method to unlock all axes 
          *
          * identical to calling lockAxis(int axis) on all axes
          */
-        Command<bool(void)> _unlockAllAxes;
+        Method<bool(void)> _unlockAllAxes;
         
         /** 
-         * Command to lock an axis.
+         * Method to lock an axis.
          *
          * Releases the brake of the axis.  Only possible in the LOCKED
          * state.
@@ -127,17 +127,17 @@ namespace Orocos
          * 
          * @return false if in wrong state or already locked.
          */
-        Command<bool(int)> _lockAxis; 
+        Method<bool(int)> _lockAxis; 
 
         /** 
-         * Command to lock all axes .
+         * Method to lock all axes .
          *
          * identical to unlockAxis(int axis) on all axes;
        */
-        Command<bool(void)> _lockAllAxes; 
+        Method<bool(void)> _lockAllAxes; 
 
         /**
-         * Command to prepare robot for use.
+         * Method to prepare robot for use.
          *
          * It is needed to activate the hardware controller of the
          * robot. 
@@ -155,7 +155,7 @@ namespace Orocos
         Command<bool(void)> _prepareForShutdown;
         
         /**
-         * Command to add a drive offset to an axis.
+         * Method to add a drive offset to an axis.
          *
          * Adds an offset to the _driveValue of axis and updates the
          * _driveOffset value.
@@ -164,7 +164,7 @@ namespace Orocos
          * @param offset offset value in fysical units
          * 
          */
-        Command<bool(int,double)> _addDriveOffset;
+        Method<bool(int,double)> _addDriveOffset;
 
         /**
          * vector of ReadDataPorts which contain the output velocities

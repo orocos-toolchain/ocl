@@ -2,7 +2,7 @@ DEPENDENT_OPTION( BUILD_KUKA "Build Kuka Components" OFF  "BUILD_HARDWARE" OFF)
 #DEPENDENT_OPTION( BUILD_KUKA_HW "Build Kuka HW Components" ON  "BUILD_KUKA;BUILD_LXRT;BUILD_APCI;BUILD_IO;BUILD_COMEDI" OFF)
 
 IF ( BUILD_KUKA )
-    INCLUDE_DIRECTORIES( ${PROJ_SOURCE_DIR}/hardware/axes )
+    INCLUDE_DIRECTORIES( ${PROJ_SOURCE_DIR}/hardware/axes ${PROJ_SOURCE_DIR}/hardware/comedi ${PROJ_SOURCE_DIR}/hardware/apci )
 
     # This gathers all the .cpp files into the variable 'SRCS'
     FILE( GLOB SRCS [^.]*.cpp )
