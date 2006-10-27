@@ -20,9 +20,9 @@
 #include <dev/ComediSubDeviceAOut.hpp>
 
 #include <dev/AbsoluteEncoderSensor.hpp>
-#include <dev/AnalogOutput.hpp>
-#include <dev/DigitalOutput.hpp>
-#include <dev/DigitalInput.hpp>
+#include <rtt/dev/AnalogOutput.hpp>
+#include <rtt/dev/DigitalOutput.hpp>
+#include <rtt/dev/DigitalInput.hpp>
 #include <dev/AnalogDrive.hpp>
 #include <dev/Axis.hpp>
 #endif
@@ -30,7 +30,7 @@
 #include <dev/TorqueSimulationAxis.hpp>
 #include <rtt/dev/AxisInterface.hpp>
 
-#include <hardware/kuka/kuka361dyn.hpp>
+#include "kuka361dyn.hpp"
 
 namespace Orocos
 {
