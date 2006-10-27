@@ -18,14 +18,22 @@
 #include <dev/EncoderSSIapci1710.hpp>
 #include <dev/ComediDevice.hpp>
 #include <dev/ComediSubDeviceAOut.hpp>
-
+#include <dev/ComediSubDeviceAIn.hpp>
+#include <dev/ComediSubDeviceDOut.hpp>
+#include <dev/ComediSubDeviceDIn.hpp>
 #include <dev/AbsoluteEncoderSensor.hpp>
+#include <dev/AnalogDrive.hpp>
+#include <dev/AnalogSensor.hpp>
+#include <dev/Axis.hpp>
+
 #include <rtt/dev/AnalogOutput.hpp>
+#include <rtt/dev/AnalogInput.hpp>
 #include <rtt/dev/DigitalOutput.hpp>
 #include <rtt/dev/DigitalInput.hpp>
-#include <dev/AnalogDrive.hpp>
-#include <dev/Axis.hpp>
+
+
 #endif
+
 #include <dev/SimulationAxis.hpp>
 #include <dev/TorqueSimulationAxis.hpp>
 #include <rtt/dev/AxisInterface.hpp>
@@ -399,16 +407,19 @@ namespace Orocos
         RTT::SwitchDigitalInapci1032*         _apci1032;
         RTT::ComediDevice*                    _comediDev_NI6024; //oktober 2006
         RTT::ComediSubDeviceAIn*              _comediSubdevAIn_NI6024; //oktober 2006
-
+        RTT::ComediSubDeviceDIn*              _comediSubdevDIn_NI6024;
+        RTT::ComediDevice*                    _comediDev_NI6527;
+        RTT::ComediSubDeviceDOut*             _comediSubdevDOut_NI6527;
+        
         std::vector<RTT::EncoderInterface*>           _encoderInterface;
         std::vector<RTT::AbsoluteEncoderSensor*>      _encoder;
         std::vector<RTT::AnalogOutput<unsigned int>*> _ref;
         std::vector<RTT::DigitalOutput*>              _enable;
         std::vector<RTT::AnalogDrive*>                _drive;
         std::vector<RTT::DigitalOutput*>              _brake;
-        std::vector<RTT::AnalogInput*>                _tachoInput; //oktober 2006
+        std::vector<RTT::AnalogInput<unsigned int>*>  _tachoInput; //oktober 2006
         std::vector<RTT::AnalogSensor*>               _tachometer; //oktober 2006
-        std::vector<RTT::AnalogInput*>                _currentInput; //oktober 2006
+        std::vector<RTT::AnalogInput<unsigned int>*>  _currentInput; //oktober 2006
         std::vector<RTT::AnalogSensor*>               _currentSensor; //oktober 2006
         std::vector<RTT::DigitalOutput*>              _modeSwitch; //oktober 2006
         std::vector<RTT::DigitalInput*>               _modeCheck; //oktober 2006

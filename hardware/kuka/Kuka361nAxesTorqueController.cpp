@@ -122,10 +122,10 @@ namespace Orocos
           _drive(KUKA361_NUM_AXES),
           _brake(KUKA361_NUM_AXES),
           _tachoInput(KUKA361_NUM_AXES), //oktober 2006
-          _tachometer, //oktober 2006
-          _currentInput, //oktober 2006
-          _currentSensor, //oktober 2006
-          _modeSwitch, //oktober 2006
+          _tachometer(KUKA361_NUM_AXES), //oktober 2006
+          _currentInput(KUKA361_NUM_AXES), //oktober 2006
+          _currentSensor(KUKA361_NUM_AXES), //oktober 2006
+          _modeSwitch(KUKA361_NUM_AXES), //oktober 2006
           //_modeCheck, //oktober 2006
 #endif
           _axes(KUKA361_NUM_AXES),
@@ -193,15 +193,15 @@ namespace Orocos
             _brake[i]->switchOn();
 
             _tachoInput[i] = new AnalogInput<unsigned int>(_comediSubdevAIn_NI6024, i+TACHO_OFFSET); //oktober 2006
-            unsigned int range = 0 // The input range is -10 to 10 V, so range 0 //oktober 2006
+            unsigned int range = 0; // The input range is -10 to 10 V, so range 0 //oktober 2006
             _comediSubdevAIn_NI6024->rangeSet(i+TACHO_OFFSET, range); //oktober 2006
-            _comediSubdevAIn_NI6024->arefSet(i+TACHO_OFFSET, Common); //oktober 2006
+            _comediSubdevAIn_NI6024->arefSet(i+TACHO_OFFSET, AnalogInInterface<unsigned int>::Common); //oktober 2006
             _tachometer[i] = new AnalogSensor( _tachoInput[i], _comediSubdevAIn_NI6024->lowest(i+TACHO_OFFSET), _comediSubdevAIn_NI6024->highest(i+TACHO_OFFSET), _tachoConvertScale[i], _tachoConvertOffset[i]); //oktober 2006
 
             _currentInput[i] = new AnalogInput<unsigned int>(_comediSubdevAIn_NI6024, i+CURRENT_OFFSET); //oktober 2006
-            unsigned int range = 1 // for a input range -5 to 5 V, range is 1 //oktober 2006
+            range = 1; // for a input range -5 to 5 V, range is 1 //oktober 2006
             _comediSubdevAIn_NI6024->rangeSet(i+CURRENT_OFFSET, range); //oktober 2006
-            _comediSubdevAIn_NI6024->arefSet(i+CURRENT_OFFSET, Common); //oktober 2006
+            _comediSubdevAIn_NI6024->arefSet(i+CURRENT_OFFSET, AnalogInInterface<unsigned int>::Common); //oktober 2006
             _currentSensor[i] = new AnalogSensor( _currentInput[i], _comediSubdevAIn_NI6024->lowest(i+CURRENT_OFFSET), _comediSubdevAIn_NI6024->highest(i+CURRENT_OFFSET), 1.0 / _shunt_R[i], 0); //oktober 2006
 
             _modeSwitch[i] = new DigitalOutput( _comediSubdevDOut_NI6527, i+MODE_OFFSET ); //Velocity or torque control, selected by relay board //oktober 2006
@@ -229,7 +229,7 @@ namespace Orocos
             _axes_hardware[i]->setSensor( "Current", _currentSensor[i] ); //oktober 2006
 //            _axes_hardware[i]->setSwitch( "Mode", _modeCheck[i] ); //oktober 2006
 
-            if ( _torqueControlled[i]() ){
+            if ( _torqueControlled[i] ){
                      _axes_hardware[i]->limitDrive(-_currentLimits.value()[i], _currentLimits.value()[i], _currentOutOfRange); //oktober 2006
             }else{
                      _axes_hardware[i]->limitDrive(-_velocityLimits.value()[i], _velocityLimits.value()[i], _velocityOutOfRange);
@@ -328,7 +328,7 @@ namespace Orocos
         delete _comediSubdevAIn_NI6024; //oktober 2006
         delete _comediSubdevDIn_NI6024; //oktober 2006
         delete _comediDev_NI6527; //oktober 2006
-        delete _comediSubdevDout_NI6527; //oktober 2006
+        delete _comediSubdevDOut_NI6527; //oktober 2006
 #endif
     }
   
