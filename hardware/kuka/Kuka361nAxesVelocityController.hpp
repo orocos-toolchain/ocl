@@ -325,7 +325,7 @@ namespace Orocos
         // 
         // Members implementing the interface to the hardware
         //
-#if  (defined (OROPKG_OS_LXRT) && defined (OROPKG_DEVICE_DRIVERS_COMEDI))&& defined (OROPKG_DEVICE_DRIVERS_APCI)
+#if  (defined (OROPKG_OS_LXRT))
         std::vector<RTT::Axis*>  _axes_hardware;
         
         RTT::ComediDevice*                    _comediDev;

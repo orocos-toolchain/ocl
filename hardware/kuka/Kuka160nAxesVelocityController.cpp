@@ -114,7 +114,7 @@ namespace Orocos{
             log(Error) << "Failed to read the property file, continueing with default values." << endlog();
         }  
         
-#if (defined OROPKG_OS_LXRT && defined OROPKG_DEVICE_DRIVERS_COMEDI)
+#if (defined OROPKG_OS_LXRT)
         _comediDevAOut       = new ComediDevice( 0 );
         _comediDevDInOut     = new ComediDevice( 3 );
         _comediDevEncoder    = new ComediDevice( 2 );
@@ -163,7 +163,7 @@ namespace Orocos{
                                                           _upperPositionLimits.value()[i]);
         }
     
-#if (defined OROPKG_OS_LXRT && defined OROPKG_DEVICE_DRIVERS_COMEDI)
+#if (defined OROPKG_OS_LXRT)
         if(!_simulation.value()){
             for (unsigned int i = 0; i <KUKA160_NUM_AXES; i++)
                 _axes[i] = _axes_hardware[i];
@@ -234,7 +234,7 @@ namespace Orocos{
         for (unsigned int i = 0; i < KUKA160_NUM_AXES; i++)
             delete _axes_simulation[i];
     
-#if (defined OROPKG_OS_LXRT && defined OROPKG_DEVICE_DRIVERS_COMEDI)
+#if (defined OROPKG_OS_LXRT)
         for (unsigned int i = 0; i < KUKA160_NUM_AXES; i++)
       delete _axes_hardware[i];
         delete _comediDevAOut;
@@ -270,7 +270,7 @@ namespace Orocos{
                 _axes[axis]->drive(_driveValue[axis]->Get());
             
             // ask the reference value from the hw 
-#if (defined OROPKG_OS_LXRT && defined OROPKG_DEVICE_DRIVERS_COMEDI)
+#if (defined OROPKG_OS_LXRT)
             if(!_simulation.value())
                 _references[axis]->Set( _axes[axis]->getSwitch("Reference")->isOn());
             else
@@ -290,7 +290,7 @@ namespace Orocos{
   
     bool Kuka160nAxesVelocityController::prepareForUse()
     {
-#if (defined OROPKG_OS_LXRT&& defined OROPKG_DEVICE_DRIVERS_COMEDI)
+#if (defined OROPKG_OS_LXRT)
         if(!_simulation.value()){
             _comediSubdevDOut->switchOn( 17 );
             Logger::log()<<Logger::Warning<<"Release Emergency stop and push button to start ...."<<Logger::endl;
@@ -302,7 +302,7 @@ namespace Orocos{
   
     bool Kuka160nAxesVelocityController::prepareForUseCompleted()const
     {
-#if (defined OROPKG_OS_LXRT&& defined OROPKG_DEVICE_DRIVERS_COMEDI)
+#if (defined OROPKG_OS_LXRT)
         if(!_simulation.rvalue())
             return (_comediSubdevDIn->isOn(3) && _comediSubdevDIn->isOn(5));
 #endif
@@ -314,7 +314,7 @@ namespace Orocos{
         //make sure all axes are stopped and locked
         stopAllAxes();
         lockAllAxes();
-#if (defined OROPKG_OS_LXRT&& defined OROPKG_DEVICE_DRIVERS_COMEDI)
+#if (defined OROPKG_OS_LXRT)
         if(!_simulation.value())
             _comediSubdevDOut->switchOff( 17 );
 #endif
@@ -463,7 +463,7 @@ namespace Orocos{
     {
         _driveOffset.value()[axis] += offset;
 
-#if (defined OROPKG_OS_LXRT&& defined OROPKG_DEVICE_DRIVERS_COMEDI&& defined (OROPKG_DEVICE_DRIVERS_APCI))
+#if (defined OROPKG_OS_LXRT)
         if (!_simulation.value())
             ((Axis*)(_axes[axis]))->getDrive()->addOffset(offset);
 #endif
@@ -477,7 +477,7 @@ namespace Orocos{
     
     bool Kuka160nAxesVelocityController::initPosition(int axis)
     {
-#if (defined OROPKG_OS_LXRT&& defined OROPKG_DEVICE_DRIVERS_COMEDI)
+#if (defined OROPKG_OS_LXRT)
         if(!_simulation.value())
             ((IncrementalEncoderSensor*)_axes[axis]->getSensor("Position"))->writeSensor(_initialPosition.value()[axis]);
 #endif

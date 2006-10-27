@@ -82,7 +82,7 @@ namespace Orocos
           _activated(false),
           _positionConvertFactor(KUKA361_NUM_AXES),
           _driveConvertFactor(KUKA361_NUM_AXES),
-#if (defined OROPKG_OS_LXRT && defined OROPKG_DEVICE_DRIVERS_COMEDI&& defined (OROPKG_DEVICE_DRIVERS_APCI))
+#if (defined OROPKG_OS_LXRT)
           _axes_hardware(KUKA361_NUM_AXES),
           _encoderInterface(KUKA361_NUM_AXES),
           _encoder(KUKA361_NUM_AXES),
@@ -112,7 +112,7 @@ namespace Orocos
             log(Error) << "Failed to read the property file, continueing with default values." << endlog();
         }  
         
-#if (defined OROPKG_OS_LXRT && defined OROPKG_DEVICE_DRIVERS_COMEDI&& defined (OROPKG_DEVICE_DRIVERS_APCI))
+#if (defined OROPKG_OS_LXRT)
         int encoderOffsets[KUKA361_NUM_AXES] = KUKA361_ENCODEROFFSETS;
         
         _comediDev        = new ComediDevice( 1 );
@@ -152,7 +152,7 @@ namespace Orocos
                                                           _lowerPositionLimits.value()[i],
                                                           _upperPositionLimits.value()[i]);
         }
-#if (defined OROPKG_OS_LXRT && defined OROPKG_DEVICE_DRIVERS_COMEDI&& defined (OROPKG_DEVICE_DRIVERS_APCI))
+#if (defined OROPKG_OS_LXRT)
         if(!_simulation.value()){
             for (unsigned int i = 0; i <KUKA361_NUM_AXES; i++)
                 _axes[i] = _axes_hardware[i];
@@ -216,7 +216,7 @@ namespace Orocos
         for (unsigned int i = 0; i < KUKA361_NUM_AXES; i++)
             delete _axes_simulation[i];
     
-#if (defined OROPKG_OS_LXRT && defined OROPKG_DEVICE_DRIVERS_COMEDI&& defined (OROPKG_DEVICE_DRIVERS_APCI))
+#if (defined OROPKG_OS_LXRT)
         for (unsigned int i = 0; i < KUKA361_NUM_AXES; i++)
             delete _axes_hardware[i];
         delete _comediDev;
@@ -262,7 +262,7 @@ namespace Orocos
     
     bool Kuka361nAxesVelocityController::prepareForUse()
     {
-#if (defined OROPKG_OS_LXRT&& defined OROPKG_DEVICE_DRIVERS_COMEDI&& defined (OROPKG_DEVICE_DRIVERS_APCI))
+#if (defined OROPKG_OS_LXRT)
         if(!_simulation.value()){
             _apci2200->switchOn( 12 );
             _apci2200->switchOn( 14 );
@@ -275,7 +275,7 @@ namespace Orocos
     
     bool Kuka361nAxesVelocityController::prepareForUseCompleted()const
     {
-#if (defined OROPKG_OS_LXRT&& defined OROPKG_DEVICE_DRIVERS_COMEDI&& defined (OROPKG_DEVICE_DRIVERS_APCI))
+#if (defined OROPKG_OS_LXRT)
         if(!_simulation.rvalue())
             return (_apci1032->isOn(12) && _apci1032->isOn(14));
         else
@@ -288,7 +288,7 @@ namespace Orocos
         //make sure all axes are stopped and locked
         stopAllAxes();
         lockAllAxes();
-#if (defined OROPKG_OS_LXRT&& defined OROPKG_DEVICE_DRIVERS_COMEDI&& defined (OROPKG_DEVICE_DRIVERS_APCI))
+#if (defined OROPKG_OS_LXRT)
         if(!_simulation.value()){
             _apci2200->switchOff( 12 );
             _apci2200->switchOff( 14 );
@@ -440,7 +440,7 @@ namespace Orocos
     {
         _driveOffset.value()[axis] += offset;
         
-#if (defined OROPKG_OS_LXRT&& defined OROPKG_DEVICE_DRIVERS_COMEDI&& defined (OROPKG_DEVICE_DRIVERS_APCI))
+#if (defined OROPKG_OS_LXRT)
         if (!_simulation.value())
             ((Axis*)(_axes[axis]))->getDrive()->addOffset(offset);
 #endif

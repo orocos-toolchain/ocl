@@ -354,7 +354,7 @@ namespace Orocos
       // 
       // Members implementing the interface to the hardware
       //
-#if  (defined (OROPKG_OS_LXRT) && defined (OROPKG_DEVICE_DRIVERS_COMEDI))
+#if  (defined (OROPKG_OS_LXRT))
       RTT::ComediDevice*                    _comediDevAOut;
       RTT::ComediDevice*                    _comediDevEncoder;
       RTT::ComediDevice*                    _comediDevDInOut;
