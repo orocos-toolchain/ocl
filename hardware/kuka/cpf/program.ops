@@ -1,10 +1,10 @@
 program KukaTestProg
 {
   do prepareForUse()
-  do unlockAllAxes()
-  do startAllAxes()
-  do TaskBrowser.driveValue3.Set( 0.01 )
-  while(positionValue3.Get()<1.5){
+  do unlockAxis(3)
+  do startAxis(3)
+  do TaskBrowser.driveValue3.Set( 0.1 )
+  while(positionValue3.Get()<1.5 && positionValue3.Get()>-1.5){
      do nothing
   }
   do stop()

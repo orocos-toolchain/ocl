@@ -8,10 +8,12 @@ IF ( BUILD_KUKA_TEST )
 
     # Add a test program
     GLOBAL_ADD_TEST( kuka main.cpp )
+    GLOBAL_ADD_TEST( torquekuka torquemain.cpp )
     # Use  TARGET_LINK_LIBRARIES( report libs... ) to add library deps.
 
     INCLUDE_DIRECTORIES( ${PROJECT_SOURCE_DIR}/hardware/axes )
     TARGET_LINK_LIBRARIES( kuka orocos-taskbrowser orocos-reporting orocos-kuka orocos-axes ${OROCOS_RTT_LIBS})
+    TARGET_LINK_LIBRARIES( torquekuka orocos-taskbrowser orocos-reporting orocos-kuka orocos-axes ${OROCOS_RTT_LIBS})
     
     GLOBAL_ADD_TEST( encoderTest encoderKuka361Test.cpp )
     TARGET_LINK_LIBRARIES( encoderTest ${OROCOS_RTT_LIBS} )

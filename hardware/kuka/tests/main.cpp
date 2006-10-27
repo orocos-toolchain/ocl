@@ -41,8 +41,8 @@ int ORO_main(int argc, char* argv[])
       }
     }
   else{
-    Logger::log()<<Logger::Warning<<"Using Default Kuka160"<<Logger::endl;
-    my_robot = new Kuka160nAxesVelocityController("Kuka160");
+    Logger::log()<<Logger::Warning<<"Using Default Kuka361"<<Logger::endl;
+    my_robot = new Kuka361nAxesVelocityController("Kuka361");
   }
   
   EmergencyStop _emergency(my_robot);
@@ -56,7 +56,7 @@ int ORO_main(int argc, char* argv[])
   browser.setColorTheme( TaskBrowser::whitebg );
 
   //Loading program in browser
-  my_robot->scripting()->loadPrograms("program.ops");
+  my_robot->scripting()->loadPrograms("cpf/program.ops");
 
   /// Creating Tasks
   PeriodicActivity _kukaTask(0,0.01, my_robot->engine() );  
