@@ -34,10 +34,10 @@
 
 #include "rtt/TryCommand.hpp"
 #include <rtt/TaskContext.hpp>
-#include <rtt/Parser.hpp>
-#include <rtt/ProgramLoader.hpp>
-#include <rtt/parse_exception.hpp>
-#include <rtt/PeerParser.hpp>
+#include <rtt/scripting/Parser.hpp>
+#include <rtt/scripting/ProgramLoader.hpp>
+#include <rtt/scripting/parse_exception.hpp>
+#include <rtt/scripting/PeerParser.hpp>
 
 #include <iostream>
 #include <sstream>
