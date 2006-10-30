@@ -125,6 +125,14 @@
 *         <li>Orocos::IOComponent
 *         </ul> 
 *
+*     <li>axes: Implementation to access the Orocos Axis interface.
+*        It uses the RTT::AxisInterface to allow the user to manipulate them.
+*        Several ports and methods are available per axis in a single component.
+*        Usefull for quick testing of axis implementations.
+* 	      <ul>
+*         <li>Orocos::AxesComponent
+*         </ul> 
+*
 *     </ul>
 *
 * \subsection motion Motion_control: [ready]
