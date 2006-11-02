@@ -150,6 +150,7 @@ INCLUDE(config/component_rules.cmake)
 #First unset the LOCAL_LIBRARIES
 SET(ENV{SELECTED_LIBS} "")
 SET(ENV{SELECTED_DIRS} "")
+ADD_SUBDIRECTORY( ocl )
 ADD_SUBDIRECTORY( taskbrowser )
 ADD_SUBDIRECTORY( helloworld )
 ADD_SUBDIRECTORY( reporting )

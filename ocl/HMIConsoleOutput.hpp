@@ -28,33 +28,18 @@
 #ifndef HMI_CONSOLE_OUTPUT_HPP
 #define HMI_CONSOLE_OUTPUT_HPP
 
-#include <control_kernel/BaseComponents.hpp>
-
-#include <pkgconf/control_kernel.h>
-#ifdef OROPKG_CONTROL_KERNEL_EXTENSIONS_EXECUTION
-#include <rtt/TemplateMethodFactory.hpp>
-#include <control_kernel/ExecutionExtension.hpp>
-#endif
-#include <control_kernel/ExtensionComposition.hpp>
-#include <rtt/PropertyComposition.hpp>
-#include <rtt/TaskNonRealTime.hpp>
-
+#include <rtt/TaskContext.hpp>
+#include <rtt/PeriodicActivity.hpp>
+#include <rtt/Method.hpp>
+#include <rtt/Logger.hpp>
 #include <rtt/os/MutexLock.hpp>
 #include <sstream>
 #include <iostream>
 
-#ifdef ORO_PRAGMA_INTERFACE
-#pragma interface
-#endif
-namespace ORO_ControlKernel
-{
-#ifdef OROPKG_CONTROL_KERNEL_EXTENSIONS_EXECUTION
-    using namespace RTT;
-#endif
-    using RTT::OS::Mutex;
-    using RTT::OS::MutexLock;
-    using RTT::OS::MutexTryLock;
+#include <ocl/OCL.hpp>
 
+namespace OCL
+{
     /**
      * @brief This component can be used to display messages on the
      * standard output.
@@ -62,21 +47,10 @@ namespace ORO_ControlKernel
      * It is known as the 'cout' component in scripts.
      *
      * HMI == Human-Machine Interface
-     * @ingroup kcomps kcomp_support
      */
     class HMIConsoleOutput
-        : public SupportComponent< MakeFacet<KernelBaseFunction
-#ifdef OROPKG_CONTROL_KERNEL_EXTENSIONS_EXECUTION
-                                              , ExecutionExtension
-#endif
-                                              >::Result >,
-          public RTT::TaskNonRealTime
+        : public RTT::TaskContext
     {
-        typedef SupportComponent< MakeFacet<KernelBaseFunction
-#ifdef OROPKG_CONTROL_KERNEL_EXTENSIONS_EXECUTION
-                                             , ExecutionExtension
-#endif
-                                             >::Result > Base;
         std::string coloron;
         std::string coloroff;
         std::string _prompt;
@@ -84,26 +58,65 @@ namespace ORO_ControlKernel
         std::ostringstream backup;
         std::ostringstream logmessages;
         std::ostringstream logbackup;
-        //TaskNonRealtime printer;
-        Mutex msg_lock;
-        Mutex log_lock;
+
+        RTT::OS::Mutex msg_lock;
+        RTT::OS::Mutex log_lock;
+
+        RTT::PeriodicActivity runner;
     public :
         HMIConsoleOutput( const std::string& name = "cout")
-            : Base( name ), TaskNonRealTime(0.1), coloron("\033[1;34m"), coloroff("\033[0m"),
-              _prompt("HMIConsoleOutput :\n")
-              {
-                  this->start();
-              }
+            : TaskContext( name ),
+              coloron("\033[1;34m"), coloroff("\033[0m"),
+              _prompt("HMIConsoleOutput :\n"),
+              runner(RTT::OS::LowestPriority, 0.1, this->engine() )
+        {
+            this->clear();
+
+            this->methods()->addMethod( method( "display", &HMIConsoleOutput::display, this),
+                               "Display a message on the console",
+                               "message","The message to be displayed"
+                                );
+            this->methods()->addMethod( method( "displayBool", &HMIConsoleOutput::displayBool, this),
+                               "Display a boolean on the console",
+                               "boolean","The Boolean to be displayed"
+                                );
+            this->methods()->addMethod( method( "displayInt", &HMIConsoleOutput::displayInt, this),
+                               "Display a integer on the console",
+                               "integer","The Integer to be displayed"
+                                );
+            this->methods()->addMethod( method( "displayDouble", &HMIConsoleOutput::displayDouble, this),
+                               "Display a double on the console",
+                               "double","The Double to be displayed"
+                                );
+            this->methods()->addMethod( method( "log", &HMIConsoleOutput::log, this),
+                               "Log a message on the console",
+                               "message","The message to be logged"
+                                );
+            this->methods()->addMethod( method( "logBool", &HMIConsoleOutput::logBool, this),
+                               "Log a boolean on the console",
+                               "boolean","The Boolean to be logged"
+                                );
+            this->methods()->addMethod( method( "logInt", &HMIConsoleOutput::logInt, this),
+                               "Log a integer on the console",
+                               "integer","The Integer to be logged"
+                                );
+            this->methods()->addMethod( method( "logDouble", &HMIConsoleOutput::logDouble, this),
+                               "Log a double on the console",
+                               "double","The Double to be logged"
+                                );
+
+            runner.start();
+        }
 
         ~HMIConsoleOutput()
         {
             this->stop();
         }
 
-        void step()
+        void update()
         {
             {
-                MutexLock lock1( msg_lock );
+                RTT::OS::MutexLock lock1( msg_lock );
                 if ( ! messages.str().empty() ) {
                     std::cout << coloron << _prompt<< coloroff <<
                         messages.str() << std::endl;
@@ -111,9 +124,9 @@ namespace ORO_ControlKernel
                 }
             }
             {
-                MutexLock lock1( log_lock );
+                RTT::OS::MutexLock lock1( log_lock );
                 if ( ! logmessages.str().empty() ) {
-                    Logger::log() << Logger::Info << logmessages.str() << Logger::endl;
+                    RTT::log(RTT::Info) << logmessages.str() << RTT::endlog();
                     logmessages.rdbuf()->str("");
                 }
             }
@@ -158,7 +171,7 @@ namespace ORO_ControlKernel
         template<class T>
         void enqueue( const T& what )
         {
-            MutexTryLock try_lock( msg_lock );
+            RTT::OS::MutexTryLock try_lock( msg_lock );
             if ( try_lock.isSuccessful() ) {
                 // we got the lock, copy everything...
                 messages << backup.str();
@@ -196,7 +209,7 @@ namespace ORO_ControlKernel
         template<class T>
         void dolog( const T& what )
         {
-            MutexTryLock try_lock( log_lock );
+            RTT::OS::MutexTryLock try_lock( log_lock );
             if ( try_lock.isSuccessful() ) {
                 // we got the lock, copy everything...
                 logmessages << logbackup.str();
@@ -236,46 +249,6 @@ namespace ORO_ControlKernel
             this->dolog( what );
         }
 
-#ifdef OROPKG_CONTROL_KERNEL_EXTENSIONS_EXECUTION
-        // Methods are display commands.
-        MethodFactoryInterface* createMethodFactory()
-        {
-
-            this->methods()->addMethod( method( "display", &HMIConsoleOutput::display, this),
-                               "Display a message on the console",
-                               "message","The message to be displayed"
-                                );
-            this->methods()->addMethod( method( "displayBool", &HMIConsoleOutput::displayBool, this),
-                               "Display a boolean on the console",
-                               "boolean","The Boolean to be displayed"
-                                );
-            this->methods()->addMethod( method( "displayInt", &HMIConsoleOutput::displayInt, this),
-                               "Display a integer on the console",
-                               "integer","The Integer to be displayed"
-                                );
-            this->methods()->addMethod( method( "displayDouble", &HMIConsoleOutput::displayDouble, this),
-                               "Display a double on the console",
-                               "double","The Double to be displayed"
-                                );
-            this->methods()->addMethod( method( "log", &HMIConsoleOutput::log, this),
-                               "Log a message on the console",
-                               "message","The message to be logged"
-                                );
-            this->methods()->addMethod( method( "logBool", &HMIConsoleOutput::logBool, this),
-                               "Log a boolean on the console",
-                               "boolean","The Boolean to be logged"
-                                );
-            this->methods()->addMethod( method( "logInt", &HMIConsoleOutput::logInt, this),
-                               "Log a integer on the console",
-                               "integer","The Integer to be logged"
-                                );
-            this->methods()->addMethod( method( "logDouble", &HMIConsoleOutput::logDouble, this),
-                               "Log a double on the console",
-                               "double","The Double to be logged"
-                                );
-            return ret;
-        }
-#endif
     };
 
 }
