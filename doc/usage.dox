@@ -41,6 +41,10 @@
 * - OpenCV for the Orocos::CaptureCamera firewire component.
 *
 * \section structure Structure:
+*
+* \subsection hello Hello World: [ready]
+* The OCL::HelloWorld component demonstrates the TaskContext interface
+* and how it can be used in applications.
 * 
 * \subsection reporting Reporting: [ready]
 * 	Components for real-time data capturing. Currently console
