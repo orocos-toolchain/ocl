@@ -16,7 +16,7 @@
 //  
 
 #include <rtt/RTT.hpp>
-#include <rtt/NonPreemptibleActivity.hpp>
+#include <rtt/PeriodicActivity.hpp>
 #include <rtt/os/main.h>
 #include <kdl/toolkit.hpp>
 #include "hardware/demotool/Demotool.hpp"
@@ -27,8 +27,6 @@
 
 
 using namespace std;
-using namespace RTT;
-using namespace KDL;
 using namespace Orocos;
 
 
@@ -52,15 +50,15 @@ int ORO_main(int arc, char* argv[])
 
     // wrench sensor
     WrenchSensor wrenchsensor(0.01, "Wrenchsensor", 0);
-    NonPreemptibleActivity wrenchsensorTask(0.01, wrenchsensor.engine() );
+    PeriodicActivity wrenchsensorTask(OS::HighestPriority, 0.01, wrenchsensor.engine() );
 
     // demotool task
     Demotool demotool("Demotool");
-    NonPreemptibleActivity demotoolTask(0.01, demotool.engine() );
+    PeriodicActivity demotoolTask(OS::HighestPriority, 0.01, demotool.engine() );
 
     // reporter
     FileReporting reporter("Reporting");
-    NonRealTimeActivity reporterTask(0.01, reporter.engine() );
+    PeriodicActivity reporterTask(OS::LowestPriority, 0.01, reporter.engine() );
 
     // connect tasks
     demotool.connectPeers(&krypton);
