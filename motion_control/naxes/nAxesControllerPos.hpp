@@ -39,9 +39,9 @@ namespace OCL
      * to calculate an output velocity. 
      * velocity_out = K_gain * ( position_desired - position_measured)
      * It can share dataports with
-     * Orocos::nAxesSensor to get the measured positions, with
-     * Orocos::nAxesGeneratorPos to get its desired positions and with
-     * Orocos::nAxesEffectorVel to send its output velocities to the
+     * OCL::nAxesSensor to get the measured positions, with
+     * OCL::nAxesGeneratorPos to get its desired positions and with
+     * OCL::nAxesEffectorVel to send its output velocities to the
      * hardware/simulation axes.
      * 
      */
@@ -98,13 +98,13 @@ namespace OCL
          */
         RTT::Method<std::vector<double>(void)>      _getOffset;
         /// DataPort containing the measured positions, shared with
-        /// Orocos::nAxesSensor 
+        /// OCL::nAxesSensor 
         RTT::ReadDataPort< std::vector<double> >    _position_meas;
         /// DataPort containing the desired positions, shared with
-        /// Orocos::nAxesGeneratorPos 
+        /// OCL::nAxesGeneratorPos 
         RTT::ReadDataPort< std::vector<double> >    _position_desi;
         /// DataPort containing the output velocities, shared with
-        /// Orocos::nAxesEffectorVel 
+        /// OCL::nAxesEffectorVel 
         RTT::WriteDataPort< std::vector<double> >   _velocity_out;
     private:
         int                                         _num_samples, _num_samples_taken;

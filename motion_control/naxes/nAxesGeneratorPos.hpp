@@ -45,9 +45,9 @@ namespace OCL
      * interpolation uses a trapezoidal velocity profile using a
      * maximum acceleration and a maximum velocity. It takes the
      * current position from a dataport shared with
-     * Orocos::nAxesSensor and generates position and velocity
-     * setpoints which can be use by Orocos::nAxesControllerPos,
-     * Orocos::nAxesControllerPosVel or Orocos::nAxesControllerVel.
+     * OCL::nAxesSensor and generates position and velocity
+     * setpoints which can be use by OCL::nAxesControllerPos,
+     * OCL::nAxesControllerPosVel or OCL::nAxesControllerVel.
      * 
      */
 
@@ -99,13 +99,13 @@ namespace OCL
          */
         RTT::Method<void(void)>                   _reset;
         /// DataPort containing the current measured position, shared
-        /// with Orocos::nAxesSensor.
+        /// with OCL::nAxesSensor.
         RTT::ReadDataPort< std::vector<double> >  _position_meas;
         /// DataPort containing the current desired position, shared
-        /// with Orocos::nAxesControllerPos and Orocos::nAxesControllerPosVel.
+        /// with OCL::nAxesControllerPos and OCL::nAxesControllerPosVel.
         RTT::WriteDataPort< std::vector<double> > _position_desi;
         /// DataPort containing the current desired velocity, shared
-        /// with Orocos::nAxesControllerPosVel and Orocos::nAxesControllerVel.
+        /// with OCL::nAxesControllerPosVel and OCL::nAxesControllerVel.
         RTT::WriteDataPort< std::vector<double> > _velocity_desi;
     private:
         std::vector<KDL::VelocityProfile_Trap*>    _motion_profile;

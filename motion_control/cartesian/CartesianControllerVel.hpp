@@ -44,9 +44,9 @@ namespace OCL
      *             twist_desired.
      * The desired frame is calculated by integrating the desired twist.
      * It can share dataports with
-     * Orocos::CartesianSensor to get the measured frame, with
-     * Orocos::CartesianGeneratorPos to get its desired frame and with
-     * Orocos::CartesianEffectorVel to convert the output twist to
+     * OCL::CartesianSensor to get the measured frame, with
+     * OCL::CartesianGeneratorPos to get its desired frame and with
+     * OCL::CartesianEffectorVel to convert the output twist to
      * output velocities and send them to the hardware/simulation
      * axes.
      * 
@@ -78,13 +78,13 @@ namespace OCL
         
     protected:
         /// DataPort containing the measured frame, shared with
-        /// Orocos::CartesianSensor 
+        /// OCL::CartesianSensor 
         RTT::ReadDataPort< KDL::Frame >  _position_meas;
         /// DataPort containing the desired twist, shared with
-        /// Orocos::CartesianGeneratorPos 
+        /// OCL::CartesianGeneratorPos 
         RTT::ReadDataPort< KDL::Twist >  _velocity_desi;
         /// DataPort containing the output twist, shared with
-        /// Orocos::CartesianEffectorVel 
+        /// OCL::CartesianEffectorVel 
         RTT::WriteDataPort< KDL::Twist > _velocity_out;
         /// Vector with the control gain value for each dof.
         RTT::Property< std::vector<double> >      _controller_gain;

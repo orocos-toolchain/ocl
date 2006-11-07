@@ -44,8 +44,8 @@ namespace OCL
      * interpolation uses a trapezoidal acceleration profile using a
      * maximum acceleration and a maximum jerk. It takes the
      * current velocity from a dataport shared with
-     * Orocos::nAxesSensor and generates velocity
-     * setpoints which can be use by Orocos::nAxesControllerVel.
+     * OCL::nAxesSensor and generates velocity
+     * setpoints which can be use by OCL::nAxesControllerVel.
      * 
      */
     
@@ -158,7 +158,7 @@ namespace OCL
         RTT::Method<void(std::vector<double>)>         _setInitVelocities;
 
         /// DataPort containing the current desired velocities, shared
-        /// with Orocos::nAxesControllerVel 
+        /// with OCL::nAxesControllerVel 
         RTT::WriteDataPort< std::vector<double> >     _velocity_desi;
         /// Property with a vector of the maximum accelerations of
         /// each axes to be used in the interpolation

@@ -37,8 +37,8 @@ namespace OCL
 {
     /**
      * This class implements a TaskContext that reads out the
-     * output twist dataports of Orocos::CartesianControllerPos,
-     * Orocos::CartesianControllerPosVel or Orocos::CartesianControllerVel and
+     * output twist dataports of OCL::CartesianControllerPos,
+     * OCL::CartesianControllerPosVel or OCL::CartesianControllerVel and
      * converts them to axis output velocities using a
      * KDL::KinematicFamily and puts these output values in the
      * driveValue dataports of an nAxesVelocityController. 
@@ -67,9 +67,9 @@ namespace OCL
         JointVector                                _velocity_joint_local;
     protected:
         /// DataPort containing the output twist, shared with
-        /// Orocos::CartesianControllerPos,
-        /// Orocos::CartesianControllerPosVel or
-        /// Orocos::CartesianControllerVel  
+        /// OCL::CartesianControllerPos,
+        /// OCL::CartesianControllerPosVel or
+        /// OCL::CartesianControllerVel  
         RTT::ReadDataPort< KDL::Twist >            _velocity_cartesian;
         /// vector of dataports which read from the
         /// nAxesVelocityController. Default looks for ports with

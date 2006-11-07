@@ -32,8 +32,8 @@ namespace OCL
 {
     /**
      * This class implements a TaskContext that reads out the
-     * output velocity dataports of Orocos::nAxesControllerPos,
-     * Orocos::nAxesControllerPosVel or Orocos::nAxesControllerVel and
+     * output velocity dataports of OCL::nAxesControllerPos,
+     * OCL::nAxesControllerPosVel or OCL::nAxesControllerVel and
      * puts these output values in the driveValue dataports of an
      * nAxesVelocityController. 
      * 
@@ -62,8 +62,8 @@ namespace OCL
         std::vector<double>                                _velocity_out_local;
     protected:
         /// DataPort containing the output velocities, shared with
-        /// Orocos::nAxesControllerPos, Orocos::nAxesControllerPosVel
-        /// or Orocos::nAxesControllerVel 
+        /// OCL::nAxesControllerPos, OCL::nAxesControllerPosVel
+        /// or OCL::nAxesControllerVel 
         RTT::ReadDataPort< std::vector<double> >           _velocity_out;
         /// vector of dataports which write to the
         /// nAxesVelocityController. Default looks for ports with

@@ -66,7 +66,7 @@
     <section>
       <title>Creating an IO Component</title>
       <para>
-	The <classname>Orocos::IOComponent</classname> is created like all
+	The <classname>OCL::IOComponent</classname> is created like all
 	the other components in the Orocos framework :
 	<programlisting>  IOComponent   io(IN_CHANS, OUT_CHANS, "IOName");
 	</programlisting>
@@ -173,7 +173,7 @@
     <section>
       <title>Steering : Effector Hardware Abstraction</title>
       <para>
-	The <classname>Orocos::IOComponent</classname>
+	The <classname>OCL::IOComponent</classname>
 	support sending signals to hardware as well.
       </para>
       <section>

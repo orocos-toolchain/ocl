@@ -45,8 +45,8 @@ namespace OCL
      * new desired cartesian position. It uses trapezoidal
      * velocity-profiles for every dof using a maximum velocity and a
      * maximum acceleration. It generates frame and twist setpoints
-     * which can be used by Orocos::CartesianControllerPos,
-     * Orocos::CartesianControllerPosVel or Orocos::CartesianControllerVel.
+     * which can be used by OCL::CartesianControllerPos,
+     * OCL::CartesianControllerPosVel or OCL::CartesianControllerVel.
      * 
      */
     class CartesianGeneratorPos : public RTT::TaskContext
@@ -96,15 +96,15 @@ namespace OCL
          */
         RTT::Method<void(void)>           _reset;
         /// Dataport containing the current measured end-effector
-        /// frame, shared with Orocos::CartesianSensor
+        /// frame, shared with OCL::CartesianSensor
         RTT::ReadDataPort< KDL::Frame >   _position_meas;
         /// Dataport containing the current desired end-effector
-        /// frame, shared with Orocos::CartesianControllerPos,
-        /// Orocos::CartesianControllerPosVel 
+        /// frame, shared with OCL::CartesianControllerPos,
+        /// OCL::CartesianControllerPosVel 
         RTT::WriteDataPort< KDL::Frame >  _position_desi;
         /// Dataport containing the current desired end-effector
-        /// twist, shared with Orocos::CartesianControllerPosVel,
-        /// Orocos::CartesianControllerVel 
+        /// twist, shared with OCL::CartesianControllerPosVel,
+        /// OCL::CartesianControllerVel 
         RTT::WriteDataPort< KDL::Twist >  _velocity_desi;
         /// Property containing a vector with the maximum velocity of
         /// each dof

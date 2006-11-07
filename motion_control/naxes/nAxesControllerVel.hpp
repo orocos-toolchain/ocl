@@ -39,9 +39,9 @@ namespace OCL
      * + velocity_desired.
      * The desired position is calculated by integrating the desired velocity
      * It can share dataports with
-     * Orocos::nAxesSensor to get the measured positions, with
-     * Orocos::nAxesGeneratorVel to get its desired velocities and with
-     * Orocos::nAxesEffectorVel to send its output velocities to the
+     * OCL::nAxesSensor to get the measured positions, with
+     * OCL::nAxesGeneratorVel to get its desired velocities and with
+     * OCL::nAxesEffectorVel to send its output velocities to the
      * hardware/simulation axes.
      * 
      */
@@ -85,13 +85,13 @@ namespace OCL
         RTT::Method<void(int)>                     _resetAxis;
         
         /// DataPort containing the measured positions, shared with
-        /// Orocos::nAxesSensor 
+        /// OCL::nAxesSensor 
         RTT::ReadDataPort< std::vector<double> >   _position_meas;
         /// DataPort containing the desired velocities, shared with
-        /// Orocos::nAxesGeneratorVel
+        /// OCL::nAxesGeneratorVel
         RTT::ReadDataPort< std::vector<double> >   _velocity_desi;
         /// DataPort containing the output velocities, shared with
-        /// Orocos::nAxesEffectorVel 
+        /// OCL::nAxesEffectorVel 
         RTT::WriteDataPort< std::vector<double> >  _velocity_out;
         /// Vector with the control gain value for each axis.
         RTT::Property< std::vector<double> >       _controller_gain;
