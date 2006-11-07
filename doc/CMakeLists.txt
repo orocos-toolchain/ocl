@@ -22,5 +22,6 @@ IF (BUILD_DOCS)
   ADD_CUSTOM_TARGET(dochtml DEPENDS orocos-hardware-components.html orocos-taskbrowser.html)
   ADD_CUSTOM_TARGET(docpdf DEPENDS orocos-hardware-components.pdf orocos-taskbrowser.pdf)
 
+  ADD_CUSTOM_TARGET(message ALL echo "Use: make dochtml docpdf to build the documentation.")
 
 ENDIF (BUILD_DOCS)
