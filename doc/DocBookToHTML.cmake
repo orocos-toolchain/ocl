@@ -19,7 +19,7 @@ macro( DOCBOOK_TO_HTML XSLT_SHEET )
 	if (_current_FILE STREQUAL "FILES")
 	  set(_in_catalogs FALSE)
 	else(_current_FILE STREQUAL "FILES")
-	  set( _catalog_FILES "${_catalog_FILES} ${CMAKE_CURRENT_SOURCE_DIR}/${_current_FILE}")
+	  set( _catalog_FILES ${_catalog_FILES} ${CMAKE_CURRENT_SOURCE_DIR}/${_current_FILE})
 	endif(_current_FILE STREQUAL "FILES")
       endif ( _in_catalogs )
 
@@ -33,9 +33,10 @@ macro( DOCBOOK_TO_HTML XSLT_SHEET )
 	string(REPLACE ".xml" ".html" _current_HTMLFILE ${_current_FILE})
 	MESSAGE( "Converting ${_current_FILE} to ${_current_HTMLFILE}" )
 	add_custom_command(OUTPUT ${_current_HTMLFILE}
-	  COMMAND XML_CATALOG_FILES="${_catalog_FILES}" xsltproc --xinclude ${CMAKE_CURRENT_SOURCE_DIR}/${XSLT_SHEET} ${CMAKE_CURRENT_SOURCE_DIR}/${_current_FILE} > ${_current_HTMLFILE}
-	  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${_current_FILE} ${CMAKE_CURRENT_SOURCE_DIR}/${XSLT_SHEET}
+	  COMMAND XML_CATALOG_FILES=${_catalog_FILES} xsltproc --xinclude ${CMAKE_CURRENT_SOURCE_DIR}/${XSLT_SHEET} ${CMAKE_CURRENT_SOURCE_DIR}/${_current_FILE} > ${_current_HTMLFILE}
+	  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${_current_FILE} ${CMAKE_CURRENT_SOURCE_DIR}/${XSLT_SHEET} ${_catalog_FILES}
 	  )
+        #add_custom_target(dochtml DEPENDS ${_current_HTMLFILE} )
       endif ( _in_files)
     endif ( _current_FILE STREQUAL "FILES")
   endforeach (_current_FILE ${ARGN})

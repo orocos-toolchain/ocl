@@ -19,9 +19,8 @@ IF (BUILD_DOCS)
     orocos-hardware-components.xml
     orocos-taskbrowser.xml)
 
-  ADD_CUSTOM_TARGET(dochtml ALL DEPENDS orocos-hardware-components.html )
-  ADD_CUSTOM_TARGET(dochtml ALL DEPENDS orocos-taskbrowser.html)
-  ADD_CUSTOM_TARGET(docpdf ALL DEPENDS orocos-hardware-components.pdf orocos-taskbrowser.pdf)
+  ADD_CUSTOM_TARGET(dochtml DEPENDS orocos-hardware-components.html orocos-taskbrowser.html)
+  ADD_CUSTOM_TARGET(docpdf DEPENDS orocos-hardware-components.pdf orocos-taskbrowser.pdf)
 
 
 ENDIF (BUILD_DOCS)

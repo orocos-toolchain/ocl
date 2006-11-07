@@ -17,7 +17,7 @@ macro( DOCBOOK_TO_PDF XSLT_SHEET )
 	if (_current_FILE STREQUAL "FILES")
 	  set(_in_catalogs FALSE)
 	else (_current_FILE STREQUAL "FILES")
-          set( _catalog_FILES "${_catalog_FILES} ${CMAKE_CURRENT_SOURCE_DIR}/${_current_FILE}")
+          set( _catalog_FILES ${_catalog_FILES} ${CMAKE_CURRENT_SOURCE_DIR}/${_current_FILE})
 	endif(_current_FILE STREQUAL "FILES")
       endif ( _in_catalogs )
 
@@ -32,11 +32,12 @@ macro( DOCBOOK_TO_PDF XSLT_SHEET )
 
       MESSAGE( "Converting ${_current_FILE} to ${_current_PDFFILE}" )
       add_custom_command(OUTPUT ${_current_PDFFILE}
-	COMMAND XML_CATALOG_FILES="${_catalog_FILES}" xsltproc --xinclude ${CMAKE_CURRENT_SOURCE_DIR}/${XSLT_SHEET} ${CMAKE_CURRENT_SOURCE_DIR}/${_current_FILE} > ${_current_FOPFILE}
+	COMMAND XML_CATALOG_FILES={_catalog_FILES} xsltproc --xinclude ${CMAKE_CURRENT_SOURCE_DIR}/${XSLT_SHEET} ${CMAKE_CURRENT_SOURCE_DIR}/${_current_FILE} > ${_current_FOPFILE}
 	COMMAND fop ${_current_FOPFILE} ${_current_PDFFILE}
         COMMAND rm ${_current_FOPFILE}
-	DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${_current_FILE} ${CMAKE_CURRENT_SOURCE_DIR}/${XSLT_SHEET}
+	DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${_current_FILE} ${CMAKE_CURRENT_SOURCE_DIR}/${XSLT_SHEET} ${_catalog_FILES}
 	)
+      #add_custom_target(docpdf DEPENDS ${_current_PDFFILE} )
       endif ( _in_files)
     endif ( _current_FILE STREQUAL "FILES")
   endforeach (_current_FILE ${ARGN})
