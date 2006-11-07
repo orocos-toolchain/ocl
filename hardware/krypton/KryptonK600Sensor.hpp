@@ -36,7 +36,9 @@
 #define MAX_MESSAGE_LENGTH (15 + MAX_NUM_COORD * 8)
 #endif
 
-namespace Orocos
+#include <ocl/OCL.hpp>
+
+namespace OCL
 {
   class KryptonK600Sensor 
     :public RTT::TaskContext

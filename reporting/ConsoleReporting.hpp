@@ -4,7 +4,9 @@
 #include "ReportingComponent.hpp"
 #include <iostream>
 
-namespace Orocos
+#include <ocl/OCL.hpp>
+
+namespace OCL
 {
     /**
      * A component which writes data reports to a console.

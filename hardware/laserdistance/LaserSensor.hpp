@@ -32,7 +32,9 @@
 #include <rtt/dev/AnalogInput.hpp>
 #endif
 
-namespace Orocos {
+#include <ocl/OCL.hpp>
+
+namespace OCL {
     /**
      * This class implements a TaskContext which construct an
      * interface to the automated Laser initialising a link to the

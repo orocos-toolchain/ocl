@@ -26,7 +26,9 @@
 #include <rtt/TaskContext.hpp>
 #include <rtt/Ports.hpp>
 
-namespace Orocos
+#include <ocl/OCL.hpp>
+
+namespace OCL
 {
     /**
      * This class implements a TaskContext that reads out the

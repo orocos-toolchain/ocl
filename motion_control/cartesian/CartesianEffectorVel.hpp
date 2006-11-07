@@ -31,7 +31,9 @@
 #include <kdl/frames.hpp>
 #include <kdl/kinfam/kinematicfamily.hpp>
 
-namespace Orocos
+#include <ocl/OCL.hpp>
+
+namespace OCL
 {
     /**
      * This class implements a TaskContext that reads out the

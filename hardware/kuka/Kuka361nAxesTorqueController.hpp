@@ -40,7 +40,9 @@
 
 #include "kuka361dyn.hpp"
 
-namespace Orocos
+#include <ocl/OCL.hpp>
+
+namespace OCL
 {
     /**
      * This class implements a TaskContext to use with the

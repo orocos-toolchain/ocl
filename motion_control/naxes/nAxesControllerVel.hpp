@@ -27,7 +27,9 @@
 #include <rtt/TimeService.hpp>
 #include <rtt/Ports.hpp>
 
-namespace Orocos
+#include <ocl/OCL.hpp>
+
+namespace OCL
 {
     /**
      * This class implements a TaskContext that controlls the

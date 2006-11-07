@@ -44,7 +44,9 @@
 #include <rtt/Attribute.hpp>
 #include <rtt/RTT.hpp>
 
-namespace Orocos
+#include <ocl/OCL.hpp>
+
+namespace OCL
 {
     /**
      * @brief A Component which allows you to control Axis objects.

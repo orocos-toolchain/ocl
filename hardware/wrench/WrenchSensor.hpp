@@ -24,7 +24,9 @@ struct s16Forces
 
 #endif
 
-namespace Orocos
+#include <ocl/OCL.hpp>
+
+namespace OCL
 {
     /**
      * This class implements a TaskContext that communicates with a

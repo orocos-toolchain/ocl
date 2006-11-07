@@ -30,7 +30,9 @@
 
 #include "LiASConstants.hpp"
 
-namespace Orocos {
+#include <ocl/OCL.hpp>
+
+namespace OCL {
 
 class CRSnAxesVelocityController : public RTT::TaskContext
 {

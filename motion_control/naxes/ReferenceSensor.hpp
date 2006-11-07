@@ -6,7 +6,9 @@
 #include <rtt/Ports.hpp>
 #include <rtt/Method.hpp>
 
-namespace Orocos
+#include <ocl/OCL.hpp>
+
+namespace OCL
 {
     /**
      * Implementation of a TaskContext that collects all the reference

@@ -31,7 +31,9 @@
 #include <kdl/kdl.hpp>
 #include <kdl/frames.hpp>
 
-namespace Orocos
+#include <ocl/OCL.hpp>
+
+namespace OCL
 {
     /**
      * This class implements a TaskContext that controlls the

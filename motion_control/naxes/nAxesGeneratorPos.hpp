@@ -32,7 +32,9 @@
 #include <kdl/motion/velocityprofile_trap.h>
 #include <rtt/TimeService.hpp>
 
-namespace Orocos
+#include <ocl/OCL.hpp>
+
+namespace OCL
 {
     /**
      * This class implements a TaskContext that generates a path

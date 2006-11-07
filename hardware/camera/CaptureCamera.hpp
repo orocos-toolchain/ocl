@@ -30,7 +30,9 @@
 
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
-namespace Orocos
+#include <ocl/OCL.hpp>
+
+namespace OCL
 {
     
     /**

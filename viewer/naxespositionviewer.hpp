@@ -10,7 +10,9 @@
 
 
 
-namespace Orocos {
+#include <ocl/OCL.hpp>
+
+namespace OCL {
     /**
      * This class implements a TaskContext that sends position values
      * to the KDLViewer using an ACE-socket.

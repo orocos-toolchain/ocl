@@ -27,7 +27,9 @@
 #include <rtt/Command.hpp>
 #include <kdl/frames.hpp>
 
-namespace Orocos
+#include <ocl/OCL.hpp>
+
+namespace OCL
 {
     
   class Demotool : public RTT::TaskContext

@@ -43,7 +43,9 @@
 
 #include <rtt/RTT.hpp>
 
-namespace Orocos
+#include <ocl/OCL.hpp>
+
+namespace OCL
 {
     /**
      * @brief A Component for periodically reporting Component
