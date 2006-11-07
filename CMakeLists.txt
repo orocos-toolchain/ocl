@@ -184,6 +184,7 @@ CONFIGURE_FILE(Doxyfile.in Doxyfile @ONLY)
 
 IF ( "${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}" STREQUAL "2.4" )
 OPTION( CPACK_PACKAGES "Set to ON to build the packages. Requires cmake >2.4" OFF )
+MARK_AS_ADVANCED( CPACK_PACKAGES )
 IF (CPACK_PACKAGES)
 
 INCLUDE(InstallRequiredSystemLibraries)
@@ -235,6 +236,7 @@ ADD_CUSTOM_TARGET(docs "doxygen" "Doxyfile")
 
 ## Debugging
 OPTION( DISPLAY_FLAGS "Display cmake variables at end of configure step." OFF)
+MARK_AS_ADVANCED(DISPLAY_FLAGS)
 IF( DISPLAY_FLAGS )
 INCLUDE(config/cmake_logging.cmake)
 ENDIF( DISPLAY_FLAGS )
