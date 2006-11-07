@@ -10,9 +10,9 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.2)
 #                                                 #
 ###################################################
 
-PROJECT(Orocos-Components)
+PROJECT(orocos-ocl)
 
-SET( VERSION 0.1 CACHE STRING "Version of Orocos Components" )
+SET( VERSION 0.2 CACHE STRING "Version of Orocos Components" )
   MESSAGE( "Orocos Components version ${VERSION}" )
 
 # Do not rely on environment variables to find the path, because that's confusing
@@ -21,8 +21,8 @@ IF(NOT CMAKE_INSTALL_PREFIX)
   MESSAGE( STATUS "Setting installation directory to ${CMAKE_INSTALL_PREFIX}" )
 ENDIF(NOT CMAKE_INSTALL_PREFIX)
 
-SET( PROJ_SOURCE_DIR ${Orocos-Components_SOURCE_DIR} )
-SET( PROJ_BINARY_DIR ${Orocos-Components_BINARY_DIR} )
+SET( PROJ_SOURCE_DIR ${orocos-ocl_SOURCE_DIR} )
+SET( PROJ_BINARY_DIR ${orocos-ocl_BINARY_DIR} )
 
 IF(NOT OROCOS_INSTALL)
   SET( OROCOS_INSTALL ${CMAKE_INSTALL_PREFIX}/orocos CACHE PATH "The RTT installation directory.")
@@ -87,6 +87,10 @@ INCLUDE (${CMAKE_ROOT}/Modules/CMakeDetermineCXXCompiler.cmake)
 #                                                 #
 ###################################################
 
+#
+# This is the first in the include path.
+INCLUDE_DIRECTORIES( ${PROJ_SOURCE_DIR} )
+
 # Put your 'flags' inhere if you want them to apear in the
 # orocos-components.pc file. Various .cmake scripts below do
 # this.
@@ -113,14 +117,12 @@ INCLUDE (${PROJ_SOURCE_DIR}/config/FindComedi.cmake)
 
 ## Uninstall target
 CONFIGURE_FILE(
-  "${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"
+  "${CMAKE_CURRENT_SOURCE_DIR}/config/cmake_uninstall.cmake.in"
   "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
   IMMEDIATE @ONLY)
 
 ADD_CUSTOM_TARGET(uninstall
   "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake")
-
-INCLUDE_DIRECTORIES( ${PROJ_SOURCE_DIR} )
 
 ###########################################################
 #                                                         #
@@ -165,6 +167,8 @@ SET(OROCOS_COMPONENTS_LINKFLAGS "$ENV{OROCOS_COMPONENTS_LINKFLAGS}")
 SET(OROCOS_COMPONENTS_CFLAGS "$ENV{OROCOS_COMPONENTS_CFLAGS}")
 CONFIGURE_FILE( orocos-components.pc.in orocos-components.pc @ONLY)
 INSTALL_FILES( /lib/pkgconfig FILES orocos-components.pc)
+CONFIGURE_FILE( orocos-ocl.pc.in orocos-ocl.pc @ONLY)
+INSTALL_FILES( /lib/pkgconfig FILES orocos-ocl.pc)
 
 #MESSAGE("Selected dirs: $ENV{SELECTED_DIRS}")
 #SET(SELECTED_DIRS $ENV{SELECTED_DIRS})
@@ -173,7 +177,7 @@ CONFIGURE_FILE(Doxyfile.in Doxyfile @ONLY)
 
 ############################################################
 ##                                                         #
-## Setup PACKAGING                                         #
+## Setup PACKAGING   THIS IS EXPERIMENTAL/BETA/NOT USED    #
 ##                                                         #
 ############################################################
 
@@ -204,9 +208,13 @@ SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
 SET(CPACK_PACKAGE_MAJOR_VERSION "0")
 SET(CPACK_PACKAGE_MINOR_VERSION "1")
 SET(CPACK_PACKAGE_VERSION_PATCH "1")
-SET(CPACK_PACKAGE_INSTALL_DIRECTORY "CMAKE ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}")
-SET(CPACK_STRIP_FILES "bin/cmake")
+
 SET(CPACK_PACKAGE_EXECUTABLES "OrocosExec" "Orocos Executable")
+
+SET(CPACK_PACKAGE_INSTALL_DIRECTORY "${CMAKE_INSTALL_PREFIX}")
+SET(CPACK_SOURCE_TOPLEVEL_TAG "src")
+SET(CPACK_PACKAGE_FILE_NAME "orocos-ocl")
+
 INCLUDE(CPack)
 ENDIF (CPACK_PACKAGES)
 ELSE ( "${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}" STREQUAL "2.4" )

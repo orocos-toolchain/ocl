@@ -12,22 +12,34 @@ Just do:
 THE LONG VERSION
 ----------------
 
-Orocos uses cmake (www.cmake.org) for its build configuration.
-CMake is a cross-platform build system.
+* Orocos uses cmake (www.cmake.org) for its build configuration.
+  CMake is a cross-platform build system. Use version 2.2 or 2.4.
 
+* Orocos uses the 'pkg-config' program to detect installed libraries.
 
+* This library requires that the Orocos RTT (liborocos-rtt) is installed.
 
-There are a few ways you can do things differently to the short version:
+* There are a few ways you can do things differently to the short version:
 
+  1) Out-of-source builds:
 
-1) Out-of-source builds:
+	$ mkdir build
+	$ cd build
+	$ cmake ..
+	$ make
 
-'mkdir build'
-'cd build'
-'cmake ..'
-'make'
+  2) Setting a different compiler:
 
+	$ CC="distcc gcc-3.3" CXX="distcc g++-3.3" cmake ..
 
-2) GUI Configurator:
+     or use the 'configure' wrapper script:
 
-Use 'ccmake' rather than 'cmake' for a GUI configurator.
+	$ ../configure CC="distcc gcc-3.3" CXX="distcc g++-3.3"
+
+  3) GUI Configurator:
+
+	Use 'ccmake' rather than 'cmake' for a text-based configurator.
+
+  4) Packaging support:
+
+	'make install DISTDIR=...."
