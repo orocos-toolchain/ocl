@@ -19,13 +19,14 @@
 
     #include "CombinedDigitalOutInterface.hpp"
 
-    #include <hardware/axes/drivers/IncrementalEncoderSensor.hpp>
     #include <rtt/dev/AnalogOutput.hpp>
     #include <rtt/dev/DigitalOutput.hpp>
     #include <rtt/dev/DigitalInput.hpp>
-    #include <hardware/axes/drivers/AnalogDrive.hpp>
-    #include <hardware/axes/drivers/Axis.hpp>
     #include <rtt/dev/AxisInterface.hpp>
+
+    #include <dev/AnalogDrive.hpp>
+    #include <dev/Axis.hpp>
+    #include <dev/IncrementalEncoderSensor.hpp>
 #endif
 
 #include "LiASConstants.hpp"
