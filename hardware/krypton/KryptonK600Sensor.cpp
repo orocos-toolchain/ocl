@@ -21,7 +21,7 @@
 #include <rtt/Logger.hpp>
 #include <kdl/frames_io.hpp>
 
-namespace Orocos
+namespace OCL
 {
     using namespace RTT;
     using namespace KDL;

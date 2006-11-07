@@ -21,7 +21,7 @@
 #include "CartesianControllerVel.hpp"
 #include <assert.h>
 
-namespace Orocos
+namespace OCL
 {
   
   using namespace RTT;

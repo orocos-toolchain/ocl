@@ -16,7 +16,7 @@
 // and 16384 is half of 32768, which is the full range (e.g. -200 to 200 N).
 #define MAX_LOAD 12000
 
-namespace Orocos
+namespace OCL
 {
   using namespace RTT;
   using namespace std;

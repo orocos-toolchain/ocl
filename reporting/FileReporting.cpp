@@ -5,7 +5,7 @@
 #include "rtt/marsh/TableMarshaller.hpp"
 #include "rtt/marsh/TableHeaderMarshaller.hpp"
 
-namespace Orocos
+namespace OCL
 {
     using namespace RTT;
     using namespace std;

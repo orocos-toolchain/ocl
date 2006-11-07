@@ -18,7 +18,7 @@
 #include "CaptureCamera.hpp"
 #include <libdc1394/dc1394_control.h>
 
-namespace Orocos
+namespace OCL
 {
   
   using namespace RTT;

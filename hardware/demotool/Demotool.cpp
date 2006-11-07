@@ -22,7 +22,7 @@
 #define GRAVITY_CONSTANT    9.81
 #define MM_TO_M             0.001
 
-namespace Orocos
+namespace OCL
 {
   using namespace RTT;
   using namespace std;

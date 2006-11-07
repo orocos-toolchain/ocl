@@ -28,7 +28,7 @@
 
 #include <rtt/Logger.hpp>
 
-namespace Orocos
+namespace OCL
 {
     using namespace RTT;
     using namespace std;

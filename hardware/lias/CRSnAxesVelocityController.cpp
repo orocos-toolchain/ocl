@@ -59,7 +59,7 @@
 #include <dev/SimulationAxis.hpp>
 
 #endif
-namespace Orocos {
+namespace OCL {
 
 	using namespace RTT;
 	using namespace std;

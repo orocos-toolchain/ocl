@@ -22,7 +22,7 @@
 #include "CartesianControllerPos.hpp"
 #include <assert.h>
 
-namespace Orocos
+namespace OCL
 {
   
   using namespace RTT;

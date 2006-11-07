@@ -29,7 +29,7 @@
 #include <rtt/Method.hpp>
 #include <rtt/Command.hpp>
 
-namespace Orocos 
+namespace OCL 
 {
 
     AxesComponent::AxesComponent( int max_chan , const std::string& name ) 

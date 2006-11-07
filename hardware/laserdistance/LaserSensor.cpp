@@ -22,7 +22,7 @@
 #define OFFSET 0
 #endif
 
-namespace Orocos
+namespace OCL
 {
   using namespace RTT;
   using namespace std;

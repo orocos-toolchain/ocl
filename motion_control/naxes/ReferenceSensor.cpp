@@ -1,6 +1,6 @@
 #include <motion_control/naxes/ReferenceSensor.hpp>
 
-namespace Orocos
+namespace OCL
 {
     using namespace std;
     using namespace RTT;

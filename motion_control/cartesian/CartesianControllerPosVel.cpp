@@ -22,7 +22,7 @@
 #include <rtt/Logger.hpp>
 #include <assert.h>
 
-namespace Orocos
+namespace OCL
 {
   using namespace RTT;
   using namespace KDL;

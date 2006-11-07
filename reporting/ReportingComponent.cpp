@@ -37,7 +37,7 @@
 #include <fstream>
 #endif
 
-namespace Orocos
+namespace OCL
 {
   using namespace std;
   using namespace RTT;

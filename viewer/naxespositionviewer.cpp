@@ -45,7 +45,7 @@
 
 #include <ace/Select_Reactor_Base.h>
 
-namespace Orocos {
+namespace OCL {
 
 	using namespace RTT;
 	using namespace std;

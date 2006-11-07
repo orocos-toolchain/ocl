@@ -52,7 +52,7 @@
 #include <pkgconf/system.h>
 #include <signal.h>
 
-namespace Orocos
+namespace OCL
 {
     using namespace RTT;
     using namespace RTT::detail;

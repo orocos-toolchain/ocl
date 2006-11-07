@@ -20,7 +20,7 @@
 #include "nAxesGeneratorVel.hpp"
 #include <assert.h>
 
-namespace Orocos
+namespace OCL
 {
     using namespace RTT;
     using namespace KDL;
