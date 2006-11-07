@@ -1,5 +1,9 @@
 DEPENDENT_OPTION( BUILD_COMEDI "Build Comedi Component" OFF "BUILD_HARDWARE" OFF )
 
+IF ( BUILD_COMEDI AND NOT COMEDI_FOUND)
+   MESSAGE( FATAL_ERROR "Trying to build comedi drivers, but comedi not found.")
+ENDIF ( BUILD_COMEDI AND NOT COMEDI_FOUND)
+
 IF ( BUILD_COMEDI AND COMEDI_FOUND)
 
     # This gathers all the .cpp files into the variable 'SRCS'
@@ -10,5 +14,15 @@ IF ( BUILD_COMEDI AND COMEDI_FOUND)
     GLOBAL_ADD_INCLUDE( ocl/dev ${DEVHPPS} )
 
     #ADD_SUBDIRECTORY( tests )
+
+    IF( OS_GNULINUX )
+    TARGET_LINK_LIBRARIES(orocos-comedi comedi)
+    OROCOS_PKGCONFIG_LIBS("-lcomedi")
+    ENDIF( OS_GNULINUX )
+
+    IF( OS_LXRT )
+    TARGET_LINK_LIBRARIES(orocos-comedi kcomedilxrt)
+    OROCOS_PKGCONFIG_LIBS("-lkcomedilxrt")
+    ENDIF( OS_LXRT )
 
 ENDIF ( BUILD_COMEDI AND COMEDI_FOUND)
