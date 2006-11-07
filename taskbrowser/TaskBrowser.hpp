@@ -40,7 +40,9 @@
 #include <vector>
 
 
-namespace Orocos
+#include <ocl/OCL.hpp>
+
+namespace OCL
 {
     /**
      * @brief This component allows a text client to browse the
@@ -189,7 +191,7 @@ namespace Orocos
         /**
          * Print the synopsis of an Event.
          */
-        void printEvent( const std::string m, EventService* ops );
+        void printEvent( const std::string m, RTT::EventService* ops );
 
         /**
          * Print a program listing of a loaded program centered at line \a line.
