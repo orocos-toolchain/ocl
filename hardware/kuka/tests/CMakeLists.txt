@@ -11,6 +11,11 @@ IF ( BUILD_KUKA_TEST )
     GLOBAL_ADD_TEST( torquekuka torquemain.cpp )
     GLOBAL_ADD_TEST( encoderTest encoderKuka361Test.cpp )
 
+    INCLUDE_DIRECTORIES( ${PROJECT_SOURCE_DIR}/hardware/axes )
+    TARGET_LINK_LIBRARIES( kuka orocos-taskbrowser orocos-reporting orocos-kuka orocos-axes ${OROCOS_RTT_LIBS})
+    TARGET_LINK_LIBRARIES( torquekuka orocos-taskbrowser orocos-reporting orocos-kuka orocos-axes ${OROCOS_RTT_LIBS})
+    TARGET_LINK_LIBRARIES( encoderTest ${OROCOS_RTT_LIBS} )
+
     IF ( BUILD_COMEDI )
     TARGET_LINK_LIBRARIES( kuka orocos-comedi )
     TARGET_LINK_LIBRARIES( torquekuka orocos-comedi )
@@ -22,10 +27,6 @@ IF ( BUILD_KUKA_TEST )
     TARGET_LINK_LIBRARIES( encoderTest orocos-apci )
     ENDIF ( BUILD_APCI )
     
-    INCLUDE_DIRECTORIES( ${PROJECT_SOURCE_DIR}/hardware/axes )
-    TARGET_LINK_LIBRARIES( kuka orocos-taskbrowser orocos-reporting orocos-kuka orocos-axes ${OROCOS_RTT_LIBS})
-    TARGET_LINK_LIBRARIES( torquekuka orocos-taskbrowser orocos-reporting orocos-kuka orocos-axes ${OROCOS_RTT_LIBS})
-    TARGET_LINK_LIBRARIES( encoderTest ${OROCOS_RTT_LIBS} )
 
 ENDIF ( BUILD_KUKA_TEST )
 ENDIF ( BUILD_TESTS)
