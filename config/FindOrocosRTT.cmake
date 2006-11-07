@@ -25,23 +25,33 @@ IF ( CMAKE_PKGCONFIG_EXECUTABLE AND NOT SKIP_BUILD)
         LINK_DIRECTORIES( ${OROCOS_RTT_LINK_DIRS} )
 
 	# Detect OS:
-	SET( CMAKE_REQUIRED_INCLUDES ${OROCOS_RTT_INCLUDE_DIRS})
-	CHECK_INCLUDE_FILE( rtt/os/gnulinux.h OS_GNULINUX)
+	# FIND_XXX has a special treatment if the variable's value is XXX-NOTFOUND
+	# This 'value' will trigger a new search in the next cmake run.
+	SET(OS_GNULINUX OS_GNULINUX-NOTFOUND)
+	SET(OS_XENOMAI OS_GNULINUX-NOTFOUND)
+	SET(OS_LXRT OS_GNULINUX-NOTFOUND)
+	#SET( OS_GNULINUX 1 CACHE INTERNAL "")
+	#CHECK_INCLUDE_FILE( rtt/os/gnulinux.h OS_GNULINUX ${OROCOS_RTT_INCLUDE_DIRS})
+	FIND_FILE( OS_GNULINUX rtt/os/gnulinux.h ${OROCOS_RTT_INCLUDE_DIRS})
         IF(OS_GNULINUX)
-        MESSAGE( STATUS "Detected GNU/Linux installation." )
+           MESSAGE( "Detected GNU/Linux installation: ${OS_GNULINUX}" )
         ENDIF(OS_GNULINUX)
 
-	SET( CMAKE_REQUIRED_INCLUDES ${OROCOS_RTT_INCLUDE_DIRS})
-	CHECK_INCLUDE_FILE( rtt/os/xenomai.h OS_XENOMAI)
+        SET( CMAKE_REQUIRED_INCLUDES ${OROCOS_RTT_INCLUDE_DIRS})
+	FIND_FILE( OS_XENOMAI rtt/os/xenomai.h ${OROCOS_RTT_INCLUDE_DIRS})
         IF(OS_XENOMAI)
-        MESSAGE( STATUS "Detected Xenomai installation." )
-        ENDIF(OS_XENOMAI)
+           MESSAGE( "Detected Xenomai installation." )
+	ENDIF(OS_XENOMAI)
 
 	SET( CMAKE_REQUIRED_INCLUDES ${OROCOS_RTT_INCLUDE_DIRS})
-	CHECK_INCLUDE_FILE( rtt/os/lxrt.h OS_LXRT)
+ 	FIND_FILE( OS_LXRT rtt/os/lxrt.h ${OROCOS_RTT_INCLUDE_DIRS})
         IF(OS_LXRT)
-        MESSAGE( STATUS "Detected LXRT installation." )
+           MESSAGE( "Detected LXRT installation." )
         ENDIF(OS_LXRT)
+
+	IF ( NOT OS_LXRT AND NOT OS_GNULINUX AND NOT OS_XENOMAI )
+	MESSAGE( FATAL_ERROR "Could not detect target OS!" )
+	ENDIF ( NOT OS_LXRT AND NOT OS_GNULINUX AND NOT OS_XENOMAI )
 
     ELSE  ( OROCOS_RTT )
         MESSAGE( FATAL_ERROR "Can't find Orocos Real-Time Toolkit (orocos-rtt.pc)")
