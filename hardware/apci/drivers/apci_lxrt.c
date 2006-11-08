@@ -39,11 +39,6 @@
  * Feb 2003 Peter Soetens
  */
 
-//#include "apci1710/apci1710.h"
-//#include "apci2200/apci2200.h"
-//#include "apci1032/apci1032.h"
-
-
 #include <linux/module.h>
 
 //#include <rtai/config.h>
@@ -61,13 +56,11 @@ MODULE_LICENSE("GPL");
  * to be called.
  */
 static struct rt_fun_entry rt_apci_fun[] = {
-#ifdef OROINT_DEVICE_DRIVERS_APCI1032
     [ APCI1032_READ1 ] = { 0,i_APCI1032_Read1DigitalInput },
     [ APCI1032_READ8  ] = { 0,i_APCI1032_Read8DigitalInput },
     [ APCI1032_READ16 ] = { 0,i_APCI1032_Read16DigitalInput },
     [ APCI1032_READ32 ] = { 0,i_APCI1032_Read32DigitalInput },
-#endif
-#ifdef OROINT_DEVICE_DRIVERS_APCI2200
+
     [ APCI2200_GETDEVICE	] = { 0,apci2200_get_device },
     [ APCI2200_GETINPUTSTATUS	] = { 0,apci2200_get_input_status },
     [ APCI2200_GETOUTPUTSTATUS	] = { 0,apci2200_get_output_status },
@@ -81,8 +74,7 @@ static struct rt_fun_entry rt_apci_fun[] = {
     [ APCI2200_WATCHDOGTRIGGER	] = { 0,apci2200_watchdog_trigger },
     */
     [ APCI2200_GETNUMBERDO       ] = { 0,apci2200_get_number_off_digital_outputs },
-#endif
-#ifdef OROINT_DEVICE_DRIVERS_APCI1710
+
     [ APCI1710_GETDEVICE         ] = { 0,apci1710_get_device },
     [ APCI1710_SSI_INIT          ] = { 0,apci1710_ssi_init },
     [ APCI1710_SSI_READ          ] = { UW1(4,0),apci1710_ssi_read },
@@ -114,7 +106,6 @@ static struct rt_fun_entry rt_apci_fun[] = {
     [ APCI1710_INCR_SET_DIG_CHANNEL_OFF ] = { 0, apci1710_incr_set_digital_channel_off},
     [ APCI1710_INCR_CREATE ] = { 0, apci1710_incr_create_module},
     [ APCI1710_INCR_CLEANUP ] = { 0, apci1710_incr_cleanup_module},
-#endif
 };
 
 
