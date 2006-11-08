@@ -41,7 +41,8 @@ namespace RTT
 	virtual double minMeasurement() const {return _min; };
 	virtual double zeroMeasurement() const {return 0.0;};
 
-	void setDrive(double velocity);
+	void update(double position, double velocity, TimeService::ticks previous_time);
+	void stop();
   
     private:
 	double _position, _velocity, _min, _max;
@@ -70,7 +71,8 @@ namespace RTT
 	virtual double minMeasurement() const { return - _maxvel; }
 	virtual double zeroMeasurement() const { return 0; }
     
-	double setDrive(double acceleration);
+	void update(double velocity, double acceleration, TimeService::ticks previous_time);
+	void stop();
 
     private:
 	double _velocity, _acceleration, _maxvel;
@@ -100,7 +102,6 @@ namespace RTT
 	virtual bool lock();
 	virtual bool unlock();
         virtual bool drive( double cur );
-	virtual bool drive_sim( double cur, double acc );
 	virtual bool isLocked() const;
 	virtual bool isStopped() const;
 	virtual bool isDriven() const;
@@ -121,7 +122,6 @@ namespace RTT
 	double      _drive_value;
 	DigitalOutput  _enable;
 	DigitalOutput  _brake;
-	double      _velocity;
 	double      _max_drive_value;
 	TorqueSimulationEncoder*         _encoder;
 	TorqueSimulationVelocitySensor*  _velSensor;

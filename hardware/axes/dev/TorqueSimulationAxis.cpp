@@ -50,20 +50,17 @@ TorqueSimulationEncoder::readSensor(double& data) const
 
 
 void 
-TorqueSimulationEncoder::setDrive(double velocity) 
+TorqueSimulationEncoder::update(double position, double velocity, TimeService::ticks previous_time) 
 {
-  // adjust position, using previous velocity
-  if (_first_drive)
-    _first_drive = false;
-
-  else{
-    _delta_time = TimeService::Instance()->secondsSince(_previous_time);
-    _position += _velocity*(double)_delta_time;
-  }
-  
-  // set new velocity and start time
-  _previous_time = TimeService::Instance()->getTicks();
+  _position = position;
   _velocity = velocity;
+  _previous_time = previous_time;
+}
+
+void 
+TorqueSimulationEncoder::stop() 
+{
+  _velocity = 0.0;
 }
 
 
@@ -102,22 +99,19 @@ TorqueSimulationVelocitySensor::readSensor(double& data) const
 }
 
 
-double 
-TorqueSimulationVelocitySensor::setDrive(double acceleration) 
+void 
+TorqueSimulationVelocitySensor::update(double velocity, double acceleration, TimeService::ticks previous_time) 
 {
-  // adjust velocity, using previous acceleration
-  if (_first_drive){
-    _first_drive = false;
-  }
-  else{
-    _delta_time = TimeService::Instance()->secondsSince(_previous_time);
-    _velocity += _acceleration*(double)_delta_time;
-  }
-  
-  // set new acceleration and start time
-  _previous_time = TimeService::Instance()->getTicks();
+  _velocity = velocity;
   _acceleration = acceleration;
-return _velocity;
+  _previous_time = previous_time;
+}
+
+void 
+TorqueSimulationVelocitySensor::stop() 
+{
+  _velocity = 0.0;
+  _acceleration = 0.0;
 }
 
 
@@ -134,7 +128,6 @@ return _velocity;
 TorqueSimulationAxis::TorqueSimulationAxis(double initial, double min, double max, double velLim):
   _drive_value(0),
   _enable(false), _brake(true),
-  _velocity(0),
   _max_drive_value(std::numeric_limits<double>::max()),
   _encoder( new TorqueSimulationEncoder( initial, min, max) ),
   _velSensor( new TorqueSimulationVelocitySensor( velLim ) ),
@@ -154,17 +147,7 @@ TorqueSimulationAxis::~TorqueSimulationAxis()
 }
 
 bool 
-TorqueSimulationAxis::drive( double cur )
-{
-    //this method should only be used to start the axis, to arguments are necessary to do a simulation
-    if (cur!=0){
-	Logger::log()<<Logger::Error<<"Use drive_sim(double, double) in simulation mode"<<Logger::endl;
-    }
-    return false;
-}
-
-bool 
-TorqueSimulationAxis::drive_sim( double cur, double acc )
+TorqueSimulationAxis::drive( double current )
 { 
     // detect enable switch
     if ( !_enable.isOn() )
@@ -174,20 +157,17 @@ TorqueSimulationAxis::drive_sim( double cur, double acc )
         return false;
 
  if (_is_stopped || _is_driven){
-    if ( (acc < -_max_drive_value) || (acc > _max_drive_value) ){
+    if ( (current < -_max_drive_value) || (current > _max_drive_value) ){
       //std::cerr << "(TorqueSimulationAxis)  Maximum drive value exceeded. Axis.disable()" << std::endl;
       stop();
       lock();
       return false;
     }
     else{
-	//Logger::log()<<Logger::Debug<<"_acceleration "<< acc <<Logger::endl;
-       _velocity = _velSensor->setDrive(acc);
-       _encoder->setDrive(_velocity);
-       _drive_value = cur;
-       _is_stopped = false;
-       _is_driven  = true;
-      return true;
+        _drive_value = current;
+        _is_stopped = false;
+        _is_driven  = true;
+        return true;
    }
  }
  else
@@ -198,9 +178,9 @@ bool
 TorqueSimulationAxis::stop()
 {
   if (_is_driven){
-    _encoder->setDrive(0);
-    _velSensor->setDrive(0);
-    _drive_value = 0;
+    _encoder->stop();
+    _velSensor->stop();
+    _drive_value = 0.0;
     _is_driven  = false;
     _is_stopped = true;
     return true;
