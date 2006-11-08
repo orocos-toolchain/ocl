@@ -11,6 +11,7 @@
 #include <rtt/Event.hpp>
 #include <rtt/Properties.hpp>
 #include <rtt/Command.hpp>
+#include <rtt/Method.hpp>
 
 #if (defined (OROPKG_OS_LXRT))
 #include <dev/SwitchDigitalInapci1032.hpp>
@@ -37,8 +38,7 @@
 #include <dev/SimulationAxis.hpp>
 #include <dev/TorqueSimulationAxis.hpp>
 #include <rtt/dev/AxisInterface.hpp>
-
-#include "kuka361dyn.hpp"
+#include "Kuka361TorqueSimulator.hpp"
 
 #include <ocl/OCL.hpp>
 
@@ -70,7 +70,7 @@ namespace OCL
     
     protected:  
         /** 
-         * Command to start an axis .
+         * Method to start an axis .
          *
          * Sets the axis in the DRIVEN state. Only possible if the axis
          * is int the STOPPED state. If succesfull the drive value of
@@ -81,19 +81,19 @@ namespace OCL
          * 
          * @return Can only succeed if the axis was in the DRIVEN state
          */
-        Command<bool(int)> _startAxis; 
+        Method<bool(int)> _startAxis; 
         
         /**
-         * Command to start all axes .
+         * Method to start all axes .
          *
          * Identical to calling startAxis(int axis) on all axes.
          *  
          * @return true if all Axes could be started.
          */
-        Command<bool(void)> _startAllAxes; 
+        Method<bool(void)> _startAllAxes; 
         
         /**
-         * Command to stop an axis .
+         * Method to stop an axis .
          *
          * Sets the drive value to zero and changes to the STOP
          * state. Only possible if axis is in the DRIVEN state. In the
@@ -104,16 +104,16 @@ namespace OCL
          *
          * @return false if in wrong state or already stopped.
          */
-        Command<bool(int)> _stopAxis; 
+        Method<bool(int)> _stopAxis; 
       
-        /** Command to stop all axes.
+        /** Method to stop all axes.
          *
          * Identical to calling stopAxis(int axis) on all axes.
          */
-        Command<bool(void)> _stopAllAxes; 
+        Method<bool(void)> _stopAllAxes; 
         
         /** 
-         * Command to unlock an axis .
+         * Method to unlock an axis .
          *
          * Activates the brake of the axis.  Only possible in the STOPPED state.
          * 
@@ -121,17 +121,17 @@ namespace OCL
          * 
          * @return false if in wrong state or already locked.
          */
-        Command<bool(int)> _unlockAxis; 
+        Method<bool(int)> _unlockAxis; 
         
         /** 
-         * Command to unlock all axes 
+         * Method to unlock all axes 
          *
          * identical to calling lockAxis(int axis) on all axes
          */
-        Command<bool(void)> _unlockAllAxes;
+        Method<bool(void)> _unlockAllAxes;
         
         /** 
-         * Command to lock an axis.
+         * Method to lock an axis.
          *
          * Releases the brake of the axis.  Only possible in the LOCKED
          * state.
@@ -140,17 +140,17 @@ namespace OCL
          * 
          * @return false if in wrong state or already locked.
          */
-        Command<bool(int)> _lockAxis; 
+        Method<bool(int)> _lockAxis; 
 
         /** 
-         * Command to lock all axes .
+         * Method to lock all axes .
          *
          * identical to unlockAxis(int axis) on all axes;
        */
-        Command<bool(void)> _lockAllAxes; 
+        Method<bool(void)> _lockAllAxes; 
 
         /**
-         * Command to prepare robot for use.
+         * Method to prepare robot for use.
          *
          * It is needed to activate the hardware controller of the
          * robot. 
@@ -168,16 +168,16 @@ namespace OCL
         Command<bool(void)> _prepareForShutdown;
         
         /**
-         * Command to add a drive offset to an axis.
+         * Method to add a drive offset to an axis.
          *
          * Adds an offset to the _driveValue of axis and updates the
-         * _velDriveOffset value.
+         * _driveOffset value.
          * 
          * @param axis nr of Axis
          * @param offset offset value in fysical units
          * 
          */
-        Command<bool(int,double)> _addDriveOffset;
+        Method<bool(int,double)> _addDriveOffset;
 
         /**
          * vector of ReadDataPorts which contain the output velocities
@@ -220,7 +220,7 @@ namespace OCL
          * Used to fire an event if necessary and to saturate the velocities.
          * It is a good idea to set this property to a low value when using experimental code.
          */
-        RTT::Property<std::vector <double> >     _currentLimits; //oktober 2006
+        RTT::Property<std::vector <double> >     _currentLimits; 
 
         /**
          * Lower limit for the positions.  Used to fire an event if necessary.
@@ -267,7 +267,7 @@ namespace OCL
          *  Each axis that is out of range throws a seperate event.
          *  The component will continue with the previous value.
          */
-        RTT::Event< void(std::string) > _currentOutOfRange; //oktober 2006
+        RTT::Event< void(std::string) > _currentOutOfRange; 
         
         /**
          *  parameters to this event are the axis and the position that is out of range.
@@ -350,24 +350,24 @@ namespace OCL
          * velocity = (volt - offset)/scale
          */
         
-        std::vector<double>     _tachoConvertScale;//oktober 2006
-        std::vector<double>     _tachoConvertOffset;//oktober 2006
+        std::vector<double>     _tachoConvertScale;
+        std::vector<double>     _tachoConvertOffset;
 
          /**
          * Parameters of current regulator
          * I = (a*UN + b)/R
          */
         
-        std::vector<double>     _curReg_a;//oktober 2006
-        std::vector<double>     _curReg_b;//oktober 2006
-        std::vector<double>     _shunt_R;//oktober 2006
+        std::vector<double>     _curReg_a;
+        std::vector<double>     _curReg_b;
+        std::vector<double>     _shunt_R;
 
          /**
          * Motor current constant Km
          * torque = current * Km
          */
         
-        std::vector<double>     _Km;//oktober 2006
+        std::vector<double>     _Km;
 	
          /**
          * Define which axes are torque controlled
@@ -375,7 +375,7 @@ namespace OCL
          * velocity control = 0
          */
         
-        std::vector<double>     _torqueControlled;//oktober 2006
+        std::vector<double>     _torqueControlled;
 
 
     public:
@@ -407,8 +407,8 @@ namespace OCL
         RTT::EncoderSSI_apci1710_board*       _apci1710;
         RTT::RelayCardapci2200*               _apci2200;
         RTT::SwitchDigitalInapci1032*         _apci1032;
-        RTT::ComediDevice*                    _comediDev_NI6024; //oktober 2006
-        RTT::ComediSubDeviceAIn*              _comediSubdevAIn_NI6024; //oktober 2006
+        RTT::ComediDevice*                    _comediDev_NI6024; 
+        RTT::ComediSubDeviceAIn*              _comediSubdevAIn_NI6024; 
         RTT::ComediSubDeviceDIn*              _comediSubdevDIn_NI6024;
         RTT::ComediDevice*                    _comediDev_NI6527;
         RTT::ComediSubDeviceDOut*             _comediSubdevDOut_NI6527;
@@ -419,24 +419,19 @@ namespace OCL
         std::vector<RTT::DigitalOutput*>              _enable;
         std::vector<RTT::AnalogDrive*>                _drive;
         std::vector<RTT::DigitalOutput*>              _brake;
-        std::vector<RTT::AnalogInput<unsigned int>*>  _tachoInput; //oktober 2006
-        std::vector<RTT::AnalogSensor*>               _tachometer; //oktober 2006
-        std::vector<RTT::AnalogInput<unsigned int>*>  _currentInput; //oktober 2006
-        std::vector<RTT::AnalogSensor*>               _currentSensor; //oktober 2006
-        std::vector<RTT::DigitalOutput*>              _modeSwitch; //oktober 2006
-        std::vector<RTT::DigitalInput*>               _modeCheck; //oktober 2006
+        std::vector<RTT::AnalogInput<unsigned int>*>  _tachoInput; 
+        std::vector<RTT::AnalogSensor*>               _tachometer; 
+        std::vector<RTT::AnalogInput<unsigned int>*>  _currentInput; 
+        std::vector<RTT::AnalogSensor*>               _currentSensor; 
+        std::vector<RTT::DigitalOutput*>              _modeSwitch; 
+        std::vector<RTT::DigitalInput*>               _modeCheck; 
     
 #endif
         std::vector<RTT::AxisInterface*>      _axes;
         std::vector<RTT::AxisInterface*>      _axes_simulation;
-
-        //vectors used in case of simulation //oktober 2006
-        std::vector<double> pos_sim;
-        std::vector<double> vel_sim;
-        std::vector<double> tau_sim;
-        std::vector<double> acc_sim;
-
-	kuka361dyn kuka361DM;
+	OCL::Kuka361TorqueSimulator*		_torqueSimulator;
+        std::vector<double> 			_tau_sim;
+	std::vector<double> 			_pos_sim;
     
     };//class Kuka361nAxesTorqueController
 }//namespace Orocos
