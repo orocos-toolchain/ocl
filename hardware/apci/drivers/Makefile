@@ -1,6 +1,6 @@
 KERNEL_DIR=/lib/modules/2.6.15.7/build/
 RTAI_INSTALL_DIR=/usr/realtime/rtai-3.3/
-OROCOS_INSTALL_DIR=/src/orocos-trunk/build-lxrt/packages/install
+OROCOS_INSTALL_DIR=/install/build-pre-release-lxrt
 
 CPPFLAGS+=-I$(RTAI_INSTALL_DIR)/include -I$(RTNET_INSTALL_DIR)/include -I$(OROCOS_INSTALL_DIR)/include
 CFLAGS+=-march=pentium4 -mcpu=pentium4
