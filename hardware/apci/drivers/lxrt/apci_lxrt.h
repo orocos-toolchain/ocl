@@ -34,6 +34,10 @@
 extern "C" {
 #endif
 
+#define OROINT_DEVICE_DRIVERS_APCI1032
+#define OROINT_DEVICE_DRIVERS_APCI2200
+#define OROINT_DEVICE_DRIVERS_APCI1710
+
 
 #undef DECLARE
 #define DECLARE static inline
@@ -184,11 +188,8 @@ typedef void apci1710_module;
 #ifndef __KERNEL__
 
 #include <stdarg.h>
-
-#define OROBLD_OS_LXRT_INTERNAL
-#include <rtt/os/fosi.h>
-#undef OROBLD_OS_LXRT_INTERNAL
-
+#include <stdlib.h>
+#include <rtai_lxrt.h>
 #include <asm/rtai_lxrt.h>
 	//union rtai_lxrt_t rtai_lxrt(short int dynx, short int lsize, int srq, void *arg);
 
