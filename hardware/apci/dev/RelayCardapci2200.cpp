@@ -36,13 +36,15 @@ namespace RTT
     RelayCardapci2200::RelayCardapci2200( const std::string& name )
             : DigitalOutInterface( name ), output_cache(0)
     {
-        rtos_printf("APCI2200 Relay init.\n");
+        Logger::In in("RelayCardapci2200");
+
+        log() << "Relay init."<< endlog(Debug);
         if ( ( apci2200 = apci2200_get_device() ) != 0)
         {
-            rtos_printf("Acquired apci2200 handle.\n");
+            log() << "Acquired apci2200 handle." << endlog(Info);
             apci2200_set_output_off( apci2200, ~output_cache );
         } else
-            rtos_printf("FAILED TO Acquire apci2200 handle.\n");
+            log() << "FAILED to acquire apci2200 handle." <<endlog(Error);
     }
 
     RelayCardapci2200::~RelayCardapci2200()

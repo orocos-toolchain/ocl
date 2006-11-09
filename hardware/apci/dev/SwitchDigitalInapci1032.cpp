@@ -29,6 +29,7 @@
 #include "../drivers/lxrt/apci_lxrt.h"
 
 #include <rtt/os/fosi.h>
+#include <rtt/Logger.hpp>
 #include "SwitchDigitalInapci1032.hpp"
 
 namespace RTT
@@ -38,7 +39,8 @@ namespace RTT
           DigitalInInterface( name )
     {
         BoardHandle = bh;
-        rtos_printf( "BoardHandle is %i\n", bh );
+        Logger::In in("SwitchDigitalInapci1032");
+        log()<< name << ": BoardHandle is "<< bh <<endlog(Info);
         bh++;
         //SlotNumber=checkAndGetPCISlotNumber();
     }
