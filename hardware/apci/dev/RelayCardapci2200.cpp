@@ -29,6 +29,7 @@
 #include "../drivers/lxrt/apci_lxrt.h"
 #include <rtt/os/fosi.h>
 #include "RelayCardapci2200.hpp"
+#include <rtt/Logger.hpp>
 
 namespace RTT
 {

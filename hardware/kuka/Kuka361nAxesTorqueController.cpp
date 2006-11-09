@@ -345,64 +345,65 @@ namespace OCL
     {
 
 #if (defined (OROPKG_OS_LXRT)) 
-if(_simulation.rvalue()) {
-	//simulate kuka 361
-	for (int axis=0;axis<KUKA361_NUM_AXES;axis++) {
-		_tau_sim[axis] = _driveValue[axis]->Get();
-	}
-	_torqueSimulator->update(_tau_sim);
+        if(_simulation.rvalue()) {
+            //simulate kuka 361
+            for (int axis=0;axis<KUKA361_NUM_AXES;axis++) {
+                _tau_sim[axis] = _driveValue[axis]->Get();
+            }
+            _torqueSimulator->update(_tau_sim);
 #else
-	//simulate kuka 361
-	for (int axis=0;axis<KUKA361_NUM_AXES;axis++) {
-		_tau_sim[axis] = _driveValue[axis]->Get();
-	}
-	_torqueSimulator->update(_tau_sim);
+            //simulate kuka 361
+            for (int axis=0;axis<KUKA361_NUM_AXES;axis++) {
+                _tau_sim[axis] = _driveValue[axis]->Get();
+            }
+            _torqueSimulator->update(_tau_sim);
 #endif
-
-        for (int axis=0;axis<KUKA361_NUM_AXES;axis++) {
-            // Set the position and perform checks in joint space.
-            _positionValue[axis]->Set(_axes[axis]->getSensor("Position")->readSensor());
-
-            // emit event when position is out of range
-            if( (_positionValue[axis]->Get() < _lowerPositionLimits.value()[axis]) ||
-                (_positionValue[axis]->Get() > _upperPositionLimits.value()[axis]) )
-                _positionOutOfRange("Position  of a Kuka361 Axis is out of range");
-
-            // Set the velocity and perform checks in joint space.
-            _velocityValue[axis]->Set(_axes[axis]->getSensor("Velocity")->readSensor()); 
-
-            // emit event when velocity is out of range
-            if( (_velocityValue[axis]->Get() < -_velocityLimits.value()[axis]) ||
-                (_velocityValue[axis]->Get() > _velocityLimits.value()[axis]) )
-                _velocityOutOfRange("Velocity  of a Kuka361 Axis is out of range");
-
-	    //Update Km= Im[k]*Km/Id[k-1] 
-            /*if( _torqueControlled[axis] ){
-                _Km[axis] = _torqueValue[axis]->Get() * _Km[axis] / _axes[axis]->getDriveValue();
-            }*/
-
-            // send the drive value to hw and performs checks, convert torque to current if torque controlled
-            if (_axes[axis]->isDriven()) {
-                 if( _torqueControlled[axis] ){
-                       //_axes[axis]->drive(_driveValue[axis]->Get() / _Km[axis]); // accepts a current 
-		       _axes[axis]->drive(_driveValue[axis]->Get());
-		 }
-		 else
-                       _axes[axis]->drive(_driveValue[axis]->Get());
+            
+            for (int axis=0;axis<KUKA361_NUM_AXES;axis++) {
+                // Set the position and perform checks in joint space.
+                _positionValue[axis]->Set(_axes[axis]->getSensor("Position")->readSensor());
+                
+                // emit event when position is out of range
+                if( (_positionValue[axis]->Get() < _lowerPositionLimits.value()[axis]) ||
+                    (_positionValue[axis]->Get() > _upperPositionLimits.value()[axis]) )
+                    _positionOutOfRange("Position  of a Kuka361 Axis is out of range");
+                
+                // Set the velocity and perform checks in joint space.
+                _velocityValue[axis]->Set(_axes[axis]->getSensor("Velocity")->readSensor()); 
+                
+                // emit event when velocity is out of range
+                if( (_velocityValue[axis]->Get() < -_velocityLimits.value()[axis]) ||
+                    (_velocityValue[axis]->Get() > _velocityLimits.value()[axis]) )
+                    _velocityOutOfRange("Velocity  of a Kuka361 Axis is out of range");
+                
+                //Update Km= Im[k]*Km/Id[k-1] 
+                /*if( _torqueControlled[axis] ){
+                  _Km[axis] = _torqueValue[axis]->Get() * _Km[axis] / _axes[axis]->getDriveValue();
+                  }*/
+                
+                // send the drive value to hw and performs checks, convert torque to current if torque controlled
+                if (_axes[axis]->isDriven()) {
+                    if( _torqueControlled[axis] ){
+                        //_axes[axis]->drive(_driveValue[axis]->Get() / _Km[axis]); // accepts a current 
+                        _axes[axis]->drive(_driveValue[axis]->Get());
+                    }
+                    else
+                        _axes[axis]->drive(_driveValue[axis]->Get());
+                }
+                
+                // Set the measured torque
+                if( _torqueControlled[axis] ){
+                    //_torqueValue[axis]->Set(_axes[axis]->getSensor("Current")->readSensor() * _Km[axis]);
+                    _torqueValue[axis]->Set(_axes[axis]->getSensor("Current")->readSensor());
+                }
             }
-
-	    // Set the measured torque
-            if( _torqueControlled[axis] ){
-//              _torqueValue[axis]->Set(_axes[axis]->getSensor("Current")->readSensor() * _Km[axis]);
-		_torqueValue[axis]->Set(_axes[axis]->getSensor("Current")->readSensor());
-            }
+            
+            Logger::log()<<Logger::Debug<<"pos (rad): "<<_positionValue[3]->Get()<<" | vel (rad/s): "<<_velocityValue[3]->Get()<<" | drive (A): "<<_driveValue[3]->Get()<<" | cur (A): "<<_torqueValue[3]->Get()<<Logger::endl;
         }
-
-	Logger::log()<<Logger::Debug<<"pos (rad): "<<_positionValue[3]->Get()<<" | vel (rad/s): "<<_velocityValue[3]->Get()<<" | drive (A): "<<_driveValue[3]->Get()<<" | cur (A): "<<_torqueValue[3]->Get()<<Logger::endl;
+        
     }
     
-    
-    void Kuka361nAxesTorqueController::shutdown()
+        void Kuka361nAxesTorqueController::shutdown()
     {
         //Make sure machine is shut down
         prepareForShutdown();
