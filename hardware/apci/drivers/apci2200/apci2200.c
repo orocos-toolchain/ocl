@@ -122,17 +122,29 @@ apci2200_device* apci2200_get_device( void )
 
 unsigned int apci2200_get_input_status( apci2200_device* dev )
 {
+	if (dev == 0) {
+		printk("Error: null device in %s.\n",__PRETTY_FUNCTION__);
+		return 0;
+	}
     return inl( dev->ioaddr[ 1 ] + APCI2200_DIGITAL_INPUT_REGISTER );
 }
 
 unsigned int apci2200_get_output_status( apci2200_device* dev )
 {
+	if (dev == 0) {
+		printk("Error: null device in %s.\n",__PRETTY_FUNCTION__);
+		return 0;
+	}
     return inl( dev->ioaddr[ 1 ] + APCI2200_DIGITAL_OUTPUT_REGISTER );
 }
 
 void apci2200_set_output_on( apci2200_device* dev, unsigned int on )
 {
     unsigned int result, status;
+	if (dev == 0) {
+		printk("Error: null device in %s.\n",__PRETTY_FUNCTION__);
+		return;
+	}
     // status contains the output status, output is bitwise or-ed with status
     status = apci2200_get_output_status( dev );
     result = on | status;
@@ -142,6 +154,10 @@ void apci2200_set_output_on( apci2200_device* dev, unsigned int on )
 void apci2200_set_output_off( apci2200_device* dev, unsigned int off )
 {
     unsigned int result, status;
+	if (dev == 0) {
+		printk("Error: null device in %s.\n",__PRETTY_FUNCTION__);
+		return;
+	}
     // status contains the output status
     // result = status . (neg output) (in C: ^ is used for exor, and ~ for neg)
     status = apci2200_get_output_status( dev );
@@ -160,6 +176,11 @@ void apci2200_watchdog_init( apci2200_device* dev, short access_mode, short time
     unsigned char command1;
     unsigned char command2;
     int command;
+
+	if (dev == 0) {
+		printk("Error: null device in %s.\n",__PRETTY_FUNCTION__);
+		return;
+	}
 
     // test the access
 
