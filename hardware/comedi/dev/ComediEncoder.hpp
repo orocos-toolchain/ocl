@@ -27,7 +27,6 @@
 
 namespace RTT
 {
-  typedef double UnitType;  
   /**
    * A class for reading an encoder using the comedi hardware
    * abstraction layer.  Based on the comedi API of the home
@@ -43,7 +42,7 @@ namespace RTT
    * @todo Throw exception when constructor fails instead of just
    * printing an error
    * @bug upcounting is always true
-   * @bug The current implementation does not consider the _turn
+   * @note The current implementation does not consider the _turn
    * parameter, since an overflow of the 32 bit register is unlikely
    * to occur in our case.
    */

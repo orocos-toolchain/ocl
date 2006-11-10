@@ -67,7 +67,7 @@ namespace RTT
 
             it = comedi_open( devString );
 
-            log(Info) << "Trying to open" << devString << endlog();
+            log(Info) << "Trying to open " << devString << endlog();
 
             if ( it == 0 )
                 {
