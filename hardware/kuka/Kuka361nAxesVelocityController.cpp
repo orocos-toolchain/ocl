@@ -94,6 +94,7 @@ namespace OCL
           _axes(KUKA361_NUM_AXES),
           _axes_simulation(KUKA361_NUM_AXES)
     {
+        Logger::In in("Kuka361nAxesVelocityController");
         double ticks2rad[KUKA361_NUM_AXES] = KUKA361_TICKS2RAD;
         double vel2volt[KUKA361_NUM_AXES] = KUKA361_RADproSEC2VOLT;
         for(unsigned int i = 0;i<KUKA361_NUM_AXES;i++){
@@ -115,21 +116,28 @@ namespace OCL
 #if (defined OROPKG_OS_LXRT)
         int encoderOffsets[KUKA361_NUM_AXES] = KUKA361_ENCODEROFFSETS;
         
+        log(Info)<<"Creating Comedi Devices."<<endlog();
         _comediDev        = new ComediDevice( 1 );
         _comediSubdevAOut = new ComediSubDeviceAOut( _comediDev, "Kuka361" );
+        log(Info)<<"Creating APCI Devices."<<endlog();
         _apci1710         = new EncoderSSI_apci1710_board( 0, 1 );
         _apci2200         = new RelayCardapci2200( "Kuka361" );
         _apci1032         = new SwitchDigitalInapci1032( "Kuka361" );
         
         
         for (unsigned int i = 0; i < KUKA361_NUM_AXES; i++){
+            log(Info)<<"Creating Hardware axis "<<i<<endlog();
             //Setting up encoders
+            log(Info)<<"Setting up encoder ..."<<endlog();
             _encoderInterface[i] = new EncoderSSI_apci1710( i + 1, _apci1710 );
             _encoder[i]          = new AbsoluteEncoderSensor( _encoderInterface[i], 1.0 / ticks2rad[i], encoderOffsets[i], -10, 10 );
             
+            log(Info)<<"Setting up brake ..."<<endlog();
             _brake[i] = new DigitalOutput( _apci2200, i + KUKA361_NUM_AXES );
+            log(Info)<<"Setting brake to on"<<endlog();
             _brake[i]->switchOn();
             
+            log(Info)<<"Setting up drive ..."<<endlog();
             _vref[i]   = new AnalogOutput<unsigned int>( _comediSubdevAOut, i );
             _enable[i] = new DigitalOutput( _apci2200, i );
             _drive[i]  = new AnalogDrive( _vref[i], _enable[i], 1.0 / vel2volt[i], _driveOffset.value()[i]);

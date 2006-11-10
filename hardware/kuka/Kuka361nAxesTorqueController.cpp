@@ -188,6 +188,7 @@ namespace OCL
             _encoder[i]          = new AbsoluteEncoderSensor( _encoderInterface[i], 1.0 / ticks2rad[i], encoderOffsets[i], -10, 10 );
 
             _brake[i] = new DigitalOutput( _apci2200, i + KUKA361_NUM_AXES );
+            log(Info)<<"Setting brake "<<i<<" On."<<endlog();
             _brake[i]->switchOn();
 
             _tachoInput[i] = new AnalogInput<unsigned int>(_comediSubdevAIn_NI6024, i+TACHO_OFFSET); 

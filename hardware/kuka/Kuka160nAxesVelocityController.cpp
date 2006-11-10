@@ -94,6 +94,8 @@ namespace OCL{
           _axes(KUKA160_NUM_AXES),
           _axes_simulation(KUKA160_NUM_AXES)
     {
+        Logger::In in("Kuka160nAxesVelocityController");
+        
         double ticks2rad[KUKA160_NUM_AXES] = KUKA160_TICKS2RAD;
         double vel2volt[KUKA160_NUM_AXES] = KUKA160_RADproSEC2VOLT;
         for(unsigned int i = 0;i<KUKA160_NUM_AXES;i++){
@@ -118,7 +120,7 @@ namespace OCL{
         _comediDevAOut       = new ComediDevice( 0 );
         _comediDevDInOut     = new ComediDevice( 3 );
         _comediDevEncoder    = new ComediDevice( 2 );
-        log(Debug)<< "ComediDevices Created"<<endlog();
+        log(Info)<< "ComediDevices Created"<<endlog();
         
         int subd;
         subd = 1; // subdevice 1 is analog out
@@ -127,19 +129,21 @@ namespace OCL{
         _comediSubdevDIn     = new ComediSubDeviceDIn( _comediDevDInOut, "Kuka160", subd );
         subd = 1; // subdevice 1 is digital out
         _comediSubdevDOut    = new ComediSubDeviceDOut( _comediDevDInOut, "Kuka160", subd );
-        log(Debug)<<"ComediSubDevices Created"<<endlog();
+        log(Info)<<"ComediSubDevices Created"<<endlog();
         
         // first switch all channels off
         for(int i = 0; i < 24 ; i++)  _comediSubdevDOut->switchOff( i );
         
         for (unsigned int i = 0; i < KUKA160_NUM_AXES; i++){
-            log(Debug)<<"Kuka160 Creating Hardware Axis "<<i<<endlog();
+            log(Info)<<"Kuka160 Creating Hardware Axis "<<i<<endlog();
             //Setting up encoders
+            log(Info)<<"Setting up encoder ..."<<endlog();
             subd = 0; // subdevice 0 is counter
             _encoderInterface[i] = new ComediEncoder(_comediDevEncoder , subd , i);
             _encoder[i] = new IncrementalEncoderSensor( _encoderInterface[i], 1.0 / _positionConvertFactor[i], 
                                                         _initialPosition.value()[i]*_positionConvertFactor[i], 
                                                         _lowerPositionLimits.value()[i], _upperPositionLimits.value()[i],KUKA160_ENC_RES);
+            log(Info)<<"Setting up brake ..."<<endlog();
             _brake[i] = new DigitalOutput( _comediSubdevDOut, 23 - i,true);
             _brake[i]->switchOn();
 
