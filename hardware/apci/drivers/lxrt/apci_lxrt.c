@@ -39,10 +39,6 @@
  * Feb 2003 Peter Soetens
  */
 
-//#include "apci1710/apci1710.h"
-//#include "apci2200/apci2200.h"
-//#include "apci1032/apci1032.h"
-
 #include <asm/types.h>
 #include <linux/kernel.h>
 #include <linux/module.h>
@@ -125,7 +121,8 @@ int init_module(void)
 {
 
 	if( set_rt_fun_ext_index(rt_apci_fun, MYIDX)) {
-		printk("Recompile your module with a different index\n");
+		printk("LXRT index %d already in use.\n", MYIDX);
+		printk("Recompile your kernel module with a different index.\n");
 		return -EACCES;
 	}
 
