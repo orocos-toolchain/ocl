@@ -12,7 +12,7 @@
 #include <pkgconf/system.h> 
 
 #include "IP_Encoder_6_EncInterface.hpp"
-#include <dev/SimulationAxis.hpp> 
+#include "dev/SimulationAxis.hpp" 
 
 
 #if defined (OROPKG_OS_LXRT)
@@ -24,9 +24,9 @@
     #include <rtt/dev/DigitalInput.hpp>
     #include <rtt/dev/AxisInterface.hpp>
 
-    #include <dev/AnalogDrive.hpp>
-    #include <dev/Axis.hpp>
-    #include <dev/IncrementalEncoderSensor.hpp>
+    #include "dev/AnalogDrive.hpp"
+    #include "dev/Axis.hpp"
+    #include "dev/IncrementalEncoderSensor.hpp"
 #endif
 
 #include "LiASConstants.hpp"

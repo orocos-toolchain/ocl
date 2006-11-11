@@ -14,18 +14,18 @@
 #include <rtt/Method.hpp>
 
 #if (defined (OROPKG_OS_LXRT))
-#include <dev/SwitchDigitalInapci1032.hpp>
-#include <dev/RelayCardapci2200.hpp>
-#include <dev/EncoderSSIapci1710.hpp>
-#include <dev/ComediDevice.hpp>
-#include <dev/ComediSubDeviceAOut.hpp>
-#include <dev/ComediSubDeviceAIn.hpp>
-#include <dev/ComediSubDeviceDOut.hpp>
-#include <dev/ComediSubDeviceDIn.hpp>
-#include <dev/AbsoluteEncoderSensor.hpp>
-#include <dev/AnalogDrive.hpp>
-#include <dev/AnalogSensor.hpp>
-#include <dev/Axis.hpp>
+#include "dev/SwitchDigitalInapci1032.hpp"
+#include "dev/RelayCardapci2200.hpp"
+#include "dev/EncoderSSIapci1710.hpp"
+#include "dev/ComediDevice.hpp"
+#include "dev/ComediSubDeviceAOut.hpp"
+#include "dev/ComediSubDeviceAIn.hpp"
+#include "dev/ComediSubDeviceDOut.hpp"
+#include "dev/ComediSubDeviceDIn.hpp"
+#include "dev/AbsoluteEncoderSensor.hpp"
+#include "dev/AnalogDrive.hpp"
+#include "dev/AnalogSensor.hpp"
+#include "dev/Axis.hpp"
 
 #include <rtt/dev/AnalogOutput.hpp>
 #include <rtt/dev/AnalogInput.hpp>
@@ -35,8 +35,8 @@
 
 #endif
 
-#include <dev/SimulationAxis.hpp>
-#include <dev/TorqueSimulationAxis.hpp>
+#include "dev/SimulationAxis.hpp"
+#include "dev/TorqueSimulationAxis.hpp"
 #include <rtt/dev/AxisInterface.hpp>
 #include "Kuka361TorqueSimulator.hpp"
 

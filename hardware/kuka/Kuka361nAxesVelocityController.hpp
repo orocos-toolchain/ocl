@@ -16,17 +16,17 @@
 #include <rtt/dev/AnalogOutput.hpp>
 #include <rtt/dev/DigitalOutput.hpp>
 
-#include <dev/SwitchDigitalInapci1032.hpp>
-#include <dev/RelayCardapci2200.hpp>
-#include <dev/EncoderSSIapci1710.hpp>
-#include <dev/ComediDevice.hpp>
-#include <dev/ComediSubDeviceAOut.hpp>
+#include "dev/SwitchDigitalInapci1032.hpp"
+#include "dev/RelayCardapci2200.hpp"
+#include "dev/EncoderSSIapci1710.hpp"
+#include "dev/ComediDevice.hpp"
+#include "dev/ComediSubDeviceAOut.hpp"
 
-#include <dev/AbsoluteEncoderSensor.hpp>
-#include <dev/AnalogDrive.hpp>
-#include <dev/Axis.hpp>
+#include "dev/AbsoluteEncoderSensor.hpp"
+#include "dev/AnalogDrive.hpp"
+#include "dev/Axis.hpp"
 #endif
-#include <dev/SimulationAxis.hpp>
+#include "dev/SimulationAxis.hpp"
 #include <rtt/dev/AxisInterface.hpp>
 
 #include <ocl/OCL.hpp>

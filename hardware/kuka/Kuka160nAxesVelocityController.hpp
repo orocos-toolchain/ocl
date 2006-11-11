@@ -13,19 +13,19 @@
 #include <rtt/Properties.hpp>
 
 #if defined (OROPKG_OS_LXRT)
-#include <dev/ComediDevice.hpp>
-#include <dev/ComediSubDeviceAOut.hpp>
-#include <dev/ComediSubDeviceDIn.hpp>
-#include <dev/ComediSubDeviceDOut.hpp>
-#include <dev/ComediEncoder.hpp>
-#include <dev/IncrementalEncoderSensor.hpp>
+#include "dev/ComediDevice.hpp"
+#include "dev/ComediSubDeviceAOut.hpp"
+#include "dev/ComediSubDeviceDIn.hpp"
+#include "dev/ComediSubDeviceDOut.hpp"
+#include "dev/ComediEncoder.hpp"
+#include "dev/IncrementalEncoderSensor.hpp"
 #include <rtt/dev/AnalogOutput.hpp>
 #include <rtt/dev/DigitalOutput.hpp>
 #include <rtt/dev/DigitalInput.hpp>
-#include <dev/AnalogDrive.hpp>
-#include <dev/Axis.hpp>
+#include "dev/AnalogDrive.hpp"
+#include "dev/Axis.hpp"
 #endif   
-#include <dev/SimulationAxis.hpp>
+#include "dev/SimulationAxis.hpp"
 #include <rtt/dev/AxisInterface.hpp>
 
 #include <ocl/OCL.hpp>
