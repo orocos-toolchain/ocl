@@ -101,14 +101,14 @@ namespace OCL
          * @param sensor_name      The name of a Sensor of the Axis
          * @param virtual_channel  The channel number where the Sensor must be added.
          * 
-         * @return true if successfull, false otherwise.
+         * @return true if successful, false otherwise.
          */
         bool addAxisOnChannel(const std::string& axis_name, const std::string& sensor_name, int virtual_channel );
 
         /** 
          * @brief Remove an axis from a virtual channel.
          * 
-         * @param virtual_channel The channel to remove.
+         * @param axis_name The name of the axis to be removed
          * 
          */
         void removeAxisFromChannel(const std::string& axis_name);
