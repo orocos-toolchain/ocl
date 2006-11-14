@@ -58,13 +58,13 @@ namespace RTT
     bool Axis::drive( double vel )
     {
         // detect enable switch
-        if ( act->isEnabled() )
+        if ( !act->isEnabled() )
             return false;
-
+        
         // detect if brake is on.
         if ( brakeswitch && brakeswitch->isOn() )
             return false;
-
+        
       if (_is_stopped || _is_driven)
       {
           act->driveSet( vel );
@@ -74,7 +74,8 @@ namespace RTT
           return true;
       }
       else
-        return false;
+          return false;
+      
     }
 
 
