@@ -7,7 +7,7 @@ IF ( BUILD_CAMERA )
     FILE( GLOB HPPS [^.]*.hpp )
 
     GLOBAL_ADD_COMPONENT( orocos-camera ${SRCS} )
-    GLOBAL_ADD_INCLUDE( hardware/camera ${HPPS})
+    GLOBAL_ADD_INCLUDE( ocl ${HPPS})
 
     ADD_SUBDIRECTORY( tests )
 

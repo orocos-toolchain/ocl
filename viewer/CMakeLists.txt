@@ -6,7 +6,7 @@ IF ( BUILD_VIEWER )
     
     FILE( GLOB HPPS [^.]*.hpp )
     GLOBAL_ADD_COMPONENT( orocos-viewer ${SRCS} )
-    GLOBAL_ADD_INCLUDE( viewer ${HPPS})
+    GLOBAL_ADD_INCLUDE( ocl ${HPPS})
 
     ADD_SUBDIRECTORY( tests )
     ADD_SUBDIRECTORY( cpf )
