@@ -378,7 +378,6 @@ namespace OCL
                 //Logger::log()<<Logger::Warning<<"velsensor: "<<_axes[axis]->getSensor("Velocity")->readSensor()<<Logger::endl;
                 //Logger::log()<<Logger::Warning<<"axis: "<<axis<<Logger::endl;
 		}
-        	
 
                 //Update Km= Im[k]*Km/Id[k-1] 
                 /*if( _mode.value()[axis] ){
@@ -396,13 +395,14 @@ namespace OCL
                 }
                 
                 // Set the measured current
-                _currentValue[axis]->Set(_axes[axis]->getSensor("Current")->readSensor());
+		if( _mode.value()[axis] ){
+                	_currentValue[axis]->Set(_axes[axis]->getSensor("Current")->readSensor());
+		}
             }
             
-            Logger::log()<<Logger::Debug<<"pos (rad): "<<_positionValue[3]->Get()<<" | vel (rad/s): "<<_velocityValue[3]->Get()<<" | drive (A): "<<_driveValue[3]->Get()<<" | cur (A): "<<_currentValue[3]->Get()<<Logger::endl;
+            //Logger::log()<<Logger::Debug<<"pos (rad): "<<_positionValue[3]->Get()<<" | vel (rad/s): "<<_velocityValue[3]->Get()<<" | drive (A): "<<_driveValue[3]->Get()<<" | cur (A): "<<_currentValue[3]->Get()<<Logger::endl;
      }
 
-    
     void Kuka361nAxesTorqueController::shutdown()
     {
         //Make sure machine is shut down

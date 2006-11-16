@@ -45,8 +45,16 @@ int ORO_main(int argc, char* argv[])
   /// Creating Tasks
   PeriodicActivity _kukaTask(OS::HighestPriority,0.01, my_robot->engine() );  
   
+   //Reporting
+   FileReporting reporter("Reporting");
+   reporter.marshalling()->updateProperties("cpf/reporter.cpf");
+   reporter.connectPeers(my_robot);
+   PeriodicActivity _reportingTask(3,0.02,reporter.engine());
+
   /// Start the console reader.
   _kukaTask.start();
+  reporter.load();
+  _reportingTask.start();
 
   browser.loop();
   
