@@ -20,11 +20,11 @@ using namespace std;
 
 int ORO_main(int argc, char* argv[])
 {
-  if ( Logger::log().getLogLevel() < Logger::Debug ) {
-    Logger::log().setLogLevel( Logger::Debug );
-    log(Info) << argv[0] << " manually raises LogLevel to 'Debug'."
-              << " See also file 'orocos.log'." << endlog();
-  }
+//  if ( Logger::log().getLogLevel() < Logger::Debug ) {
+//    Logger::log().setLogLevel( Logger::Debug );
+//    log(Info) << argv[0] << " manually raises LogLevel to 'Debug'."
+//              << " See also file 'orocos.log'." << endlog();
+//  }
 
   TaskContext* my_robot = new Kuka361nAxesTorqueController("Kuka361");
   
@@ -43,7 +43,7 @@ int ORO_main(int argc, char* argv[])
   my_robot->scripting()->loadPrograms("cpf/program.ops");
 
   /// Creating Tasks
-  PeriodicActivity _kukaTask(0,0.01, my_robot->engine() );  
+  PeriodicActivity _kukaTask(OS::HighestPriority,0.01, my_robot->engine() );  
   
   /// Start the console reader.
   _kukaTask.start();

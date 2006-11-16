@@ -3,7 +3,7 @@ program KukaTestProg
   do prepareForUse()
   do unlockAxis(3)
   do startAxis(3)
-  do TaskBrowser.driveValue3.Set( 20.0 )
+  do TaskBrowser.driveValue3.Set( 0.5 )
   while(positionValue3.Get()<1.5 && positionValue3.Get()>-1.5){
      do nothing
   }

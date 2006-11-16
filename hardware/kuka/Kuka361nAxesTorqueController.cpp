@@ -53,7 +53,7 @@ namespace OCL
 #define KUKA361_RADproSEC2VOLT { 2.5545, 2.67804024532652, 1.37350318088664, 2.34300679603342, 2.0058, 3.3786 } //18 april 2006
 
 	// Conversion factors for tacho, unknown for last 3 axes
-#define KUKA361_TACHOSCALE { 9.2750, 10.0285, 4.9633, 5, 5, 5 } 
+#define KUKA361_TACHOSCALE { 9.2750, 10.0285, 4.9633, 5*2, 5, 5 } 
 #define KUKA361_TACHOOFFSET { 0.0112, 0.0083, 0.0056, 0, 0, 0 } 
 
 	// Conversion of current to torque: Km. Initial values
@@ -69,8 +69,6 @@ namespace OCL
 #define CURRENT_OFFSET KUKA361_NUM_AXES 
 #define	MODE_OFFSET 0 
 
-	// Define which axes should be torque controlled
-#define	TORQUE_CONTROLLED { 1, 1, 1, 1, 1, 1 }  
 
     typedef Kuka361nAxesTorqueController MyType;
     
@@ -90,9 +88,10 @@ namespace OCL
           _driveValue(KUKA361_NUM_AXES),
           _positionValue(KUKA361_NUM_AXES),
           _velocityValue(KUKA361_NUM_AXES), 
-          _torqueValue(KUKA361_NUM_AXES), 
+          _currentValue(KUKA361_NUM_AXES), 
           _velocityLimits("velocityLimits","velocity limits of the axes, (rad/s)",vector<double>(KUKA361_NUM_AXES,0)),
           _currentLimits("currentLimits","current limits of the axes, (A)",vector<double>(KUKA361_NUM_AXES,0)), 
+          _mode("mode","control mode of the axis (velocity/torque)",vector<double>(KUKA361_NUM_AXES,0)), 
           _lowerPositionLimits("LowerPositionLimits","Lower position limits (rad)",vector<double>(KUKA361_NUM_AXES,0)),
           _upperPositionLimits("UpperPositionLimits","Upper position limits (rad)",vector<double>(KUKA361_NUM_AXES,0)),
           _initialPosition("initialPosition","Initial position (rad) for simulation or hardware",vector<double>(KUKA361_NUM_AXES,0)),
@@ -112,7 +111,6 @@ namespace OCL
           _curReg_b(KUKA361_NUM_AXES), 
           _shunt_R(KUKA361_NUM_AXES), 
           _Km(KUKA361_NUM_AXES), 
-          _torqueControlled(KUKA361_NUM_AXES), 
 #if (defined (OROPKG_OS_LXRT))
           _axes_hardware(KUKA361_NUM_AXES),
           _encoderInterface(KUKA361_NUM_AXES),
@@ -141,7 +139,6 @@ namespace OCL
         double curReg_b[KUKA361_NUM_AXES] = KUKA361_B;
         double shunt_R[KUKA361_NUM_AXES] = KUKA361_R;
         double KM[KUKA361_NUM_AXES] = KUKA361_KM;
-        double torquecontrolled[KUKA361_NUM_AXES] = TORQUE_CONTROLLED;
         for(unsigned int i = 0;i<KUKA361_NUM_AXES;i++){
             _positionConvertFactor[i] = ticks2rad[i];
             _driveConvertFactor[i] = vel2volt[i];
@@ -151,11 +148,11 @@ namespace OCL
             _curReg_b[i] = curReg_b[i];
             _shunt_R[i] = shunt_R[i];
             _Km[i] = KM[i];
-            _torqueControlled[i] = torquecontrolled[i];
         }
 		
         properties()->addProperty( &_velocityLimits );
         properties()->addProperty( &_currentLimits );
+        properties()->addProperty( &_mode );
         properties()->addProperty( &_lowerPositionLimits );
         properties()->addProperty( &_upperPositionLimits  );
         properties()->addProperty( &_initialPosition  );
@@ -195,13 +192,13 @@ namespace OCL
             unsigned int range = 0; // The input range is -10 to 10 V, so range 0 
             _comediSubdevAIn_NI6024->rangeSet(i+TACHO_OFFSET, range); 
             _comediSubdevAIn_NI6024->arefSet(i+TACHO_OFFSET, AnalogInInterface<unsigned int>::Common); 
-            _tachometer[i] = new AnalogSensor( _tachoInput[i], _comediSubdevAIn_NI6024->lowest(i+TACHO_OFFSET), _comediSubdevAIn_NI6024->highest(i+TACHO_OFFSET), _tachoConvertScale[i], _tachoConvertOffset[i]); 
+            _tachometer[i] = new AnalogSensor( _tachoInput[i], _comediSubdevAIn_NI6024->lowest(i+TACHO_OFFSET), _comediSubdevAIn_NI6024->highest(i+TACHO_OFFSET), 1.0/_tachoConvertScale[i], _tachoConvertOffset[i]); 
 
             _currentInput[i] = new AnalogInput<unsigned int>(_comediSubdevAIn_NI6024, i+CURRENT_OFFSET); 
             range = 1; // for a input range -5 to 5 V, range is 1 
             _comediSubdevAIn_NI6024->rangeSet(i+CURRENT_OFFSET, range); 
             _comediSubdevAIn_NI6024->arefSet(i+CURRENT_OFFSET, AnalogInInterface<unsigned int>::Common); 
-            _currentSensor[i] = new AnalogSensor( _currentInput[i], _comediSubdevAIn_NI6024->lowest(i+CURRENT_OFFSET), _comediSubdevAIn_NI6024->highest(i+CURRENT_OFFSET), 1.0 / _shunt_R[i], 0); 
+            _currentSensor[i] = new AnalogSensor( _currentInput[i], _comediSubdevAIn_NI6024->lowest(i+CURRENT_OFFSET), _comediSubdevAIn_NI6024->highest(i+CURRENT_OFFSET), 1.0 , 0); // 1.0 / _shunt_R[i]
 
             _modeSwitch[i] = new DigitalOutput( _comediSubdevDOut_NI6527, i+MODE_OFFSET ); //Velocity or torque control, selected by relay board 
 //            _modeCheck[i] = new DigitalInput( _comediSubdevDIn_NI6024, i ); 
@@ -209,7 +206,7 @@ namespace OCL
             _ref[i]   = new AnalogOutput<unsigned int>( _comediSubdevAOut, i );
             _enable[i] = new DigitalOutput( _apci2200, i );
 
-            if ( _torqueControlled[i] ){
+            if ( _mode.value()[i] ){
                      _modeSwitch[i]->switchOn(); 
 //                     if ( !_modeCheck[i]->isOn() ) {
 //                                log(Error) << "Failed to switch relay of channel " << i << " to torque control mode" << endlog(); 
@@ -228,7 +225,7 @@ namespace OCL
             _axes_hardware[i]->setSensor( "Current", _currentSensor[i] ); 
 //            _axes_hardware[i]->setSwitch( "Mode", _modeCheck[i] ); 
 
-            if ( _torqueControlled[i] ){
+            if ( _mode.value()[i] ){
                      _axes_hardware[i]->limitDrive(-_currentLimits.value()[i], _currentLimits.value()[i], _currentOutOfRange); 
             }else{
                      _axes_hardware[i]->limitDrive(-_velocityLimits.value()[i], _velocityLimits.value()[i], _velocityOutOfRange);
@@ -237,7 +234,7 @@ namespace OCL
         
 #endif
         for (unsigned int i = 0; i <KUKA361_NUM_AXES; i++){
-             if ( _torqueControlled[i] ) {
+             if ( _mode.value()[i] ) {
                    _axes_simulation[i] = new RTT::TorqueSimulationAxis(_initialPosition.value()[i], _lowerPositionLimits.value()[i], _upperPositionLimits.value()[i],_velocityLimits.value()[i]);
             } else {
                    _axes_simulation[i] = new RTT::SimulationAxis(_initialPosition.value()[i], _lowerPositionLimits.value()[i], _upperPositionLimits.value()[i]);
@@ -298,9 +295,9 @@ namespace OCL
             sprintf(buf,"velocityValue%d",i); 
             _velocityValue[i]  = new DataPort<double>(buf); 
             ports()->addPort(_velocityValue[i]); 
-            sprintf(buf,"torqueValue%d",i); 
-            _torqueValue[i]  = new DataPort<double>(buf); 
-            ports()->addPort(_torqueValue[i]); 
+            sprintf(buf,"currentValue%d",i); //measures current signal (in volts) at the moment
+            _currentValue[i]  = new DataPort<double>(buf); 
+            ports()->addPort(_currentValue[i]); 
         }
         
     /**
@@ -347,11 +344,12 @@ namespace OCL
 
 #if (defined (OROPKG_OS_LXRT)) 
         if(_simulation.rvalue()) {
-            //simulate kuka 361
+            //simulate kuka 361 in torque mode
             for (int axis=0;axis<KUKA361_NUM_AXES;axis++) {
                 _tau_sim[axis] = _driveValue[axis]->Get();
             }
             _torqueSimulator->update(_tau_sim);
+        }
 #else
             //simulate kuka 361
             for (int axis=0;axis<KUKA361_NUM_AXES;axis++) {
@@ -374,17 +372,22 @@ namespace OCL
                 
                 // emit event when velocity is out of range
                 if( (_velocityValue[axis]->Get() < -_velocityLimits.value()[axis]) ||
-                    (_velocityValue[axis]->Get() > _velocityLimits.value()[axis]) )
-                    _velocityOutOfRange("Velocity  of a Kuka361 Axis is out of range");
-                
+                    (_velocityValue[axis]->Get() > _velocityLimits.value()[axis]) ){
+                    _velocityOutOfRange("Velocity of a Kuka361 Axis is out of range");
+                //Logger::log()<<Logger::Warning<<"velocity"<<_velocityValue[axis]->Get()<<Logger::endl;
+                //Logger::log()<<Logger::Warning<<"velsensor: "<<_axes[axis]->getSensor("Velocity")->readSensor()<<Logger::endl;
+                //Logger::log()<<Logger::Warning<<"axis: "<<axis<<Logger::endl;
+		}
+        	
+
                 //Update Km= Im[k]*Km/Id[k-1] 
-                /*if( _torqueControlled[axis] ){
-                  _Km[axis] = _torqueValue[axis]->Get() * _Km[axis] / _axes[axis]->getDriveValue();
+                /*if( _mode.value()[axis] ){
+                  _Km[axis] = _currentValue[axis]->Get() * _Km[axis] / _axes[axis]->getDriveValue();
                   }*/
                 
                 // send the drive value to hw and performs checks, convert torque to current if torque controlled
                 if (_axes[axis]->isDriven()) {
-                    if( _torqueControlled[axis] ){
+                    if( _mode.value()[axis] ){
                         //_axes[axis]->drive(_driveValue[axis]->Get() / _Km[axis]); // accepts a current 
                         _axes[axis]->drive(_driveValue[axis]->Get());
                     }
@@ -392,19 +395,15 @@ namespace OCL
                         _axes[axis]->drive(_driveValue[axis]->Get());
                 }
                 
-                // Set the measured torque
-                if( _torqueControlled[axis] ){
-                    //_torqueValue[axis]->Set(_axes[axis]->getSensor("Current")->readSensor() * _Km[axis]);
-                    _torqueValue[axis]->Set(_axes[axis]->getSensor("Current")->readSensor());
-                }
+                // Set the measured current
+                _currentValue[axis]->Set(_axes[axis]->getSensor("Current")->readSensor());
             }
             
-            Logger::log()<<Logger::Debug<<"pos (rad): "<<_positionValue[3]->Get()<<" | vel (rad/s): "<<_velocityValue[3]->Get()<<" | drive (A): "<<_driveValue[3]->Get()<<" | cur (A): "<<_torqueValue[3]->Get()<<Logger::endl;
-        }
-        
-    }
+            Logger::log()<<Logger::Debug<<"pos (rad): "<<_positionValue[3]->Get()<<" | vel (rad/s): "<<_velocityValue[3]->Get()<<" | drive (A): "<<_driveValue[3]->Get()<<" | cur (A): "<<_currentValue[3]->Get()<<Logger::endl;
+     }
+
     
-        void Kuka361nAxesTorqueController::shutdown()
+    void Kuka361nAxesTorqueController::shutdown()
     {
         //Make sure machine is shut down
         prepareForShutdown();
@@ -442,6 +441,9 @@ namespace OCL
         stopAllAxes();
         lockAllAxes();
 #if (defined (OROPKG_OS_LXRT))
+        //Put mode back to velocitycontrol
+        for(unsigned int i=0;i<KUKA361_NUM_AXES;i++)
+            _modeSwitch[i]->switchOff();
         if(!_simulation.value()){
             _apci2200->switchOff( 12 );
             _apci2200->switchOff( 14 );

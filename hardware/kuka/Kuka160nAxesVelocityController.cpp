@@ -32,6 +32,7 @@ namespace OCL{
     using namespace RTT;
     using namespace std;
   
+
 #define KUKA160_NUM_AXES 6
 #define KUKA160_CONV1  120*114*106*100/( 30*40*48*14)
 #define KUKA160_CONV2  168*139*111/(28*37*15)
@@ -81,7 +82,7 @@ namespace OCL{
           _activated(false),
           _positionConvertFactor(KUKA160_NUM_AXES),
           _driveConvertFactor(KUKA160_NUM_AXES),
-#if (defined OROPKG_OS_LXRT && defined OROPKG_DEVICE_DRIVERS_COMEDI)
+#if (defined OROPKG_OS_LXRT)
           _encoderInterface(KUKA160_NUM_AXES),
           _vref(KUKA160_NUM_AXES),
           _encoder(KUKA160_NUM_AXES),
@@ -140,13 +141,20 @@ namespace OCL{
             log(Info)<<"Setting up encoder ..."<<endlog();
             subd = 0; // subdevice 0 is counter
             _encoderInterface[i] = new ComediEncoder(_comediDevEncoder , subd , i);
+            log(Info)<<"Creation ComediEncoder succeeded."<<endlog();
+            
+            log(Info)<<"encoder settings: "<<_positionConvertFactor[i]<<endlog();
+            log(Info)<<", "<<_initialPosition.value()[i]<<endlog();
+            log(Info)<<", "<<_lowerPositionLimits.value()[i]<<endlog();
+            log(Info)<<", "<< _upperPositionLimits.value()[i]<<endlog();
+            
             _encoder[i] = new IncrementalEncoderSensor( _encoderInterface[i], 1.0 / _positionConvertFactor[i], 
-                                                        _initialPosition.value()[i]*_positionConvertFactor[i], 
+                                                       _initialPosition.value()[i]*_positionConvertFactor[i], 
                                                         _lowerPositionLimits.value()[i], _upperPositionLimits.value()[i],KUKA160_ENC_RES);
             log(Info)<<"Setting up brake ..."<<endlog();
             _brake[i] = new DigitalOutput( _comediSubdevDOut, 23 - i,true);
             _brake[i]->switchOn();
-
+            
             _vref[i]   = new AnalogOutput<unsigned int>( _comediSubdevAOut, i + 1 );
             _enable[i] = new DigitalOutput( _comediSubdevDOut, 13 - i );
             _reference[i] = new DigitalInput( _comediSubdevDIn, 23 - i);

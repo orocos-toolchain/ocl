@@ -206,7 +206,7 @@ namespace OCL
          * current sensors transformed to torque. 
          * 
          */
-        std::vector<RTT::DataPort<double>*>       _torqueValue;
+        std::vector<RTT::DataPort<double>*>       _currentValue;
 
         /**
          * The absolute value of the velocity will be limited to this property.  
@@ -215,12 +215,17 @@ namespace OCL
          */
         RTT::Property<std::vector <double> >     _velocityLimits;
 
-		/**
+	/**
          * The absolute value of the current will be limited to this property.  
-         * Used to fire an event if necessary and to saturate the velocities.
+         * Used to fire an event if necessary and to saturate the currents.
          * It is a good idea to set this property to a low value when using experimental code.
          */
         RTT::Property<std::vector <double> >     _currentLimits; 
+
+	/**
+         * Selection of control mode (velocity or torque) for each axis
+         */
+        RTT::Property<std::vector <double> >     _mode; 
 
         /**
          * Lower limit for the positions.  Used to fire an event if necessary.
