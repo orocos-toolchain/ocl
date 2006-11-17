@@ -42,4 +42,4 @@ THE LONG VERSION
 
   4) Packaging support:
 
-	'make install DISTDIR=...."
+	'make install DESTDIR=...."
