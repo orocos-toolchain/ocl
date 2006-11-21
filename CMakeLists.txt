@@ -52,13 +52,6 @@ SET( LOCAL_LIBRARY ON ) # CACHE BOOL "Build a library for each component.")
 # Toggle if an executable must be built.
 #Broken: SET( STANDALONE_COMPONENTS OFF CACHE BOOL "Build an executable for each component.")
 
-# Set the default build type to debug.
-IF(NOT CMAKE_BUILD_TYPE)
-  SET(CMAKE_BUILD_TYPE Debug CACHE STRING
-      "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
-      FORCE)
-ENDIF(NOT CMAKE_BUILD_TYPE)
-
 # Make compilation verbose by default
 SET(CMAKE_VERBOSE_MAKEFILE FALSE)
 
@@ -72,10 +65,18 @@ SET(CMAKE_VERBOSE_MAKEFILE FALSE)
 # Set the build type (affects debugging symbols and optimization)
 #
 IF ( NOT CMAKE_BUILD_TYPE )
-  SET( CMAKE_BUILD_TYPE Release )
+  SET( CMAKE_BUILD_TYPE "OCL" CACHE STRING "Build type: None (Use CMAKE_C_FLAGS and CMAKE_CXX_FLAGS), OCL (Recommended), Release, Debug, RelWithDebInfo, MinSizeRel." FORCE )
   MESSAGE( STATUS "Setting build type to '${CMAKE_BUILD_TYPE}'" )
+  SET( CMAKE_C_FLAGS_OCL "-O2 -DNDEBUG" CACHE STRING "The CFLAGS for OCL" )
+  SET( CMAKE_CXX_FLAGS_OCL "-O2 -DNDEBUG" CACHE STRING "The CXXFLAGS flags for OCL"  )
 ELSE ( NOT CMAKE_BUILD_TYPE )
   MESSAGE( STATUS "Build type set to '${CMAKE_BUILD_TYPE}' by user." )
+  IF ( NOT CMAKE_BUILD_TYPE STREQUAL "OCL" )
+    MARK_AS_ADVANCED(FORCE CMAKE_C_FLAGS_OCL CMAKE_CXX_FLAGS_OCL)
+  ELSE ( NOT CMAKE_BUILD_TYPE STREQUAL "OCL" )
+    MARK_AS_ADVANCED(CLEAR CMAKE_C_FLAGS_OCL CMAKE_CXX_FLAGS_OCL)
+  ENDIF ( NOT CMAKE_BUILD_TYPE STREQUAL "OCL" )
+
 ENDIF ( NOT CMAKE_BUILD_TYPE )
 
 # MESSAGE("Looking for compiler:")
