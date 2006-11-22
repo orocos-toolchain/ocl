@@ -2,8 +2,7 @@
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
 "http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd"
 [
-<!ENTITY % oro_ents SYSTEM "http://people.mech.kuleuven.be/~psoetens/orocos/doc/orocos.ent" >
-%oro_ents;
+<!ENTITY orocos      "<acronym>Orocos</acronym>">
 ]
 >
 
@@ -24,25 +23,6 @@
       <year>2006</year>
       <holder>Peter Soetens, FMTC</holder>
     </copyright>
-
-    <abstract>
-      <para>
-	This document explains the design and implementation of the
-	<emphasis>Core Library</emphasis> of &orocos;, the <emphasis>Open
-	RObot COntrol Software</emphasis> project. The CoreLib provides
-	infrastructural support for the functional and application components
-	of the &orocos; framework.
-      </para>
-    </abstract>
-
-    <revhistory>
-      <revision>
-	<revnumber>0.24.0</revnumber>
-	<date>16 June 2006</date>
-	<authorinitials>ps</authorinitials>
-	<revremark>Introduction.</revremark>
-      </revision>
-    </revhistory>
 
     <legalnotice>
       <para>

@@ -19,8 +19,13 @@ IF (BUILD_DOCS)
     orocos-hardware-components.xml
     orocos-taskbrowser.xml)
 
-  ADD_CUSTOM_TARGET(dochtml DEPENDS orocos-hardware-components.html orocos-taskbrowser.html)
-  ADD_CUSTOM_TARGET(docpdf DEPENDS orocos-hardware-components.pdf orocos-taskbrowser.pdf)
+  add_custom_command(OUTPUT taskbrowsing.png
+    COMMAND inkscape -z -D -d 60 -e taskbrowsing.png ${CMAKE_CURRENT_SOURCE_DIR}/taskbrowsing.svg
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/taskbrowsing.svg
+    )
+
+  ADD_CUSTOM_TARGET(dochtml DEPENDS taskbrowsing.png orocos-hardware-components.html orocos-taskbrowser.html)
+  ADD_CUSTOM_TARGET(docpdf DEPENDS taskbrowsing.png orocos-hardware-components.pdf orocos-taskbrowser.pdf)
 
   ADD_CUSTOM_TARGET(message ALL echo "Use: make dochtml docpdf to build the documentation.")
 

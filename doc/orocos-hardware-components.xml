@@ -1,10 +1,7 @@
 <?xml version='1.0'?>
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
 "http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd"
-[
-<!ENTITY % oro_ents SYSTEM "http://people.mech.kuleuven.be/~psoetens/orocos/doc/orocos.ent" >
-%oro_ents;
-]
+[]
 >
 
 <article>
@@ -48,8 +45,8 @@
     <title>Introduction</title>
     <para>
       This component depends on the interfaces defined in the 
-      Orocos Device Interface. The Comedi package provides an
-      support for adding comedi devices to this component.
+      Orocos Device Interface. See the Comedi component for
+      implemenations of this interface.
     </para>
   </section>
   <section id="generic-sens-eff">
