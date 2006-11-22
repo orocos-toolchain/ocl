@@ -29,12 +29,12 @@ INCLUDE( ${PROJ_SOURCE_DIR}/config/DependentOption.cmake )
 #
 INCLUDE( ${CMAKE_ROOT}/Modules/FindDoxygen.cmake )
 IF ( DOXYGEN )
-  MESSAGE( STATUS "Found Doxygen -- documentation can be built" )
+  MESSAGE( "Found Doxygen -- documentation can be built" )
 
   OPTION( GENERATE_DOCUMENTATION "Build Documentation" OFF )
 
 ELSE ( DOXYGEN )
-  MESSAGE( STATUS "Doxygen not found -- unable to build documentation" )
+  MESSAGE( "Doxygen not found -- unable to build documentation" )
 ENDIF ( DOXYGEN )
 
 

@@ -42,7 +42,7 @@ MACRO( GLOBAL_ADD_COMPONENT COMPONENT_NAME )
   ENDIF(GLOBAL_LIBRARY)
 
   IF(LOCAL_LIBRARY)
-    MESSAGE( STATUS "Building Stand-alone library ${COMPONENT_NAME}" )
+    MESSAGE( "Building Stand-alone library ${COMPONENT_NAME}" )
     ADD_LIBRARY( ${COMPONENT_NAME} STATIC ${ARGN} )
     INSTALL_TARGETS( /lib ${COMPONENT_NAME} )
     #The later a component is added, the earlier it apears in the -l list.
@@ -77,9 +77,9 @@ MACRO( GLOBAL_ADD_TEST TEST_NAME )
 	ADD_EXECUTABLE( ${TEST_NAME} ${ARGN} )
 	#INSTALL_TARGETS( /bin/${TEST_NAME} ${TEST_NAME} )
 
-	MESSAGE(STATUS "Planning to build test: ${TEST_NAME}" )
+	MESSAGE("Planning to build test: ${TEST_NAME}" )
   ELSE(BUILD_TESTS)
-	MESSAGE(STATUS "Not building test: ${TEST_NAME}" )
+	MESSAGE("Not building test: ${TEST_NAME}" )
   ENDIF(BUILD_TESTS)
 ENDMACRO( GLOBAL_ADD_TEST TEST_NAME )
 
@@ -126,7 +126,7 @@ ENDMACRO( GLOBAL_ADD_DEPENDENCY  )
 MACRO( OPTIONAL_SUB_LIBRARY DESCRIPTION SUBDIRECTORY OUTPUT_LIBRARY LINK_LIBS OK_TO_BUILD DEFINITION_TAG )
 
   IF( ${${OK_TO_BUILD}} )
-    MESSAGE(STATUS "    ${DESCRIPTION} - can be built")
+    MESSAGE("    ${DESCRIPTION} - can be built")
     SUBDIRS( ${SUBDIRECTORY} )
     
     # The top level executable will be link to this optional libraries...
@@ -142,7 +142,7 @@ MACRO( OPTIONAL_SUB_LIBRARY DESCRIPTION SUBDIRECTORY OUTPUT_LIBRARY LINK_LIBS OK
     SET(${DEFINITION_TAG} TRUE)
 #    ADD_LIBRARY( ${OUTPUT_LIBRARY} )
   ELSE(  ${${OK_TO_BUILD}} )
-    MESSAGE(STATUS "    ${DESCRIPTION} - cannot be built")
+    MESSAGE( "    ${DESCRIPTION} - cannot be built")
     SET(${DEFINITION_TAG} FALSE)
   ENDIF( ${${OK_TO_BUILD}} )
 

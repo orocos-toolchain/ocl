@@ -8,7 +8,8 @@ INCLUDE (${PROJ_SOURCE_DIR}/config/FindPkgConfig.cmake)
 
 IF ( CMAKE_PKGCONFIG_EXECUTABLE )
 
-    MESSAGE( "Using pkgconfig" )
+    MESSAGE( STATUS "Detecting BFL" )
+    #MESSAGE( "Looking for BFL in: ${BFL_INSTALL}")
     PKGCONFIG( "libbfl-dev >= 0.4.2" BFL_FOUND BFL_INCLUDE_DIRS BFL_DEFINES BFL_LINK_DIRS BFL_LIBS )
 
     IF( BFL_FOUND )
@@ -25,6 +26,6 @@ IF ( CMAKE_PKGCONFIG_EXECUTABLE )
 ELSE  ( CMAKE_PKGCONFIG_EXECUTABLE )
 
     # Can't find pkg-config -- have to search manually
-    MESSAGE( FATAL_ERROR "Can't find BFL")
+    MESSAGE( FATAL_ERROR "Can't find BFL without pkgconfig !")
 
 ENDIF ( CMAKE_PKGCONFIG_EXECUTABLE )
