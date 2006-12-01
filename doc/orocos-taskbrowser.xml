@@ -41,7 +41,7 @@
   <section>
     <title>Introduction</title>
     <para>
-      This document describes the TaskBrowser Orocos component for
+      This document describes the <classname>OCL::TaskBrowser</classname> Orocos component for
       user interaction with other components. It can visit any
       component in a given network, query it, send it commands,
       run programs etc.
@@ -55,13 +55,12 @@
       peer components and visit any component in an application.
     </para>
     <para>
-      The TaskBrowser is a component itself, but it offers a 'window'
-      to another component. When it is connected
-      to another component, it dynamically creates the 'anti' 
+      The <classname>OCL::TaskBrowser</classname> is a component
+      itself, and it offers a 'window' to another component. When it
+      is connected to another component, it dynamically creates 
       data ports and connects these to the other component. In
-      this way, the TaskBrowser can send data to any component.
-      When the component is left, the ports are disconnected and
-      removed.
+      this way, the TaskBrowser can send data to any component.  When
+      the component is left, the ports are disconnected and removed.
     </para>
     <figure><title>Task Browsing</title>
     <mediaobject>

@@ -125,7 +125,7 @@
 	  This allows a more generic way of reading inputs
 	  from other components. The Channel Port which is
 	  created is of the type
-	  <classname>DataPort&lt; std::vector&lt;double&gt; &gt;</classname>
+	  <classname>RTT::DataPort</classname>&lt; std::vector&lt;double&gt; &gt;
 	  and has the name "InputValues". AnalogInputs
 	  can be added to a channel in this vector :
 	  <programlisting>

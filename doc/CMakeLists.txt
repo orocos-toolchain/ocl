@@ -1,9 +1,9 @@
-OPTION(BUILD_DOCS "Build the documentation" ON)
+OPTION(DOC_BUILD_DOCS "Build the documentation" ON)
 
 include(DocBookToHTML.cmake)
 include(DocBookToPDF.cmake)
 
-IF (BUILD_DOCS)
+IF (DOC_BUILD_DOCS)
   #list the xml files:
   DOCBOOK_TO_HTML( orocos-html.xsl 
     CATALOG
@@ -29,4 +29,4 @@ IF (BUILD_DOCS)
 
   ADD_CUSTOM_TARGET(message ALL echo "Use: make dochtml docpdf to build the documentation.")
 
-ENDIF (BUILD_DOCS)
+ENDIF (DOC_BUILD_DOCS)
