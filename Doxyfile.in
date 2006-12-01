@@ -30,7 +30,7 @@ PROJECT_NUMBER         =  @VERSION@
 # If a relative path is entered, it will be relative to the location 
 # where doxygen was started. If left blank the current directory will be used.
 
-OUTPUT_DIRECTORY       = doc/
+OUTPUT_DIRECTORY       = doc/api
 
 # If the CREATE_SUBDIRS tag is set to YES, then doxygen will create 
 # 4096 sub-directories (in 2 levels) under the output directory of each output 
@@ -745,7 +745,7 @@ TREEVIEW_WIDTH         = 250
 # If the GENERATE_LATEX tag is set to YES (the default) Doxygen will 
 # generate Latex output.
 
-GENERATE_LATEX         = YES
+GENERATE_LATEX         = NO
 
 # The LATEX_OUTPUT tag is used to specify where the LaTeX docs will be put. 
 # If a relative path is entered the value of OUTPUT_DIRECTORY will be 
@@ -1049,8 +1049,8 @@ SKIP_FUNCTION_MACROS   = YES
 # If a tag file is not located in the directory in which doxygen 
 # is run, you must also specify the path to the tagfile here.
 
-TAGFILES               = @OROCOS_INSTALL@/doc/rtt.tag=../../../rtt/current/api \
-			 @OROCOS_INSTALL@/doc/kdl.tag=../../../kdl/current/api
+TAGFILES               = @OROCOS_INSTALL@/doc/rtt.tag=../../../../rtt/v1.0.x/api/html \
+			 @OROCOS_INSTALL@/doc/kdl.tag=../../../../kdl/v0.2.x/api/html
 
 # When a file name is specified after GENERATE_TAGFILE, doxygen will create 
 # a tag file that is based on the input files it reads.

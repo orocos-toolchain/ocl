@@ -1,6 +1,6 @@
-IF ( BUILD_TESTS)
-OPTION( BUILD_WRENCH_TEST "Build WrenchSensor Components Test" OFF )
+DEPENDENT_OPTION( BUILD_WRENCH_TEST "Build WrenchSensor Components Test" OFF "BUILD_WRENCH;BUILD_TESTS" OFF)
 
+IF ( BUILD_TESTS)
 IF ( BUILD_WRENCH_TEST )
 
     # This gathers all the .cpp files into the variable 'SRCS'

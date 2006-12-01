@@ -1,5 +1,8 @@
 DEPENDENT_OPTION( BUILD_KRYPTON "Build Krypton Components" OFF "BUILD_HARDWARE" OFF)
 
+#Always process subdirs
+ADD_SUBDIRECTORY( tests )
+
 IF ( BUILD_KRYPTON )
 
     # This gathers all the .cpp files into the variable 'SRCS'
@@ -8,8 +11,6 @@ IF ( BUILD_KRYPTON )
 
     GLOBAL_ADD_COMPONENT( orocos-krypton ${SRCS} )
     GLOBAL_ADD_INCLUDE( ocl ${HPPS})
-
-    ADD_SUBDIRECTORY( tests )
 
 ENDIF ( BUILD_KRYPTON )
 

@@ -1,6 +1,6 @@
-IF ( BUILD_TESTS)
-OPTION( BUILD_LASER_TEST "Build Laser Distance Sensor Components Test" OFF )
+DEPENDENT_OPTION( BUILD_LASER_TEST "Build Laser Distance Sensor Components Test" OFF "BUILD_LASER;BUILD_TESTS" OFF)
 
+IF ( BUILD_TESTS)
 IF ( BUILD_LASER_TEST )
 
     # This gathers all the .cpp files into the variable 'SRCS'

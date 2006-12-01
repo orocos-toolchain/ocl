@@ -1,4 +1,7 @@
-OPTION( BUILD_NAXES "Build NAxes Control Components" ON )
+DEPENDENT_OPTION( BUILD_NAXES "Build NAxes Control Components" ON "KDL_FOUND" OFF)
+
+#Always process subdirs
+ADD_SUBDIRECTORY( tests )
 
 IF ( BUILD_NAXES )
 
@@ -8,7 +11,5 @@ IF ( BUILD_NAXES )
 
     GLOBAL_ADD_COMPONENT( orocos-naxes ${SRCS} )
     GLOBAL_ADD_INCLUDE( ocl ${HPPS})
-
-    ADD_SUBDIRECTORY( tests )
 
 ENDIF ( BUILD_NAXES )

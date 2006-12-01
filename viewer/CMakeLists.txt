@@ -1,4 +1,7 @@
-OPTION( BUILD_VIEWER "Build Viewer Component" OFF )
+DEPENDENT_OPTION( BUILD_VIEWER "Build Viewer Component" OFF "BUILD_NAXES;" OFF)
+
+ADD_SUBDIRECTORY( tests )
+ADD_SUBDIRECTORY( cpf )
 
 IF ( BUILD_VIEWER )
 
@@ -7,8 +10,5 @@ IF ( BUILD_VIEWER )
     FILE( GLOB HPPS [^.]*.hpp )
     GLOBAL_ADD_COMPONENT( orocos-viewer ${SRCS} )
     GLOBAL_ADD_INCLUDE( ocl ${HPPS})
-
-    ADD_SUBDIRECTORY( tests )
-    ADD_SUBDIRECTORY( cpf )
 
 ENDIF ( BUILD_VIEWER )

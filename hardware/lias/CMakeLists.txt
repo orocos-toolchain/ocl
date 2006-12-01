@@ -1,5 +1,8 @@
 DEPENDENT_OPTION( BUILD_LIAS "Build LiAS Components" OFF "BUILD_HARDWARE" OFF)
 
+#Always process subdirs
+ADD_SUBDIRECTORY( tests )
+
 IF ( BUILD_LIAS )
     
     SET( SRCS 
@@ -17,8 +20,6 @@ IF ( BUILD_LIAS )
     INCLUDE_DIRECTORIES( ${PROJECT_SOURCE_DIR}/hardware/axes/ )
     GLOBAL_ADD_COMPONENT( orocos-lias ${SRCS} )
     GLOBAL_ADD_INCLUDE( ocl ${HPPS})
-
-    ADD_SUBDIRECTORY( tests )
 
 ENDIF ( BUILD_LIAS )
 

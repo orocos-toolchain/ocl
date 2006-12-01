@@ -1,5 +1,8 @@
 DEPENDENT_OPTION( BUILD_LASER "Build Laser Distance Sensor Components" OFF "BUILD_HARDWARE" OFF)
 
+#Always process subdirs
+ADD_SUBDIRECTORY( tests )
+
 IF ( BUILD_LASER )
 
     # This gathers all the .cpp files into the variable 'SRCS'
@@ -8,7 +11,5 @@ IF ( BUILD_LASER )
 
     GLOBAL_ADD_COMPONENT( orocos-laser ${SRCS} )
     GLOBAL_ADD_INCLUDE( ocl ${HPPS})
-
-    ADD_SUBDIRECTORY( tests )
 
 ENDIF ( BUILD_LASER )

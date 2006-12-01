@@ -1,4 +1,7 @@
-OPTION( BUILD_CARTESIAN "Build Cartesian Control Components" ON )
+DEPENDENT_OPTION( BUILD_CARTESIAN "Build Cartesian Control Components" ON "KDL_FOUND" OFF)
+
+#Always process subdirs
+ADD_SUBDIRECTORY( tests )
 
 IF ( BUILD_CARTESIAN )
 
@@ -9,7 +12,5 @@ IF ( BUILD_CARTESIAN )
     INCLUDE_DIRECTORIES( ${PROJECT_SOURCE_DIR}/motion_control/naxes )
     GLOBAL_ADD_COMPONENT( orocos-cartesian ${SRCS} )
     GLOBAL_ADD_INCLUDE( ocl ${HPPS})
-
-    ADD_SUBDIRECTORY( tests )
 
 ENDIF ( BUILD_CARTESIAN )

@@ -9,7 +9,7 @@ INCLUDE (${PROJ_SOURCE_DIR}/config/FindPkgConfig.cmake)
 IF ( CMAKE_PKGCONFIG_EXECUTABLE )
 
     MESSAGE( STATUS "Detecting BFL" )
-    #MESSAGE( "Looking for BFL in: ${BFL_INSTALL}")
+    MESSAGE( "Looking for BFL in: ${BFL_INSTALL}")
     PKGCONFIG( "libbfl-dev >= 0.4.2" BFL_FOUND BFL_INCLUDE_DIRS BFL_DEFINES BFL_LINK_DIRS BFL_LIBS )
 
     IF( BFL_FOUND )

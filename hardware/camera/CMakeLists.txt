@@ -1,5 +1,8 @@
 DEPENDENT_OPTION( BUILD_CAMERA "Build Camera Components" OFF "BUILD_HARDWARE" OFF)
 
+#Always process subdirs
+ADD_SUBDIRECTORY( tests )
+
 IF ( BUILD_CAMERA )
 
     # This gathers all the .cpp files into the variable 'SRCS'
@@ -8,7 +11,5 @@ IF ( BUILD_CAMERA )
 
     GLOBAL_ADD_COMPONENT( orocos-camera ${SRCS} )
     GLOBAL_ADD_INCLUDE( ocl ${HPPS})
-
-    ADD_SUBDIRECTORY( tests )
 
 ENDIF ( BUILD_CAMERA )
