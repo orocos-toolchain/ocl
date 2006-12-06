@@ -1,0 +1,13 @@
+         Orocos Components Library (OCL) v0.2.1
+
+This release of the Orocos Components Library is a bugfix
+and documentation-update release. The following issues
+were fixed
+
+ o bug #276: Fixed ...-NOTFOUND Target OS flags in build system
+ o bug #280: Axis Drive function contains wrong check
+
+This release also provides the 'Component Template' package
+which allows Orocos Component builders to quickly construct
+a new component. The template offers a ready to use build system
+(using cmake), an example component and an example test program.

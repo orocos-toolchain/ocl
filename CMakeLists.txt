@@ -12,7 +12,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.2)
 
 PROJECT(orocos-ocl)
 
-SET( VERSION 0.2 CACHE STRING "Version of Orocos Components" )
+SET( VERSION 0.2.1 CACHE STRING "Version of Orocos Components" )
   MESSAGE( "Orocos Components version ${VERSION}" )
 
 # Do not rely on environment variables to find the path, because that's confusing
