@@ -35,7 +35,7 @@ namespace OCL
      * nAxesVelocityController. It collects these values and stores
      * them as a vector in a dataport, available for other nAxes or
      * your own components.
-     * 
+     * \ingroup nAxesComponents 
      */
     class nAxesSensor : public RTT::TaskContext
     {

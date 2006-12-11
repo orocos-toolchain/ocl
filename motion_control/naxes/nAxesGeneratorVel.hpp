@@ -47,6 +47,7 @@ namespace OCL
      * OCL::nAxesSensor and generates velocity
      * setpoints which can be use by OCL::nAxesControllerVel.
      * 
+     * \ingroup nAxesComponents 
      */
     
     class nAxesGeneratorVel : public RTT::TaskContext

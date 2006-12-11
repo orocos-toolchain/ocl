@@ -15,6 +15,7 @@ namespace OCL
      * dataports of a nAxesVelocityController and supplies a method to
      * get the value of each reference signal
      * 
+     * \ingroup nAxesComponents 
      */
 
     class ReferenceSensor : public RTT::TaskContext

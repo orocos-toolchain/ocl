@@ -49,6 +49,7 @@ namespace OCL
      * setpoints which can be use by OCL::nAxesControllerPos,
      * OCL::nAxesControllerPosVel or OCL::nAxesControllerVel.
      * 
+     * \ingroup nAxesComponents
      */
 
     class nAxesGeneratorPos : public RTT::TaskContext

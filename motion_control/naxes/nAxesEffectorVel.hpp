@@ -37,6 +37,7 @@ namespace OCL
      * puts these output values in the driveValue dataports of an
      * nAxesVelocityController. 
      * 
+     * \ingroup nAxesComponents 
      */
 
     class nAxesEffectorVel : public RTT::TaskContext

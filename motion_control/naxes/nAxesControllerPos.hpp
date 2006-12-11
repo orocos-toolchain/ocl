@@ -44,6 +44,7 @@ namespace OCL
      * OCL::nAxesEffectorVel to send its output velocities to the
      * hardware/simulation axes.
      * 
+     * \ingroup nAxesComponents 
      */
 
     class nAxesControllerPos : public RTT::TaskContext

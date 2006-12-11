@@ -17,7 +17,7 @@
 
 /**
  * Header that collects all nAxesComponents headers.
- * 
+ * \defgroup nAxesComponents The Joint Control Components
  */
 
 #include "nAxesSensor.hpp"
