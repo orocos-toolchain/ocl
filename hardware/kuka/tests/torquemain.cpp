@@ -49,7 +49,7 @@ int ORO_main(int argc, char* argv[])
    FileReporting reporter("Reporting");
    reporter.marshalling()->updateProperties("cpf/reporter.cpf");
    reporter.connectPeers(my_robot);
-   PeriodicActivity _reportingTask(3,0.02,reporter.engine());
+   PeriodicActivity _reportingTask(3,0.01,reporter.engine());
 
   /// Start the console reader.
   _kukaTask.start();

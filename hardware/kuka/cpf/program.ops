@@ -1,10 +1,18 @@
 program KukaTestProg
 {
+  var double refpos = 2.0*151.0719/10
+  var double refneg = 2.0*151.0719/10
+
   do prepareForUse()
-  do unlockAxis(3)
-  do startAxis(3)
-  do TaskBrowser.driveValue3.Set( 0.5 )
-  while(positionValue3.Get()<1.5 && positionValue3.Get()>-1.5){
+  do unlockAxis(0)
+  do startAxis(0)
+  do TaskBrowser.driveValue0.Set(refpos )
+  while(positionValue0.Get()<2.5){
+     do nothing
+  }
+  do stop()
+  do TaskBrowser.driveValue0.Set(-refneg )
+  while(positionValue0.Get()>-1.5){
      do nothing
   }
   do stop()

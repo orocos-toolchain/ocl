@@ -366,7 +366,6 @@ namespace OCL
         std::vector<double>     _curReg_a;
         std::vector<double>     _curReg_b;
         std::vector<double>     _shunt_R;
-        std::vector<double>     _shunt_c;
 
          /**
          * Motor current constant Km
@@ -431,11 +430,6 @@ namespace OCL
         std::vector<RTT::AnalogSensor*>               _currentSensor; 
         std::vector<RTT::DigitalOutput*>              _modeSwitch; 
         std::vector<RTT::DigitalInput*>               _modeCheck; 
-
-// 	//Temp
-// 	RTT::AnalogInput<unsigned int>*  _motorCurrentInput; 
-// 	RTT::AnalogSensor*               _motorCurrentSensor; 
-// 	RTT::DataPort<double>*       			_motorCurrentValue;
     
 #endif
         std::vector<RTT::AxisInterface*>      _axes;
@@ -443,9 +437,7 @@ namespace OCL
 	OCL::Kuka361TorqueSimulator*		_torqueSimulator;
         std::vector<double> 			_tau_sim;
 	std::vector<double> 			_pos_sim;
-	std::vector<TimeService::ticks>		_previous_time;
-	TimeService::Seconds 			_delta_time;
-
+    
     };//class Kuka361nAxesTorqueController
 }//namespace Orocos
 #endif // Kuka361nAxesTorqueController
