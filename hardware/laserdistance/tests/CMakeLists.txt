@@ -3,6 +3,8 @@ DEPENDENT_OPTION( BUILD_LASER_TEST "Build Laser Distance Sensor Components Test"
 IF ( BUILD_TESTS)
 IF ( BUILD_LASER_TEST )
 
+    INCLUDE_DIRECTORIES( ${PROJ_SOURCE_DIR}/hardware/comedi)
+
     # This gathers all the .cpp files into the variable 'SRCS'
     FILE( GLOB SRCS [^.]*.cpp )
 

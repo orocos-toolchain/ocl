@@ -15,8 +15,8 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 //  
 
-#ifndef __LASER_HARDWARE__
-#define __LASER_HARDWARE__
+#ifndef __LASERDISTANCE_HARDWARE__
+#define __LASERDISTANCE_HARDWARE__
 
 #include <pkgconf/system.h>
 
@@ -44,7 +44,7 @@ namespace OCL {
      * digital IO PCI cards. It can also be used in simulation if the
      * comedi-device drivers were not available during compilation of orocos.
      */
-    class LaserSensor : public RTT::TaskContext {
+    class LaserDistance : public RTT::TaskContext {
     public:
         /** 
          * Constructor of the class
@@ -52,11 +52,11 @@ namespace OCL {
          * @param name name of the TaskContext
          * @param nr_chan nr of channels that should be read
          * @param propertyfilename location of the
-         * propertyfile. Default: cpf/LaserSensor.cpf
+         * propertyfile. Default: cpf/LaserDistance.cpf
          * 
          */
-        LaserSensor(std::string name,unsigned int nr_chan,std::string propertyfilename="cpf/LaserSensor.cpf");
-        virtual~LaserSensor();
+        LaserDistance(std::string name,unsigned int nr_chan,std::string propertyfilename="cpf/LaserDistance.cpf");
+        virtual~LaserDistance();
         
         virtual bool startup();
         virtual void update();

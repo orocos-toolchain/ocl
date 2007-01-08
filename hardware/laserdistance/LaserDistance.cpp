@@ -15,7 +15,7 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 //  
 
-#include "LaserSensor.hpp"
+#include "LaserDistance.hpp"
 #include <iostream>
 
 #if defined (OROPKG_DEVICE_DRIVERS_COMEDI)
@@ -28,7 +28,7 @@ namespace OCL
   using namespace RTT;
   using namespace std;
   
-  LaserSensor::LaserSensor(string name,unsigned int nr_chan ,string propertyfile):
+  LaserDistance::LaserDistance(string name,unsigned int nr_chan ,string propertyfile):
     TaskContext(name),
 #if defined (OROPKG_DEVICE_DRIVERS_COMEDI)    
     _LaserInput(nr_chan),
@@ -83,7 +83,7 @@ namespace OCL
 
   }
   
-  LaserSensor::~LaserSensor()
+  LaserDistance::~LaserDistance()
   {
 #if defined (OROPKG_DEVICE_DRIVERS_COMEDI)
     delete _comediDev_NI6024;
@@ -93,7 +93,7 @@ namespace OCL
 #endif
   }
   
-  bool LaserSensor::startup()    
+  bool LaserDistance::startup()    
   {
     if(_simulation_values.value().size()!=_nr_chan||
        _volt2m.value().size()!=_nr_chan||
@@ -107,7 +107,7 @@ namespace OCL
     return true;
   }
     
-    void LaserSensor::update()
+    void LaserDistance::update()
     {
 #if defined (OROPKG_DEVICE_DRIVERS_COMEDI)
         for(unsigned int i = 0 ; i<_nr_chan;i++){
@@ -123,7 +123,7 @@ namespace OCL
         _distances.Set(_distances_local);
     }
     
-    void LaserSensor::shutdown()
+    void LaserDistance::shutdown()
     {
         marshalling()->writeProperties(_propertyfile);
     }

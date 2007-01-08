@@ -20,7 +20,7 @@
 
 #include <rtt/os/main.h>
 
-#include "hardware/laserdistance/LaserSensor.hpp"
+#include "hardware/laserdistance/LaserDistance.hpp"
 //User interface
 #include "taskbrowser/TaskBrowser.hpp"
 
@@ -45,7 +45,7 @@ int ORO_main(int arc, char* argv[])
         Logger::log() << Logger::Info << argv[0] << " manually raises LogLevel to 'Info' (5). See also file 'orocos.log'."<<Logger::endl;
     }
 
-    LaserSensor laser("LaserSensor",2);
+    LaserDistance laser("LaserDistance",2);
     
     PeriodicActivity laserTask(0,0.1, laser.engine() );
     FileReporting reporter("Reporting");
