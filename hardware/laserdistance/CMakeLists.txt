@@ -1,9 +1,11 @@
-DEPENDENT_OPTION( BUILD_LASER "Build Laser Distance Sensor Components" OFF "BUILD_HARDWARE" OFF)
+DEPENDENT_OPTION( BUILD_LASER "Build Laser Distance Sensor Components" OFF "BUILD_HARDWARE,BUILD_COMEDI" OFF)
 
 #Always process subdirs
 ADD_SUBDIRECTORY( tests )
 
 IF ( BUILD_LASER )
+
+    INCLUDE_DIRECTORIES( ${PROJ_SOURCE_DIR}/hardware/comedi)
 
     # This gathers all the .cpp files into the variable 'SRCS'
     FILE( GLOB SRCS [^.]*.cpp )

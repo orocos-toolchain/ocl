@@ -16,6 +16,7 @@
 //  
 
 #include "LaserSensor.hpp"
+#include <iostream>
 
 #if defined (OROPKG_DEVICE_DRIVERS_COMEDI)
 #define NR_CHAN 2

@@ -26,9 +26,12 @@
 #include <rtt/Event.hpp>
 #include <rtt/Properties.hpp>
 
+#define OROPKG_DEVICE_DRIVERS_COMEDI 1
+
 #if defined (OROPKG_DEVICE_DRIVERS_COMEDI)
-#include <rtt/dev/ComediDevice.hpp>
-#include <rtt/dev/ComediSubDeviceAIn.hpp>
+
+#include "dev/ComediDevice.hpp"
+#include "dev/ComediSubDeviceAIn.hpp"
 #include <rtt/dev/AnalogInput.hpp>
 #endif
 
@@ -63,8 +66,8 @@ namespace OCL {
         
     private:
 #if defined (OROPKG_DEVICE_DRIVERS_COMEDI)
-        RTT::ComediDevice* _comediDev_NI6024; //NI-6024 for analog in
-        RTT::ComediSubDeviceAIn* _comediSubdevAIn;
+        ComediDevice* _comediDev_NI6024; //NI-6024 for analog in
+        ComediSubDeviceAIn* _comediSubdevAIn;
         std::vector<RTT::AnalogInput<unsigned int>*> _LaserInput;
 #endif
     

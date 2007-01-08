@@ -48,8 +48,10 @@ int ORO_main(int arc, char* argv[])
     LaserSensor laser("LaserSensor",2);
     
     PeriodicActivity laserTask(0,0.1, laser.engine() );
-    //FileReporting reporter("Reporting");
-    //reporter.connectPeers(&a_task);
+    FileReporting reporter("Reporting");
+
+    reporter.addPeer(&laser);
+    PeriodicActivity reportingTask(2,0.1, reporter.engine() );
  
     
     TaskBrowser browser( &laser );
