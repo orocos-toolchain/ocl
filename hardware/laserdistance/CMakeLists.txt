@@ -1,4 +1,4 @@
-DEPENDENT_OPTION( BUILD_LASER "Build Laser Distance Sensor Components" OFF "BUILD_HARDWARE,BUILD_COMEDI" OFF)
+DEPENDENT_OPTION( BUILD_LASER "Build Laser Distance Sensor Components" OFF "BUILD_HARDWARE;BUILD_COMEDI" OFF)
 
 #Always process subdirs
 ADD_SUBDIRECTORY( tests )
