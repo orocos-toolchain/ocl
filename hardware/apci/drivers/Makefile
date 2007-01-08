@@ -1,5 +1,5 @@
-KERNEL_DIR=/home/sspr/src/linux-2.6.14.3-rtai-3.3
-RTAI_INSTALL_DIR=/usr/realtime
+KERNEL_DIR=/usr/src/linux-2.6.15.7-rtai-3.3
+RTAI_INSTALL_DIR=/usr/realtime/rtai-3.3
 
 #CPPFLAGS+=-I$(RTAI_INSTALL_DIR)/include
 #CFLAGS+=-march=pentium4 -mcpu=pentium4
