@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "cpf.dtd">
+<properties>
+  <struct name="sim_values" type="std::vector&lt;double&gt;">
+     <description>Value used for simulation</description>
+     <simple name="Size" type="long"><description>Dimension of the Vector</description><value>2</value></simple>
+     <simple name="0" type="double"><value>1</value></simple>
+     <simple name="1" type="double"><value>1</value></simple>
+  </struct>
+  <struct name="volt2m" type="std::vector&lt;double&gt;">
+     <description>Convert Factor from volt to m</description>
+     <simple name="Size" type="long"><description>Dimension of the Vector</description><value>2</value></simple>
+     <simple name="0" type="double"><value>0.05</value></simple>
+     <simple name="1" type="double"><value>0.05</value></simple>
+  </struct>
+  <struct name="offsets" type="std::vector&lt;double&gt;">
+     <description>Offset in m</description>
+     <simple name="Size" type="long"><description>Dimension of the Vector</description><value>2</value></simple>
+     <simple name="0" type="double"><value>0.1</value></simple>
+     <simple name="1" type="double"><value>0.1</value></simple>
+  </struct>
+  <struct name="up_limits" type="std::vector&lt;double&gt;">
+     <description>UpperLimits of the distance sensor</description>
+     <simple name="Size" type="long"><description>Dimension of the Vector</description><value>2</value></simple>
+     <simple name="0" type="double"><value>0.6</value></simple>
+     <simple name="1" type="double"><value>0.6</value></simple>
+  </struct>
+  <struct name="low_limits" type="std::vector&lt;double&gt;">
+     <description>LowerLimits of the distance sensor</description>
+     <simple name="Size" type="long"><description>Dimension of the Vector</description><value>2</value></simple>
+     <simple name="0" type="double"><value>0.1</value></simple>
+     <simple name="1" type="double"><value>0.1</value></simple>
+  </struct>
+</properties>
