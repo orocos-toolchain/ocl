@@ -274,7 +274,7 @@ namespace OCL
         if(!_simulation.value()){
             _apci2200->switchOn( 12 );
             _apci2200->switchOn( 14 );
-            Logger::log()<<Logger::Warning<<"Release Emergency stop and push button to start ...."<<Logger::endl;
+            log(Warning) <<"Release Emergency stop and push button to start ...."<<endlog();
         }
 #endif
         _activated = true;
@@ -337,7 +337,7 @@ namespace OCL
         if (!(axis<0 || axis>KUKA361_NUM_AXES-1))
             return _axes[axis]->stop();
         else{
-          Logger::log()<<Logger::Error<<"Axis "<< axis <<"doesn't exist!!"<<Logger::endl;
+          log(Error) <<"Axis "<< axis <<"doesn't exist!!"<<endlog();
           return false;
         }
     }
@@ -347,7 +347,7 @@ namespace OCL
         if (!(axis<0 || axis>KUKA361_NUM_AXES-1))
             return _axes[axis]->drive(0.0);
         else{
-            Logger::log()<<Logger::Error<<"Axis "<< axis <<"doesn't exist!!"<<Logger::endl;
+            log(Error) <<"Axis "<< axis <<"doesn't exist!!"<<endlog();
             return false;
         }
     }
@@ -358,7 +358,7 @@ namespace OCL
             if (!(axis<0 || axis>KUKA361_NUM_AXES-1))
                 return _axes[axis]->unlock();
             else{
-                Logger::log()<<Logger::Error<<"Axis "<< axis <<"doesn't exist!!"<<Logger::endl;
+                log(Error) <<"Axis "<< axis <<"doesn't exist!!"<<endlog();
                 return false;
             }
         }
@@ -371,7 +371,7 @@ namespace OCL
         if (!(axis<0 || axis>KUKA361_NUM_AXES-1))
             return _axes[axis]->lock();
         else{
-            Logger::log()<<Logger::Error<<"Axis "<< axis <<"doesn't exist!!"<<Logger::endl;
+            log(Error) <<"Axis "<< axis <<"doesn't exist!!"<<endlog();
             return false;
         }
     }

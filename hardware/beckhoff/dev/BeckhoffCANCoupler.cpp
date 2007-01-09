@@ -115,7 +115,7 @@ namespace RTT
         if ( !(this->status == PreOperational ||
                this->status == Stopped) )
             return false;
-        Logger::log() <<Logger::Info << "[ BechoffCANCoupler ] Sending StartUp to node "<<node_id<<Logger::endl;
+        log(Info) << "[ BechoffCANCoupler ] Sending StartUp to node "<<node_id<<endlog();
         bus->write(&StartUpmsg);
 
         /**
@@ -129,7 +129,7 @@ namespace RTT
 
     void BeckhoffCANCoupler::resetNode()
     {
-        Logger::log() <<Logger::Info << "[ BechoffCANCoupler ] Sending Reset to node "<<node_id<<Logger::endl;
+        log(Info) << "[ BechoffCANCoupler ] Sending Reset to node "<<node_id<<endlog();
         this->status = Initialisation;
         bus->write(&Resetmsg);
     }
@@ -139,7 +139,7 @@ namespace RTT
         if ( !(this->status == PreOperational ||
                this->status == Operational) )
             return false;
-        Logger::log() <<Logger::Info << "[ BechoffCANCoupler ] Sending Stop to node "<<node_id<<Logger::endl;
+        log(Info) << "[ BechoffCANCoupler ] Sending Stop to node "<<node_id<<endlog();
         bus->write(&Stopmsg);
         this->status = Stopped;
         return true;

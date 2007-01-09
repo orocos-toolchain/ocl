@@ -1,4 +1,4 @@
-// Copyright (C) 2006 Ruben Smits <ruben dot smits at mech dot kuleuven dot be>
+// Copyright (C) 2006 Wim Meeussen <wim dot meeussen at mech dot kuleuven dot be>
 //  
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -31,8 +31,7 @@ namespace OCL {
     /**
      * This class implements a TaskContext which construct an
      * interface to the automated Laser initialising a link to the
-     * digital IO PCI cards. It can also be used in simulation if the
-     * comedi-device drivers were not available during compilation of orocos.
+     * digital IO PCI cards. 
      */
     class LaserScanner : public RTT::TaskContext {
     public:
@@ -54,21 +53,25 @@ namespace OCL {
     protected:
         /// values which should be used in simulation
         RTT::Property<std::vector<double> > _simulation_values;
-        /// Conversion factor from volts to meters
-        RTT::Property<std::vector<double> > _volt2m;
-        /// Offset of measurement in meters
-        RTT::Property<std::vector<double> > _offsets;
-        /// lower limits of measurements, fires _distanceOutOfRange event
-        RTT::Property<std::vector<double> > _lowerLimits;
-        /// upper limits of measurements, fires _distanceOutOfRange event
-        RTT::Property<std::vector<double> > _upperLimits;
+        RTT::Property<std::string> _port;
+        RTT::Property<int> _range_mode;
+        RTT::Property<int> _res_mode;
+        RTT::Property<int> _unit_mode;
+
         /// Dataport which contains the measurements
         RTT::WriteDataPort<std::vector<double> > _distances;
+
         /// Event which is fired if the distance is out of range
         RTT::Event< void(int,double)>  _distanceOutOfRange;
+
     private:
-        std::vector<double> _measurement, _distances_local;
+        unsigned char _range_mode_char;
+        unsigned char _res_mode_char;
+        unsigned char _unit_mode_char;
+
         std::string _propertyfile;
+
+
     }; // class
 } // namespace
 

@@ -51,7 +51,7 @@ namespace OCL
     _calibrate_wrench_sensor("calibrateWrenchSensor", &Demotool::calibrateWrenchSensor, this),
     _propertyfile(propertyfile)
   {
-    Logger::log()<<Logger::Debug<<this->getName()<<": adding Properties"<<Logger::endl;
+    log(Debug) <<this->getName()<<": adding Properties"<<endlog();
     properties()->addProperty(&_pos_leds_demotool);
     properties()->addProperty(&_mass_demotool);
     properties()->addProperty(&_center_gravity_demotool);
@@ -60,7 +60,7 @@ namespace OCL
     properties()->addProperty(&_Frame_demotool_fs);
     properties()->addProperty(&_Frame_world_camera);
 
-    Logger::log()<<Logger::Debug<<this->getName()<<": adding Ports"<<Logger::endl;
+    log(Debug) <<this->getName()<<": adding Ports"<<endlog();
     ports()->addPort(&_Wrench_fs_fs_port);
     ports()->addPort(&_Vector_led_camera_port);
     ports()->addPort(&_Wrench_world_world_port);
@@ -70,7 +70,7 @@ namespace OCL
     ports()->addPort(&_Frame_world_manip_port);
     ports()->addPort(&_num_visible_leds_port);
     
-    Logger::log()<<Logger::Debug<<this->getName()<<": adding Methods"<<Logger::endl;
+    log(Debug) <<this->getName()<<": adding Methods"<<endlog();
     methods()->addMethod(_calibrate_world_to_manip, "set world frame to current manip frame");
     methods()->addMethod(_calibrate_wrench_sensor, "set wrench sensor offset to measure zero force");
 
@@ -95,7 +95,7 @@ namespace OCL
       _Vector_led_demotool[i] = temp;
     }
 
-    Logger::log()<<Logger::Debug<<this->getName()<<": constructed."<<Logger::endl;
+    log(Debug) <<this->getName()<<": constructed."<<endlog();
   }
   
   Demotool::~Demotool()
@@ -107,10 +107,10 @@ namespace OCL
   {
     // get command from wrench component, to add offset
     TaskContext* wrench_sensor = getPeer("Wrenchsensor");
-    if (!wrench_sensor) Logger::log()<<Logger::Error<<this->getName()<<": peer Wrenchsensor not found."<<Logger::endl;
+    if (!wrench_sensor) log(Error) <<this->getName()<<": peer Wrenchsensor not found."<<endlog();
  
     _add_offset = wrench_sensor->commands()->getCommand<bool(Wrench)>("addOffset");
-    if (!_add_offset.ready()) Logger::log()<<Logger::Error<<this->getName()<<": command addOffset not found."<<Logger::endl;
+    if (!_add_offset.ready()) log(Error) <<this->getName()<<": command addOffset not found."<<endlog();
 
     // set _Twist_world_manip to zero
     SetToZero(_Twist_world_manip);
@@ -178,8 +178,8 @@ namespace OCL
 	  vec_temp(j) = residu(j+1, i+1);
 	error += vec_temp.Norm() /_num_visible_leds;
       if (error > 0.001){
-	Logger::log() << Logger::Warning << "SensorDemotool: Error while solving LED position equation = " 
-		      << error << " > 0.001" << Logger::endl;
+	log(Warning) << "SensorDemotool: Error while solving LED position equation = " 
+		      << error << " > 0.001" << endlog();
       }
     }
     
@@ -230,8 +230,8 @@ namespace OCL
 
   void Demotool::calibrateWrenchSensor()
   {
-    Logger::log()<<Logger::Debug<<this->getName()<<": calibrate with " << _Frame_world_fs.Inverse() * _Wrench_world_world 
-		 <<Logger::endl;
+    log(Debug) <<this->getName()<<": calibrate with " << _Frame_world_fs.Inverse() * _Wrench_world_world 
+		 <<endlog();
 
     _add_offset( _Frame_world_fs.Inverse() * _Wrench_world_world );
   }

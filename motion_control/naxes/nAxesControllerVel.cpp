@@ -62,7 +62,7 @@ namespace OCL{
                                     "axis","axis to reset");  
         
         if(!marshalling()->readProperties(_propertyfile))
-            Logger::log()<<Logger::Error<<"(nAxesControllerVel) Reading Properties from "<<_propertyfile<<" failed!!"<<Logger::endl;
+            log(Error) <<"(nAxesControllerVel) Reading Properties from "<<_propertyfile<<" failed!!"<<endlog();
         
     }
   

@@ -59,7 +59,7 @@ int ORO_main( int argc, char** argv)
     // such that we can see output :
     if ( Logger::log().getLogLevel() < Logger::Info ) {
         Logger::log().setLogLevel( Logger::Info );
-        Logger::log() << Logger::Info << argv[0] << " manually raises LogLevel to 'Info' (5). See also file 'orocos.log'."<<Logger::endl;
+        log(Info) << argv[0] << " manually raises LogLevel to 'Info' (5). See also file 'orocos.log'."<<endlog();
     }
 
     TestTaskContext gtc("MyPeer");
@@ -71,10 +71,10 @@ int ORO_main( int argc, char** argv)
 
     TaskBrowser tb( &gtc );
 
-    Logger::log()<<Logger::Info <<Logger::endl<< "  This demo demonstrates interaction with Components." << Logger::endl;
-    Logger::log()<<Logger::Info << "  Use 'enter' and/or 'leave' to go 'inside' or 'outside' a component. " <<Logger::endl;
-    Logger::log()<<Logger::Info << "  The inside interface shows the methods and ports of the visited component," <<Logger::endl;
-    Logger::log()<<Logger::Info << "  the outside interface show the methods and ports of the TaskBrowser."<<Logger::endl;
+    log(Info) <<endlog()<< "  This demo demonstrates interaction with Components." << endlog();
+    log(Info) << "  Use 'enter' and/or 'leave' to go 'inside' or 'outside' a component. " <<endlog();
+    log(Info) << "  The inside interface shows the methods and ports of the visited component," <<endlog();
+    log(Info) << "  the outside interface show the methods and ports of the TaskBrowser."<<endlog();
         
     PeriodicActivity act(10, 1.0, gtc.engine());
 

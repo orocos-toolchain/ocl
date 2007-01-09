@@ -393,9 +393,9 @@ namespace OCL
                 if( (_velocityValue[axis]->Get() < -_velocityLimits.value()[axis]) ||
                     (_velocityValue[axis]->Get() > _velocityLimits.value()[axis]) ){
                     _velocityOutOfRange("Velocity of a Kuka361 Axis is out of range");
-                //Logger::log()<<Logger::Warning<<"velocity"<<_velocityValue[axis]->Get()<<Logger::endl;
-                //Logger::log()<<Logger::Warning<<"velsensor: "<<_axes[axis]->getSensor("Velocity")->readSensor()<<Logger::endl;
-                //Logger::log()<<Logger::Warning<<"axis: "<<axis<<Logger::endl;
+                //log(Warning) <<"velocity"<<_velocityValue[axis]->Get()<<endlog();
+                //log(Warning) <<"velsensor: "<<_axes[axis]->getSensor("Velocity")->readSensor()<<endlog();
+                //log(Warning) <<"axis: "<<axis<<endlog();
 		}
                 
                 // emit event when position is out of range
@@ -421,7 +421,7 @@ namespace OCL
 // 		//temp
 // 		_motorCurrentValue->Set(_motorCurrentSensor->readSensor());
             
-            //Logger::log()<<Logger::Debug<<"pos (rad): "<<_positionValue[3]->Get()<<" | vel (rad/s): "<<_velocityValue[3]->Get()<<" | drive (A): "<<_driveValue[3]->Get()<<" | cur (A): "<<_currentValue[3]->Get()<<Logger::endl;
+            //log(Debug) <<"pos (rad): "<<_positionValue[3]->Get()<<" | vel (rad/s): "<<_velocityValue[3]->Get()<<" | drive (A): "<<_driveValue[3]->Get()<<" | cur (A): "<<_currentValue[3]->Get()<<endlog();
      }
 
     void Kuka361nAxesTorqueController::shutdown()
@@ -439,7 +439,7 @@ namespace OCL
         if(!_simulation.value()){
             _apci2200->switchOn( 12 );
             _apci2200->switchOn( 14 );
-            Logger::log()<<Logger::Warning<<"Release Emergency stop and push button to start ..."<<Logger::endl;
+            log(Warning) <<"Release Emergency stop and push button to start ..."<<endlog();
         }
 #endif
         _activated = true;
@@ -506,7 +506,7 @@ namespace OCL
             return _axes[axis]->stop();
 	}
         else{
-          Logger::log()<<Logger::Error<<"Axis "<< axis <<"doesn't exist!!"<<Logger::endl;
+          log(Error) <<"Axis "<< axis <<"doesn't exist!!"<<endlog();
           return false;
         }
     }
@@ -516,7 +516,7 @@ namespace OCL
         if (!(axis<0 || axis>KUKA361_NUM_AXES-1))
             return _axes[axis]->drive(0.0);
         else{
-            Logger::log()<<Logger::Error<<"Axis "<< axis <<"doesn't exist!!"<<Logger::endl;
+            log(Error) <<"Axis "<< axis <<"doesn't exist!!"<<endlog();
             return false;
         }
     }
@@ -527,7 +527,7 @@ namespace OCL
             if (!(axis<0 || axis>KUKA361_NUM_AXES-1))
                 return _axes[axis]->unlock();
             else{
-                Logger::log()<<Logger::Error<<"Axis "<< axis <<"doesn't exist!!"<<Logger::endl;
+                log(Error) <<"Axis "<< axis <<"doesn't exist!!"<<endlog();
                 return false;
             }
         }
@@ -540,7 +540,7 @@ namespace OCL
         if (!(axis<0 || axis>KUKA361_NUM_AXES-1))
             return _axes[axis]->lock();
         else{
-            Logger::log()<<Logger::Error<<"Axis "<< axis <<"doesn't exist!!"<<Logger::endl;
+            log(Error) <<"Axis "<< axis <<"doesn't exist!!"<<endlog();
             return false;
         }
     }

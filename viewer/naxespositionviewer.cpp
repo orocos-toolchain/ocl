@@ -87,7 +87,7 @@ public:
 			data.jointvalues[i] = q[i];
 		}
 		data.stop = stop;
-  		//Logger::log() << Logger::Info << "(Viewer) sending " << data.jointvalues[2] << " for thirth joint " << Logger::endl;
+  		//log(Info) << "(Viewer) sending " << data.jointvalues[2] << " for thirth joint " << endlog();
 		for (ClientHandlers::iterator it=clients.begin();it!=clients.end();it++) {
 			(*it)->peer().send_n(&data,sizeof(data));
 		}
@@ -97,15 +97,15 @@ public:
 		for (ClientHandlers::iterator it=clients.begin();it!=clients.end();it++) {
 			delete (*it);
 			*it = 0;
-  			Logger::log() << Logger::Info << "(Viewer) Connection closed" << Logger::endl;
+  			log(Info) << "(Viewer) Connection closed" << endlog();
 		}
 	} 
 
 
 	virtual int open(void*) {
-  		Logger::log() << Logger::Info << "(Viewer)Connection established" << Logger::endl;
+  		log(Info) << "(Viewer)Connection established" << endlog();
 	    if (reactor_instance==0) {
-  			Logger::log() << Logger::Info << "(Viewer) Programming error : reactor_instance should not be 0" << Logger::endl;
+  			log(Info) << "(Viewer) Programming error : reactor_instance should not be 0" << endlog();
 		}
 		reactor_instance->register_handler(this, ACE_Event_Handler::READ_MASK);
 		clients.push_back(this);
@@ -118,7 +118,7 @@ public:
 				break;
 			}
 		}
-  		Logger::log() << Logger::Info << "(Viewer)Connection closed" << Logger::endl;
+  		log(Info) << "(Viewer)Connection closed" << endlog();
 		delete this;
         return 0;
 	}
@@ -140,7 +140,7 @@ NAxesPositionViewer::NAxesPositionViewer(const std::string& name,const std::stri
 	clientacceptor(0),
 	state(0)
 {
-  Logger::log() << Logger::Debug << "Entering NAxesPositionViewer::NAxesPositionViewer" << Logger::endl;
+  log(Debug) << "Entering NAxesPositionViewer::NAxesPositionViewer" << endlog();
   /**
    * initializing properties.
    */
@@ -156,11 +156,11 @@ NAxesPositionViewer::NAxesPositionViewer(const std::string& name,const std::stri
   properties()->addProperty( &port_name);
  
   if (!marshalling()->readProperties(_propertyfile)) {
-    Logger::log() << Logger::Error << "Failed to read the property file, continue with default values." << Logger::endl;
+    log(Error) << "Failed to read the property file, continue with default values." << endlog();
   }
   _num_axes = num_axes.value();
 
-  Logger::log() << Logger::Debug << "creating dataport(s) with base name : " << port_name.value() << Logger::endl;
+  log(Debug) << "creating dataport(s) with base name : " << port_name.value() << endlog();
   /**
    * Creating and adding the data-ports
    */
@@ -179,7 +179,7 @@ NAxesPositionViewer::NAxesPositionViewer(const std::string& name,const std::stri
     ports()->addPort(vectorValue);
   }
 
-  Logger::log() << Logger::Debug << "Leaving NAxesPositionViewer::NAxesPositionViewer" << Logger::endl;
+  log(Debug) << "Leaving NAxesPositionViewer::NAxesPositionViewer" << endlog();
 }
 
 NAxesPositionViewer::~NAxesPositionViewer()
@@ -203,7 +203,7 @@ bool NAxesPositionViewer::startup() {
 void NAxesPositionViewer::update() {
 	// ACE_DEBUG( (LM_INFO,"%t update\n"));
 	if (state==1) {
-  	  Logger::log() << Logger::Info << "(Viewer) startup()" << Logger::endl;
+  	  log(Info) << "(Viewer) startup()" << endlog();
   	  ACE_INET_Addr addr(portnumber);
       ClientHandler::reactor_instance = new ACE_Reactor();
       clientacceptor=new ClientAcceptor(addr,ClientHandler::reactor_instance);
@@ -233,7 +233,7 @@ void NAxesPositionViewer::update() {
  * This function is called when the task is stopped.
  */
 void NAxesPositionViewer::shutdown() {
-    Logger::log() << Logger::Info << "(Viewer) shutdown()" << Logger::endl;
+    log(Info) << "(Viewer) shutdown()" << endlog();
 	ClientHandler::send_data(jointvec,true);
 	ClientHandler::delete_all();
 	delete (ClientAcceptor*)clientacceptor;

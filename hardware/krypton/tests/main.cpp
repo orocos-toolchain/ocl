@@ -38,20 +38,20 @@ int ORO_main(int arc, char* argv[])
     // such that we can see output :
     if ( Logger::log().getLogLevel() < Logger::Info ) {
       Logger::log().setLogLevel( Logger::Info );
-      Logger::log() << Logger::Info << argv[0] << " manually raises LogLevel to 'Info' (5). "
-		    << "See also file 'orocos.log'."<<Logger::endl;
+      log(Info) << argv[0] << " manually raises LogLevel to 'Info' (5). "
+		    << "See also file 'orocos.log'."<<endlog();
     }
     // import kdl toolkit
     Toolkit::Import( KDLToolkit );
 
-    Logger::log() << Logger::Info << "creating krypton sensor" << Logger::endl;
+    log(Info) << "creating krypton sensor" << endlog();
     KryptonK600Sensor krypton("KryptonSensor",6);
 
-    Logger::log() << Logger::Info << "creating reporter" << Logger::endl;
+    log(Info) << "creating reporter" << endlog();
     FileReporting reporter("Reporting");
     reporter.connectPeers(&krypton);
  
-    Logger::log() << Logger::Info << "start task browser" << Logger::endl;
+    log(Info) << "start task browser" << endlog();
     TaskBrowser browser( &krypton );
     browser.loop();
 

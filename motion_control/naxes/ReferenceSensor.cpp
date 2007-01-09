@@ -24,11 +24,11 @@ namespace OCL
     bool ReferenceSensor::getReference(int axis)
     {
         if ((0<=axis)&&(axis<nrofaxes)) {
-            Logger::log()<<Logger::Error<<"reference"<<axis<<" connected: "<<reference[axis]->ready()<<Logger::endl;
-            Logger::log()<< Logger::Error << "reference"<<axis<<" " << reference[axis]->Get() << Logger::endl;
+            log(Error) <<"reference"<<axis<<" connected: "<<reference[axis]->ready()<<endlog();
+            log(Error) << "reference"<<axis<<" " << reference[axis]->Get() << endlog();
             return reference[axis]->Get();
         } else {
-            Logger::log()<< Logger::Error << "parameter axis out of range" << Logger::endl;
+            log(Error) << "parameter axis out of range" << endlog();
             return false;
         }
     }

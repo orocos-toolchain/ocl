@@ -55,7 +55,7 @@ namespace OCL
     this->properties()->addProperty(&_controller_gain);
   
     if(!marshalling()->readProperties(_propertyfile))
-      Logger::log()<<Logger::Error<<"(nAxesControllerPosVel) Reading Properties from "<<_propertyfile<<" failed!!"<<Logger::endl;
+      log(Error) <<"(nAxesControllerPosVel) Reading Properties from "<<_propertyfile<<" failed!!"<<endlog();
     
   }
   

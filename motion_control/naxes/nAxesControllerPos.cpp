@@ -67,7 +67,7 @@ namespace OCL
         this->methods()->addMethod( &_getOffset,"Get offset measurements");
 
         if(!marshalling()->readProperties(_propertyfile)){
-            Logger::log()<<Logger::Error<<"(nAxesControllerPos) Reading Properties from "<<_propertyfile<<" failed!!"<<Logger::endl;
+            log(Error) <<"(nAxesControllerPos) Reading Properties from "<<_propertyfile<<" failed!!"<<endlog();
         }
         
     }
@@ -120,7 +120,7 @@ namespace OCL
   
     bool nAxesControllerPos::startMeasuringOffsets(double time_sleep, int num_samples)
     {
-        Logger::log()<<Logger::Debug<<"(nAxesControllerPos) start measuring offsets"<<Logger::endl;
+        log(Debug) <<"(nAxesControllerPos) start measuring offsets"<<endlog();
         
         // don't do anything if still measuring
         if (_is_measuring)

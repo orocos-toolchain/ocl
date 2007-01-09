@@ -620,21 +620,21 @@ namespace OCL
     void TaskBrowser::enterTask()
     {
         if ( context == taskcontext ) {
-            Logger::log() << Logger::Info <<"Already in Task "<< taskcontext->getName()<<Logger::endl;
+            log(Info) <<"Already in Task "<< taskcontext->getName()<<endlog();
             return;
         }
         context = taskcontext;
-        Logger::log() << Logger::Info <<"Entering Task "<< taskcontext->getName()<<Logger::endl;
+        log(Info) <<"Entering Task "<< taskcontext->getName()<<endlog();
     }
 
     void TaskBrowser::leaveTask()
     {
         if ( context == tb ) {
-            Logger::log() << Logger::Info <<"Already watching Task "<< taskcontext->getName()<<Logger::endl;
+            log(Info) <<"Already watching Task "<< taskcontext->getName()<<endlog();
             return;
         }
         context = tb;
-        Logger::log() << Logger::Info <<"Watching Task "<< taskcontext->getName()<<Logger::endl;
+        log(Info) <<"Watching Task "<< taskcontext->getName()<<endlog();
     }
 
     void TaskBrowser::switchBack()
@@ -644,7 +644,7 @@ namespace OCL
         if ( !taskcontext->engine()->commands()->isProcessed( lastc ) ) {
             Logger::log()<<Logger::Warning
                          << "Previous command was not yet processed by previous Processor." <<Logger::nl
-                         << " Can not track command status across tasks."<< Logger::endl;
+                         << " Can not track command status across tasks."<< endlog();
             // memleak command...
             command = 0;
         } else {
@@ -735,7 +735,7 @@ namespace OCL
         if ( taskcontext && !taskcontext->engine()->commands()->isProcessed( lastc ) ) {
             Logger::log()<<Logger::Warning
                          << "Previous command was not yet processed by previous Processor." <<Logger::nl
-                         << " Can not track command status across tasks."<< Logger::endl;
+                         << " Can not track command status across tasks."<< endlog();
             // memleak it...
             command = 0;
         } else {
@@ -786,7 +786,7 @@ namespace OCL
         }
         catch( ... )
             {
-                Logger::log()<<Logger::Debug<<"No such peer : "<< c <<Logger::endl;
+                log(Debug) <<"No such peer : "<< c <<endlog();
                 return 0;
             }
         object = pp.object(); // store object.
@@ -809,7 +809,7 @@ namespace OCL
         }
         catch( ... )
             {
-                Logger::log()<<Logger::Debug<<"No such property : "<< c <<Logger::endl;
+                log(Debug) <<"No such property : "<< c <<endlog();
                 return 0;
             }
         return pp.property();

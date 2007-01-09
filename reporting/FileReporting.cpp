@@ -29,7 +29,7 @@ namespace OCL
                 
             this->addMarshaller( fheader, fbody );
         } else {
-            Logger::log() <<Logger::Error << "Could not open file "+repfile.get()+" for reporting."<<Logger::endl;
+            log(Error) << "Could not open file "+repfile.get()+" for reporting."<<endlog();
         }
 
         return ReportingComponent::startup();

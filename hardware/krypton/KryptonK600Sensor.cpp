@@ -50,7 +50,7 @@ namespace OCL
         // If kernel Module is not loaded yet, Print error message
         if (! ((udp_message_arrived = (SEM *) rt_get_adr(nam2num("KEDSEM"))) && 
                (udp_message = (MBX *) rt_get_adr(nam2num("KEDMBX")))	      ))
-	  Logger::log() << Logger::Info << "KryptonK600Sensor: Can't find sem/mbx" << Logger::endl;
+	  log(Info) << "KryptonK600Sensor: Can't find sem/mbx" << endlog();
 
         for (unsigned int i =0; i<_num_leds;i++)
 	  _ledPositions_local[i] = Vector(-99999, -99999, -99999);
@@ -90,15 +90,15 @@ namespace OCL
         
 	int ret = rt_mbx_receive_if(udp_message,(void *) &msg, MAX_MESSAGE_LENGTH);
 	if (ret != 0 && ret !=MAX_MESSAGE_LENGTH)
-	  Logger::log() << Logger::Info << "KryptonK600Sensor: Error receiving message from mbx: error " 
-			<< ret << " EINVAL is " << EINVAL << Logger::endl;
+	  log(Info) << "KryptonK600Sensor: Error receiving message from mbx: error " 
+			<< ret << " EINVAL is " << EINVAL << endlog();
 	else{
 	  // Interprete Message
 	  if ( interprete_K600_Msg(msg))
 	    // Copy Data into write buffer
 	    _ledPositions.Set(_ledPositions_local);
-	  else Logger::log() << Logger::Info << "KryptonK600Sensor: Bad message, "
-			     << "or something went wrong in decoding" << Logger::endl;
+	  else log(Info) << "KryptonK600Sensor: Bad message, "
+			     << "or something went wrong in decoding" << endlog();
 	}
 	_ledPositions.Set(_ledPositions_local);
       }
@@ -132,9 +132,9 @@ namespace OCL
 	  return true;
         }
 	else {
-	  Logger::log() << Logger::Error << "K600PositionInterface: The Krypton system has " << _nr_markers 
-			<< " leds registered, but you said there are " << _num_leds << " leds" << Logger::endl;
-	  Logger::log() << Logger::Error << "K600PositionInterface: Prepare for Segfault :-)" << Logger::endl;
+	  log(Error) << "K600PositionInterface: The Krypton system has " << _nr_markers 
+			<< " leds registered, but you said there are " << _num_leds << " leds" << endlog();
+	  log(Error) << "K600PositionInterface: Prepare for Segfault :-)" << endlog();
 	  return false;
 	}
       }

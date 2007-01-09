@@ -66,7 +66,7 @@ namespace OCL
 
     //Read properties
     if(!marshalling()->readProperties(_propertyfile))
-      Logger::log()<<Logger::Error<<"(CartesianGeneratorPos) Reading Properties from "<<_propertyfile<<" failed!!"<<Logger::endl;
+      log(Error) <<"(CartesianGeneratorPos) Reading Properties from "<<_propertyfile<<" failed!!"<<endlog();
 
 
   }
@@ -81,7 +81,7 @@ namespace OCL
   {
     //Check if readPort is connected
     if (!_position_meas.connected())
-      Logger::log()<<Logger::Warning<<"(CartesianGeneratorPos) Port "<<_position_meas.getName()<<" not connected"<<Logger::endl;
+      log(Warning) <<"(CartesianGeneratorPos) Port "<<_position_meas.getName()<<" not connected"<<endlog();
 
     // check size of properties
     if(_maximum_velocity.value().size() != 6 || _maximum_acceleration.value().size() != 6)

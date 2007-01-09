@@ -78,10 +78,10 @@ namespace OCL
     _capture = cvCaptureFromCAM(0);
     if( !_capture )
       {
-        Logger::log() << Logger::Error << "(CaptureCamera) Could not initialize capturing..." << Logger::endl;
+        log(Error) << "(CaptureCamera) Could not initialize capturing..." << endlog();
         return false;
       }
-    Logger::log() << Logger::Info << "(CaptureCamera) Capturing started..." << Logger::endl;
+    log(Info) << "(CaptureCamera) Capturing started..." << endlog();
   
     //Setting properties for camera
     //=============================
@@ -112,7 +112,7 @@ namespace OCL
     if(_show_image.value())
       cvDestroyAllWindows();
     
-    Logger::log() << Logger::Info << "(CaptureCamera) stopping Capture..." << Logger::endl;
+    log(Info) << "(CaptureCamera) stopping Capture..." << endlog();
     cvReleaseCapture( &_capture );
   }
   
@@ -132,7 +132,7 @@ namespace OCL
     
     if(_show_time.value()){
       _elapsed = TimeService::Instance()->secondsSince( _timestamp );
-      Logger::log()<< Logger::Info << "time since last capture: "<< _elapsed << Logger::endl;
+      log(Info) << "time since last capture: "<< _elapsed << endlog();
       _timestamp = TimeService::Instance()->ticksGet();
     }
     
@@ -144,7 +144,7 @@ namespace OCL
         
     if(_show_time.value()){
       _elapsed = TimeService::Instance()->secondsSince( _timestamp );
-      Logger::log()<< Logger::Info << "time used for capturing: "<< _elapsed << Logger::endl;
+      log(Info) << "time used for capturing: "<< _elapsed << endlog();
       _timestamp = TimeService::Instance()->ticksGet();
     }
     _update = true;

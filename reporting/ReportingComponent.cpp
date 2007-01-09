@@ -127,7 +127,7 @@ namespace OCL
         Logger::In in("ReportingComponent");
         ofstream outf( config.get().c_str() );
         if ( !outf ) {
-            Logger::log() << Logger::Error << "Writing file "<< config.get() << " failed."<<Logger::endl;
+            log(Error) << "Writing file "<< config.get() << " failed."<<endlog();
             return false;
         }
         CPFMarshaller<std::ostream> marsh( outf );
@@ -154,7 +154,7 @@ namespace OCL
         CPFDemarshaller dem( config.get() );
         PropertyBag bag;
         if (dem.deserialize( bag ) == false ) {
-            Logger::log() << Logger::Error << "Reading file "<< config.get() << " failed."<<Logger::endl;
+            log(Error) << "Reading file "<< config.get() << " failed."<<endlog();
             return false;
         }
         
@@ -164,8 +164,8 @@ namespace OCL
             {
                 Property<std::string>* compName = dynamic_cast<Property<std::string>* >( *it );
                 if ( !compName )
-                    Logger::log() << Logger::Error << "Expected Property \""
-                                  << (*it)->getName() <<"\" to be of type string."<< Logger::endl;
+                    log(Error) << "Expected Property \""
+                                  << (*it)->getName() <<"\" to be of type string."<< endlog();
                 else if ( compName->getName() == "Component" ) {
                     ok &= this->reportComponent( compName->value() );
                 }
@@ -180,8 +180,8 @@ namespace OCL
                     ok &= this->reportData(cname, pname);
                 }
                 else {
-                    Logger::log() << Logger::Error << "Expected \"Component\", \"Port\" or \"Data\", got "
-                                  << compName->getName() << Logger::endl;
+                    log(Error) << "Expected \"Component\", \"Port\" or \"Data\", got "
+                                  << compName->getName() << endlog();
                     ok = false;
                 }
                 ++it;
@@ -196,7 +196,7 @@ namespace OCL
     bool ReportingComponent::screenComponent( const std::string& comp )
     {
         Logger::In in("ReportingComponent::screenComponent");
-        Logger::log() <<Logger::Error << "not implemented." <<comp<<Logger::endl;
+        log(Error) << "not implemented." <<comp<<endlog();
         return false;
     }
 
@@ -205,7 +205,7 @@ namespace OCL
         Logger::In in("ReportingComponent");
         TaskContext* c = this->getPeer(comp);
         if ( c == 0) {
-            Logger::log() <<Logger::Error << "Unknown Component: " <<comp<<Logger::endl;
+            log(Error) << "Unknown Component: " <<comp<<endlog();
             return false;
         }
         output << "Screening Component '"<< comp << "' : "<< endl << endl;
@@ -242,12 +242,12 @@ namespace OCL
         //std::vector<std::string> sources                = comp->data()->getNames();
         TaskContext* comp = this->getPeer(component);
         if ( !comp ) {
-            Logger::log() <<Logger::Error << "Could not report Component " << component <<" : no such peer."<<Logger::endl;
+            log(Error) << "Could not report Component " << component <<" : no such peer."<<endlog();
             return false;
         }
         Ports ports   = comp->ports()->getPorts();
         for (Ports::iterator it = ports.begin(); it != ports.end() ; ++it) {
-            Logger::log() <<Logger::Debug << "Checking port " << (*it)->getName()<<"."<<Logger::endl;
+            log(Debug) << "Checking port " << (*it)->getName()<<"."<<endlog();
             this->reportPort( component, (*it)->getName() );
         }
         return true;
@@ -257,7 +257,7 @@ namespace OCL
     bool ReportingComponent::unreportComponent( const std::string& component ) {
         TaskContext* comp = this->getPeer(component);
         if ( !comp ) {
-            Logger::log() <<Logger::Error << "Could not unreport Component " << component <<" : no such peer."<<Logger::endl;
+            log(Error) << "Could not unreport Component " << component <<" : no such peer."<<endlog();
             return false;
         }
         Ports ports   = comp->ports()->getPorts();
@@ -274,18 +274,18 @@ namespace OCL
         Logger::In in("ReportingComponent");
         TaskContext* comp = this->getPeer(component);
         if ( !comp ) {
-            Logger::log() <<Logger::Error << "Could not report Component " << component <<" : no such peer."<<Logger::endl;
+            log(Error) << "Could not report Component " << component <<" : no such peer."<<endlog();
             return false;
         }
         PortInterface* porti   = comp->ports()->getPort(port);
         if ( !porti ) {
-            Logger::log() <<Logger::Error << "Could not report Port " << port
-                          <<" : no such port on Component "<<component<<"."<<Logger::endl;
+            log(Error) << "Could not report Port " << port
+                          <<" : no such port on Component "<<component<<"."<<endlog();
             return false;
         }
         if ( porti->connected() ) {
             this->reportDataSource( component + "." + port, "Port", porti->connection()->getDataSource() );
-            Logger::log() <<Logger::Info << "Reporting port " << port <<" : ok."<<Logger::endl;
+            log(Info) << "Reporting port " << port <<" : ok."<<endlog();
         } else {
             // create new port temporarily 
             // this port is only created with the purpose of
@@ -302,7 +302,7 @@ namespace OCL
             
             delete ourport;
             this->reportDataSource( component + "." + porti->getName(), "Port", ci->getDataSource() );
-            Logger::log() <<Logger::Info << "Created connection for port " << porti->getName()<<" : ok."<<Logger::endl;
+            log(Info) << "Created connection for port " << porti->getName()<<" : ok."<<endlog();
         }
         return true;
     }
@@ -317,7 +317,7 @@ namespace OCL
         Logger::In in("ReportingComponent");
         TaskContext* comp = this->getPeer(component);
         if ( !comp ) {
-            Logger::log() <<Logger::Error << "Could not report Component " << component <<" : no such peer."<<Logger::endl;
+            log(Error) << "Could not report Component " << component <<" : no such peer."<<endlog();
             return false;
         }
         // Is it an attribute ?
@@ -349,7 +349,7 @@ namespace OCL
         // update the copy from the original.
         DataSourceBase::shared_ptr clone = orig->getTypeInfo()->buildValue();
         if ( !clone ) {
-            Logger::log() <<Logger::Error << "Could not report '"<< tag <<"' : unknown type." << Logger::endl;
+            log(Error) << "Could not report '"<< tag <<"' : unknown type." << endlog();
             return false;
         }
         try {
@@ -357,7 +357,7 @@ namespace OCL
             assert( comm );
             root.push_back( boost::make_tuple( tag, orig, comm, clone, type ) );
         } catch ( bad_assignment& ba ) {
-            Logger::log() <<Logger::Error << "Could not report '"<< tag <<"' : failed to create Command." << Logger::endl;
+            log(Error) << "Could not report '"<< tag <<"' : failed to create Command." << endlog();
             return false;
         }
         return true;
@@ -377,7 +377,7 @@ namespace OCL
     bool ReportingComponent::startup() {
         Logger::In in("ReportingComponent");
         if (marshallers.begin() == marshallers.end()) {
-            Logger::log() << Logger::Error << "Need at least one marshaller to write reports." <<Logger::endl;
+            log(Error) << "Need at least one marshaller to write reports." <<endlog();
             return false;
         }
 

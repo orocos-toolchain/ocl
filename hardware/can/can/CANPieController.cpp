@@ -44,10 +44,10 @@ namespace RTT
         CANPieController::~CANPieController()
         {
             CpUserAppDeInit(0);
-            Logger::log() <<Logger::Info << "CANPie Controller Statistics :"<<Logger::nl;
+            log(Info) << "CANPie Controller Statistics :"<<Logger::nl;
             Logger::log() << " Total Received    : "<<total_recv<< ".  Failed to Receive (FIFO empty) : "<< failed_recv<<Logger::nl;
             Logger::log() << " Total Transmitted : "<<total_trns<< ".  Failed to Transmit (FIFO full) : "<< failed_trns<<
-                ".  Generic Transmit Errors: "<<generic_trns<<Logger::endl;
+                ".  Generic Transmit Errors: "<<generic_trns<<endlog();
         }
 
         bool CANPieController::initialize() 
@@ -72,7 +72,7 @@ namespace RTT
             bus = _bus;
             controller[CANPieChannel] = this;
             CANPieStatus = CpUserAppInit(CANPieChannel, 32, 64, 10);
-            Logger::log() <<Logger::Info << "CANPieController : Added bus with status :"<<CANPieStatus<<Logger::endl;
+            log(Info) << "CANPieController : Added bus with status :"<<CANPieStatus<<endlog();
             CpUserIntFunctions( CANPieChannel, ReceiveIntHandler, 0 , 0);
             bus->setController( this );
         }

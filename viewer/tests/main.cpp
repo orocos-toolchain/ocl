@@ -49,20 +49,20 @@ public:
 	}
 
    virtual void message(const std::string& msg) {
-         Logger::log() << Logger::Info << msg <<Logger::endl;
+         log(Info) << msg <<endlog();
 	}
    virtual void setDriveValue(int axis,double value) {
 		if ((0<=axis)&&(axis<nrofaxes)) {
 			driveValue[axis]->Set( value);
 		} else {
-  			Logger::log()<< Logger::Error << "parameter axis out of range" << Logger::endl;
+  			log(Error) << "parameter axis out of range" << endlog();
 		}
    }
    virtual bool getReference(int axis) {
 		if ((0<=axis)&&(axis<nrofaxes)) {
 			return reference[axis]->Get();
 		} else {
-  			Logger::log()<< Logger::Error << "parameter axis out of range" << Logger::endl;
+  			log(Error) << "parameter axis out of range" << endlog();
             return false;
 		}
    }
@@ -126,7 +126,7 @@ int ORO_main(int argc, char* argv[])
 
   if ( Logger::log().getLogLevel() < Logger::Info ) {
     Logger::log().setLogLevel( Logger::Info );
-              Logger::log() << Logger::Info << argv[0] << " manually raises LogLevel to 'Info' (5). See also file 'orocos.log'."<<Logger::endl;
+              log(Info) << argv[0] << " manually raises LogLevel to 'Info' (5). See also file 'orocos.log'."<<endlog();
   }
   TaskContext* my_robot = new Kuka160nAxesVelocityController("lias"); 
   //TaskContext* my_robot = new LiASnAxesVelocityController("lias");
@@ -169,11 +169,11 @@ int ORO_main(int argc, char* argv[])
   my_robot->scripting()->loadPrograms("cpf/program.ops"); 
   /// Start the console reader.
   browser.loop();
-  Logger::log()<< Logger::Info << "Browser ended " << Logger::endl;
+  log(Info) << "Browser ended " << endlog();
   
   _robotTask.stop();
-  Logger::log()<< Logger::Info << "Task stopped" << Logger::endl;
+  log(Info) << "Task stopped" << endlog();
   delete my_robot;
-  Logger::log()<< Logger::Info << "robot deleted" << Logger::endl;
+  log(Info) << "robot deleted" << endlog();
   return 0;
 }

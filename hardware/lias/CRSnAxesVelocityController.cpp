@@ -67,12 +67,12 @@ namespace OCL {
 #define NUM_AXES 6
 
 #define DBG \
-    Logger::log() << Logger::Info << Logger::endl; \
-    Logger::log() << Logger::Info << __PRETTY_FUNCTION__ << Logger::endl;
+    log(Info) << endlog(); \
+    log(Info) << __PRETTY_FUNCTION__ << endlog();
 
 
 #define TRACE(x) \
-    Logger::log() << Logger::Info << "TRACE " << #x << Logger::endl; \
+    log(Info) << "TRACE " << #x << endlog(); \
     x;
     
 
@@ -126,11 +126,11 @@ CRSnAxesVelocityController::CRSnAxesVelocityController(const std::string& name,c
   attributes()->addConstant( &_num_axes);
  
   if (!marshalling()->readProperties(propertyfilename)) {
-    Logger::log() << Logger::Error << "Failed to read the property file, continueing with default values." << Logger::endl;
+    log(Error) << "Failed to read the property file, continueing with default values." << endlog();
     throw 0;
   }
 #if defined (OROPKG_OS_LXRT)
-    Logger::log() << Logger::Info << "LXRT version of CRSnAxesVelocityController has started" << Logger::endl;
+    log(Info) << "LXRT version of CRSnAxesVelocityController has started" << endlog();
     
     _IP_Digital_24_DOut = new IP_Digital_24_DOutInterface("IP_Digital_24_DOut");
     // \TODO : Set this automatically to the correct value :
@@ -191,7 +191,7 @@ CRSnAxesVelocityController::CRSnAxesVelocityController(const std::string& name,c
         _axesInterface[i] = _axes[i];
     }
   #else  // ifndef   OROPKG_OS_LXRT
-    Logger::log() << Logger::Info << "GNU-Linux simulation version of CRSnAxesVelocityController has started" << Logger::endl;
+    log(Info) << "GNU-Linux simulation version of CRSnAxesVelocityController has started" << endlog();
     /*_IP_Digital_24_DOut            = 0;
     _IP_Encoder_6_task             = 0;
     _IP_FastDac_AOut               = 0;
@@ -322,7 +322,7 @@ CRSnAxesVelocityController::isDriven(int axis)
   if (!(axis<0 || axis>NUM_AXES-1))
     return _axes[axis]->isDriven();
   else{
-    Logger::log()<<Logger::Error<<"Axis "<< axis <<"doesn't exist!!"<<Logger::endl;
+    log(Error) <<"Axis "<< axis <<"doesn't exist!!"<<endlog();
     return false;
   }
 }
@@ -334,7 +334,7 @@ CRSnAxesVelocityController::startAxis(int axis)
   if (!(axis<0 || axis>NUM_AXES-1))
     return _axes[axis]->drive(0.0);
   else{
-    Logger::log()<<Logger::Error<<"Axis "<< axis <<"doesn't exist!!"<<Logger::endl;
+    log(Error) <<"Axis "<< axis <<"doesn't exist!!"<<endlog();
     return false;
   }
 }
@@ -375,7 +375,7 @@ CRSnAxesVelocityController::stopAxis(int axis)
   if (!(axis<0 || axis>NUM_AXES-1))
     return _axes[axis]->stop();
   else{
-    Logger::log()<<Logger::Error<<"Axis "<< axis <<" doesn't exist!!"<<Logger::endl;
+    log(Error) <<"Axis "<< axis <<" doesn't exist!!"<<endlog();
     return false;
   }
 }
@@ -416,7 +416,7 @@ CRSnAxesVelocityController::unlockAxis(int axis)
       _axes[axis]->unlock();
       return true;
   } else{
-    Logger::log()<<Logger::Error<<"Axis "<< axis <<"doesn't exist!!"<<Logger::endl;
+    log(Error) <<"Axis "<< axis <<"doesn't exist!!"<<endlog();
     return false;
   }
 }
@@ -437,7 +437,7 @@ CRSnAxesVelocityController::lockAxis(int axis)
       _axes[axis]->lock();
       return true;
   } else {
-    Logger::log()<<Logger::Error<<"Axis "<< axis <<"doesn't exist!!"<<Logger::endl;
+    log(Error) <<"Axis "<< axis <<"doesn't exist!!"<<endlog();
     return false;
   }
 }
@@ -492,7 +492,7 @@ CRSnAxesVelocityController::addDriveOffset(int axis, double offset)
        #endif
        return true;
   } else {
-    Logger::log()<<Logger::Error<<"Axis "<< axis <<"doesn't exist!!"<<Logger::endl;
+    log(Error) <<"Axis "<< axis <<"doesn't exist!!"<<endlog();
     return false;
   }
 }
@@ -518,7 +518,7 @@ CRSnAxesVelocityController::initPosition(int axis)
        #endif
        return true;
   } else {
-    Logger::log()<<Logger::Error<<"Axis "<< axis <<"doesn't exist!!"<<Logger::endl;
+    log(Error) <<"Axis "<< axis <<"doesn't exist!!"<<endlog();
     return false;
   }
 }

@@ -45,32 +45,32 @@ namespace OCL
     _distances_local(nr_chan),
     _propertyfile(propertyfile)
   {
-    Logger::log()<<Logger::Debug<<this->getName()<<": adding Properties"<<Logger::endl;
+    log(Debug) <<this->getName()<<": adding Properties"<<endlog();
     properties()->addProperty(&_simulation_values);
     properties()->addProperty(&_volt2m);
     properties()->addProperty(&_offsets);
     properties()->addProperty(&_upperLimits);
     properties()->addProperty(&_lowerLimits);
 
-    Logger::log()<<Logger::Debug<<this->getName()<<": adding Ports"<<Logger::endl;
+    log(Debug) <<this->getName()<<": adding Ports"<<endlog();
     ports()->addPort(&_distances);
 
-    Logger::log()<<Logger::Debug<<this->getName()<<": adding Events"<<Logger::endl;
+    log(Debug) <<this->getName()<<": adding Events"<<endlog();
     events()->addEvent(&_distanceOutOfRange, "Distance out of Range", "C", "Channel", "V", "Value");
     
 #if defined (OROPKG_DEVICE_DRIVERS_COMEDI)
     if(_nr_chan>NR_CHAN){
-      Logger::log()<<Logger::Warning<<"Only 2 hardware sensors currently available, resetting nr of channels to 2"<<Logger::endl;
+      log(Warning) <<"Only 2 hardware sensors currently available, resetting nr of channels to 2"<<endlog();
       _nr_chan = NR_CHAN;
     }
-    Logger::log()<<Logger::Debug<<this->getName()<<": Creating ComediDevice"<<Logger::endl;
+    log(Debug) <<this->getName()<<": Creating ComediDevice"<<endlog();
     _comediDev_NI6024  = new ComediDevice( 4 ); //NI-6024 for analog in
     int subd;
     subd = 0; // subdevice 0 is analog  in
-    Logger::log()<<Logger::Debug<<this->getName()<<": Creating ComediSubDevice"<<Logger::endl;
+    log(Debug) <<this->getName()<<": Creating ComediSubDevice"<<endlog();
     _comediSubdevAIn     = new ComediSubDeviceAIn( _comediDev_NI6024, "Laser", subd );
     for(unsigned int i = 0; i < nr_chan;i++){
-      Logger::log()<<Logger::Debug<<this->getName()<<": Creating AnalogInput "<<i<<Logger::endl;
+      log(Debug) <<this->getName()<<": Creating AnalogInput "<<i<<endlog();
       _LaserInput[i] = new AnalogInput<unsigned int>(_comediSubdevAIn, i+OFFSET); //channel number starting from 0
     }
 #endif
@@ -78,7 +78,7 @@ namespace OCL
     if(!marshalling()->readProperties(_propertyfile))
       log(Error)<<"Reading properties failed."<<endlog();
     
-    Logger::log()<<Logger::Debug<<this->getName()<<": constructed."<<Logger::endl;
+    log(Debug) <<this->getName()<<": constructed."<<endlog();
 
 
   }
@@ -101,7 +101,7 @@ namespace OCL
        _upperLimits.value().size()!=_nr_chan||
        _lowerLimits.value().size()!=_nr_chan)
 	{
-	  Logger::log()<<Logger::Error<<"size of Properties do not match nr of channels"<<Logger::endl;
+	  log(Error) <<"size of Properties do not match nr of channels"<<endlog();
 	  return false;
 	}
     return true;

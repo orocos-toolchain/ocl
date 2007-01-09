@@ -65,7 +65,7 @@ namespace OCL
         this->methods()->addMethod( &_reset, "Reset generator" );  
 
     if(!marshalling()->readProperties(_propertyfile))
-      Logger::log()<<Logger::Error<<"(nAxesGeneratorPos) Reading Properties from "<<_propertyfile<<" failed!!"<<Logger::endl;
+      log(Error) <<"(nAxesGeneratorPos) Reading Properties from "<<_propertyfile<<" failed!!"<<endlog();
 
     // Instantiate Motion Profiles
     for( unsigned int i=0; i<_num_axes; i++)
@@ -83,12 +83,12 @@ namespace OCL
 
     //Check if readPort is connected
     if (!_position_meas.connected())
-      Logger::log()<<Logger::Warning<<"(nAxesGeneratorPos) Port "<<_position_meas.getName()<<" not connected"<<Logger::endl;
+      log(Warning) <<"(nAxesGeneratorPos) Port "<<_position_meas.getName()<<" not connected"<<endlog();
     
     
     // check size of properties
     if(_maximum_velocity.value().size() != _num_axes || _maximum_acceleration.value().size() != _num_axes){
-      Logger::log()<<Logger::Error<<"Sizes of properies not equal to num_axes"<<Logger::endl;
+      log(Error) <<"Sizes of properies not equal to num_axes"<<endlog();
       return false;
     }
     

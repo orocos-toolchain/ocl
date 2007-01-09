@@ -47,23 +47,23 @@ int ORO_main(int argc, char* argv[])
     {
       string s = argv[1];
       if(s == "Kuka361"){
-	Logger::log()<<Logger::Warning<<"Choosing Kuka361"<<Logger::endl;
+	log(Warning) <<"Choosing Kuka361"<<endlog();
 	my_robot = new Kuka361nAxesVelocityController("Robot");
       }
       else if(s == "Kuka160"){
-	Logger::log()<<Logger::Warning<<"Choosing Kuka160"<<Logger::endl;
+	log(Warning) <<"Choosing Kuka160"<<endlog();
 	my_robot = new Kuka160nAxesVelocityController("Robot");
       }
     }
   else{
-    Logger::log()<<Logger::Warning<<"Using Default Kuka160"<<Logger::endl;
+    log(Warning) <<"Using Default Kuka160"<<endlog();
     my_robot = new Kuka160nAxesVelocityController("Robot");
   }
 
   if ( Logger::log().getLogLevel() < Logger::Info ) {
     Logger::log().setLogLevel( Logger::Info );
-    Logger::log() << Logger::Info << argv[0] << " manually raises LogLevel to 'Info' (5)."
-		  << " See also file 'orocos.log'."<<Logger::endl;
+    log(Info) << argv[0] << " manually raises LogLevel to 'Info' (5)."
+		  << " See also file 'orocos.log'."<<endlog();
   }
   
   EmergencyStop _emergency(my_robot);

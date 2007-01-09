@@ -91,7 +91,7 @@ namespace OCL
             _vel_profile[i] = new VelocityProfile_Trap( 0,0);
         
         if(!marshalling()->readProperties(_propertyfile))
-            Logger::log()<<Logger::Error<<"(nAxesGeneratorVel) Reading Properties from "<<_propertyfile<<" failed!!"<<Logger::endl;
+            log(Error) <<"(nAxesGeneratorVel) Reading Properties from "<<_propertyfile<<" failed!!"<<endlog();
 
     }
     

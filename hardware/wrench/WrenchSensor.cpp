@@ -70,10 +70,10 @@ namespace OCL
     
     JR3DSP_get_full_scale(&_full_scale, _dsp);
       
-    Logger::log() << Logger::Info << "WrenchSensor -  Full scale: ("
+    log(Info) << "WrenchSensor -  Full scale: ("
   		  << (double) _full_scale.Fx << ", " << (double) _full_scale.Fy << ", " << (double) _full_scale.Fz
   		  << (double) _full_scale.Tx << ", " << (double) _full_scale.Ty << ", " << (double) _full_scale.Tz 
-		  << ")" << Logger::endl;
+		  << ")" << endlog();
 #else
     _full_scale.Fx=100;
     _full_scale.Fy=100;
@@ -85,7 +85,7 @@ namespace OCL
     
     
     if (!marshalling()->readProperties(_propertyfile)) {
-      Logger::log() << Logger::Error << "Failed to read the property file. Offsets are set to zero" << Logger::endl;
+      log(Error) << "Failed to read the property file. Offsets are set to zero" << endlog();
     }
     
 
@@ -124,11 +124,11 @@ namespace OCL
     else if ( period < 1.0/(2*CUTOFF_FREQUENCY_FILTER6)) _filterToReadFrom = 6;
     else
       {
-	Logger::log() << Logger::Warning << "(WrenchSensor)  Sample to low to garantee no aliasing!" << Logger::endl;
+	log(Warning) << "(WrenchSensor)  Sample to low to garantee no aliasing!" << endlog();
 	return false;
       }
 #endif 
-    Logger::log() << Logger::Info << "WrenchSensor - ChooseFilter: " << _filterToReadFrom << Logger::endl;
+    log(Info) << "WrenchSensor - ChooseFilter: " << _filterToReadFrom << endlog();
     return true;
   }
   

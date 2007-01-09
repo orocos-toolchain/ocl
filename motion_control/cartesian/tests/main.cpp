@@ -41,18 +41,18 @@ int ORO_main(int argc, char* argv[])
         {
             string s = argv[1];
             if(s == "Kuka361"){
-                Logger::log()<<Logger::Warning<<"Choosing Kuka361"<<Logger::endl;
+                log(Warning) <<"Choosing Kuka361"<<endlog();
                 my_robot = new Kuka361nAxesVelocityController("Robot");
                 kukakf = new Kuka361();
             }
             else if(s == "Kuka160"){
-                Logger::log()<<Logger::Warning<<"Choosing Kuka160"<<Logger::endl;
+                log(Warning) <<"Choosing Kuka160"<<endlog();
                 my_robot = new Kuka160nAxesVelocityController("Robot");
                 kukakf = new Kuka160();
             }
         }
     else{
-        Logger::log()<<Logger::Warning<<"Using Default Kuka160"<<Logger::endl;
+        log(Warning) <<"Using Default Kuka160"<<endlog();
         my_robot = new Kuka160nAxesVelocityController("Robot");
         kukakf = new Kuka160();
     }

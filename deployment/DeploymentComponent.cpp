@@ -46,7 +46,7 @@ namespace OCL
             return false;
         }
         if (!t2) {
-            Logger::log() <<Logger::Error<< "No such peer: "<<other<<endlog();
+            log(Error) << "No such peer: "<<other<<endlog();
             return false;
         }
         if ( autoConnect.get() ) {

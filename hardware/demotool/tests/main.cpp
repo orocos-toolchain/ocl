@@ -39,8 +39,8 @@ int ORO_main(int arc, char* argv[])
     // such that we can see output :
     if ( Logger::log().getLogLevel() < Logger::Info ) {
         Logger::log().setLogLevel( Logger::Debug );
-        Logger::log() << Logger::Info << argv[0] << " manually raises LogLevel to 'Info' (5). "
-		      << "See also file 'orocos.log'."<<Logger::endl;
+        log(Info) << argv[0] << " manually raises LogLevel to 'Info' (5). "
+		      << "See also file 'orocos.log'."<<endlog();
     }
     // import kdl toolkit
     Toolkit::Import( KDLToolkit );

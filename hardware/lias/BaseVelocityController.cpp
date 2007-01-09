@@ -60,7 +60,7 @@ BaseVelocityController::BaseVelocityController(const std::string& name,const std
         this->properties()->addProperty( &logging );
         
         if (!marshalling()->readProperties(propfile)) {
-                     Logger::log() << Logger::Error << "Failed to read the property file." << Logger::endl;
+                     log(Error) << "Failed to read the property file." << endlog();
                      assert(0);
          }
 
@@ -198,21 +198,21 @@ BaseVelocityController::BaseVelocityController(const std::string& name,const std
     bool BaseVelocityController::startup() {
 
        /*if ( ! indatPort.connected() || ! outdatPort.connected() ) {
-            Logger::log() << Logger::Error << "Not all ports were properly connected. Aborting.!!!!"<<Logger::endl;
+            log(Error) << "Not all ports were properly connected. Aborting.!!!!"<<endlog();
             if ( !indatPort.connected() )
-                Logger::log() << indatPort.getName() << " not connected."<<Logger::endl;
+                Logger::log() << indatPort.getName() << " not connected."<<endlog();
             if ( !outdatPort.connected() )
-                Logger::log() << outdatPort.getName() << " not connected."<<Logger::endl;
+                Logger::log() << outdatPort.getName() << " not connected."<<endlog();
                    return false;
        }*/
        cl=new LiasClientN::Client;
 
        if (cl->connect(hostname,port)!=-1) { 
            connected=true; 
-           Logger::log() << "Connection to "<<hostname<<":"<<port<<" established."<<Logger::endl;
+           Logger::log() << "Connection to "<<hostname<<":"<<port<<" established."<<endlog();
        } else { 
            connected=false;
-           Logger::log() << "Could not connect to "<<hostname<<":"<<port<<Logger::endl;
+           Logger::log() << "Could not connect to "<<hostname<<":"<<port<<endlog();
        }
 
    	   return connected; 
@@ -232,12 +232,12 @@ BaseVelocityController::BaseVelocityController(const std::string& name,const std
         stringstream sstr;
         sstr << "SetVelocityGetPosition "<< v << " " << w << " \n" ; 
         if (logging.value()) {
-           Logger::log() << "(BaseVelocityController) Sending "<< sstr.str() <<Logger::endl;
+           Logger::log() << "(BaseVelocityController) Sending "<< sstr.str() <<endlog();
         } 
         cl->sendCommand(sstr.str());
         string str = cl->receiveData(); 
         if (logging.value()) {
-           Logger::log() << "(BaseVelocityController) Receiving "<< str <<Logger::endl;
+           Logger::log() << "(BaseVelocityController) Receiving "<< str <<endlog();
         } 
         stringstream sstr2(str);
         double x,y,theta;
@@ -260,7 +260,7 @@ BaseVelocityController::BaseVelocityController(const std::string& name,const std
                 delete cl;
                 cl=0;
             }
-            Logger::log() << "Disconnected."<<Logger::endl;
+            Logger::log() << "Disconnected."<<endlog();
             connected=false;
         }
    }

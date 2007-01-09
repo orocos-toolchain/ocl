@@ -29,7 +29,7 @@ namespace OCL
                 
                 this->addMarshaller( fheader, fbody );
             } else {
-                RTT::Logger::log() <<RTT::Logger::Error << "Could not write to console for reporting."<<RTT::Logger::endl;
+                log(Error) << "Could not write to console for reporting."<<RTT::endlog();
             }
 
             return ReportingComponent::startup();
