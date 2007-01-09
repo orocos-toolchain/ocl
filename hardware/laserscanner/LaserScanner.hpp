@@ -56,7 +56,7 @@ namespace OCL {
     protected:
         RTT::Property<int> _port;
         RTT::Property<int> _range_mode;
-        RTT::Property<int> _res_mode;
+        RTT::Property<double> _res_mode;
         RTT::Property<std::string> _unit_mode;
 
         /// Dataport which contains the measurements

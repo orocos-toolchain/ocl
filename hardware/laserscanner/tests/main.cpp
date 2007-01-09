@@ -17,14 +17,9 @@
 
 #include <rtt/RTT.hpp>
 #include <rtt/PeriodicActivity.hpp>
-
 #include <rtt/os/main.h>
-
-#include "hardware/laserdistance/LaserScanner.hpp"
-//User interface
+#include "hardware/laserscanner/LaserScanner.hpp"
 #include "taskbrowser/TaskBrowser.hpp"
-
-//Reporting
 #include "reporting/FileReporting.hpp"
 
 
@@ -32,6 +27,7 @@
 using namespace std;
 using namespace RTT;
 using namespace Orocos;
+using namespace OCL;
 
 /**
  * main() function
@@ -45,7 +41,7 @@ int ORO_main(int arc, char* argv[])
         log(Info) << argv[0] << " manually raises LogLevel to 'Info' (5). See also file 'orocos.log'."<<endlog();
     }
 
-    LaserSensor laser("LaserSensor",2);
+    LaserScanner laser("LaserScanner");
     
     PeriodicActivity laserTask(0,0.1, laser.engine() );
     FileReporting reporter("Reporting");

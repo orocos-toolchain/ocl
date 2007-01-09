@@ -29,6 +29,10 @@ namespace OCL
   
   LaserScanner::LaserScanner(string name, string propertyfile):
     TaskContext(name),
+    _port("port",""),
+    _range_mode("range_mode",""),
+    _res_mode("res_mode",""),
+    _unit_mode("unit_mode",""),
     _distances("LaserDistance"),
     _distanceOutOfRange("distanceOutOfRange"),
     _propertyfile(propertyfile)
@@ -50,20 +54,20 @@ namespace OCL
     
     log(Debug) <<this->getName()<<": create Sick laserscanner"<<endlog();
     if (_port.value() == 0 ) _port_char = "/dev/ttyS0";
-    else log(Error) << this->getName()<<"Wrong port parameter. Should be 0.";
+    else log(Error) << this->getName()<<"Wrong port parameter. Should be 0."<<endlog();
 
     if (_range_mode.value() == 100 ) _range_mode_char = SickLMS200::RANGE_100;
     else if (_range_mode.value() == 180 ) _range_mode_char = SickLMS200::RANGE_180;
-    else log(Error) << this->getName()<<"Wrong range parameter. Should be 100 or 180.";
+    else log(Error) << this->getName()<<"Wrong range parameter. Should be 100 or 180."<<endlog();
     
     if (_res_mode.value() == 0.25 ) _res_mode_char = SickLMS200::RES_0_25_DEG;
     else if (_res_mode.value() == 0.5 ) _res_mode_char = SickLMS200::RES_0_5_DEG;
     else if (_res_mode.value() == 1.0 ) _res_mode_char = SickLMS200::RES_1_DEG;
-    else log(Error) << this->getName()<<"Wrong res_mode parameter. Should be 0.25 or 0.5 or 1.0.";
+    else log(Error) << this->getName()<<"Wrong res_mode parameter. Should be 0.25 or 0.5 or 1.0."<<endlog();
 
     if (_unit_mode.value() == "cm" ) _unit_mode_char = SickLMS200::CMMODE;
     else if (_unit_mode.value() == "mm" ) _unit_mode_char = SickLMS200::MMMODE;
-    else log(Error) << this->getName()<<"Wrong unit mode parameter. Should be cm or mm.";
+    else log(Error) << this->getName()<<"Wrong unit mode parameter. Should be cm or mm."<<endlog();
 
     _sick_laserscanner = new SickLMS200(_port_char, _range_mode_char, _res_mode_char, _unit_mode_char);
 
