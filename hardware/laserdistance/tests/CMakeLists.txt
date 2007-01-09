@@ -1,7 +1,7 @@
-DEPENDENT_OPTION( BUILD_LASER_TEST "Build Laser Distance Sensor Components Test" OFF "BUILD_LASER;BUILD_TESTS" OFF)
+DEPENDENT_OPTION( BUILD_LASERDISTANCE_TEST "Build Laser Distance Sensor Components Test" OFF "BUILD_LASERDISTANCE;BUILD_TESTS" OFF)
 
 IF ( BUILD_TESTS)
-IF ( BUILD_LASER_TEST )
+IF ( BUILD_LASERDISTANCE_TEST )
 
     INCLUDE_DIRECTORIES( ${PROJ_SOURCE_DIR}/hardware/comedi)
 
@@ -9,9 +9,9 @@ IF ( BUILD_LASER_TEST )
     FILE( GLOB SRCS [^.]*.cpp )
 
     # Add a test program
-    GLOBAL_ADD_TEST( laser ${SRCS} )
+    GLOBAL_ADD_TEST( laserdistance ${SRCS} )
     # Use  TARGET_LINK_LIBRARIES( report libs... ) to add library deps.
-    TARGET_LINK_LIBRARIES( laser ${COMEDI_LIBS} orocos-taskbrowser orocos-reporting ${OROCOS_RTT_LIBS} ${COMEDI_LIBS} orocos-comedi orocos-laser ${OROCOS_RTT_LIBS} ${COMEDI_LIBS} orocos-comedi)
+    TARGET_LINK_LIBRARIES( laserdistance ${COMEDI_LIBS} orocos-taskbrowser orocos-reporting ${OROCOS_RTT_LIBS} ${COMEDI_LIBS} orocos-comedi orocos-laserdistance ${OROCOS_RTT_LIBS} ${COMEDI_LIBS} orocos-comedi)
 
-ENDIF ( BUILD_LASER_TEST )
+ENDIF ( BUILD_LASERDISTANCE_TEST )
 ENDIF ( BUILD_TESTS)

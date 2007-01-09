@@ -18,20 +18,22 @@
 #include "LaserScanner.hpp"
 #include <iostream>
 
+
+
+
 namespace OCL
 {
   using namespace RTT;
   using namespace std;
+  using namespace SickDriver;
   
   LaserScanner::LaserScanner(string name, string propertyfile):
     TaskContext(name),
-    _simulation_values("sim_values","Value used for simulation",vector<double>(nr_chan,0)),
-    _distances("LaserDistance",vector<double>(nr_chan,0)),
+    _distances("LaserDistance"),
     _distanceOutOfRange("distanceOutOfRange"),
     _propertyfile(propertyfile)
   {
     log(Debug) <<this->getName()<<": adding Properties"<<endlog();
-    properties()->addProperty(&_simulation_values);
     properties()->addProperty(&_port);
     properties()->addProperty(&_range_mode);
     properties()->addProperty(&_res_mode);
@@ -47,28 +49,23 @@ namespace OCL
     events()->addEvent(&_distanceOutOfRange, "Distance out of Range", "C", "Channel", "V", "Value");
     
     log(Debug) <<this->getName()<<": create Sick laserscanner"<<endlog();
+    if (_port.value() == 0 ) _port_char = "/dev/ttyS0";
+    else log(Error) << this->getName()<<"Wrong port parameter. Should be 0.";
+
     if (_range_mode.value() == 100 ) _range_mode_char = SickLMS200::RANGE_100;
     else if (_range_mode.value() == 180 ) _range_mode_char = SickLMS200::RANGE_180;
-    else {}
+    else log(Error) << this->getName()<<"Wrong range parameter. Should be 100 or 180.";
     
-    
+    if (_res_mode.value() == 0.25 ) _res_mode_char = SickLMS200::RES_0_25_DEG;
+    else if (_res_mode.value() == 0.5 ) _res_mode_char = SickLMS200::RES_0_5_DEG;
+    else if (_res_mode.value() == 1.0 ) _res_mode_char = SickLMS200::RES_1_DEG;
+    else log(Error) << this->getName()<<"Wrong res_mode parameter. Should be 0.25 or 0.5 or 1.0.";
 
-    case 'r':
-      if(strncmp(optarg,"180",3)==0) range_mode=SickLMS200::RANGE_180;
-      else range_mode=SickLMS200::RANGE_100;
-      break;
-    case 's':
-      if(strncmp(optarg,"0.25",4)==0) res_mode=SickLMS200::RES_0_25_DEG;
-      else if(strncmp(optarg,"0.5",3)==0) res_mode=SickLMS200::RES_0_5_DEG;
-      else res_mode=SickLMS200::RES_1_DEG;
-      break;
-    case 'u':
-      if(strncmp(optarg,"cm",2)==0) unit_mode=SickLMS200::CMMODE;
-      else unit_mode=SickLMS200::MMMODE;
-      break;
+    if (_unit_mode.value() == "cm" ) _unit_mode_char = SickLMS200::CMMODE;
+    else if (_unit_mode.value() == "mm" ) _unit_mode_char = SickLMS200::MMMODE;
+    else log(Error) << this->getName()<<"Wrong unit mode parameter. Should be cm or mm.";
 
-
-    _sick_laserscanner = new SickLMS200(_port.value(), _range_mode.value(), _res_mode.value(), _unit_mode.value());
+    _sick_laserscanner = new SickLMS200(_port_char, _range_mode_char, _res_mode_char, _unit_mode_char);
 
     log(Debug) <<this->getName()<<": constructed."<<endlog();
   }
@@ -83,6 +80,7 @@ namespace OCL
   bool LaserScanner::startup()    
   {
       _sick_laserscanner->start();
+      registerSickLMS200SignalHandler();
       return true;
   }
     
@@ -96,15 +94,18 @@ namespace OCL
           log(Error)<<this->getName()<<": measurement error."<<endlog();
       if (!_sick_laserscanner->checkPlausible()) 
           log(Warning)<<this->getName()<<": measurement not reliable."<<endlog();
-      showdata(datalen,buf);
 
-      _distances_local = _simulation_values.value();
+      _distances_local.resize(datalen);
+      for (unsigned int i=0; i<(unsigned int)datalen; i++)
+          _distances_local[i] = (double)( (buf[i+1] & 0x1f) <<8  |buf[i]);
+      
       _distances.Set(_distances_local);
   }
 
 
   void LaserScanner::shutdown()
   {
+      _sick_laserscanner->stop();
       marshalling()->writeProperties(_propertyfile);
   }
 }//namespace

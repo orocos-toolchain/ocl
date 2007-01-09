@@ -89,7 +89,7 @@ void SickLMS200::wtLMSmsg(int fd, int len, const uchar *msg)
 
 int SickLMS200::rdLMSmsg(int fd, int len, const uchar *buf)
 {
-  int sumRead=0,nRead,toRead=len,n;
+  int sumRead=0,nRead=0,toRead=len,n;
 #ifdef DEBUG
   int i;
   //printf("read msg: ");
@@ -382,6 +382,7 @@ int SickLMS200::readMeasurement(uchar* buf,int& datalen) {
     meas_state = rdLMSbyte(fd); 
     rdLMSbyte(fd); /*should be CRC low byte*/
     rdLMSbyte(fd); /*should be CRC high byte*/
+    return 0;
 }
 
 

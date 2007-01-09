@@ -26,6 +26,9 @@
 #include <rtt/Properties.hpp>
 #include <rtt/dev/AnalogInput.hpp>
 #include <ocl/OCL.hpp>
+#include "SickLMS200.h"
+
+
 
 namespace OCL {
     /**
@@ -51,12 +54,10 @@ namespace OCL {
         virtual void shutdown();
     
     protected:
-        /// values which should be used in simulation
-        RTT::Property<std::vector<double> > _simulation_values;
-        RTT::Property<std::string> _port;
+        RTT::Property<int> _port;
         RTT::Property<int> _range_mode;
         RTT::Property<int> _res_mode;
-        RTT::Property<int> _unit_mode;
+        RTT::Property<std::string> _unit_mode;
 
         /// Dataport which contains the measurements
         RTT::WriteDataPort<std::vector<double> > _distances;
@@ -65,6 +66,10 @@ namespace OCL {
         RTT::Event< void(int,double)>  _distanceOutOfRange;
 
     private:
+        SickDriver::SickLMS200* _sick_laserscanner;
+        std::vector<double> _distances_local;
+
+        char* _port_char;
         unsigned char _range_mode_char;
         unsigned char _res_mode_char;
         unsigned char _unit_mode_char;

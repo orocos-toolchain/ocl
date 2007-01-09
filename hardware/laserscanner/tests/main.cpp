@@ -20,7 +20,7 @@
 
 #include <rtt/os/main.h>
 
-#include "hardware/laserdistance/LaserSensor.hpp"
+#include "hardware/laserdistance/LaserScanner.hpp"
 //User interface
 #include "taskbrowser/TaskBrowser.hpp"
 
