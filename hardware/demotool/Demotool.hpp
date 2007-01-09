@@ -1,4 +1,4 @@
-// Copyright (C) 2006 Wim Meeussen <wim dot neeysseb at mech dot kuleuven dot be>
+// Copyright (C) 2006 Wim Meeussen <wim dot meeussen at mech dot kuleuven dot be>
 //  
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -32,23 +32,29 @@
 namespace OCL
 {
     
+  /**
+   * This class implements a TaskContext to use with the demonstration
+   * tool in the RoboticLab, PMA, dept. Mechanical Engineering,
+   * KULEUVEN. Since the hardware part is very specific for our setup,
+   * other people cannot use this class.
+   */
   class Demotool : public RTT::TaskContext
   {
   public:
-    /**
-     * Construct an interface to the Demotool
+    /** 
+     * The contructor of the class.
+     * 
+     * @param name Name of the TaskContext
+     * @param propertyfilename name of the propertyfile to
+     * configure the component with, default: cpf/Demotool.cpf
      */
     Demotool(std::string name, std::string propertyfilename="cpf/Demotool.cpf");
     virtual~Demotool();
-    
     virtual bool startup();
     virtual void update();
     virtual void shutdown();
 
-    void calibrateWorldToManip();
-    void calibrateWrenchSensor();
-    
-  private:
+  protected:
     // property
     RTT::Property<std::vector<double> > _pos_leds_demotool;
     RTT::Property<double>               _mass_demotool;
@@ -71,6 +77,10 @@ namespace OCL
     // methods
     RTT::Method<void(void)>          _calibrate_world_to_manip, _calibrate_wrench_sensor;
 
+  private:
+    void calibrateWorldToManip();
+    void calibrateWrenchSensor();
+    
     std::string _propertyfile;
     std::vector<KDL::Vector> _Vector_led_demotool, _Vector_led_camera;
     

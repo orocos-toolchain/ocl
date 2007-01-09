@@ -1,4 +1,4 @@
-// Copyright (C) 2006 Ruben Smits <ruben dot smits at mech dot kuleuven dot be>
+// Copyright (C) 2006 Wim Meeussen <wim dot meeussen at mech dot kuleuven dot be>
 //  
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
