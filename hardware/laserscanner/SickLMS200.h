@@ -136,7 +136,7 @@ private:
 };
 
 
-void registerSickLMS200SignalHandler();
+bool registerSickLMS200SignalHandler();
 };
 #endif
 

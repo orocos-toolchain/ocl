@@ -83,14 +83,21 @@ namespace OCL
 
   bool LaserScanner::startup()    
   {
+      log(Debug)<<this->getName()<<": startup begin."<<endlog();
       _sick_laserscanner->start();
-      registerSickLMS200SignalHandler();
+      if (!registerSickLMS200SignalHandler()){
+	log(Error)<<this->getName()<<": register Sick signal handler failed."<<endlog();
+	return false;
+      }
+      log(Debug)<<this->getName()<<": startup end."<<endlog();
       return true;
   }
     
 
   void LaserScanner::update()
   {
+      log(Debug)<<this->getName()<<": Update."<<endlog();
+
       uchar buf[MAXNDATA];
       int datalen;
       _sick_laserscanner->readMeasurement(buf,datalen);

@@ -13,6 +13,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <rtt/Logger.hpp>
 
 #define FALSE 0
 #define TRUE 1
@@ -21,6 +22,9 @@
 #define STX 0x02   /*every PC->LMS packet is started by STX*/ 
 #define ACKSTX 0x06 /*every PC->LMS packet is started by ACKSTX*/
 typedef unsigned char uchar;
+
+using namespace RTT;
+
 
 namespace SickDriver {
 /*the cmd and ack packets for the 5 different range/resolution modes*/
@@ -76,49 +80,26 @@ bool SickLMS200::msgcmp(int len1, const uchar *s1, int len2, const uchar *s2)
 
 void SickLMS200::wtLMSmsg(int fd, int len, const uchar *msg)
 {
-#ifdef DEBUG
-  int i;
-#endif
   write(fd,(const void*) msg,len);
-#ifdef DEBUG
-  //printf("write msg: ");
-  for(i=0;i<len; i++) printf("%02x ",msg[i]);
-  //printf("\n");
-#endif
 }
 
 int SickLMS200::rdLMSmsg(int fd, int len, const uchar *buf)
 {
   int sumRead=0,nRead=0,toRead=len,n;
-#ifdef DEBUG
-  int i;
-  //printf("read msg: ");
-#endif
   while(toRead>0){
     n=toRead>255 ? 255:toRead;
     toRead-=n;
     nRead=read(fd,(void *)(buf+sumRead),n);
-#ifdef DEBUG
-    for(i=0;i<nRead; i++) printf("%02x ",buf[i]);
-#endif
     sumRead+=nRead;
     if(nRead!=n) break;
   }
-#ifdef DEBUG
-  printf("\n");  
-#endif
   return nRead;
 }
 
 uchar SickLMS200::rdLMSbyte(int fd)
 {
-  //printf("entered rdLMSbyte\n");
   uchar buf;
   read(fd,&buf,1);
-  //printf("read fd\n");
-#ifdef DEBUG
-  printf("read byte: %02x\n", buf);
-#endif
   return buf;
 }
 
@@ -127,26 +108,19 @@ uchar SickLMS200::rdLMSbyte(int fd)
 /*return true if the ACK packet is as expected*/
 bool SickLMS200::chkAck(int fd, int ackmsglen, const uchar *ackmsg)
 {
-  //printf("entered chkAck\n");
   int i,buflen;
   uchar buf[MAXNDATA];
 
   /*the following is to deal with a possibly timing issue*/
   /*the communication occasionally breaks without this*/
   usleep(100000); 
-  //printf("before for loop\n");
   for(i=0;i<MAXRETRY;i++) {
-    //printf("i\n"); 
     if(rdLMSbyte(fd)==0x06)
     {
-       //printf("rdLMSbyte true");
        break;
     }
-    //printf("rdLMSbyte false");
   }
- //printf("before rdLMSmsg\n");
   buflen=rdLMSmsg(fd,ackmsglen-1,buf);
-  //printf("left chkAck\n");
   return msgcmp(ackmsglen-1,ackmsg+1,buflen,buf);
 }
 
@@ -177,29 +151,11 @@ int SickLMS200::initLMS(const char *serialdev, struct termios *oldtio)
   tcflush(fd, TCIFLUSH);
   tcsetattr(fd,TCSANOW,newtio);
 
-//  /* set the PC side as well*/
-//  printf("set the PC side as well\n");
-//  close(fd);
-//  fd = open(serialdev, O_RDWR | O_NOCTTY );
-//  if (fd <0) {
-//      throw IOException(strerror(errno));
-//  }
-//  newtio->c_cflag = B9600 | CS8 | CLOCAL | CREAD;
-//  tcflush(fd, TCIFLUSH);
-//  tcsetattr(fd,TCSANOW,newtio);
-
-//  printf("step to the 9600bps mode\n");
-//  /* step to the 9600bps mode*/
-//  wtLMSmsg(fd,sizeof(PCLMS_B9600)/sizeof(uchar),PCLMS_B9600);
-//  if(!chkAck(fd,sizeof(LMSPC_CMD_ACK)/sizeof(uchar),LMSPC_CMD_ACK))
-//      throw BaudRateChangeException();
-//
 
   /* step to the 38400bps mode*/
   wtLMSmsg(fd,sizeof(PCLMS_B38400)/sizeof(uchar),PCLMS_B38400);
   if(!chkAck(fd,sizeof(LMSPC_CMD_ACK)/sizeof(uchar),LMSPC_CMD_ACK))
       throw BaudRateChangeException();
-  //printf("after chkAck\n");
 
   /* set the PC side as well*/
   close(fd);
@@ -287,6 +243,7 @@ void SickLMS200::setmode(int fd, int mode)
 /*tell the scanner to enter the continuous measurement mode*/
 void SickLMS200::startLMS(int fd)
 {
+  log(Debug)<< " SickLMS200::startLMS entered."<<endlog();
   int ackmsglen;
 
   wtLMSmsg(fd,sizeof(PCLMS_START)/sizeof(uchar),PCLMS_START);
@@ -344,11 +301,11 @@ SickLMS200::SickLMS200(const char* _port, uchar _range_mode, uchar _res_mode, uc
 }
 
 void SickLMS200::start() {
-    printf("entered start\n");
+    log(Debug)<< " SickLMS200::start() entered."<<endlog();
     fd = initLMS(port,&oldtio);
     setmode(fd, range_mode | res_mode | unit_mode);
     startLMS(fd);
-    printf("left start\n");
+    log(Debug)<< " SickLMS200::start() exit."<<endlog();
 }
 void SickLMS200::stop() {
     stopLMS(fd);
@@ -393,11 +350,10 @@ static void SickLMS200_trap(int sig) {
     }
 };
 
-void registerSickLMS200SignalHandler() {
-    if(signal(SIGTERM, SickLMS200_trap) ==SIG_ERR || signal(SIGHUP, SickLMS200_trap) ==SIG_ERR || 
-        signal(SIGINT, SickLMS200_trap) ==SIG_ERR || signal(SIGQUIT, SickLMS200_trap) ==SIG_ERR || 
-        signal(SIGABRT, SickLMS200_trap) ==SIG_ERR)
-        throw RegisterException();
+bool registerSickLMS200SignalHandler() {
+  return !(signal(SIGTERM, SickLMS200_trap) ==SIG_ERR || signal(SIGHUP, SickLMS200_trap) ==SIG_ERR || 
+	   signal(SIGINT, SickLMS200_trap) ==SIG_ERR || signal(SIGQUIT, SickLMS200_trap) ==SIG_ERR || 
+	   signal(SIGABRT, SickLMS200_trap) ==SIG_ERR);
 };
 
 
