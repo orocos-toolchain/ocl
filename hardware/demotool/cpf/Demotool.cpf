@@ -4,31 +4,31 @@
   <struct name="pos_leds_demotool" type="std::vector&lt;double&gt;">
      <description>led positions in demotool frame</description>
      <simple name="Size" type="long"><description>Dimension of the Vector</description><value>18</value></simple>
-     <simple name="0" type="double"><description>X</description><value>-0.006141</value></simple>
-     <simple name="1" type="double"><description>Y</description><value>-0.089179</value></simple>
-     <simple name="2" type="double"><description>Z</description><value>-0.034894</value></simple>
-     <simple name="3" type="double"><description>X</description><value>0.05214</value></simple>
-     <simple name="4" type="double"><description>Y</description><value>0.07305</value></simple>
-     <simple name="5" type="double"><description>Z</description><value>-0.035037</value></simple>
-     <simple name="6" type="double"><description>X</description><value>0.086808</value></simple>
-     <simple name="7" type="double"><description>Y</description><value>-6.2e-05</value></simple>
-     <simple name="8" type="double"><description>Z</description><value>-0.012841</value></simple>
-     <simple name="9" type="double"><description>X</description><value>0.06624</value></simple>
-     <simple name="10" type="double"><description>Y</description><value>-0.055888</value></simple>
-     <simple name="11" type="double"><description>Z</description><value>-0.012859</value></simple>
-     <simple name="12" type="double"><description>X</description><value>0.086588</value></simple>
-     <simple name="13" type="double"><description>Y</description><value>-8.1e-05</value></simple>
-     <simple name="14" type="double"><description>Z</description><value>-0.056619</value></simple>
-     <simple name="15" type="double"><description>X</description><value>0.066377</value></simple>
-     <simple name="16" type="double"><description>Y</description><value>-0.055678</value></simple>
-     <simple name="17" type="double"><description>Z</description><value>-0.056463</value></simple>
+     <simple name="0" type="double"><value>-0.006141</value></simple>
+     <simple name="1" type="double"><value>-0.089179</value></simple>
+     <simple name="2" type="double"><value>-0.034894</value></simple>
+     <simple name="3" type="double"><value>0.05214</value></simple>
+     <simple name="4" type="double"><value>0.07305</value></simple>
+     <simple name="5" type="double"><value>-0.035037</value></simple>
+     <simple name="6" type="double"><value>0.086808</value></simple>
+     <simple name="7" type="double"><value>-6.2e-05</value></simple>
+     <simple name="8" type="double"><value>-0.012841</value></simple>
+     <simple name="9" type="double"><value>0.06624</value></simple>
+     <simple name="10" type="double"><value>-0.055888</value></simple>
+     <simple name="11" type="double"><value>-0.012859</value></simple>
+     <simple name="12" type="double"><value>0.086588</value></simple>
+     <simple name="13" type="double"><value>-8.1e-05</value></simple>
+     <simple name="14" type="double"><value>-0.056619</value></simple>
+     <simple name="15" type="double"><value>0.066377</value></simple>
+     <simple name="16" type="double"><value>-0.055678</value></simple>
+     <simple name="17" type="double"><value>-0.056463</value></simple>
   </struct>
-  <simple name="mass_demotool" type="double"><description>Mass attached to force sensor</description><value>0.83</value></simple>
+  <simple name="mass_demotool" type="double"><description>Mass attached to force sensor</description><value>0.62</value></simple>
   <struct name="center_gravity_demotool" type="MotCon::Vector">
      <description>Center of gravity from mass attached to force sensor, expressed in demotool</description>
-     <simple name="X" type="double"><description>X Value</description><value>0.1</value></simple>
-     <simple name="Y" type="double"><description>Y Value</description><value>0.1</value></simple>
-     <simple name="Z" type="double"><description>Z Value</description><value>-0.085</value></simple>
+     <simple name="X" type="double"><description>X Value</description><value>0</value></simple>
+     <simple name="Y" type="double"><description>Y Value</description><value>0</value></simple>
+     <simple name="Z" type="double"><description>Z Value</description><value>-0.055</value></simple>
   </struct>
   <struct name="gravity_dir_world" type="MotCon::Vector">
      <description>Direction of gravity, expressed in world</description>
@@ -39,14 +39,14 @@
   <struct name="demotool_manip" type="MotCon::Frame">
      <description>frame from demotool to manip</description>
      <struct name="Position" type="MotCon::Vector">
-        <simple name="X" type="double"><description>X Value</description><value>-0.0268</value></simple>
-        <simple name="Y" type="double"><description>Y Value</description><value>-0.0268</value></simple>
-        <simple name="Z" type="double"><description>Z Value</description><value>-0.02</value></simple>
+        <simple name="X" type="double"><description>X Value</description><value>0</value></simple>
+        <simple name="Y" type="double"><description>Y Value</description><value>0</value></simple>
+        <simple name="Z" type="double"><description>Z Value</description><value>-0.0168</value></simple>
      </struct>
      <struct name="Rotation" type="MotCon::RPY">
-        <simple name="R" type="double"><description> X with R(oll) in radians</description><value>3.14159</value></simple>
-        <simple name="P" type="double"><description> Y with P(itch) in radians</description><value>0</value></simple>
-        <simple name="Y" type="double"><description> Z with Y(aw) in radians</description><value>2.356</value></simple>
+        <simple name="R" type="double"><description>First rotate around X with R(oll) in radians</description><value>0</value></simple>
+        <simple name="P" type="double"><description>Next rotate around old Y with P(itch) in radians</description><value>0</value></simple>
+        <simple name="Y" type="double"><description>Next rotate around old Z with Y(aw) in radians</description><value>0</value></simple>
      </struct>
   </struct>
   <struct name="demotool_fs" type="MotCon::Frame">
@@ -57,28 +57,22 @@
         <simple name="Z" type="double"><description>Z Value</description><value>-0.0275</value></simple>
      </struct>
      <struct name="Rotation" type="MotCon::RPY">
-        <simple name="R" type="double"><description>First rotate</description><value>-3.14159</value></simple>
-        <simple name="P" type="double"><description>Next rotate </description><value>0</value></simple>
-        <simple name="Y" type="double"><description>Next rotate </description><value>0.7853</value></simple>
+        <simple name="R" type="double"><description>First rotate around X with R(oll) in radians</description><value>-3.14159</value></simple>
+        <simple name="P" type="double"><description>Next rotate around old Y with P(itch) in radians</description><value>0</value></simple>
+        <simple name="Y" type="double"><description>Next rotate around old Z with Y(aw) in radians</description><value>0.7853</value></simple>
      </struct>
   </struct>
   <struct name="world_camera" type="MotCon::Frame">
      <description>frame from world to camera</description>
      <struct name="Position" type="MotCon::Vector">
-        <simple name="X" type="double"><description>X Value</description><value>-2.02022</value></simple>
-        <simple name="Y" type="double"><description>Y Value</description><value>-0.069074</value></simple>
-        <simple name="Z" type="double"><description>Z Value</description><value>0.134243</value></simple>
+        <simple name="X" type="double"><description>X Value</description><value>2.6564</value></simple>
+        <simple name="Y" type="double"><description>Y Value</description><value>-0.121881</value></simple>
+        <simple name="Z" type="double"><description>Z Value</description><value>0.441154</value></simple>
      </struct>
-     <struct name="Rotation" type="MotCon::Rotation">
-        <simple name="X_x" type="double"><value>0.298845</value></simple>
-        <simple name="X_y" type="double"><value>0.0124952</value></simple>
-        <simple name="X_z" type="double"><value>0.95422</value></simple>
-        <simple name="Y_x" type="double"><value>0.00188327</value></simple>
-        <simple name="Y_y" type="double"><value>0.999904</value></simple>
-        <simple name="Y_z" type="double"><value>-0.0136832</value></simple>
-        <simple name="Z_x" type="double"><value>-0.954299</value></simple>
-        <simple name="Z_y" type="double"><value>0.00588621</value></simple>
-        <simple name="Z_z" type="double"><value>0.298793</value></simple>
+     <struct name="Rotation" type="MotCon::RPY">
+        <simple name="R" type="double"><description>First rotate around X with R(oll) in radians</description><value>1.6079</value></simple>
+        <simple name="P" type="double"><description>Next rotate around old Y with P(itch) in radians</description><value>-0.0491055</value></simple>
+        <simple name="Y" type="double"><description>Next rotate around old Z with Y(aw) in radians</description><value>1.64542</value></simple>
      </struct>
   </struct>
 </properties>

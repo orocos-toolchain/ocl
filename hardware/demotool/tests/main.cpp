@@ -44,7 +44,7 @@ int ORO_main(int arc, char* argv[])
     }
     // import kdl toolkit
     Toolkit::Import( KDLToolkit );
-
+    
     // krypton
     KryptonK600Sensor krypton("Krypton",6);
 
@@ -61,10 +61,12 @@ int ORO_main(int arc, char* argv[])
     PeriodicActivity reporterTask(OS::LowestPriority, 0.01, reporter.engine() );
 
     // connect tasks
-    demotool.connectPeers(&krypton);
+    demotool.connectPorts(&krypton);
+    demotool.connectPorts(&wrenchsensor);
+    reporter.connectPorts(&demotool);
     demotool.connectPeers(&wrenchsensor);
-    reporter.connectPeers(&demotool);
- 
+    demotool.connectPeers(&reporter);
+
     // start tasks
     wrenchsensorTask.start();
     demotoolTask.start();

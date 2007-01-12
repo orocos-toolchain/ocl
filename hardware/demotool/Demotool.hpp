@@ -25,6 +25,7 @@
 #include <rtt/Properties.hpp>
 #include <rtt/Method.hpp>
 #include <rtt/Command.hpp>
+#include <kdl/toolkit.hpp>
 #include <kdl/frames.hpp>
 
 #include <ocl/OCL.hpp>
