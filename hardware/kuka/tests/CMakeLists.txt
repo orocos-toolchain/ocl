@@ -11,7 +11,7 @@ IF ( BUILD_KUKA_TEST )
     GLOBAL_ADD_TEST( torquekuka torquemain.cpp )
     GLOBAL_ADD_TEST( encoderTest encoderKuka361Test.cpp )
 
-    INCLUDE_DIRECTORIES( ${PROJECT_SOURCE_DIR}/hardware/axes )
+    INCLUDE_DIRECTORIES( ${PROJECT_SOURCE_DIR}/hardware/axes ${PROJECT_SOURCE_DIR}/hardware/comedi ${PROJECT_SOURCE_DIR}/hardware/apci)
     LINK_DIRECTORIES(${PROJECT_BINARY_DIR}/hardware/kuka )
     TARGET_LINK_LIBRARIES( kuka orocos-taskbrowser orocos-reporting orocos-kuka orocos-axes)
     TARGET_LINK_LIBRARIES( torquekuka orocos-taskbrowser orocos-reporting orocos-kuka orocos-axes)
