@@ -69,8 +69,6 @@ public:
     virtual ~EncoderSSI_apci1710_board();
     
     unsigned int read( unsigned int encNr );
-
-    
     
 protected:
     virtual void step();

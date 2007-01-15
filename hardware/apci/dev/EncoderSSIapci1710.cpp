@@ -364,9 +364,8 @@ void EncoderSSI_apci1710_board::switchBuffers()
     // this is called *after* each refresh, so we know that it is safe
     // use spinlocks or implement an 'atomic' swing(b1,b2,p1,p2) function !!!
     
-    OS::MutexTryLock locker( readLock );
-    if ( locker.isSuccessful() )
-        if ( readbuffer == buffer1 )
+    OS::MutexLock locker( readLock );
+    if ( readbuffer == buffer1 )
         {
             readbuffer = buffer2;
             writebuffer = buffer1;
