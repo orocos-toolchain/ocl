@@ -41,11 +41,15 @@ int ORO_main(int argc, char* argv[])
                 log(Warning) <<"Choosing Kuka160"<<endlog();
                 my_robot = new Kuka160nAxesVelocityController("Kuka160");
             }
+            else{
+                log(Warning) <<"Using Default Kuka361"<<endlog();
+                my_robot = new Kuka361nAxesVelocityController("Kuka361");
+            }
         }
     else{
         log(Warning) <<"Using Default Kuka361"<<endlog();
         my_robot = new Kuka361nAxesVelocityController("Kuka361");
-  }
+    }
     log(Info)<<"Robot Created"<<endlog();
     
     EmergencyStop _emergency(my_robot);
@@ -62,7 +66,7 @@ int ORO_main(int argc, char* argv[])
     my_robot->scripting()->loadPrograms("cpf/program.ops");
     
     /// Creating Tasks
-    PeriodicActivity _kukaTask(0,0.01, my_robot->engine() );  
+    PeriodicActivity _kukaTask(0,0.002, my_robot->engine() );  
     
     /// Start the console reader.
     _kukaTask.start();
