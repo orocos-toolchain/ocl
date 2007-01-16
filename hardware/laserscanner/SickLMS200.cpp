@@ -309,7 +309,7 @@ void SickLMS200::start() {
 }
 void SickLMS200::stop() {
     stopLMS(fd);
-    resetLMS(fd,&oldtio);
+    //resetLMS(fd,&oldtio);
 }
 void SickLMS200::reset() {
     try {

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE properties SYSTEM "cpf.dtd">
 <properties>
-     <simple name="port" type="long"><description></description><value>0</value></simple>
-     <simple name="range_mode" type="long"><description></description><value>180</value></simple>
-     <simple name="res_mode" type="double"><description></description><value>1.0</value></simple>
-     <simple name="unit_mode" type="string"><description></description><value>cm</value></simple>
+  <simple name="port" type="long"><value>0</value></simple>
+  <simple name="range_mode" type="long"><value>180</value></simple>
+  <simple name="res_mode" type="double"><value>1</value></simple>
+  <simple name="unit_mode" type="string"><value>mm</value></simple>
 </properties>

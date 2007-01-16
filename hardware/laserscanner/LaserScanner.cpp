@@ -35,6 +35,7 @@ namespace OCL
     _unit_mode("unit_mode",""),
     _distances("LaserDistance"),
     _distanceOutOfRange("distanceOutOfRange"),
+    _keep_running(false),
     _propertyfile(propertyfile)
   {
     log(Debug) <<this->getName()<<": adding Properties"<<endlog();
@@ -70,54 +71,64 @@ namespace OCL
     else log(Error) << this->getName()<<"Wrong unit mode parameter. Should be cm or mm."<<endlog();
 
     _sick_laserscanner = new SickLMS200(_port_char, _range_mode_char, _res_mode_char, _unit_mode_char);
-
     log(Debug) <<this->getName()<<": constructed."<<endlog();
   }
 
   
   LaserScanner::~LaserScanner()
   {
+      _keep_running = false;
       delete _sick_laserscanner;
   }
   
 
   bool LaserScanner::startup()    
   {
-      log(Debug)<<this->getName()<<": startup begin."<<endlog();
       _sick_laserscanner->start();
       if (!registerSickLMS200SignalHandler()){
 	log(Error)<<this->getName()<<": register Sick signal handler failed."<<endlog();
 	return false;
       }
-      log(Debug)<<this->getName()<<": startup end."<<endlog();
+
+      _keep_running = true;
       return true;
   }
     
 
   void LaserScanner::update()
   {
-      log(Debug)<<this->getName()<<": Update."<<endlog();
+    while (_keep_running){
 
-      uchar buf[MAXNDATA];
-      int datalen;
+      static int counter = 0;
+      counter++;
+      if (counter > 100){
+	log(Debug)<<this->getName()<<": Update start."<<endlog();
+	counter = 0;
+      }
+      unsigned char buf[MAXNDATA];  int datalen;
       _sick_laserscanner->readMeasurement(buf,datalen);
-      if (_sick_laserscanner->checkErrorMeasurement())
-          log(Error)<<this->getName()<<": measurement error."<<endlog();
-      if (!_sick_laserscanner->checkPlausible()) 
-          log(Warning)<<this->getName()<<": measurement not reliable."<<endlog();
 
-      _distances_local.resize(datalen);
-      for (unsigned int i=0; i<(unsigned int)datalen; i++)
-          _distances_local[i] = (double)( (buf[i+1] & 0x1f) <<8  |buf[i]);
+      if (_sick_laserscanner->checkErrorMeasurement())
+	log(Error)<<this->getName()<<": measurement error."<<endlog();
+      if (!_sick_laserscanner->checkPlausible()) 
+	log(Warning)<<this->getName()<<": measurement not reliable."<<endlog();
       
+      _distances_local.resize((unsigned int)(datalen/2));
+      for (int i=0; i<datalen; i=i+2)
+          _distances_local[(unsigned int)(i/2)] = ((double)( (buf[i+1] & 0x1f) <<8  |buf[i]));
       _distances.Set(_distances_local);
+
+    }
   }
 
 
   void LaserScanner::shutdown()
   {
-      _sick_laserscanner->stop();
+      log(Debug)<<this->getName()<<": shutdown begin."<<endlog();
+      _keep_running = false;
+      //_sick_laserscanner->stop();
       marshalling()->writeProperties(_propertyfile);
+      log(Debug)<<this->getName()<<": shutdown end."<<endlog();
   }
 }//namespace
 

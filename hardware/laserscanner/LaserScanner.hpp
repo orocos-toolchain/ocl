@@ -74,6 +74,7 @@ namespace OCL {
         unsigned char _res_mode_char;
         unsigned char _unit_mode_char;
 
+        bool _keep_running;
         std::string _propertyfile;
 
 
