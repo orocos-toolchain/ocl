@@ -241,26 +241,24 @@ void SickLMS200::setmode(int fd, int mode)
 }
 
 /*tell the scanner to enter the continuous measurement mode*/
-void SickLMS200::startLMS(int fd)
+bool SickLMS200::startLMS(int fd)
 {
   log(Debug)<< " SickLMS200::startLMS entered."<<endlog();
   int ackmsglen;
 
   wtLMSmsg(fd,sizeof(PCLMS_START)/sizeof(uchar),PCLMS_START);
   ackmsglen=sizeof(LMSPC_CMD_ACK)/sizeof(uchar);
-  if(!chkAck(fd,ackmsglen,LMSPC_CMD_ACK))
-      throw StartFailureException();
+  return chkAck(fd,ackmsglen,LMSPC_CMD_ACK);
 }
 
 /*stop the continuous measurement mode*/
-void SickLMS200::stopLMS(int fd)
+bool SickLMS200::stopLMS(int fd)
 {
   int ackmsglen;
 
   wtLMSmsg(fd,sizeof(PCLMS_STOP)/sizeof(uchar),PCLMS_STOP);
   ackmsglen=sizeof(LMSPC_CMD_ACK)/sizeof(uchar);
-  if(!chkAck(fd,ackmsglen,LMSPC_CMD_ACK))
-      throw StopFailureException();
+  return chkAck(fd,ackmsglen,LMSPC_CMD_ACK);
 }
 
 
@@ -282,15 +280,13 @@ bool SickLMS200::checkPlausible() {
 
 
 /*reset terminal and transfer speed of laser scanner before quitting*/
-void SickLMS200::resetLMS(int fd, struct termios *oldtio)
+bool SickLMS200::resetLMS(int fd, struct termios *oldtio)
 {
   wtLMSmsg(fd,sizeof(PCLMS_B9600)/sizeof(uchar),PCLMS_B9600);
   tcflush(fd, TCIFLUSH);
   tcsetattr(fd,TCSANOW,oldtio);
   close(fd);
-   if(!chkAck(fd,sizeof(LMSPC_CMD_ACK)/sizeof(uchar),LMSPC_CMD_ACK))
-      throw BaudRateChangeException();
-  
+  return chkAck(fd,sizeof(LMSPC_CMD_ACK)/sizeof(uchar),LMSPC_CMD_ACK);
 }
 
 SickLMS200::SickLMS200(const char* _port, uchar _range_mode, uchar _res_mode, uchar _unit_mode) {
@@ -300,23 +296,21 @@ SickLMS200::SickLMS200(const char* _port, uchar _range_mode, uchar _res_mode, uc
     unit_mode  = _unit_mode;
 }
 
-void SickLMS200::start() {
-    log(Debug)<< " SickLMS200::start() entered."<<endlog();
+bool SickLMS200::start() {
     fd = initLMS(port,&oldtio);
     setmode(fd, range_mode | res_mode | unit_mode);
-    startLMS(fd);
-    log(Debug)<< " SickLMS200::start() exit."<<endlog();
+    return startLMS(fd);
 }
-void SickLMS200::stop() {
-    stopLMS(fd);
-    //resetLMS(fd,&oldtio);
+bool SickLMS200::stop() {
+    bool ret1 = stopLMS(fd);
+    bool ret2 = resetLMS(fd,&oldtio);
+
+    return ret1 && ret2;
 }
-void SickLMS200::reset() {
-    try {
-        resetLMS(fd,&oldtio);
-    } catch (Exception&) {
-    }
+bool SickLMS200::reset() {
+  return resetLMS(fd,&oldtio);
 }
+
 SickLMS200::~SickLMS200() {
 }
 

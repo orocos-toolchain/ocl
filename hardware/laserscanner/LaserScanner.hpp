@@ -25,6 +25,7 @@
 #include <rtt/Event.hpp>
 #include <rtt/Properties.hpp>
 #include <rtt/dev/AnalogInput.hpp>
+#include <rtt/NonPeriodicActivity.hpp>
 #include <ocl/OCL.hpp>
 #include "SickLMS200.h"
 
@@ -36,7 +37,9 @@ namespace OCL {
      * interface to the automated Laser initialising a link to the
      * digital IO PCI cards. 
      */
-    class LaserScanner : public RTT::TaskContext {
+    class LaserScanner 
+      :public RTT::TaskContext, 
+       public RTT::NonPeriodicActivity {
     public:
         /** 
          * Constructor of the class
@@ -46,12 +49,13 @@ namespace OCL {
          * propertyfile. Default: cpf/LaserScanner.cpf
          * 
          */
-        LaserScanner(std::string name, std::string propertyfilename="cpf/LaserScanner.cpf");
+        LaserScanner(std::string name, std::string propertyfilename="cpf/LaserScanner.cpf", unsigned int priority=0);
         virtual~LaserScanner();
         
         virtual bool startup();
-        virtual void update();
+        virtual void update();  // taskcontext
         virtual void shutdown();
+        virtual void loop();  // nonperiodicactivity
     
     protected:
         RTT::Property<int> _port;
@@ -74,7 +78,7 @@ namespace OCL {
         unsigned char _res_mode_char;
         unsigned char _unit_mode_char;
 
-        bool _keep_running;
+        bool _loop_ended, _keep_running;
         std::string _propertyfile;
 
 

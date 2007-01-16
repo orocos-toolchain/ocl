@@ -90,10 +90,10 @@ public:
        uchar _range_mode=RANGE_100,
        uchar _res_mode  = RES_1_DEG,
        uchar _unit_mode = MMMODE );
-    void start();
+    bool start();
     int readMeasurement(uchar* buf,int& datalen);
-    void reset();
-    void stop();
+    bool reset();
+    bool stop();
     ~SickLMS200();
     bool checkErrorMeasurement();
     bool checkPlausible();
@@ -119,16 +119,16 @@ private:
     void setmode(int fd, int mode);
     
     /*tell the scanner to enter the continuous measurement mode*/
-    void startLMS(int fd);
+    bool startLMS(int fd);
     
     /*stop the continuous measurement mode*/
-    void stopLMS(int fd);
+    bool stopLMS(int fd);
     
     /*check the status bit of the measurement*/
     void chkstatus(uchar c);
     
     /*reset terminal and transfer speed of laser scanner before quitting*/
-    void resetLMS(int fd, struct termios *oldtio);
+    bool resetLMS(int fd, struct termios *oldtio);
     
     /*trap a number of signals like SIGINT, ensure the invoke
     of resetLMS() before quitting*/
