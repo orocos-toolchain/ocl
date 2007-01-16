@@ -36,6 +36,7 @@ namespace OCL
     _res_mode("res_mode",""),
     _unit_mode("unit_mode",""),
     _distances("LaserDistance"),
+    _angles("LaserAngle"),
     _distanceOutOfRange("distanceOutOfRange"),
     _loop_ended(false),
     _keep_running(true),
@@ -52,26 +53,34 @@ namespace OCL
 
     log(Debug) <<this->TaskContext::getName()<<": adding Ports"<<endlog();
     ports()->addPort(&_distances);
+    ports()->addPort(&_angles);
 
     log(Debug) <<this->TaskContext::getName()<<": adding Events"<<endlog();
     events()->addEvent(&_distanceOutOfRange, "Distance out of Range", "C", "Channel", "V", "Value");
     
     log(Debug) <<this->TaskContext::getName()<<": create Sick laserscanner"<<endlog();
-    if (_port.value() == 0 ) _port_char = "/dev/ttyS0";
-    else log(Error) << this->TaskContext::getName()<<"Wrong port parameter. Should be 0."<<endlog();
+    _port_char = _port.value().c_str();
 
     if (_range_mode.value() == 100 ) _range_mode_char = SickLMS200::RANGE_100;
     else if (_range_mode.value() == 180 ) _range_mode_char = SickLMS200::RANGE_180;
-    else log(Error) << this->TaskContext::getName()<<"Wrong range parameter. Should be 100 or 180."<<endlog();
+    else log(Error) << this->TaskContext::getName()<<": Wrong range parameter. Should be 100 or 180."<<endlog();
     
-    if (_res_mode.value() == 0.25 ) _res_mode_char = SickLMS200::RES_0_25_DEG;
+    if (_res_mode.value() == 1.0 ) _res_mode_char = SickLMS200::RES_1_DEG;
     else if (_res_mode.value() == 0.5 ) _res_mode_char = SickLMS200::RES_0_5_DEG;
-    else if (_res_mode.value() == 1.0 ) _res_mode_char = SickLMS200::RES_1_DEG;
-    else log(Error) << this->TaskContext::getName()<<"Wrong res_mode parameter. Should be 0.25 or 0.5 or 1.0."<<endlog();
+    else if (_res_mode.value() == 0.25 && _range_mode.value() == 100 )_res_mode_char = SickLMS200::RES_0_25_DEG;
+    else if (_res_mode.value() == 0.25 && _range_mode.value() == 180 ) log(Error) << this->TaskContext::getName()
+										  <<": Res 0.25 does not work with range mode 180."<<endlog();
+    else log(Error) << this->TaskContext::getName()<<": Wrong res_mode parameter. Should be 0.25 or 0.5 or 1.0."<<endlog();
 
     if (_unit_mode.value() == "cm" ) _unit_mode_char = SickLMS200::CMMODE;
     else if (_unit_mode.value() == "mm" ) _unit_mode_char = SickLMS200::MMMODE;
-    else log(Error) << this->TaskContext::getName()<<"Wrong unit mode parameter. Should be cm or mm."<<endlog();
+    else log(Error) << this->TaskContext::getName()<<": Wrong unit mode parameter. Should be cm or mm."<<endlog();
+
+    _num_meas = (unsigned int)(_range_mode.value()/_res_mode.value())+1;
+    _distances_local.resize(_num_meas);
+    _angles_local.resize(_num_meas);
+    for (unsigned int i=0; i<_num_meas; i++)
+      _angles_local[i] = ((double)i/((double)_num_meas-1.0))*(double)_range_mode.value();
 
     _sick_laserscanner = new SickLMS200(_port_char, _range_mode_char, _res_mode_char, _unit_mode_char);
 
@@ -114,6 +123,8 @@ namespace OCL
     if (!registerSickLMS200SignalHandler())
       log(Error)<<this->TaskContext::getName()<<": register Sick signal handler failed."<<endlog();
 
+    _angles.Set(_angles_local);
+
     // loop
     while (_keep_running){
       unsigned char buf[MAXNDATA];  int datalen;
@@ -121,12 +132,16 @@ namespace OCL
 
       if (_sick_laserscanner->checkErrorMeasurement())
 	log(Error)<<this->TaskContext::getName()<<": measurement error."<<endlog();
+
       if (!_sick_laserscanner->checkPlausible()) 
 	log(Warning)<<this->TaskContext::getName()<<": measurement not reliable."<<endlog();
       
-      _distances_local.resize((unsigned int)(datalen/2));
+      if (_num_meas*2 != (unsigned int)datalen)
+	log(Error)<< this->TaskContext::getName()<<": number of measurements inconsistent: expected "
+		  << _num_meas << " and received " << datalen/2 <<endlog();
+
       for (int i=0; i<datalen; i=i+2)
-          _distances_local[(unsigned int)(i/2)] = ((double)( (buf[i+1] & 0x1f) <<8  |buf[i]));
+	_distances_local[(unsigned int)(i/2)] = ((double)( (buf[i+1] & 0x1f) <<8  |buf[i]));
       _distances.Set(_distances_local);
     }// loop
 

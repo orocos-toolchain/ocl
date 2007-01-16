@@ -32,57 +32,55 @@
 
 
 namespace OCL {
-    /**
-     * This class implements a TaskContext which construct an
-     * interface to the automated Laser initialising a link to the
-     * digital IO PCI cards. 
+  /**
+   * This class implements a TaskContext which construct an
+   * interface to the automated Laser initialising a link to the
+   * digital IO PCI cards. 
+   */
+  class LaserScanner 
+    :public RTT::TaskContext, 
+     public RTT::NonPeriodicActivity {
+  public:
+    /** 
+     * Constructor of the class
+     * 
+     * @param name name of the TaskContext
+     * @param propertyfilename location of the
+     * propertyfile. Default: cpf/LaserScanner.cpf
+     * 
      */
-    class LaserScanner 
-      :public RTT::TaskContext, 
-       public RTT::NonPeriodicActivity {
-    public:
-        /** 
-         * Constructor of the class
-         * 
-         * @param name name of the TaskContext
-         * @param propertyfilename location of the
-         * propertyfile. Default: cpf/LaserScanner.cpf
-         * 
-         */
-        LaserScanner(std::string name, std::string propertyfilename="cpf/LaserScanner.cpf", unsigned int priority=0);
-        virtual~LaserScanner();
-        
-        virtual bool startup();
-        virtual void update();  // taskcontext
-        virtual void shutdown();
-        virtual void loop();  // nonperiodicactivity
+    LaserScanner(std::string name, std::string propertyfilename="cpf/LaserScanner.cpf", unsigned int priority=0);
+    virtual~LaserScanner();
     
-    protected:
-        RTT::Property<int> _port;
-        RTT::Property<int> _range_mode;
-        RTT::Property<double> _res_mode;
-        RTT::Property<std::string> _unit_mode;
-
-        /// Dataport which contains the measurements
-        RTT::WriteDataPort<std::vector<double> > _distances;
-
-        /// Event which is fired if the distance is out of range
-        RTT::Event< void(int,double)>  _distanceOutOfRange;
-
-    private:
-        SickDriver::SickLMS200* _sick_laserscanner;
-        std::vector<double> _distances_local;
-
-        char* _port_char;
-        unsigned char _range_mode_char;
-        unsigned char _res_mode_char;
-        unsigned char _unit_mode_char;
-
-        bool _loop_ended, _keep_running;
-        std::string _propertyfile;
-
-
-    }; // class
+    virtual bool startup();
+    virtual void update();  // taskcontext
+    virtual void shutdown();
+    virtual void loop();  // nonperiodicactivity
+    
+  protected:
+    RTT::Property<std::string> _port;
+    RTT::Property<int> _range_mode;
+    RTT::Property<double> _res_mode;
+    RTT::Property<std::string> _unit_mode;
+    
+    /// Dataport which contains the measurements
+    RTT::WriteDataPort<std::vector<double> > _distances, _angles;
+    
+    /// Event which is fired if the distance is out of range
+    RTT::Event< void(int,double)>  _distanceOutOfRange;
+    
+  private:
+    SickDriver::SickLMS200* _sick_laserscanner;
+    std::vector<double> _distances_local, _angles_local;
+    
+    const char* _port_char;
+    unsigned char _range_mode_char, _res_mode_char, _unit_mode_char;
+    unsigned int _num_meas;
+    bool _loop_ended, _keep_running;
+    std::string _propertyfile;
+    
+    
+  }; // class
 } // namespace
 
 #endif
