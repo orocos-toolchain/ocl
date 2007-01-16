@@ -116,7 +116,6 @@ namespace OCL
 
   void LaserScanner::loop()
   {
-    log(Debug)<<this->TaskContext::getName()<<": loop start"<<endlog();
     if (!_sick_laserscanner->start())
       log(Error)<<this->TaskContext::getName()<<": starting laserscanner failed."<<endlog();
 
@@ -148,8 +147,6 @@ namespace OCL
     if (!_sick_laserscanner->stop())
       log(Error)<<this->TaskContext::getName()<<": Error stopping laserscanner"<<endlog();
     _loop_ended = true;
-
-    log(Debug)<<this->TaskContext::getName()<<": loop stop"<<endlog();
   }
 
 
