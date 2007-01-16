@@ -97,9 +97,9 @@ namespace OCL
     _image.Set(*cvQueryFrame(_capture));
     if(_show_image.value()){
       cvNamedWindow(_image.getName().c_str(),CV_WINDOW_AUTOSIZE);
-      cvShowImage(_image.getName().c_str(),&_image.Get());
+      cvShowImage(_image.getName().c_str(),&_empty);
       cvWaitKey(3);
-      cvShowImage(_image.getName().c_str(),&_image.Get());
+      cvShowImage(_image.getName().c_str(),&_empty);
       cvWaitKey(3);
     }
     
@@ -140,7 +140,7 @@ namespace OCL
     _image.Set(*cvQueryFrame(_capture));
     
     if(_show_image.value())
-      cvShowImage(_image.getName().c_str(),&_image.Get());
+      cvShowImage(_image.getName().c_str(),&_empty);
         
     if(_show_time.value()){
       _elapsed = TimeService::Instance()->secondsSince( _timestamp );
