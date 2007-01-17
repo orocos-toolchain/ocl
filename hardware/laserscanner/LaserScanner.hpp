@@ -27,8 +27,12 @@
 #include <rtt/dev/AnalogInput.hpp>
 #include <rtt/NonPeriodicActivity.hpp>
 #include <ocl/OCL.hpp>
-#include "SickLMS200.h"
 
+// forward declaration
+namespace SickDriver
+{
+    class SickLMS200;
+}
 
 
 namespace OCL {

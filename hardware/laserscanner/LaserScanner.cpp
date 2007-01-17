@@ -16,8 +16,10 @@
 //  
 
 #include "LaserScanner.hpp"
+#include "SickLMS200.h"
 #include <rtt/Logger.hpp>
 #include <iostream>
+
 
 
 
