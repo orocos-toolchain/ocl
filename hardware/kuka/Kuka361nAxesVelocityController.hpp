@@ -323,6 +323,11 @@ namespace OCL
          */
         virtual void shutdown();
         
+        /**
+         * Get the number of axes of this robot
+         */
+        unsigned int GetNumAxes();
+
     private:
         // 
         // Members implementing the interface to the hardware

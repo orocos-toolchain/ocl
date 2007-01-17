@@ -460,4 +460,11 @@ namespace OCL
         return true;
     }
     
+    unsigned int Kuka361nAxesVelocityController::GetNumAxes()
+    {
+        return KUKA361_NUM_AXES;
+        
+    }
+    
+
 }//namespace orocos

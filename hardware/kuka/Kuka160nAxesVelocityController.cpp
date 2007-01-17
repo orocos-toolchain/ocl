@@ -500,4 +500,11 @@ namespace OCL{
     {
         return true;
     }
+
+    unsigned int Kuka160nAxesVelocityController::GetNumAxes()
+    {
+        return KUKA160_NUM_AXES;
+        
+    }
+
 }//namespace orocos
