@@ -156,16 +156,15 @@ namespace RTT
             if ( enableDevice->isOn() == false )
                 return false;
 
-            mySpeed = v;
-
-            // limit v;
-            if ( mySpeed+offset < lowvel || mySpeed+offset > highvel ){
+            // limit the speed send to robot;
+            if ( v+offset > lowvel && v+offset < highvel && !isnan(v) && !isnan(offset) && !isnan(scale)){
+                mySpeed = v;
+                analogDevice->value( (mySpeed+offset)/scale );
+            }
+            else{
                 log(Error)<<"Drive value: "<<v<<endlog();
                 event("Axis drive value exceeds boundaries");
             }
-            else
-                analogDevice->value( (mySpeed+offset)/scale );
-
             return true;
         }
 
