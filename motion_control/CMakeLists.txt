@@ -4,6 +4,6 @@ DEPENDENT_OPTION( BUILD_MOTION "Build Motion Control Components" ON "KDL_FOUND" 
 ADD_SUBDIRECTORY( naxes )
 ADD_SUBDIRECTORY( cartesian )
 
-IF ( NOT BUILD_MOTION )
-    MESSAGE( "**** KDL is not present, thus the Motion Control components can not be built ! ****" )
-ENDIF ( NOT BUILD_MOTION )
+#IF ( NOT BUILD_MOTION )
+#    MESSAGE( "**** KDL is not present, thus the Motion Control components can not be built ! ****" )
+#ENDIF ( NOT BUILD_MOTION )

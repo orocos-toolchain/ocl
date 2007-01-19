@@ -1,7 +1,5 @@
 OPTION( BUILD_HARDWARE "Build Hardware Components" OFF )
 
-#IF ( BUILD_HARDWARE )
-
     # IMPORTANT: The order must be the same as the dependencies:
 
     ADD_SUBDIRECTORY( demotool )
@@ -18,5 +16,3 @@ OPTION( BUILD_HARDWARE "Build Hardware Components" OFF )
     ADD_SUBDIRECTORY( axes )
     ADD_SUBDIRECTORY( kuka )
     ADD_SUBDIRECTORY( lias )
-
-#ENDIF ( BUILD_HARDWARE )

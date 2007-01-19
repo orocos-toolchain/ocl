@@ -1,4 +1,4 @@
-DEPENDENT_OPTION( BUILD_CARTESIAN "Build Cartesian Control Components" ON "KDL_FOUND" OFF)
+DEPENDENT_OPTION( BUILD_CARTESIAN "Build Cartesian Control Components" ON "BUILD_MOTION;KDL_FOUND" OFF)
 
 #Always process subdirs
 ADD_SUBDIRECTORY( tests )
