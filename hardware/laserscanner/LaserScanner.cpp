@@ -82,7 +82,7 @@ namespace OCL
     _distances_local.resize(_num_meas);
     _angles_local.resize(_num_meas);
     for (unsigned int i=0; i<_num_meas; i++)
-      _angles_local[i] = ((double)i/((double)_num_meas-1.0))*(double)_range_mode.value();
+      _angles_local[i] = ((double)i/((double)_num_meas-1.0))*(double)(_range_mode.value()*M_PI/180);
 
     _sick_laserscanner = new SickLMS200(_port_char, _range_mode_char, _res_mode_char, _unit_mode_char);
 
