@@ -31,14 +31,16 @@ namespace OCL
     
     
     CartesianEffectorVel::CartesianEffectorVel(string name, 
-                                               KinematicFamily* kf)
+                                               KinematicFamily* kf,
+					       const Vector& offset)
         : TaskContext(name),
           _velocity_joint_local(kf->nrOfJoints()),
           _velocity_cartesian("CartesianOutputVelocity"),
           _position_joint("nAxesSensorPosition"),
           _velocity_drives(kf->nrOfJoints()),
           _kf(kf),
-          _cartvel2jnt(kf->createCartVel2Jnt())
+          _cartvel2jnt(kf->createCartVel2Jnt()),
+	  _offset(offset)
     {
         //Adding ports
         for (int i=0;i<_kf->nrOfJoints();++i) {
@@ -63,7 +65,7 @@ namespace OCL
     
     void CartesianEffectorVel::update()
     {
-        _cartvel2jnt->setTwist(_velocity_cartesian.Get());
+        _cartvel2jnt->setTwist(_velocity_cartesian.Get().RefPoint(-_offset));
         _cartvel2jnt->evaluate(_position_joint.Get(),_velocity_joint_local);
         
         for (int i=0; i<_kf->nrOfJoints(); i++)

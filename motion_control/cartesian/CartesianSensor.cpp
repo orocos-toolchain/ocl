@@ -30,12 +30,14 @@ namespace OCL
     
   
     CartesianSensor::CartesianSensor(string name,
-                                     KinematicFamily* kf)
+                                     KinematicFamily* kf,
+				     const KDL::Frame& offset)
         : nAxesSensor(name,kf->nrOfJoints()),
           _frame("CartesianSensorPosition"),
           _twist("CartesianSensorVelocity"),
           _kf(kf),
-          _jnt2cartvel(kf->createJnt2CartVel())
+          _jnt2cartvel(kf->createJnt2CartVel()),
+	  _offset(offset)
     {
         ports()->addPort(&_frame);
         ports()->addPort(&_twist);
@@ -55,8 +57,8 @@ namespace OCL
         _jnt2cartvel->evaluate(_position_local,_velocity_local);
         _jnt2cartvel->getFrameVel(_FV_local);
     
-        _frame.Set(_FV_local.value());
-        _twist.Set(_FV_local.deriv());
+        _frame.Set(_FV_local.value() * _offset);
+        _twist.Set(_FV_local.deriv().RefPoint(_offset.p));
         
         return succes;
     }
@@ -69,8 +71,8 @@ namespace OCL
         _jnt2cartvel->evaluate(_position_local,_velocity_local);
         _jnt2cartvel->getFrameVel(_FV_local);
         
-        _frame.Set(_FV_local.value());
-        _twist.Set(_FV_local.deriv());
+        _frame.Set(_FV_local.value() * _offset);
+        _twist.Set(_FV_local.deriv().RefPoint(_offset.p));
         
     }
   

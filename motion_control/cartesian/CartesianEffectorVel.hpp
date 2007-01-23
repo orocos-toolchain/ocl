@@ -53,9 +53,11 @@ namespace OCL
          * @param name name of the TaskContext
          * @param kf pointer to the KDL::KinematicFamily to use for
          * kinematic calculations
+         * @param offset optional vector that specifies the twist reference
+         * point, relative to the end-effector frame
          * 
          */
-        CartesianEffectorVel(std::string name, KDL::KinematicFamily* kf);
+        CartesianEffectorVel(std::string name, KDL::KinematicFamily* kf, const KDL::Vector& offset=KDL::Vector::Zero());
         
         virtual ~CartesianEffectorVel();
         
@@ -83,6 +85,8 @@ namespace OCL
     private:
         KDL::KinematicFamily*                      _kf;
         KDL::CartVel2Jnt*                          _cartvel2jnt;
+        /// vector that specifies the twist reference point, relative to the end-effector frame
+        KDL::Vector                                _offset;
         
     }; // class
 }//namespace

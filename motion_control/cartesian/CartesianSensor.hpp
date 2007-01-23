@@ -47,10 +47,13 @@ namespace OCL
          * @param name name of the TaskContext
          * @param kf pointer to the KDL::KinematicFamily to use for
          * kinematic calculations
+         * @param offset optional frame that specifies offset between
+         * end-effector frame and frame that measured by this component
          * 
          */
         CartesianSensor(std::string name,
-                        KDL::KinematicFamily* kf);
+                        KDL::KinematicFamily* kf,
+			const KDL::Frame& offset=KDL::Frame::Identity());
         
         virtual ~CartesianSensor();
         
@@ -71,6 +74,8 @@ namespace OCL
         KDL::KinematicFamily*              _kf;
         //KDL::Jnt2CartPos*                  _jnt2cartpos;
         KDL::Jnt2CartVel*                  _jnt2cartvel;
+        /// offset between end-effector frame and frame this sensor components measures
+        KDL::Frame                         _offset;
         
     }; // class
 }//namespace
