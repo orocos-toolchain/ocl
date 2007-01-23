@@ -142,7 +142,7 @@ namespace OCL
 		  << _num_meas << " and received " << datalen/2 <<endlog();
 
       for (int i=0; i<datalen; i=i+2)
-	_distances_local[(unsigned int)(i/2)] = ((double)( (buf[i+1] & 0x1f) <<8  |buf[i]));
+	_distances_local[(unsigned int)(i/2)] = ((double)( (buf[i+1] & 0x1f) <<8  |buf[i]))/1000.0;
       _distances.Set(_distances_local);
     }// loop
 
