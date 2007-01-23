@@ -66,10 +66,11 @@ namespace OCL
     private:
         JointVector                                _velocity_joint_local;
     protected:
-        /// DataPort containing the output twist, shared with
+        /// DataPort containing the output twist, represented in the
+        /// base frame with end-effector reference point, shared with
         /// OCL::CartesianControllerPos,
         /// OCL::CartesianControllerPosVel or
-        /// OCL::CartesianControllerVel  
+        /// OCL::CartesianControllerVel
         RTT::ReadDataPort< KDL::Twist >            _velocity_cartesian;
         /// vector of dataports which read from the
         /// nAxesVelocityController. Default looks for ports with

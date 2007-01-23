@@ -79,8 +79,9 @@ namespace OCL
         /// DataPort containing the desired frame, shared with
         /// OCL::CartesianGeneratorPos 
         RTT::ReadDataPort< KDL::Frame >  _position_desi;
-        /// DataPort containing the output twist, shared with
-        /// OCL::CartesianEffectorVel 
+        /// DataPort containing the output twist, represented in the
+        /// base frame with end-effector reference point, shared with
+        /// OCL::CartesianEffectorVel
         RTT::WriteDataPort< KDL::Twist > _velocity_out;
         /// Vector with the control gain value for each dof.
         RTT::Property< std::vector<double> >      _controller_gain;
