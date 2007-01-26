@@ -5,7 +5,6 @@
 #include <rtt/Ports.hpp>
 #include <rtt/Logger.hpp>
 #include <rtt/PropertyLoader.hpp>
-#include <pkgconf/corelib_properties_marshalling.h>
 #include <rtt/marsh/CPFDemarshaller.hpp>
 
 #include <ocl/OCL.hpp>

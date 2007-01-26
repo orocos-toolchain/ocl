@@ -49,7 +49,6 @@
 #include <boost/bind.hpp>
 #include <boost/lambda/lambda.hpp>
 
-#include <pkgconf/system.h>
 #include <signal.h>
 
 namespace OCL
