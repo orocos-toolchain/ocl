@@ -42,8 +42,14 @@ MACRO( GLOBAL_ADD_COMPONENT COMPONENT_NAME )
   ENDIF(GLOBAL_LIBRARY)
 
   IF(LOCAL_LIBRARY)
-    MESSAGE( "Building Stand-alone library ${COMPONENT_NAME}" )
-    ADD_LIBRARY( ${COMPONENT_NAME} STATIC ${ARGN} )
+    IF (OROCOS_RTT_1.2)
+      MESSAGE( "Building Shared library for ${COMPONENT_NAME}" )
+      ADD_LIBRARY( ${COMPONENT_NAME} SHARED ${ARGN} )
+    ELSE (OROCOS_RTT_1.2)
+      MESSAGE( "Building Static library for ${COMPONENT_NAME}" )
+      ADD_LIBRARY( ${COMPONENT_NAME} STATIC ${ARGN} )
+    ENDIF (OROCOS_RTT_1.2)
+
     INSTALL_TARGETS( /lib ${COMPONENT_NAME} )
     #The later a component is added, the earlier it apears in the -l list.
     SET (ENV{SELECTED_LIBS} "-l${COMPONENT_NAME} $ENV{SELECTED_LIBS} ")
