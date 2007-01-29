@@ -1,4 +1,11 @@
+
+#include <rtt/RTT.hpp>
 #include "DeploymentComponent.hpp"
+#ifndef OROCLS_CORELIB_PROPERTIES_DEMARSHALLING_DRIVER
+#include <pkgconf/corelib_properties_marshalling.h>
+#endif
+#include ORODAT_CORELIB_PROPERTIES_MARSHALLING_INCLUDE
+#include ORODAT_CORELIB_PROPERTIES_DEMARSHALLING_INCLUDE
 
 using namespace Orocos;
 
