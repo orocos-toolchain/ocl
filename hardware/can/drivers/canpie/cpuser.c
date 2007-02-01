@@ -31,14 +31,14 @@
 *                                                                             *
 \*****************************************************************************/
 
-#include "rtt/can/cpcore.h"
-#include "rtt/can/cpfifo.h"
-#include "rtt/can/cpfilter.h"
-#include "rtt/can/cpuser.h"
+#include "cpcore.h"
+#include "cpfifo.h"
+#include "cpfilter.h"
+#include "cpuser.h"
 
-#include <pkgconf/system.h>
+#include "orocos-components-config.h"
 #if (defined OROPKG_OS_RTAI) || (defined OROPKG_OS_LXRT)
-#include "rtt/can/cplxrt.h"
+#include "cplxrt.h"
 #endif
 
 /*------------------------------------------------------------------------

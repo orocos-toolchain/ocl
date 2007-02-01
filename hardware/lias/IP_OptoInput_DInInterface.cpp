@@ -1,5 +1,5 @@
 
-#include <pkgconf/system.h>
+#include <rtt/RTT.hpp>
 
 #if defined (OROPKG_OS_LXRT)
 

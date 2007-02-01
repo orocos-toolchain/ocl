@@ -18,7 +18,7 @@
 #ifndef __LASERSCANNER_HARDWARE__
 #define __LASERSCANNER_HARDWARE__
 
-#include <pkgconf/system.h>
+#include <rtt/RTT.hpp>
 #include <rtt/RTT.hpp>
 #include <rtt/TaskContext.hpp>
 #include <rtt/Ports.hpp>

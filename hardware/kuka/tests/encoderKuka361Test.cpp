@@ -1,5 +1,5 @@
 
-#include <pkgconf/system.h>
+#include <rtt/RTT.hpp>
 #include <rtt/RTT.hpp>
 #include <rtt/os/main.h>
 #include <rtt/os/threads.hpp>

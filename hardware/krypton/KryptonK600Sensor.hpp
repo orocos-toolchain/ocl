@@ -21,7 +21,7 @@
 #ifndef __KRYTON_K600_SENSOR__
 #define __KRYTON_K600_SENSOR__
 
-#include <pkgconf/system.h> 
+#include <rtt/RTT.hpp> 
 #include <kdl/frames.hpp>
 #include <rtt/RTT.hpp>
 #include <rtt/TaskContext.hpp>

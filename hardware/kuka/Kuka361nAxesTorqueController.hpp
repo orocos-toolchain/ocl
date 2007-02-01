@@ -1,7 +1,7 @@
 #ifndef KUKA361_NAXES_TORQUE_CONTROLLER_HPP
 #define KUKA361_NAXES_TORQUE_CONTROLLER_HPP
 
-#include <pkgconf/system.h> 
+#include <rtt/RTT.hpp> 
 
 #include <vector>
 #include <rtt/RTT.hpp>

@@ -9,7 +9,7 @@
 #include <rtt/Properties.hpp>
 
 
-#include <pkgconf/system.h> 
+#include <rtt/RTT.hpp> 
 
 #include "IP_Encoder_6_EncInterface.hpp"
 #include "dev/SimulationAxis.hpp" 

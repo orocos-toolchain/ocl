@@ -18,7 +18,7 @@
 #ifndef __LASERDISTANCE_HARDWARE__
 #define __LASERDISTANCE_HARDWARE__
 
-#include <pkgconf/system.h>
+#include <rtt/RTT.hpp>
 
 #include <rtt/RTT.hpp>
 #include <rtt/TaskContext.hpp>

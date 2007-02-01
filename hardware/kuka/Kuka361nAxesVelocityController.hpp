@@ -1,8 +1,6 @@
 #ifndef KUKA361_NAXES_VELOCITY_CONTROLLER_HPP
 #define KUKA361_NAXES_VELOCITY_CONTROLLER_HPP
 
-#include <pkgconf/system.h> 
-
 #include <vector>
 #include <rtt/RTT.hpp>
 

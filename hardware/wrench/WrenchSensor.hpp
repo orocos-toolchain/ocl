@@ -10,7 +10,7 @@
 #include <kdl/toolkit.hpp>
 #include <kdl/frames.hpp>
 
-#include <pkgconf/system.h> 
+#include <rtt/RTT.hpp> 
 #if defined (OROPKG_OS_LXRT)
 
 #include <hardware/wrench/drivers/jr3_lxrt_common.h>

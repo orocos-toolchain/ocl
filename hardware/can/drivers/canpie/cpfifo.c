@@ -31,7 +31,7 @@
 \*****************************************************************************/
 
 #include "rtt/can/cpfifo.h"
-#include "pkgconf/system.h"
+#include "orocos-components-config.h"
 
 
 

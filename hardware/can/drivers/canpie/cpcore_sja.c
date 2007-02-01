@@ -29,22 +29,21 @@
 *                                                                             *
 \*****************************************************************************/
 
-#include <pkgconf/system.h>
-#include <pkgconf/device_drivers_canpie.h>
+#include "orocos-components-config.h"
 
-#include "rtt/can/cpconfig.h"
-#include "rtt/can/cpcore.h"
-#include "rtt/can/cpfifo.h"
-#include "rtt/can/cpfilter.h"
-#include "rtt/can/cpmacro.h"
+#include "cpconfig.h"
+#include "cpcore.h"
+#include "cpfifo.h"
+#include "cpfilter.h"
+#include "cpmacro.h"
 
 /* SJA: Include header for SJA CAN controller */
-#include "rtt/can/pelican.h" 
+#include "pelican.h" 
 
 #if defined(OROPKG_OS_RTAI) || defined(OROPKG_OS_LXRT)
 #include <rtai.h>
 #include <rtai_sched.h>
-#include "rtt/can/cplxrt.h"
+#include "cplxrt.h"
 #endif
 
 

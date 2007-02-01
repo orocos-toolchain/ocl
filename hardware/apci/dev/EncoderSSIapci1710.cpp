@@ -42,7 +42,7 @@
 //  
 
 
-#include <pkgconf/system.h>
+#include <rtt/RTT.hpp>
 #include <rtt/os/threads.hpp>
 #include "apci-config.h"
 
