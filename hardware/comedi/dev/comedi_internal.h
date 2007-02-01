@@ -36,7 +36,7 @@
 #ifndef _COMEDI_INTERNAL_HPP
 #define _COMEDI_INTERNAL_HPP
 
-#include <pkgconf/system.h>
+#include <rtt/RTT.hpp>
 #ifdef OROPKG_OS_LXRT
     #define __KERNEL__
     extern "C"
@@ -54,31 +54,41 @@
 namespace RTT
 {
     /**
+     * This class stores a comedi_t struct. If \a it is zero, the
+     * comedi_open failed.
      * D pointer: hide comedi implementation from header file.
      */
     class ComediDevice::DeviceInfo
     {
     public:
         DeviceInfo( unsigned int dm )
-            : devminor(dm), error(0), it(0)
+            : devminor(dm), it(0)
         {
             char devString[ 15 ];
             sprintf( devString, "/dev/comedi%d", devminor );
 
             it = comedi_open( devString );
 
-            log(Info) << "Trying to open " << devString << endlog();
+            log(Error) << "Trying to open ";
 
             if ( it == 0 )
-                {
-                    log(Error) << "ComediDevice::DeviceInfo : comedi_open failed" << endlog();
-                    error = -1;
-                }
+                log() << devString << ": no such device." << endlog(Error);
+            else
+                log() << devString << ": success." << endlog(Info);
+
+
+        }
+
+        ~DeviceInfo() {
+            if ( it )
+                if ( comedi_close(it) < 0 )
+                    log(Error) << "Device /dev/comedi"<<devminor<<" : close failed" << endlog();
         }
 
         unsigned int devminor;
-        int error;
-        
+        /**
+         * If non zero, points to existing comedi device.
+         */
         comedi_t *it;
     };
 

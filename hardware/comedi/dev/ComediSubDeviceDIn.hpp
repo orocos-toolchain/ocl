@@ -77,7 +77,7 @@ namespace RTT
        * The subdevice number of this instance in \a myCard
        */
       unsigned int _subDevice;
-      int error;
+      bool error;
     };
 
   };

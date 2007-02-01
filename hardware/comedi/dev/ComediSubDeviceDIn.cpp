@@ -39,34 +39,42 @@ namespace RTT
 
     ComediSubDeviceDIn::ComediSubDeviceDIn( ComediDevice* cd, const std::string& name, unsigned int subdevice)
       : DigitalInInterface( name ),
-	myCard( cd ), _subDevice( subdevice ) 
+        myCard( cd ), _subDevice( subdevice )
     {
-      init();
+        init();
     }
 
     ComediSubDeviceDIn::ComediSubDeviceDIn( ComediDevice* cd, unsigned int subdevice )
-      : myCard( cd ), _subDevice( subdevice )
+        : myCard( cd ), _subDevice( subdevice )
     {
-      init();
+        init();
     }
 
     void ComediSubDeviceDIn::init()
     {
-      if ( ( myCard->getSubDeviceType( _subDevice ) != COMEDI_SUBD_DI ) &&
-	   ( myCard->getSubDeviceType( _subDevice ) != COMEDI_SUBD_DIO) )
-	{
-	  error = -1;
-	  rtos_printf( "Comedi Digital In : comedi_get_subdevice_type failed\n" );
-	}
-      rtos_printf("Setting all dio on subdevice %d to input\n",_subDevice);
-      unsigned int num_chan = this->nbOfInputs();
-      for (unsigned int i=0; i<num_chan; ++i)
-	comedi_dio_config(myCard->getDevice()->it, _subDevice, i, COMEDI_INPUT);
+        if (!myCard) {
+            log(Error) << "Error creating ComediSubDeviceDIn: null ComediDevice given." <<endlog();
+            return;
+        }
+        if ( ( myCard->getSubDeviceType( _subDevice ) != COMEDI_SUBD_DI ) &&
+             ( myCard->getSubDeviceType( _subDevice ) != COMEDI_SUBD_DIO) )
+            {
+                Logger::In in("ComediSubDeviceDIn");
+                log(Error) << "SubDevice "<< _subDevice <<" is not a digital input: ";
+                log() << "type = " << myCard->getSubDeviceType( _subDevice ) << endlog();
+                myCard = 0;
+                return;
+            }
+        log(Info) << "Setting all dio on subdevice "<<_subDevice<<" to input type." << endlog();
+        unsigned int num_chan = this->nbOfInputs();
+        for (unsigned int i=0; i<num_chan; ++i)
+            comedi_dio_config(myCard->getDevice()->it, _subDevice, i, COMEDI_INPUT);
     }
 
   bool ComediSubDeviceDIn::isOn( unsigned int bit /*= 0*/) const
-    {
+  {
       unsigned int tmp;
+      if (!myCard) return false;
       comedi_dio_read( myCard->getDevice()->it,_subDevice,bit, &tmp );
       return (tmp == 1);
     }
@@ -83,16 +91,19 @@ namespace RTT
 
     unsigned int ComediSubDeviceDIn::nbOfInputs() const
     {
+      if (!myCard) return 0;
       return comedi_get_n_channels(myCard->getDevice()->it, _subDevice);
     }
 
     unsigned int ComediSubDeviceDIn::readSequence(unsigned int start_bit, unsigned int stop_bit) const
     {
       unsigned int value = 0;
+      if (!myCard) return 0;
       if ((start_bit > stop_bit) || (stop_bit >= this->nbOfInputs()))
-	{
-	  rtos_printf( "Comedi Digital In : You Moron, trying to trick me?  start_bit should be less than stop_bit)\n" );
-	}
+          {
+              Logger::In in("ComediSubDeviceDIn");
+              log(Error) << "start_bit should be less than stop_bit" << endlog();
+          }
       else
 	{
 	  // Read all channels

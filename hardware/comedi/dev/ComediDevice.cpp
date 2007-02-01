@@ -66,10 +66,6 @@ namespace RTT
 
   ComediDevice::~ComediDevice()
   {
-    if (comedi_close(d->it) < 0)
-      {
-          rtos_printf( "comedi_close failed\n" );
-      }
   }
 
   // KG MaxData only depending on subdevice?
@@ -90,7 +86,7 @@ namespace RTT
 			  ComediDevice::Data& value )
   {
     value = 0;
-    if ( d->error )
+    if ( !d->it )
       return -1;
 
     comedi_data_read( d->it, subd, chanNr, range, aref, 
@@ -103,7 +99,7 @@ namespace RTT
 			   unsigned int range, unsigned int aref,
 			   const ComediDevice::Data& value)
   {
-    if ( d->error )
+    if ( !d->it )
       return -1;
 
     Data output = value; 
