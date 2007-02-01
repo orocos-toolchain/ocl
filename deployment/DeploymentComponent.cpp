@@ -1,17 +1,22 @@
 
 #include <rtt/RTT.hpp>
 #include "DeploymentComponent.hpp"
+#include <rtt/Activities.hpp>
 #ifndef OROCLS_CORELIB_PROPERTIES_DEMARSHALLING_DRIVER
 #include <pkgconf/corelib_properties_marshalling.h>
 #endif
 #include ORODAT_CORELIB_PROPERTIES_MARSHALLING_INCLUDE
 #include ORODAT_CORELIB_PROPERTIES_DEMARSHALLING_INCLUDE
 
+#include <cstdio>
+#include <dlfcn.h>
+#include "ComponentLoader.hpp"
+
+
 using namespace Orocos;
 
 namespace OCL
 {
-
     DeploymentComponent::DeploymentComponent(std::string name)
         : RTT::TaskContext(name),
           configurationfile("ConfigFile", "Name of the configuration file.", "cpf/"+name+".cpf"),
@@ -21,6 +26,14 @@ namespace OCL
         this->properties()->addProperty( &configurationfile );
         this->properties()->addProperty( &autoConnect );
         this->attributes()->addAttribute( &validConfig );
+
+        this->methods()->addMethod( RTT::method("loadComponent", &DeploymentComponent::loadComponent, this),
+                                    "Load a new component instance from a library.",
+                                    "Name", "The name of the to be created component",
+                                    "Type", "The component type, used to lookup the library.");
+        this->methods()->addMethod( RTT::method("unloadComponent", &DeploymentComponent::unloadComponent, this),
+                                    "Unload a loaded component instance.",
+                                    "Name", "The name of the to be created component");
 
         this->methods()->addMethod( RTT::method("loadConfiguration", &DeploymentComponent::loadConfiguration, this),
                                     "Load and store the configuration file 'ConfigFille'.");
@@ -137,8 +150,12 @@ namespace OCL
                         }
                         // set PropFile name if present
                         std::string filename = *it + ".cpf";
-                        if ( comp->get().getProperty<std::string>("PropFile") )
+                        if ( comp->get().getProperty<std::string>("PropFile") )  // PropFile is deprecated
                             if ( !comp->get().getProperty<std::string>("PropFile") ) {
+                                valid = false;
+                            }
+                        if ( comp->get().getProperty<std::string>("PropertyFile") )
+                            if ( !comp->get().getProperty<std::string>("PropertyFile") ) {
                                 valid = false;
                             }
                             
@@ -226,18 +243,23 @@ namespace OCL
             Property<PropertyBag>* comp = root.getProperty<PropertyBag>(*it);
                 
             // set PropFile name if present
-            std::string filename = *it + ".cpf";
+            std::string filename;
             if ( comp->get().getProperty<std::string>("PropFile") ){
                 filename = comp->get().getProperty<std::string>("PropFile")->get();
-                PropertyLoader pl;
-                TaskContext* peer = this->getPeer( *it );
-                assert( peer );
-                bool ret = pl.configure( filename, peer, true ); // strict:true 
-                if (!ret) {
-                    log(Error) << "Failed to configure properties for component "<<*it<<endlog();
-                } else {
-                    log(Info) << "Configured Properties of "<<*it<<endlog();
-                }
+	    }
+            if ( comp->get().getProperty<std::string>("PropertyFile") ){
+                filename = comp->get().getProperty<std::string>("PropertyFile")->get();
+	    }
+	    if ( !filename.empty() ) {
+	      PropertyLoader pl;
+	      TaskContext* peer = this->getPeer( *it );
+	      assert( peer );
+	      bool ret = pl.configure( filename, peer, true ); // strict:true 
+	      if (!ret) {
+		log(Error) << "Failed to configure properties for component "<<*it<<endlog();
+	      } else {
+		log(Info) << "Configured Properties of "<<*it<<endlog();
+	      }
             }
                 
             //peer->disconnect();
@@ -326,6 +348,126 @@ namespace OCL
         }
             
         return true;
+    }
+
+    bool DeploymentComponent::loadComponent(const std::string& name, const std::string& type)
+    {
+        Logger::In in("DeploymentComponent::loadComponent");
+
+        CompList::iterator it = comps.begin();
+        while (it != comps.end() ) {
+            if (it->instance->getName() == name ) {
+                log(Error) <<"Failed to load component with name "<<name<<": already loaded."<<endlog();
+                return false;
+            }
+            ++it;
+        }
+
+        void *handle;
+        TaskContext* (*factory)(std::string name);
+        char *error;
+
+        // First: try static loading:
+        factory = ComponentFactories::Factories[ type ];
+
+        if ( factory ) {
+            log(Info) <<"Found static factory for Component type "<<type<<endlog();
+        } else {
+            // Second: try dynamic loading:
+            std::string so_name = type +".so";
+
+            handle = dlopen ( so_name.c_str(), RTLD_NOW);
+            if (!handle) {
+                log(Error) << "Could not find plugin '"<< so_name <<"':";
+                log(Error) << dlerror() << endlog();
+                return false;
+            }
+
+            dlerror();    /* Clear any existing error */
+            *(void **) (&factory) = dlsym(handle, "createComponent");
+            if ((error = dlerror()) != NULL) {
+                log(Error) << "Found plugin '"<< so_name <<"', but it is not an Orocos Component:";
+                log(Error) << error << endlog();
+                dlclose( handle );
+                return false;
+            }
+            log(Info) << "Found Orocos plugin '"<< so_name <<"'"<<endlog();
+        }
+        
+        ComponentData newcomp;
+        newcomp.instance = (*factory)(name);
+        newcomp.type = type;
+
+        if ( newcomp.instance == 0 ) {
+            log(Error) <<"Failed to load component with name "<<name<<": refused to be created."<<endlog();
+            return false;
+        }
+
+        comps.push_back( newcomp );
+        log(Info) << "Adding "<< newcomp.instance->getName() << " as new Peer." <<endlog();
+        this->addPeer( newcomp.instance );
+        return true;
+    }
+
+
+    bool DeploymentComponent::unloadComponent(const std::string& name)
+    {
+        CompList::iterator it = comps.begin();
+        while (it != comps.end() ) {
+            if (it->instance->getName() == name ) {
+                if ( it->instance->isRunning() ) {
+                    log(Error) << "Can't unload component "<<name<<" since it is still running."<<endlog();
+                    return false;
+                }
+                // todo: write properties ?
+                it->instance->disconnect();
+                delete it->instance;
+                comps.erase(it);
+                log(Info) << "Succesfully unloaded component "<<name<<"."<<endlog();
+                return true;
+            }
+            ++it;
+        }
+        log(Error) << "Can't unload component "<<name<<": not loaded by "<<this->getName()<<endlog();
+        return false;
+    }
+
+    bool DeploymentComponent::setActivity(const std::string& comp_name, 
+                                          const std::string& act_type, 
+                                          double period, int priority,
+                                          const std::string& scheduler)
+    {
+        CompList::iterator it = comps.begin();
+        while (it != comps.end() ) {
+            if (it->instance->getName() == comp_name ) {
+                if ( it->instance->isRunning() ) {
+                    log(Error) << "Can't change activity of component "<<comp_name<<" since it is still running."<<endlog();
+                    return false;
+                }
+                ActivityInterface* oldact = it->instance->engine()->getActivity();
+                ActivityInterface* newact = 0;
+                if ( act_type == "PeriodicActivity" && period != 0.0)
+                    newact = new PeriodicActivity(priority, period);
+                else
+                    if ( act_type == "NonPeriodicActivity" && period == 0.0)
+                        newact = new NonPeriodicActivity(priority);
+                    else
+                        if ( act_type == "SlaveActivity" )
+                            newact = new SlaveActivity(period);
+                
+                if (newact == 0) {
+                    log(Error) << "Can't create activity for component "<<comp_name<<": incorrect arguments."<<endlog();
+                    return false;
+                }
+
+                it->instance->engine()->setActivity( newact );
+                delete oldact;
+                return true;
+            }
+            ++it;
+        }
+        log(Error) << "Can't create Activity for component "<<comp_name<<": not loaded by "<<this->getName()<<endlog();
+        return false;
     }
 
     bool DeploymentComponent::configure(std::string name)

@@ -8,7 +8,6 @@
 #include <rtt/marsh/CPFDemarshaller.hpp>
 
 #include <ocl/OCL.hpp>
-
 namespace OCL
 {
 
@@ -21,6 +20,7 @@ namespace OCL
     class DeploymentComponent
         : public RTT::TaskContext
     {
+    protected:
         RTT::PropertyBag root;
         // STRUCTURE:
         //         Property<PropertyBag> component;
@@ -35,6 +35,24 @@ namespace OCL
         RTT::Property<bool> autoConnect;
         RTT::Attribute<bool> validConfig;
 
+        /**
+         * Each loaded component is stored in a struct like this.
+         */
+        struct ComponentData {
+            /**
+             * The created component instance.
+             */
+            RTT::TaskContext* instance;
+            /**
+             * The 'main' class type
+             */
+            std::string type;
+            /**
+             * The property file (if any).
+             */
+            std::string properties;
+        };
+
         struct ConnectionData {
             typedef std::vector<RTT::PortInterface*> Ports;
             Ports ports;
@@ -42,6 +60,10 @@ namespace OCL
 
         typedef std::map<std::string, ConnectionData> ConMap;
         ConMap conmap;
+
+        typedef std::vector<ComponentData> CompList;
+        CompList comps;
+        
     public:
         DeploymentComponent(std::string name = "Configurator");
         
@@ -73,10 +95,46 @@ namespace OCL
         using TaskContext::connectPeers;
 
         /** 
+         * Load a new component in the current process.
+         * 
+         * @param name 
+         * @param type 
+         * 
+         * @return 
+         */
+        bool loadComponent(const std::string& name, const std::string& type);
+
+        /** 
+         * Unload a loaded component from the current process.
+         * 
+         * @param name 
+         * 
+         * @return 
+         */
+        bool unloadComponent(const std::string& name);
+
+        /**
+         * (Re-)set the activity of a component.
+         * 
+         * @param comp_name The name of the component to change.
+         * @param act_type  The Activity type: 'PeriodicActivity', 'NonPeriodicActivity' or 'SlaveActivity'.
+         * @param period    The period of the activity. Must be \a 0.0 in case of NonPeriodicActivity.
+         * @param priority  The scheduler priority (OS dependent).
+         * @param scheduler The scheduler type \a ORO_SCHED_RT or \a ORO_SCHED_OTHER.
+         * 
+         * @return false if one of the parameters does not match or if the
+         * component is running.
+         */
+        bool setActivity(const std::string& comp_name, 
+                         const std::string& act_type, 
+                         double period, int priority,
+                         const std::string& scheduler);
+
+        /** 
          * Load a configuration from disk. The 'ConfigFile' property is used to
          * locate the file. This does not apply the configuration yet on the
          * components.
-         * @see configurePeers to configure the peer components with the loaded
+         * @see configureComponents to configure the peer components with the loaded
          * configuration.
          * 
          * @return true if the configuration could be read and was valid.
@@ -85,7 +143,6 @@ namespace OCL
 
         /** 
          * Configure the components with a loaded configuration.
-         * 
          * 
          * @return true if all components could be succesfully configured.
          */
