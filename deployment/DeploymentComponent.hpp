@@ -1,67 +1,81 @@
+#ifndef OCL_DEPLOYMENTCOMPONENT_HPP
+#define OCL_DEPLOYMENTCOMPONENT_HPP
+
 #include <rtt/RTT.hpp>
 #include <rtt/TaskContext.hpp>
 #include <rtt/Properties.hpp>
 #include <rtt/Attribute.hpp>
 #include <rtt/Ports.hpp>
-#include <rtt/Logger.hpp>
-#include <rtt/PropertyLoader.hpp>
-#include <rtt/marsh/CPFDemarshaller.hpp>
-
 #include <ocl/OCL.hpp>
+#include <vector>
+#include <map>
+
 namespace OCL
 {
 
     /**
      * A Component for deploying (configuring) other components in an
-     * application. It allows to create connections between components and
-     * load the properties for components,
-     * such that connection of ports with different names can take place.
+     * application. It allows to create connections between components,
+     * load the properties and scripts for components and setup 
+     * component activities.
      */
     class DeploymentComponent
         : public RTT::TaskContext
     {
     protected:
+        /**
+         * This bag stores the current configuration.
+         * It is the cumulation of all loadConfiguration() calls.
+         */
         RTT::PropertyBag root;
-        // STRUCTURE:
-        //         Property<PropertyBag> component;
-        //         //         Property<std::string> property-source;
-        
-        //         Property<PropertyBag> ports;
-        //         //         Property<std::string> portname; // value = connection_name
-        
-        //         Property<std::string> peername;
-
-        RTT::Property<std::string> configurationfile;
-        RTT::Property<bool> autoConnect;
+        RTT::Property<std::string> compPath;
         RTT::Attribute<bool> validConfig;
+        RTT::Constant<int> sched_RT;
+        RTT::Constant<int> sched_OTHER;
+        RTT::Constant<int> lowest_Priority;
+        RTT::Constant<int> highest_Priority;
 
         /**
-         * Each loaded component is stored in a struct like this.
+         * Each configured component is stored in a struct like this.
+         * We need this to keep track of: 1. if we created an activity for it.
+         * 2. if we loaded it.
          */
         struct ComponentData {
+            ComponentData() 
+                : instance(0), act(0), loaded(false)
+            {}
             /**
-             * The created component instance.
+             * The component instance.
              */
             RTT::TaskContext* instance;
             /**
-             * The 'main' class type
+             * The activity created by DeploymentComponent.
              */
-            std::string type;
+            ActivityInterface* act;
             /**
-             * The property file (if any).
+             * If it was loaded by DeploymentComponent.
              */
-            std::string properties;
+            bool loaded;
         };
 
+        /**
+         * Assembles all ports which share a connection.
+         */
         struct ConnectionData {
             typedef std::vector<RTT::PortInterface*> Ports;
             Ports ports;
         };
 
+        /**
+         * This maps connection names to associated ports.
+         */
         typedef std::map<std::string, ConnectionData> ConMap;
         ConMap conmap;
 
-        typedef std::vector<ComponentData> CompList;
+        /**
+         * This vector holds the dynamically loaded components.
+         */
+        typedef std::map<std::string, ComponentData> CompList;
         CompList comps;
         
     public:
@@ -81,6 +95,34 @@ namespace OCL
         bool connectPeers(const std::string& one, const std::string& other);
 
         /** 
+         * Establish a data flow connection between two tasks. The direction
+         * of the connection is determined by the read/write port types.3B
+         * 
+         * @param one The first task to connect
+         * @param other The second task to connect
+         * 
+         * @return true if both tasks are peers of this component and
+         * data ports could be connected.
+         */
+        bool connectPorts(const std::string& one, const std::string& other);
+
+        /** 
+         * Connect two named ports of components. The direction
+         * of the connection is determined by the read/write port types.
+         * 
+         * @param one Name of the first component
+         * @param one_port Name of the port of the first component to connect to
+         * \a other_port
+         * @param other Name of the second component
+         * @param other_port Name of the port of the second component to connect
+         * to \a one_port
+         * 
+         * @return true if the ports are present and could be connected, false otherwise.
+         */
+        bool connectPorts(const std::string& one, const std::string& one_port,
+                          const std::string& other, const std::string& other_port);
+
+        /** 
          * Establish a uni directional connection form one task to another
          * 
          * @param from The component where the connection starts.
@@ -95,31 +137,86 @@ namespace OCL
         using TaskContext::connectPeers;
 
         /** 
-         * Load a new component in the current process.
+         * Use this command to load a dynamic library into the memory of the
+         * current process.
          * 
-         * @param name 
-         * @param type 
+         * @param name an absolute or relative path to a loadable library.
          * 
-         * @return 
+         * @return True if it could be loaded, false otherwise.
+         */
+        bool loadLibrary(const std::string& name);
+
+        /** 
+         * Load a new component in the current process. It wil appear
+         * as a peer with name \a name of this component.
+         * 
+         * @param name Name the new component will receive.
+         * @param type The type of the component. This is usually a library (.dll or .so)
+         * name.
+         * 
+         * @return True if the component could be created, false if \a name
+         * is already in use or \a type was not an Orocos library.
          */
         bool loadComponent(const std::string& name, const std::string& type);
 
         /** 
-         * Unload a loaded component from the current process.
+         * Unload a loaded component from the current process. It may not
+         * be running.
          * 
-         * @param name 
+         * @param name The name of a component loaded with loadComponent().
          * 
-         * @return 
+         * @return true if \a name was not running and could be unloaded.
          */
         bool unloadComponent(const std::string& name);
 
         /**
-         * (Re-)set the activity of a component.
+         * (Re-)set the activity of a component which was loaded with loadComponent.
+         * 
+         * @param comp_name The name of the component to change.
+         * @param period    The period of the activity.
+         * @param priority  The scheduler priority (OS dependent).
+         * @param scheduler The scheduler type \a ORO_SCHED_RT or \a ORO_SCHED_OTHER.
+         * 
+         * @return false if one of the parameters does not match or if the
+         * component is running.
+         */
+        bool setPeriodicActivity(const std::string& comp_name, 
+                                 double period, int priority,
+                                 int scheduler);
+
+        /**
+         * (Re-)set the activity of a component which was loaded with loadComponent.
+         * 
+         * @param comp_name The name of the component to change.
+         * @param priority  The scheduler priority (OS dependent).
+         * @param scheduler The scheduler type \a ORO_SCHED_RT or \a ORO_SCHED_OTHER.
+         * 
+         * @return false if one of the parameters does not match or if the
+         * component is running.
+         */
+        bool setNonPeriodicActivity(const std::string& comp_name, 
+                                    int priority,
+                                    int scheduler);
+
+        /**
+         * (Re-)set the activity of a component which was loaded with loadComponent.
+         * 
+         * @param comp_name The name of the component to change.
+         * @param period    The period of the activity.
+         * 
+         * @return false if one of the parameters does not match or if the
+         * component is running.
+         */
+        bool setSlaveActivity(const std::string& comp_name, 
+                              double period);
+
+        /**
+         * (Re-)set the activity of a component which was loaded with loadComponent.
          * 
          * @param comp_name The name of the component to change.
          * @param act_type  The Activity type: 'PeriodicActivity', 'NonPeriodicActivity' or 'SlaveActivity'.
-         * @param period    The period of the activity. Must be \a 0.0 in case of NonPeriodicActivity.
          * @param priority  The scheduler priority (OS dependent).
+         * @param period    The period of the activity.
          * @param scheduler The scheduler type \a ORO_SCHED_RT or \a ORO_SCHED_OTHER.
          * 
          * @return false if one of the parameters does not match or if the
@@ -128,32 +225,60 @@ namespace OCL
         bool setActivity(const std::string& comp_name, 
                          const std::string& act_type, 
                          double period, int priority,
-                         const std::string& scheduler);
+                         int scheduler);
 
         /** 
-         * Load a configuration from disk. The 'ConfigFile' property is used to
-         * locate the file. This does not apply the configuration yet on the
-         * components.
-         * @see configureComponents to configure the peer components with the loaded
-         * configuration.
+         * Load a (partial) application configuration from disk. The
+         * necessary components are located or loaded, but no
+         * component configuration is yet applied. One can load
+         * multiple configurations and call configureComponents() once
+         * to apply all settings. In case of duplicate information is
+         * the latest loaded configuration option used.
+         *
+         * @see configureComponents to configure the components with
+         * the loaded configuration.
          * 
          * @return true if the configuration could be read and was valid.
          */
-        bool loadConfiguration();
+        bool loadConfiguration(const std::string& config_file);
 
         /** 
-         * Configure the components with a loaded configuration.
+         * Configure the components with loaded configuration(s). This
+         * function connects components and data ports, attaches
+         * activities, sends properties to the components, loads scripts etc.
+         * If the configuration fails halfway, the system is configured as complete
+         * as possible. You can try to reconfigure by loading a new configuration
+         * (using loadConfiguration ) and call configureComponents again to resolve
+         * remaining issues.
+         *
+         * This function tries to apply the configuration with a best effort.
+         * For example, if a program must be loaded in the component, and a program
+         * with that same name is already present, the present one is unloaded and the
+         * new one is attempted to be loaded. If that fails, the configuration process
+         * leaves the scripts as-is and proceeds with further configuration steps of
+         * the same component and other components.
+         *
+         * The order of configuration depends on the order of components during
+         * loadConfiguration. The first encountered component is configured first.
+         * If additional loadConfiguration operations refer to the same component,
+         * the configuration order is not changed.
          * 
          * @return true if all components could be succesfully configured.
          */
         bool configureComponents();
+
+        /** 
+         * Clear all loaded configuration options.
+         * This does not alter any component.
+         */
+        void clearConfiguration();
 
         /**
          * Configure a component by loading the property file 'name.cpf' for component with
          * name \a name.
          * @param name The name of the component to configure.
          * The file used will be 'name.cpf'.
-         * @return true if the component is known and the file could be
+         * @return true if the component is a peer of this component and the file could be
          * read.
          */
         bool configure(std::string name);
@@ -164,7 +289,7 @@ namespace OCL
          * @param name The name of the component to configure
          * @param filename The filename where the configuration is in.
          * 
-         * @return true if the component is known and the file could be
+         * @return true if the component is a peer of this component and the file could be
          * read.
          */
         bool configureFromFile(std::string name, std::string filename);
@@ -172,3 +297,4 @@ namespace OCL
 
 
 }
+#endif

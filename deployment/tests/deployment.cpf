@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE properties SYSTEM "cpf.dtd">
 <properties>
+  <simple name="Import" type="string"><value>emulator-gnulinux</value></simple>
 
   <!-- Component 1 -->
   <struct name="t1" type="type_less">

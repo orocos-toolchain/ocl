@@ -1,7 +1,6 @@
 #ifndef OCL_COMPONENT_LOADER_HPP
 #define OCL_COMPONENT_LOADER_HPP
 
-#include <map>
 #include <string>
 
 namespace RTT {
@@ -15,6 +14,9 @@ namespace OCL
      */
     typedef RTT::TaskContext* (*ComponentLoaderSignature)(std::string instance_name);
 }
+
+#if 0
+#include <map>
 
 namespace OCL
 {
@@ -43,11 +45,9 @@ namespace OCL
         }
     };
 }
+#endif
 
-#define COMPONENT_LOADER(CNAME) \
-namespace {\
-  ComponentLoader<CNAME> static_loader("CNAME"); \
-} \
+#define ORO_CREATE_COMPONENT(CNAME) \
 extern "C" { \
   RTT::TaskContext* createComponent(std::string instance_name) \
   { \

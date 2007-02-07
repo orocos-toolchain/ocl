@@ -11,21 +11,41 @@
 #include <cstdio>
 #include <dlfcn.h>
 #include "ComponentLoader.hpp"
+#include <rtt/PropertyLoader.hpp>
 
 
 using namespace Orocos;
 
 namespace OCL
 {
+    using namespace std;
+    using namespace RTT;
+
     DeploymentComponent::DeploymentComponent(std::string name)
         : RTT::TaskContext(name),
-          configurationfile("ConfigFile", "Name of the configuration file.", "cpf/"+name+".cpf"),
-          autoConnect("AutoConnect", "Should available ports with the same name be auto-connected between peers ?", true),
-          validConfig("Valid", false)
+          compPath("ComponentPath",
+                   "Location to look for components in addition to the local directory and system paths.",
+                   "/usr/local/orocos/lib"),
+          validConfig("Valid", false),
+          sched_RT("ORO_SCHED_RT", ORO_SCHED_RT ),
+          sched_OTHER("ORO_SCHED_OTHER", ORO_SCHED_OTHER ),
+          lowest_Priority("LowestPriority", RTT::OS::LowestPriority ),
+          highest_Priority("HighestPriority", RTT::OS::HighestPriority )
     {
-        this->properties()->addProperty( &configurationfile );
-        this->properties()->addProperty( &autoConnect );
         this->attributes()->addAttribute( &validConfig );
+        this->attributes()->addAttribute( &sched_RT );
+        this->attributes()->addAttribute( &sched_OTHER );
+        this->attributes()->addAttribute( &lowest_Priority );
+        this->attributes()->addAttribute( &highest_Priority );
+
+
+        this->methods()->addMethod( RTT::method("loadLibrary", &DeploymentComponent::loadLibrary, this),
+                                    "Load a new library into memory.",
+                                    "Name", "The name of the to be loaded library.");
+        this->methods()->addMethod( RTT::method("import", &DeploymentComponent::loadLibrary, this),
+                                    "Load a new library into memory.",
+                                    "Name", "The name of the to be loaded library.");
+
 
         this->methods()->addMethod( RTT::method("loadComponent", &DeploymentComponent::loadComponent, this),
                                     "Load a new component instance from a library.",
@@ -36,7 +56,8 @@ namespace OCL
                                     "Name", "The name of the to be created component");
 
         this->methods()->addMethod( RTT::method("loadConfiguration", &DeploymentComponent::loadConfiguration, this),
-                                    "Load and store the configuration file 'ConfigFille'.");
+                                    "Load a new configuration.",
+                                    "File", "The file which contains the new configuration.");
         this->methods()->addMethod( RTT::method("configureComponents", &DeploymentComponent::configureComponents, this),
                                     "Apply a loaded configuration.");
         // Work around compiler ambiguity:
@@ -45,15 +66,55 @@ namespace OCL
         this->methods()->addMethod( RTT::method("connectPeers", cp, this),
                                     "Connect two Components known to this Component.",
                                     "One", "The first component.","Two", "The second component.");
+        cp = &DeploymentComponent::connectPorts;
+        this->methods()->addMethod( RTT::method("connectPorts", cp, this),
+                                    "Connect the Data Ports of two Components known to this Component.",
+                                    "One", "The first component.","Two", "The second component.");
         cp = &DeploymentComponent::addPeer;
+        typedef bool(DeploymentComponent::*DC4Fun)(const std::string&, const std::string&,
+                                                   const std::string&, const std::string&);
+        DC4Fun cp4 = &DeploymentComponent::connectPorts;
+        this->methods()->addMethod( RTT::method("connectDataPorts", cp4, this),
+                                    "Connect two data ports of Components known to this Component.",
+                                    "One", "The first component.","Two", "The second component.",
+                                    "PortOne", "The port name of the first component.",
+                                    "PortTwo", "The port name of the second component.");
+
         this->methods()->addMethod( RTT::method("addPeer", cp, this),
                                     "Add a peer to a Component.",
                                     "From", "The first component.","To", "The other component.");
+        typedef void(DeploymentComponent::*RPFun)(const std::string&);
+        RPFun rp = &TaskContext::removePeer;
+        this->methods()->addMethod( RTT::method("removePeer", rp, this),
+                                    "Remove a peer from this Component.",
+                                    "PeerName", "The name of the peer to remove.");
+
+        this->methods()->addMethod( RTT::method("setPeriodicActivity", &DeploymentComponent::setPeriodicActivity, this),
+                                    "Attach a periodic activity to a Component.",
+                                    "CompName", "The name of the Component.",
+                                    "Period", "The period of the activity.",
+                                    "Priority", "The priority of the activity.",
+                                    "SchedType", "The scheduler type of the activity."
+                                    );
+        this->methods()->addMethod( RTT::method("setNonPeriodicActivity", &DeploymentComponent::setNonPeriodicActivity, this),
+                                    "Attach a non periodic activity to a Component.",
+                                    "CompName", "The name of the Component.",
+                                    "Priority", "The priority of the activity.",
+                                    "SchedType", "The scheduler type of the activity."
+                                    );
+        this->methods()->addMethod( RTT::method("setSlaveActivity", &DeploymentComponent::setSlaveActivity, this),
+                                    "Attach a slave activity to a Component.",
+                                    "CompName", "The name of the Component.",
+                                    "Period", "The period of the activity."
+                                    );
+        
+        
     }
         
     DeploymentComponent::~DeploymentComponent()
     {
         RTT::deletePropertyBag(root);
+        // Should we unload all loaded components here ?
     }
 
     bool DeploymentComponent::connectPeers(const std::string& one, const std::string& other)
@@ -68,11 +129,6 @@ namespace OCL
         if (!t2) {
             log(Error) << "No such peer: "<<other<<endlog();
             return false;
-        }
-        if ( autoConnect.get() ) {
-            log(Info) << "Automatically connecting data ports of "<<t1->getName() <<" and " << t2->getName() <<endlog();
-            log(Info) << "Disable with AutoConnect = false."<< endlog();
-            t1->connectPorts(t2);
         }
         return t1->connectPeers(t2);
     }
@@ -90,15 +146,119 @@ namespace OCL
             log(Error)<< "No such peer: "<<to<<endlog();
             return false;
         }
-        if ( autoConnect.get() ) {
-            log(Info) << "Automatically connecting data ports of "<<t1->getName() <<" and " << t2->getName() <<endlog();
-            log(Info) << "Disable with AutoConnect = false."<< endlog();
-            t1->connectPorts(t2);
-        }
         return t1->addPeer(t2);
     }
 
-    bool DeploymentComponent::loadConfiguration()
+    bool DeploymentComponent::connectPorts(const std::string& one, const std::string& other)
+    {
+        TaskContext* a, *b;
+        a = getPeer(one);
+        b = getPeer(other);
+        if ( !a ) {
+            log(Error) << one <<" could not be found."<< endlog();
+            return false;
+        }
+        if ( !b ) {
+            log(Error) << other <<" could not be found."<< endlog();
+            return false;
+        }
+
+        return a->connectPorts(b);
+    }
+
+    bool DeploymentComponent::connectPorts(const std::string& one, const std::string& one_port,
+                                           const std::string& other, const std::string& other_port)
+    {
+        TaskContext* a, *b;
+        a = getPeer(one);
+        b = getPeer(other);
+        if ( !a ) {
+            log(Error) << one <<" could not be found."<< endlog();
+            return false;
+        }
+        if ( !b ) {
+            log(Error) << other <<" could not be found."<< endlog();
+            return false;
+        }
+        PortInterface* ap, *bp;
+        ap = a->ports()->getPort(one_port);
+        bp = b->ports()->getPort(other_port);
+        if ( !ap ) {
+            log(Error) << one <<" does not have a port "<<one_port<< endlog();
+            return false;
+        }
+        if ( !b ) {
+            log(Error) << other <<" does not have a port "<<other_port<< endlog();
+            return false;
+        }
+
+        // Detect already connected ports.
+        if ( ap->connected() && bp->connected() ) {
+            if (ap->connection() == bp->connection() ) {
+                log(Info) << "Port '"<< ap->getName() << "' of Component '"<<a->getName()
+                          << "' is already connected to port '"<< bp->getName() << "' of Component '"<<b->getName()<<"'."<<endlog();
+                return true;
+            }
+            log(Error) << "Port '"<< ap->getName() << "' of Component '"<<a->getName()
+                       << "' and port '"<< bp->getName() << "' of Component '"<<b->getName()
+                       << "' are already connected but not to each other."<<endlog();
+            return false;
+        }
+
+        // NOTE: all code below can be replaced by a single line:
+        // bp->connectTo( ap ) || ap->connectTo(bp);
+        // but that has less informational log messages.
+
+        if ( ap->connected() ) {
+            // ask peer to connect to us:
+            if ( bp->connectTo( ap ) ) {
+                log(Info)<< "Connected Port " << ap->getName()
+                         << " of peer Task "<<ap->getName() << " to existing connection." << endlog();
+                return true;
+            }
+            else {
+                log(Error)<< "Failed to connect Port " << ap->getName()
+                          << " of peer Task "<<ap->getName() << " to existing connection." << endlog();
+                return false;
+            }
+        }
+
+        // Peer port is connected thus our port is not connected.
+        if ( bp->connected() ) {
+            if ( ap->connectTo( bp ) ) {
+                log(Info)<< "Added Port " << ap->getName()
+                         << " to existing connection of Task "<<b->getName() << "." << endlog();
+                return true;
+            }
+            else {
+                log(Error)<< "Not connecting Port " << ap->getName()
+                          << " to existing connection of Task "<<b->getName() << "." << endlog();
+                return false;
+            }
+        }
+
+        // Last resort: both not connected: create new connection.
+        if ( !ap->connectTo( bp ) ) {
+            // real error msg will be produced by factory itself.
+            log(Warning)<< "Failed to connect Port " << ap->getName() << " of " << a->getName() << " to peer Task "<<b->getName() <<"." << endlog();
+            return false;
+        }
+        
+        // all went fine.
+        log(Info)<< "Connected Port " << ap->getName() << " to peer Task "<< b->getName() <<"." << endlog();
+        return true;
+    }
+
+    int string_to_oro_sched(std::string sched) {
+        if ( sched == "ORO_SCHED_OTHER" )
+            return ORO_SCHED_OTHER;
+        if (sched == "ORO_SCHED_RT" )
+            return ORO_SCHED_RT;
+        log(Error)<<"Unknown scheduler type: "<< sched <<endlog();
+        return -1;
+    }
+
+    bool DeploymentComponent::loadConfiguration(const std::string& configurationfile)
     {
         Logger::In in("DeploymentComponent::loadConfiguration");
 #ifndef OROPKG_CORELIB_PROPERTIES_MARSHALLING
@@ -106,9 +266,8 @@ namespace OCL
         return false;
     
 #else
-        deletePropertyBag(root);
-
-        log(Info) << "Loading '" <<configurationfile.get()<<"'."<< endlog();
+        PropertyBag from_file;
+        log(Info) << "Loading '" <<configurationfile<<"'."<< endlog();
         // demarshalling failures:
         bool failure = false;  
         // semantic failures:
@@ -122,45 +281,63 @@ namespace OCL
                 return false;
             }
         try {
-            std::vector<CommandInterface*> assignComs;
-
-            if ( demarshaller->deserialize( root ) )
+            if ( demarshaller->deserialize( from_file ) )
                 {
                     valid = true;
-                    conmap.clear();
                     log(Info)<<"Validating new configuration..."<<endlog();
-                    if ( root.empty() ) {
+                    if ( from_file.empty() ) {
                         log(Error)<< "Configuration was empty !" <<endlog();
                         valid = false;
                     }
-                    PropertyBag::Names nams = root.list();
 
-                    for (PropertyBag::Names::iterator it= nams.begin();it != nams.end();it++) {
+                    ConMap connections;
+                    //for (PropertyBag::Names::iterator it= nams.begin();it != nams.end();it++) {
+                    for (PropertyBag::iterator it= from_file.begin(); it!=from_file.end();it++) {
+                        // Read in global options.
+                        if ( (*it)->getName() == "Import" ) {
+                            Property<std::string> import = *it;
+                            if ( !import.ready() ) {
+                                log(Error)<< "Found 'Import' statement, but it is not of type='string'."<<endlog();
+                                valid = false;
+                                continue;
+                            }
+                            if ( loadLibrary( import.get() ) == false )
+                                valid = false;
+                            continue;
+                        }
                         // Check if it is a propertybag.
-                        Property<PropertyBag>* comp = root.getProperty<PropertyBag>(*it);
-                        if ( comp == 0 ) {
+                        Property<PropertyBag> comp = *it;
+                        if ( !comp.ready() ) {
                             log(Error)<< "Property '"<< *it <<"' is not a PropertyBag." << endlog();
                             valid = false;
+                            continue;
                         }
                         // Check if we know this component.
-                        TaskContext* c = this->getPeer( *it );
+                        TaskContext* c = this->getPeer( (*it)->getName() );
                         if ( !c ) {
-                            log(Warning)<< "Could not configure '"<< *it <<"': No such peer."<< endlog();
-                            valid = false;
-                        }
-                        // set PropFile name if present
-                        std::string filename = *it + ".cpf";
-                        if ( comp->get().getProperty<std::string>("PropFile") )  // PropFile is deprecated
-                            if ( !comp->get().getProperty<std::string>("PropFile") ) {
+                            // try to load it.
+                            if (this->loadComponent( (*it)->getName(), comp.rvalue().getType() ) == false) {
+                                log(Warning)<< "Could not configure '"<< (*it)->getName() <<"': No such peer."<< endlog();
                                 valid = false;
+                                continue;
                             }
-                        if ( comp->get().getProperty<std::string>("PropertyFile") )
-                            if ( !comp->get().getProperty<std::string>("PropertyFile") ) {
+                            c = this->getPeer( (*it)->getName() );
+                        }
+
+                        assert(c);
+
+                        // set PropFile name if present
+                        std::string filename = (*it)->getName() + ".cpf";
+                        if ( comp.get().getProperty<std::string>("PropFile") )  // PropFile is deprecated
+                            comp.get().getProperty<std::string>("PropFile")->setName("PropertyFile");
+
+                        if ( comp.get().getProperty<std::string>("PropertyFile") )
+                            if ( !comp.get().getProperty<std::string>("PropertyFile") ) {
                                 valid = false;
                             }
                             
                         // connect ports 'Ports' tag is optional.
-                        Property<PropertyBag>* ports = comp->get().getProperty<PropertyBag>("Ports");
+                        Property<PropertyBag>* ports = comp.get().getProperty<PropertyBag>("Ports");
                         if ( ports != 0 ) {
                             PropertyBag::Names pnams = ports->get().list();
                             for (PropertyBag::Names::iterator pit= pnams.begin(); pit !=pnams.end(); pit++) {
@@ -177,39 +354,132 @@ namespace OCL
                                 if (valid) {
                                     log(Debug)<<"storing Port: "<<c->getName()<<"."<<p->getName();
                                     log(Debug)<<" in " << ports->get().getProperty<std::string>(*pit)->get() <<endlog();
-                                    conmap[ports->get().getProperty<std::string>(*pit)->get()].ports.push_back( p );
+                                    connections[ports->get().getProperty<std::string>(*pit)->get()].ports.push_back( p );
                                 }
                             }
                         }
 
                         // Setup the connections from this
                         // component to the others.
-                        for (PropertyBag::iterator it= comp->value().begin(); it != comp->value().end();it++) {
+                        for (PropertyBag::const_iterator it= comp.rvalue().begin(); it != comp.rvalue().end();it++) {
                             if ( (*it)->getName() == "Peer" ) {
-                                Property<std::string>* nm = Property<std::string>::narrow(*it);
-                                if ( !nm ) {
+                                Property<std::string> nm = *it;
+                                if ( !nm.ready() ) {
                                     log(Error)<<"Property 'Peer' does not have type 'string'."<<endlog();
                                     valid = false;
+                                    continue;
                                 }
-                                if ( this->getPeer( nm->value() ) == 0 ) {
-                                    log(Error)<<"No such Peer:"<<nm->value()<<endlog();
-                                    valid = false;
-                                }
-                                delete nm; // narrow() returns a clone()
                             }
                         }
+                        
+                        // Read the activity profile if present.
+                        if ( comp.value().find("Activity") != 0) {
+                            Property<PropertyBag> nm = comp.value().getProperty<PropertyBag>("Activity");
+                            if ( !nm.ready() ) {
+                                log(Error)<<"Property 'Activity' must be a 'struct'."<<endlog();
+                                valid = false;
+                            } else {
+                                if ( nm.rvalue().getType() == "PeriodicActivity" ) {
+                                    Property<double> per;
+                                    if (nm.rvalue().getProperty<double>("Period") )
+                                        per = nm.rvalue().getProperty<double>("Period"); // work around RTT 1.0.2 bug.
+                                    if ( !per.ready() ) {
+                                        log(Error)<<"Please specify period <double> of PeriodicActivity."<<endlog();
+                                        valid = false;
+                                    }
+                                    Property<int> prio;
+                                    if ( nm.rvalue().getProperty<int>("Priority") )
+                                        prio = nm.rvalue().getProperty<int>("Priority"); // work around RTT 1.0.2 bug
+                                    if ( !prio.ready() ) {
+                                        log(Error)<<"Please specify priority <short> of PeriodicActivity."<<endlog();
+                                        valid = false;
+                                    }
+                                    Property<string> sched;
+                                    if (nm.rvalue().getProperty<string>("Scheduler") )
+                                        sched = nm.rvalue().getProperty<string>("Scheduler"); // work around RTT 1.0.2 bug
+                                    int scheduler = ORO_SCHED_RT;
+                                    if ( sched.ready() ) {
+                                        scheduler = string_to_oro_sched( sched.get());
+                                        if (scheduler == -1 )
+                                            valid = false;
+                                    }
+                                    if (valid) {
+                                        this->setActivity(comp.getName(), nm.rvalue().getType(), per.get(), prio.get(), scheduler );
+                                    }
+                                } else
+                                    if ( nm.rvalue().getType() == "NonPeriodicActivity" ) {
+                                        Property<int> prio;
+                                        if ( nm.rvalue().getProperty<int>("Priority") )
+                                            prio = nm.rvalue().getProperty<int>("Priority"); // work around RTT 1.0.2 bug
+                                        if ( !prio ) {
+                                            log(Error)<<"Please specify priority <short> of NonPeriodicActivity."<<endlog();
+                                            valid = false;
+                                        }
+                                        Property<string> sched;
+                                        if (nm.rvalue().getProperty<string>("Scheduler") )
+                                            sched = nm.rvalue().getProperty<string>("Scheduler"); // work around RTT 1.0.2 bug
+                                        int scheduler = ORO_SCHED_RT;
+                                        if ( sched.ready() ) {
+                                            int scheduler = string_to_oro_sched( sched.get());
+                                            if (scheduler == -1 )
+                                                valid = false;
+                                        }
+                                        if (valid) {
+                                            this->setActivity(comp.getName(), nm.rvalue().getType(), 0.0, prio.get(), scheduler );
+                                        }
+                                    } else
+                                        if ( nm.rvalue().getType() == "SlaveActivity" ) {
+                                            double period = 0.0;
+                                            if ( nm.rvalue().getProperty<double>("Period") )
+                                                period = nm.rvalue().getProperty<double>("Period")->get();
+                                            if (valid) {
+                                                this->setActivity(comp.getName(), nm.rvalue().getType(), period, 0, 0 );
+                                            }
+                                        } else {
+                                            log(Error) << "Unknown activity type: " << nm.rvalue().getType()<<endlog();
+                                            valid = false;
+                                        }
+                            }
+                        } else {
+                            // no 'Activity' element, default to Slave:
+                            this->setActivity(comp.getName(), "SlaveActivity", 0.0, 0, 0 );
+                        }
+
+                        // State machines and program scripts.
+                        for (PropertyBag::const_iterator it= comp.rvalue().begin(); it != comp.rvalue().end();it++) {
+                            if ( (*it)->getName() == "ProgramScript" ) {
+                                PropertyBase* ps = comp.rvalue().getProperty<string>("ProgramScript");
+                                if (!ps) {
+                                    log(Error) << "ProgramScript must be of type <string>" << endlog();
+                                    valid = false;
+                                    continue;
+                                }
+                            }
+                            if ( (*it)->getName() == "StateMachineScript" ) {
+                                PropertyBase* ps = comp.rvalue().getProperty<string>("StateMachineScript");
+                                if (!ps) {
+                                    log(Error) << "StateMachineScript must be of type <string>" << endlog();
+                                    valid = false;
+                                    continue;
+                                }
+                            }
+                        }
+
                     }
                         
-                        
-                    if ( !valid )
-                        deletePropertyBag( root );
+                    if ( valid ) {
+                        // put this config in the root config.
+                        // existing component options are updated, new components are
+                        // added to the back.
+                        updateProperties( root, from_file );
+                        conmap.insert( connections.begin(), connections.end() );
+                    }
+                    deletePropertyBag( from_file );
                 }
             else
                 {
-                    log(Error)<< "Some error occured while parsing "<< configurationfile.rvalue() <<endlog();
+                    log(Error)<< "Some error occured while parsing "<< configurationfile <<endlog();
                     failure = true;
-                    deletePropertyBag( root );
-                    conmap.clear();
                 }
         } catch (...)
             {
@@ -217,7 +487,6 @@ namespace OCL
                 failure = true;
             }
         delete demarshaller;
-        validConfig.set( valid );
         return !failure && valid;
 #endif // OROPKG_CORELIB_PROPERTIES_MARSHALLING
     }
@@ -236,33 +505,60 @@ namespace OCL
                           << "No configuration loaded !" <<endlog();
             return false;
         }
-        PropertyBag::Names nams = root.list();
+
+        bool valid = true;
 
         // Load all property files into the components.
-        for (PropertyBag::Names::iterator it= nams.begin(); it!=nams.end();it++) {
-            Property<PropertyBag>* comp = root.getProperty<PropertyBag>(*it);
+        for (PropertyBag::iterator it= root.begin(); it!=root.end();it++) {
+
+            if ( (*it)->getName() == "Import" ) {
+                continue;
+            }
+            
+            Property<PropertyBag> comp = *it;
+
+            TaskContext* peer = this->getPeer( comp.getName() );
+            if ( !peer ) {
+                log(Error) << "Peer not found: "<< comp.getName() <<endlog();
+                valid=false;
+                continue;
+            }
+
+            comps[comp.getName()].instance = peer;
                 
             // set PropFile name if present
             std::string filename;
-            if ( comp->get().getProperty<std::string>("PropFile") ){
-                filename = comp->get().getProperty<std::string>("PropFile")->get();
-	    }
-            if ( comp->get().getProperty<std::string>("PropertyFile") ){
-                filename = comp->get().getProperty<std::string>("PropertyFile")->get();
-	    }
-	    if ( !filename.empty() ) {
-	      PropertyLoader pl;
-	      TaskContext* peer = this->getPeer( *it );
-	      assert( peer );
-	      bool ret = pl.configure( filename, peer, true ); // strict:true 
-	      if (!ret) {
-		log(Error) << "Failed to configure properties for component "<<*it<<endlog();
-	      } else {
-		log(Info) << "Configured Properties of "<<*it<<endlog();
-	      }
+            if ( comp.get().getProperty<std::string>("PropertyFile") ){
+                filename = comp.get().getProperty<std::string>("PropertyFile")->get();
             }
-                
-            //peer->disconnect();
+            if ( !filename.empty() ) {
+                PropertyLoader pl;
+                bool ret = pl.configure( filename, peer, true ); // strict:true 
+                if (!ret) {
+                    log(Error) << "Failed to configure properties for component "<< comp.getName() <<endlog();
+                    valid = false;
+                } else {
+                    log(Info) << "Configured Properties of "<< comp.getName() <<endlog();
+                }
+            }
+
+            Property<string> script;
+            if (comp.get().getProperty<std::string>("ProgramScript") )
+                script = comp.get().getProperty<std::string>("ProgramScript"); // work around RTT 1.0.2 bug
+            if ( script.ready() ) {
+                valid = valid && peer->scripting()->loadPrograms( script.get(), false );
+            }
+            if (comp.get().getProperty<std::string>("StateMachineScript") )
+                script = comp.get().getProperty<std::string>("StateMachineScript");
+            if ( script.ready() ) {
+                valid = valid && peer->scripting()->loadStateMachines( script.get(), false );
+            }
+
+            // Attach activities
+            if ( comps[comp.getName()].act ) {
+                log(Info) << "Setting activity of "<< comp.getName() <<endlog();
+                peer->engine()->setActivity( comps[comp.getName()].act );
+            }
         }
 
         // Create data port connections:
@@ -336,17 +632,56 @@ namespace OCL
 
         // Setup the connections from each component to the
         // others.
+
+        PropertyBag::Names nams = root.list();
         for (PropertyBag::Names::iterator nit= nams.begin(); nit!=nams.end();nit++) {
-            Property<PropertyBag>* comp = root.getProperty<PropertyBag>(*nit);
-            for (PropertyBag::iterator it= comp->value().begin(); it != comp->value().end();it++) {
+            if ( *nit == "Import" )
+                continue;
+            Property<PropertyBag> comp = root.getProperty<PropertyBag>(*nit);
+            for (PropertyBag::const_iterator it= comp.rvalue().begin(); it != comp.rvalue().end();it++) {
                 if((*it)->getName() == "Peer"){
-                    Property<std::string>* nm = Property<std::string>::narrow(*it);
-                    this->addPeer( comp->getName(), nm->value() );
-                    delete nm; // was a clone.
+                    Property<std::string> nm = *it;
+                    this->addPeer( comp.getName(), nm.value() );
                 }
             }
         }
             
+        validConfig.set(valid);
+        return valid;
+    }
+
+    void DeploymentComponent::clearConfiguration()
+    {
+        log(Info) << "Clearing configuration options."<< endlog();
+        conmap.clear();
+        deletePropertyBag( root );
+    }
+
+    bool DeploymentComponent::loadLibrary(const std::string& name)
+    {
+        Logger::In in("DeploymentComponent::loadLibrary");
+
+        void *handle;
+
+        // Second: try dynamic loading:
+        std::string so_name = name +".so";
+
+        handle = dlopen ( so_name.c_str(), RTLD_NOW | RTLD_GLOBAL);
+        if (!handle) {
+            std::string error = dlerror();
+            so_name = "lib" + so_name;
+            handle = dlopen ( so_name.c_str(), RTLD_NOW | RTLD_GLOBAL);
+
+            if (!handle) {
+                log(Error) << "Could not load library '"<< name <<"':"<<endlog();
+                log(Error) << error << endlog();
+                log(Error) << dlerror() << endlog();
+                return false;
+            }
+        }
+
+        dlerror();    /* Clear any existing error */
+        log(Info) << "Loaded library '"<< so_name <<"'"<<endlog();
         return true;
     }
 
@@ -354,21 +689,17 @@ namespace OCL
     {
         Logger::In in("DeploymentComponent::loadComponent");
 
-        CompList::iterator it = comps.begin();
-        while (it != comps.end() ) {
-            if (it->instance->getName() == name ) {
-                log(Error) <<"Failed to load component with name "<<name<<": already loaded."<<endlog();
-                return false;
-            }
-            ++it;
+        if ( this->getPeer(name) || comps.find(name) != comps.end() ) {
+            log(Error) <<"Failed to load component with name "<<name<<": already present as peer or loaded."<<endlog();
+            return false;
         }
 
         void *handle;
-        TaskContext* (*factory)(std::string name);
+        TaskContext* (*factory)(std::string name) = 0;
         char *error;
 
         // First: try static loading:
-        factory = ComponentFactories::Factories[ type ];
+        //factory = ComponentFactories::Factories[ type ];
 
         if ( factory ) {
             log(Info) <<"Found static factory for Component type "<<type<<endlog();
@@ -376,11 +707,17 @@ namespace OCL
             // Second: try dynamic loading:
             std::string so_name = type +".so";
 
-            handle = dlopen ( so_name.c_str(), RTLD_NOW);
+            handle = dlopen ( so_name.c_str(), RTLD_NOW | RTLD_GLOBAL);
             if (!handle) {
-                log(Error) << "Could not find plugin '"<< so_name <<"':";
-                log(Error) << dlerror() << endlog();
-                return false;
+                std::string error = dlerror();
+                // search in component path:
+                handle = dlopen ( string(compPath.get() + "/" + so_name).c_str(), RTLD_NOW | RTLD_GLOBAL);
+                if (!handle) {
+                    log(Error) << "Could not load plugin '"<< so_name <<"':" <<endlog();
+                    log(Error) << error << endlog();
+                    log(Error) << dlerror() << endlog();
+                    return false;
+                }
             }
 
             dlerror();    /* Clear any existing error */
@@ -396,78 +733,135 @@ namespace OCL
         
         ComponentData newcomp;
         newcomp.instance = (*factory)(name);
-        newcomp.type = type;
+        newcomp.loaded = true;
 
         if ( newcomp.instance == 0 ) {
             log(Error) <<"Failed to load component with name "<<name<<": refused to be created."<<endlog();
             return false;
         }
 
-        comps.push_back( newcomp );
-        log(Info) << "Adding "<< newcomp.instance->getName() << " as new Peer." <<endlog();
-        this->addPeer( newcomp.instance );
+        log(Error) << "Adding "<< newcomp.instance->getName() << " as new peer: ";
+        if (!this->addPeer( newcomp.instance ) ) {
+            log() << "Failed !" << endlog(Error);
+            delete newcomp.instance;
+            return false;
+        }
+        log() << " OK."<< endlog(Info);
+        comps[name] = newcomp;
         return true;
     }
 
 
     bool DeploymentComponent::unloadComponent(const std::string& name)
     {
-        CompList::iterator it = comps.begin();
-        while (it != comps.end() ) {
-            if (it->instance->getName() == name ) {
-                if ( it->instance->isRunning() ) {
-                    log(Error) << "Can't unload component "<<name<<" since it is still running."<<endlog();
-                    return false;
-                }
-                // todo: write properties ?
-                it->instance->disconnect();
-                delete it->instance;
-                comps.erase(it);
-                log(Info) << "Succesfully unloaded component "<<name<<"."<<endlog();
-                return true;
-            }
-            ++it;
+        if ( comps[name].loaded == false ) {
+            log(Error) << "Can't unload component "<<name<<": not loaded by "<<this->getName()<<endlog();
+            comps.erase(name);
+            return false;
         }
-        log(Error) << "Can't unload component "<<name<<": not loaded by "<<this->getName()<<endlog();
+        TaskContext* peer = comps[name].instance;
+        if ( peer->isRunning() ) {
+            log(Error) << "Can't unload component "<<name<<" since it is still running."<<endlog();
+            return false;
+        }
+        // todo: write properties ?
+        peer->disconnect(); // if it is no longer a peer of this, that's ok.
+        delete peer;
+        comps.erase(name);
+        log(Info) << "Succesfully unloaded component "<<name<<"."<<endlog();
+        return true;
+    }
+
+    bool DeploymentComponent::setPeriodicActivity(const std::string& comp_name, 
+                                                  double period, int priority,
+                                                  int scheduler)
+    {
+        if ( this->setActivity(comp_name, "PeriodicActivity", period, priority, scheduler) ) {
+            assert( comps[comp_name].instance );
+            assert( comps[comp_name].act );
+            comps[comp_name].instance->engine()->setActivity( comps[comp_name].act );
+            return true;
+        }
         return false;
     }
+    
+    bool DeploymentComponent::setNonPeriodicActivity(const std::string& comp_name, 
+                                                     int priority,
+                                                     int scheduler)
+    {
+        if ( this->setActivity(comp_name, "NonPeriodicActivity", 0.0, priority, scheduler) ) {
+            assert( comps[comp_name].instance );
+            assert( comps[comp_name].act );
+            comps[comp_name].instance->engine()->setActivity( comps[comp_name].act );
+            return true;
+        }
+        return false;
+    }
+    
+    bool DeploymentComponent::setSlaveActivity(const std::string& comp_name, 
+                                               double period)
+    {
+        if ( this->setActivity(comp_name, "SlaveActivity", period, 0, ORO_SCHED_OTHER ) ) {
+            assert( comps[comp_name].instance );
+            assert( comps[comp_name].act );
+            comps[comp_name].instance->engine()->setActivity( comps[comp_name].act );
+            return true;
+        }
+        return false;
+    }
+    
 
     bool DeploymentComponent::setActivity(const std::string& comp_name, 
                                           const std::string& act_type, 
                                           double period, int priority,
-                                          const std::string& scheduler)
+                                          int scheduler)
     {
-        CompList::iterator it = comps.begin();
-        while (it != comps.end() ) {
-            if (it->instance->getName() == comp_name ) {
-                if ( it->instance->isRunning() ) {
-                    log(Error) << "Can't change activity of component "<<comp_name<<" since it is still running."<<endlog();
-                    return false;
-                }
-                ActivityInterface* oldact = it->instance->engine()->getActivity();
-                ActivityInterface* newact = 0;
-                if ( act_type == "PeriodicActivity" && period != 0.0)
-                    newact = new PeriodicActivity(priority, period);
-                else
-                    if ( act_type == "NonPeriodicActivity" && period == 0.0)
-                        newact = new NonPeriodicActivity(priority);
-                    else
-                        if ( act_type == "SlaveActivity" )
-                            newact = new SlaveActivity(period);
-                
-                if (newact == 0) {
-                    log(Error) << "Can't create activity for component "<<comp_name<<": incorrect arguments."<<endlog();
-                    return false;
-                }
-
-                it->instance->engine()->setActivity( newact );
-                delete oldact;
-                return true;
-            }
-            ++it;
+        TaskContext* peer = this->getPeer(comp_name);
+        if (!peer) {
+            log(Error) << "Can't create Activity: component "<<comp_name<<" not found."<<endlog();
+            return false;
         }
-        log(Error) << "Can't create Activity for component "<<comp_name<<": not loaded by "<<this->getName()<<endlog();
-        return false;
+        comps[comp_name].instance = peer;
+        if ( peer->isRunning() ) {
+            log(Error) << "Can't change activity of component "<<comp_name<<" since it is still running."<<endlog();
+            return false;
+        }
+
+        ActivityInterface* newact = 0;
+        if ( act_type == "PeriodicActivity" && period != 0.0)
+            newact = new PeriodicActivity(priority, period);
+        else
+            if ( act_type == "NonPeriodicActivity" && period == 0.0)
+                newact = new NonPeriodicActivity(priority);
+            else
+                if ( act_type == "SlaveActivity" )
+                    newact = new SlaveActivity(period);
+                
+        if (newact == 0) {
+            log(Error) << "Can't create activity for component "<<comp_name<<": incorrect arguments."<<endlog();
+            return false;
+        }
+
+        if ( act_type != "SlaveActivity" ) {
+            if (scheduler == ORO_SCHED_RT && newact->thread()->getScheduler() != ORO_SCHED_RT ) {
+                newact->thread()->stop();
+                newact->thread()->setScheduler(ORO_SCHED_RT);
+                newact->thread()->start();
+            }
+                        
+            if (scheduler == ORO_SCHED_OTHER && newact->thread()->getScheduler() != ORO_SCHED_OTHER ) {
+                newact->thread()->stop();
+                newact->thread()->setScheduler(ORO_SCHED_OTHER);
+                newact->thread()->start();
+            }
+        }
+
+        // this must never happen if component is running:
+        assert( peer->isRunning() == false );
+        delete comps[comp_name].act;
+        comps[comp_name].act = newact;
+                
+        return true;
     }
 
     bool DeploymentComponent::configure(std::string name)
