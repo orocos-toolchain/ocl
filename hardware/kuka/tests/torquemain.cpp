@@ -11,6 +11,7 @@
 #include <reporting/FileReporting.hpp>
 
 #include <rtt/os/main.h>
+#include <rtt/PeriodicActivity.hpp>
 
 using namespace Orocos;
 using namespace RTT;
