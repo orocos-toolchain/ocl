@@ -9,8 +9,8 @@ IF ( BUILD_CARTESIAN_TEST )
     # Add a test program
     GLOBAL_ADD_TEST( cartesian ${SRCS} )
     # Use  TARGET_LINK_LIBRARIES( report libs... ) to add library deps.
-    INCLUDE_DIRECTORIES( ${PROJ_SOURCE_DIR}/hardware/axes ${PROJ_SOURCE_DIR}/hardware/comedi ${PROJ_SOURCE_DIR}/hardware/apci )
-    TARGET_LINK_LIBRARIES( cartesian orocos-taskbrowser orocos-reporting orocos-viewer orocos-cartesian orocos-naxes orocos-kuka orocos-axes ${KDL_LIBS} ${KDLTK_LIBS})
+    INCLUDE_DIRECTORIES( ${PROJ_SOURCE_DIR}/hardware/axes ${PROJ_SOURCE_DIR}/hardware/comedi ${PROJ_SOURCE_DIR}/hardware/apci ${PROJ_SOURCE_DIR}/motion_control/naxes )
+    TARGET_LINK_LIBRARIES( cartesian orocos-taskbrowser orocos-reporting orocos-viewer orocos-cartesian orocos-naxes orocos-kuka orocos-axes ${KDL_LIBS} ${KDLTK_LIBS} ACE)
 
     IF ( BUILD_COMEDI )
     TARGET_LINK_LIBRARIES( cartesian orocos-comedi )

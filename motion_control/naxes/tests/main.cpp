@@ -29,7 +29,7 @@
 //nAxes components
 #include <motion_control/naxes/nAxesComponents.hpp>
 
-//#include <rtt/Activities.hpp>
+#include <rtt/Activities.hpp>
 #include <rtt/TaskContext.hpp>
 //#include <rtt/Logger.hpp>
 #include <rtt/os/main.h>

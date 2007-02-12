@@ -23,6 +23,7 @@
 
 #include <rtt/TaskContext.hpp>
 #include <rtt/os/main.h>
+#include <rtt/Activities.hpp>
 
 using namespace Orocos;
 using namespace RTT;

@@ -9,7 +9,7 @@ IF ( BUILD_CARTESIAN )
     FILE( GLOB SRCS [^.]*.cpp )
     FILE( GLOB HPPS [^.]*.hpp )
 
-    INCLUDE_DIRECTORIES( ${PROJECT_SOURCE_DIR}/motion_control/naxes )
+    INCLUDE_DIRECTORIES( ${PROJECT_SOURCE_DIR}/motion_control/naxes/ )
     GLOBAL_ADD_COMPONENT( orocos-cartesian ${SRCS} )
     GLOBAL_ADD_INCLUDE( ocl ${HPPS})
 

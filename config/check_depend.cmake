@@ -46,37 +46,13 @@ ELSE ( QT4 )
     MESSAGE("-- Looking for Qt4 >= 4.1 - not found")
 ENDIF ( QT4 )
 
-# Check for OpenCV
-FIND_LIBRARY( OPENCV NAMES opencv cv cv0.9 PATHS /usr/lib /usr/local/lib )
-IF ( OPENCV )
-    MESSAGE("-- Looking for OpenCV - found")
-ELSE ( OPENCV )
-    MESSAGE("-- Looking for OpenCV - not found")
-ENDIF ( OPENCV )
-
-# Check for CVAux
-FIND_LIBRARY( CVAUX NAMES cvaux cvaux0.9 PATHS /usr/lib /usr/local/lib )
-IF ( CVAUX )
-    MESSAGE("-- Looking for CVAux - found")
-ELSE ( CVAUX )
-    MESSAGE("-- Looking for CVAux - not found")
-ENDIF ( CVAUX )
-
-# Check for HighGUI
-FIND_LIBRARY( HIGHGUI NAMES highgui highgui0.9 PATHS /usr/lib /usr/local/lib )
-IF ( HIGHGUI )
-    MESSAGE("-- Looking for HighGUI - found")
-ELSE ( HIGHGUI )
-    MESSAGE("-- Looking for HighGUI - not found")
-ENDIF ( HIGHGUI )
-
 # Check for OpenCV-0.9.7
 INCLUDE (${PROJ_SOURCE_DIR}/config/FindOpenCV.cmake)
-IF ( OPENCV7 )
-    MESSAGE("-- Looking for OpenCV-0.9.7 - found")
-ELSE ( OPENCV7 )
-    MESSAGE("-- Looking for OpenCV-0.9.7 - not found")
-ENDIF ( OPENCV7 )
+IF ( OPENCV_FOUND )
+    MESSAGE("-- Looking for OpenCV - found")
+ELSE ( OPENCV_FOUND )
+    MESSAGE("-- Looking for OpenCV - not found")
+ENDIF ( OPENCV_FOUND )
 
 # Look for firewire headers (for firewire cameras)
 CHECK_INCLUDE_FILE_CXX( libdc1394/dc1394_control.h 1394 )
