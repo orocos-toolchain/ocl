@@ -471,7 +471,7 @@ namespace OCL
                         // put this config in the root config.
                         // existing component options are updated, new components are
                         // added to the back.
-                        updateProperties( root, from_file );
+                        copyProperties( root, from_file );
                         conmap.insert( connections.begin(), connections.end() );
                     }
                     deletePropertyBag( from_file );
@@ -557,7 +557,9 @@ namespace OCL
             // Attach activities
             if ( comps[comp.getName()].act ) {
                 log(Info) << "Setting activity of "<< comp.getName() <<endlog();
-                peer->engine()->setActivity( comps[comp.getName()].act );
+                comps[comp.getName()].act->run( peer->engine() );
+		assert( peer->engine()->getActivity() == comps[comp.getName()].act );
+		
             }
         }
 
@@ -779,7 +781,7 @@ namespace OCL
         if ( this->setActivity(comp_name, "PeriodicActivity", period, priority, scheduler) ) {
             assert( comps[comp_name].instance );
             assert( comps[comp_name].act );
-            comps[comp_name].instance->engine()->setActivity( comps[comp_name].act );
+            comps[comp_name].act->run(comps[comp_name].instance->engine());
             return true;
         }
         return false;
@@ -792,7 +794,7 @@ namespace OCL
         if ( this->setActivity(comp_name, "NonPeriodicActivity", 0.0, priority, scheduler) ) {
             assert( comps[comp_name].instance );
             assert( comps[comp_name].act );
-            comps[comp_name].instance->engine()->setActivity( comps[comp_name].act );
+            comps[comp_name].act->run(comps[comp_name].instance->engine());
             return true;
         }
         return false;
@@ -804,7 +806,7 @@ namespace OCL
         if ( this->setActivity(comp_name, "SlaveActivity", period, 0, ORO_SCHED_OTHER ) ) {
             assert( comps[comp_name].instance );
             assert( comps[comp_name].act );
-            comps[comp_name].instance->engine()->setActivity( comps[comp_name].act );
+            comps[comp_name].act->run(comps[comp_name].instance->engine());
             return true;
         }
         return false;
@@ -842,6 +844,7 @@ namespace OCL
             return false;
         }
 
+#if 0
         if ( act_type != "SlaveActivity" ) {
             if (scheduler == ORO_SCHED_RT && newact->thread()->getScheduler() != ORO_SCHED_RT ) {
                 newact->thread()->stop();
@@ -855,6 +858,7 @@ namespace OCL
                 newact->thread()->start();
             }
         }
+#endif
 
         // this must never happen if component is running:
         assert( peer->isRunning() == false );
