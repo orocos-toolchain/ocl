@@ -7,7 +7,7 @@ IF ( BUILD_VIEWER_TEST )
     GLOBAL_ADD_TEST( viewer ${SRCS} )
 
     # Use  TARGET_LINK_LIBRARIES( report libs... ) to add library deps.
-    INCLUDE_DIRECTORIES( ${PROJ_SOURCE_DIR}/hardware/axes )
+    INCLUDE_DIRECTORIES( ${PROJ_SOURCE_DIR}/hardware/axes ${PROJ_SOURCE_DIR}/hardware/comedi ${PROJ_SOURCE_DIR}/hardware/apci )
     TARGET_LINK_LIBRARIES( viewer orocos-taskbrowser orocos-reporting orocos-kuka orocos-axes orocos-viewer ACE )
 
     IF ( BUILD_COMEDI )

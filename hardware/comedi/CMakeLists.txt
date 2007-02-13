@@ -1,10 +1,10 @@
-DEPENDENT_OPTION( BUILD_COMEDI "Build Comedi Component" OFF "BUILD_HARDWARE" OFF )
+DEPENDENT_OPTION( BUILD_COMEDI "Build Comedi Component" OFF "BUILD_HARDWARE;COMEDI_FOUND" OFF )
 
-IF ( BUILD_COMEDI AND NOT COMEDI_FOUND)
-   MESSAGE( FATAL_ERROR "Trying to build comedi drivers, but comedi not found.")
-ENDIF ( BUILD_COMEDI AND NOT COMEDI_FOUND)
+#IF ( BUILD_COMEDI AND NOT COMEDI_FOUND)
+#   MESSAGE( FATAL_ERROR "Trying to build comedi drivers, but comedi not found.")
+#ENDIF ( BUILD_COMEDI AND NOT COMEDI_FOUND)
 
-IF ( BUILD_COMEDI AND COMEDI_FOUND)
+IF ( BUILD_COMEDI )
 
     # This gathers all the .cpp files into the variable 'SRCS'
     FILE( GLOB DEVSRCS dev/[^.]*.cpp )
@@ -25,4 +25,4 @@ IF ( BUILD_COMEDI AND COMEDI_FOUND)
     OROCOS_PKGCONFIG_LIBS("-lkcomedilxrt")
     ENDIF( OS_LXRT )
 
-ENDIF ( BUILD_COMEDI AND COMEDI_FOUND)
+ENDIF ( BUILD_COMEDI )
