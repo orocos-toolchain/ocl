@@ -191,7 +191,7 @@ namespace RTT
         {
             v_MsgId = msg.v_MsgId;
             v_MsgFlags = msg.v_MsgFlags;
-            strncpy((char*)(v_MsgData), (char*)(msg.v_MsgData),8);
+            memcpy((void*)(v_MsgData), (void*)(msg.v_MsgData),8);
             return *this;
         }
                         
