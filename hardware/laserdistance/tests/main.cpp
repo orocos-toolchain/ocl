@@ -45,7 +45,7 @@ int ORO_main(int arc, char* argv[])
         log(Info) << argv[0] << " manually raises LogLevel to 'Info' (5). See also file 'orocos.log'."<<endlog();
     }
 
-    LaserDistance laser("LaserDistance",2);
+    LaserDistance laser("LaserDistanceComponent",2);
     
     PeriodicActivity laserTask(0,0.1, laser.engine() );
     FileReporting reporter("Reporting");
