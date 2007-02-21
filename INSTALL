@@ -1,34 +1,70 @@
+Orocos Component Library
+========================
 
-THE SHORT VERSION
------------------
+Installation
+============
 
-Just do:
+For the minimal ocl library, do
 
-'cmake .'
-'make'
-(as root) 'make install'
+  tar -xjvf orocos-ocl-<version>-src.tar.bz2
+  cd orocos-ocl-<version>
+  cmake .
+
+If all dependencies could be found, a Makefile is generated and you
+can type:
+
+  make
+  make install
+
+For selecting additional (hardware related) components, setting
+include paths, or setting the installation prefix, do
+
+  cd orocos-ocl-<version>
+  cmake .
+  ccmake .
+
+Now a config screen appears:
+
+  [ edit paths ]
+  [ press 'c' ]
+  [ check for errors, press 'e' ]
+  [ select additional components ]
+  [ press 'c'; check for errors, press 'e', ... ]
+
+When all is fine, you can press 'g' in the config screen. If no 'g'
+appears, the configuration is not yet correct.
+
+Finally:
+
+  make
+  make install
 
 
-THE LONG VERSION
-----------------
+Installation options
+--------------------
 
-* Orocos uses cmake (www.cmake.org) for its build configuration.
+* Orocos uses cmake (http://www.cmake.org) for its build configuration.
   CMake is a cross-platform build system. Use version 2.2 or 2.4.
 
 * Orocos uses the 'pkg-config' program to detect installed libraries.
 
-* This library requires that the Orocos RTT (liborocos-rtt) is installed.
+* This library requires that the Orocos RTT (liborocos-rtt) is installed
+  (path in OROCOS_INSTALL) Some components require the Orocos KDL (path in KDL_INSTALL)
+  or the Orocos BFL (path in BFL_INSTALL).
 
-* There are a few ways you can do things differently to the short version:
+* You can set the installation prefix in the CMAKE_INSTALL_PREFIX variable
+using ccmake.
 
-  1) Out-of-source builds:
+* You can additionally
+
+  1) do out-of-source builds:
 
 	$ mkdir build
 	$ cd build
 	$ cmake ..
 	$ make
 
-  2) Setting a different compiler:
+  2) set a different compiler:
 
 	$ CC="distcc gcc-3.3" CXX="distcc g++-3.3" cmake ..
 
@@ -36,10 +72,10 @@ THE LONG VERSION
 
 	$ ../configure CC="distcc gcc-3.3" CXX="distcc g++-3.3"
 
-  3) GUI Configurator:
+  3) use the GUI Configurator:
 
 	Use 'ccmake' rather than 'cmake' for a text-based configurator.
 
-  4) Packaging support:
+  4) have packaging support:
 
 	'make install DESTDIR=...."
