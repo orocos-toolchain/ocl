@@ -11,5 +11,5 @@ components which can be used to build a control application.
 
 * See doc/PACKAGING if you want to build a source/binary package
 
-* See doc/INSTALL if you want to build and install Orocos Components
+* See INSTALL if you want to build and install Orocos Components
   on your system.
