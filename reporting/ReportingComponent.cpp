@@ -30,12 +30,10 @@
 
 // Impl.
 #include <rtt/marsh/EmptyMarshaller.hpp>
-
-#ifdef OROINT_OS_STDIOSTREAM
 #include <rtt/marsh/CPFDemarshaller.hpp>
 #include <rtt/marsh/CPFMarshaller.hpp>
 #include <fstream>
-#endif
+
 
 namespace OCL
 {
@@ -123,7 +121,6 @@ namespace OCL
 
     bool ReportingComponent::store()
     {
-#ifdef OROINT_OS_STDIOSTREAM
         Logger::In in("ReportingComponent");
         ofstream outf( config.get().c_str() );
         if ( !outf ) {
@@ -142,14 +139,10 @@ namespace OCL
         marsh.serialize( bag );
         deleteProperties(bag);
         return true;
-#else
-        return false;
-#endif
     }
 
     bool ReportingComponent::load()
     {
-#ifdef OROINT_OS_STDIOSTREAM
         Logger::In in("ReportingComponent");
         CPFDemarshaller dem( config.get() );
         PropertyBag bag;
@@ -188,9 +181,6 @@ namespace OCL
             }
         deleteProperties( bag );
         return ok;
-#else
-        return false;
-#endif
     }
 
     bool ReportingComponent::screenComponent( const std::string& comp )
