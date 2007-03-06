@@ -124,16 +124,17 @@ bool SickLMS200::chkAck(int fd, int ackmsglen, const uchar *ackmsg)
   return msgcmp(ackmsglen-1,ackmsg+1,buflen,buf);
 }
 
-/*set the communication speed and terminal properties*/
-int SickLMS200::initLMS(const char *serialdev, struct termios *oldtio)
 
+
+/*set the communication speed and terminal properties*/
+bool SickLMS200::initLMS(const char *serialdev, struct termios *oldtio, int& fd)
 {
-  int fd;
   struct termios newtio_struct, *newtio=&newtio_struct;
 
   fd = open(serialdev, O_RDWR | O_NOCTTY ); 
   if (fd <0) {
-      throw IOException(strerror(errno));
+    log(Error)<< " SickLMS200 IOException."<<endlog();
+    return false;
   }
         
   tcgetattr(fd,oldtio); /* save current port settings */
@@ -154,25 +155,28 @@ int SickLMS200::initLMS(const char *serialdev, struct termios *oldtio)
 
   /* step to the 38400bps mode*/
   wtLMSmsg(fd,sizeof(PCLMS_B38400)/sizeof(uchar),PCLMS_B38400);
-  if(!chkAck(fd,sizeof(LMSPC_CMD_ACK)/sizeof(uchar),LMSPC_CMD_ACK))
-      throw BaudRateChangeException();
-
+  if(!chkAck(fd,sizeof(LMSPC_CMD_ACK)/sizeof(uchar),LMSPC_CMD_ACK)){
+    log(Error)<< " SickLMS200 BaudRateChangeException."<<endlog();
+    throw BaudRateChangeException();
+  }
+  
   /* set the PC side as well*/
   close(fd);
   fd = open(serialdev, O_RDWR | O_NOCTTY );
   if (fd <0) {
-      throw IOException(strerror(errno));
+    log(Error)<< " SickLMS200 IOException."<<endlog();
+    return false;
   }
   newtio->c_cflag = B38400 | CS8 | CLOCAL | CREAD;
   tcflush(fd, TCIFLUSH);
   tcsetattr(fd,TCSANOW,newtio);
 
-  return fd;
+  return true;
 }
 
 
 /*set both the angular range and resolutions*/
-void SickLMS200::setmode(int fd, int mode)
+bool SickLMS200::setmode(int fd, int mode)
 {
   const uchar *msg, *ackmsg;
   int msglen, ackmsglen, unit, res;
@@ -203,7 +207,8 @@ void SickLMS200::setmode(int fd, int mode)
   default:
     msg=PCLMS_RES1;
     ackmsg=LMSPC_RES1_ACK;
-    throw InvalidResolutionException();
+    log(Error)<< " SickLMS200 InvalidResolutionException."<<endlog();
+    return false;
     break;
   }
 
@@ -211,9 +216,10 @@ void SickLMS200::setmode(int fd, int mode)
   msglen=sizeof(PCLMS_RES1)/sizeof(uchar);
   ackmsglen=sizeof(LMSPC_RES1_ACK)/sizeof(uchar);
   wtLMSmsg(fd,msglen,msg);
-  if(!chkAck(fd,ackmsglen,ackmsg))
-      throw ResolutionFailureException();
-
+  if(!chkAck(fd,ackmsglen,ackmsg)){
+    log(Error)<< " SickLMS200 ResolutionFailureException."<<endlog();
+    return false;
+  }
 
   /*change the measurement unit*/
   unit=mode & 0x1;  
@@ -229,15 +235,19 @@ void SickLMS200::setmode(int fd, int mode)
   msglen=sizeof(PCLMS_SETMODE)/sizeof(uchar);
   ackmsglen=sizeof(LMSPC_CMD_ACK)/sizeof(uchar);
   wtLMSmsg(fd,msglen,PCLMS_SETMODE);
-  if(!chkAck(fd,ackmsglen,LMSPC_CMD_ACK))
-      throw ModeFailureException();
+  if(!chkAck(fd,ackmsglen,LMSPC_CMD_ACK)){
+    log(Error)<< " SickLMS200 ModeFailureException."<<endlog();
+    return false;
+  }
   /*the following two line works only because msg and ackmsg are const uchar str*/
   msglen=sizeof(PCLMS_MM)/sizeof(uchar);
   ackmsglen=sizeof(LMSPC_MM_ACK)/sizeof(uchar);
   wtLMSmsg(fd,msglen,msg);
-  if(!chkAck(fd,ackmsglen,ackmsg))
-      throw ModeFailureException();
-
+  if(!chkAck(fd,ackmsglen,ackmsg)){
+    log(Error)<< " SickLMS200 ModeFailureException."<<endlog();
+    return false;
+  }
+  return true;
 }
 
 /*tell the scanner to enter the continuous measurement mode*/
@@ -268,8 +278,14 @@ bool SickLMS200::checkErrorMeasurement() {
     case 1: return false;
     case 2: return false; 
     case 3: return true;
-    case 4: throw FatalMeasurementException();
-    default: throw FatalMeasurementException();
+    case 4: {    
+      log(Error)<< " SickLMS200 FatalMeasurementException."<<endlog();
+      return false;
+    }
+    default: {
+      log(Error)<< " SickLMS200 FatalMeasurementException."<<endlog();
+      return false;
+    }
   }
 }
 
@@ -297,8 +313,8 @@ SickLMS200::SickLMS200(const char* _port, uchar _range_mode, uchar _res_mode, uc
 }
 
 bool SickLMS200::start() {
-    fd = initLMS(port,&oldtio);
-    setmode(fd, range_mode | res_mode | unit_mode);
+    if (!initLMS(port,&oldtio,fd)) return false;
+    if (!setmode(fd, range_mode | res_mode | unit_mode)) return false;
     return startLMS(fd);
 }
 bool SickLMS200::stop() {

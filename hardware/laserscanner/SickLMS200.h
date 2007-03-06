@@ -112,11 +112,11 @@ private:
     bool chkAck(int fd, int ackmsglen, const uchar *ackmsg);
     
     /*set the communication speed and terminal properties*/
-    int initLMS(const char *serialdev, struct termios *oldtio);
+    bool initLMS(const char *serialdev, struct termios *oldtio, int& fd);
     
     
     /*set both the angular range and resolutions*/
-    void setmode(int fd, int mode);
+    bool setmode(int fd, int mode);
     
     /*tell the scanner to enter the continuous measurement mode*/
     bool startLMS(int fd);
