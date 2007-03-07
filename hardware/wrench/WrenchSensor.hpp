@@ -13,7 +13,7 @@
 #include <rtt/RTT.hpp> 
 #if defined (OROPKG_OS_LXRT)
 
-#include <hardware/wrench/drivers/jr3_lxrt_common.h>
+#include "drivers/jr3_lxrt_common.h"
 
 #else
 
@@ -60,7 +60,7 @@ namespace OCL
         virtual void shutdown();
 
         /// DataPort which contains Wrench information
-        RTT::WriteDataPort<KDL::Wrench> outdatPort;
+        RTT::DataPort<KDL::Wrench> outdatPort;
         
         /// Event that is fired if the measured force exceeds the
         /// allowed maximum value.
