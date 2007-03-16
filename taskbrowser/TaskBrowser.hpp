@@ -79,6 +79,11 @@ namespace OCL
 
         std::deque<TaskContext*> taskHistory;
 
+        // store TC + program/state name + line number
+        typedef std::map<std::pair<TaskContext*,std::string>,int> PTrace;
+        PTrace ptraces;
+        PTrace straces;
+
         /* Read a string, and return a pointer to it.
            Returns NULL on EOF. */
         char *rl_gets ();
@@ -196,7 +201,7 @@ namespace OCL
         /**
          * Print a program listing of a loaded program centered at line \a line.
          */
-        void printProgram( const std::string& pn, int line = -1 );
+        void printProgram( const std::string& pn, int line = -1, TaskContext* progpeer = 0 );
 
         /**
          * Print the program listing of the last shown program centered at line \a line.

@@ -196,19 +196,22 @@ namespace OCL
             return;
         }
 
-        if ( line.find(std::string("list ")) == 0 ) { 
-            // PEER :
-            // first make a list of all sensible completions.
-            string tcn = std::string("list ")+context->getName();
-            if ( tcn.find(line) == 0 )
-                completes.push_back( tcn );
+        if ( line.find(std::string("list ")) == 0
+             || line.find(std::string("trace ")) == 0
+             || line.find(std::string("untrace ")) == 0) { 
+            stringstream ss( line.c_str() ); // copy line into ss.
+            string lcommand;
+            ss >> lcommand;
+            lcommand += ' ';
+            std::vector<std::string> progs;
 
-            std::vector<std::string> progs = context->scripting()->getPrograms();
+            // THIS:
+            progs = context->scripting()->getPrograms();
             // then see which one matches the already typed line :
             for( std::vector<std::string>::iterator it = progs.begin();
                  it != progs.end();
                  ++it) {
-                string res = "list " + context->getName() + "." + *it;
+                string res = lcommand + *it;
                 if ( res.find(line) == 0 )
                     completes.push_back( *it ); // if partial match, add.
             }
@@ -216,25 +219,7 @@ namespace OCL
             for( std::vector<std::string>::iterator it = progs.begin();
                  it != progs.end();
                  ++it) {
-                string res = "list " + context->getName() + "." + *it;
-                if ( res.find(line) == 0 )
-                    completes.push_back( *it ); // if partial match, add.
-            }
-            // THIS:
-            progs = tb->scripting()->getPrograms();
-            // then see which one matches the already typed line :
-            for( std::vector<std::string>::iterator it = progs.begin();
-                 it != progs.end();
-                 ++it) {
-                string res = "list " + *it;
-                if ( res.find(line) == 0 )
-                    completes.push_back( *it ); // if partial match, add.
-            }
-            progs = tb->scripting()->getStateMachines();
-            for( std::vector<std::string>::iterator it = progs.begin();
-                 it != progs.end();
-                 ++it) {
-                string res = "list " + *it;
+                string res = lcommand + *it;
                 if ( res.find(line) == 0 )
                     completes.push_back( *it ); // if partial match, add.
             }
@@ -329,6 +314,10 @@ namespace OCL
                 completes.push_back("quit");
             if ( std::string( "list " ).find(text) == 0 )
                 completes.push_back("list ");
+            if ( std::string( "trace " ).find(text) == 0 )
+                completes.push_back("trace ");
+            if ( std::string( "untrace " ).find(text) == 0 )
+                completes.push_back("untrace ");
 
             if (taskcontext == context && string("leave").find(text) == 0)
                 completes.push_back("leave");
@@ -568,6 +557,25 @@ namespace OCL
                 // processing that previously happened, which was using 'nl'.
                 cout << endl;
 
+                // print traces.
+                for (PTrace::iterator it = ptraces.begin(); it != ptraces.end(); ++it) {
+                    TaskContext* progpeer = it->first.first;
+                    int line = progpeer->scripting()->getProgramLine(it->first.second);
+                    if ( line != it->second ) {
+                        it->second = line;
+                        printProgram( it->first.second, -1, progpeer );
+                    }
+                }
+
+                for (PTrace::iterator it = straces.begin(); it != straces.end(); ++it) {
+                    TaskContext* progpeer = it->first.first;
+                    int line = progpeer->scripting()->getStateMachineLine(it->first.second);
+                    if ( line != it->second ) {
+                        it->second = line;
+                        printProgram( it->first.second, -1, progpeer );
+                    }
+                }
+
                 // Call readline wrapper :
                 std::string command( rl_gets() ); // copy over to string
                 cout << coloroff;
@@ -581,6 +589,10 @@ namespace OCL
                 } else if ( command == "#debug") {
                     debug = !debug;
                 } else if ( command.find("list ") == 0 || command == "list" ) {
+                    browserAction(command);
+                } else if ( command.find("trace ") == 0 || command == "trace" ) {
+                    browserAction(command);
+                } else if ( command.find("untrace ") == 0 || command == "untrace" ) {
                     browserAction(command);
                 } else if ( command.find("ls") == 0 ) {
                     std::string::size_type pos = command.find("ls")+2;
@@ -845,6 +857,78 @@ namespace OCL
             }
             // just 'list' :
             this->printProgram();
+            return;
+        }
+
+        //
+        // TRACING
+        //
+        if ( instr == "trace") {
+            string arg;
+            ss >> arg;
+            if (ss) {
+                bool pi = context->scripting()->hasProgram(arg);
+                if (pi) {
+                    ptraces[make_pair(context, arg)] = context->scripting()->getProgramLine(arg); // store current line number.
+                    this->printProgram( arg );
+                    return;
+                }
+                pi = context->scripting()->hasStateMachine(arg);
+                if (pi) {
+                    straces[make_pair(context, arg)] = context->scripting()->getStateMachineLine(arg); // store current line number.
+                    this->printProgram( arg );
+                    return;
+                }
+                cerr <<"No such program or state machine: "<< arg <<endl;
+                return;
+            }
+
+            // just 'trace' :
+            std::vector<std::string> names;
+            names = context->scripting()->getPrograms();
+            for (std::vector<std::string>::iterator it = names.begin(); it != names.end(); ++it) {
+                bool pi = context->scripting()->hasProgram(arg);
+                if (pi)
+                    ptraces[make_pair(context, arg)] = context->scripting()->getProgramLine(arg); // store current line number.
+            }
+
+            names = context->scripting()->getStateMachines();
+            for (std::vector<std::string>::iterator it = names.begin(); it != names.end(); ++it) {
+                bool pi = context->scripting()->hasStateMachine(arg);
+                if (pi)
+                    straces[make_pair(context, arg)] = context->scripting()->getStateMachineLine(arg); // store current line number.
+            }
+            
+            cerr << "Tracing all programs and state machines in "<< context->getName() << endl;
+            return;
+        }
+
+        if ( instr == "untrace") {
+            string arg;
+            ss >> arg;
+            if (ss) {
+                ptraces.erase( make_pair(context, arg) );
+                straces.erase( make_pair(context, arg) );
+                cerr <<"Untracing "<< arg <<" of "<< context->getName()<<endl;
+                return;
+            }
+            // just 'untrace' :
+            std::vector<std::string> names; 
+            names = context->scripting()->getPrograms();
+            for (std::vector<std::string>::iterator it = names.begin(); it != names.end(); ++it) {
+                bool pi = context->scripting()->hasProgram(arg);
+                if (pi)
+                    ptraces.erase(make_pair(context, arg));
+            }
+
+            names = context->scripting()->getStateMachines();
+            for (std::vector<std::string>::iterator it = names.begin(); it != names.end(); ++it) {
+                bool pi = context->scripting()->hasStateMachine(arg);
+                if (pi)
+                    straces.erase(make_pair(context, arg));
+            }
+           
+            cerr << "Untracing all programs and state machines of "<< context->getName() << endl;
             return;
         }
 
@@ -1206,14 +1290,22 @@ namespace OCL
         cout << "   ( notice the starting dot '.' )"<<nl;
         cout << "  Likewise, "<<comcol(".loadProgram <ProgramName>")<<" and "<<comcol(".unloadStateMachine <StateMachineName>")<<nl;
         cout << "   are available (notice it is the program's name, not the filename)."<<nl;
-        cout << "  You can "<<comcol("cd programs.progname")<<" to your program and type "<<comcol("ls")<<nl;
+        cout << "  You can use "<<comcol("ls progname")<<nl;
         cout << "   to see the programs commands, methods and variables. You can manipulate each one of these,."<<nl;
         cout << "   as if the program is a Task itself (see all items above)."<<nl;
+
         cout << "  To print a program or state machine listing, use "<<comcol("list progname [linenumber]")<<nl;
-        cout << "   to list the contents of the current program lines begin executed,"<<nl;
+        cout << "   to list the contents of the current program lines being executed,"<<nl;
         cout << "   or 10 lines before or after <linenumber>. When only "<<comcol("list [n]")<<nl;
         cout << "   is typed, 20 lines of the last listed program are printed from line <n> on "<<nl;
         cout << "   ( default : list next 20 lines after previous list )."<<nl;
+
+        cout << "  To trace a program or state machine listing, use "<<comcol("trace [progname]")<<" this will"<<nl;
+        cout << "   cause the TaskBrowser to list the contents of a traced program,"<<nl;
+        cout << "   each time the line number of the traced program changes."<<nl;
+        cout << "   Disable tracing with "<<comcol("untrace [progname]")<<""<<nl;
+        cout << "   If no arguments are given to "<<comcol("trace")<<" and "<<comcol("untrace")<<", it applies to all programs."<<nl;
+
         cout << "   A status character shows which line is being executed."<<nl;
         cout << "   For programs : 'E':Error, 'S':Stopped, 'R':Running, 'P':Paused"<<nl;
         cout << "   For state machines : <the same as programs> + 'A':Active, 'I':Inactive"<<nl;
@@ -1224,7 +1316,7 @@ namespace OCL
 
     }
 
-    void TaskBrowser::printProgram(const std::string& progname, int cl /*= -1*/) {
+    void TaskBrowser::printProgram(const std::string& progname, int cl /*= -1*/, TaskContext* progpeer /* = 0 */) {
         string ps;
         char s;
         stringstream txtss;
@@ -1233,12 +1325,15 @@ namespace OCL
         int end;
         bool found(false);
 
+        if (progpeer == 0 )
+            progpeer = context;
+
         // if program exists, display.
-        if ( context->scripting()->hasProgram( progname ) ) {
-            ps = context->scripting()->getProgramStatus(progname);
+        if ( progpeer->scripting()->hasProgram( progname ) ) {
+            ps = progpeer->scripting()->getProgramStatus(progname);
             s = toupper(ps[0]);
-            txtss.str( context->scripting()->getProgramText(progname) );
-            ln = context->scripting()->getProgramLine(progname);
+            txtss.str( progpeer->scripting()->getProgramText(progname) );
+            ln = progpeer->scripting()->getProgramLine(progname);
             if ( cl < 0 ) cl = ln;
             start = cl < 10 ? 1 : cl - 10;
             end   = cl + 10;
@@ -1247,11 +1342,11 @@ namespace OCL
         }
 
         // If statemachine exists, display.
-        if ( context->scripting()->hasStateMachine( progname ) ) {
-            ps = context->scripting()->getStateMachineStatus(progname);
+        if ( progpeer->scripting()->hasStateMachine( progname ) ) {
+            ps = progpeer->scripting()->getStateMachineStatus(progname);
             s = toupper(ps[0]);
-            txtss.str( context->scripting()->getStateMachineText(progname) );
-            ln = context->scripting()->getStateMachineLine(progname);
+            txtss.str( progpeer->scripting()->getStateMachineText(progname) );
+            ln = progpeer->scripting()->getStateMachineLine(progname);
             if ( cl < 0 ) cl = ln;
             start = cl <= 10 ? 1 : cl - 10;
             end   = cl + 10;
@@ -1260,11 +1355,13 @@ namespace OCL
         }
         if ( !found ) {
             cerr << "Error : No such program or state machine found : "<<progname;
-            cerr << " in "<< context->getName() <<"."<<endl;
+            cerr << " in "<< progpeer->getName() <<"."<<endl;
+            return;
         }
+        storedname = progname;
     }
 
-    void TaskBrowser::printProgram(int cl) {
+    void TaskBrowser::printProgram(int cl /* = -1 */) {
         string ps;
         char s;
         stringstream txtss;
