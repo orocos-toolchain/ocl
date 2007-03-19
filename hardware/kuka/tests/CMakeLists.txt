@@ -12,20 +12,9 @@ IF ( BUILD_KUKA_TEST )
 
     INCLUDE_DIRECTORIES( ${PROJECT_SOURCE_DIR}/hardware/axes ${PROJECT_SOURCE_DIR}/hardware/comedi ${PROJECT_SOURCE_DIR}/hardware/apci)
     LINK_DIRECTORIES(${PROJECT_BINARY_DIR}/hardware/kuka )
-    TARGET_LINK_LIBRARIES( kuka orocos-taskbrowser orocos-reporting orocos-kuka orocos-axes)
-    TARGET_LINK_LIBRARIES( torquekuka orocos-taskbrowser orocos-reporting orocos-kuka orocos-axes)
+    TARGET_LINK_LIBRARIES( kuka orocos-taskbrowser orocos-reporting orocos-kuka)
+    TARGET_LINK_LIBRARIES( torquekuka orocos-taskbrowser orocos-reporting orocos-kuka)
 
-    IF ( BUILD_COMEDI )
-    TARGET_LINK_LIBRARIES( kuka orocos-comedi )
-    TARGET_LINK_LIBRARIES( torquekuka orocos-comedi )
-    ENDIF ( BUILD_COMEDI )
-
-    IF ( BUILD_APCI )
-    MESSAGE( "BUILD_APCI : ${BUILD_APCI}" )
-    TARGET_LINK_LIBRARIES( kuka orocos-apci )
-    TARGET_LINK_LIBRARIES( torquekuka orocos-apci )
-    TARGET_LINK_LIBRARIES( encoderTest orocos-apci )
-    ENDIF ( BUILD_APCI )
     
     TARGET_LINK_LIBRARIES( kuka ${OROCOS_RTT_LIBS})
     TARGET_LINK_LIBRARIES( encoderTest ${OROCOS_RTT_LIBS} )

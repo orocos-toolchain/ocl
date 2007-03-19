@@ -1,7 +1,5 @@
 DEPENDENT_OPTION( BUILD_CAMERA "Build Camera Components" OFF "BUILD_HARDWARE;OpenCV_FOUND" OFF)
 
-MESSAGE("OPENCV_FOUND ${OPENCV_FOUND}")
-
 #Always process subdirs
 ADD_SUBDIRECTORY( tests )
 
@@ -13,5 +11,12 @@ IF ( BUILD_CAMERA )
 
     GLOBAL_ADD_COMPONENT( orocos-camera ${SRCS} )
     GLOBAL_ADD_INCLUDE( ocl ${HPPS})
+    TARGET_LINK_LIBRARIES(orocos-camera ${OpenCV_LIBRARIES}
+      ${GTHREAD_LIBS} ${GTK_LIBS} 
+      jpeg
+      raw1394
+      dc1394_control
+      avcodec
+      avformat)
 
 ENDIF ( BUILD_CAMERA )

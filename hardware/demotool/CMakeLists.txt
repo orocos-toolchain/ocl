@@ -5,11 +5,13 @@ ADD_SUBDIRECTORY( tests )
 
 IF ( BUILD_DEMOTOOL )
 
-    # This gathers all the .cpp files into the variable 'SRCS'
-    FILE( GLOB SRCS [^.]*.cpp )
-    FILE( GLOB HPPS [^.]*.hpp )
+  # This gathers all the .cpp files into the variable 'SRCS'
+  FILE( GLOB SRCS [^.]*.cpp )
+  FILE( GLOB HPPS [^.]*.hpp )
+  
+  GLOBAL_ADD_COMPONENT( orocos-demotool ${SRCS} )
+  GLOBAL_ADD_INCLUDE( ocl ${HPPS})
 
-    GLOBAL_ADD_COMPONENT( orocos-demotool ${SRCS} )
-    GLOBAL_ADD_INCLUDE( ocl ${HPPS})
+  TARGET_LINK_LIBRARIES( orocos-demotool orocos-wrench orocos-krypton wrapper_matrix)
 
 ENDIF ( BUILD_DEMOTOOL )
