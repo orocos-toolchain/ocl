@@ -29,6 +29,7 @@ namespace OCL
          */
         RTT::PropertyBag root;
         RTT::Property<std::string> compPath;
+        RTT::Property<bool> autoUnload;
         RTT::Attribute<bool> validConfig;
         RTT::Constant<int> sched_RT;
         RTT::Constant<int> sched_OTHER;

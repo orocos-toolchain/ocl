@@ -26,12 +26,18 @@ namespace OCL
           compPath("ComponentPath",
                    "Location to look for components in addition to the local directory and system paths.",
                    "/usr/local/orocos/lib"),
+          autoUnload("AutoUnload",
+                     "Stop and unload all components loaded by the DeploymentComponent when it is destroyed.",
+                     true),
           validConfig("Valid", false),
           sched_RT("ORO_SCHED_RT", ORO_SCHED_RT ),
           sched_OTHER("ORO_SCHED_OTHER", ORO_SCHED_OTHER ),
           lowest_Priority("LowestPriority", RTT::OS::LowestPriority ),
           highest_Priority("HighestPriority", RTT::OS::HighestPriority )
     {
+        this->properties()->addProperty( &compPath );
+        this->properties()->addProperty( &autoUnload );
+
         this->attributes()->addAttribute( &validConfig );
         this->attributes()->addAttribute( &sched_RT );
         this->attributes()->addAttribute( &sched_OTHER );
@@ -115,6 +121,21 @@ namespace OCL
     {
         RTT::deletePropertyBag(root);
         // Should we unload all loaded components here ?
+        if ( autoUnload.get() ) {
+            for ( CompList::iterator cit = comps.begin(); cit != comps.end(); ++cit) {
+                ComponentData* it = &(cit->second);
+                if ( it->loaded ) {
+                    if ( it->instance->stop() ) {
+                        it->instance->disconnect();
+                        delete it->instance;
+                        delete it->act;
+                        log(Info) << "Disconnected and destroyed "<< it->instance->getName() <<endlog();
+                    } else {
+                        log(Error) << "Could not stop loaded Component "<< it->instance->getName() <<endlog();
+                    }
+                }
+            }
+        }
     }
 
     bool DeploymentComponent::connectPeers(const std::string& one, const std::string& other)
