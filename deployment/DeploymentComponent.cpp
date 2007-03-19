@@ -138,19 +138,19 @@ namespace OCL
             // 2. Disconnect and destroy all components.
             for ( CompList::iterator cit = comps.begin(); cit != comps.end(); ++cit) {
                 ComponentData* it = &(cit->second);
-		std::string name = it->instance->getName();
+                std::string name = it->instance->getName();
 		
                 if ( it->loaded && it->instance ) {
                     if ( it->instance->engine()->getActivity() == 0 ||
                          it->instance->engine()->getActivity()->isActive() == false ) {
 		      
-		      log(Debug) << "Disconnecting " <<name <<endlog();
+                        log(Debug) << "Disconnecting " <<name <<endlog();
                         it->instance->disconnect();
-		      log(Debug) << "Terminating " <<name <<endlog();
+                        log(Debug) << "Terminating " <<name <<endlog();
                         delete it->instance;
-			it->instance = 0;
+                        it->instance = 0;
                         delete it->act;
-			it->act = 0;
+                        it->act = 0;
                         log(Info) << "Disconnected and destroyed "<< name <<endlog();
                     } else {
                         log(Error) << "Could not unload Component "<< name <<endlog();
