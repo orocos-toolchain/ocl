@@ -125,7 +125,7 @@ namespace OCL
             for ( CompList::iterator cit = comps.begin(); cit != comps.end(); ++cit) {
                 ComponentData* it = &(cit->second);
                 if ( it->loaded ) {
-                    if ( it->instance->stop() ) {
+                    if ( it->instance->engine()->getActivity()->isActive() == false || it->instance->stop() ) {
                         it->instance->disconnect();
                         delete it->instance;
                         delete it->act;
