@@ -122,17 +122,38 @@ namespace OCL
         RTT::deletePropertyBag(root);
         // Should we unload all loaded components here ?
         if ( autoUnload.get() ) {
+            // 1. Stop all activities, give components chance to cleanup.
             for ( CompList::iterator cit = comps.begin(); cit != comps.end(); ++cit) {
                 ComponentData* it = &(cit->second);
                 if ( it->loaded ) {
                     if ( it->instance->engine()->getActivity() == 0 || 
-                         it->instance->engine()->getActivity()->isActive() == false || it->instance->stop() ) {
-                        it->instance->disconnect();
-                        delete it->instance;
-                        delete it->act;
-                        log(Info) << "Disconnected and destroyed "<< it->instance->getName() <<endlog();
+                         it->instance->engine()->getActivity()->isActive() == false ||
+                         it->instance->stop() ) {
+                        log(Info) << "Stopped "<< it->instance->getName() <<endlog();
                     } else {
                         log(Error) << "Could not stop loaded Component "<< it->instance->getName() <<endlog();
+                    }
+                }
+            }
+            // 2. Disconnect and destroy all components.
+            for ( CompList::iterator cit = comps.begin(); cit != comps.end(); ++cit) {
+                ComponentData* it = &(cit->second);
+		std::string name = it->instance->getName();
+		
+                if ( it->loaded && it->instance ) {
+                    if ( it->instance->engine()->getActivity() == 0 ||
+                         it->instance->engine()->getActivity()->isActive() == false ) {
+		      
+		      log(Debug) << "Disconnecting " <<name <<endlog();
+                        it->instance->disconnect();
+		      log(Debug) << "Terminating " <<name <<endlog();
+                        delete it->instance;
+			it->instance = 0;
+                        delete it->act;
+			it->act = 0;
+                        log(Info) << "Disconnected and destroyed "<< name <<endlog();
+                    } else {
+                        log(Error) << "Could not unload Component "<< name <<endlog();
                     }
                 }
             }
