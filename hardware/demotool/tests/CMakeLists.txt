@@ -9,6 +9,6 @@ IF ( BUILD_DEMOTOOL_TEST )
     GLOBAL_ADD_TEST( demotool ${SRCS} )
     # Use  TARGET_LINK_LIBRARIES( report libs... ) to add library deps.
     TARGET_LINK_LIBRARIES( demotool orocos-taskbrowser orocos-reporting
-      orocos-demotool)
+      orocos-demotool ${OROCOS_RTT_LIBS} ${KDLTK_LIBS})
 
 ENDIF ( BUILD_DEMOTOOL_TEST )

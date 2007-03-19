@@ -56,8 +56,8 @@ int ORO_main(int argc, char* argv[])
       }
     }
   else{
-    log(Warning) <<"Using Default Kuka160"<<endlog();
-    my_robot = new Kuka160nAxesVelocityController("Robot");
+    log(Warning) <<"Using Default Kuka361"<<endlog();
+    my_robot = new Kuka361nAxesVelocityController("Robot");
   }
 
   if ( Logger::log().getLogLevel() < Logger::Info ) {

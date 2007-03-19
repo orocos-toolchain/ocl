@@ -53,9 +53,9 @@ int ORO_main(int argc, char* argv[])
             }
         }
     else{
-        log(Warning) <<"Using Default Kuka160"<<endlog();
-        my_robot = new Kuka160nAxesVelocityController("Robot");
-        kukakf = new Kuka160();
+        log(Warning) <<"Using Default Kuka361"<<endlog();
+        my_robot = new Kuka361nAxesVelocityController("Robot");
+        kukakf = new Kuka361();
     }
     
     NAxesPositionViewer viewer("viewer");

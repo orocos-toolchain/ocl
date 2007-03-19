@@ -25,9 +25,9 @@ StateMachine Default
         select StopRobotState
     }
     entry {
-	  var frame f = frame(vector(0.,1.5,1.2), rotation(0.0,pi,0.0))
+	  var frame f = frame(vector(0.0,-1.0,1.2), rotation(0.0,pi,0.0))
 	  do MoveToCartesian(f)
-	  set f = frame(vector(0.,-1.5,1.2), rotation(0.0,pi,0.0))
+	  set f = frame(vector(0.,-1.0,1.2), rotation(0.0,pi,0.0))
 	  do MoveToCartesian(f)
     }
     exit {

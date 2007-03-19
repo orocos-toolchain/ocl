@@ -244,7 +244,7 @@ namespace OCL
         }
 
 
-// 	//Temp for motor current measurements
+// 	//Temp for motor current measurements 
 //         _motorCurrentInput = new AnalogInput<unsigned int>(_comediSubdevAIn_NI6024, 0); 
 //         unsigned int range2 = 1; // for a input range -5 to 5 V, range is 1 
 //         _comediSubdevAIn_NI6024->rangeSet(0, range2); 
