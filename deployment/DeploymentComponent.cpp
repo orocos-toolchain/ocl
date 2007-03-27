@@ -708,8 +708,11 @@ namespace OCL
 
         void *handle;
 
-        // Second: try dynamic loading:
-        std::string so_name = name +".so";
+        // try dynamic loading:
+        std::string so_name(name);
+        if ( so_name.rfind(".so") == std::string::npos ||
+             so_name.substr(so_name.rfind(".so")) != ".so" )
+            so_name += ".so";
 
         handle = dlopen ( so_name.c_str(), RTLD_NOW | RTLD_GLOBAL);
         if (!handle) {
@@ -750,7 +753,10 @@ namespace OCL
             log(Info) <<"Found static factory for Component type "<<type<<endlog();
         } else {
             // Second: try dynamic loading:
-            std::string so_name = type +".so";
+            std::string so_name(type);
+            if ( so_name.rfind(".so") == std::string::npos ||
+                 so_name.substr(so_name.rfind(".so")) != ".so" )
+                so_name += ".so";
 
             handle = dlopen ( so_name.c_str(), RTLD_NOW | RTLD_GLOBAL);
             if (!handle) {
