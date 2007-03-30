@@ -1,0 +1,161 @@
+<?xml version='1.0'?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
+"http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd"
+[
+<!ENTITY orocos      "<acronym>Orocos</acronym>">
+]
+>
+
+<article>
+  <articleinfo>
+    <title>The Deployment Component</title>
+    <authorgroup>
+      <author>
+	<firstname>Peter</firstname>
+	<surname>Soetens</surname>
+	<affiliation>
+	  <orgname>FMTC</orgname>
+	  <address><country>Belgium</country></address>
+	</affiliation>
+      </author>
+    </authorgroup>
+    <copyright>
+      <year>2006</year>
+      <holder>Peter Soetens, FMTC</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>
+	Permission is granted to copy, distribute and/or modify this document
+	under the terms of the GNU Free Documentation License, Version 1.1 or
+	any later version published by the Free Software Foundation, with no
+	Invariant Sections, with no Front-Cover Texts, and with no Back-Cover
+	Texts. A copy of this license can be found at
+	<ulink
+	  url="http://www.fsf.org/copyleft/fdl.html">http://www.fsf.org/copyleft/fdl.html</ulink>.
+      </para>
+    </legalnotice>
+
+  </articleinfo>
+  
+  <section>
+    <title>Introduction</title>
+    <para>
+      This document describes the
+      <classname>OCL::DeploymentComponent</classname> Orocos component
+      for loading and configuring other components. It uses this
+      by reading an Orocos script or an XML file. This component
+      can only load components into the same process.
+    </para>
+    <section>
+      <title>Principle</title>
+      <para>
+	Each Orocos component can be compiled as a shared (or: dynamic)
+	library. In addition, the component can define a special
+	function which will allow the deployment component to create new
+	instances of this component type. In practice, the special
+	function is predefined by a C macro. This principle is analogous
+	to the plugin mechanism found in web browsers or other desktop
+	applications.
+      </para>
+      <para>
+	A common usage scenario of the DeploymentComponent goes as
+	follows. An initial Orocos application is created which contains
+	only the DeploymentComponent and the
+	<classname>OCL::TaskBrowser</classname>. When the application is
+	started, the TaskBrowser prompts for commands which can be given
+	to the DeploymentComponent. One gives then the
+	<function>loadConfiguration("configname.xml")</function> command
+	which contains instructions for the DeploymentComponent where to
+	look for components ('import statements'), which component types
+	to create, which name they must be given and how their internal
+	thread is configured (priorities, periods,...). Furthermore this
+	file describes the network interconnections between all
+	components and how data must be relayed from one component to
+	another. The <function>loadConfiguration()</function> function
+	looks up the components, creates them and stores the
+	configuration parameters. One can apply the configuration
+	(threads, properties, data connections,...) by calling
+	<function>configureComponents()</function>. After this step,
+	the components (and the application as a whole) can be started.
+      </para>
+      <para>
+	The configuration does not need to be stored in XML format.
+	One can apply the same configuration by using the scripting
+	methods of the DeploymentComponent at the console prompt,
+	or by listing them in an Orocos script.
+      </para>
+      
+      <figure><title>Orocos Component Deployment</title>
+      <mediaobject>
+	<imageobject>
+	  <imagedata fileref="deployment" />
+	</imageobject>
+	<caption><para>
+	</para></caption>
+      </mediaobject>
+      </figure>
+    </section>
+    <section>
+      <title>Configuration format</title>
+      <para>
+	The configuration format defines the instructions one can use
+	to load and configure Orocos components. One can divide the
+	instructions in three groups:
+	<itemizedlist>
+	  <listitem><para>Where to look for component libraries</para></listitem>
+	  <listitem><para>Which components to create and with which name</para></listitem>
+	  <listitem><para>How each component is setup</para></listitem>
+	</itemizedlist>
+      </para>
+      <section>
+	<title>Where to look for component libraries</title>
+	<para>
+	  The <function>import</function> statement causes all
+	  component libraries in a given directory to be pre-loaded.
+	  It does not cause any component to be created, but
+	  allows the DeploymentComponent to know where the 
+	  component libraries are located. This function works recursively
+	  and may be called for multiple paths.
+	</para>
+	<para>
+	  In XML, the import statement looks like:
+	  <programlisting><![CDATA[
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "cpf.dtd">
+<properties>
+  <!-- ....  -->
+
+  <simple name="Import" type="string"><value>/usr/local/lib/orocos</value></simple>
+
+</properties>]]></programlisting>
+	</para>
+	<para>
+	  The script method equivalent is:
+	  <programlisting>
+  do import("/usr/local/lib/orocos");
+	  </programlisting>
+	</para>
+	<para>
+	  Each library found under the given location is pre-loaded. The
+	  import statement thus allows you to load non-Orocos libraries as
+	  well. If a library contains one or more Orocos components, 
+	  the contained component types become available in the next step.
+	</para>
+      </section>
+      <section>
+	<title>Which components to create and with which name</title>
+	<para>
+	  
+	</para>
+      </section>
+      <section>
+	<title>How each component is setup</title>
+	<para>
+	  
+	</para>
+      </section>
+
+    </section>
+  </section>
+</article>
