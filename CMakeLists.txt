@@ -131,22 +131,6 @@ ADD_CUSTOM_TARGET(uninstall
 
 ###########################################################
 #                                                         #
-# Look for low-level C headers, write defines to config.h #
-#                                                         #
-###########################################################
-
-# Only do this once.
-IF ( NOT WROTE_CONFIG_H )
-  MESSAGE( STATUS "Writing config.h" )
-  INCLUDE(config/write_config_h.cmake)
-  SET( WROTE_CONFIG_H TRUE CACHE INTERNAL 
-       "Remember that we've already written config.h" )
-ELSE ( NOT WROTE_CONFIG_H )
-  MESSAGE( STATUS "Not writing config.h -- wrote it previously" )
-ENDIF ( NOT WROTE_CONFIG_H )
-
-###########################################################
-#                                                         #
 # Look for dependencies required by individual components #
 #                                                         #
 ###########################################################
