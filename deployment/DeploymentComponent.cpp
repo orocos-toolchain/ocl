@@ -13,6 +13,7 @@
 #include "ComponentLoader.hpp"
 #include <rtt/PropertyLoader.hpp>
 
+#include <dirent.h>
 
 using namespace Orocos;
 
@@ -48,9 +49,9 @@ namespace OCL
         this->methods()->addMethod( RTT::method("loadLibrary", &DeploymentComponent::loadLibrary, this),
                                     "Load a new library into memory.",
                                     "Name", "The name of the to be loaded library.");
-        this->methods()->addMethod( RTT::method("import", &DeploymentComponent::loadLibrary, this),
-                                    "Load a new library into memory.",
-                                    "Name", "The name of the to be loaded library.");
+        this->methods()->addMethod( RTT::method("import", &DeploymentComponent::import, this),
+                                    "Load all libraries in Path into memory.",
+                                    "Path", "The name of the directory where libraries are located.");
 
 
         this->methods()->addMethod( RTT::method("loadComponent", &DeploymentComponent::loadComponent, this),
@@ -60,6 +61,8 @@ namespace OCL
         this->methods()->addMethod( RTT::method("unloadComponent", &DeploymentComponent::unloadComponent, this),
                                     "Unload a loaded component instance.",
                                     "Name", "The name of the to be created component");
+        this->methods()->addMethod( RTT::method("displayComponentTypes", &DeploymentComponent::displayComponentTypes, this),
+                                    "Print out a list of all component types this component can create.");
 
         this->methods()->addMethod( RTT::method("loadConfiguration", &DeploymentComponent::loadConfiguration, this),
                                     "Load a new configuration.",
@@ -338,13 +341,13 @@ namespace OCL
                     for (PropertyBag::iterator it= from_file.begin(); it!=from_file.end();it++) {
                         // Read in global options.
                         if ( (*it)->getName() == "Import" ) {
-                            Property<std::string> import = *it;
-                            if ( !import.ready() ) {
+                            Property<std::string> importp = *it;
+                            if ( !importp.ready() ) {
                                 log(Error)<< "Found 'Import' statement, but it is not of type='string'."<<endlog();
                                 valid = false;
                                 continue;
                             }
-                            if ( loadLibrary( import.get() ) == false )
+                            if ( this->import( importp.get() ) == false )
                                 valid = false;
                             continue;
                         }
@@ -702,6 +705,58 @@ namespace OCL
         deletePropertyBag( root );
     }
 
+    int filter_so(const struct dirent * d)
+    {
+        std::string so_name(d->d_name);
+        // return FALSE if string ends in .so:
+        if ( so_name.find("/.") != std::string::npos ||
+             so_name.rfind("~") == so_name.length() -1 ) {
+            log(Debug) << "Skipping " << so_name <<endlog(); 
+            return 0;
+        }
+        return 1;
+    }
+
+    bool DeploymentComponent::import(const std::string& path)
+    {
+        Logger::In in("DeploymentComponent::import");
+        struct dirent **namelist;
+        int n;
+
+        log(Info) << "Importing: " <<  path << endlog();
+
+        // scan the directory for files.
+        n = scandir( path.c_str(), &namelist, &filter_so, &alphasort);
+        if (n < 0) {
+            // path not found or 1 library specified.
+            //perror("scandir");
+            return loadLibrary( path );
+        } else {
+            int i = 0;
+            while(i != n) {
+                std::string name = namelist[i]->d_name;
+                if (name != "." && name != ".." )
+                    if (namelist[i]->d_type == DT_DIR) { //ignoring symlinks and subdirs here.
+                        import( path +"/" +name );
+                    } else {
+                        log(Info) << "Scanning " << path +"/" +name <<endlog();
+                        if ( name.rfind(".so") == std::string::npos ||
+                             name.substr(name.rfind(".so")) != ".so" ) {
+                            log(Debug) << "Dropping " << name <<endlog(); 
+                        }
+                        else {
+                            log(Debug) << "Accepting " << name <<endlog(); 
+                            loadLibrary( path + "/" + name );
+                        }
+                    }
+                free(namelist[i]);
+                ++i;
+            }
+            free(namelist);
+        }
+        return true;
+    }
+
     bool DeploymentComponent::loadLibrary(const std::string& name)
     {
         Logger::In in("DeploymentComponent::loadLibrary");
@@ -715,24 +770,53 @@ namespace OCL
             so_name += ".so";
 
         handle = dlopen ( so_name.c_str(), RTLD_NOW | RTLD_GLOBAL);
-        if (!handle) {
-            std::string error = dlerror();
+        if (!handle && so_name.find("/") == std::string::npos ) {
             so_name = "lib" + so_name;
             handle = dlopen ( so_name.c_str(), RTLD_NOW | RTLD_GLOBAL);
+        }
 
-            if (!handle) {
-                log(Error) << "Could not load library '"<< name <<"':"<<endlog();
-                log(Error) << error << endlog();
-                log(Error) << dlerror() << endlog();
-                return false;
-            }
+        if (!handle) {
+            log(Error) << "Could not load library '"<< name <<"':"<<endlog();
+            log(Error) << dlerror() << endlog();
+            return false;
         }
 
         dlerror();    /* Clear any existing error */
+        
+        // Lookup factories:
+        FactoryMap* (*getfactory)() = 0;
+        FactoryMap* fmap = 0;
+        char* error = 0;
+        *(void **) (&getfactory) = dlsym(handle, "getComponentFactoryMap");
+        if ((error = dlerror()) == NULL) {
+            // symbol found, register factories...
+            fmap = (*getfactory)();
+            ComponentFactories::Instance().insert( fmap->begin(), fmap->end() );
+            log(Info) << "Loaded component library '"<<so_name <<"'"<<endlog();
+            return true;
+        }
+
+        // Lookup createComponent:
+        dlerror();    /* Clear any existing error */
+
+        TaskContext* (*factory)(std::string name) = 0;
+        *(void **) (&factory) = dlsym(handle, "createComponent");
+        if ((error = dlerror()) == NULL) {
+            // store factory.
+            string libname = name.substr(name.rfind("/"), name.rfind(".so"));
+            if ( libname.find("lib") == 0 )
+                libname = libname.substr(3, std::string::npos); // strip leading lib if any.
+            ComponentFactories::Instance()[libname] = factory;
+            log(Info) << "Loaded component type '"<< libname <<"'"<<endlog();
+            return true;
+        }
+
+        // plain library
         log(Info) << "Loaded library '"<< so_name <<"'"<<endlog();
         return true;
     }
 
+    // or type is a shared library or it is a class type.
     bool DeploymentComponent::loadComponent(const std::string& name, const std::string& type)
     {
         Logger::In in("DeploymentComponent::loadComponent");
@@ -746,11 +830,11 @@ namespace OCL
         TaskContext* (*factory)(std::string name) = 0;
         char *error;
 
-        // First: try static loading:
-        //factory = ComponentFactories::Factories[ type ];
+        // First: try loading from imported libraries. (see: import).
+        factory = ComponentFactories::Instance()[ type ];
 
         if ( factory ) {
-            log(Info) <<"Found static factory for Component type "<<type<<endlog();
+            log(Info) <<"Found factory for Component type "<<type<<endlog();
         } else {
             // Second: try dynamic loading:
             std::string so_name(type);
@@ -821,6 +905,17 @@ namespace OCL
         comps.erase(name);
         log(Info) << "Succesfully unloaded component "<<name<<"."<<endlog();
         return true;
+    }
+
+    void DeploymentComponent::displayComponentTypes() const\
+    {
+        OCL::FactoryMap::iterator it;
+        cout << "I can create the following component types: " <<endl;
+        for(it = OCL::ComponentFactories::Instance().begin(); it != OCL::ComponentFactories::Instance().end(); ++it) {
+            cout << "   " << it->first << endl;
+        }
+        if ( OCL::ComponentFactories::Instance().size() == 0 )
+            cout << "   (none)"<<endl;
     }
 
     bool DeploymentComponent::setPeriodicActivity(const std::string& comp_name, 

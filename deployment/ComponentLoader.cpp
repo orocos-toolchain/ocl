@@ -1,3 +1,9 @@
 #include "ComponentLoader.hpp"
 
-//std::map<std::string,OCL::ComponentLoaderSignature> OCL::ComponentFactories::Factories;
+using namespace std;
+
+namespace OCL
+{
+    FactoryMap* OCL::ComponentFactories::Factories = 0;
+}
+

@@ -1,4 +1,4 @@
-OPTION( BUILD_DEPLOYMENT "Build Deployment" ON )
+OPTION( BUILD_DEPLOYMENT "Build Deployment Component" ON )
 
 IF ( BUILD_DEPLOYMENT )
 
@@ -10,5 +10,11 @@ IF ( BUILD_DEPLOYMENT )
     GLOBAL_ADD_INCLUDE( ocl ${HPPS})
      
     ADD_SUBDIRECTORY( tests )
+
+    # This requires the orocos-rtt library to be carefully tagged
+    # with the necessary 'export' attributes, or unresolved symbols
+    # will appear. Especially template classes and exceptions are 
+    # sensitive.
+    SET_SOURCE_FILES_PROPERTIES( ${SRCS} PROPERTIES COMPILE_FLAGS "-fvisibility=hidden")
 
 ENDIF ( BUILD_DEPLOYMENT )

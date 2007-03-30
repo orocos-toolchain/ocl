@@ -19,7 +19,7 @@ namespace OCL
      * load the properties and scripts for components and setup 
      * component activities.
      */
-    class DeploymentComponent
+    class OCL_API DeploymentComponent
         : public RTT::TaskContext
     {
     protected:
@@ -137,6 +137,12 @@ namespace OCL
         using TaskContext::addPeer;
         using TaskContext::connectPeers;
 
+        /**
+         * Import a library or all libraries in a given directory.
+         * This function calls loadLibrary on each found shared library in \a path.
+         */
+        bool import(const std::string& path);
+
         /** 
          * Use this command to load a dynamic library into the memory of the
          * current process.
@@ -169,6 +175,13 @@ namespace OCL
          * @return true if \a name was not running and could be unloaded.
          */
         bool unloadComponent(const std::string& name);
+
+        /**
+         * This function prints out the component types this DeploymentComponent
+         * can create.
+         * @see loadComponent()
+         */
+        void displayComponentTypes() const;
 
         /**
          * (Re-)set the activity of a component which was loaded with loadComponent.
