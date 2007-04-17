@@ -2,11 +2,8 @@
 #include <rtt/RTT.hpp>
 #include "DeploymentComponent.hpp"
 #include <rtt/Activities.hpp>
-#ifndef OROCLS_CORELIB_PROPERTIES_DEMARSHALLING_DRIVER
-#include <pkgconf/corelib_properties_marshalling.h>
-#endif
-#include ORODAT_CORELIB_PROPERTIES_MARSHALLING_INCLUDE
-#include ORODAT_CORELIB_PROPERTIES_DEMARSHALLING_INCLUDE
+#include <rtt/marsh/PropertyMarshaller.hpp>
+#include <rtt/marsh/PropertyDemarshaller.hpp>
 
 #include <cstdio>
 #include <dlfcn.h>
@@ -14,6 +11,7 @@
 #include <rtt/PropertyLoader.hpp>
 
 #include <dirent.h>
+#include <iostream>
 
 using namespace Orocos;
 
@@ -307,27 +305,16 @@ namespace OCL
     bool DeploymentComponent::loadConfiguration(const std::string& configurationfile)
     {
         Logger::In in("DeploymentComponent::loadConfiguration");
-#ifndef OROPKG_CORELIB_PROPERTIES_MARSHALLING
-        log(Error) << "No Property Demarshaller configured !" << endlog();
-        return false;
-    
-#else
+
         PropertyBag from_file;
         log(Info) << "Loading '" <<configurationfile<<"'."<< endlog();
         // demarshalling failures:
         bool failure = false;  
         // semantic failures:
         bool valid = validConfig.get();
-        OROCLS_CORELIB_PROPERTIES_DEMARSHALLING_DRIVER* demarshaller = 0;
-        try
-            {
-                demarshaller = new OROCLS_CORELIB_PROPERTIES_DEMARSHALLING_DRIVER (configurationfile);
-            } catch (...) {
-                log(Error)<< "Could not open file "<< configurationfile << endlog();
-                return false;
-            }
+        PropertyDemarshaller demarshaller(configurationfile);
         try {
-            if ( demarshaller->deserialize( from_file ) )
+            if ( demarshaller.deserialize( from_file ) )
                 {
                     valid = true;
                     log(Info)<<"Validating new configuration..."<<endlog();
@@ -529,12 +516,10 @@ namespace OCL
                 }
         } catch (...)
             {
-                log(Error)<< "Uncaught exception in deserialise !"<< endlog();
+                log(Error)<< "Uncaught exception in deserialize !"<< endlog();
                 failure = true;
             }
-        delete demarshaller;
         return !failure && valid;
-#endif // OROPKG_CORELIB_PROPERTIES_MARSHALLING
     }
 
     /** 
@@ -975,10 +960,10 @@ namespace OCL
 
         ActivityInterface* newact = 0;
         if ( act_type == "PeriodicActivity" && period != 0.0)
-            newact = new PeriodicActivity(priority, period);
+            newact = new PeriodicActivity(scheduler, priority, period);
         else
             if ( act_type == "NonPeriodicActivity" && period == 0.0)
-                newact = new NonPeriodicActivity(priority);
+                newact = new NonPeriodicActivity(scheduler, priority);
             else
                 if ( act_type == "SlaveActivity" )
                     newact = new SlaveActivity(period);
@@ -987,22 +972,6 @@ namespace OCL
             log(Error) << "Can't create activity for component "<<comp_name<<": incorrect arguments."<<endlog();
             return false;
         }
-
-#if 0
-        if ( act_type != "SlaveActivity" ) {
-            if (scheduler == ORO_SCHED_RT && newact->thread()->getScheduler() != ORO_SCHED_RT ) {
-                newact->thread()->stop();
-                newact->thread()->setScheduler(ORO_SCHED_RT);
-                newact->thread()->start();
-            }
-                        
-            if (scheduler == ORO_SCHED_OTHER && newact->thread()->getScheduler() != ORO_SCHED_OTHER ) {
-                newact->thread()->stop();
-                newact->thread()->setScheduler(ORO_SCHED_OTHER);
-                newact->thread()->start();
-            }
-        }
-#endif
 
         // this must never happen if component is running:
         assert( peer->isRunning() == false );
