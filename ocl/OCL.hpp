@@ -1,9 +1,7 @@
 #ifndef ORO_OCL_HPP
 #define ORO_OCL_HPP
 
-#include <rtt/rtt-config.h>
-
-namespace RTT {}
+#include <rtt/RTT.hpp>
 
 /**
  * The Orocos Component Library.
