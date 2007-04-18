@@ -81,7 +81,7 @@ extern "C" { \
   { \
     return new CNAME(instance_name); \
   } \
-}
+} /* extern "C" */
 
 /**
  * Use this macro to export all components listed with
@@ -90,6 +90,7 @@ extern "C" { \
  * each class added with ORO_LIST_COMPONENT_TYPE.
  */
 #define ORO_CREATE_COMPONENT_TYPE() \
+OCL::FactoryMap* OCL::ComponentFactories::Factories = 0; \
 extern "C" { \
   OCL_API RTT::TaskContext* createComponentType(std::string instance_name, std::string type_name) \
   { \
@@ -107,8 +108,7 @@ extern "C" { \
     return ret; \
   } \
   OCL_API OCL::FactoryMap* getComponentFactoryMap() { return &OCL::ComponentFactories::Instance(); } \
-  OCL::FactoryMap* OCL::ComponentFactories::Factories = 0; \
-}
+} /* extern "C" */
 
 #else
 
