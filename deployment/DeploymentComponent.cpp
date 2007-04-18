@@ -769,10 +769,10 @@ namespace OCL
         dlerror();    /* Clear any existing error */
         
         // Lookup factories:
-        FactoryMap* (*getfactory)() = 0;
+        FactoryMap* (*getfactory)(void) = 0;
         FactoryMap* fmap = 0;
         char* error = 0;
-        *(void **) (&getfactory) = dlsym(handle, "getComponentFactoryMap");
+        getfactory = reinterpret_cast<FactoryMap*(*)(void)>( dlsym(handle, "getComponentFactoryMap") );
         if ((error = dlerror()) == NULL) {
             // symbol found, register factories...
             fmap = (*getfactory)();
@@ -785,7 +785,7 @@ namespace OCL
         dlerror();    /* Clear any existing error */
 
         TaskContext* (*factory)(std::string name) = 0;
-        *(void **) (&factory) = dlsym(handle, "createComponent");
+        factory = reinterpret_cast<TaskContext*(*)(std::string name)>(dlsym(handle, "createComponent") );
         if ((error = dlerror()) == NULL) {
             // store factory.
             string libname = name.substr(name.rfind("/"), name.rfind(".so"));
@@ -841,7 +841,7 @@ namespace OCL
             }
 
             dlerror();    /* Clear any existing error */
-            *(void **) (&factory) = dlsym(handle, "createComponent");
+            factory = reinterpret_cast<TaskContext*(*)(std::string)>(dlsym(handle, "createComponent"));
             if ((error = dlerror()) != NULL) {
                 log(Error) << "Found plugin '"<< so_name <<"', but it is not an Orocos Component:";
                 log(Error) << error << endlog();
