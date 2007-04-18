@@ -1,4 +1,4 @@
-OPTION( BUILD_HELLOWORLD "Build Helloworld Example" ON )
+DEPENDENT_OPTION( BUILD_HELLOWORLD "Build Helloworld Example" OFF  "BUILD_TASKBROWSER" OFF)
 
 IF ( BUILD_HELLOWORLD )
 
@@ -7,6 +7,7 @@ IF ( BUILD_HELLOWORLD )
     FILE( GLOB HPPS [^.]*.hpp )
 
     ADD_EXECUTABLE( helloworld ${SRCS} )
+
     TARGET_LINK_LIBRARIES( helloworld orocos-taskbrowser ${OROCOS_RTT_LIBS} )
     
 ENDIF ( BUILD_HELLOWORLD )

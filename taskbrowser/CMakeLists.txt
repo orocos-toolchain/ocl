@@ -3,7 +3,9 @@ OPTION( BUILD_TASKBROWSER "Build TaskBrowser" ON )
 IF ( BUILD_TASKBROWSER )
 
     IF(NOT CURSES)
-       MESSAGE( FATAL "Can not build TaskBrowser without the ncurses library." )
+       MESSAGE( FATAL_ERROR "Can not build TaskBrowser without the
+       ncurses library. Try 'sudo apt-get install libncurses5-dev' or
+       disable the TaskBrowser" )
     ELSE(NOT CURSES)
        OROCOS_PKGCONFIG_LIBS("-lncurses -lreadline")
 
