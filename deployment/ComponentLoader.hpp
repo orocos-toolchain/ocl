@@ -116,7 +116,7 @@ extern "C" { \
 // Identical to ORO_LIST_COMPONENT_TYPE:
 #define ORO_CREATE_COMPONENT(CLASS_NAME) namespace { OCL::ComponentLoader<CLASS_NAME> m_cloader(ORO_LIST_COMPONENT_TYPE_str(CLASS_\
 NAME)); }
-#define ORO_CREATE_COMPONENT_TYPE()
+#define ORO_CREATE_COMPONENT_TYPE() __attribute__((weak)) OCL::FactoryMap* OCL::ComponentFactories::Factories = 0;
 
 #endif
 
