@@ -23,7 +23,7 @@ namespace OCL
     
     bool ReferenceSensor::getReference(int axis)
     {
-        if ((0>=axis)&&(axis<nrofaxes)) {
+        if ((0<=axis)&&(axis<nrofaxes)) {
 	  //log(Error) <<"reference"<<axis<<" connected: "<<reference[axis]->ready()<<endlog();
 	  // log(Error) << "reference"<<axis<<" " << reference[axis]->Get() << endlog();
             return reference[axis]->Get();

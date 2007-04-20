@@ -10,5 +10,6 @@ IF ( BUILD_VIEWER )
     FILE( GLOB HPPS [^.]*.hpp )
     GLOBAL_ADD_COMPONENT( orocos-viewer ${SRCS} )
     GLOBAL_ADD_INCLUDE( ocl ${HPPS})
+    TARGET_LINK_LIBRARIES(orocos-viewer ACE)    
 
 ENDIF ( BUILD_VIEWER )
