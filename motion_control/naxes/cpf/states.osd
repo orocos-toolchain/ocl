@@ -31,7 +31,7 @@ StateMachine Default
       do nAxesGeneratorPos.start()
       do nAxesControllerPos.start()
       do nAxesEffectorVel.start()
-      do programs.CalibrateOffsetsProg.start()
+      do CalibrateOffsetsProg.start()
     }
     exit {
       do nAxesSensor.stop()
@@ -40,7 +40,7 @@ StateMachine Default
       do nAxesEffectorVel.stop()
     }
     transitions {
-      if !programs.CalibrateOffsetsProg.isRunning then
+      if !CalibrateOffsetsProg.isRunning then
        select MoveToState
     }
   }      
