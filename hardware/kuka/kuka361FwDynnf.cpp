@@ -1,5 +1,8 @@
 
-#include "kuka361dyn.hpp"
+#include "kuka361FwDynnf.hpp"
+
+#define FSIGN(a) ( a<-1E-15 ? -1.0 : ( a>1E-15 ? 1.0 : 0.0))
+#define SSSIGN(a,b) (2.0/(1.0+exp(-3*a/b))-1.0)
 
 //namespace Orocos
 //{
@@ -8,7 +11,8 @@ using namespace std;
 #define Y_LS {29.0130, -10.9085, -0.2629, 2.6403, -0.0421, 0.0509, 3.0221, 2.4426, 0.0531, -0.2577, -0.2627, 346.7819, -0.2651, 35.4666, 5.6321, 0.9935, 3.2192, 10.7823, 34.2604, 16.9902, 39.1594, 5.4501, 16.1392, -12.7243, -6.1094, 1.9590}
 #define Y_LS2 {3.4102, 3.2555, 2.2401, 29.5178, 35.0201, 28.1370, 16.3857, 15.5666, 14.5318, -0.5734, -2.1976, 5.8708} 
 
-kuka361dyn::kuka361dyn():_ddq(6){
+kuka361FwDynnf::kuka361FwDynnf():_ddq(6){
+	dqm = 0.001;
 	D13 = 0.48;
 	g1 = 9.81;
 	double y_ls[26] = Y_LS;
@@ -24,7 +28,7 @@ kuka361dyn::kuka361dyn():_ddq(6){
 	}
 }
 
-vector<double> kuka361dyn::fwdyn361(vector<double> &tau, vector<double> &q, vector<double> &dq){
+vector<double> kuka361FwDynnf::fwdyn361(vector<double> &tau, vector<double> &q, vector<double> &dq){
 	//Calculate ddq of fist three axes
 	t1 = sin(q[2]);
 	t2 = D13 * t1;
@@ -234,7 +238,7 @@ vector<double> kuka361dyn::fwdyn361(vector<double> &tau, vector<double> &q, vect
 	t731 = t730 * dq[1];
 	t732 = t669 * t62;
 	t735 = t673 * t53;
-	t743 = -_y_ls[9] * t707 * t62 + _y_ls[10] * t664 * t53 + _y_ls[10] * t707 * t53 - 0.2e1 * t693 * dq[1] + 0.2e1 * t700 * dq[2] + 0.2e1 * t700 * dq[1] + _y_ls[4] * t664 * t68 - 0.4e1 * t700 * dq[1] * t92 + 0.4e1 * _y_ls[1] * dq[0] * dq[1] * t68 * t69 + 0.2e1 * t731 * t732 - 0.2e1 * t731 * t735 - 0.2e1 * t730 * dq[2] * t735 - FSIGN(dq[0]) * _y_ls[18] - dq[0] * _y_ls[17];
+	t743 = -_y_ls[9] * t707 * t62 + _y_ls[10] * t664 * t53 + _y_ls[10] * t707 * t53 - 0.2e1 * t693 * dq[1] + 0.2e1 * t700 * dq[2] + 0.2e1 * t700 * dq[1] + _y_ls[4] * t664 * t68 - 0.4e1 * t700 * dq[1] * t92 + 0.4e1 * _y_ls[1] * dq[0] * dq[1] * t68 * t69 + 0.2e1 * t731 * t732 - 0.2e1 * t731 * t735 - 0.2e1 * t730 * dq[2] * t735 - SSSIGN(dq[0],dqm) * _y_ls[18] - dq[0] * _y_ls[17];
 	t744 = t706 + t743;
 	t748 = 0.1000e4 * t190 * _y_ls[14];
 	t750 = 0.1000e4 * t285;
@@ -264,11 +268,11 @@ vector<double> kuka361dyn::fwdyn361(vector<double> &tau, vector<double> &q, vect
 	t814 = g1 * t69;
 	t817 = _y_ls[6] * t772;
 	t818 = t817 * t775;
-	t838 = -t799 * t765 * t8 + t799 * t814 * t1 + t818 * t670 + t818 * t674 + 0.2e1 * t817 * dq[1] * t804 * t1 + t817 * t808 * t1 + t817 * t765 * t1 + t817 * t814 * t8 - t69 * _y_ls[11] * t772 - dq[1] * _y_ls[19] * t772 - FSIGN(dq[1]) * _y_ls[20] * t772 - _y_ls[24] * t772;
+	t838 = -t799 * t765 * t8 + t799 * t814 * t1 + t818 * t670 + t818 * t674 + 0.2e1 * t817 * dq[1] * t804 * t1 + t817 * t808 * t1 + t817 * t765 * t1 + t817 * t814 * t8 - t69 * _y_ls[11] * t772 - dq[1] * _y_ls[19] * t772 - SSSIGN(dq[1],dqm) * _y_ls[20] * t772 - _y_ls[24] * t772;
 	t842 = tau[1] + (t811 + t838) / t772;
 	t858 = t754 + t756 + t759 + t761 - t190 * t159 + t284 * t159 - 0.1000e4 * t190 * t296 - 0.1000e4 * t190 * t143 + 0.1000e4 * t284 * t296 + 0.1000e4 * t284 * t143 + t137 + 0.1000e4 * t74 * _y_ls[13] + t74 * _y_ls[15] + 0.1000e4 * t128 - t748 + t750 - t757 - t762;
 	t859 = t858 * t662;
-	t878 = tau[2] + _y_ls[5] * t775 * t735 - dq[2] * _y_ls[21] - FSIGN(dq[2]) * _y_ls[22] + 0.2e1 * t776 * t92 + _y_ls[5] * t664 * t9 - _y_ls[25] + 0.2e1 * t794 * t795 + _y_ls[6] * t775 * t674 - _y_ls[6] * t664 * t2 - t776 - _y_ls[5] * g1 * t62 + _y_ls[6] * g1 * t53;
+	t878 = tau[2] + _y_ls[5] * t775 * t735 - dq[2] * _y_ls[21] - SSSIGN(dq[2],dqm) * _y_ls[22] + 0.2e1 * t776 * t92 + _y_ls[5] * t664 * t9 - _y_ls[25] + 0.2e1 * t794 * t795 + _y_ls[6] * t775 * t674 - _y_ls[6] * t664 * t2 - t776 - _y_ls[5] * g1 * t62 + _y_ls[6] * g1 * t53;
 	_ddq[0] = t48 * t662 * t744 - t764 * t842 - t859 * t878;
 	t881 = 0.1000e4 * t90;
 	t887 = 0.1000e4 * t9 * _y_ls[6] * _y_ls[14];
@@ -338,9 +342,9 @@ vector<double> kuka361dyn::fwdyn361(vector<double> &tau, vector<double> &q, vect
 	_ddq[2] = -t859 * t744 + t1045 * t842 + (t1074 + t1109 + t1138 + t1143) * t662 * t878;
 			
 	//calculate ddq of last tree axes
-	tau4 = (_y_ls2[1*3+0]*dq[3] + _y_ls2[2*3+0]*FSIGN(dq[3]) + _y_ls2[3*3+0]);
-	tau5 = (_y_ls2[1*3+1]*dq[4] + _y_ls2[2*3+1]*FSIGN(dq[4]) + _y_ls2[3*3+1]);
-	tau6 = (_y_ls2[1*3+2]*dq[5] + _y_ls2[2*3+2]*FSIGN(dq[5]) + _y_ls2[3*3+2]);
+	tau4 = (_y_ls2[1*3+0]*dq[3] + _y_ls2[2*3+0]*SSSIGN(dq[3],dqm) + _y_ls2[3*3+0]);
+	tau5 = (_y_ls2[1*3+1]*dq[4] + _y_ls2[2*3+1]*SSSIGN(dq[4],dqm) + _y_ls2[3*3+1]);
+	tau6 = (_y_ls2[1*3+2]*dq[5] + _y_ls2[2*3+2]*SSSIGN(dq[5],dqm) + _y_ls2[3*3+2]);
 
 	taut[0] = tau[3] - tau4;
 	taut[1] = tau[4] - tau5;

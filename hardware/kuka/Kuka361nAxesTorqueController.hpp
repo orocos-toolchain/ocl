@@ -65,7 +65,7 @@ namespace OCL
          * configure the component with, default: cpf/Kuka361nAxesTorqueController.cpf
          * 
          */
-        Kuka361nAxesTorqueController(std::string name,std::string propertyfilename="cpf/Kuka361nAxesTorqueController.cpf");
+        Kuka361nAxesTorqueController(std::string name,bool velresolved,std::string propertyfilename="cpf/Kuka361nAxesTorqueController.cpf");
         virtual ~Kuka361nAxesTorqueController();
     
     protected:  
@@ -184,7 +184,7 @@ namespace OCL
          * of the axes.  
          * 
          */
-        std::vector<RTT::ReadDataPort<double>*>   _driveValue;
+        std::vector<RTT::DataPort<double>*>   _driveValue;
 
         /**
          * vector of WriteDataPorts which contain the values of the
@@ -222,10 +222,6 @@ namespace OCL
          */
         RTT::Property<std::vector <double> >     _currentLimits; 
 
-	/**
-         * Selection of control mode (velocity or torque) for each axis
-         */
-        RTT::Property<std::vector <double> >     _mode; 
 
         /**
          * Lower limit for the positions.  Used to fire an event if necessary.
@@ -248,6 +244,16 @@ namespace OCL
          * volt = (setpoint + offset)/scale
          */
         RTT::Property<std::vector <double> >     _velDriveOffset;
+      
+        /**
+         * Correction scale for Torque constant
+         */
+        RTT::Property<std::vector <double> >     _ff_scale;
+      
+        /**
+         * Correction offset for Torque constant
+         */
+        RTT::Property<std::vector <double> >     _ff_offset;
       
         /**
          * True if simulationAxes should be used in stead of hardware axes
@@ -329,6 +335,17 @@ namespace OCL
          * changed properties.
          */
         const std::string _propertyfile;
+
+        /**
+         * If true robot will be velocity controlled
+         */
+        bool _velresolved;
+
+	/**
+         * Selection of control mode (velocity = 0 or torque = 1) for each axis
+         */
+        std::vector<bool>     _TorqueMode;
+
     
         /**
          * Activation state of robot
@@ -374,14 +391,6 @@ namespace OCL
          */
         
         std::vector<double>     _Km;
-	
-         /**
-         * Define which axes are torque controlled
-         * torque control = 1
-         * velocity control = 0
-         */
-        
-        std::vector<double>     _torqueControlled;
 
 
     public:

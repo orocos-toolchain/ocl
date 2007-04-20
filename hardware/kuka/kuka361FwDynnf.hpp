@@ -1,3 +1,6 @@
+#ifndef __kuka361FwDynnf_H__
+#define __kuka361FwDynnf_H__
+
 
 #include <vector>
 #include "math.h"
@@ -5,18 +8,16 @@
 //{
 	using namespace std;
 
-#define FSIGN(a) ( a<-1E-15 ? -1.0 : ( a>1E-15 ? 1.0 : 0.0))
-
 
 	/**
 	*This class can calculate the forward dynamics of the kuka 361
 	*/
-	class kuka361dyn {
+	class kuka361FwDynnf {
 	
 	
 	public:
-		kuka361dyn();
-		~kuka361dyn(){};
+		kuka361FwDynnf();
+		~kuka361FwDynnf(){};
 	
 		/** 
 		* Calculate forward dynamics of kuka 361
@@ -35,7 +36,7 @@
 		vector<double> _ddq;
 
 		//Parameters of the kuka 361 forward dynamic model
-		double D13, g1, r3, l, r;
+		double dqm, D13, g1, r3, l, r;
 		double _y_ls[26];
 		double _y_ls2[12];
 	
@@ -58,3 +59,4 @@
 		double taut[3];
 	};
 //}//namespace Orocos
+#endif
