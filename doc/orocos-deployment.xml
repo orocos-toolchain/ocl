@@ -85,19 +85,22 @@
 	methods of the DeploymentComponent at the console prompt,
 	or by listing them in an Orocos script.
       </para>
-      
-      <figure><title>Orocos Component Deployment</title>
+      <figure><title>Component Deployment Overview</title>
       <mediaobject>
 	<imageobject>
-	  <imagedata fileref="deployment" />
+	  <imagedata fileref="Deployment" />
 	</imageobject>
-	<caption><para>
+	<caption><para>Components are located on your disk using the 'import' statement,
+	loaded using 'loadConfiguration' and configured using 'configureComponents'.
+	These three steps can be described in an XML file format or using the command
+	prompt.
 	</para></caption>
       </mediaobject>
       </figure>
     </section>
-    <section>
-      <title>Configuration format</title>
+  </section>
+  <section>
+      <title>Configuration Procedure</title>
       <para>
 	The configuration format defines the instructions one can use
 	to load and configure Orocos components. One can divide the
@@ -107,6 +110,16 @@
 	  <listitem><para>Which components to create and with which name</para></listitem>
 	  <listitem><para>How each component is setup</para></listitem>
 	</itemizedlist>
+	This work-flow is shown in <xref linkend="fig-deployment-flow" />.
+      <figure id="fig-deployment-flow"><title>Deployment Component API</title>
+      <mediaobject>
+	<imageobject>
+	  <imagedata fileref="DeploymentFlow" />
+	</imageobject>
+	<caption><para>The effects of the Deployment API.
+	</para></caption>
+      </mediaobject>
+      </figure>
       </para>
       <section>
 	<title>Where to look for component libraries</title>
@@ -133,8 +146,7 @@
 	<para>
 	  The script method equivalent is:
 	  <programlisting>
-  do import("/usr/local/lib/orocos");
-	  </programlisting>
+  import("/usr/local/lib/orocos")</programlisting>
 	</para>
 	<para>
 	  Each library found under the given location is pre-loaded. The
@@ -146,16 +158,154 @@
       <section>
 	<title>Which components to create and with which name</title>
 	<para>
-	  
+	  Import makes components available, but does not create an
+	  <emphasis>specific instance</emphasis> yet.  In order to add
+	  a component of a given type to the current application,
+	  use the <function>loadComponent</function> function:
+	</para>
+	<para>
+	  In XML, the loadComponent statement of a reporting
+	  component would look like:
+	  <programlisting><![CDATA[
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "cpf.dtd">
+<properties>
+  <!-- ....  -->
+
+  <struct name="Reporter" type="OCL::FileReporting">
+  </struct>
+
+</properties>]]></programlisting>
+	  This line causes the DeploymentComponent to look up
+	  the OCL::FileReporting type, and if found, creates
+	  a component of that type with the name "Reporter".
+	  This component is added as a peer component to the
+	  DeploymentComponent such that it becomes immediately
+	  available to the application. This step can be
+	  repeated any number of times with any number of types.
+	</para>
+	<para>
+	  The available types can be queried by invoking the
+	  <function>displayComponentTypes</function> (script) method:
+	  <screen>
+ (type 'ls' for context info) :displayComponentTypes()
+      Got :displayComponentTypes()
+ = I can create the following component types:
+   OCL::ConsoleReporting
+   OCL::FileReporting
+(void)</screen>
+	</para>
+	<para>
+	  Alternatively, the type may be a filename if that file
+	  contains only one component, which is exported using
+	  the <function>createComponent</function> function.
+	</para>
+	<para>
+	  The script method equivalent is:
+	  <programlisting>
+  loadComponent("Reporter", "OCL::FileReporting")</programlisting>
 	</para>
       </section>
       <section>
 	<title>How each component is setup</title>
 	<para>
-	  
+	  Now that one or more component instances are created, you
+	  can configure them by connecting components, assigning
+	  threads, configuration values and program scripts. Again,
+	  you can do this using XML or the scripting language.
+	</para>
+	<para>
+	  In XML, one adds additional elements to the component
+	  struct.  Let's extend the Reporting component example with
+	  another component 'Controller':
+	</para><programlisting><![CDATA[
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "cpf.dtd">
+<properties>
+  <!-- ....  -->
+
+  <struct name="Reporter" type="OCL::FileReporting">
+
+    <struct name="Activity" type="PeriodicActivity">
+      <simple name="Period" type="double"><value>0.005</value></simple>
+      <simple name="Priority" type="short"><value>0</value></simple>
+      <simple name="Scheduler" type="string"><value>ORO_SCHED_OTHER</value></simple>
+    </struct>
+
+    <simple name="PropertyFile" type="string"><value>file-reporting.cpf</value></simple>
+
+    <struct name="Peers" type="PropertyBag">
+      <simple type="string"><value>Controller</value></simple>
+    </struct>
+
+  </struct>
+
+  <struct name="Controller" type="ControllerType">
+
+    <struct name="Activity" type="PeriodicActivity">
+      <simple name="Period" type="double"><value>0.001</value></simple>
+      <simple name="Priority" type="short"><value>0</value></simple>
+      <simple name="Scheduler" type="string"><value>ORO_SCHED_RT</value></simple>
+    </struct>
+
+    <simple name="AutoConf" type="boolean"><value>1</value></simple>
+    <simple name="AutoStart" type="boolean"><value>1</value></simple>
+
+    <simple name="PropertyFile" type="string"><value>controller.cpf</value></simple>
+
+    <struct name="Ports" type="PropertyBag">
+      <simple name="SensorValues" type="string"><value>SensorValuesConnection</value></simple>
+      <simple name="MotorValues" type="string"><value>MotorValuesConnection</value></simple>
+    </struct>
+
+    <simple name="ProgramScript" type="string"><value>controller-program.ops</value></simple>
+    <simple name="StateMachineScript" type="string"><value>controller-states.ops</value></simple>
+  </struct>
+
+</properties>]]></programlisting>
+	<para>
+	  The first section of both components sets up the active
+	  behaviour of the component. Both have periodic activities,
+	  which run with a given period, priority and in a
+	  scheduler. The Controller runs in a real-time scheduler, the
+	  Reporter doesn't. The activities are created and attached to
+	  each component during the
+	  <function>configureComponents()</function> step of the
+	  DeploymentComponent.
+	</para>
+	<para>
+	  The next section of the Controller contains the AutoConf and AutoStart
+	  elements. If AutoConf is set to 1, the DeploymentComponent will call
+	  the component's configure() method during <function>configureComponents()</function>,
+	  after the properties are loaded. If AutoStart is set to 1, the component's start() 
+	  method will be called during <function>startComponents()</function>.
+	</para>
+	<para>
+	  The PropertyFile section specifies from which file each component is
+	  configured.  The CPF files contain XML properties as well
+	  which are read during the
+	  <function>configureComponents()</function> step of the
+	  DeploymentComponent.
+	</para>
+	<para>
+	  The last section of the Reporter component lists its
+	  peers. The Reporter has one peer, the Controller, with which
+	  it will be able to communicate and monitor its data
+	  ports. The Controller component does not have any peers, but
+	  it does have two data ports listed (SensorValues and
+	  MotorValues), which are added to a connection object. If
+	  other component's ports in the same file refer to the same
+	  connection object, the ports are connected to each other by
+	  the DeploymentComponent during the
+	  <function>configureComponents()</function> step.
+	</para>
+	<para>
+	  The Controller has at the end two additional elements
+	  describing which script files must be loaded into that
+	  component. Both Orocos program scripts and state machine
+	  scripts can be loaded. This is again done during the
+	  <function>configureComponents()</function> step.
 	</para>
       </section>
-
     </section>
-  </section>
 </article>

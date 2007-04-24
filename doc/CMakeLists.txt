@@ -2,31 +2,46 @@ OPTION(DOC_BUILD_DOCS "Build the documentation" ON)
 
 include(DocBookToHTML.cmake)
 include(DocBookToPDF.cmake)
+include(AnyToPNG.cmake)
 
 IF (DOC_BUILD_DOCS)
   #list the xml files:
-  DOCBOOK_TO_HTML( orocos-html.xsl 
+  SET( XML_SOURCES
+    orocos-deployment.xml orocos-taskbrowser.xml orocos-hardware-components.xml)
+
+  SEPARATE_ARGUMENTS(XML_SOURCES)
+
+  DOCBOOK_TO_HTML( HTML_OUTPUT orocos-html.xsl 
+    CATALOG
+    catalog.xml
+    FILES 
+    ${XML_SOURCES} )
+  MESSAGE( "HTML_OUTPUT: ${HTML_OUTPUT}")
+
+  DOCBOOK_TO_PDF( PDF_OUTPUT orocos-pdf.xsl
     CATALOG
     catalog.xml
     FILES
-    orocos-hardware-components.xml
-    orocos-taskbrowser.xml)
+    ${XML_SOURCES} )
 
-  DOCBOOK_TO_PDF( orocos-pdf.xsl 
-    CATALOG
-    catalog.xml
-    FILES
-    orocos-hardware-components.xml
-    orocos-taskbrowser.xml)
+  FILE( GLOB PNGS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} [^.]*.png )
+  FILE( GLOB DIAS  RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} [^.]*.dia )
+  FILE( GLOB SVGS  RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} [^.]*.svg )
 
-  add_custom_command(OUTPUT taskbrowsing.png
-    COMMAND inkscape -z -D -d 60 -e taskbrowsing.png ${CMAKE_CURRENT_SOURCE_DIR}/taskbrowsing.svg
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/taskbrowsing.svg
-    )
+  ANY_TO_PNG( RESULT_PNGS ${PNGS} ${DIAS} ${SVGS} )
 
-  ADD_CUSTOM_TARGET(dochtml DEPENDS taskbrowsing.png orocos-hardware-components.html orocos-taskbrowser.html)
-  ADD_CUSTOM_TARGET(docpdf DEPENDS taskbrowsing.png orocos-hardware-components.pdf orocos-taskbrowser.pdf)
+  ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/orocos-html.css
+	 COMMAND cp -a ${CMAKE_CURRENT_SOURCE_DIR}/orocos-html.css ${CMAKE_CURRENT_BINARY_DIR}/orocos-html.css
+	 DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/orocos-html.css
+	 )
 
-  ADD_CUSTOM_TARGET(message ALL echo "Use: make dochtml docpdf to build the documentation.")
+
+  ADD_CUSTOM_TARGET(docpng DEPENDS ${RESULT_PNGS})
+  ADD_CUSTOM_TARGET(dochtml DEPENDS ${HTML_OUTPUT} ${CMAKE_CURRENT_BINARY_DIR}/orocos-html.css)
+  ADD_CUSTOM_TARGET(docpdf DEPENDS ${PDF_OUTPUT})
+  ADD_DEPENDENCIES(dochtml docpng)
+  ADD_DEPENDENCIES(docpdf docpng)
+
+  ADD_CUSTOM_TARGET(message ALL echo "Use: 'make docapi dochtml docpdf' to build the documentation.")
 
 ENDIF (DOC_BUILD_DOCS)
