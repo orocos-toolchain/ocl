@@ -64,28 +64,9 @@
 	only the DeploymentComponent and the
 	<classname>OCL::TaskBrowser</classname>. When the application is
 	started, the TaskBrowser prompts for commands which can be given
-	to the DeploymentComponent. One gives then the
-	<function>loadConfiguration("configname.xml")</function> command
-	which contains instructions for the DeploymentComponent where to
-	look for components ('import statements'), which component types
-	to create, which name they must be given and how their internal
-	thread is configured (priorities, periods,...). Furthermore this
-	file describes the network interconnections between all
-	components and how data must be relayed from one component to
-	another. The <function>loadConfiguration()</function> function
-	looks up the components, creates them and stores the
-	configuration parameters. One can apply the configuration
-	(threads, properties, data connections,...) by calling
-	<function>configureComponents()</function>. After this step,
-	the components (and the application as a whole) can be started.
+	to the DeploymentComponent.
       </para>
-      <para>
-	The configuration does not need to be stored in XML format.
-	One can apply the same configuration by using the scripting
-	methods of the DeploymentComponent at the console prompt,
-	or by listing them in an Orocos script.
-      </para>
-      <figure><title>Component Deployment Overview</title>
+      <figure id="fig-deployment-overview"><title>Component Deployment Overview</title>
       <mediaobject>
 	<imageobject>
 	  <imagedata fileref="Deployment" />
@@ -97,10 +78,43 @@
 	</para></caption>
       </mediaobject>
       </figure>
+      <para> 
+	<xref linkend="fig-deployment-overview" /> shows the basic
+	steps.  An XML file contains instructions for the
+	DeploymentComponent where to look for components ('import
+	statements'), which component types to create, which name they
+	must be given and how their internal thread is configured
+	(priorities, periods,...). Furthermore this file describes the
+	network interconnections between all components and how data
+	must be relayed from one component to another. The
+	<function>loadConfiguration("file.xml")</function> method
+	reads this file, looks up the components, creates them and
+	stores the configuration parameters. One can apply the
+	configuration (threads, properties, data connections,...) by
+	calling <function>configureComponents()</function>. After this
+	step, the components (and the application as a whole) can be
+	started.
+      </para>
+      <para>
+	The configuration does not need to be stored in XML format.
+	One can apply the same configuration by using the scripting
+	methods of the DeploymentComponent at the console prompt,
+	or by listing them in an Orocos script.
+      </para>
     </section>
   </section>
   <section>
       <title>Configuration Procedure</title>
+      <figure id="fig-deployment-flow"><title>Deployment Procedure</title>
+      <mediaobject>
+	<imageobject>
+	  <imagedata fileref="DeploymentFlow" />
+	</imageobject>
+	<caption><para>The Deployment component API consists of import, 
+	loadConfiguration, configureComponents and startComponents.
+	</para></caption>
+      </mediaobject>
+      </figure>
       <para>
 	The configuration format defines the instructions one can use
 	to load and configure Orocos components. One can divide the
@@ -110,31 +124,41 @@
 	  <listitem><para>Which components to create and with which name</para></listitem>
 	  <listitem><para>How each component is setup</para></listitem>
 	</itemizedlist>
-	This work-flow is shown in <xref linkend="fig-deployment-flow" />.
-      <figure id="fig-deployment-flow"><title>Deployment Component API</title>
+      </para>
+      <para>
+	Let's demonstrate this principle with a simple application
+	example as shown in <xref linkend="fig-deployment-example"
+	/>. We want to setup an application with three components: a
+	Reporting component, a 'Controller' and a 'Plant'. The Plant
+	component provides access to the hardware, the Controller
+	component contains the control algorithm. The Reporting
+	component is here to sense the values exchanged and write
+	them to a file.
+      </para>
+      <figure id="fig-deployment-example"><title>Deployment Example Application</title>
       <mediaobject>
 	<imageobject>
-	  <imagedata fileref="DeploymentFlow" />
+	  <imagedata fileref="deployment-example" />
 	</imageobject>
-	<caption><para>The effects of the Deployment API.
+	<caption><para>A Reporter component monitors communication
+	between Plant and Controller. The Deployment component itself
+	is not shown.
 	</para></caption>
       </mediaobject>
       </figure>
-      </para>
       <section>
 	<title>Where to look for component libraries</title>
 	<para>
 	  The <function>import</function> statement causes all
 	  component libraries in a given directory to be pre-loaded.
 	  It does not cause any component to be created, but
-	  allows the DeploymentComponent to know where the 
+	  allows the <classname>OCL::DeploymentComponent</classname> to know where the 
 	  component libraries are located. This function works recursively
 	  and may be called for multiple paths.
 	</para>
 	<para>
 	  In XML, the import statement looks like:
-	  <programlisting><![CDATA[
-<?xml version="1.0" encoding="UTF-8"?>
+	  <programlisting><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE properties SYSTEM "cpf.dtd">
 <properties>
   <!-- ....  -->
@@ -145,14 +169,25 @@
 	</para>
 	<para>
 	  The script method equivalent is:
-	  <programlisting>
-  import("/usr/local/lib/orocos")</programlisting>
+	  <programlisting>  import("/usr/local/lib/orocos")</programlisting>
 	</para>
 	<para>
 	  Each library found under the given location is pre-loaded. The
-	  import statement thus allows you to load non-Orocos libraries as
+	  import statement allows you to load non-Orocos libraries as
 	  well. If a library contains one or more Orocos components, 
 	  the contained component types become available in the next step.
+	</para>
+	<para>
+	  To see the effects of the import function, the available
+	  types can be queried by invoking the
+	  <function>displayComponentTypes</function> (script) method:
+	  <screen>
+ (type 'ls' for context info) :displayComponentTypes()
+      Got :displayComponentTypes()
+ = I can create the following component types:
+   OCL::ConsoleReporting
+   OCL::FileReporting
+(void)</screen>
 	</para>
       </section>
       <section>
@@ -166,8 +201,7 @@
 	<para>
 	  In XML, the loadComponent statement of a reporting
 	  component would look like:
-	  <programlisting><![CDATA[
-<?xml version="1.0" encoding="UTF-8"?>
+	  <programlisting><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE properties SYSTEM "cpf.dtd">
 <properties>
   <!-- ....  -->
@@ -185,25 +219,13 @@
 	  repeated any number of times with any number of types.
 	</para>
 	<para>
-	  The available types can be queried by invoking the
-	  <function>displayComponentTypes</function> (script) method:
-	  <screen>
- (type 'ls' for context info) :displayComponentTypes()
-      Got :displayComponentTypes()
- = I can create the following component types:
-   OCL::ConsoleReporting
-   OCL::FileReporting
-(void)</screen>
-	</para>
-	<para>
 	  Alternatively, the type may be a filename if that file
 	  contains only one component, which is exported using
 	  the <function>createComponent</function> function.
 	</para>
 	<para>
 	  The script method equivalent is:
-	  <programlisting>
-  loadComponent("Reporter", "OCL::FileReporting")</programlisting>
+	  <programlisting>  loadComponent("Reporter", "OCL::FileReporting")</programlisting>
 	</para>
       </section>
       <section>
@@ -216,13 +238,11 @@
 	</para>
 	<para>
 	  In XML, one adds additional elements to the component
-	  struct.  Let's extend the Reporting component example with
-	  another component 'Controller':
-	</para><programlisting><![CDATA[
-<?xml version="1.0" encoding="UTF-8"?>
+	  struct.
+	</para>
+	  <programlisting><![CDATA[<?xml version="1.0" encoding="UTF-8"?> 
 <!DOCTYPE properties SYSTEM "cpf.dtd">
 <properties>
-  <!-- ....  -->
 
   <struct name="Reporter" type="OCL::FileReporting">
 
@@ -237,14 +257,13 @@
     <struct name="Peers" type="PropertyBag">
       <simple type="string"><value>Controller</value></simple>
     </struct>
-
   </struct>
 
   <struct name="Controller" type="ControllerType">
 
     <struct name="Activity" type="PeriodicActivity">
       <simple name="Period" type="double"><value>0.001</value></simple>
-      <simple name="Priority" type="short"><value>0</value></simple>
+      <simple name="Priority" type="short"><value>99</value></simple>
       <simple name="Scheduler" type="string"><value>ORO_SCHED_RT</value></simple>
     </struct>
 
@@ -255,19 +274,34 @@
 
     <struct name="Ports" type="PropertyBag">
       <simple name="SensorValues" type="string"><value>SensorValuesConnection</value></simple>
-      <simple name="MotorValues" type="string"><value>MotorValuesConnection</value></simple>
+      <simple name="SteeringSignals" type="string"><value>DriveConnection</value></simple>
+    </struct>
+
+    <struct name="Peers" type="PropertyBag">
+      <simple type="string"><value>Plant</value></simple>
     </struct>
 
     <simple name="ProgramScript" type="string"><value>controller-program.ops</value></simple>
     <simple name="StateMachineScript" type="string"><value>controller-states.ops</value></simple>
   </struct>
 
+  <struct name="Plant" type="PlantType">
+    <struct name="Activity" type="NonPeriodicActivity">
+      <simple name="Priority" type="short"><value>0</value></simple>
+      <simple name="Scheduler" type="string"><value>ORO_SCHED_RT</value></simple>
+    </struct>
+    <simple name="AutoStart" type="boolean"><value>1</value></simple>
+    <struct name="Ports" type="PropertyBag">
+      <simple name="Position" type="string"><value>SensorValuesConnection</value></simple>
+      <simple name="Velocity" type="string"><value>DriveConnection</value></simple>
+    </struct>
+  </struct>
 </properties>]]></programlisting>
 	<para>
-	  The first section of both components sets up the active
+	  The first section of all three components sets up the active
 	  behaviour of the component. Both have periodic activities,
 	  which run with a given period, priority and in a
-	  scheduler. The Controller runs in a real-time scheduler, the
+	  scheduler. The Controller and Plant run in a real-time scheduler, the
 	  Reporter doesn't. The activities are created and attached to
 	  each component during the
 	  <function>configureComponents()</function> step of the
@@ -291,13 +325,19 @@
 	  The last section of the Reporter component lists its
 	  peers. The Reporter has one peer, the Controller, with which
 	  it will be able to communicate and monitor its data
-	  ports. The Controller component does not have any peers, but
-	  it does have two data ports listed (SensorValues and
-	  MotorValues), which are added to a connection object. If
-	  other component's ports in the same file refer to the same
-	  connection object, the ports are connected to each other by
-	  the DeploymentComponent during the
+	  ports. The Controller component has the Plant as peer, which
+	  means it can control it. It has two data ports listed as
+	  well (SensorValues and SteeringSignals), which are added to
+	  two connection objects.  These connections show up in the
+	  Plant component's Ports section as well. And it shows that
+	  the SensorValues Port is connected to the Position Port and
+	  the SteeringSignals Port is connected to the Velocity
+	  Port. If other component's ports in the same file refer to
+	  the same connection object, the ports are connected to each
+	  other by the DeploymentComponent during the
 	  <function>configureComponents()</function> step.
+	  The Component Builder's Manual goes into detail about
+	  the possible connection mechanisms.
 	</para>
 	<para>
 	  The Controller has at the end two additional elements
