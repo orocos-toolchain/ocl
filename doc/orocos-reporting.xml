@@ -1,0 +1,211 @@
+<?xml version='1.0'?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
+"http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd"
+[
+<!ENTITY orocos      "<acronym>Orocos</acronym>">
+]
+>
+
+<article>
+  <articleinfo>
+    <title>The Reporting Component</title>
+    <authorgroup>
+      <author>
+	<firstname>Peter</firstname>
+	<surname>Soetens</surname>
+	<affiliation>
+	  <orgname>FMTC</orgname>
+	  <address><country>Belgium</country></address>
+	</affiliation>
+      </author>
+    </authorgroup>
+    <copyright>
+      <year>2007</year>
+      <holder>Peter Soetens, FMTC</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>
+	Permission is granted to copy, distribute and/or modify this document
+	under the terms of the GNU Free Documentation License, Version 1.1 or
+	any later version published by the Free Software Foundation, with no
+	Invariant Sections, with no Front-Cover Texts, and with no Back-Cover
+	Texts. A copy of this license can be found at
+	<ulink
+	  url="http://www.fsf.org/copyleft/fdl.html">http://www.fsf.org/copyleft/fdl.html</ulink>.
+      </para>
+    </legalnotice>
+
+  </articleinfo>
+  
+  <section>
+    <title>Introduction</title>
+    <para>
+      This document describes the Orocos
+      <classname>OCL::ReportingComponent</classname> for monitoring
+      and capturing data exchanged between Orocos components.
+    </para>
+    <section>
+      <title>Principle</title>
+      <para>
+	Each Orocos component can have one or more data ports. One
+	can configure the reporting components such that one or more
+	ports are captured of one or more peer components. The sample
+	rate and the file format can be selected.
+      </para>
+      <para>
+	A common usage scenario of the
+	<classname>OCL::ReportingComponent</classname> goes
+	as follows. An Orocos application is created which contains a
+	reporting component and various other components. The
+	reporting component is peer-connected to all components which
+	must be monitored. An XML file or script command defines which
+	data ports to log.  When the reporting component is started,
+	it reads the ports and writes the exchanged data to a file at
+	a given sample rate.
+      </para>
+      <figure id="fig-reporting-example"><title>Component Reporting Example</title>
+      <mediaobject>
+	<imageobject>
+	  <imagedata fileref="reporting-example" />
+	</imageobject>
+	<caption><para>
+	</para></caption>
+      </mediaobject>
+      </figure>
+      <para>
+	One can not use the <classname>OCL::ReportingComponent</classname> 
+	directly but must use a derived component which implements
+	the method of writing out the data. There exists two variants:
+	<classname>OCL::FileReporting</classname> for writing data to a
+	file and <classname>OCL::ConsoleReporting</classname> which prints
+	the data directly to the screen. These two examples can aid you
+	in writing your own data format or to transfer data over a
+	network connection.
+      </para>
+    </section>
+  </section>
+  <section>
+    <title>Setup Procedure</title>
+    <para>
+      The <classname>OCL::ReportingComponent</classname> is configured using
+      two XML files:
+      <itemizedlist>
+	<listitem><para>One for setting the component's properties</para></listitem>
+	<listitem><para>One for describing which components and ports to monitor</para></listitem>
+      </itemizedlist>
+    </para>
+    <section>
+      <title>Property Configuration File</title>
+      <para>
+	This is an example configuration file:
+      </para>
+      <programlisting><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "cpf.dtd">
+<properties>
+
+  <simple name="AutoTrigger" type="boolean"><description>When set to 1, the data is taken upon each update(), otherwise, the data is only taken when the user invokes 'snapshot()'.</description><value>1</value></simple>
+
+  <simple name="Configuration" type="string"><description>The name of the property file which lists what is to be reported.</description><value>cpf/reporter.cpf</value></simple>
+
+  <simple name="WriteHeader" type="boolean"><description>Set to true to start each report with a header.</description><value>1</value></simple>
+
+</properties>]]></programlisting>
+       <para>
+	 The <option>AutoTrigger</option> property toggles if the data is captured
+	 at the time a new line is written to file or at a user determined time.
+	 If <option>AutoTrigger</option> is set to false, a data snapshot is taken
+	 when the user invokes the <function>snapshot()</function> method of the
+	 ReportingComponent.
+       </para>
+       <para>
+	 The <option>Configuration</option> property contains the location of the
+	 configuration XML file for reporting data ports.
+       </para>
+       <para>
+	 If <option>WriteHeader</option> is set to true, a header will be written
+	 describing the file format layout.
+       </para>
+    </section>
+    <section>
+      <title>Reporting Configuration File</title>
+      <para>
+	This is an example configuration file for reporting data of peer components:
+      </para>
+      <programlisting><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "cpf.dtd">
+<properties>
+  <simple name="Component" type="string"><value>Camera</value></simple>
+
+  <simple name="Port" type="string"><value>Controller.SensorValues</value></simple>
+  <simple name="Port" type="string"><value>Controller.SteeringSignals</value></simple>
+</properties>]]></programlisting>
+      <para>
+	As the example shows (see also <xref linkend="fig-reporting-example"/>),
+	a complete component can be monitored (Camera) or specific ports of
+	a peer component can be monitored. The reporting component can monitor
+	any data type as long as it is known in the Orocos type system. Extending
+	the type system is explained in the manuals of the Real-Time Toolkit.
+      </para>
+    </section>
+    <section>
+      <title>Reading the configuration files</title>
+      <para>
+	The property file of the reporting component can be read with the
+	script method:
+	<screen>  marshalling.readProperties("reporting.cpf")</screen>
+	This file tells the reporter where it can find the configuration file
+	and sets the options shown above.
+      </para>
+      <para>
+	The reporting configuration file can be read with the
+	script method:
+	<screen>  load()</screen>
+      </para>
+      <para>
+	The load method will look up the <option>Configuration</option> property
+	and load the contents of that file. There is also a <screen>  store()</screen>
+	method for writing the current configuration to that file.
+      </para>
+    </section>
+    <section>
+      <title>Scripting commands</title>
+      <para>
+	The scripting commands of the reporting components can be listed 
+	using the <command>this</command> command on the TaskBrowser. Below is
+	a snippet of the output:
+      </para>
+      <screen>  Method     : bool load( )
+   Read the Configuration file.
+  Method     : bool reportComponent( string const&amp; Component )
+   Add a Component for reporting. Only works if Component is connected.
+   Component : Name of the Component
+  Method     : bool reportData( string const&amp; Component, string const&amp; DataObject )
+   Add a Component's DataSource for reporting. Only works if DataObject exists and Component is connected.
+   Component : Name of the Component
+   DataObject : Name of the DataObject. For example, a property or attribute.
+  Method     : bool reportPort( string const&amp; Component, string const&amp; Port )
+   Add a Component's Connection or Port for reporting.
+   Component : Name of the Component
+   Port : Name of the Port to the connection.
+  Method     : bool screenComponent( string const&amp; Component )
+   Display the variables and ports of a Component.
+   Component : Name of the Component
+  Method     : void snapshot( )
+   Take a new shapshot of the data and set the timestamp.
+  Method     : bool store( )
+   Write the Configuration file.
+  Method     : bool unreportComponent( string const&amp; Component )
+   Remove a Component from reporting.
+   Component : Name of the Component
+  Method     : bool unreportData( string const&amp; Component, string const&amp; DataObject )
+   Remove a DataObject from reporting.
+   Component : Name of the Component
+   DataObject : Name of the DataObject.
+  Method     : bool unreportPort( string const&amp; Component, string const&amp; Port )
+   Remove a Connection for reporting.
+   Component : Name of the Component
+   Port : Name of the Port to the connection.</screen>
+    </section>
+  </section>
+</article>

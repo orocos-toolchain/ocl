@@ -7,7 +7,7 @@ include(AnyToPNG.cmake)
 IF (DOC_BUILD_DOCS)
   #list the xml files:
   SET( XML_SOURCES
-    orocos-deployment.xml orocos-taskbrowser.xml orocos-hardware-components.xml)
+    orocos-deployment.xml orocos-reporting.xml orocos-taskbrowser.xml orocos-hardware-components.xml)
 
   SEPARATE_ARGUMENTS(XML_SOURCES)
 
