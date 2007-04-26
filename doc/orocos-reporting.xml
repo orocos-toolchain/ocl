@@ -95,10 +95,26 @@
 	<listitem><para>One for describing which components and ports to monitor</para></listitem>
       </itemizedlist>
     </para>
+    <para>
+      In order to report data of other components, they must be added as a Peer
+      to the reporting component. The following C++ setup code does this for the
+      example above (<xref linkend="fig-reporting-example"/>):
+      <programlisting>  #include &lt;ocl/FileReporting.hpp>
+
+  // ...
+  OCL::FileReporting reporter("Reporter");
+  Controller controller("Controller");
+  Plant      plant("Plant");
+  Camera     cam0("Camera");
+
+  reporter.addPeer( &amp;controller );
+  reporter.addPeer( &amp;camera );
+  controller.addPeer( &amp;plant );</programlisting>
+    </para>
     <section>
       <title>Property Configuration File</title>
       <para>
-	This is an example configuration file:
+	This is an example property file:
       </para>
       <programlisting><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE properties SYSTEM "cpf.dtd">
@@ -106,7 +122,7 @@
 
   <simple name="AutoTrigger" type="boolean"><description>When set to 1, the data is taken upon each update(), otherwise, the data is only taken when the user invokes 'snapshot()'.</description><value>1</value></simple>
 
-  <simple name="Configuration" type="string"><description>The name of the property file which lists what is to be reported.</description><value>cpf/reporter.cpf</value></simple>
+  <simple name="Configuration" type="string"><description>The name of the property file which lists what is to be reported.</description><value>configuration.cpf</value></simple>
 
   <simple name="WriteHeader" type="boolean"><description>Set to true to start each report with a header.</description><value>1</value></simple>
 
@@ -130,7 +146,8 @@
     <section>
       <title>Reporting Configuration File</title>
       <para>
-	This is an example configuration file for reporting data of peer components:
+	This is an example <filename>configuration.cpf</filename> file
+	for reporting data of peer components:
       </para>
       <programlisting><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE properties SYSTEM "cpf.dtd">
