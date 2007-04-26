@@ -43,7 +43,8 @@ namespace OCL
          */
         struct ComponentData {
             ComponentData() 
-                : instance(0), act(0), loaded(false)
+                : instance(0), act(0), loaded(false),
+                  autostart(false), autoconf(false)
             {}
             /**
              * The component instance.
@@ -57,6 +58,7 @@ namespace OCL
              * If it was loaded by DeploymentComponent.
              */
             bool loaded;
+            bool autostart, autoconf;
         };
 
         /**
@@ -280,6 +282,13 @@ namespace OCL
          * @return true if all components could be succesfully configured.
          */
         bool configureComponents();
+
+        /**
+         * Start all components in the current configuration which have AutoStart
+         * set to true.
+         * @return true if all components could be succesfully started.
+         */
+        bool startComponents();
 
         /** 
          * Clear all loaded configuration options.

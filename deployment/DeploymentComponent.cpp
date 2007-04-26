@@ -67,6 +67,8 @@ namespace OCL
                                     "File", "The file which contains the new configuration.");
         this->methods()->addMethod( RTT::method("configureComponents", &DeploymentComponent::configureComponents, this),
                                     "Apply a loaded configuration.");
+        this->methods()->addMethod( RTT::method("startComponents", &DeploymentComponent::startComponents, this),
+                                    "Start the components configured for AutoStart.");
         // Work around compiler ambiguity:
         typedef bool(DeploymentComponent::*DCFun)(const std::string&, const std::string&);
         DCFun cp = &DeploymentComponent::connectPeers;
@@ -394,13 +396,19 @@ namespace OCL
 
                         // Setup the connections from this
                         // component to the others.
-                        for (PropertyBag::const_iterator it= comp.rvalue().begin(); it != comp.rvalue().end();it++) {
-                            if ( (*it)->getName() == "Peer" ) {
-                                Property<std::string> nm = *it;
-                                if ( !nm.ready() ) {
-                                    log(Error)<<"Property 'Peer' does not have type 'string'."<<endlog();
-                                    valid = false;
-                                    continue;
+                        if ( comp.value().find("Peers") != 0) {
+                            Property<PropertyBag> nm = comp.value().getProperty<PropertyBag>("Peers");
+                            if ( !nm.ready() ) {
+                                log(Error)<<"Property 'Peers' must be a 'struct'."<<endlog();
+                                valid = false;
+                            } else {
+                                for (PropertyBag::const_iterator it= nm.rvalue().begin(); it != nm.rvalue().end();it++) {
+                                    Property<std::string> pr = *it;
+                                    if ( !pr.ready() ) {
+                                        log(Error)<<"Property 'Peer' does not have type 'string'."<<endlog();
+                                        valid = false;
+                                        continue;
+                                    }
                                 }
                             }
                         }
@@ -478,23 +486,41 @@ namespace OCL
                             this->setActivity(comp.getName(), "SlaveActivity", 0.0, 0, 0 );
                         }
 
-                        // State machines and program scripts.
-                        for (PropertyBag::const_iterator it= comp.rvalue().begin(); it != comp.rvalue().end();it++) {
-                            if ( (*it)->getName() == "ProgramScript" ) {
+                        // Other options:
+                        for (PropertyBag::const_iterator optit= comp.rvalue().begin(); optit != comp.rvalue().end();optit++) {
+                            if ( (*optit)->getName() == "AutoStart" ) {
+                                Property<bool> ps = comp.rvalue().getProperty<bool>("AutoStart");
+                                if (!ps.ready()) {
+                                    log(Error) << "AutoStart must be of type <boolean>" << endlog();
+                                    valid = false;
+                                } else
+                                    comps[comp.getName()].autostart = ps.get();
+                                continue;
+                            }
+                            if ( (*optit)->getName() == "AutoConf" ) {
+                                Property<bool> ps = comp.rvalue().getProperty<bool>("AutoConf");
+                                if (!ps.ready()) {
+                                    log(Error) << "AutoConf must be of type <boolean>" << endlog();
+                                    valid = false;
+                                } else
+                                    comps[comp.getName()].autoconf = ps.get();
+                                continue;
+                            }
+                            if ( (*optit)->getName() == "ProgramScript" ) {
                                 PropertyBase* ps = comp.rvalue().getProperty<string>("ProgramScript");
                                 if (!ps) {
                                     log(Error) << "ProgramScript must be of type <string>" << endlog();
                                     valid = false;
-                                    continue;
                                 }
+                                continue;
                             }
-                            if ( (*it)->getName() == "StateMachineScript" ) {
+                            if ( (*optit)->getName() == "StateMachineScript" ) {
                                 PropertyBase* ps = comp.rvalue().getProperty<string>("StateMachineScript");
                                 if (!ps) {
                                     log(Error) << "StateMachineScript must be of type <string>" << endlog();
                                     valid = false;
-                                    continue;
                                 }
+                                continue;
                             }
                         }
 
@@ -539,9 +565,8 @@ namespace OCL
 
         bool valid = true;
 
-        // Load all property files into the components.
+        // Connect peers
         for (PropertyBag::iterator it= root.begin(); it!=root.end();it++) {
-
             if ( (*it)->getName() == "Import" ) {
                 continue;
             }
@@ -556,44 +581,23 @@ namespace OCL
             }
 
             comps[comp.getName()].instance = peer;
-                
-            // set PropFile name if present
-            std::string filename;
-            if ( comp.get().getProperty<std::string>("PropertyFile") ){
-                filename = comp.get().getProperty<std::string>("PropertyFile")->get();
-            }
-            if ( !filename.empty() ) {
-                PropertyLoader pl;
-                bool ret = pl.configure( filename, peer, true ); // strict:true 
-                if (!ret) {
-                    log(Error) << "Failed to configure properties for component "<< comp.getName() <<endlog();
-                    valid = false;
-                } else {
-                    log(Info) << "Configured Properties of "<< comp.getName() <<endlog();
+
+            // Setup the connections from each component to the
+            // others.
+            Property<PropertyBag> peers = comp.rvalue().getProperty<PropertyBag>("Peers");
+            if ( peers.ready() )
+                for (PropertyBag::const_iterator it= peers.rvalue().begin(); it != peers.rvalue().end();it++) {
+                    Property<string> nm = (*it);
+                    if ( nm.ready() )
+                        this->addPeer( comp.getName(), nm.value() );
+                    else {
+                        log(Error) << "Wrong property type in Peers struct. Expected property of type 'string',"
+                                   << " got type "<< (*it)->getType() <<endlog();
+                        valid = false;
+                    }
                 }
-            }
-
-            Property<string> script;
-            if (comp.get().getProperty<std::string>("ProgramScript") )
-                script = comp.get().getProperty<std::string>("ProgramScript"); // work around RTT 1.0.2 bug
-            if ( script.ready() ) {
-                valid = valid && peer->scripting()->loadPrograms( script.get(), false );
-            }
-            if (comp.get().getProperty<std::string>("StateMachineScript") )
-                script = comp.get().getProperty<std::string>("StateMachineScript");
-            if ( script.ready() ) {
-                valid = valid && peer->scripting()->loadStateMachines( script.get(), false );
-            }
-
-            // Attach activities
-            if ( comps[comp.getName()].act ) {
-                log(Info) << "Setting activity of "<< comp.getName() <<endlog();
-                comps[comp.getName()].act->run( peer->engine() );
-		assert( peer->engine()->getActivity() == comps[comp.getName()].act );
-		
-            }
         }
-
+            
         // Create data port connections:
         for(ConMap::iterator it = conmap.begin(); it != conmap.end(); ++it) {
             if ( it->second.ports.size() < 2 ){
@@ -663,23 +667,80 @@ namespace OCL
             delete reader;
         }
 
-        // Setup the connections from each component to the
-        // others.
-
-        PropertyBag::Names nams = root.list();
-        for (PropertyBag::Names::iterator nit= nams.begin(); nit!=nams.end();nit++) {
-            if ( *nit == "Import" )
+        // Main configuration
+        for (PropertyBag::iterator it= root.begin(); it!=root.end();it++) {
+            if ( (*it)->getName() == "Import" ) {
                 continue;
-            Property<PropertyBag> comp = root.getProperty<PropertyBag>(*nit);
-            for (PropertyBag::const_iterator it= comp.rvalue().begin(); it != comp.rvalue().end();it++) {
-                if((*it)->getName() == "Peer"){
-                    Property<std::string> nm = *it;
-                    this->addPeer( comp.getName(), nm.value() );
+            }
+            
+            Property<PropertyBag> comp = *it;
+
+            TaskContext* peer = this->getPeer( comp.getName() );
+
+            // set PropFile name if present
+            std::string filename;
+            if ( comp.get().getProperty<std::string>("PropertyFile") ){
+                filename = comp.get().getProperty<std::string>("PropertyFile")->get();
+            }
+            if ( !filename.empty() ) {
+                PropertyLoader pl;
+                bool ret = pl.configure( filename, peer, true ); // strict:true 
+                if (!ret) {
+                    log(Error) << "Failed to configure properties for component "<< comp.getName() <<endlog();
+                    valid = false;
+                } else {
+                    log(Info) << "Configured Properties of "<< comp.getName() <<endlog();
                 }
             }
+
+            // Attach activities
+            if ( comps[comp.getName()].act ) {
+                log(Info) << "Setting activity of "<< comp.getName() <<endlog();
+                comps[comp.getName()].act->run( peer->engine() );
+                assert( peer->engine()->getActivity() == comps[comp.getName()].act );
+            }
+
+            // Load programs
+            Property<string> script;
+            if (comp.get().getProperty<std::string>("ProgramScript") )
+                script = comp.get().getProperty<std::string>("ProgramScript"); // work around RTT 1.0.2 bug
+            if ( script.ready() ) {
+                valid = valid && peer->scripting()->loadPrograms( script.get(), false );
+            }
+            if (comp.get().getProperty<std::string>("StateMachineScript") )
+                script = comp.get().getProperty<std::string>("StateMachineScript");
+            if ( script.ready() ) {
+                valid = valid && peer->scripting()->loadStateMachines( script.get(), false );
+            }
+
+            // AutoConf
+            if (comps[comp.getName()].autoconf )
+                if ( peer->configure() == false) 
+                    valid = false;
         }
-            
+
         validConfig.set(valid);
+        return valid;
+    }
+
+    bool DeploymentComponent::startComponents()
+    {
+        Logger::In in("DeploymentComponent::startComponents");
+        if (validConfig.get() == false) {
+            log(Error) << "Not starting components with invalid configuration." <<endlog();
+            return false;
+        }
+        bool valid = true;
+        for (PropertyBag::iterator it= root.begin(); it!=root.end();it++) {
+            if ( (*it)->getName() == "Import" )
+                continue;
+            
+            TaskContext* peer = this->getPeer( (*it)->getName() );
+            // AutoStart
+            if (comps[(*it)->getName()].autostart )
+                if ( peer->start() == false) 
+                    valid = false;
+        }
         return valid;
     }
 

@@ -2,6 +2,11 @@ OPTION( BUILD_DEPLOYMENT "Build Deployment Component" ON )
 
 IF ( BUILD_DEPLOYMENT )
 
+  # Better inform user instead of hiding the option.
+  IF(NOT OROCOS_RTT_1.2 )
+    MESSAGE(FATAL_ERROR "Deployment Component requires Orocos RTT 1.1.0 or newer." )
+  ENDIF(NOT OROCOS_RTT_1.2 )
+
     # This gathers all the .cpp files into the variable 'SRCS'
     FILE( GLOB HPPS [^.]*.hpp )
     FILE( GLOB SRCS [^.]*.cpp )
