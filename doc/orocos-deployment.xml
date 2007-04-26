@@ -432,16 +432,14 @@
 	  The compilation flag of a component for a shared library
 	  might look like:
 	</para>
-	<programlisting>  CFLAGS=-O2 -Wall -fPIC -DOCL_DLL_EXPORT
-  LDFLAGS=-fPIC
-	</programlisting>
+	<programlisting>  CFLAGS= -O2 -Wall -fPIC -DOCL_DLL_EXPORT
+  LDFLAGS= -fPIC</programlisting>
 	<para>
 	  The compilation flag of a component for a static library
 	  lacks both options :
 	</para>
-	<programlisting>  CFLAGS=-O2 -Wall
-  LDFLAGS=
-	</programlisting>
+	<programlisting>  CFLAGS= -O2 -Wall
+  LDFLAGS=</programlisting>
       </section>
     </section>
 </article>
