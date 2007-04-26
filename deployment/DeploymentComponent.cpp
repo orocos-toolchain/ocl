@@ -7,7 +7,7 @@
 
 #include <cstdio>
 #include <dlfcn.h>
-#include "ComponentLoader.hpp"
+#include "ocl/ComponentLoader.hpp"
 #include <rtt/PropertyLoader.hpp>
 
 #include <dirent.h>

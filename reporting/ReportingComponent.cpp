@@ -34,7 +34,7 @@
 #include <rtt/marsh/CPFMarshaller.hpp>
 #include <fstream>
 
-#include "deployment/ComponentLoader.hpp"
+#include "ocl/ComponentLoader.hpp"
 
 ORO_CREATE_COMPONENT_TYPE()
 
