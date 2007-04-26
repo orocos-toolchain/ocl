@@ -41,20 +41,19 @@
   <section>
     <title>Introduction</title>
     <para>
-      This document describes the
-      <classname>OCL::DeploymentComponent</classname> Orocos component
-      for loading and configuring other components. It uses this
-      by reading an Orocos script or an XML file. This component
-      can only load components into the same process.
+      This document describes the Orocos
+      <classname>OCL::DeploymentComponent</classname> for loading and
+      configuring other components using an Orocos script or XML
+      file. This component can only load components into the same
+      process.
     </para>
     <section>
       <title>Principle</title>
       <para>
-	Each Orocos component can be compiled as a shared (or: dynamic)
-	library. In addition, the component can define a special
-	function which will allow the deployment component to create new
-	instances of this component type. In practice, the special
-	function is predefined by a C macro. This principle is analogous
+	Each Orocos component can be compiled as a shared, dynamic loadable
+	library. Each such library can define a special
+	function which will allow the DeploymentComponent to create new
+	instances of a component type. This principle is analogous
 	to the plugin mechanism found in web browsers or other desktop
 	applications.
       </para>
@@ -346,6 +345,103 @@
 	  scripts can be loaded. This is again done during the
 	  <function>configureComponents()</function> step.
 	</para>
+      </section>
+    </section>
+    <section>
+      <title>Setting up a deployable component library</title>
+      <para>
+	This section explains how to prepare a component library
+	for deployment. It is demonstrated with an example.
+      </para>
+      <section>
+	<title>Additional Code</title>
+	<para>
+	  There exist three C macros for preparing a component
+	  library.  The simplest way is when the resulting library
+	  will contain only one component type. Assume we have written
+	  the <classname>OCL::HelloWorld</classname> component ( in
+	  the OCL C++ namespace) which is compiled in the
+	  <filename>orocos-helloworld.so</filename> library. The
+	  following code is added to HelloWorld.cpp:
+	</para>
+	<programlisting>  #include "HelloWorld.hpp"
+  #include &lt;ocl/ComponentLoader.hpp&gt;
+
+  /* ... Hello World implementation file ... */
+
+  // You <emphasis>must</emphasis> specify the namespace:
+  ORO_CREATE_COMPONENT( OCL::HelloWorld )</programlisting>
+         <para>
+	   This macro inserts a function into the library which will
+	   allow the DeploymentComponent to create OCL::HelloWorld components.
+	 </para>
+	 <para>
+	   In case multiple components are defined in the same
+	   library, two other macros must be used. One macro for each
+	   component type and one macro once for the whole
+	   library. Say your library has components
+	   NS::<classname>ComponentX</classname> and
+	   NS::<classname>ComponentZ</classname> in namespace NS. In
+	   order to export both components, you could write in
+	   <filename>ComponentX.cpp</filename>:
+	 </para>
+	<programlisting>  #include "ComponentX.hpp"
+  #include &lt;ocl/ComponentLoader.hpp&gt;
+
+  /* ... ComponentX implementation file ... */
+  // <emphasis>once</emphasis>:
+  ORO_CREATE_COMPONENT_TYPE
+  // <emphasis>For the ComponentX type</emphasis>:
+  ORO_LIST_COMPONENT_TYPE( NS::ComponentX )</programlisting>
+         <para>
+	   and in <filename>ComponentY.cpp</filename> the same but without the
+	   ORO_CREATE_COMPONENT_TYPE macro:
+	 </para>
+	<programlisting>  #include "ComponentY.hpp"
+  #include &lt;ocl/ComponentLoader.hpp&gt;
+
+  /* ... ComponentY implementation file ... */
+
+  // <emphasis>For the ComponentY type</emphasis>:
+  ORO_LIST_COMPONENT_TYPE( NS::ComponentY )</programlisting>
+         <para>
+	   For each additional component in the same library,
+	   the ORO_LIST_COMPONENT_TYPE macro is added. It is
+	   allowed to put all the ORO_LIST_COMPONENT_TYPE macros
+	   in a single file. 
+	 </para>
+      </section>
+      <section>
+	<title>Compiling and linking a component library</title>
+	<para>
+	  In order to have a working library, care must be taken
+	  of the compilation flags. You may compile your library
+	  static or shared. But a static library will not be
+	  dynamically loadable. In the final executable the
+	  DeploymentComponent will be able to find the linked in
+	  components and setup the application using the XML file.
+	</para>
+	<para>
+	  The macros need some help to figure out if you are 
+	  compiling a shared or static library. You need to define
+	  the OCL_DLL_EXPORT macro when compiling for a shared
+	  library. If this macro is not defined, it is assumed
+	  that you are compiling for a static library.
+	</para>
+	<para>
+	  The compilation flag of a component for a shared library
+	  might look like:
+	</para>
+	<programlisting>  CFLAGS=-O2 -Wall -fPIC -DOCL_DLL_EXPORT
+  LDFLAGS=-fPIC
+	</programlisting>
+	<para>
+	  The compilation flag of a component for a static library
+	  lacks both options :
+	</para>
+	<programlisting>  CFLAGS=-O2 -Wall
+  LDFLAGS=
+	</programlisting>
       </section>
     </section>
 </article>
