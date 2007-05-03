@@ -21,7 +21,7 @@ namespace OCL
     using namespace RTT;
 
     DeploymentComponent::DeploymentComponent(std::string name)
-        : RTT::TaskContext(name),
+        : RTT::TaskContext(name, Stopped),
           compPath("ComponentPath",
                    "Location to look for components in addition to the local directory and system paths.",
                    "/usr/local/orocos/lib"),
@@ -1008,7 +1008,11 @@ namespace OCL
                                           double period, int priority,
                                           int scheduler)
     {
-        TaskContext* peer = this->getPeer(comp_name);
+        TaskContext* peer;
+        if ( comp_name == this->getName() )
+            peer = this;
+        else
+            peer = this->getPeer(comp_name);
         if (!peer) {
             log(Error) << "Can't create Activity: component "<<comp_name<<" not found."<<endlog();
             return false;
@@ -1050,7 +1054,11 @@ namespace OCL
     bool DeploymentComponent::configureFromFile(std::string name, std::string filename)
     {
         Logger::In in("DeploymentComponent");
-        TaskContext* c = this->getPeer(name);
+        TaskContext* c;
+        if ( name == this->getName() )
+            c = this;
+        else
+            c = this->getPeer(name);
         if (!c) {
             log(Error)<<"No such peer to configure: "<<name<<endlog();
             return false;
