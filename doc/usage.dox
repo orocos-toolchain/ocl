@@ -62,10 +62,17 @@
 *   <li>OCL::TaskBrowser
 *   </ul>
 *
+* \subsection deployment Component Deployment: [ready]
+* 	Component for loading and configuring components into an
+*       application.
+*   <ul>
+*   <li>OCL::DeploymentComponent
+*   </ul>
+*                                                               
 * \subsection viewer Viewer: [beta stage]
 *   A Component which sends naxisposition values to the
 *   kdlviewer. KDLViewer is an application of KDL and can be found on
-*   http://svn.mech.kuleuven.be/repos/orocos/kdl/trunk/apps
+*   http://svn.mech.kuleuven.be/repos/orocos/apps/kdl/kdlviewer
 *   <ul>
 *   <li>OCL::NAxesPositionViewer
 *   </ul>
@@ -176,15 +183,5 @@
 *           <li>OCL::CartesianEffectorVel
 *        </ul>
 *   </ul>  
-*
-* \subsection deployment Deployment: [beta stage]
-* 	Component for connecting and configuring an application.      
-*   <ul>
-*   <li>OCL::DeploymentComponent
-*   </ul>
-*                                                               
-* \subsection kinematics kinematics: [deprecated]                
-* 	Component for forward and reverse kinematics. Needs to        
-* 	be adapted to the KDL. Not used in any testcase at the moment.
 *
 */
