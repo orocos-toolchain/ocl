@@ -131,7 +131,7 @@ typedef void apci1710_module;
 
     
 // Every module that extends LXRT needs a unique MYIDX (1-15).
-#define MYIDX                                    15
+#define MYIDX                                    13
 
 #define APCI1032_READ1                            0
 #define APCI1032_READ8                            1
