@@ -7,13 +7,13 @@ IF ( BUILD_KUKA_TEST )
 
     # Add a test program
     GLOBAL_ADD_TEST( kuka main.cpp )
-    GLOBAL_ADD_TEST( torquekuka torquemain.cpp )
+    #GLOBAL_ADD_TEST( torquekuka torquemain.cpp )
     GLOBAL_ADD_TEST( encoderTest encoderKuka361Test.cpp )
 
     INCLUDE_DIRECTORIES( ${PROJECT_SOURCE_DIR}/hardware/axes ${PROJECT_SOURCE_DIR}/hardware/comedi ${PROJECT_SOURCE_DIR}/hardware/apci)
     LINK_DIRECTORIES(${PROJECT_BINARY_DIR}/hardware/kuka )
     TARGET_LINK_LIBRARIES( kuka orocos-taskbrowser orocos-reporting orocos-kuka ${OROCOS_RTT_LIBS})
-    TARGET_LINK_LIBRARIES( torquekuka orocos-taskbrowser orocos-reporting orocos-kuka ${OROCOS_RTT_LIBS})
+    #TARGET_LINK_LIBRARIES( torquekuka orocos-taskbrowser orocos-reporting orocos-kuka ${OROCOS_RTT_LIBS})
     TARGET_LINK_LIBRARIES( encoderTest orocos-kuka ${OROCOS_RTT_LIBS} )
 
 
