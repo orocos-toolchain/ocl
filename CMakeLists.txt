@@ -12,12 +12,12 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.2)
 
 PROJECT(orocos-ocl)
 
-SET( VERSION 0.2.1 CACHE STRING "Version of Orocos Components" )
-  MESSAGE( "Orocos Components version ${VERSION}" )
+SET( OCL_VERSION 0.3.0 CACHE STRING "Version of Orocos Components" )
+  MESSAGE( "Orocos Components version ${OCL_VERSION}" )
 
 # Do not rely on environment variables to find the path, because that's confusing
 IF(NOT CMAKE_INSTALL_PREFIX)
-  SET( CMAKE_INSTALL_PREFIX /usr/local/orocos CACHE PATH "Installation directory" FORCE)
+  SET( CMAKE_INSTALL_PREFIX /usr/local CACHE PATH "Installation directory" FORCE)
   MESSAGE( "Setting installation directory to ${CMAKE_INSTALL_PREFIX}" )
 ENDIF(NOT CMAKE_INSTALL_PREFIX)
 
@@ -25,7 +25,7 @@ SET( PROJ_SOURCE_DIR ${orocos-ocl_SOURCE_DIR} )
 SET( PROJ_BINARY_DIR ${orocos-ocl_BINARY_DIR} )
 
 IF(NOT OROCOS_INSTALL)
-  SET( OROCOS_INSTALL ${CMAKE_INSTALL_PREFIX}/orocos CACHE PATH "The RTT installation directory.")
+  SET( OROCOS_INSTALL ${CMAKE_INSTALL_PREFIX} CACHE PATH "The RTT installation directory.")
 ENDIF(NOT OROCOS_INSTALL)
 
 IF(NOT KDL_INSTALL)
