@@ -65,7 +65,7 @@
     <figure><title>Task Browsing</title>
     <mediaobject>
       <imageobject>
-	<imagedata fileref="taskbrowsing" />
+	<imagedata fileref="images/taskbrowsing" />
       </imageobject>
       <caption><para>The TaskBrowser is initially connected to a
       component. It can 'enter' a component, which shows a perspective

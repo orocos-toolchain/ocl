@@ -16,7 +16,7 @@
 //  
 
 /** 
-* \mainpage Orocos-Components
+* \mainpage Orocos Component Library
 * 
 * \section intro Introduction
 *
@@ -24,7 +24,7 @@
 * components which can be used to build a control application.
 * It uses the Orocos RealTime Toolkit and KDL, a kinematic and dynamic
 * library which is available through svn at
-* http://svn.mech.kuleuven.be/repos/orocos/kdl/trunk/kdl
+* http://svn.mech.kuleuven.be/repos/orocos/trunk/kdl
 * 
 * Examples for the usage of all components can be found in the
 * respective tests subdirectory 

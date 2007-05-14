@@ -2,6 +2,11 @@
 macro( ANY_TO_PNG RESULT)
   #SEPARATE_ARGUMENTS( ARGN )
   foreach (_current_FILE ${ARGN})
+    # Create the target directory.
+    MESSAGE( "Processing ${CMAKE_CURRENT_BINARY_DIR}/${_current_FILE}" )
+    get_filename_component(DIRNAME ${CMAKE_CURRENT_BINARY_DIR}/${_current_FILE} PATH)
+    file(MAKE_DIRECTORY ${DIRNAME})
+
     if ( _current_FILE MATCHES ".*.dia" )
       string(REPLACE ".dia" ".png" _current_PNGFILE ${_current_FILE})
 
@@ -29,7 +34,6 @@ macro( ANY_TO_PNG RESULT)
        set(_current_PNGFILE ${_current_FILE})
        #MESSAGE( "Copying ${_current_FILE} to ${CMAKE_CURRENT_BINARY_DIR}/${_current_PNGFILE}" )
        add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${_current_PNGFILE}
-	 COMMAND mkdir -p $$\(dirname ${_current_PNGFILE} \)
 	 COMMAND cp -a ${CMAKE_CURRENT_SOURCE_DIR}/${_current_FILE} ${_current_PNGFILE}
 	 DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${_current_FILE}
 	 )

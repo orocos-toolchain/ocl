@@ -68,7 +68,7 @@
       <figure id="fig-deployment-overview"><title>Component Deployment Overview</title>
       <mediaobject>
 	<imageobject>
-	  <imagedata fileref="Deployment" />
+	  <imagedata fileref="images/Deployment" />
 	</imageobject>
 	<caption><para>Components are located on your disk using the 'import' statement,
 	loaded using 'loadConfiguration' and configured using 'configureComponents'.
@@ -107,7 +107,7 @@
       <figure id="fig-deployment-flow"><title>Deployment Procedure</title>
       <mediaobject>
 	<imageobject>
-	  <imagedata fileref="DeploymentFlow" />
+	  <imagedata fileref="images/DeploymentFlow" />
 	</imageobject>
 	<caption><para>The Deployment component API consists of import, 
 	loadConfiguration, configureComponents and startComponents.
@@ -137,7 +137,7 @@
       <figure id="fig-deployment-example"><title>Deployment Example Application</title>
       <mediaobject>
 	<imageobject>
-	  <imagedata fileref="deployment-example" />
+	  <imagedata fileref="images/deployment-example" />
 	</imageobject>
 	<caption><para>A Reporter component monitors communication
 	between Plant and Controller. The Deployment component itself

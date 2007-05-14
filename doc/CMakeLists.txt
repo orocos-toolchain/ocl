@@ -7,27 +7,27 @@ include(AnyToPNG.cmake)
 IF (DOC_BUILD_DOCS)
   #list the xml files:
   SET( XML_SOURCES
-    orocos-deployment.xml orocos-reporting.xml orocos-taskbrowser.xml orocos-hardware-components.xml)
+    xml/orocos-deployment.xml xml/orocos-reporting.xml xml/orocos-taskbrowser.xml xml/orocos-hardware-components.xml)
 
   SEPARATE_ARGUMENTS(XML_SOURCES)
 
   DOCBOOK_TO_HTML( HTML_OUTPUT orocos-html.xsl 
     CATALOG
-    catalog.xml
+    xml/catalog.xml
     FILES 
     ${XML_SOURCES} )
   MESSAGE( "HTML_OUTPUT: ${HTML_OUTPUT}")
 
   DOCBOOK_TO_PDF( PDF_OUTPUT orocos-pdf.xsl
     CATALOG
-    catalog.xml
+    xml/catalog.xml
     FILES
     ${XML_SOURCES} )
 
-  FILE( GLOB PNGS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} [^.]*.png )
-  FILE( GLOB DIAS  RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} [^.]*.dia )
-  FILE( GLOB SVGS  RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} [^.]*.svg )
-
+  FILE( GLOB PNGS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} xml/images/[^.]*.png )
+  FILE( GLOB DIAS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} xml/images/[^.]*.dia )
+  FILE( GLOB SVGS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} xml/images/[^.]*.svg )
+  MESSAGE( "PNGS: ${PNGS}, path: ${CMAKE_CURRENT_SOURCE_DIR}/xml/images" )
   ANY_TO_PNG( RESULT_PNGS ${PNGS} ${DIAS} ${SVGS} )
 
   ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/orocos-html.css
