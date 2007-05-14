@@ -1,11 +1,11 @@
-  Orocos Components
-  =================
+  Orocos Component Library
+  ========================
 
 This directory consists of a series of independent Orocos
 components which can be used to build a control application.
 
-* See doc/components.dox or the online documentation
-  to see the status of individual components.
+* Use 'make docapi dochtml' or the online documentation
+  to get information about the components.
 
 * See doc/CMAKE-HELP.txt if you want to add a new component
 

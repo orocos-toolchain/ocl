@@ -1,5 +1,5 @@
-Orocos Component Library
-========================
+  Orocos Component Library
+  ========================
 
 Installation
 ============
@@ -53,7 +53,7 @@ Installation options
   or the Orocos BFL (path in BFL_INSTALL).
 
 * You can set the installation prefix in the CMAKE_INSTALL_PREFIX variable
-using ccmake.
+  using ccmake.
 
 * You can additionally
 
@@ -78,4 +78,4 @@ using ccmake.
 
   4) have packaging support:
 
-	'make install DESTDIR=...."
+	$ make install DESTDIR=/staging/dir
