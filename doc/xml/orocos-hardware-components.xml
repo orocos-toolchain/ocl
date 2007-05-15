@@ -17,15 +17,15 @@
       </author>
     </authorgroup>
     <copyright>
-      <year>2002-2006</year>
+      <year>2002-2007</year>
       <holder>Peter.Soetens@mech.kuleuven.be</holder>
       <holder>Herman.Bruyninckx@mech.kuleuven.be</holder>
     </copyright>
 
     <abstract>
       <para>
-	This document explains the design and implementation of the
-	hardware IO component.
+	This document explains the interface of the hardware IO
+	component.
       </para>
     </abstract>
 
@@ -65,13 +65,24 @@
       <para>
 	The <classname>OCL::IOComponent</classname> is created like all
 	the other components in the Orocos framework :
-	<programlisting>  IOComponent   io(IN_CHANS, OUT_CHANS, "IOName");
+	<programlisting>  IOComponent   io("IOComponent");
 	</programlisting>
-	Where IN_CHANS is the maximal number of input channels
-	and OUT_CHANS is the maximal number of output channels
-	this componentexposes (see later). The last parameter
-	is the unique name of this component instance.
+	You can choose another name freely. Additionally,
+	you'll need to assign an activity such that the IOComponent
+	can read and write data to the device drivers:
+	<programlisting>  <classname>RTT::PeriodicActivity</classname>   io_act(ORO_SCHED_RT, RTT::OS::HighestPriority, 0.001);
+  io_act.run( io.engine() );
+	</programlisting>
+	See the Component Builder's manual for more information
+	on running components. 
       </para>
+      <important>
+	<para>
+	  When all device drivers are added, use io.start() to start
+	  the component, or data will not be read or written to the device
+	  drivers.
+	</para>
+      </important>
     </section>
     <section>
       <title>Sensing : Sensor Hardware Abstraction</title>
@@ -85,6 +96,28 @@
 	The component provides methods to add Analog and
 	Digital Inputs.
       </para>
+      <section>
+	<title>Adding an Analog Input Interface card</title>
+	<para>
+	  You can add all channels of an Analog interface card 
+	  using:
+	  <programlisting>
+  AnalogInInterface* analog_input_card = ...
+  io.addAnalogInInterface("AInCard", analog_input_card );
+	  </programlisting>
+	  The analog_input_card object must implement the <classname>
+	  RTT::AnalogInInterface</classname>.  If there is already a
+	  card named "AInCard", addAnalogInput returns false. A
+	  DataPort is created with the same name which contains all
+	  channels of analog_input_card.
+	</para>
+	<para>
+	  Likewise, you can remove it again using:
+	  <programlisting>
+  io.removeAnalogInInterface("AInCard");
+	  </programlisting>
+	</para>
+      </section>
       <section>
 	<title>Adding and Removing an Analog Input</title>
 	<para>
@@ -145,6 +178,23 @@
 	</para>
       </section>
       <section>
+	<title>Adding an Digital Input Interface card</title>
+	<para>
+	  You can add all channels of an Digital interface card 
+	  using:
+	  <programlisting>
+  DigitalInInterface* digital_input_card = ...
+  io.addDigitalInInterface("DInCard", digital_input_card );
+	  </programlisting>
+	  The digital_input_card object must implement the <classname>
+	  RTT::DigitalInInterface</classname>.  If there is already a
+	  card named "DInCard", addDigitalInput returns false. The
+	  bits of the card are accessible as shown below. The names
+	  to use are "DInCardX" with X the channel number from zero
+	  to the number of channels.
+	</para>
+      </section>
+      <section>
 	<title>Adding Digital Inputs</title>
 	<para>
 	  Digital Inputs are available through the method interface.
@@ -173,6 +223,22 @@
 	The <classname>OCL::IOComponent</classname>
 	support sending signals to hardware as well.
       </para>
+      <section>
+	<title>Adding an Analog Output Interface card</title>
+	<para>
+	  You can add all channels of an Analog Output interface card 
+	  using:
+	  <programlisting>
+  AnalogOutInterface* analog_output_card = ...
+  io.addAnalogOutInterface("AOutCard", analog_output_card );
+	  </programlisting>
+	  The analog_output_card object must implement the <classname>
+	  RTT::AnalogOutInterface</classname>.  If there is already a
+	  card named "AOutCard", addAnalogOutput returns false. A
+	  DataPort is created with the same name which contains all
+	  channels of analog_output_card.
+	</para>
+      </section>
       <section>
 	<title>Adding and Removing Analog Outputs</title>
 	<para> Analogous to Analog inputs :
@@ -228,6 +294,23 @@
 	  <programlisting>
   io.removeChannel( A_VIRT_CHAN );
 	  </programlisting>
+	</para>
+      </section>
+      <section>
+	<title>Adding an Digital Output Interface card</title>
+	<para>
+	  You can add all channels of an Digital interface card 
+	  using:
+	  <programlisting>
+  DigitalOutInterface* digital_output_card = ...
+  io.addDigitalOutInterface("DOutCard", digital_output_card );
+	  </programlisting>
+	  The digital_output_card object must implement the <classname>
+	  RTT::DigitalOutInterface</classname>.  If there is already a
+	  card named "DOutCard", addDigitalOutput returns false. The
+	  bits of the card are accessible as shown below. The names
+	  to use are "DOutCardX" with X the channel number from zero
+	  to the number of channels.
 	</para>
       </section>
       <section>

@@ -1,0 +1,107 @@
+<?xml version='1.0'?>
+
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
+"/usr/share/sgml/docbook/dtd/xml/4.1.2/docbookx.dtd" 
+[
+<!ENTITY cvs         "<acronym>CVS</acronym>">
+<!ENTITY orocos      "<acronym>Orocos</acronym>">
+<!ENTITY rtai        "<acronym>RTAI</acronym>">
+<!ENTITY rtos        "<acronym>RTOS</acronym>">
+]
+>
+
+<article>
+ <articleinfo>
+    <title>
+      The Orocos Component Library
+    </title>
+    <subtitle><emphasis>Open RObot COntrol Software</emphasis>
+    </subtitle>
+    <copyright>
+      <year>2002-2007</year>
+      <holder>Herman Bruyninckx, Peter Soetens</holder>
+    </copyright>
+
+    <abstract>
+      <para>
+	This document gives a short overview of the <ulink
+	url="http://www.orocos.org/ocl">&orocos; Component
+	Library</ulink>, a collection of useful components for running
+	and managing control applications.
+      </para>
+    </abstract>
+
+    <revhistory>
+      <revision>
+	<revnumber>1.0</revnumber>
+	<date>15 May 2007</date>
+	<authorinitials>ps</authorinitials>
+	<revremark>Initial version</revremark>
+      </revision>
+    </revhistory>
+
+    <legalnotice>
+      <para>
+	Permission is granted to copy, distribute and/or modify this document
+	under the terms of the GNU Free Documentation License, Version 1.1 or
+	any later version published by the Free Software Foundation, with no
+	Invariant Sections, with no Front-Cover Texts, and with no Back-Cover
+	Texts. A copy of this license can be found at
+	<ulink
+	  url="http://www.fsf.org/copyleft/fdl.html">http://www.fsf.org/copyleft/fdl.html</ulink>.
+      </para>
+    </legalnotice>
+
+  </articleinfo>
+
+  <section id="whatis">
+    <title>What is the Orocos Component Library?</title>
+    <para>
+      This library contains user contributed software components of
+      the <emphasis><ulink url="http://www.orocos.org">Open Robot
+      Control Software</ulink></emphasis> project. They are built
+      using the Real-Time Toolkit and some of them use other libraries
+      such as OpenCV, readline, Comedi, the Kinematics and Dynamics Library, the
+      Bayesian Filtering Library and so on. Components for interfacing
+      hardware devices are available as well.
+    </para>
+  </section>
+  <section id="audience">
+    <title>Component Documentation</title>
+    <para>
+      Each component or group of associated components has a manual
+      of its own and are available in the API documentation. The
+      following documents are available:
+    </para>
+    <itemizedlist>
+      <listitem>
+	<para>
+	  Component 
+	  <ulink url="../api/html/index.html">API Reference</ulink>:
+	  Overview of the functions of all components.
+	</para>
+      </listitem>
+      <listitem>
+	<para>
+	  <ulink url="orocos-taskbrowser.html">TaskBrowser Component
+	  Manual</ulink>: the interactive console for communicating
+	  with any kind of component.
+	</para>
+      </listitem>
+      <listitem>
+	<para>
+	  <ulink url="orocos-reporting.html">Reporting Component
+	  Manual</ulink>: a component which can read most 
+	  component data ports and save data periodically into a file.
+	</para>
+      </listitem>
+      <listitem>
+	<para>
+	  <ulink url="orocos-hardware-components.html">IOComponent
+	  Manual</ulink>: a component which can be used to test Orocos
+	  device drivers interactively.
+	</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+</article>
