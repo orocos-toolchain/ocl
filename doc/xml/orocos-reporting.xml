@@ -67,7 +67,7 @@
       <figure id="fig-reporting-example"><title>Component Reporting Example</title>
       <mediaobject>
 	<imageobject>
-	  <imagedata fileref="reporting-example" />
+	  <imagedata fileref="images/reporting-example" />
 	</imageobject>
 	<caption><para>
 	</para></caption>
