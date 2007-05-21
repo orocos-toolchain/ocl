@@ -150,10 +150,11 @@ namespace OCL
                         log(Debug) << "Disconnecting " <<name <<endlog();
                         it->instance->disconnect();
                         log(Debug) << "Terminating " <<name <<endlog();
-                        delete it->instance;
-                        it->instance = 0;
+                        // delete the activity before the TC !
                         delete it->act;
                         it->act = 0;
+                        delete it->instance;
+                        it->instance = 0;
                         log(Info) << "Disconnected and destroyed "<< name <<endlog();
                     } else {
                         log(Error) << "Could not unload Component "<< name <<endlog();
@@ -397,9 +398,9 @@ namespace OCL
                         // Setup the connections from this
                         // component to the others.
                         if ( comp.value().find("Peers") != 0) {
-                            Property<PropertyBag> nm = comp.value().getProperty<PropertyBag>("Peers");
+                            Property<PropertyBag> nm = comp.value().find("Peers");
                             if ( !nm.ready() ) {
-                                log(Error)<<"Property 'Peers' must be a 'struct'."<<endlog();
+                                log(Error)<<"Property 'Peers' must be a 'struct', was type "<< comp.value().find("Peers")->getType() << endlog();
                                 valid = false;
                             } else {
                                 for (PropertyBag::const_iterator it= nm.rvalue().begin(); it != nm.rvalue().end();it++) {
@@ -415,7 +416,7 @@ namespace OCL
                         
                         // Read the activity profile if present.
                         if ( comp.value().find("Activity") != 0) {
-                            Property<PropertyBag> nm = comp.value().getProperty<PropertyBag>("Activity");
+                            Property<PropertyBag> nm = comp.value().find("Activity");
                             if ( !nm.ready() ) {
                                 log(Error)<<"Property 'Activity' must be a 'struct'."<<endlog();
                                 valid = false;
@@ -483,7 +484,7 @@ namespace OCL
                             }
                         } else {
                             // no 'Activity' element, default to Slave:
-                            this->setActivity(comp.getName(), "SlaveActivity", 0.0, 0, 0 );
+                            //this->setActivity(comp.getName(), "SlaveActivity", 0.0, 0, 0 );
                         }
 
                         // Other options:
@@ -584,7 +585,7 @@ namespace OCL
 
             // Setup the connections from each component to the
             // others.
-            Property<PropertyBag> peers = comp.rvalue().getProperty<PropertyBag>("Peers");
+            Property<PropertyBag> peers = comp.rvalue().find("Peers");
             if ( peers.ready() )
                 for (PropertyBag::const_iterator it= peers.rvalue().begin(); it != peers.rvalue().end();it++) {
                     Property<string> nm = (*it);
