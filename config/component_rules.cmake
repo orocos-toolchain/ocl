@@ -171,16 +171,16 @@ ENDMACRO( OROCOS_PKGCONFIG_CFLAGS TO_ADD)
 
 # Use this to add an include path which get written to the .pc file
 MACRO( OROCOS_PKGCONFIG_INCPATH TO_ADD)
-  if ( NOT ${TO_ADD} STREQUAL "/usr/include" AND NOT ${TO_ADD} STREQUAL "/usr/local/include" )
+  if ( NOT "${TO_ADD}" STREQUAL "/usr/include" AND NOT "${TO_ADD}" STREQUAL "/usr/local/include" )
     SET( ENV{OROCOS_COMPONENTS_CFLAGS} "$ENV{OROCOS_COMPONENTS_CFLAGS} -I${TO_ADD}")
-  endif ( NOT ${TO_ADD} STREQUAL "/usr/include" AND NOT ${TO_ADD} STREQUAL "/usr/local/include" )
+  endif ( NOT "${TO_ADD}" STREQUAL "/usr/include" AND NOT "${TO_ADD}" STREQUAL "/usr/local/include" )
 ENDMACRO( OROCOS_PKGCONFIG_INCPATH TO_ADD)
 
 # Use this to add a library path which get written to the .pc file
 MACRO( OROCOS_PKGCONFIG_LIBPATH TO_ADD)
-  if ( NOT ${TO_ADD} STREQUAL "/usr/lib" AND NOT ${TO_ADD} STREQUAL "/usr/local/lib" )
+  if ( NOT "${TO_ADD}" STREQUAL "/usr/lib" AND NOT "${TO_ADD}" STREQUAL "/usr/local/lib" )
     SET( ENV{OROCOS_COMPONENTS_LINKFLAGS} "$ENV{OROCOS_COMPONENTS_LINKFLAGS} -L${TO_ADD}")
-  endif ( NOT ${TO_ADD} STREQUAL "/usr/lib" AND NOT ${TO_ADD} STREQUAL "/usr/local/lib" )
+  endif ( NOT "${TO_ADD}" STREQUAL "/usr/lib" AND NOT "${TO_ADD}" STREQUAL "/usr/local/lib" )
 ENDMACRO( OROCOS_PKGCONFIG_LIBPATH TO_ADD)
 
 # Use this to add a .pc dependency ('Requires') which get written to the .pc file
