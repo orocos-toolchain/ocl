@@ -67,6 +67,8 @@ IF ( CMAKE_PKGCONFIG_EXECUTABLE AND NOT SKIP_BUILD)
 	FIND_FILE( CORBA_ENABLED rtt/corba/ControlTaskProxy.hpp ${OROCOS_RTT_INCLUDE_DIRS} )
 	IF (CORBA_ENABLED)
 	  MESSAGE( "Detected CORBA build of RTT: ${CORBA_ENABLED}" )
+	  # Work around RTT 1.2.0 bug when rtt/corba libs are not in ldconfig/standard paths.
+	  SET(OROCOS_RTT_LIBS "${OROCOS_RTT_LIBS} -lorocos-rtt-corba")
 	ELSE(CORBA_ENABLED)
 	  MESSAGE( "CORBA not detected." )
 	ENDIF (CORBA_ENABLED)
