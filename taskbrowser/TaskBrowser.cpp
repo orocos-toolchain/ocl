@@ -89,6 +89,10 @@ namespace OCL
     {
         ::signal(sig, SIG_IGN);
         cerr <<nl<<"TaskBrowser intercepted Ctrl-C. Type 'quit' to exit."<<endl;
+//         rl_delete_text(0, rl_end);
+//         //cerr << "deleted " <<deleted <<endl;
+//         rl_free_line_state();
+//         rl_cleanup_after_signal();
         ::signal(SIGINT, ctrl_c_catcher);
     }
 
@@ -169,8 +173,11 @@ namespace OCL
                 if ( !( pos+1 > startpos) )
                     path = line.substr(pos+1, startpos - pos);
                 //cerr << "path :"<<path<<endl;
-                if ( startpos == std::string::npos || startpos+1 == line.length() || i->find( line.substr(startpos+1)) == 0 )
-                     completes.push_back( path + *i + "." );
+                if ( *i == line.substr(startpos+1) )
+                     completes.push_back( path + *i + ".");
+                else
+                    if ( startpos == std::string::npos || startpos+1 == line.length() || i->find( line.substr(startpos+1)) == 0 )
+                        completes.push_back( path + *i );
             }
             return; // do not add component names.
         }
@@ -527,6 +534,9 @@ namespace OCL
 
         // Intercept Ctrl-C
         ::signal( SIGINT, ctrl_c_catcher );
+        // Let readline intercept relevant signals
+        assert(rl_catch_signals);
+        rl_set_signals();
 
         cout << nl<<
             coloron <<
@@ -791,7 +801,7 @@ namespace OCL
         our_pos_iter_t parsebegin( s.begin(), s.end(), "teststring" );
         our_pos_iter_t parseend;
             
-        PeerParser pp( peer );
+        PeerParser pp( peer, true );
         try {
             parse( parsebegin, parseend, pp.parser(), SKIP_PARSER );
         }
@@ -1523,15 +1533,15 @@ namespace OCL
 
         // if we are in the TB, display the peers of our connected task:
         if ( context == tb ) {
-            cout << " "<<taskcontext->getName()<<" Peers : "<<coloron;
-            objlist = taskcontext->getPeerList();
+            cout << " "<<peer->getName()<<" Peers : "<<coloron;
+            objlist = peer->getPeerList();
             if ( !objlist.empty() )
                 copy(objlist.begin(), objlist.end(), std::ostream_iterator<std::string>(cout, " "));
             else
                 cout << "(none)";
         } else {
             cout << " Peers        : "<<coloron;
-            objlist = taskcontext->getPeerList();
+            objlist = peer->getPeerList();
             if ( !objlist.empty() )
                 copy(objlist.begin(), objlist.end(), std::ostream_iterator<std::string>(cout, " "));
             else
