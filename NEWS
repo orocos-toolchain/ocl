@@ -1,13 +1,15 @@
-         Orocos Components Library (OCL) v0.2.1
+         Orocos Components Library (OCL) v0.4.0
 
-This release of the Orocos Components Library is a bugfix
-and documentation-update release. The following issues
-were fixed
+This release of the Orocos Components Library is aimed at
+the Real-Time Toolkit v1.2.0. and offers new functionality
+for loading and configuring components dynamically at run-time.
 
- o bug #276: Fixed ...-NOTFOUND Target OS flags in build system
- o bug #280: Axis Drive function contains wrong check
+Two new stand-alone applications have been added as well:
+ deployer: loads other components into the current process
+ ctaskbrowser: connects the TaskBrowser to a networked component [CORBA required]
 
-This release also provides the 'Component Template' package
-which allows Orocos Component builders to quickly construct
-a new component. The template offers a ready to use build system
-(using cmake), an example component and an example test program.
+An overview of the components is available here:
+  <http://www.orocos.org/stable/documentation/ocl/v0.4.x/doc-xml/ocl-overview.html>
+
+This release can be downloaded here:
+  <http://www.orocos.org/stable/ocl/v0.4.0/orocos-ocl-0.4.0-src.tar.bz2>
