@@ -12,6 +12,7 @@
 
 #include <dirent.h>
 #include <iostream>
+#include <fstream>
 
 using namespace Orocos;
 
@@ -63,8 +64,11 @@ namespace OCL
                                     "Print out a list of all component types this component can create.");
 
         this->methods()->addMethod( RTT::method("loadConfiguration", &DeploymentComponent::loadConfiguration, this),
-                                    "Load a new configuration.",
+                                    "Load a new XML configuration from a file.",
                                     "File", "The file which contains the new configuration.");
+        this->methods()->addMethod( RTT::method("loadConfigurationString", &DeploymentComponent::loadConfigurationString, this),
+                                    "Load a new XML configuration from a string.",
+                                    "Text", "The string which contains the new configuration.");
         this->methods()->addMethod( RTT::method("configureComponents", &DeploymentComponent::configureComponents, this),
                                     "Apply a loaded configuration.");
         this->methods()->addMethod( RTT::method("startComponents", &DeploymentComponent::startComponents, this),
@@ -305,6 +309,14 @@ namespace OCL
         return -1;
     }
 
+    bool DeploymentComponent::loadConfigurationString(const std::string& text)
+    {
+        const char* tmpfile = ".loadConfigurationString.cpf";
+        std::ofstream file( tmpfile );
+        file << text.c_str();
+        file.close();
+        return this->loadConfiguration( tmpfile );
+    }
     bool DeploymentComponent::loadConfiguration(const std::string& configurationfile)
     {
         Logger::In in("DeploymentComponent::loadConfiguration");
@@ -770,7 +782,7 @@ namespace OCL
         struct dirent **namelist;
         int n;
 
-        log(Info) << "Importing: " <<  path << endlog();
+        log(Debug) << "Importing " <<  path << endlog();
 
         // scan the directory for files.
         n = scandir( path.c_str(), &namelist, &filter_so, &alphasort);
@@ -786,7 +798,7 @@ namespace OCL
                     if (namelist[i]->d_type == DT_DIR) { //ignoring symlinks and subdirs here.
                         import( path +"/" +name );
                     } else {
-                        log(Info) << "Scanning " << path +"/" +name <<endlog();
+                        log(Debug) << "Scanning " << path +"/" +name <<endlog();
                         if ( name.rfind(".so") == std::string::npos ||
                              name.substr(name.rfind(".so")) != ".so" ) {
                             log(Debug) << "Dropping " << name <<endlog(); 
@@ -841,21 +853,39 @@ namespace OCL
             ComponentFactories::Instance().insert( fmap->begin(), fmap->end() );
             log(Info) << "Loaded component library '"<<so_name <<"'"<<endlog();
             return true;
+        } else {
+            log(Debug) << error << endlog();
         }
 
         // Lookup createComponent:
         dlerror();    /* Clear any existing error */
 
-        TaskContext* (*factory)(std::string name) = 0;
-        factory = reinterpret_cast<TaskContext*(*)(std::string name)>(dlsym(handle, "createComponent") );
+        TaskContext* (*factory)(std::string) = 0;
+        std::string(*tname)(void) = 0;
+        factory = reinterpret_cast<TaskContext*(*)(std::string)>(dlsym(handle, "createComponent") );
         if ((error = dlerror()) == NULL) {
             // store factory.
             string libname = name.substr(name.rfind("/"), name.rfind(".so"));
             if ( libname.find("lib") == 0 )
                 libname = libname.substr(3, std::string::npos); // strip leading lib if any.
+            if ( ComponentFactories::Instance().count(libname) == 1 ) {
+                log(Warning) << "Library name "<<libname<<" already used: overriding."<<endlog();
+            }
             ComponentFactories::Instance()[libname] = factory;
-            log(Info) << "Loaded component type '"<< libname <<"'"<<endlog();
+            tname = reinterpret_cast<std::string(*)(void)>(dlsym(handle, "getComponentType") );
+            if ((error = dlerror()) == NULL) {
+                std::string cname = (*tname)();
+                if ( ComponentFactories::Instance().count(cname) == 1 ) {
+                    log(Warning) << "Component type name "<<cname<<" already used: overriding."<<endlog();
+                }
+                ComponentFactories::Instance()[ cname ] = factory;
+                log(Info) << "Loaded component type '"<< cname <<"'"<<endlog();
+            } else {
+                log(Info) << "Loaded component library '"<< libname <<"'"<<endlog();
+            }
             return true;
+        } else {
+            log(Debug) << error << endlog();
         }
 
         // plain library
@@ -878,8 +908,14 @@ namespace OCL
         char *error;
 
         // First: try loading from imported libraries. (see: import).
-        factory = ComponentFactories::Instance()[ type ];
-
+        if ( ComponentFactories::Instance().count(type) == 1 ) {
+            factory = ComponentFactories::Instance()[ type ];
+            if (factory == 0 ) {
+                log(Error) <<"Found empty factory for Component type "<<type<<endlog();
+                return false;
+            }
+        }
+                
         if ( factory ) {
             log(Info) <<"Found factory for Component type "<<type<<endlog();
         } else {

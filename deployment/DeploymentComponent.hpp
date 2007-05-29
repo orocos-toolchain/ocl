@@ -244,7 +244,7 @@ namespace OCL
                          int scheduler);
 
         /** 
-         * Load a (partial) application configuration from disk. The
+         * Load a (partial) application XML configuration from disk. The
          * necessary components are located or loaded, but no
          * component configuration is yet applied. One can load
          * multiple configurations and call configureComponents() once
@@ -253,10 +253,18 @@ namespace OCL
          *
          * @see configureComponents to configure the components with
          * the loaded configuration.
-         * 
+         * @param config_file A file on local disk containing the XML configuration.
          * @return true if the configuration could be read and was valid.
          */
         bool loadConfiguration(const std::string& config_file);
+
+        /**
+         * Identical to \a loadConfiguration, but reads the XML from a string
+         * instead of a file.
+         * @param config_text A string containing the XML configuration.
+         * @return true if the configuration string could be read and was valid.
+         */
+        bool loadConfigurationString(const std::string& config_text);
 
         /** 
          * Configure the components with loaded configuration(s). This
