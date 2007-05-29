@@ -30,8 +30,8 @@
 
 // Impl.
 #include <rtt/marsh/EmptyMarshaller.hpp>
-#include <rtt/marsh/CPFDemarshaller.hpp>
-#include <rtt/marsh/CPFMarshaller.hpp>
+#include <rtt/marsh/PropertyDemarshaller.hpp>
+#include <rtt/marsh/PropertyMarshaller.hpp>
 #include <fstream>
 
 #include "ocl/ComponentLoader.hpp"
@@ -126,12 +126,7 @@ namespace OCL
     bool ReportingComponent::store()
     {
         Logger::In in("ReportingComponent");
-        ofstream outf( config.get().c_str() );
-        if ( !outf ) {
-            log(Error) << "Writing file "<< config.get() << " failed."<<endlog();
-            return false;
-        }
-        CPFMarshaller<std::ostream> marsh( outf );
+        PropertyMarshaller marsh( config.get() );
         PropertyBag bag;
         Reports::iterator it = root.begin();
         while ( it != root.end() ) {
@@ -148,7 +143,7 @@ namespace OCL
     bool ReportingComponent::load()
     {
         Logger::In in("ReportingComponent");
-        CPFDemarshaller dem( config.get() );
+        PropertyDemarshaller dem( config.get() );
         PropertyBag bag;
         if (dem.deserialize( bag ) == false ) {
             log(Error) << "Reading file "<< config.get() << " failed."<<endlog();
