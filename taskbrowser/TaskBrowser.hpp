@@ -65,6 +65,7 @@ namespace OCL
         static RTT::TaskContext* tb;
         // the current Context: is tb or taskcontext
         static RTT::TaskContext* context;
+        static RTT::OperationInterface* taskobject;
         RTT::ConditionInterface* condition;
         RTT::DispatchInterface*   command;
         RTT::DataSource<bool>::shared_ptr   accepted;
@@ -108,12 +109,8 @@ namespace OCL
 
         static void find_completes();
         
-        static void find_ops(std::string::size_type startpos);
+        static void find_ops();
         static void find_peers(std::string::size_type startpos);
-
-        static void find_method(std::string::size_type startpos);
-
-        static void find_attribute(std::string::size_type startpos);
 
         static char ** orocos_hmi_completion ( const char *text, int start, int end );
 
@@ -127,6 +124,13 @@ namespace OCL
 
         void enterTask();
         void leaveTask();
+
+        bool macrorecording;
+        std::string macrotext;
+        std::string macroname;
+        void recordMacro(std::string name);
+        void cancelMacro();
+        void endMacro();
     public:
 
         /**

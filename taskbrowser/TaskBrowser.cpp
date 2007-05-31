@@ -40,6 +40,7 @@
 #include <rtt/scripting/PeerParser.hpp>
 
 #include <iostream>
+#include <fstream>
 #include <sstream>
 #include <iomanip>
 #include <deque>
@@ -65,6 +66,7 @@ namespace OCL
     std::string TaskBrowser::datasource;
     std::string TaskBrowser::text;
     TaskContext* TaskBrowser::taskcontext = 0;
+    OperationInterface* TaskBrowser::taskobject = 0;
     TaskContext* TaskBrowser::peer = 0;
     TaskContext* TaskBrowser::tb = 0;
     TaskContext* TaskBrowser::context = 0;
@@ -107,7 +109,12 @@ namespace OCL
             }
 
         /* Get a line from the user. */
-        std::string p = coloroff + prompt + green;
+        std::string p;
+        if ( !macrorecording ) {
+            p = coloroff + prompt + green;
+        } else {
+            p = "> ";
+        }
         line_read = readline ( p.c_str() );
 
         /* If the line has any text in it,
@@ -149,6 +156,10 @@ namespace OCL
         return  dupstr( complete_iter->c_str() ); // RL requires malloc !
     }
 
+    /**
+     * This is the entry function to look up all possible completions at once.
+     * 
+     */
     void TaskBrowser::find_completes() {
         std::string::size_type pos;
         std::string::size_type startpos;
@@ -168,6 +179,18 @@ namespace OCL
 
             //std::string peername = text.substring( pos+1, std::string::npos );
             TaskContext::PeerList v = peer->getPeerList();
+            for (TaskContext::PeerList::iterator i = v.begin(); i != v.end(); ++i) {
+                std::string path;
+                if ( !( pos+1 > startpos) )
+                    path = line.substr(pos+1, startpos - pos);
+                //cerr << "path :"<<path<<endl;
+                if ( *i == line.substr(startpos+1) )
+                     completes.push_back( path + *i + ".");
+                else
+                    if ( startpos == std::string::npos || startpos+1 == line.length() || i->find( line.substr(startpos+1)) == 0 )
+                        completes.push_back( path + *i );
+            }
+            v = peer->getObjectList();
             for (TaskContext::PeerList::iterator i = v.begin(); i != v.end(); ++i) {
                 std::string path;
                 if ( !( pos+1 > startpos) )
@@ -234,6 +257,27 @@ namespace OCL
             return;
         }
 
+        startpos = text.find_last_of(",( ");
+        if ( startpos == std::string::npos )
+            startpos = 0;      // if none is found, start at beginning
+
+        // complete on peers and objects, and find the peer the user wants completion for
+        find_peers(startpos);
+        // now proceed with 'this->peer' as TC, 
+        // this->taskobject as TO and 
+        // this->component as object and
+        // this->peerpath as the text leading up to 'this->component'.
+
+        // store the partial compname or peername
+        std::string comp = component;
+
+
+        // NEXT: use taskobject to complete commands, events, methods, attrs
+        // based on 'component' (find trick).
+        // if taskobject == peer, also complete properties
+        find_ops();
+
+        // TODO: concat two cases below as text.find("cd")...
         // check if the user is tabbing on an empty command, then add the console commands :
         if (  line.empty() ) {
             completes.push_back("cd "); 
@@ -242,69 +286,13 @@ namespace OCL
             completes.push_back("help");
             completes.push_back("quit");
             completes.push_back("list");
+            completes.push_back("trace");
+            completes.push_back("untrace");
             if (taskcontext == context)
                 completes.push_back("leave");
             else
                 completes.push_back("enter");
             // go on below to add components and tasks as well.
-        }
-
-        startpos = text.find_last_of(",( ");
-        if ( startpos == std::string::npos )
-            startpos = 0;      // if none is found, start at beginning
-
-        // complete on peers, and find the peer the user wants completion for
-        find_peers(startpos);
-        // now proceed with 'this->peer' as TC and component as object :
-
-        // locate the last dot :
-        startpos = text.rfind(".");
-        if ( startpos == std::string::npos )
-            startpos = 0;      // if none is found, start at beginning
-        else if (startpos  != text.length() )
-            startpos++;        // skip dot, if possible.
-        else
-            startpos = std::string::npos; // empty 'method'
-
-        // store the partial compname or peername
-        std::string comp = component;
-        //cout << "Found : "<< comp << endl;
-
-            // strip white spaces from comp
-//             while ( comp.find(" ") != std::string::npos )
-//                 comp.replace( comp.find(" "),1,"" );
-
-        // try if it is an object :
-        if ( peer->getObject( object ) ) {
-            // fill with new ones.
-            find_ops( startpos );
-        }
-
-        find_attribute( startpos );
-
-        std::vector<std::string> comps = peer->attributes()->names();
-        for (std::vector<std::string>::iterator i = comps.begin(); i!= comps.end(); ++i ) {
-            if ( i->find( comp ) == 0 )
-                completes.push_back( peerpath+*i );
-        }
-
-        if (peer->properties() != 0 ) {
-            peer->properties()->list(comps);
-            for (std::vector<std::string>::iterator i = comps.begin(); i!= comps.end(); ++i ) {
-                if ( i->find( comp ) == 0 )
-                    completes.push_back( peerpath+*i );
-            }
-        }
-        // Only complete peers and objects, not "this" methods.
-        comps = peer->getObjectList();
-        for (std::vector<std::string>::iterator i = comps.begin(); i!= comps.end(); ++i ) {
-            if ( i->find( comp ) == 0 )//&& *i != "this" )
-                completes.push_back( peerpath+*i + "." ); // +"."
-        }
-        comps = peer->getPeerList();
-        for (TaskContext::PeerList::iterator i = comps.begin(); i!= comps.end(); ++i ) {
-            if ( i->find( comp ) == 0 )//&& *i != "this" )
-                completes.push_back( peerpath+ *i + "." ); // +"."
         }
 
         // only try this if text is not empty.
@@ -334,112 +322,44 @@ namespace OCL
         }
     }
         
-    void TaskBrowser::find_ops(std::string::size_type startpos)
+    void TaskBrowser::find_ops()
     {
-        // no brace found, thus build completion list :
-        std::string _method;
-        if (startpos != std::string::npos )
-            _method = text.substr( startpos );
-        //cout << "FoundMethod2 : "<< _method << endl;
-            
-        // strip white spaces from _method
-        while ( _method.find(" ") != std::string::npos )
-            _method.replace( _method.find(" "),1,"" );
-
-        // commands:
-        std::vector<std::string> comps;
-        comps = peer->getObject( object )->commands()->getNames();
-        for (std::vector<std::string>::iterator i = comps.begin(); i!= comps.end(); ++i ) {
-            if ( i->find( _method ) == 0  )
-                if ( object == "this" )
-                    completes.push_back( peerpath + *i );
-                else
-                    completes.push_back( peerpath +object+"."+ *i );
-        }
-        // methods:
-        comps = peer->getObject( object )->methods()->getNames();
-        for (std::vector<std::string>::iterator i = comps.begin(); i!= comps.end(); ++i ) {
-            if ( i->find( _method ) == 0  )
-                if ( object == "this" )
-                    completes.push_back( peerpath + *i );
-                else
-                    completes.push_back( peerpath +object+"."+ *i );
-        }
-        // events:
-        comps = peer->events()->getNames();
-        for (std::vector<std::string>::iterator i = comps.begin(); i!= comps.end(); ++i ) {
-            if ( i->find( _method ) == 0  )
-                completes.push_back( peerpath + *i );
-        }
-    }
-
-    void TaskBrowser::find_method(std::string::size_type startpos)
-    {
-#if 0
-        std::string::size_type pos;
-        if ( (pos = text.find( "(", startpos )) != std::string::npos ) {
-            std::string _method( text, startpos, pos - 1); // remove "("
-            //cout << "FoundMethod : "<< _method <<endl;
-
-            // strip white spaces from method
-            while ( _method.find(" ") != std::string::npos )
-                _method.replace( _method.find(" "),1,"" );
-
-            // try if it is a command :
-            if ( peer->methods()->getObject( object )->hasMember( _method ) ) {
-                method = _method;
-            }
-        }
-        // no brace found, thus build completion list :
-#endif
-        std::string _method;
-        if (startpos != std::string::npos)
-            _method = text.substr( startpos );
-        //cout << "FoundMethod2 : "<< _method << endl;
-            
-        // strip white spaces from _method
-        while ( _method.find(" ") != std::string::npos )
-            _method.replace( _method.find(" "),1,"" );
-
-        std::vector<std::string> comps;
-        comps = peer->getObject(object)->methods()->getNames();
-        for (std::vector<std::string>::iterator i = comps.begin(); i!= comps.end(); ++i ) {
-            if ( i->find( _method ) == 0  )
-                if ( object == "this" )
-                    completes.push_back( peerpath + *i );
-                else
-                    completes.push_back( peerpath +object+"."+ *i );
-        }
-    }
-
-    void TaskBrowser::find_attribute(std::string::size_type startpos)
-    {
-        // attribute to complete :
-        std::string _attribute;
-        if (startpos != std::string::npos)
-            _attribute = text.substr( startpos );
-
-        //cout << "startpos "<<startpos<<" attribute : "<< _attribute << endl;
-            
-        // strip white spaces from _attribute
-        while ( _attribute.find(" ") != std::string::npos )
-            _attribute.replace( _attribute.find(" "),1,"" );
-
+        // the last (incomplete) text is stored in 'component'.
         // all attributes :
         std::vector<std::string> attrs;
-        attrs = peer->attributes()->names();
+        attrs = taskobject->attributes()->names();
         for (std::vector<std::string>::iterator i = attrs.begin(); i!= attrs.end(); ++i ) {
-            if ( i->find( _attribute ) == 0 && !_attribute.empty() )
+            if ( i->find( component ) == 0 && !component.empty() )
                 completes.push_back( peerpath + *i );
         }
-        // all properties :
-        if (peer->properties() != 0 ) {
+        // all properties if TaskContext:
+        if (taskobject == peer && peer->properties() != 0 ) {
             std::vector<std::string> props;
             peer->properties()->list(props);
             for (std::vector<std::string>::iterator i = props.begin(); i!= props.end(); ++i ) {
-                if ( i->find( _attribute ) == 0 && !_attribute.empty() )
+                if ( i->find( component ) == 0 && !component.empty() )
                     completes.push_back( peerpath + *i );
             }
+        }
+
+        // commands:
+        std::vector<std::string> comps;
+        comps = taskobject->commands()->getNames();
+        for (std::vector<std::string>::iterator i = comps.begin(); i!= comps.end(); ++i ) {
+            if ( i->find( component ) == 0  )
+                completes.push_back( peerpath + *i );
+        }
+        // methods:
+        comps = taskobject->methods()->getNames();
+        for (std::vector<std::string>::iterator i = comps.begin(); i!= comps.end(); ++i ) {
+            if ( i->find( component ) == 0  )
+                completes.push_back( peerpath + *i );
+        }
+        // events:
+        comps = taskobject->events()->getNames();
+        for (std::vector<std::string>::iterator i = comps.begin(); i!= comps.end(); ++i ) {
+            if ( i->find( component ) == 0  )
+                completes.push_back( peerpath + *i );
         }
     }
 
@@ -447,47 +367,77 @@ namespace OCL
     {
         peerpath.clear();
         peer = context;
+        taskobject = context;
 
-        //cerr <<" text : "<<text<<endl;
-        findPeer( text );
+        std::string to_parse = text.substr(startpos);
+        startpos = 0;
+        std::string::size_type endpos = 0;
+        // Traverse the entered peer-list
+        component.clear();
+        peerpath.clear();
+        while (endpos != std::string::npos )
+            {
+                bool itemfound = false;
+                endpos = to_parse.find(".");
+                if ( endpos == startpos ) {
+                    component.clear();
+                    break;
+                }
+                std::string item = to_parse.substr(startpos, endpos);
 
-        // there is only a peerpath, if there is another peer :
-        if ( peer != context ) {
-            std::string::size_type pos = 0;
-            pos = text.rfind("."); // last dot
-            assert( pos != std::string::npos );
-            // after last dot is for sure the method :
-            component = text.substr( pos+1, std::string::npos);
-
-            // on 'this' object, all before last dot is peerpath
-            if ( object == "this" ) {
-                peerpath = text.substr( startpos, pos )+".";
-            }  // with normal object, all before last-but-one dot is peerpath, 
-            else {
-                pos = text.rfind(".", pos-1); // starting from pos-1, since there is a dot on pos
-                peerpath = text.substr( startpos, pos )+".";
+                if ( taskobject->getObject( item ) && item != "this" ) {
+                    taskobject = peer->getObject(item);
+                    itemfound = true;
+                } else
+                    if ( peer->hasPeer( item ) ) {
+                        peer = peer->getPeer( item );
+                        taskobject = peer;
+                        itemfound = true;
+                    } 
+                if ( itemfound ) { // if "." found and correct path
+                    peerpath += to_parse.substr(startpos, endpos) + ".";
+                    if ( endpos != std::string::npos )
+                        to_parse = to_parse.substr(endpos + 1);
+                    else
+                        to_parse.clear();
+                    startpos = 0;
+                }
+                else {
+                    // no match: typo or member name
+                    // store the (incompletely) typed text
+                    component = item;
+                    break;
+                }
             }
-        } else {
-            std::string::size_type pos = 0;
-            pos = text.rfind("."); // last dot
-            if ( pos == std::string::npos ) // no dot
-                component = text.substr(startpos);
-            else
-                component = text.substr(pos);
+
+        // now we got the peer and taskobject pointers,
+        // the completed path in peerpath
+        // the last partial path in component
+//         cout << "text: '" << text <<"'"<<endl;
+//         cout << "to_parse: '" << text <<"'"<<endl;
+//         cout << "Peerpath: '" << peerpath <<"'"<<endl;
+//         cout << "Component: '" << component <<"'"<<endl;
+
+        TaskContext::PeerList v;
+        if ( taskobject == peer ) {
+            // add peer's completes:
+            v = peer->getPeerList();
+            for (TaskContext::PeerList::iterator i = v.begin(); i != v.end(); ++i) {
+                if ( i->find( component ) == 0 ) { // only add if match 
+                    completes.push_back( peerpath + *i + "." );
+                    //cerr << "added " << peerpath+*i+"."<<endl;
+                }
+            }
         }
-
-//         cerr <<" peer : "<<peer->getName()<<endl;
-//         cerr << "path :"<<peerpath<<endl;
-//         cerr <<" comp : "<<component<<endl;
-//         cerr <<" obj  : "<<object<<endl;
-
-        TaskContext::PeerList v = peer->getPeerList();
+        // add taskobject's completes:
+        v = taskobject->getObjectList();
         for (TaskContext::PeerList::iterator i = v.begin(); i != v.end(); ++i) {
-            if ( i->find( component ) == 0 ) { // only add if match 
+            if ( i->find( component ) == 0 && *i != "this" ) { // only add if match 
                 completes.push_back( peerpath + *i + "." );
                 //cerr << "added " << peerpath+*i+"."<<endl;
             }
         }
+        return;
     }
 
     char ** TaskBrowser::orocos_hmi_completion ( const char *text, int start, int end )
@@ -505,7 +455,8 @@ namespace OCL
           command(0),
           debug(0),
           line_read(0),
-          lastc(0), storedname(""), storedline(-1)
+          lastc(0), storedname(""), storedline(-1),
+          macrorecording(false)
     {
         tb = this;
         context = tb;
@@ -546,46 +497,47 @@ namespace OCL
         cout << "    TAB completion and HISTORY is available ('bash' like)" <<coloroff<<nl<<nl;
         while (1)
             {
-                if ( context == tb )
-                    cout << green << " Watching " <<coloroff;
-                else
-                    cout << red << " In " << coloroff;
+                if (!macrorecording) {
+                    if ( context == tb )
+                        cout << green << " Watching " <<coloroff;
+                    else
+                        cout << red << " In " << coloroff;
 
-                cout << "Task "<<green<< taskcontext->getName() <<coloroff<< ". (Status of last Command : ";
-                if ( command == 0 )
-                    cout << "none";
-                else if ( command->done() ) // disposed or done
-                     cout <<green + "done";
-                else if ( command->valid() )
-                    cout << blue+"busy";
-                else if ( command->executed() ) // if not valid, but executed: fail
-                    cout << red+"fail";
-                else if ( command->accepted() )
-                    cout << blue+"queued";
-                cout << coloroff << " )"; 
-                // This 'endl' is important because it flushes the whole output to screen of all
-                // processing that previously happened, which was using 'nl'.
-                cout << endl;
+                    cout << "Task "<<green<< taskcontext->getName() <<coloroff<< ". (Status of last Command : ";
+                    if ( command == 0 )
+                        cout << "none";
+                    else if ( command->done() ) // disposed or done
+                        cout <<green + "done";
+                    else if ( command->valid() )
+                        cout << blue+"busy";
+                    else if ( command->executed() ) // if not valid, but executed: fail
+                        cout << red+"fail";
+                    else if ( command->accepted() )
+                        cout << blue+"queued";
+                    cout << coloroff << " )"; 
+                    // This 'endl' is important because it flushes the whole output to screen of all
+                    // processing that previously happened, which was using 'nl'.
+                    cout << endl;
 
-                // print traces.
-                for (PTrace::iterator it = ptraces.begin(); it != ptraces.end(); ++it) {
-                    TaskContext* progpeer = it->first.first;
-                    int line = progpeer->scripting()->getProgramLine(it->first.second);
-                    if ( line != it->second ) {
-                        it->second = line;
-                        printProgram( it->first.second, -1, progpeer );
+                    // print traces.
+                    for (PTrace::iterator it = ptraces.begin(); it != ptraces.end(); ++it) {
+                        TaskContext* progpeer = it->first.first;
+                        int line = progpeer->scripting()->getProgramLine(it->first.second);
+                        if ( line != it->second ) {
+                            it->second = line;
+                            printProgram( it->first.second, -1, progpeer );
+                        }
+                    }
+
+                    for (PTrace::iterator it = straces.begin(); it != straces.end(); ++it) {
+                        TaskContext* progpeer = it->first.first;
+                        int line = progpeer->scripting()->getStateMachineLine(it->first.second);
+                        if ( line != it->second ) {
+                            it->second = line;
+                            printProgram( it->first.second, -1, progpeer );
+                        }
                     }
                 }
-
-                for (PTrace::iterator it = straces.begin(); it != straces.end(); ++it) {
-                    TaskContext* progpeer = it->first.first;
-                    int line = progpeer->scripting()->getStateMachineLine(it->first.second);
-                    if ( line != it->second ) {
-                        it->second = line;
-                        printProgram( it->first.second, -1, progpeer );
-                    }
-                }
-
                 // Call readline wrapper :
                 std::string command( rl_gets() ); // copy over to string
                 cout << coloroff;
@@ -622,6 +574,8 @@ namespace OCL
                 } else if ( command.find(".") == 0  ) {
                     command = std::string(command, 1, command.length());
                     this->browserAction( command );
+                } else if ( macrorecording) {
+                    macrotext += command +'\n';
                 } else {
                     this->evalCommand( command );
                     // a command was typed... clear storedline such that a next 'list'
@@ -656,6 +610,42 @@ namespace OCL
         }
         context = tb;
         log(Info) <<"Watching Task "<< taskcontext->getName()<<endlog();
+    }
+
+    void TaskBrowser::recordMacro(std::string name)
+    {
+        if ( name.empty() ) {
+            cerr << "Please specify a macro name." <<endl;
+            return;
+        } else {
+            cout << "Recording macro "<< name <<endl;
+            cout << "Use program scripting syntax (do, set,...) !" << endl;
+        }
+        macrorecording = true;
+        macroname = name;
+    }
+
+    void TaskBrowser::cancelMacro() {
+        cout << "Canceling macro "<< macroname <<endl;
+        macrorecording = false;
+    }
+
+    void TaskBrowser::endMacro() {
+        string fname = macroname + ".ops";
+        macrorecording = false;
+        cout << "Saving file "<< fname <<endl;
+        ofstream macrofile( fname.c_str() );
+        macrofile << "/* TaskBrowser macro '"<<macroname<<"' */" <<endl<<endl;
+        macrofile << "export function "<<macroname<<"() {"<<endl;
+        macrofile << macrotext.c_str();
+        macrofile << "}"<<endl;
+
+        cout << "Loading file "<< fname <<endl;
+        ProgramLoader loader;
+        if ( loader.loadProgram( fname, context ) ) {
+            cout << "Done."<<endl;
+        } else
+            cout << "Failed."<<endl;
     }
 
     void TaskBrowser::switchBack()
@@ -810,32 +800,11 @@ namespace OCL
                 log(Debug) <<"No such peer : "<< c <<endlog();
                 return 0;
             }
-        object = pp.object(); // store object.
+        taskobject = pp.taskObject();
+        assert(taskobject);
         peer = pp.peer();
         return pp.peer();
     }
-
-#if 0
-    PropertyBase* TaskBrowser::findProperty(std::string c) {
-        // returns the one but last peer, which is the one we want.
-        std::string s( c );
-            
-        our_pos_iter_t parsebegin( s.begin(), s.end(), "teststring" );
-        our_pos_iter_t parseend;
-            
-        PropertyParser pp();
-        pp.setPropertyBag( taskcontext.properties() );
-        try {
-            parse( parsebegin, parseend, pp.locator(), SKIP_PARSER );
-        }
-        catch( ... )
-            {
-                log(Debug) <<"No such property : "<< c <<endlog();
-                return 0;
-            }
-        return pp.property();
-    }
-#endif
 
     void TaskBrowser::browserAction(std::string& act)
     {
@@ -987,6 +956,18 @@ namespace OCL
         if ( instr == "nocolors") {
             this->setColorTheme(nocolors);
             cout <<nl << "Disabling all colors"<<endl;
+            return;
+        }
+        if ( instr == "record") {
+            recordMacro( arg );
+            return;
+        }
+        if ( instr == "cancel") {
+            cancelMacro();
+            return;
+        }
+        if ( instr == "end") {
+            endMacro();
             return;
         }
         cerr << "Unknown Browser Action : "<< act <<endl;
@@ -1437,79 +1418,69 @@ namespace OCL
     {
         // this sets this->peer to the peer given
         peer = context;
-        if ( this->findPeer( peerp+"." ) == 0 )
+        if ( this->findPeer( peerp+"." ) == 0 ) {
+            cerr << "No such peer or object: " << peerp << endl;
             return;
+        }
 
-        cout <<nl<<" Listing "<< green << peer->getName()<<coloroff<< " :"<<nl;
+        if ( peer == taskobject ) 
+            cout <<nl<<" Listing TaskContext "<< green << peer->getName()<<coloroff<< " :"<<nl;
+        else
+            cout <<nl<<" Listing TaskObject "<< green << taskobject->getName()<<coloroff<< " :"<<nl;
 
-        std::vector<std::string> objlist = peer->attributes()->names();
-        PropertyBag* bag = peer->properties();
-        cout <<nl<<" Attributes   : ";
-        if ( !objlist.empty() || !bag->empty() ) {
+        // Only print Properties for TaskContexts
+        if ( peer == taskobject ) {
+            cout <<nl<<" Configuration Properties: ";
+            PropertyBag* bag = peer->properties();
+            if ( bag && bag->size() != 0 ) {
+                // Print Properties:
+                for( PropertyBag::iterator it = bag->begin(); it != bag->end(); ++it) {
+                    DataSourceBase::shared_ptr pds = (*it)->getDataSource();
+                    cout << nl << setw(11)<< (*it)->getType()<< " "
+                         << coloron <<setw(14)<<left<< (*it)->getName() << coloroff;
+                    this->printResult( pds.get(), false ); // do not recurse
+                    cout<<" ("<< (*it)->getDescription() <<')'<< nl;
+                }
+            } else {
+                cout << "(none)";
+            }
+        }
+
+        // Print "this" interface (without detail) and then list objects...
+        cout <<nl<< " Execution Interface:";
+
+        cout <<nl<< "  Attributes   : ";
+        std::vector<std::string> objlist = taskobject->attributes()->names();
+        if ( !objlist.empty() ) {
             cout << nl;
             // Print Attributes:
             for( std::vector<std::string>::iterator it = objlist.begin(); it != objlist.end(); ++it) {
-                DataSourceBase::shared_ptr pds = peer->attributes()->getValue(*it)->getDataSource();
-                cout << ((bag && bag->find(*it)) ? " (Property ) " : " (Attribute) ")
-                     << setw(11)<< pds->getType()<< " "
+                DataSourceBase::shared_ptr pds = taskobject->attributes()->getValue(*it)->getDataSource();
+                cout << setw(11)<< pds->getType()<< " "
                      << coloron <<setw( 14 )<<left<< *it << coloroff;
                 this->printResult( pds.get(), false ); // do not recurse
-                if (bag && bag->find(*it)) {
-                    cout<<" ("<< bag->find(*it)->getDescription() <<')'<< nl;
-                } else
-                    cout <<nl;
-            }
-            // Print Properties:
-            for( PropertyBag::iterator it = bag->begin(); it != bag->end(); ++it) {
-                if (peer->attributes()->getValue( (*it)->getName() ) )
-                    continue; // atributes were already printed above
-                DataSourceBase::shared_ptr pds = (*it)->getDataSource();
-                cout << " (Property ) "
-                     << setw(11)<< (*it)->getType()<< " "
-                         << coloron <<setw(14)<<left<< (*it)->getName() << coloroff;
-                this->printResult( pds.get(), false ); // do not recurse
-                cout<<" ("<< (*it)->getDescription() <<')'<< nl;
+                cout <<nl;
             }
         } else {
-            cout <<coloron<< "(none)" << coloroff<<nl;
+            cout << coloron << "(none)";
         }
         
-        // Print "this" interface (without detail) and then list objects...
-        cout <<nl<< " Interface    : "<<coloron;
-        
         cout <<coloroff<<nl<< "  Methods      : "<<coloron;
-        objlist = peer->methods()->getNames();
+        objlist = taskobject->methods()->getNames();
         if ( !objlist.empty() ) {
             copy(objlist.begin(), objlist.end(), std::ostream_iterator<std::string>(cout, " "));
         } else {
             cout << "(none)";
         }
         cout <<coloroff<<nl<< "  Commands     : "<<coloron;
-        objlist = peer->commands()->getNames();
+        objlist = taskobject->commands()->getNames();
         if ( !objlist.empty() ) {
             copy(objlist.begin(), objlist.end(), std::ostream_iterator<std::string>(cout, " "));
         } else {
             cout << "(none)";
         }
         cout <<coloroff<<nl<< "  Events       : "<<coloron;
-        objlist = peer->events()->getEvents();
-        if ( !objlist.empty() ) {
-            copy(objlist.begin(), objlist.end(), std::ostream_iterator<std::string>(cout, " "));
-        } else {
-            cout << "(none)";
-        }
-
-        objlist = peer->getObjectList();
-        cout <<coloroff<<nl<<nl<< " Objects      : "<<nl;
-        if ( !objlist.empty() ) {
-            for(vector<string>::iterator it = objlist.begin(); it != objlist.end(); ++it)
-                cout <<coloron<< "  " << setw(14) << *it <<coloroff<< " ( "<< peer->getObject(*it)->getDescription() << " ) "<<nl;
-        } else {
-            cout <<coloron<< "(none)" <<coloroff <<nl;
-        }
-
-        cout <<coloroff<<nl<< " Ports        : "<<coloron;
-        objlist = peer->ports()->getPortNames();
+        objlist = taskobject->events()->getEvents();
         if ( !objlist.empty() ) {
             copy(objlist.begin(), objlist.end(), std::ostream_iterator<std::string>(cout, " "));
         } else {
@@ -1517,35 +1488,75 @@ namespace OCL
         }
         cout << coloroff << nl;
 
-        objlist = peer->scripting()->getPrograms();
-        if ( !objlist.empty() ) {
-            cout << " Programs     : "<<coloron;
-            copy(objlist.begin(), objlist.end(), std::ostream_iterator<std::string>(cout, " "));
-            cout << coloroff << nl;
-        }
-
-        objlist = peer->scripting()->getStateMachines();
-        if ( !objlist.empty() ) {
-            cout << " StateMachines: "<<coloron;
-            copy(objlist.begin(), objlist.end(), std::ostream_iterator<std::string>(cout, " "));
-            cout << coloroff << nl;
-        }
-
-        // if we are in the TB, display the peers of our connected task:
-        if ( context == tb ) {
-            cout << " "<<peer->getName()<<" Peers : "<<coloron;
-            objlist = peer->getPeerList();
-            if ( !objlist.empty() )
-                copy(objlist.begin(), objlist.end(), std::ostream_iterator<std::string>(cout, " "));
-            else
+        if ( peer == taskobject ) {
+            cout <<nl<< " Data Flow Ports: ";
+            objlist = peer->ports()->getPortNames();
+            if ( !objlist.empty() ) {
+                for(vector<string>::iterator it = objlist.begin(); it != objlist.end(); ++it) {
+                    PortInterface* port = peer->ports()->getPort(*it);
+                    PortInterface::PortType pt = port->getPortType();
+                    // Port type R/W
+                    cout << nl << " " << (pt == PortInterface::ReadPort ?
+                        " R " : pt == PortInterface::WritePort ? " W " : "RW ");
+                    // Port data type + name
+                    if ( !port->ready() )
+                        cout << setw(11)<<right<< "(unconnected)";
+                    else
+                        cout << setw(11)<<right<<port->connection()->getDataSource()->getType();
+                    cout << " "
+                         << coloron <<setw( 14 )<<left<< *it << coloroff;
+                    // Port description
+//                     if ( peer->getObject(*it) )
+//                         cout << " ( "<< taskobject->getObject(*it)->getDescription() << " ) ";
+                }
+            } else {
                 cout << "(none)";
+            }
+            cout << coloroff << nl;
+        }
+
+        objlist = taskobject->getObjectList();
+        cout <<nl<< " Task Objects: "<<nl;
+        if ( !objlist.empty() ) {
+            for(vector<string>::iterator it = objlist.begin(); it != objlist.end(); ++it)
+                cout <<coloron<< "  " << setw(14) << *it <<coloroff<< " ( "<< taskobject->getObject(*it)->getDescription() << " ) "<<nl;
         } else {
-            cout << " Peers        : "<<coloron;
-            objlist = peer->getPeerList();
-            if ( !objlist.empty() )
+            cout <<coloron<< "(none)" <<coloroff <<nl;
+        }
+
+        // TaskContext specific:
+        if ( peer == taskobject ) {
+
+            objlist = peer->scripting()->getPrograms();
+            if ( !objlist.empty() ) {
+                cout << " Programs     : "<<coloron;
                 copy(objlist.begin(), objlist.end(), std::ostream_iterator<std::string>(cout, " "));
-            else
-                cout << "(none)";
+                cout << coloroff << nl;
+            }
+
+            objlist = peer->scripting()->getStateMachines();
+            if ( !objlist.empty() ) {
+                cout << " StateMachines: "<<coloron;
+                copy(objlist.begin(), objlist.end(), std::ostream_iterator<std::string>(cout, " "));
+                cout << coloroff << nl;
+            }
+
+            // if we are in the TB, display the peers of our connected task:
+            if ( context == tb ) {
+                cout <<nl<< " "<<peer->getName()<<" Peers : "<<coloron;
+                objlist = peer->getPeerList();
+                if ( !objlist.empty() )
+                    copy(objlist.begin(), objlist.end(), std::ostream_iterator<std::string>(cout, " "));
+                else
+                    cout << "(none)";
+            } else {
+                cout << nl <<" Peers        : "<<coloron;
+                objlist = peer->getPeerList();
+                if ( !objlist.empty() )
+                    copy(objlist.begin(), objlist.end(), std::ostream_iterator<std::string>(cout, " "));
+                else
+                    cout << "(none)";
+            }
         }
         cout <<coloroff<<nl;
     }
