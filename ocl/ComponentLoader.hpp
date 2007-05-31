@@ -67,7 +67,8 @@ namespace OCL
  * Use this macro to register a single component in a shared library (plug-in).
  * You can only use this macro once in a .cpp file for the whole shared library.
  * It adds a function 'createComponent', which will return a new instance of
- * the library's component type.
+ * the library's component type and a function 'getComponentType', which returns
+ * the type (namespace::class) name of the component.
  *
  * The advantage of this approach is that the user does not need to know the
  * class name of the component, he just needs to locate the shared library itself.
@@ -80,6 +81,10 @@ extern "C" { \
   OCL_API RTT::TaskContext* createComponent(std::string instance_name) \
   { \
     return new CNAME(instance_name); \
+  } \
+  OCL_API std::string getComponentType() \
+  { \
+    return ORO_LIST_COMPONENT_TYPE_str(CNAME); \
   } \
 } /* extern "C" */
 
