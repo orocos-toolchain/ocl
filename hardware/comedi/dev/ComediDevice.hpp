@@ -22,15 +22,18 @@
    Major rewrite of original file by Peter Soetens
 */
 
-#ifndef COMEDIDEVICE_HPP
-#define COMEDIDEVICE_HPP
+#ifndef OCL_COMEDIDEVICE_HPP
+#define OCL_COMEDIDEVICE_HPP
 
 #include <boost/shared_ptr.hpp>
 
 namespace RTT
 {
   /**
-   * Some small class for using comedi in C++.
+   * Minimal C++ API to a comedi device.
+   * You require the ComediSubDevice family classes in order to
+   * access subdevices.
+   * @see http://www.comedi.org
    */
   class ComediDevice
   {
@@ -111,6 +114,7 @@ namespace RTT
 
     /**
        Return a pointer to a comedi device info.
+       This may be null if the device could not be found.
     */
     DeviceInfo* getDevice();
         

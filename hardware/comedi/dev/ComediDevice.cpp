@@ -59,12 +59,16 @@ namespace RTT
   Data ComediDevice::getMaxData(unsigned int subd)
   {
     unsigned int channel = 0;
+    if ( !d->it )
+        return Data();
     return (Data) comedi_get_maxdata( d->it, subd, channel );
   }
 
   int ComediDevice::getSubDeviceType(unsigned int subd)
   {
-    return comedi_get_subdevice_type( d->it, subd );
+      if ( !d->it )
+          return -1;
+      return comedi_get_subdevice_type( d->it, subd );
   }
 
   int ComediDevice::read( unsigned int subd, unsigned int chanNr,
