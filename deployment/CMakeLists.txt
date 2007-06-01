@@ -20,6 +20,6 @@ IF ( BUILD_DEPLOYMENT )
     # with the necessary 'export' attributes, or unresolved symbols
     # will appear. Especially template classes and exceptions are 
     # sensitive.
-    SET_SOURCE_FILES_PROPERTIES( ${SRCS} PROPERTIES COMPILE_FLAGS "-fvisibility=hidden")
+    # SET_SOURCE_FILES_PROPERTIES( ${SRCS} PROPERTIES COMPILE_FLAGS "-fvisibility=hidden")
 
 ENDIF ( BUILD_DEPLOYMENT )
