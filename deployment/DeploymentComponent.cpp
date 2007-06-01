@@ -64,15 +64,20 @@ namespace OCL
                                     "Print out a list of all component types this component can create.");
 
         this->methods()->addMethod( RTT::method("loadConfiguration", &DeploymentComponent::loadConfiguration, this),
-                                    "Load a new XML configuration from a file.",
+                                    "Load a new XML configuration from a file (identical to loadComponents).",
                                     "File", "The file which contains the new configuration.");
         this->methods()->addMethod( RTT::method("loadConfigurationString", &DeploymentComponent::loadConfigurationString, this),
                                     "Load a new XML configuration from a string.",
                                     "Text", "The string which contains the new configuration.");
+
+        this->methods()->addMethod( RTT::method("loadComponents", &DeploymentComponent::loadComponents, this),
+                                    "Load components listed in an XML configuration file.",
+                                    "File", "The file which contains the new configuration.");
         this->methods()->addMethod( RTT::method("configureComponents", &DeploymentComponent::configureComponents, this),
-                                    "Apply a loaded configuration.");
+                                    "Apply a loaded configuration to the components and configure() them if AutoConf is set.");
         this->methods()->addMethod( RTT::method("startComponents", &DeploymentComponent::startComponents, this),
                                     "Start the components configured for AutoStart.");
+
         // Work around compiler ambiguity:
         typedef bool(DeploymentComponent::*DCFun)(const std::string&, const std::string&);
         DCFun cp = &DeploymentComponent::connectPeers;
@@ -317,9 +322,15 @@ namespace OCL
         file.close();
         return this->loadConfiguration( tmpfile );
     }
+
     bool DeploymentComponent::loadConfiguration(const std::string& configurationfile)
     {
-        Logger::In in("DeploymentComponent::loadConfiguration");
+        return this->loadComponents(configurationfile);
+    }
+
+    bool DeploymentComponent::loadComponents(const std::string& configurationfile)
+    {
+        Logger::In in("DeploymentComponent::loadComponents");
 
         PropertyBag from_file;
         log(Info) << "Loading '" <<configurationfile<<"'."<< endlog();

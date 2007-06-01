@@ -252,28 +252,23 @@ namespace OCL
          * the latest loaded configuration option used.
          *
          * @see configureComponents to configure the components with
-         * the loaded configuration.
+         * the loaded configuration and startComponents to start them.
          * @param config_file A file on local disk containing the XML configuration.
          * @return true if the configuration could be read and was valid.
          */
-        bool loadConfiguration(const std::string& config_file);
-
-        /**
-         * Identical to \a loadConfiguration, but reads the XML from a string
-         * instead of a file.
-         * @param config_text A string containing the XML configuration.
-         * @return true if the configuration string could be read and was valid.
-         */
-        bool loadConfigurationString(const std::string& config_text);
+        bool loadComponents(const std::string& config_file);
 
         /** 
          * Configure the components with loaded configuration(s). This
-         * function connects components and data ports, attaches
-         * activities, sends properties to the components, loads scripts etc.
-         * If the configuration fails halfway, the system is configured as complete
-         * as possible. You can try to reconfigure by loading a new configuration
-         * (using loadConfiguration ) and call configureComponents again to resolve
-         * remaining issues.
+         * function connects components and data ports, reads
+         * properties for the components, attaches activities and
+         * loads program and state machine scripts.  If a component
+         * XML entry has the AutoConf element, configure() will be
+         * called upon this component as well.  If the configuration
+         * fails halfway, the system is configured as complete as
+         * possible. You can try to reconfigure by loading a new
+         * configuration (using loadConfiguration ) and call
+         * configureComponents again to resolve remaining issues.
          *
          * This function tries to apply the configuration with a best effort.
          * For example, if a program must be loaded in the component, and a program
@@ -324,6 +319,31 @@ namespace OCL
          * read.
          */
         bool configureFromFile(std::string name, std::string filename);
+
+        /** 
+         * Load a (partial) application XML configuration from disk. The
+         * necessary components are located or loaded, but no
+         * component configuration is yet applied. One can load
+         * multiple configurations and call configureComponents() once
+         * to apply all settings. In case of duplicate information is
+         * the latest loaded configuration option used.
+         *
+         * @deprecated by loadComponents.
+         * @see configureComponents to configure the components with
+         * the loaded configuration.
+         * @param config_file A file on local disk containing the XML configuration.
+         * @return true if the configuration could be read and was valid.
+         */
+        bool loadConfiguration(const std::string& config_file);
+
+        /**
+         * Identical to \a loadConfiguration, but reads the XML from a string
+         * instead of a file.
+         * @param config_text A string containing the XML configuration.
+         * @return true if the configuration string could be read and was valid.
+         */
+        bool loadConfigurationString(const std::string& config_text);
+
     };
 
 
