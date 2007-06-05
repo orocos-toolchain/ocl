@@ -119,8 +119,12 @@ namespace OCL
 
         /* If the line has any text in it,
            save it on the history. */
-        if (line_read && *line_read)
-            add_history (line_read);
+        if (line_read && *line_read) {
+            // do not store "quit"
+            string s = line_read;
+            if (s != "quit") 
+                add_history (line_read);
+        }
 
         return (line_read);
     }
@@ -466,6 +470,10 @@ namespace OCL
         
         this->setColorTheme( darkbg );
         this->enterTask();
+
+        if ( read_history(".tb_history") != 0 ) {
+            read_history("~/.tb_history");
+        }
     }
 
     TaskBrowser::~TaskBrowser() {
@@ -473,6 +481,33 @@ namespace OCL
             {
                 free (line_read);
             }
+        if ( write_history(".tb_history") != 0 ) {
+            write_history("~/.tb_history");
+        }
+    }
+
+    /**
+     * Helper functions to display task and script states.
+     */
+    char getTaskStatusChar(TaskContext* t)
+    {
+        if (t->isRunning() )
+            return 'R'; // Running
+        if (t->isConfigured() )
+            return 'S'; // Stopped
+        return 'U';     // Unconfigured
+    }
+
+    char getStateMachineStatusChar(TaskContext* t, string progname)
+    {
+        string ps = t->scripting()->getStateMachineStatus(progname);
+        return toupper(ps[0]);
+    }
+
+    char getProgramStatusChar(TaskContext* t, string progname)
+    {
+        string ps = t->scripting()->getProgramStatus(progname);
+        return toupper(ps[0]);
     }
 
     /**
@@ -503,7 +538,9 @@ namespace OCL
                     else
                         cout << red << " In " << coloroff;
 
-                    cout << "Task "<<green<< taskcontext->getName() <<coloroff<< ". (Status of last Command : ";
+                    char state = getTaskStatusChar(taskcontext);
+                    
+                    cout << "Task "<<green<< taskcontext->getName() <<coloroff<< "["<< state <<"]. (Status of last Command : ";
                     if ( command == 0 )
                         cout << "none";
                     else if ( command->done() ) // disposed or done
@@ -538,6 +575,8 @@ namespace OCL
                         }
                     }
                 }
+                // Check port status:
+                checkPorts();
                 // Call readline wrapper :
                 std::string command( rl_gets() ); // copy over to string
                 cout << coloroff;
@@ -667,6 +706,23 @@ namespace OCL
         taskHistory.pop_front();
     }
 
+    void TaskBrowser::checkPorts()
+    {
+        // check periodically if the taskcontext did not change its ports.
+
+        DataFlowInterface::Ports ports;
+        ports = this->ports()->getPorts();
+        for( DataFlowInterface::Ports::iterator i=ports.begin(); i != ports.end(); ++i) {
+            // If our port is no longer connected, try to reconnect.
+            PortInterface* p = *i;
+            PortInterface* tcp = taskcontext->ports()->getPort( p->getName() );
+            if ( p->ready() == false || tcp == 0 || tcp->ready() == false) {
+                this->ports()->removePort( p->getName() );
+                delete p;
+            }
+        }
+    }
+
     void TaskBrowser::setColorTheme(ColorTheme t)
     {
         // background color palettes:
@@ -770,15 +826,8 @@ namespace OCL
         taskcontext = tc; // peer is the new taskcontext.
         lastc = 0;
 
-        // create 'anti-ports' to allow port-level interaction with the peer.
-        ports = taskcontext->ports()->getPorts();
-        for( DataFlowInterface::Ports::iterator i=ports.begin(); i != ports.end(); ++i) {
-            this->ports()->addPort( (*i)->antiClone() );
-        }
-
-        // connect data ports.
+        // connect peer.
         this->connectPeers( taskcontext );
-        this->connectPorts( taskcontext );
 
         cerr << "   Switched to : " << taskcontext->getName() <<endl;
 
@@ -956,6 +1005,17 @@ namespace OCL
         if ( instr == "nocolors") {
             this->setColorTheme(nocolors);
             cout <<nl << "Disabling all colors"<<endl;
+            return;
+        }
+        if ( instr == "connect") {
+            cout <<nl << "TaskBrowser connects to all ports of "<<taskcontext->getName()<<endl;
+            // create 'anti-ports' to allow port-level interaction with the peer.
+            DataFlowInterface::Ports ports = taskcontext->ports()->getPorts();
+            for( DataFlowInterface::Ports::iterator i=ports.begin(); i != ports.end(); ++i) {
+                if (this->ports()->getPort( (*i)->getName() ) == 0 )
+                    this->ports()->addPort( (*i)->antiClone() );
+            }
+            RTT::connectPorts(this,taskcontext);
             return;
         }
         if ( instr == "record") {
@@ -1321,8 +1381,7 @@ namespace OCL
 
         // if program exists, display.
         if ( progpeer->scripting()->hasProgram( progname ) ) {
-            ps = progpeer->scripting()->getProgramStatus(progname);
-            s = toupper(ps[0]);
+            s = getProgramStatusChar(progpeer, progname);
             txtss.str( progpeer->scripting()->getProgramText(progname) );
             ln = progpeer->scripting()->getProgramLine(progname);
             if ( cl < 0 ) cl = ln;
@@ -1334,8 +1393,7 @@ namespace OCL
 
         // If statemachine exists, display.
         if ( progpeer->scripting()->hasStateMachine( progname ) ) {
-            ps = progpeer->scripting()->getStateMachineStatus(progname);
-            s = toupper(ps[0]);
+            s = getStateMachineStatusChar(progpeer, progname);
             txtss.str( progpeer->scripting()->getStateMachineText(progname) );
             ln = progpeer->scripting()->getStateMachineLine(progname);
             if ( cl < 0 ) cl = ln;
@@ -1361,8 +1419,7 @@ namespace OCL
         int end;
         bool found(false);
         if ( context->scripting()->hasProgram( storedname ) ) {
-            ps = context->scripting()->getProgramStatus(storedname);
-            s = toupper(ps[0]);
+            s = getProgramStatusChar(context, storedname);
             txtss.str( context->scripting()->getProgramText(storedname) );
             ln = context->scripting()->getProgramLine(storedname);
             if ( cl < 0 ) cl = storedline;
@@ -1373,8 +1430,7 @@ namespace OCL
             found = true;
         }
         if ( context->scripting()->hasStateMachine(storedname) ) {
-            ps = context->scripting()->getStateMachineStatus(storedname);
-            s = toupper(ps[0]);
+            s = getStateMachineStatusChar(context, storedname);
             txtss.str( context->scripting()->getStateMachineText(storedname) );
             ln = context->scripting()->getStateMachineLine(storedname);
             if ( cl < 0 ) cl = storedline;
@@ -1439,11 +1495,12 @@ namespace OCL
                     cout << nl << setw(11)<< (*it)->getType()<< " "
                          << coloron <<setw(14)<<left<< (*it)->getName() << coloroff;
                     this->printResult( pds.get(), false ); // do not recurse
-                    cout<<" ("<< (*it)->getDescription() <<')'<< nl;
+                    cout<<" ("<< (*it)->getDescription() <<')';
                 }
             } else {
                 cout << "(none)";
             }
+            cout <<nl;
         }
 
         // Print "this" interface (without detail) and then list objects...
@@ -1530,33 +1587,31 @@ namespace OCL
             objlist = peer->scripting()->getPrograms();
             if ( !objlist.empty() ) {
                 cout << " Programs     : "<<coloron;
-                copy(objlist.begin(), objlist.end(), std::ostream_iterator<std::string>(cout, " "));
+                for(vector<string>::iterator it = objlist.begin(); it != objlist.end(); ++it)
+                    cout << *it << "["<<getProgramStatusChar(peer,*it)<<"] ";
                 cout << coloroff << nl;
             }
 
             objlist = peer->scripting()->getStateMachines();
             if ( !objlist.empty() ) {
                 cout << " StateMachines: "<<coloron;
-                copy(objlist.begin(), objlist.end(), std::ostream_iterator<std::string>(cout, " "));
+                for(vector<string>::iterator it = objlist.begin(); it != objlist.end(); ++it)
+                    cout << *it << "["<<getStateMachineStatusChar(peer,*it)<<"] ";
                 cout << coloroff << nl;
             }
 
             // if we are in the TB, display the peers of our connected task:
-            if ( context == tb ) {
+            if ( context == tb ) 
                 cout <<nl<< " "<<peer->getName()<<" Peers : "<<coloron;
-                objlist = peer->getPeerList();
-                if ( !objlist.empty() )
-                    copy(objlist.begin(), objlist.end(), std::ostream_iterator<std::string>(cout, " "));
-                else
-                    cout << "(none)";
-            } else {
+            else
                 cout << nl <<" Peers        : "<<coloron;
-                objlist = peer->getPeerList();
-                if ( !objlist.empty() )
-                    copy(objlist.begin(), objlist.end(), std::ostream_iterator<std::string>(cout, " "));
-                else
-                    cout << "(none)";
-            }
+
+            objlist = peer->getPeerList();
+            if ( !objlist.empty() )
+                for(vector<string>::iterator it = objlist.begin(); it != objlist.end(); ++it)
+                    cout << *it << "["<<getTaskStatusChar(peer->getPeer(*it))<<"] ";
+            else
+                cout << "(none)";
         }
         cout <<coloroff<<nl;
     }

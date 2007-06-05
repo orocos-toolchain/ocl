@@ -131,6 +131,8 @@ namespace OCL
         void recordMacro(std::string name);
         void cancelMacro();
         void endMacro();
+
+        void checkPorts();
     public:
 
         /**
