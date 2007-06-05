@@ -3,7 +3,7 @@
 #include "rtt/RTT.hpp"
 #include "rtt/Logger.hpp"
 #include "rtt/marsh/TableMarshaller.hpp"
-#include "rtt/marsh/TableHeaderMarshaller.hpp"
+#include "NiceHeaderMarshaller.hpp"
 
 
 #include "ocl/ComponentLoader.hpp"
@@ -16,7 +16,7 @@ namespace OCL
 
     FileReporting::FileReporting(const std::string& fr_name)
         : ReportingComponent( fr_name ),
-          repfile("ReportFile","Location on disc to store the reports.", "results.txt")
+          repfile("ReportFile","Location on disc to store the reports.", "reports.dat")
     {
         this->properties()->addProperty( &repfile );
     }
@@ -26,7 +26,7 @@ namespace OCL
         mfile.open( repfile.get().c_str() );
         if (mfile) {
             if ( this->writeHeader)
-                fheader = new RTT::TableHeaderMarshaller<std::ostream>( mfile );
+                fheader = new RTT::NiceHeaderMarshaller<std::ostream>( mfile );
             else 
                 fheader = 0;
             fbody = new RTT::TableMarshaller<std::ostream>( mfile );

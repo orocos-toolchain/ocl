@@ -386,6 +386,7 @@ namespace OCL
 
         // write headers.
         if (writeHeader.get()) {
+            this->snapshot();
             this->makeReport();
             for(Marshallers::iterator it=marshallers.begin(); it != marshallers.end(); ++it) {
                 it->first->serialize( report );

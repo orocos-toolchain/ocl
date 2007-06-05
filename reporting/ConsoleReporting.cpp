@@ -2,7 +2,7 @@
 #include "ConsoleReporting.hpp"
 #include "rtt/Logger.hpp"
 #include "rtt/marsh/TableMarshaller.hpp"
-#include "rtt/marsh/TableHeaderMarshaller.hpp"
+#include "NiceHeaderMarshaller.hpp"
 
 #include "ocl/ComponentLoader.hpp"
 ORO_LIST_COMPONENT_TYPE(OCL::ConsoleReporting)
@@ -25,7 +25,7 @@ namespace OCL
                 RTT::Marshaller* fheader;
                 RTT::Marshaller* fbody;
                 if ( this->writeHeader)
-                    fheader = new RTT::TableHeaderMarshaller<std::ostream>( mconsole );
+                    fheader = new RTT::NiceHeaderMarshaller<std::ostream>( mconsole );
                 else 
                     fheader = 0;
                 fbody = new RTT::TableMarshaller<std::ostream>( mconsole );
