@@ -80,7 +80,21 @@ namespace OCL
          */
         typedef std::map<std::string, ComponentData> CompList;
         CompList comps;
-        
+
+        /**
+         * Keep a list of all loaded libraries such that double
+         * loads are avoided during import/loadLibrary.
+         */
+        static std::vector<std::string> LoadedLibs;
+
+        /**
+         * Handle of last loaded library.
+         */
+        void* handle;
+        /**
+         * Name of last loaded libarary.
+         */
+        std::string libname;
     public:
         DeploymentComponent(std::string name = "Configurator");
         
@@ -300,6 +314,14 @@ namespace OCL
         void clearConfiguration();
 
         /**
+         * This function runs loadComponents, configureComponents and startComponents
+         * in a row, given no failures occur along the way.
+         */
+        bool kickStart(const std::string& file_name);
+
+        using TaskCore::configure;
+
+        /**
          * Configure a component by loading the property file 'name.cpf' for component with
          * name \a name.
          * @param name The name of the component to configure.
@@ -307,7 +329,7 @@ namespace OCL
          * @return true if the component is a peer of this component and the file could be
          * read.
          */
-        bool configure(std::string name);
+        bool configure(const std::string& name);
 
         /** 
          * Configure a component by loading a property file.
@@ -318,7 +340,7 @@ namespace OCL
          * @return true if the component is a peer of this component and the file could be
          * read.
          */
-        bool configureFromFile(std::string name, std::string filename);
+        bool configureFromFile(const std::string& name, const std::string& filename);
 
         /** 
          * Load a (partial) application XML configuration from disk. The

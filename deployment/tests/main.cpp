@@ -30,8 +30,8 @@ public:
 int ORO_main(int, char**)
 {
     DeploymentComponent dc;
-    MyTask t1("t1");
-    MyTask t2("t2");
+    MyTask t1("ComponentA");
+    MyTask t2("ComponentB");
 
     dc.addPeer( &t1 );
     dc.addPeer( &t2 );

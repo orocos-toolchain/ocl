@@ -21,6 +21,8 @@ namespace OCL
     using namespace std;
     using namespace RTT;
 
+    std::vector<string> DeploymentComponent::LoadedLibs;
+
     DeploymentComponent::DeploymentComponent(std::string name)
         : RTT::TaskContext(name, Stopped),
           compPath("ComponentPath",
@@ -77,6 +79,10 @@ namespace OCL
                                     "Apply a loaded configuration to the components and configure() them if AutoConf is set.");
         this->methods()->addMethod( RTT::method("startComponents", &DeploymentComponent::startComponents, this),
                                     "Start the components configured for AutoStart.");
+
+        this->methods()->addMethod( RTT::method("kickStart", &DeploymentComponent::kickStart, this),
+                                    "Calls loadComponents, configureComponents and startComponents in a row.",
+                                    "File", "The file which contains the XML configuration to use.");
 
         // Work around compiler ambiguity:
         typedef bool(DeploymentComponent::*DCFun)(const std::string&, const std::string&);
@@ -305,7 +311,7 @@ namespace OCL
         return true;
     }
 
-    int string_to_oro_sched(std::string sched) {
+    int string_to_oro_sched(const std::string& sched) {
         if ( sched == "ORO_SCHED_OTHER" )
             return ORO_SCHED_OTHER;
         if (sched == "ORO_SCHED_RT" )
@@ -321,6 +327,11 @@ namespace OCL
         file << text.c_str();
         file.close();
         return this->loadConfiguration( tmpfile );
+    }
+
+    bool DeploymentComponent::kickStart(const std::string& configurationfile)
+    {
+        return this->loadComponents(configurationfile) && this->configureComponents() && this->startComponents();
     }
 
     bool DeploymentComponent::loadConfiguration(const std::string& configurationfile)
@@ -476,7 +487,7 @@ namespace OCL
                                         Property<int> prio;
                                         if ( nm.rvalue().getProperty<int>("Priority") )
                                             prio = nm.rvalue().getProperty<int>("Priority"); // work around RTT 1.0.2 bug
-                                        if ( !prio ) {
+                                        if ( !prio.ready() ) {
                                             log(Error)<<"Please specify priority <short> of NonPeriodicActivity."<<endlog();
                                             valid = false;
                                         }
@@ -625,7 +636,7 @@ namespace OCL
         // Create data port connections:
         for(ConMap::iterator it = conmap.begin(); it != conmap.end(); ++it) {
             if ( it->second.ports.size() < 2 ){
-                log(Error) << "Can not form connection "<<it->first<<" with only one Port."<< endlog();
+                log(Warning) << "Can not form connection "<<it->first<<" with only one Port."<< endlog();
                 continue;
             }
             // first find a write and a read port.
@@ -671,20 +682,24 @@ namespace OCL
                 
             log(Info) << "Creating Connection "<<it->first<<":"<<endlog();
             ConnectionInterface::shared_ptr con = writer->createConnection( reader );
-            assert( con );
-            con->connect();
-            // connect all ports to connection
-            p = it->second.ports.begin();
-            while (p != it->second.ports.end() ) {
-                if ((*p)->connectTo( con ) == false) {
-                    log(Error) << "Could not connect Port "<< (*p)->getName() << " to connection " <<it->first<<endlog();
-                    if ((*p)->connected())
-                        log(Error) << "Port "<< (*p)->getName() << " already connected !"<<endlog();
-                    else
-                        log(Error) << "Port "<< (*p)->getName() << " has wrong type !"<<endlog();
-                } else
-                    log(Info) << "Connected Port "<< (*p)->getName() <<" to connection " << it->first <<endlog();
-                ++p;
+            if ( con ) {
+                con->connect();
+                // connect all ports to connection
+                p = it->second.ports.begin();
+                while (p != it->second.ports.end() ) {
+                    if ((*p)->connectTo( con ) == false) {
+                        log(Error) << "Could not connect Port "<< (*p)->getName() << " to connection " <<it->first<<endlog();
+                        if ((*p)->connected())
+                            log(Error) << "Port "<< (*p)->getName() << " already connected !"<<endlog();
+                        else
+                            log(Error) << "Port "<< (*p)->getName() << " has wrong type !"<<endlog();
+                    } else
+                        log(Info) << "Connected Port "<< (*p)->getName() <<" to connection " << it->first <<endlog();
+                    ++p;
+                }
+            } else {
+                log(Error) << "Could not create connection: incompatible port types."<<endlog();
+                valid = false;
             }
             // writer,reader was a clone or anticlone.
             delete writer;
@@ -725,16 +740,17 @@ namespace OCL
             }
 
             // Load programs
-            Property<string> script;
+            Property<string> pscript;
             if (comp.get().getProperty<std::string>("ProgramScript") )
-                script = comp.get().getProperty<std::string>("ProgramScript"); // work around RTT 1.0.2 bug
-            if ( script.ready() ) {
-                valid = valid && peer->scripting()->loadPrograms( script.get(), false );
+                pscript = comp.get().getProperty<std::string>("ProgramScript"); // work around RTT 1.0.2 bug
+            if ( pscript.ready() ) {
+                valid = valid && peer->scripting()->loadPrograms( pscript.get(), false );
             }
+            Property<string> sscript;
             if (comp.get().getProperty<std::string>("StateMachineScript") )
-                script = comp.get().getProperty<std::string>("StateMachineScript");
-            if ( script.ready() ) {
-                valid = valid && peer->scripting()->loadStateMachines( script.get(), false );
+                sscript = comp.get().getProperty<std::string>("StateMachineScript");
+            if ( sscript.ready() ) {
+                valid = valid && peer->scripting()->loadStateMachines( sscript.get(), false );
             }
 
             // AutoConf
@@ -809,6 +825,7 @@ namespace OCL
                     if (namelist[i]->d_type == DT_DIR) { //ignoring symlinks and subdirs here.
                         import( path +"/" +name );
                     } else {
+                        // Import only accepts libraries ending in .so
                         log(Debug) << "Scanning " << path +"/" +name <<endlog();
                         if ( name.rfind(".so") == std::string::npos ||
                              name.substr(name.rfind(".so")) != ".so" ) {
@@ -831,26 +848,53 @@ namespace OCL
     {
         Logger::In in("DeploymentComponent::loadLibrary");
 
-        void *handle;
-
         // try dynamic loading:
         std::string so_name(name);
-        if ( so_name.rfind(".so") == std::string::npos ||
-             so_name.substr(so_name.rfind(".so")) != ".so" )
+        if ( so_name.rfind(".so") == std::string::npos)
             so_name += ".so";
 
-        handle = dlopen ( so_name.c_str(), RTLD_NOW | RTLD_GLOBAL);
+        // Extract the libname such that we avoid double loading (crashes in case of two # versions).
+        libname = so_name;
+        if ( libname.find("/") != string::npos ) 
+            libname = libname.substr( so_name.rfind("/")+1 );
+        if ( libname.find("lib") == 0 ) {
+            libname = libname.substr(3);
+        }
+        // finally:
+        libname = libname.substr(0, libname.find(".so") );
+
+        if ( find(LoadedLibs.begin(), LoadedLibs.end(),libname) != LoadedLibs.end() ) {
+            log(Info) <<"Library "<< libname <<" already loaded."<<endlog();
+            return true;
+        }
+
+        std::vector<string> errors;
+        handle = dlopen ( so_name.c_str(), RTLD_NOW | RTLD_GLOBAL );
+        // if no path is given:
         if (!handle && so_name.find("/") == std::string::npos ) {
-            so_name = "lib" + so_name;
-            handle = dlopen ( so_name.c_str(), RTLD_NOW | RTLD_GLOBAL);
+            errors.push_back(string( dlerror() ));
+            cout << so_name.substr(0,3) <<endl;
+            if ( so_name.substr(0,3) != "lib") {
+                so_name = "lib" + so_name;
+                handle = dlopen ( so_name.c_str(), RTLD_NOW | RTLD_GLOBAL);
+                if (!handle)
+                    errors.push_back(string( dlerror() ));
+            }
+            if (!handle) {
+                handle = dlopen ( string(compPath.get() + "/" + so_name).c_str(), RTLD_NOW | RTLD_GLOBAL);
+            }
         }
 
         if (!handle) {
+            errors.push_back(string( dlerror() ));
             log(Error) << "Could not load library '"<< name <<"':"<<endlog();
-            log(Error) << dlerror() << endlog();
+            for(vector<string>::iterator i=errors.begin(); i!= errors.end(); ++i)
+                log(Error) << *i << endlog();
             return false;
         }
 
+        LoadedLibs.push_back(libname);
+        log(Debug) <<"Storing "<< libname <<endlog();
         dlerror();    /* Clear any existing error */
         
         // Lookup factories:
@@ -862,7 +906,11 @@ namespace OCL
             // symbol found, register factories...
             fmap = (*getfactory)();
             ComponentFactories::Instance().insert( fmap->begin(), fmap->end() );
-            log(Info) << "Loaded component library '"<<so_name <<"'"<<endlog();
+            log(Info) << "Loaded multi component library '"<<so_name <<"'"<<endlog();
+            log(Debug) << "Components:";
+            for (FactoryMap::iterator it = fmap->begin(); it != fmap->end(); ++it)
+                log(Debug) <<" "<<it->first;
+            log(Debug) << endlog();
             return true;
         } else {
             log(Debug) << error << endlog();
@@ -876,9 +924,6 @@ namespace OCL
         factory = reinterpret_cast<TaskContext*(*)(std::string)>(dlsym(handle, "createComponent") );
         if ((error = dlerror()) == NULL) {
             // store factory.
-            string libname = name.substr(name.rfind("/"), name.rfind(".so"));
-            if ( libname.find("lib") == 0 )
-                libname = libname.substr(3, std::string::npos); // strip leading lib if any.
             if ( ComponentFactories::Instance().count(libname) == 1 ) {
                 log(Warning) << "Library name "<<libname<<" already used: overriding."<<endlog();
             }
@@ -892,7 +937,7 @@ namespace OCL
                 ComponentFactories::Instance()[ cname ] = factory;
                 log(Info) << "Loaded component type '"<< cname <<"'"<<endlog();
             } else {
-                log(Info) << "Loaded component library '"<< libname <<"'"<<endlog();
+                log(Info) << "Loaded single component library '"<< libname <<"'"<<endlog();
             }
             return true;
         } else {
@@ -900,7 +945,7 @@ namespace OCL
         }
 
         // plain library
-        log(Info) << "Loaded library '"<< so_name <<"'"<<endlog();
+        log(Info) << "Loaded shared library '"<< so_name <<"'"<<endlog();
         return true;
     }
 
@@ -914,7 +959,6 @@ namespace OCL
             return false;
         }
 
-        void *handle;
         TaskContext* (*factory)(std::string name) = 0;
         char *error;
 
@@ -931,33 +975,18 @@ namespace OCL
             log(Info) <<"Found factory for Component type "<<type<<endlog();
         } else {
             // Second: try dynamic loading:
-            std::string so_name(type);
-            if ( so_name.rfind(".so") == std::string::npos ||
-                 so_name.substr(so_name.rfind(".so")) != ".so" )
-                so_name += ".so";
-
-            handle = dlopen ( so_name.c_str(), RTLD_NOW | RTLD_GLOBAL);
-            if (!handle) {
-                std::string error = dlerror();
-                // search in component path:
-                handle = dlopen ( string(compPath.get() + "/" + so_name).c_str(), RTLD_NOW | RTLD_GLOBAL);
-                if (!handle) {
-                    log(Error) << "Could not load plugin '"<< so_name <<"':" <<endlog();
-                    log(Error) << error << endlog();
-                    log(Error) << dlerror() << endlog();
-                    return false;
-                }
-            }
+            if ( loadLibrary(type) == false )
+                return false;
 
             dlerror();    /* Clear any existing error */
             factory = reinterpret_cast<TaskContext*(*)(std::string)>(dlsym(handle, "createComponent"));
             if ((error = dlerror()) != NULL) {
-                log(Error) << "Found plugin '"<< so_name <<"', but it is not an Orocos Component:";
+                log(Error) << "Found plugin '"<< type <<"', but it can not create a single Orocos Component:";
                 log(Error) << error << endlog();
-                dlclose( handle );
+                // leave it loaded.
                 return false;
             }
-            log(Info) << "Found Orocos plugin '"<< so_name <<"'"<<endlog();
+            log(Info) << "Found Orocos plugin '"<< type <<"'"<<endlog();
         }
         
         ComponentData newcomp;
@@ -971,11 +1000,11 @@ namespace OCL
 
         log(Error) << "Adding "<< newcomp.instance->getName() << " as new peer: ";
         if (!this->addPeer( newcomp.instance ) ) {
-            log() << "Failed !" << endlog(Error);
+            log(Error) << "Failed !" << endlog(Error);
             delete newcomp.instance;
             return false;
         }
-        log() << " OK."<< endlog(Info);
+        log(Info) << " OK."<< endlog(Info);
         comps[name] = newcomp;
         return true;
     }
@@ -1094,12 +1123,12 @@ namespace OCL
         return true;
     }
 
-    bool DeploymentComponent::configure(std::string name)
+    bool DeploymentComponent::configure(const std::string& name)
     {
         return configureFromFile( name,  name + ".cpf" );
     }
 
-    bool DeploymentComponent::configureFromFile(std::string name, std::string filename)
+    bool DeploymentComponent::configureFromFile(const std::string& name, const std::string& filename)
     {
         Logger::In in("DeploymentComponent");
         TaskContext* c;
