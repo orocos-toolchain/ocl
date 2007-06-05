@@ -29,6 +29,9 @@
 
 #include <rtt/Logger.hpp>
 
+#ifndef _REENTRANT
+#define _REENTRANT
+#endif
 #include <ace/Reactor.h>
 #include <ace/Svc_Handler.h>
 #include <ace/Acceptor.h>
