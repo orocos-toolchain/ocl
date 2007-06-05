@@ -124,6 +124,18 @@ namespace OCL
          */
 
         /**
+         * Implementation of TaskCore::configureHook().
+         * Calls load().
+         */
+        virtual bool configureHook();
+
+        /**
+         * Implementation of TaskCore::cleanupHook().
+         * Calls store() and clears the reporting configuration.
+         */
+        virtual void cleanupHook();
+
+        /**
          * Read the configuration file in order to decide
          * on what to report.
          */

@@ -66,9 +66,9 @@ namespace OCL
         this->methods()->addMethod( method( "snapshot", &ReportingComponent::snapshot , this),
                     "Take a new shapshot of the data and set the timestamp." );
         this->methods()->addMethod( method( "load", &ReportingComponent::load , this),
-                    "Read the Configuration file." );
+                    "Read the Configuration file, equivalent to configure()." );
         this->methods()->addMethod( method( "store", &ReportingComponent::store , this),
-                    "Write the Configuration file." );
+                    "Write the Configuration file, equivalent to cleanup()." );
         this->methods()->addMethod( method( "screenComponent", &ReportingComponent::screenComponent , this),
                     "Display the variables and ports of a Component.",
                     "Component", "Name of the Component" );
@@ -126,6 +126,7 @@ namespace OCL
     bool ReportingComponent::store()
     {
         Logger::In in("ReportingComponent");
+        log(Info) << "Writing Ports to report to file." <<endlog();
         PropertyMarshaller marsh( config.get() );
         PropertyBag bag;
         Reports::iterator it = root.begin();
@@ -140,9 +141,22 @@ namespace OCL
         return true;
     }
 
+    bool ReportingComponent::configureHook()
+    {
+        return load();
+    }
+
+    void ReportingComponent::cleanupHook()
+    {
+        store();
+        root.clear(); // uses shared_ptr.
+        deletePropertyBag( report );
+    }
+
     bool ReportingComponent::load()
     {
         Logger::In in("ReportingComponent");
+        log(Info) << "Loading Ports to report from file." <<endlog();
         PropertyDemarshaller dem( config.get() );
         PropertyBag bag;
         if (dem.deserialize( bag ) == false ) {
