@@ -734,7 +734,12 @@ namespace OCL
 
             // Attach activities
             if ( comps[comp.getName()].act ) {
-                log(Info) << "Setting activity of "<< comp.getName() <<endlog();
+                if ( peer->engine()->getActivity() ) {
+                    peer->engine()->getActivity()->run(0);
+                    log(Info) << "Re-setting activity of "<< comp.getName() <<endlog();
+                } else {
+                    log(Info) << "Setting activity of "<< comp.getName() <<endlog();
+                }
                 comps[comp.getName()].act->run( peer->engine() );
                 assert( peer->engine()->getActivity() == comps[comp.getName()].act );
             }
