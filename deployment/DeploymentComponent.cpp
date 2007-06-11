@@ -21,7 +21,7 @@ namespace OCL
     using namespace std;
     using namespace RTT;
 
-    std::vector<string> DeploymentComponent::LoadedLibs;
+    std::vector<pair<string,void*> > DeploymentComponent::LoadedLibs;
 
     DeploymentComponent::DeploymentComponent(std::string name)
         : RTT::TaskContext(name, Stopped),
@@ -868,9 +868,12 @@ namespace OCL
         // finally:
         libname = libname.substr(0, libname.find(".so") );
 
-        if ( find(LoadedLibs.begin(), LoadedLibs.end(),libname) != LoadedLibs.end() ) {
-            log(Info) <<"Library "<< libname <<" already loaded."<<endlog();
-            return true;
+        for(vector<pair<string,void*> >::iterator it = LoadedLibs.begin(); it != LoadedLibs.end(); ++it){
+            if ( it->first == libname ) {
+                log(Info) <<"Library "<< libname <<" already loaded."<<endlog();
+                handle = it->second;
+                return true;
+            }
         }
 
         std::vector<string> errors;
@@ -898,7 +901,7 @@ namespace OCL
             return false;
         }
 
-        LoadedLibs.push_back(libname);
+        LoadedLibs.push_back(make_pair(libname,handle));
         log(Debug) <<"Storing "<< libname <<endlog();
         dlerror();    /* Clear any existing error */
         

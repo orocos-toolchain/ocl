@@ -85,7 +85,7 @@ namespace OCL
          * Keep a list of all loaded libraries such that double
          * loads are avoided during import/loadLibrary.
          */
-        static std::vector<std::string> LoadedLibs;
+        static std::vector<std::pair<std::string,void*> > LoadedLibs;
 
         /**
          * Handle of last loaded library.
