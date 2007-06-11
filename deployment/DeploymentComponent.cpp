@@ -909,7 +909,7 @@ namespace OCL
         FactoryMap* (*getfactory)(void) = 0;
         FactoryMap* fmap = 0;
         char* error = 0;
-        getfactory = reinterpret_cast<FactoryMap*(*)(void)>( dlsym(handle, "getComponentFactoryMap") );
+        getfactory = (FactoryMap*(*)(void))( dlsym(handle, "getComponentFactoryMap") );
         if ((error = dlerror()) == NULL) {
             // symbol found, register factories...
             fmap = (*getfactory)();
@@ -929,14 +929,14 @@ namespace OCL
 
         TaskContext* (*factory)(std::string) = 0;
         std::string(*tname)(void) = 0;
-        factory = reinterpret_cast<TaskContext*(*)(std::string)>(dlsym(handle, "createComponent") );
+        factory = (TaskContext*(*)(std::string))(dlsym(handle, "createComponent") );
         if ((error = dlerror()) == NULL) {
             // store factory.
             if ( ComponentFactories::Instance().count(libname) == 1 ) {
                 log(Warning) << "Library name "<<libname<<" already used: overriding."<<endlog();
             }
             ComponentFactories::Instance()[libname] = factory;
-            tname = reinterpret_cast<std::string(*)(void)>(dlsym(handle, "getComponentType") );
+            tname = (std::string(*)(void))(dlsym(handle, "getComponentType") );
             if ((error = dlerror()) == NULL) {
                 std::string cname = (*tname)();
                 if ( ComponentFactories::Instance().count(cname) == 1 ) {
@@ -987,7 +987,7 @@ namespace OCL
                 return false;
 
             dlerror();    /* Clear any existing error */
-            factory = reinterpret_cast<TaskContext*(*)(std::string)>(dlsym(handle, "createComponent"));
+            factory = (TaskContext*(*)(std::string))(dlsym(handle, "createComponent"));
             if ((error = dlerror()) != NULL) {
                 log(Error) << "Found plugin '"<< type <<"', but it can not create a single Orocos Component:";
                 log(Error) << error << endlog();
