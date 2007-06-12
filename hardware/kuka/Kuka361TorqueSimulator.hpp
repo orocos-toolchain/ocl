@@ -55,9 +55,10 @@ namespace OCL
 		}
 		_previous_time = TimeService::Instance()->getTicks();
 
-// 	        log(Warning) <<"_pos_sim[0]: "<<_pos_sim[0]<<endlog();
-// 	        log(Warning) <<"_vel_sim[0]: "<<_vel_sim[0]<<endlog();
-// 	        log(Warning) <<"_acc_sim[0]: "<<_acc_sim[0]<<endlog();
+// 		log(Warning) <<"_tau_sim: "<<_tau_sim[1]<<endlog();
+// 	        log(Warning) <<"_pos_sim: "<<_pos_sim[1]<<endlog();
+// 	        log(Warning) <<"_vel_sim: "<<_vel_sim[1]<<endlog();
+// 	        log(Warning) <<"_acc_sim: "<<_acc_sim[1]<<endlog();
 // 	        log(Warning) <<"_tau_sim[0]: "<<_tau_sim[0]<<endlog();
 		//Logger::log()<<Logger::Debug<<"pos (rad): "<<_pos_sim[3]<<" | vel (rad/s): "<<_vel_sim[3]<<" | acc (rad/s2): "<<_acc_sim[3]<<" | tau (Nm): "<<_tau_sim[3]<<Logger::endl;
          };

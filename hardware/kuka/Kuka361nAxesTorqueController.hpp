@@ -194,7 +194,7 @@ namespace OCL
          */
         std::vector<RTT::DataPort<double>*>       _positionValue;
 
-		/**
+	/**
          * vector of WriteDataPorts which contain the values of the
          * tachometer. 
          * 
@@ -206,7 +206,14 @@ namespace OCL
          * current sensors transformed to torque. 
          * 
          */
-        std::vector<RTT::DataPort<double>*>       _currentValue;
+        std::vector<RTT::DataPort<double>*>       _torqueValue;
+
+	/**
+         * Port containing time since previous update (samole time)
+         * 
+         */	
+        RTT::WriteDataPort< double >		_delta_time_Port;
+
 
         /**
          * The absolute value of the velocity will be limited to this property.  
@@ -244,16 +251,6 @@ namespace OCL
          * volt = (setpoint + offset)/scale
          */
         RTT::Property<std::vector <double> >     _velDriveOffset;
-      
-        /**
-         * Correction scale for Torque constant
-         */
-        RTT::Property<std::vector <double> >     _ff_scale;
-      
-        /**
-         * Correction offset for Torque constant
-         */
-        RTT::Property<std::vector <double> >     _ff_offset;
       
         /**
          * True if simulationAxes should be used in stead of hardware axes
@@ -438,7 +435,7 @@ namespace OCL
         std::vector<RTT::AnalogSensor*>               _tachometer; 
         std::vector<RTT::AnalogInput<unsigned int>*>  _currentInput; 
         std::vector<RTT::AnalogSensor*>               _currentSensor; 
-        std::vector<RTT::DigitalOutput*>              _modeSwitch; 
+        std::vector<RTT::DigitalOutput*>              _TorqueModeSwitch;
         std::vector<RTT::DigitalInput*>               _modeCheck; 
 
 // 	//Temp
