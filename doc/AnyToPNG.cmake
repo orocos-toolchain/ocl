@@ -5,7 +5,10 @@ macro( ANY_TO_PNG RESULT)
     # Create the target directory.
     MESSAGE( "Processing ${CMAKE_CURRENT_BINARY_DIR}/${_current_FILE}" )
     get_filename_component(DIRNAME ${CMAKE_CURRENT_BINARY_DIR}/${_current_FILE} PATH)
+    get_filename_component(FILENAME ${CMAKE_CURRENT_BINARY_DIR}/${_current_FILE} NAME)
+    get_filename_component(FILE_WE ${CMAKE_CURRENT_BINARY_DIR}/${_current_FILE} NAME_WE)
     file(MAKE_DIRECTORY ${DIRNAME})
+    file(MAKE_DIRECTORY ${DIRNAME}/hires )
 
     if ( _current_FILE MATCHES ".*.dia" )
       string(REPLACE ".dia" ".png" _current_PNGFILE ${_current_FILE})
@@ -23,7 +26,8 @@ macro( ANY_TO_PNG RESULT)
 
       #MESSAGE( "Converting ${_current_FILE} to ${_current_PNGFILE}" )
       add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${_current_PNGFILE}
-	COMMAND inkscape -z -D -d 60 -e ${_current_PNGFILE} ${CMAKE_CURRENT_SOURCE_DIR}/${_current_FILE}
+	COMMAND inkscape -z -D -d 72 -e ${_current_PNGFILE} ${CMAKE_CURRENT_SOURCE_DIR}/${_current_FILE}
+	COMMAND inkscape -z -D -d 150 -e "${DIRNAME}/hires/${FILE_WE}.png" ${CMAKE_CURRENT_SOURCE_DIR}/${_current_FILE}
 	DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${_current_FILE}
 	)
       list( APPEND ${RESULT} ${CMAKE_CURRENT_BINARY_DIR}/${_current_PNGFILE} )

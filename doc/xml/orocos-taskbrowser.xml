@@ -65,7 +65,10 @@
     <figure><title>Task Browsing</title>
     <mediaobject>
       <imageobject>
-	<imagedata fileref="images/taskbrowsing" />
+	<imagedata role="html" fileref="images/taskbrowsing" />
+      </imageobject>
+      <imageobject>
+	<imagedata role="pdf" fileref="hires/images/taskbrowsing" />
       </imageobject>
       <caption><para>The TaskBrowser is initially connected to a
       component. It can 'enter' a component, which shows a perspective
@@ -84,5 +87,158 @@
       browsed.
     </para>
   </section>
+  </section>
+  <section>
+    <title>TaskBrowser Setup</title>
+    <para>
+      Consult the <ulink url="http://www.orocos.org/rtt">Component
+      Builder's Manual</ulink> for instructions on how to setup and
+      use the TaskBrowser
+    </para>
+  </section>
+  <section>
+    <title>TaskBrowser Commands</title>
+    <para>
+      In addition to giving commands to the components, the TaskBrowser
+      itself can also accept a number of commands. Hit TAB twice to get a list.
+      Most commands accept TAB-completed arguments as well.
+    </para>
+    <table frame="all">
+      <title>TaskBrowser Commands</title>
+      <tgroup cols="3">
+	<thead>
+	  <row>
+	    <entry>Command</entry>
+	    <entry>[optional] Argument</entry>
+	    <entry>Description &amp; Notes</entry>
+	  </row>
+	</thead>
+	<tbody>
+	  <row>
+	    <entry><emphasis>help</emphasis></entry>
+	    <entry>-</entry>
+	    <entry>Display and overview of all the available TaskBrowser commands.</entry>
+	  </row>
+	  <row>
+	    <entry>ls</entry>
+	    <entry>[peer]</entry>
+	    <entry>Lists the interface and status of a Component. Without peer, 
+	    the current visited component is shown.</entry>
+	  </row>
+	  <row>
+	    <entry>cd</entry>
+	    <entry>peer</entry>
+	    <entry>Change to a peer of the current component.</entry>
+	  </row>
+	  <row>
+	    <entry>cd ..</entry>
+	    <entry>-</entry>
+	    <entry>Change to the previously visited peer.</entry>
+	  </row>
+	  <row>
+	    <entry><emphasis>&lt;objectname&gt;</emphasis></entry>
+	    <entry>-</entry>
+	    <entry>Display the interface of an object of the current component. Use <emphasis>this</emphasis>
+	    to display the interface of the current component itself.</entry>
+	  </row>
+	  <row>
+	    <entry>enter</entry>
+	    <entry>-</entry>
+	    <entry>Interprete commands in the context of the current component, as if
+	    the current component was issuing them.</entry>
+	  </row>
+	  <row>
+	    <entry>leave</entry>
+	    <entry>-</entry>
+	    <entry>Interprete commands in the context of the
+	    TaskBrowser, as if an external component is
+	    communicating with the current component.</entry>
+	  </row>
+	  <row>
+	    <entry>.connect</entry>
+	    <entry>-</entry>
+	    <entry>Connect the TaskBrowser to <emphasis>all</emphasis> the Data
+	    Flow ports of the current component. This causes the TaskBrowser to create complementary ports
+	    which are connected to the current component. If the current component's port
+	    is already connected to another component, the existing
+	    connection is re-used. If the port is unconnected, a new connection is
+	    created.</entry>
+	  </row>
+	  <row>
+	    <entry>.loadProgram</entry>
+	    <entry>program-name.ops</entry>
+	    <entry>Load a file from the current directory and send it to the
+	    component for loading as a program script.</entry>
+	  </row>
+	  <row>
+	    <entry>.loadStateMachine</entry>
+	    <entry>statemachine-name.osd</entry>
+	    <entry>Load a file from the current directory and send it to the
+	    component for loading as a state machine script.</entry>
+	  </row>
+	  <row>
+	    <entry>list</entry>
+	    <entry>[script-name] [row]</entry>
+	    <entry>List the source of a loaded program or state machine script.
+	    If the script-name is omitted, list the last listed script again.
+	    An optional row argument can be given, otherwise, the current point
+	    of execution is shown.</entry>
+	  </row>
+	  <row>
+	    <entry>trace</entry>
+	    <entry>[script-name]</entry>
+	    <entry>Follow the point of execution of a loaded program or state machine.
+	    The taskbrowser will display the script source and point of execution when
+	    it changed and the user pressed [Enter] at the console prompt. When no
+	    arguments are given, all scripts are traced.</entry>
+	  </row>
+	  <row>
+	    <entry>untrace</entry>
+	    <entry>[script-name]</entry>
+	    <entry>No longer trace a script.</entry>
+	  </row>
+	  <row>
+	    <entry>.light</entry>
+	    <entry>-</entry>
+	    <entry>Inform the TaskBrowser that your console window has a light background.</entry>
+	  </row>
+	  <row>
+	    <entry>.dark</entry>
+	    <entry>-</entry>
+	    <entry>Inform the TaskBrowser that your console window has a dark background.</entry>
+	  </row>
+	  <row>
+	    <entry>.nocolors</entry>
+	    <entry>-</entry>
+	    <entry>Inform the TaskBrowser to disable all coloring.</entry>
+	  </row>
+	  <row>
+	    <entry>.record</entry>
+	    <entry>macro-name</entry>
+	    <entry>Start a new macro which will be saved as 'macro-name.ops' which will
+	    contain an exported function with that name. You will receive a new prompt and
+	    are required to type in scripting syntax ('do', 'set', 'if',...)</entry>
+	  </row>
+	  <row>
+	    <entry>.cancel</entry>
+	    <entry>-</entry>
+	    <entry>Cancel the recording of the current macro. This brings you back to the
+	    standard TaskBrowser prompt.</entry>
+	  </row>
+	  <row>
+	    <entry>.end</entry>
+	    <entry>-</entry>
+	    <entry>Finish and store the current macro. See .loadProgram to load this macro
+	    into the current TaskContext. It will appear as a command which takes no arguments.</entry>
+	  </row>
+	  <row>
+	    <entry>quit</entry>
+	    <entry>-</entry>
+	    <entry>Exit the TaskBrowser.</entry>
+	  </row>
+	</tbody>
+      </tgroup>
+    </table>
+    
   </section>
 </article>
