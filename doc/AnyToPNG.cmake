@@ -16,6 +16,7 @@ macro( ANY_TO_PNG RESULT)
       #MESSAGE( "Converting ${_current_FILE} to ${CMAKE_CURRENT_BINARY_DIR}/${_current_PNGFILE}" )
       add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${_current_PNGFILE}
 	COMMAND LC_NUMERIC="C" dia -t png --nosplash -e ${_current_PNGFILE} ${CMAKE_CURRENT_SOURCE_DIR}/${_current_FILE}
+	COMMAND LC_NUMERIC="C" dia -t png --nosplash -s 1024 -e "${DIRNAME}/hires/${FILE_WE}.png" ${CMAKE_CURRENT_SOURCE_DIR}/${_current_FILE}
 	DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${_current_FILE}
 	)
       list( APPEND ${RESULT} ${CMAKE_CURRENT_BINARY_DIR}/${_current_PNGFILE} )
