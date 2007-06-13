@@ -9,18 +9,8 @@
 <article>
   <articleinfo>
     <title>The Deployment Component</title>
-    <authorgroup>
-      <author>
-	<firstname>Peter</firstname>
-	<surname>Soetens</surname>
-	<affiliation>
-	  <orgname>FMTC</orgname>
-	  <address><country>Belgium</country></address>
-	</affiliation>
-      </author>
-    </authorgroup>
     <copyright>
-      <year>2006</year>
+      <year>2006,2007</year>
       <holder>Peter Soetens, FMTC</holder>
     </copyright>
 
@@ -67,7 +57,10 @@
       </para>
       <figure id="fig-deployment-overview"><title>Component Deployment Overview</title>
       <mediaobject>
-	<imageobject>
+	<imageobject role="html">
+	  <imagedata fileref="images/Deployment.png" />
+	</imageobject>
+	<imageobject role="fo">
 	  <imagedata fileref="images/Deployment.png" />
 	</imageobject>
 	<caption><para>Components are located on your disk using the 'import' statement,
@@ -106,7 +99,10 @@
       <title>Configuration Procedure</title>
       <figure id="fig-deployment-flow"><title>Deployment Procedure</title>
       <mediaobject>
-	<imageobject>
+	<imageobject role="html">
+	  <imagedata fileref="images/DeploymentFlow.png" />
+	</imageobject>
+	<imageobject role="fo">
 	  <imagedata fileref="images/DeploymentFlow.png" />
 	</imageobject>
 	<caption><para>The Deployment component API consists of import, 

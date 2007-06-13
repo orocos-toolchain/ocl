@@ -9,18 +9,8 @@
 <article>
   <articleinfo>
     <title>The Reporting Component</title>
-    <authorgroup>
-      <author>
-	<firstname>Peter</firstname>
-	<surname>Soetens</surname>
-	<affiliation>
-	  <orgname>FMTC</orgname>
-	  <address><country>Belgium</country></address>
-	</affiliation>
-      </author>
-    </authorgroup>
     <copyright>
-      <year>2007</year>
+      <year>2006,2007</year>
       <holder>Peter Soetens, FMTC</holder>
     </copyright>
 
@@ -66,8 +56,11 @@
       </para>
       <figure id="fig-reporting-example"><title>Component Reporting Example</title>
       <mediaobject>
-	<imageobject>
+	<imageobject role="html">
 	  <imagedata fileref="images/reporting-example" />
+	</imageobject>
+	<imageobject role="fo">
+	  <imagedata fileref="images/hires/reporting-example" />
 	</imageobject>
 	<caption><para>
 	</para></caption>

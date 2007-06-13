@@ -7,15 +7,6 @@
 <article>
   <articleinfo>
     <title>The Orocos Hardware IO Component</title>
-    <authorgroup>
-      <author>
-        <firstname>Peter</firstname>
-        <surname>Soetens</surname>
-        <affiliation>
-          <orgname>K.U.Leuven</orgname>          <address><country>Belgium</country></address>
-        </affiliation>
-      </author>
-    </authorgroup>
     <copyright>
       <year>2002-2007</year>
       <holder>Peter.Soetens@mech.kuleuven.be</holder>

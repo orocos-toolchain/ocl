@@ -9,18 +9,8 @@
 <article>
   <articleinfo>
     <title>The TaskBrowser Component</title>
-    <authorgroup>
-      <author>
-	<firstname>Peter</firstname>
-	<surname>Soetens</surname>
-	<affiliation>
-	  <orgname>FMTC</orgname>
-	  <address><country>Belgium</country></address>
-	</affiliation>
-      </author>
-    </authorgroup>
     <copyright>
-      <year>2006</year>
+      <year>2006,2007</year>
       <holder>Peter Soetens, FMTC</holder>
     </copyright>
 
