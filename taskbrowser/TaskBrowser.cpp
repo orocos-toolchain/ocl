@@ -495,7 +495,7 @@ namespace OCL
             return 'R'; // Running
         if (t->isConfigured() )
             return 'S'; // Stopped
-        return 'U';     // Unconfigured
+        return 'U';     // Unconfigured/Preoperational
     }
 
     char getStateMachineStatusChar(TaskContext* t, string progname)
@@ -658,7 +658,8 @@ namespace OCL
             return;
         } else {
             cout << "Recording macro "<< name <<endl;
-            cout << "Use program scripting syntax (do, set,...) !" << endl;
+            cout << "Use program scripting syntax (do, set,...) !" << endl <<endl;
+            cout << "export function "<<macroname<<"() {"<<endl;
         }
         macrorecording = true;
         macroname = name;
@@ -672,6 +673,7 @@ namespace OCL
     void TaskBrowser::endMacro() {
         string fname = macroname + ".ops";
         macrorecording = false;
+        cout << "}" <<endl;
         cout << "Saving file "<< fname <<endl;
         ofstream macrofile( fname.c_str() );
         macrofile << "/* TaskBrowser macro '"<<macroname<<"' */" <<endl<<endl;
