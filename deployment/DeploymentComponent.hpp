@@ -313,6 +313,16 @@ namespace OCL
          */
         void clearConfiguration();
 
+      /**
+       * Stop all loaded and running components.
+       */
+      bool stopComponents();
+
+      /**
+       * Unload all loaded and not running components.
+       */
+      bool unloadComponents();
+
         /**
          * This function runs loadComponents, configureComponents and startComponents
          * in a row, given no failures occur along the way.

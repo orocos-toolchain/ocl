@@ -71,6 +71,8 @@ namespace OCL
         this->methods()->addMethod( RTT::method("loadConfigurationString", &DeploymentComponent::loadConfigurationString, this),
                                     "Load a new XML configuration from a string.",
                                     "Text", "The string which contains the new configuration.");
+        this->methods()->addMethod( RTT::method("clearConfiguration", &DeploymentComponent::clearConfiguration, this),
+                                    "Clear all configuration settings.");
 
         this->methods()->addMethod( RTT::method("loadComponents", &DeploymentComponent::loadComponents, this),
                                     "Load components listed in an XML configuration file.",
@@ -79,6 +81,10 @@ namespace OCL
                                     "Apply a loaded configuration to the components and configure() them if AutoConf is set.");
         this->methods()->addMethod( RTT::method("startComponents", &DeploymentComponent::startComponents, this),
                                     "Start the components configured for AutoStart.");
+        this->methods()->addMethod( RTT::method("stopComponents", &DeploymentComponent::stopComponents, this),
+                                    "Stop all the configured components (with or without AutoStart).");
+        this->methods()->addMethod( RTT::method("unloadComponents", &DeploymentComponent::unloadComponents, this),
+                                    "Unload all the previously loaded components.");
 
         this->methods()->addMethod( RTT::method("kickStart", &DeploymentComponent::kickStart, this),
                                     "Calls loadComponents, configureComponents and startComponents in a row.",
@@ -137,46 +143,12 @@ namespace OCL
         
     DeploymentComponent::~DeploymentComponent()
     {
-        RTT::deletePropertyBag(root);
-        // Should we unload all loaded components here ?
-        if ( autoUnload.get() ) {
-            // 1. Stop all activities, give components chance to cleanup.
-            for ( CompList::iterator cit = comps.begin(); cit != comps.end(); ++cit) {
-                ComponentData* it = &(cit->second);
-                if ( it->loaded ) {
-                    if ( it->instance->engine()->getActivity() == 0 || 
-                         it->instance->engine()->getActivity()->isActive() == false ||
-                         it->instance->stop() ) {
-                        log(Info) << "Stopped "<< it->instance->getName() <<endlog();
-                    } else {
-                        log(Error) << "Could not stop loaded Component "<< it->instance->getName() <<endlog();
-                    }
-                }
-            }
-            // 2. Disconnect and destroy all components.
-            for ( CompList::iterator cit = comps.begin(); cit != comps.end(); ++cit) {
-                ComponentData* it = &(cit->second);
-                std::string name = it->instance->getName();
-		
-                if ( it->loaded && it->instance ) {
-                    if ( it->instance->engine()->getActivity() == 0 ||
-                         it->instance->engine()->getActivity()->isActive() == false ) {
-		      
-                        log(Debug) << "Disconnecting " <<name <<endlog();
-                        it->instance->disconnect();
-                        log(Debug) << "Terminating " <<name <<endlog();
-                        // delete the activity before the TC !
-                        delete it->act;
-                        it->act = 0;
-                        delete it->instance;
-                        it->instance = 0;
-                        log(Info) << "Disconnected and destroyed "<< name <<endlog();
-                    } else {
-                        log(Error) << "Could not unload Component "<< name <<endlog();
-                    }
-                }
-            }
-        }
+      clearConfiguration();
+      // Should we unload all loaded components here ?
+      if ( autoUnload.get() ) {
+	stopComponents();
+	unloadComponents();
+      }
     }
 
     bool DeploymentComponent::connectPeers(const std::string& one, const std::string& other)
@@ -788,6 +760,73 @@ namespace OCL
         }
         return valid;
     }
+
+    bool DeploymentComponent::stopComponents()
+    {
+        Logger::In in("DeploymentComponent::stopComponents");
+	bool valid = true;
+	// 1. Stop all activities, give components chance to cleanup.
+	for ( CompList::iterator cit = comps.begin(); cit != comps.end(); ++cit) {
+	  ComponentData* it = &(cit->second);
+	  if ( it->loaded ) {
+	    if ( it->instance->engine()->getActivity() == 0 || 
+		 it->instance->engine()->getActivity()->isActive() == false ||
+		 it->instance->stop() ) {
+	      log(Info) << "Stopped "<< it->instance->getName() <<endlog();
+	    } else {
+	      log(Error) << "Could not stop loaded Component "<< it->instance->getName() <<endlog();
+	      valid = false;
+	    }
+	  }
+	}
+	return valid;
+    }
+
+  bool DeploymentComponent::unloadComponents()
+  {
+    // 2. Disconnect and destroy all components.
+    bool valid = true;
+    for ( CompList::iterator cit = comps.begin(); cit != comps.end(); ++cit) {
+      ComponentData* it = &(cit->second);
+		
+      if ( it->loaded && it->instance ) {
+	if ( it->instance->engine()->getActivity() == 0 ||
+	     it->instance->engine()->getActivity()->isActive() == false ) {
+		      
+	  std::string name = cit->first;
+	  log(Debug) << "Disconnecting " <<name <<endlog();
+	  it->instance->disconnect();
+	  log(Debug) << "Terminating " <<name <<endlog();
+	  // delete the activity before the TC !
+	  delete it->act;
+	  it->act = 0;
+	  delete it->instance;
+	  it->instance = 0;
+	  log(Info) << "Disconnected and destroyed "<< name <<endlog();
+	} else {
+	  log(Error) << "Could not unload Component "<< cit->first <<endlog();
+	  valid = false;
+	}
+      }
+    }
+    if ( !comps.empty() ) {
+      // cleanup from ComponentData map:
+      CompList::iterator cit = comps.begin(); 
+      do {
+	ComponentData* it = &(cit->second);
+	// if deleted and loaded by us:
+	if (it->instance == 0 && it->loaded) {
+	  log(Info) << "Completely removed "<< cit->first <<endlog();
+	  comps.erase(cit);
+	  cit = comps.begin();
+	} else {
+	  log(Info) << "Keeping info on "<< cit->first <<endlog();
+	  ++cit;
+	}
+      } while ( cit != comps.end() );
+    }   
+    return valid;
+  }
 
     void DeploymentComponent::clearConfiguration()
     {
