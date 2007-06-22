@@ -18,6 +18,10 @@ function getcompiler
     if [ $(expr match "$arg" "CXX=") != 0 ]; then
 	CMAKE_CXX="$arg"
     fi
+    if [ $(expr match "$arg" "--prefix=") != 0 ]; then
+	CMAKE_PREFIX="${arg:9}"
+	CMAKE_ARGS="$CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=$CMAKE_PREFIX -DOROCOS_INSTALL=$CMAKE_PREFIX"
+    fi
 }
 
 while [ "$1" != "" ]; do
@@ -50,8 +54,8 @@ if [ x$(which cmake) == x ]; then
    exit 1
 fi
 
-echo "Invoking: 'CC=$CMAKE_CC CXX=$CMAKE_CXX cmake ..'"
+echo "Invoking: 'CC=$CMAKE_CC CXX=$CMAKE_CXX cmake .. $CMAKE_ARGS'"
 
-bash -c "$CMAKE_CC $CMAKE_CXX cmake .." || (echo "Error: cmake produced an error."; exit 1)
+bash -c "$CMAKE_CC $CMAKE_CXX cmake .. $CMAKE_ARGS" || (echo "Error: cmake produced an error."; exit 1)
 
 echo "OK: configure done."
