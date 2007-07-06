@@ -4,11 +4,14 @@ DEPENDENT_OPTION( BUILD_REPORTING_TEST "Build Reporting Test" ON "BUILD_REPORTIN
 IF ( BUILD_REPORTING_TEST )
 
     # This gathers all the .cpp files into the variable 'SRCS'
-    FILE( GLOB SRCS [^.]*.cpp )
 
-    GLOBAL_ADD_TEST( report ${SRCS} )
+    GLOBAL_ADD_TEST( report main.cpp )
     # Use  TARGET_LINK_LIBRARIES( report libs... ) to add library deps.
     TARGET_LINK_LIBRARIES( report orocos-taskbrowser orocos-reporting  ${OROCOS_RTT_LIBS})
+
+    GLOBAL_ADD_TEST( tcpreport tcpmain.cpp )
+    # Use  TARGET_LINK_LIBRARIES( report libs... ) to add library deps.
+    TARGET_LINK_LIBRARIES( tcpreport orocos-taskbrowser orocos-reporting  ${OROCOS_RTT_LIBS})
 
 ENDIF ( BUILD_REPORTING_TEST )
 

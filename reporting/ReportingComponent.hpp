@@ -189,6 +189,8 @@ namespace OCL
          */
         void snapshot();
 
+        void cleanReport();
+
         /** @} */
 
     protected:
@@ -210,8 +212,6 @@ namespace OCL
         virtual bool startup();
 
         void makeReport();
-
-        void cleanReport();
 
         /**
          * This not real-time function processes the copied data.

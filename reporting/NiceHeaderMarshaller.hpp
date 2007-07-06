@@ -83,7 +83,7 @@ namespace RTT
 			{
                 // start with a comment sign.
                 if (did_comment == false )
-                    *this->s << "#";
+                    *this->s << "";
                 did_comment = true;
 
                 for (
