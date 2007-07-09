@@ -27,6 +27,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <sys/types.h>
+#include <errno.h>
 
 #include "TcpReporting.hpp"
 #include "rtt/NonPeriodicActivity.hpp"
