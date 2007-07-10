@@ -71,7 +71,7 @@ namespace Orocos{
             bool silenced;
             RTT::SocketMarshaller* marshaller;
             std::vector<std::string> subscriptions;
-        
+                        
         public:
             Datasender(RTT::SocketMarshaller* marshaller, Socket* os);
             virtual ~Datasender();
