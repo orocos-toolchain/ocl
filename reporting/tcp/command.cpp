@@ -30,7 +30,7 @@
 #include <cctype>
 #include <cerrno>
 #include <rtt/Property.hpp>
-#include <rtt/marsh/XMLMarshaller.hpp>
+#include "../NiceHeaderMarshaller.hpp"
 #include "../TcpReporting.hpp"
 #include "command.hpp"
 #include "socket.hpp"
@@ -124,9 +124,10 @@ namespace
             void maincode( int, std::string* )
             {
                 prefixstr stream( _parent->getConnection()->getSocket() );
-                RTT::XMLMarshaller<std::ostream> marsh(stream);
+                RTT::NiceHeaderMarshaller<std::ostream> marsh(stream);
                 marsh.serialize( *_parent->getConnection()->getMarshaller()->getReporter()->getReport() );
                 _parent->getConnection()->getMarshaller()->getReporter()->cleanReport(); // TODO: lock?
+                marsh.flush();
                 _parent->getConnection()->getSocket() << "306 End of list" << std::endl;
             }
 

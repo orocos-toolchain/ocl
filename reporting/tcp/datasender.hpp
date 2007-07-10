@@ -4,7 +4,9 @@
                            -------------------
     begin                : Wed August 9 2006
     copyright            : (C) 2006 Bas Kemper
+                           (C) 2007 Ruben Smits //Changed subscription structure
     email                : kst@baskemper.be
+                           first dot last at mech dot kuleuven dot be
  
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
@@ -30,78 +32,61 @@
 #include <rtt/NonPeriodicActivity.hpp>
 #include <rtt/os/Mutex.hpp>
 #include <rtt/Property.hpp>
-#include <rtt/PropertyIntrospection.hpp>
 
 using RTT::OS::Mutex;
 using RTT::PropertyBase;
 using RTT::Property;
 using RTT::PropertyBag;
 
-namespace
-{
-    class TopSubscriptionManager;
-    class SubscriptionManager;
-}
 namespace RTT
 {
     class SocketMarshaller;
 }
-namespace Orocos
-{
-namespace TCP
-{
-    class TcpReportingInterpreter;
-    class Socket;
+namespace Orocos{
 
-    /**
-     * This class manages the connection with one single client. It is
-     * responsible for sending data to the client and managing the
-     * state of the client.
-     *
-     * It has a thread responsible for reading data from the socket.
-     */
-    class Datasender
-        : public RTT::PropertyIntrospection,
-            public RTT::NonPeriodicActivity
-    {
+    namespace TCP{
+        class TcpReportingInterpreter;
+        class Socket;
+
+        /**
+         * This class manages the connection with one single client. It is
+         * responsible for sending data to the client and managing the
+         * state of the client.
+         *
+         * It has a thread responsible for reading data from the socket.
+         */
+        class Datasender
+            : public RTT::NonPeriodicActivity
+        {
         private:
             Mutex lock;
             TcpReportingInterpreter* interpreter;
             void checkbag(const PropertyBag &v);
-            template< class T > void writeOut(const Property<T> &v);
-            template< class T > bool hasSubscription(Property<T> &v);
-            virtual void introspect(PropertyBase* pb);
-            virtual void introspect(Property<bool> &v);
-            virtual void introspect(Property<char> &v);
-            virtual void introspect(Property<int> &v);
-            virtual void introspect(Property<unsigned int> &v);
-            virtual void introspect(Property<double> &v);
-            virtual void introspect(Property<std::string> &v);
-            virtual void introspect(Property<PropertyBag> &v);
-            virtual void introspect(const PropertyBag &v, std::string name);
-            Socket* _os;
-            TopSubscriptionManager* subs;
-            SubscriptionManager* cursubs; /* not multi-thread safe */
+            void writeOut(PropertyBase* v);
+            void writeOut(const PropertyBag &v);
+            Socket* os;
+            Orocos::TcpReporting* reporter;
             unsigned long long limit;
             unsigned long long curframe;
-            bool _silenced;
-            RTT::SocketMarshaller* _marshaller;
-
+            bool silenced;
+            RTT::SocketMarshaller* marshaller;
+            std::vector<std::string> subscriptions;
+        
         public:
             Datasender(RTT::SocketMarshaller* marshaller, Socket* os);
             virtual ~Datasender();
-
+            
             /**
              * Returns true if the connection of the datasender is valid,
              * false otherwise.
              */
             bool isValid() const;
-
+            
             /**
              * Only frames up to frame <newlimit> will be processed.
              */
             void setLimit(unsigned long long newlimit);
-
+            
             /**
              * Send data to the client.
              */
@@ -112,19 +97,19 @@ namespace TCP
              */
             RTT::SocketMarshaller* getMarshaller() const;
 
-            int addSubscription( std::string name );
+            bool addSubscription(const std::string name );
             bool removeSubscription( const std::string& name );
 
             /**
              * Write a list of the current subscriptions to the socket.
              */
             void listSubscriptions();
-
+            
             /**
              * Get socket associated with this datasender.
              */
             Socket& getSocket() const;
-
+            
             /**
              * Data connection main loop
              */

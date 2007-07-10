@@ -196,10 +196,10 @@ namespace
             // The lock is needed to avoid problems when createInstance is called by two
             // different threads (which in reality should not occur very often).
             threadCreationLock.lock();
-            ListenThread* _oinst = ListenThread::_instance;
+            //ListenThread* _oinst = ListenThread::_instance;
             ListenThread::_instance = new ListenThread( marshaller, port );
             threadCreationLock.unlock();
-            delete _oinst;
+            //delete _oinst;
           }
 
           static void destroyInstance()
