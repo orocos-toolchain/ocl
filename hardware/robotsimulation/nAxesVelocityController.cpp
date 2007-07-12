@@ -37,7 +37,8 @@ namespace OCL
           M_lockAxes("lockAxes",&nAxesVelocityController::lockAxes,this),
           D_driveValues("nAxesOutputVelocity",driveValues),
           D_positionValues("nAxesSensorPosition",positionValues),
-          P_initialPositions("initialPositions","initial positions (rad) for the axes",positionValues)
+          P_initialPositions("initialPositions","initial positions (rad) for the axes",positionValues),
+          A_naxes("naxes",naxes)
     {
         methods()->addMethod(&M_startAxes,"start the simulation axes");
         methods()->addMethod(&M_stopAxes,"stop the simulation axes");
@@ -48,6 +49,8 @@ namespace OCL
         ports()->addPort(&D_positionValues);
         
         properties()->addProperty(&P_initialPositions);
+        attributes()->addAttribute(&A_naxes);
+        
     }
     
     bool nAxesVelocityController::configureHook()

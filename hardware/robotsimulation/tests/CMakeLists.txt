@@ -1,0 +1,8 @@
+DEPENDENT_OPTION( BUILD_SIM_ROB_TEST "Build robot simulation component test" OFF "BUILD_SIM_ROB;BUILD_TESTS;BUILD_TASKBROWSER" OFF)
+
+IF (BUILD_SIM_ROB_TEST)
+  GLOBAL_ADD_TEST(robsim main.cpp)
+  INCLUDE_DIRECTORIES( ${PROJECT_SOURCE_DIR}/hardware/axes)
+  LINK_DIRECTORIES(${PROJECT_BINARY_DIR}/hardware/robotsimulation )
+  TARGET_LINK_LIBRARIES( robsim orocos-taskbrowser orocos-simrob ${OROCOS_RTT_LIBS})
+ENDIF(BUILD_SIM_ROB_TEST)

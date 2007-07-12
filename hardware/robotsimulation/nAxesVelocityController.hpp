@@ -43,7 +43,7 @@ namespace OCL
     {
     public:
         nAxesVelocityController(std::string name,unsigned int nrofjoints, std::string propertyfile="cpf/nAxesVelocityController.cpf");
-        virtual ~nAxesVelocityController();
+        virtual ~nAxesVelocityController(){};
     
     private:
         virtual bool startAxes();
@@ -76,7 +76,9 @@ namespace OCL
         RTT::DataPort<std::vector<double> > D_positionValues;
         
         RTT::Property<std::vector<double> > P_initialPositions;
-    
+        
+        RTT::Constant<unsigned int> A_naxes;
+        
     };
 }
 #endif

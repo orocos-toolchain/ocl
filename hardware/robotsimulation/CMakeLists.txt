@@ -8,7 +8,6 @@ IF( BUILD_SIM_ROB )
 
   GLOBAL_ADD_INCLUDE( ocl nAxesVelocityController.hpp)
 
-
-#ADD_SUBDIRECTORY( tests )
+  ADD_SUBDIRECTORY( tests )
 
 ENDIF(BUILD_SIM_ROB)
