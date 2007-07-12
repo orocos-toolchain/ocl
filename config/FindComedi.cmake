@@ -8,7 +8,7 @@ INCLUDE (${PROJ_SOURCE_DIR}/config/FindPkgConfig.cmake)
 INCLUDE (${PROJ_SOURCE_DIR}/config/component_rules.cmake)
 
 # GNU/Linux detection of Comedi lib uses pkgconfig or plain header search.
-IF (OS_GNULINUX)
+IF (OS_GNULINUX OR OS_XENOMAI)
   IF ( CMAKE_PKGCONFIG_EXECUTABLE )
 
       SET(ENV{PKG_CONFIG_PATH} "${COMEDI_INSTALL}/lib/pkgconfig/")
@@ -40,7 +40,7 @@ IF (OS_GNULINUX)
         LINK_LIBRARIES( ${COMEDI_LIBS} )
 	SET(COMEDI_FOUND INTERNAL TRUE)
   ENDIF( COMEDILIB_FOUND )
-ENDIF ( OS_GNULINUX )
+ENDIF ( OS_GNULINUX OR OS_XENOMAI )
 
 # For LXRT, do a manual search.   
     IF (OS_LXRT)
