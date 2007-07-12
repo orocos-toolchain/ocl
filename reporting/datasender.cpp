@@ -34,7 +34,7 @@
 #include "socketmarshaller.hpp"
 #include "datasender.hpp"
 #include "command.hpp"
-#include "../TcpReporting.hpp"
+#include "TcpReporting.hpp"
 #include <rtt/TemplateTypeInfo.hpp>
 
 namespace Orocos

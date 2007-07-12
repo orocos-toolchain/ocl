@@ -28,7 +28,7 @@
 #include <rtt/Property.hpp>
 #include <rtt/PropertyIntrospection.hpp>
 #include <rtt/os/Mutex.hpp>
-#include "../TcpReporting.hpp"
+#include "TcpReporting.hpp"
 #include "socketmarshaller.hpp"
 #include "datasender.hpp"
 

@@ -30,8 +30,8 @@
 #include <cctype>
 #include <cerrno>
 #include <rtt/Property.hpp>
-#include "../NiceHeaderMarshaller.hpp"
-#include "../TcpReporting.hpp"
+#include "NiceHeaderMarshaller.hpp"
+#include "TcpReporting.hpp"
 #include "command.hpp"
 #include "socket.hpp"
 #include "datasender.hpp"

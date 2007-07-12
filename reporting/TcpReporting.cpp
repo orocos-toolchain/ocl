@@ -33,8 +33,8 @@
 #include "rtt/NonPeriodicActivity.hpp"
 #include "rtt/Logger.hpp"
 #include "rtt/os/Mutex.hpp"
-#include "tcp/socket.hpp"
-#include "tcp/socketmarshaller.hpp"
+#include "socket.hpp"
+#include "socketmarshaller.hpp"
 
 using RTT::Logger;
 using RTT::OS::Mutex;
