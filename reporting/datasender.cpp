@@ -212,6 +212,7 @@ namespace TCP
         
         lock.lock();
         if( !subscriptions.empty() && ( limit == 0 || curframe <= limit ) ){
+            *os << "201 " <<curframe << " -- begin of frame" << std::endl;
             checkbag(v);
             *os << "203 " << curframe << " -- end of frame" << std::endl;
             curframe++;

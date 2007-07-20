@@ -123,12 +123,10 @@ namespace
         protected:
             void maincode( int, std::string* )
             {
-                prefixstr stream( _parent->getConnection()->getSocket() );
-                RTT::NiceHeaderMarshaller<std::ostream> marsh(stream);
-                marsh.serialize( *_parent->getConnection()->getMarshaller()->getReporter()->getReport() );
-                _parent->getConnection()->getMarshaller()->getReporter()->cleanReport(); // TODO: lock?
-                marsh.flush();
-                _parent->getConnection()->getSocket() << "306 End of list" << std::endl;
+                std::vector<std::string> list = _parent->getConnection()->getMarshaller()->getReporter()->getReport()->list();
+                for(unsigned int i=0;i<list.size();i++)
+                    socket()<<"305 "<<list[i]<<std::endl;
+                socket() << "306 End of list" << std::endl;
             }
 
         public:

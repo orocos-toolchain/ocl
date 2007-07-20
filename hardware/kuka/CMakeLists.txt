@@ -1,4 +1,4 @@
-DEPENDENT_OPTION( BUILD_KUKA "Build Kuka Components" OFF  "BUILD_AXES" OFF)
+DEPENDENT_OPTION( BUILD_KUKA "Build Kuka Components" OFF  "BUILD_AXES;KDL_FOUND" OFF)
 
 #Always process subdirs
 ADD_SUBDIRECTORY( tests )
@@ -11,7 +11,7 @@ IF ( BUILD_KUKA )
   
   GLOBAL_ADD_COMPONENT( orocos-kuka ${SRCS} )
   INCLUDE_DIRECTORIES(${PROJ_SOURCE_DIR}/hardware/axes)
-  TARGET_LINK_LIBRARIES( orocos-kuka orocos-axes)
+  TARGET_LINK_LIBRARIES( orocos-kuka orocos-axes orocos-kdl)
   
   IF ( BUILD_COMEDI )
     INCLUDE_DIRECTORIES(${PROJ_SOURCE_DIR}/hardware/comedi)

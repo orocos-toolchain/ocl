@@ -29,6 +29,8 @@
 
 #include <ocl/OCL.hpp>
 
+#include <kdl/kinfam/chain.hpp>
+
 namespace OCL
 {
     /**
@@ -41,7 +43,7 @@ namespace OCL
      * 
      */
     
-    class Kuka361nAxesVelocityController : public RTT::TaskContext
+    class Kuka361nAxesVelocityController : public TaskContext
     {
     public:
         /** 
@@ -57,84 +59,46 @@ namespace OCL
     
     protected:  
         /** 
-         * Method to start an axis .
+         * Method to start all axes .
          *
          * Sets the axis in the DRIVEN state. Only possible if the axis
          * is int the STOPPED state. If succesfull the drive value of
          * the axis is setted to zero and will be updated periodically
-         * from the ReadDataPort _driveValue
          * 
-         * @param axis nr of the axis to start
-         * 
-         * @return Can only succeed if the axis was in the DRIVEN state
+         * @return Can only succeed if all axis are in the DRIVEN state
          */
-        Method<bool(int)> _startAxis; 
+        Method<bool(void)> startAllAxes_mtd; 
         
         /**
-         * Method to start all axes .
-         *
-         * Identical to calling startAxis(int axis) on all axes.
-         *  
-         * @return true if all Axes could be started.
-         */
-        Method<bool(void)> _startAllAxes; 
-        
-        /**
-         * Method to stop an axis .
+         * Method to stop all axes .
          *
          * Sets the drive value to zero and changes to the STOP
          * state. Only possible if axis is in the DRIVEN state. In the
          * stop state, the axis does not listen and write to its 
          * ReadDataPort _driveValue.
          *
-         * @param axis nr of the axis to stop
-         *
          * @return false if in wrong state or already stopped.
          */
-        Method<bool(int)> _stopAxis; 
-      
-        /** Method to stop all axes.
-         *
-         * Identical to calling stopAxis(int axis) on all axes.
-         */
-        Method<bool(void)> _stopAllAxes; 
+        Method<bool(void)> stopAllAxes_mtd; 
         
         /** 
-         * Method to unlock an axis .
+         * Method to unlock all axes .
          *
          * Activates the brake of the axis.  Only possible in the STOPPED state.
          * 
-         * @param axis nr of the axis to lock
-         * 
          * @return false if in wrong state or already locked.
          */
-        Method<bool(int)> _unlockAxis; 
+        Method<bool(void)> unlockAllAxes_mtd;
         
         /** 
-         * Method to unlock all axes 
-         *
-         * identical to calling lockAxis(int axis) on all axes
-         */
-        Method<bool(void)> _unlockAllAxes;
-        
-        /** 
-         * Method to lock an axis.
+         * Method to lock all axes.
          *
          * Releases the brake of the axis.  Only possible in the LOCKED
          * state.
          * 
-         * @param axis nr of axis to unlock
-         * 
          * @return false if in wrong state or already locked.
          */
-        Method<bool(int)> _lockAxis; 
-
-        /** 
-         * Method to lock all axes .
-         *
-         * identical to unlockAxis(int axis) on all axes;
-       */
-        Method<bool(void)> _lockAllAxes; 
+        Method<bool(void)> lockAllAxes_mtd; 
 
         /**
          * Method to prepare robot for use.
@@ -146,87 +110,98 @@ namespace OCL
          * and the emergency stops are released. 
          *
          */
-        Command<bool(void)> _prepareForUse; 
+        Command<bool(void)> prepareForUse_cmd; 
         
         /** 
          * Command to Shutdown the hardware controller of the robot.
          * 
          */
-        Command<bool(void)> _prepareForShutdown;
+        Command<bool(void)> prepareForShutdown_cmd;
         
         /**
-         * Method to add a drive offset to an axis.
+         * Method to add drive offsets to the axes.
          *
-         * Adds an offset to the _driveValue of axis and updates the
-         * _driveOffset value.
+         * Adds an offset to the drivevalues of the axes and updates the
+         * driveOffset values.
          * 
-         * @param axis nr of Axis
-         * @param offset offset value in fysical units
+         * @param offset offset value in geometrics units [rad/s]
          * 
          */
-        Method<bool(int,double)> _addDriveOffset;
+        Method<bool(std::vector<double>)> addDriveOffset_mtd;
 
         /**
-         * vector of ReadDataPorts which contain the output velocities
+         * DataPort which contain the output velocities
          * of the axes.  
          * 
          */
-        std::vector<RTT::ReadDataPort<double>*>   _driveValue;
+        DataPort<std::vector<double> > driveValues_port;
 
         /**
-         * vector of WriteDataPorts which contain the values of the
+         * DataPort which contain the values of the
          * position sensors. It is used by other components who need this
          * value for control ;)
          * 
          */
-        std::vector<RTT::DataPort<double>*>       _positionValue;
+        DataPort<std::vector<double> >  positionValues_port;
 
         /**
          * The absolute value of the velocity will be limited to this property.  
          * Used to fire an event if necessary and to saturate the velocities.
          * It is a good idea to set this property to a low value when using experimental code.
          */
-        RTT::Property<std::vector <double> >     _driveLimits;
+        Property<std::vector <double> > driveLimits_prop;
         
         /**
          * Lower limit for the positions.  Used to fire an event if necessary.
          */
-        RTT::Property<std::vector <double> >     _lowerPositionLimits;
+        Property<std::vector <double> > lowerPositionLimits_prop;
         
         /**
          * upper limit for the positions.  Used to fire an event if necessary.
          */
-        RTT::Property<std::vector <double> >     _upperPositionLimits;
+        Property<std::vector <double> > upperPositionLimits_prop;
         
         /**
          *  Start position in rad for simulation.  If the encoders are relative ( like for this component )
          *  also the starting value for the relative encoders.
          */
-        RTT::Property<std::vector <double> >     _initialPosition;
+        Property<std::vector <double> > initialPosition_prop;
         
         /**
          * Offset to the drive value 
          * volt = (setpoint + offset)/scale
          */
-        RTT::Property<std::vector <double> >     _driveOffset;
+        Property<std::vector <double> > driveOffset_prop;
       
         /**
          * True if simulationAxes should be used in stead of hardware axes
          */
-      
-        RTT::Property<bool >     _simulation;
+        Property<bool > simulation_prop;
+        bool            simulation;
         
         /**
-         * Constant: number of axes
+         * True if geometric axes values should be used in stead of
+         * actuator values.
          */
-        RTT::Constant<unsigned int> _num_axes;
+        Property<bool > geometric_prop;
         
+        /**
+         * Constant Attribute: number of axes
+         */
+        Constant<unsigned int> num_axes_attr;
+
+        /**
+         * KDL-chain for the Kuka361
+         */
+        Attribute<KDL::Chain> chain_attr;
+        KDL::Chain kinematics;
+                
         /**
          *  parameters to this event are the axis and the velocity that is out of range.
          *  Each axis that is out of range throws a seperate event.
          *  The component will continue with the previous value.
          */
-        RTT::Event< void(std::string) > _driveOutOfRange;
+        Event< void(std::string) > driveOutOfRange_evt;
         
         /**
          *  parameters to this event are the axis and the position that is out of range.
@@ -234,67 +209,37 @@ namespace OCL
          *  The component will continue.  The hardware limit switches can be reached when this
          *  event is not handled.
          */ 
-        RTT::Event< void(std::string) > _positionOutOfRange;
+        Event< void(std::string) > positionOutOfRange_evt;
         
     private:    
 
-        virtual bool startAxis(int axis);
-        virtual bool startAxisCompleted(int axis) const;
-    
         virtual bool startAllAxes();
-        virtual bool startAllAxesCompleted() const;
-    
-        virtual bool stopAxis(int axis);
-        virtual bool stopAxisCompleted(int axis) const;
-    
         virtual bool stopAllAxes();
-        virtual bool stopAllAxesCompleted() const;
-    
-        virtual bool lockAxis(int axis);
-        virtual bool lockAxisCompleted(int axis) const;
-    
         virtual bool lockAllAxes();
-        virtual bool lockAllAxesCompleted() const;
-    
-        virtual bool unlockAxis(int axis);
-        virtual bool unlockAxisCompleted(int axis) const;
-    
         virtual bool unlockAllAxes();
-        virtual bool unlockAllAxesCompleted() const;
-    
-        virtual bool addDriveOffset(int axis,double offset);
-        virtual bool addDriveOffsetCompleted(int axis) const;
-    
-        /*
-         *Kuka361 does not need a command to initialize the position since
-         *it has absolute encoders
-         */
-        //virtual bool initPosition(int axis);
-        //virtual bool initPositionCompleted(int axis) const;
-        
+        virtual bool addDriveOffset(const std::vector<double>& offset);
         virtual bool prepareForUse();
         virtual bool prepareForUseCompleted() const;
         virtual bool prepareForShutdown();
         virtual bool prepareForShutdownCompleted() const;
     
-
         /**
          * A local copy of the name of the propertyfile so we can store
          * changed properties.
          */
-        const std::string _propertyfile;
+        const std::string propertyfile;
     
         /**
          * Activation state of robot
          */
-        bool _activated;
+        bool activated;
     
         /**
          * conversion factor between position value and the encoder input.
          * position = (encodervalue)/scale
          */
         
-        std::vector<double>     _positionConvertFactor;
+        std::vector<double> positionConvertFactor;
     
     
         /**
@@ -302,53 +247,50 @@ namespace OCL
          * volt = (setpoint + offset)/scale
          */
         
-        std::vector<double>     _driveConvertFactor;
-    
-    public:
-        /**
-         *  This function contains the application's startup code.
-         *  Return false to abort startup.
-         **/
-        virtual bool startup(); 
-        
-        /**
-         * This function is periodically called.
-         */
-        virtual void update();
-        
-        /**
-         * This function is called when the task is stopped.
-         */
-        virtual void shutdown();
-        
-        /**
-         * Get the number of axes of this robot
-         */
-        unsigned int GetNumAxes();
+        std::vector<double> driveConvertFactor;
 
+
+        ///Local copy for the position and drive values:
+        std::vector<double> positionValues, driveValues,
+            positionValues_kin,driveValues_rob;
+        
+    public:
+        
+        virtual bool configureHook();
+        virtual bool startHook(); 
+        virtual void updateHook();
+        virtual void stopHook();
+        virtual void cleanupHook();
+
+        KDL::Chain getKinematics(){
+            return kinematics;
+        };
+        
     private:
+        
+        void convertGeometric();
+        
         // 
         // Members implementing the interface to the hardware
         //
 #if  (defined (OROPKG_OS_LXRT))
-        std::vector<RTT::Axis*>  _axes_hardware;
+        std::vector<Axis*>  axes_hardware;
         
-        RTT::ComediDevice*                    _comediDev;
-        RTT::ComediSubDeviceAOut*             _comediSubdevAOut;
-        RTT::EncoderSSI_apci1710_board*       _apci1710;
-        RTT::RelayCardapci2200*               _apci2200;
-        RTT::SwitchDigitalInapci1032*         _apci1032;
+        ComediDevice*                    comediDev;
+        ComediSubDeviceAOut*             comediSubdevAOut;
+        EncoderSSI_apci1710_board*       apci1710;
+        RelayCardapci2200*               apci2200;
+        SwitchDigitalInapci1032*         apci1032;
 
-        std::vector<RTT::EncoderInterface*>           _encoderInterface;
-        std::vector<RTT::AbsoluteEncoderSensor*>      _encoder;
-        std::vector<RTT::AnalogOutput<unsigned int>*> _vref;
-        std::vector<RTT::DigitalOutput*>              _enable;
-        std::vector<RTT::AnalogDrive*>                _drive;
-        std::vector<RTT::DigitalOutput*>              _brake;
+        std::vector<EncoderInterface*>           encoderInterface;
+        std::vector<AbsoluteEncoderSensor*>      encoder;
+        std::vector<AnalogOutput<unsigned int>*> vref;
+        std::vector<DigitalOutput*>              enable;
+        std::vector<AnalogDrive*>                drive;
+        std::vector<DigitalOutput*>              brake;
     
 #endif
-        std::vector<RTT::AxisInterface*>      _axes;
-        std::vector<RTT::SimulationAxis*>     _axes_simulation;
+        std::vector<AxisInterface*>      axes;
     
     };//class Kuka361nAxesVelocityController
 }//namespace Orocos

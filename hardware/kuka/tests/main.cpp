@@ -63,9 +63,6 @@ int ORO_main(int argc, char* argv[])
     TaskBrowser browser(my_robot );
     browser.setColorTheme( TaskBrowser::whitebg );
     
-    //Loading program in browser
-    my_robot->scripting()->loadPrograms("cpf/program.ops");
-    
     /// Creating Tasks
     PeriodicActivity _kukaTask(0,0.002, my_robot->engine() );  
     

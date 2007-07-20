@@ -4,9 +4,9 @@ program KukaTestProg
   var double refneg = 2.0*151.0719/10
 
   do prepareForUse()
-  do unlockAxis(0)
-  do startAxis(0)
-  do TaskBrowser.driveValue0.Set(refpos )
+  do unlockallAxes
+  do startallAxes
+  do driveValues.Set(array{0.0,0.0,0.0,0.0} )
   while(positionValue0.Get()<2.5){
      do nothing
   }
