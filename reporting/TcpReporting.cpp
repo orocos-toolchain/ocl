@@ -50,7 +50,6 @@ namespace
     {
         private:
             bool inBreak;
-            static Mutex threadCreationLock;
             static ListenThread* _instance;
             RTT::SocketMarshaller* _marshaller;
             unsigned short _port;
@@ -172,7 +171,6 @@ namespace
 
           virtual bool breakLoop()
           {
-              ListenThread::threadCreationLock.lock();
               inBreak = true;
               _accepting = false;
               ::close( _sock );
@@ -187,7 +185,6 @@ namespace
                   ::connect( sock, (struct sockaddr*)&socket, sizeof(socket) );
                   ::close( sock );
               }
-              ListenThread::threadCreationLock.unlock();
               return true;
           }
 
@@ -195,10 +192,8 @@ namespace
           {
             // The lock is needed to avoid problems when createInstance is called by two
             // different threads (which in reality should not occur very often).
-            threadCreationLock.lock();
             //ListenThread* _oinst = ListenThread::_instance;
             ListenThread::_instance = new ListenThread( marshaller, port );
-            threadCreationLock.unlock();
             //delete _oinst;
           }
 
@@ -208,7 +203,6 @@ namespace
           }
     };
     ListenThread* ListenThread::_instance = 0;
-    Mutex ListenThread::threadCreationLock;
 }
 
 namespace Orocos
