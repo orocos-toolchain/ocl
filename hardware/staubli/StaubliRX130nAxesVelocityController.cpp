@@ -129,11 +129,13 @@ namespace OCL
             log(Info)<<"Creating Hardware axis "<<i<<endlog();
             //Setting up encoders
             log(Info)<<"Setting up encoder ..."<<endlog();
-            encoderInterface[i] = new ComediEncoder( i + 1, apci1710 );
-            encoder[i]          = new IncrementalEncoderSensor( encoderInterface[i], 1.0 / ticks2rad[i], encoderOffsets[i], -10, 10 );
+            encoderInterface[i] = new ComediEncoder(Encoder,0,i);
+            encoder[i] = new IncrementalEncoderSensor( encoderInterface[i], 1.0 / ticks2rad[i],
+						       encoderOffsets[i],
+						       -10, 10,STAUBLIRX130_ENC_RES );
                         
             log(Info)<<"Setting up drive ..."<<endlog();
-            vref[i]   = new AnalogOutput<unsigned int>( comediSubdevAOut, i );
+            vref[i]   = new AnalogOutput<unsigned int>(SubAOut, i );
             enable[i] = new DigitalOutput( SubDOut, 18+i );
             enable[i]->switchOff();
             drive[i]  = new AnalogDrive( vref[i], enable[i], 1.0 / vel2volt[i], 0.0);
@@ -315,7 +317,7 @@ namespace OCL
     {
 #if (defined OROPKG_OS_LXRT)
         if(!simulation)
-            return (eStop->isOff() && ArmPowerOn->isOn());
+            return (!(eStop->isOn()) && armPowerOn->isOn());
         else
 #endif
             return true;
@@ -376,9 +378,9 @@ namespace OCL
     {
         bool succes = true;
 #if defined OROPKG_OS_LXRT
-        brakeOff->switchOff()
+        brakeOff->switchOff();
 #endif
-        for(unsigned int i = 0;i<STAUBLIRX130_NUM_AXES;i++){
+	for(unsigned int i = 0;i<STAUBLIRX130_NUM_AXES;i++){
             succes &= axes[i]->lock();
         }
         return succes;
@@ -393,7 +395,7 @@ namespace OCL
             driveOffset_prop.value()[i] += offset[i];
 #if (defined OROPKG_OS_LXRT)
             if (!simulation)
-                ((Axis*)(axes[i]))->getDrive()->addOffset(offset[axis]);
+	      ((Axis*)(axes[i]))->getDrive()->addOffset(offset[i]);
 #endif
         }
         return true;

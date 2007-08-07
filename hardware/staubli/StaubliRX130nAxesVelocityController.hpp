@@ -13,14 +13,15 @@
 #if defined (OROPKG_OS_LXRT)
 #include <rtt/dev/AnalogOutput.hpp>
 #include <rtt/dev/DigitalOutput.hpp>
+#include <rtt/dev/DigitalInput.hpp>
 
-#include "dev/SwitchDigitalInapci1032.hpp"
-#include "dev/RelayCardapci2200.hpp"
-#include "dev/EncoderSSIapci1710.hpp"
 #include "dev/ComediDevice.hpp"
 #include "dev/ComediSubDeviceAOut.hpp"
+#include "dev/ComediSubDeviceDOut.hpp"
+#include "dev/ComediSubDeviceDIn.hpp"
+#include "dev/ComediEncoder.hpp"
 
-#include "dev/AbsoluteEncoderSensor.hpp"
+#include "dev/IncrementalEncoderSensor.hpp"
 #include "dev/AnalogDrive.hpp"
 #include "dev/Axis.hpp"
 #endif
@@ -29,7 +30,7 @@
 
 #include <ocl/OCL.hpp>
 
-#include <kdl/kinfam/chain.hpp>
+#include <kdl/chain.hpp>
 
 namespace OCL
 {
@@ -128,7 +129,7 @@ namespace OCL
          * 
          */
         Method<bool(std::vector<double>)> addDriveOffset_mtd;
-
+      
         /**
          * DataPort which contain the output velocities
          * of the axes.  

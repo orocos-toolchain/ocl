@@ -1,7 +1,7 @@
 DEPENDENT_OPTION( BUILD_STAUBLI "Build Staubli Components" OFF  "BUILD_AXES;KDL_FOUND" OFF)
 
 #Always process subdirs
-#ADD_SUBDIRECTORY( tests )
+ADD_SUBDIRECTORY( tests )
 
 IF ( BUILD_STAUBLI )
 
