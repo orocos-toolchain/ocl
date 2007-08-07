@@ -146,8 +146,8 @@
 	  </row>
 	  <row>
 	    <entry>.connect</entry>
-	    <entry>-</entry>
-	    <entry>Connect the TaskBrowser to <emphasis>all</emphasis> the Data
+	    <entry>[port-name]</entry>
+	    <entry>Connect the TaskBrowser to <emphasis>port-name</emphasis> or <emphasis>all</emphasis> the Data
 	    Flow ports of the current component. This causes the TaskBrowser to create complementary ports
 	    which are connected to the current component. If the current component's port
 	    is already connected to another component, the existing
