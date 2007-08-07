@@ -659,7 +659,7 @@ namespace OCL
         } else {
             cout << "Recording macro "<< name <<endl;
             cout << "Use program scripting syntax (do, set,...) !" << endl <<endl;
-            cout << "export function "<<macroname<<"() {"<<endl;
+            cout << "export function "<< name<<" {"<<endl;
         }
         macrorecording = true;
         macroname = name;
@@ -677,7 +677,7 @@ namespace OCL
         cout << "Saving file "<< fname <<endl;
         ofstream macrofile( fname.c_str() );
         macrofile << "/* TaskBrowser macro '"<<macroname<<"' */" <<endl<<endl;
-        macrofile << "export function "<<macroname<<"() {"<<endl;
+        macrofile << "export function "<<macroname<<" {"<<endl;
         macrofile << macrotext.c_str();
         macrofile << "}"<<endl;
 
