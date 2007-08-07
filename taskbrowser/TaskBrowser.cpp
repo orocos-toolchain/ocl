@@ -220,6 +220,7 @@ namespace OCL
             tbcoms.push_back(".light"); 
             tbcoms.push_back(".dark"); 
             tbcoms.push_back(".nocolors"); 
+            tbcoms.push_back(".connect"); 
 
             // then see which one matches the already typed line :
             for( std::vector<std::string>::iterator it = tbcoms.begin();
@@ -1010,14 +1011,29 @@ namespace OCL
             return;
         }
         if ( instr == "connect") {
-            cout <<nl << "TaskBrowser connects to all ports of "<<taskcontext->getName()<<endl;
-            // create 'anti-ports' to allow port-level interaction with the peer.
-            DataFlowInterface::Ports ports = taskcontext->ports()->getPorts();
-            for( DataFlowInterface::Ports::iterator i=ports.begin(); i != ports.end(); ++i) {
-                if (this->ports()->getPort( (*i)->getName() ) == 0 )
-                    this->ports()->addPort( (*i)->antiClone() );
+            if (arg.empty() ) {
+                cout <<nl << "TaskBrowser connects to all ports of "<<taskcontext->getName()<<endl;
+                // create 'anti-ports' to allow port-level interaction with the peer.
+                DataFlowInterface::Ports ports = taskcontext->ports()->getPorts();
+                for( DataFlowInterface::Ports::iterator i=ports.begin(); i != ports.end(); ++i) {
+                    if (this->ports()->getPort( (*i)->getName() ) == 0 )
+                        this->ports()->addPort( (*i)->antiClone() );
+                }
+                RTT::connectPorts(this,taskcontext);
             }
-            RTT::connectPorts(this,taskcontext);
+            else {
+                cout <<nl << "TaskBrowser connects to port '"<<arg <<"' of "<<taskcontext->getName()<<endl;
+                // create 'anti-port' and connect.
+                DataFlowInterface::Ports ports = taskcontext->ports()->getPorts();
+                for( DataFlowInterface::Ports::iterator i=ports.begin(); i != ports.end(); ++i) {
+                    if ( (*i)->getName() == arg && this->ports()->getPort( (*i)->getName() ) == 0 ) {
+                        this->ports()->addPort( (*i)->antiClone() );
+                        this->ports()->getPort( arg )->connectTo( *i ); // this should always succeed
+                        assert( this->ports()->getPort( arg )->connected() );
+                        return;
+                    }
+                }
+            }
             return;
         }
         if ( instr == "record") {
@@ -1318,7 +1334,7 @@ namespace OCL
         cout << "     array(6)" <<nl;
         cout << "   = {0, 0, 0, 0, 0, 0}" <<nl;
 
-        cout <<titlecol("Changing Attributes")<<nl;
+        cout <<titlecol("Changing Attributes and Properties")<<nl;
         cout << "  To change the value of a Task's attribute, type "<<comcol("varname = <newvalue>")<<nl;
         cout << "  If you provided a correct assignment, the browser will inform you of the success"<<nl;
         cout <<"   with '= true'." <<nl;
@@ -1336,6 +1352,12 @@ namespace OCL
         cout << "  immediately and print the result. An example could be :"<<nl;
         cout << "     someTask.bar.getNumberOfBeers(\"Palm\") [enter] "<<nl;
         cout << "   = 99" <<nl;
+
+        cout <<titlecol("Events")<<nl;
+        cout << "  Events behave as methods, they are emitted immediately."<<nl;
+        cout << "  An example emitting an event :"<<nl;
+        cout << "     someTask.notifyUserState(\"Drunk\") [enter] "<<nl;
+        cout << "   = (void)" <<nl;
 
         cout <<titlecol("Program and StateMachine Scripts")<<nl;
         cout << "  To load a program script from local disc, type "<<comcol(".loadProgram <filename>")<<nl;
@@ -1367,6 +1389,22 @@ namespace OCL
         cout << "  You can inform the TaskBrowser of your background color by typing "<<comcol(".dark")<<nl;
         cout << "  "<<comcol(".light")<<", or "<<comcol(".nocolors")<<" to increase readability."<<nl;
 
+        cout <<titlecol("Macro Recording / Command line history")<<nl;
+        cout << "  You can browse the commandline history by using the up-arrow key or press "<<comcol("Ctrl r")<<nl;
+        cout << "  and a search term. Hit enter to execute the current searched command."<<nl;
+        cout << "  Macros can be recorded using the "<<comcol(".record 'macro-name'")<<" command."<<nl;
+        cout << "  You can cancel the recording by typing "<<comcol(".cancel")<<" ."<<nl;
+        cout << "  You can save and load the macro by typing "<<comcol(".end")<<" . The macro becomes"<<nl;
+        cout << "  available as a command with name 'macro-name' in the current TaskContext." << nl;
+        cout << "  While you enter the macro, it is not executed, as you must use scripting syntax which"<<nl;
+        cout << "  may use loop or conditional statements, variables etc."<<nl;
+
+        cout <<titlecol("Connecting Ports")<<nl;
+        cout << "  You can instruct the TaskBrowser to connect to the ports of the current Peer by"<<nl;
+        cout << "  typing "<<comcol(".connect [port-name]")<<", which will temporarily create connections"<<nl;
+        cout << "  to all ports if [port-name] is omitted or to the specified port otherwise."<<nl;
+        cout << "  The TaskBrowser disconnects these ports when it visits another component, but the"<<nl;
+        cout << "  created connection objects remain in place (this is more or less a bug)!"<<nl;
     }
 
     void TaskBrowser::printProgram(const std::string& progname, int cl /*= -1*/, TaskContext* progpeer /* = 0 */) {
