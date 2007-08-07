@@ -29,17 +29,13 @@
 #define ORO_REPORTING_COMPONENT_HPP
 
 
-#include <rtt/os/main.h>
 #include <boost/tuple/tuple.hpp>
 
 #include <rtt/Property.hpp>
 #include <rtt/PropertyBag.hpp>
 #include <rtt/Marshaller.hpp>
 #include <rtt/TimeService.hpp>
-#include <rtt/CommandInterface.hpp>
 #include <rtt/TaskContext.hpp>
-#include <rtt/Method.hpp>
-#include <rtt/Command.hpp>
 
 #include <rtt/RTT.hpp>
 

@@ -27,6 +27,8 @@
 
 #include "ReportingComponent.hpp"
 #include <rtt/Logger.hpp>
+#include <rtt/Method.hpp>
+#include <rtt/Command.hpp>
 
 // Impl.
 #include <rtt/marsh/EmptyMarshaller.hpp>
