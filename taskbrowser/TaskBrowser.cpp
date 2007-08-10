@@ -830,7 +830,7 @@ namespace OCL
         lastc = 0;
 
         // connect peer.
-        this->connectPeers( taskcontext );
+        this->addPeer( taskcontext );
 
         cerr << "   Switched to : " << taskcontext->getName() <<endl;
 
