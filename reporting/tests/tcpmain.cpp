@@ -1,3 +1,4 @@
+#include <rtt/os/main.h>
 #include <reporting/TcpReporting.hpp>
 #include <taskbrowser/TaskBrowser.hpp>
 
