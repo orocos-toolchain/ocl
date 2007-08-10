@@ -207,6 +207,12 @@ namespace OCL
          */ 
         Event< void(std::string) > positionOutOfRange_evt;
         
+        Property<std::vector<double> > servoDerivTime_prop;
+        Property<std::vector<double> > servoIntegrationFactor_prop;
+        Property<std::vector<double> > servoGain_prop;
+        Property<std::vector<double> > servoFFScale_prop;
+
+
     private:    
 
         virtual bool startAllAxes();
@@ -248,7 +254,13 @@ namespace OCL
 
         ///Local copy for the position and drive values:
         std::vector<double> positionValues, driveValues;
-                
+        ///local copy for the servoloop parameters
+        std::vector<double> servoIntVel,servoIntError,outputvel,previousPos;
+        std::vector<double> servoDerivTime,servoIntegrationFactor,servoGain,servoFFScale;
+
+        bool servoInitialized;
+        RTT::TimeService::ticks    previousTime;
+
     public:
         
         virtual bool configureHook();

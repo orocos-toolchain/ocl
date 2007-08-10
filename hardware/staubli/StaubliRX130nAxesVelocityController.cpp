@@ -19,6 +19,9 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
+// Servo controller based on work of CRSnAxesVelocityContoller by
+// Erwin Aertbelien
+
 #include "StaubliRX130nAxesVelocityController.hpp"
 
 #include <rtt/Logger.hpp>
@@ -78,12 +81,25 @@ namespace OCL
           chain_attr("Kinematics"),
           driveOutOfRange_evt("driveOutOfRange"),
           positionOutOfRange_evt("positionOutOfRange"),
+          servoDerivTime_prop("ServoDerivTime","Derivative Time for servoloop",vector<double>(STAUBLIRX130_NUM_AXES,0)),
+          servoIntegrationFactor_prop("ServoIntegrationFactor","Inverse of Integration time for servoloop",vector<double>(STAUBLIRX130_NUM_AXES,0)),
+          servoGain_prop("ServoGain","Feedback Gain for servoloop",vector<double>(STAUBLIRX130_NUM_AXES,0)),
+          servoFFScale_prop("ServoFFScale","Feedforward scale for servoloop",vector<double>(STAUBLIRX130_NUM_AXES,0)),
           propertyfile(_propertyfile),
           activated(false),
-          positionConvertFactor(STAUBLIRX130_NUM_AXES),
-          driveConvertFactor(STAUBLIRX130_NUM_AXES),
-          positionValues(STAUBLIRX130_NUM_AXES),
-          driveValues(STAUBLIRX130_NUM_AXES),
+          positionConvertFactor(STAUBLIRX130_NUM_AXES,0),
+          driveConvertFactor(STAUBLIRX130_NUM_AXES,0),
+          positionValues(STAUBLIRX130_NUM_AXES,0),
+          driveValues(STAUBLIRX130_NUM_AXES,0),
+          servoIntVel(STAUBLIRX130_NUM_AXES,0),
+          servoIntError(STAUBLIRX130_NUM_AXES,0),
+          outputvel(STAUBLIRX130_NUM_AXES,0),
+          previousPos(STAUBLIRX130_NUM_AXES,0),
+          servoDerivTime(STAUBLIRX130_NUM_AXES,0),
+          servoIntegrationFactor(STAUBLIRX130_NUM_AXES,0),
+          servoGain(STAUBLIRX130_NUM_AXES,0),
+          servoFFScale(STAUBLIRX130_NUM_AXES,0),
+          servoInitialized(false),
 #if (defined OROPKG_OS_LXRT)
           axes_hardware(STAUBLIRX130_NUM_AXES),
           encoderInterface(STAUBLIRX130_NUM_AXES),
@@ -187,6 +203,7 @@ namespace OCL
         properties()->addProperty( &simulation_prop);
         attributes()->addConstant( &num_axes_attr);
         attributes()->addAttribute(&chain_attr);
+
     }
     
     StaubliRX130nAxesVelocityController::~StaubliRX130nAxesVelocityController()
@@ -255,18 +272,43 @@ namespace OCL
 #if (defined OROPKG_OS_LXRT)
         }
 #endif
+        /**
+         * Initializing servoloop
+         */
+        servoIntVel = initialPosition_prop.value();
+        previousPos = initialPosition_prop.value();
+        servoGain = servoGain_prop.value();
+        servoIntegrationFactor = servoIntegrationFactor_prop.value();
+        servoFFScale = servoFFScale_prop.value();
+        
         return true;
     }
       
     bool StaubliRX130nAxesVelocityController::startHook()
     {
+        for (int axis=0;axis<STAUBLIRX130_NUM_AXES;++axis)
+            servoIntVel[axis] = axes[axis]->getSensor("Position")->readSensor();
+        previousPos = servoIntVel;
+        
         return true;
     }
   
     void StaubliRX130nAxesVelocityController::updateHook()
     {
+#if defined OROPKG_OS_LXRT
+        double dt;
+        // Determine sampling time :
+        if (servoInitialized) {
+            dt              = TimeService::Instance()->secondsSince(previousTime);
+            previousTime    = TimeService::Instance()->getTicks();
+        } else {
+            dt = 0.0; 
+        }
+        previousTime        = TimeService::Instance()->getTicks();
+        servoInitialized    = true;
+#endif
         driveValues_port.Get(driveValues);
-                
+        
         for (unsigned int i=0;i<STAUBLIRX130_NUM_AXES;i++) {      
 #if defined OROPKG_OS_LXRT
             if (driveFailure[i]->isOn()){
@@ -281,10 +323,35 @@ namespace OCL
                 (positionValues[i] > upperPositionLimits_prop.value()[i]) )
                 positionOutOfRange_evt("Position  of a StaubliRX130 Axis is out of range");
             // send the drive value to hw and performs checks
-            if (axes[i]->isDriven())
-                axes[i]->drive(driveValues[i]);
-
+            if (axes[i]->isDriven()){
+#if defined OROPKG_OS_LXRT      
+                // perform control action ( dt is zero the first time !) :
+                servoIntVel[i]      += dt*driveValues[i];
+                double error        = servoIntVel[i] - positionValues[i];
+                servoIntError[i]    += dt*error;
+                double deriv;
+                if (dt < 1E-4) {
+                    deriv = 0.0;
+                } else {
+                    deriv = servoDerivTime[i]*(previousPos[i]-positionValues[i])/dt;
+                }
+                outputvel[i] = servoGain[i]* 
+                    (error + servoIntegrationFactor[i]*servoIntError[i] + deriv) 
+                    + servoFFScale[i]*driveValues[i];
+            } else {
+                outputvel[i] = 0.0;
+            }
+            previousPos[i] = positionValues[i];
+            
+            axes[i]->drive(outputvel[i]);
+#else
+            axes[i]->drive(driveValues[i]);
+          }
+#endif
         }
+#if defined OROPKG_OS_LXRT      
+        driveValues_port->Set(driveValues);
+#endif
         positionValues_port.Set(positionValues);
     }
     
