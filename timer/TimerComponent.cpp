@@ -6,8 +6,7 @@
 
 #include "ocl/ComponentLoader.hpp"
 
-ORO_CREATE_COMPONENT_TYPE()
-
+ORO_CREATE_COMPONENT( OCL::TimerComponent )
 
 namespace OCL
 {
