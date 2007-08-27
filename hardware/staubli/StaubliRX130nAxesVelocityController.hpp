@@ -24,6 +24,9 @@
 #include "dev/IncrementalEncoderSensor.hpp"
 #include "dev/AnalogDrive.hpp"
 #include "dev/Axis.hpp"
+
+#include <termios.h>
+
 #endif
 #include "dev/SimulationAxis.hpp"
 #include <rtt/dev/AxisInterface.hpp>
@@ -136,6 +139,7 @@ namespace OCL
          * 
          */
         DataPort<std::vector<double> > driveValues_port;
+        DataPort<std::vector<double> > servoValues_port;
 
         /**
          * DataPort which contain the values of the
@@ -144,6 +148,8 @@ namespace OCL
          * 
          */
         DataPort<std::vector<double> >  positionValues_port;
+        DataPort<std::vector<double> >  velocityValues_port;
+        DataPort< double >            deltaTime_port;
 
         /**
          * The absolute value of the velocity will be limited to this property.  
@@ -161,6 +167,11 @@ namespace OCL
          * upper limit for the positions.  Used to fire an event if necessary.
          */
         Property<std::vector <double> > upperPositionLimits_prop;
+
+        /**
+         * limits for the velocities.  Used to fire an event if necessary.
+         */
+        Property<std::vector <double> > velocityLimits_prop;
         
         /**
          *  Start position in rad for simulation.  If the encoders are relative ( like for this component )
@@ -206,8 +217,8 @@ namespace OCL
          *  event is not handled.
          */ 
         Event< void(std::string) > positionOutOfRange_evt;
+        Event< void(std::string) > velocityOutOfRange_evt;
         
-        Property<std::vector<double> > servoDerivTime_prop;
         Property<std::vector<double> > servoIntegrationFactor_prop;
         Property<std::vector<double> > servoGain_prop;
         Property<std::vector<double> > servoFFScale_prop;
@@ -253,10 +264,10 @@ namespace OCL
 
 
         ///Local copy for the position and drive values:
-        std::vector<double> positionValues, driveValues;
+        std::vector<double> positionValues, driveValues, velocityValues;
         ///local copy for the servoloop parameters
-        std::vector<double> servoIntVel,servoIntError,outputvel,previousPos;
-        std::vector<double> servoDerivTime,servoIntegrationFactor,servoGain,servoFFScale;
+        std::vector<double> servoIntError,outputvel;
+        std::vector<double> servoIntegrationFactor,servoGain,servoFFScale;
 
         bool servoInitialized;
         RTT::TimeService::ticks    previousTime;
@@ -300,8 +311,14 @@ namespace OCL
         std::vector<DigitalInput*>               driveFailure;
         DigitalInput*                            armPowerOn;
         
+      const char* port;
+      struct termios tio;
+      int fd;
+      
 #endif
         std::vector<AxisInterface*>      axes;
+	std::vector<TimeService::ticks>         _previous_time;
+	TimeService::Seconds                    _delta_time;
     
     };//class StaubliRX130nAxesVelocityController
 }//namespace Orocos

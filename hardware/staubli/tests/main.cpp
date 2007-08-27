@@ -45,6 +45,8 @@ int ORO_main(int argc, char* argv[])
     PeriodicActivity robotTask(0,0.002, my_robot.engine() );  
     
     /// Start the console reader.
+    my_robot.configure();
+    
     browser.loop();
     
     return 0;
