@@ -1596,7 +1596,7 @@ namespace OCL
                     cout << nl << " " << (pt == PortInterface::ReadPort ?
                         " R " : pt == PortInterface::WritePort ? " W " : "RW ");
                     // Port data type + name
-                    if ( !port->ready() )
+                    if ( !port->ready() || !port->connection() )
                         cout << setw(11)<<right<< "(unconnected)";
                     else
                         cout << setw(11)<<right<<port->connection()->getDataSource()->getType();
@@ -1648,8 +1648,10 @@ namespace OCL
 
             objlist = peer->getPeerList();
             if ( !objlist.empty() )
-                for(vector<string>::iterator it = objlist.begin(); it != objlist.end(); ++it)
+	      for(vector<string>::iterator it = objlist.begin(); it != objlist.end(); ++it) {
+  		    assert( peer->getPeer(*it) );
                     cout << *it << "["<<getTaskStatusChar(peer->getPeer(*it))<<"] ";
+	      }
             else
                 cout << "(none)";
         }
