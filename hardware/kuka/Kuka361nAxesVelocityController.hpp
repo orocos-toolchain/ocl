@@ -29,7 +29,7 @@
 
 #include <ocl/OCL.hpp>
 
-#include <kdl/kinfam/chain.hpp>
+#include <kdl/chain.hpp>
 
 namespace OCL
 {

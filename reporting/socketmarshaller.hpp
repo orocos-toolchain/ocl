@@ -31,7 +31,7 @@
 #include <rtt/os/Mutex.hpp>
 #include <list>
 
-namespace Orocos
+namespace OCL
 {
 class TcpReporting;
 namespace TCP
@@ -51,20 +51,20 @@ namespace RTT
     {
         private:
             RTT::OS::MutexRecursive lock;
-            std::list<Orocos::TCP::Datasender*> _connections;
-            Orocos::TcpReporting* _reporter;
+            std::list<OCL::TCP::Datasender*> _connections;
+            OCL::TcpReporting* _reporter;
 
         public:
-            SocketMarshaller(Orocos::TcpReporting* reporter);
+            SocketMarshaller(OCL::TcpReporting* reporter);
             ~SocketMarshaller();
             virtual void flush();
             virtual void serialize(RTT::PropertyBase*);
             virtual void serialize(const PropertyBag &v);
-            void addConnection(Orocos::TCP::Socket* os);
-            void removeConnection(Orocos::TCP::Datasender* sender);
+            void addConnection(OCL::TCP::Socket* os);
+            void removeConnection(OCL::TCP::Datasender* sender);
             void closeAllConnections();
             void shutdown();
-            Orocos::TcpReporting* getReporter() const;
+            OCL::TcpReporting* getReporter() const;
     };
 }
 #endif

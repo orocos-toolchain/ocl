@@ -151,13 +151,12 @@ namespace OCL
         
 #endif
         //Definition of kinematics for the Kuka361 
-        kinematics.addSegment(Segment(Joint(Joint::RotZ)));
-        kinematics.addSegment(Segment(Joint(Joint::RotX),Frame(Vector(0.0,0.0,1.020))));
+        kinematics.addSegment(Segment(Joint(Joint::RotZ),Frame(Vector(0.0,0.0,1.020))));
         kinematics.addSegment(Segment(Joint(Joint::RotX),Frame(Vector(0.0,0.0,0.480))));
-        kinematics.addSegment(Segment(Joint(Joint::RotZ),Frame(Vector(0.0,0.0,0.645))));
-        kinematics.addSegment(Segment(Joint(Joint::RotX)));
+        kinematics.addSegment(Segment(Joint(Joint::RotX),Frame(Vector(0.0,0.0,0.645))));
         kinematics.addSegment(Segment(Joint(Joint::RotZ)));
-        kinematics.addSegment(Segment(Joint(Joint::None),Frame(Vector(0.0,0.0,0.120))));
+        kinematics.addSegment(Segment(Joint(Joint::RotX),Frame(Vector(0.0,0.0,0.120))));
+        kinematics.addSegment(Segment(Joint(Joint::RotZ)));
         
         chain_attr.set(kinematics);
         

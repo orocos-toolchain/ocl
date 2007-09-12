@@ -43,10 +43,10 @@ namespace {
     {
         private:
             char* ptr;
-            Orocos::TCP::Socket* mainClass;
+            OCL::TCP::Socket* mainClass;
 
         public:
-            sockbuf( Orocos::TCP::Socket* m ) : mainClass(m)
+            sockbuf( OCL::TCP::Socket* m ) : mainClass(m)
             {
                 char* ptr = new char[bufsize];
                 setp(ptr, ptr + bufsize);   // output buffer
@@ -111,7 +111,7 @@ namespace {
     };
 };
 
-namespace Orocos {
+namespace OCL {
 namespace TCP {
     Socket::Socket( int socketID ) :
             std::ostream( new sockbuf(this) ),

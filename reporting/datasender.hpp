@@ -42,7 +42,7 @@ namespace RTT
 {
     class SocketMarshaller;
 }
-namespace Orocos{
+namespace OCL{
 
     namespace TCP{
         class TcpReportingInterpreter;
@@ -65,7 +65,7 @@ namespace Orocos{
             void writeOut(PropertyBase* v);
             void writeOut(const PropertyBag &v);
             Socket* os;
-            Orocos::TcpReporting* reporter;
+            OCL::TcpReporting* reporter;
             unsigned long long limit;
             unsigned long long curframe;
             bool silenced;

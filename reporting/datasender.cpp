@@ -37,7 +37,7 @@
 #include "TcpReporting.hpp"
 #include <rtt/TemplateTypeInfo.hpp>
 
-namespace Orocos
+namespace OCL
 {
 namespace TCP
 {

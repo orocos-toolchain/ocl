@@ -29,7 +29,7 @@
 #include <vector>
 #include <rtt/os/Mutex.hpp>
 
-namespace Orocos
+namespace OCL
 {
 
 namespace TCP

@@ -31,7 +31,7 @@ namespace {
     class sockbuf;
 };
 
-namespace Orocos {
+namespace OCL {
 namespace TCP {
     class Socket : public std::ostream {
         friend class ::sockbuf;

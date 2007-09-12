@@ -29,7 +29,7 @@
 #include <rtt/Command.hpp>
 #include <rtt/Method.hpp>
 
-#include <kdl/motion/velocityprofile_trap.h>
+#include <kdl/velocityprofile_trap.hpp>
 #include <rtt/TimeService.hpp>
 
 #include <ocl/OCL.hpp>

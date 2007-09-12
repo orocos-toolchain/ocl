@@ -39,7 +39,7 @@
 using RTT::Logger;
 using RTT::OS::Mutex;
 
-namespace
+namespace OCL
 {
     /**
      * ListenThread is a thread which waits for new incoming connections
@@ -205,7 +205,7 @@ namespace
     ListenThread* ListenThread::_instance = 0;
 }
 
-namespace Orocos
+namespace OCL
 {
     TcpReporting::TcpReporting(std::string fr_name /*= "Reporting"*/, unsigned short port)
         : ReportingComponent( fr_name )

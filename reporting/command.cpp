@@ -37,9 +37,9 @@
 #include "datasender.hpp"
 #include "socketmarshaller.hpp"
 
-using Orocos::TCP::RealCommand;
-using Orocos::TCP::Socket;
-using Orocos::TCP::TcpReportingInterpreter;
+using OCL::TCP::RealCommand;
+using OCL::TCP::Socket;
+using OCL::TCP::TcpReportingInterpreter;
 
 namespace
 {
@@ -381,7 +381,7 @@ namespace
     };
 }
 
-namespace Orocos
+namespace OCL
 {
 namespace TCP
 {

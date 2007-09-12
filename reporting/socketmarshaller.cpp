@@ -36,7 +36,7 @@ using RTT::Logger;
 
 namespace RTT
 {
-        SocketMarshaller::SocketMarshaller(Orocos::TcpReporting* reporter)
+        SocketMarshaller::SocketMarshaller(OCL::TcpReporting* reporter)
             : _reporter(reporter)
         {
         }
@@ -46,10 +46,10 @@ namespace RTT
             closeAllConnections();
         }
 
-        void SocketMarshaller::addConnection(Orocos::TCP::Socket* os)
+        void SocketMarshaller::addConnection(OCL::TCP::Socket* os)
         {
             lock.lock();
-            Orocos::TCP::Datasender* conn = new Orocos::TCP::Datasender(this, os);
+            OCL::TCP::Datasender* conn = new OCL::TCP::Datasender(this, os);
             _connections.push_front( conn );
             conn->NonPeriodicActivity::start();
             lock.unlock();
@@ -67,7 +67,7 @@ namespace RTT
         void SocketMarshaller::flush()
             {}
 
-        void SocketMarshaller::removeConnection(Orocos::TCP::Datasender* sender)
+        void SocketMarshaller::removeConnection(OCL::TCP::Datasender* sender)
         {
             lock.lock();
             _connections.remove( sender );
@@ -76,7 +76,7 @@ namespace RTT
             lock.unlock();
         }
 
-        Orocos::TcpReporting* SocketMarshaller::getReporter() const
+        OCL::TcpReporting* SocketMarshaller::getReporter() const
         {
             return _reporter;
         }
@@ -92,7 +92,7 @@ namespace RTT
         {
             lock.lock();
             // TODO: sending data does not run in parallel!
-            for( std::list<Orocos::TCP::Datasender*>::iterator it = _connections.begin();
+            for( std::list<OCL::TCP::Datasender*>::iterator it = _connections.begin();
                  it != _connections.end(); )
             {
                 if( (*it)->isValid() )
@@ -100,7 +100,7 @@ namespace RTT
                     (*it)->serialize(v);
                     it++;
                 } else {
-                    Orocos::TCP::Datasender* torm = *it;
+                    OCL::TCP::Datasender* torm = *it;
                     it++;
                     removeConnection( torm );
                 }
