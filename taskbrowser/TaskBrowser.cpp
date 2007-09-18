@@ -221,6 +221,9 @@ namespace OCL
             tbcoms.push_back(".dark"); 
             tbcoms.push_back(".nocolors"); 
             tbcoms.push_back(".connect"); 
+            tbcoms.push_back(".record"); 
+            tbcoms.push_back(".end"); 
+            tbcoms.push_back(".cancel"); 
 
             // then see which one matches the already typed line :
             for( std::vector<std::string>::iterator it = tbcoms.begin();
