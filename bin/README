@@ -1,0 +1,13 @@
+Applications:
+
+ ctaskbrowser [IOR|ControlTaskName]
+   A TaskBrowser which connects to a remote TaskContext using CORBA,
+   and allows the user to manipulate the remote tasks as if they were local.
+
+ cdeployer [ControlTaskName]
+   A DeploymentComponent which runs as a CORBA server, waiting for
+   requests. Connect to this application using the ctaskbrowser.
+
+ deployer 
+   A DeploymentComponent which runs locally and starts up a TaskBrowser
+   console, waiting for user commands. No CORBA required or used.
