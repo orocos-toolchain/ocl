@@ -27,7 +27,8 @@ namespace RTT
 {
     ComediEncoder::ComediEncoder(ComediDevice * cd, unsigned int subd, 
                                  unsigned int encNr, const std::string& name)
-        : _myCard(cd), _subDevice(subd), _channel(encNr),
+        : EncoderInterface(name),
+          _myCard(cd), _subDevice(subd), _channel(encNr),
           _turn(0), _upcounting(true)
     {
         init();
