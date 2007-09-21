@@ -57,6 +57,10 @@ namespace OCL
 }
 
 // Helper macros.
+#define ORO_CONCAT_LINE2(x,y) x##y 
+#define ORO_CONCAT_LINE1(x,y) ORO_CONCAT_LINE2(x,y) 
+#define ORO_CONCAT_LINE(x) ORO_CONCAT_LINE1(x,__LINE__) 
+ 
 #define ORO_LIST_COMPONENT_TYPE_str(s) ORO_LIST_COMPONENT_TYPE__str(s)
 #define ORO_LIST_COMPONENT_TYPE__str(s) #s
 
@@ -119,8 +123,7 @@ extern "C" { \
 
 // Static OCL library:
 // Identical to ORO_LIST_COMPONENT_TYPE:
-#define ORO_CREATE_COMPONENT(CLASS_NAME) namespace { OCL::ComponentLoader<CLASS_NAME> m_cloader(ORO_LIST_COMPONENT_TYPE_str(CLASS_\
-NAME)); }
+#define ORO_CREATE_COMPONENT(CLASS_NAME) namespace { namespace ORO_CONCAT_LINE(LOADER_) { { OCL::ComponentLoader<CLASS_NAME> m_cloader(ORO_LIST_COMPONENT_TYPE_str(CLASS_NAME)); } }
 #define ORO_CREATE_COMPONENT_TYPE() __attribute__((weak)) OCL::FactoryMap* OCL::ComponentFactories::Factories = 0;
 
 #endif
@@ -143,6 +146,10 @@ NAME)); }
  * 
  * @param CLASS_NAME the class name of the component you are adding to the library.
  */
-#define ORO_LIST_COMPONENT_TYPE(CLASS_NAME) namespace { OCL::ComponentLoader<CLASS_NAME> m_cloader(ORO_LIST_COMPONENT_TYPE_str(CLASS_NAME)); }
+
+#define ORO_LIST_COMPONENT_TYPE(CLASS_NAME) namespace { namespace ORO_CONCAT_LINE(LOADER_) { OCL::ComponentLoader<CLASS_NAME> m_cloader(ORO_LIST_COMPONENT_TYPE_str(CLASS_NAME)); } }
+
 
 #endif
+
+//#undef ORO_CLOADER_CONCAT
