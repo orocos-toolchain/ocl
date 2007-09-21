@@ -24,6 +24,7 @@ IF ( BUILD_CAN )
     IF ( BUILD_PCAN )
        GLOBAL_ADD_COMPONENT( orocos-pcan can/PCANController.cpp)
        GLOBAL_ADD_INCLUDE( ocl/can can/PCANController.hpp )
+       TARGET_USE_LIB( orocos-pcan . orocos-can )
        OROCOS_PKGCONFIG_LIBS("-lpcan")
     ENDIF ( BUILD_PCAN )
 
