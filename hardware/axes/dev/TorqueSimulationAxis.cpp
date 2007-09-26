@@ -31,8 +31,9 @@ TorqueSimulationEncoder::TorqueSimulationEncoder(double initial, double min, dou
 double 
 TorqueSimulationEncoder::readSensor() const
 {
-  if (_first_drive)
+  if (_first_drive){
     return _position;
+  } 
 
   else{
     // get new position, using time and velocity
@@ -52,6 +53,9 @@ TorqueSimulationEncoder::readSensor(double& data) const
 void 
 TorqueSimulationEncoder::update(double position, double velocity, TimeService::ticks previous_time) 
 {
+  if (_first_drive)
+    _first_drive = false;
+
   _position = position;
   _velocity = velocity;
   _previous_time = previous_time;
@@ -81,8 +85,9 @@ TorqueSimulationVelocitySensor::TorqueSimulationVelocitySensor( double maxvel):
 double 
 TorqueSimulationVelocitySensor::readSensor() const
 {
-  if (_first_drive)
+  if (_first_drive){
     return _velocity;
+  }
 
   else{
     // get new position, using time and velocity
@@ -102,6 +107,9 @@ TorqueSimulationVelocitySensor::readSensor(double& data) const
 void 
 TorqueSimulationVelocitySensor::update(double velocity, double acceleration, TimeService::ticks previous_time) 
 {
+  if (_first_drive)
+    _first_drive = false;
+
   _velocity = velocity;
   _acceleration = acceleration;
   _previous_time = previous_time;

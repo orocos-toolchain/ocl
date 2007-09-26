@@ -37,11 +37,13 @@ int ORO_main(int arc, char* argv[])
 {
     // Set log level more verbose than default,
     // such that we can see output :
-    if ( Logger::log().getLogLevel() < Logger::Info ) {
-        Logger::log().setLogLevel( Logger::Debug );
-        log(Info) << argv[0] << " manually raises LogLevel to 'Info' (5). "
-		      << "See also file 'orocos.log'."<<endlog();
-    }
+  /*
+  if ( Logger::log().getLogLevel() < Logger::Info ) {
+    Logger::log().setLogLevel( Logger::Debug );
+    log(Info) << argv[0] << " manually raises LogLevel to 'Info' (5). "
+	      << "See also file 'orocos.log'."<<endlog();
+  }
+  */
     // import kdl toolkit
     Toolkit::Import( KDLToolkit );
     
@@ -49,7 +51,7 @@ int ORO_main(int arc, char* argv[])
     KryptonK600Sensor krypton("Krypton",6);
 
     // wrench sensor
-    WrenchSensor wrenchsensor(0.01, "Wrenchsensor", 0);
+    WrenchSensor wrenchsensor(0.01, "WrenchSensor", 0);
     PeriodicActivity wrenchsensorTask(OS::HighestPriority, 0.01, wrenchsensor.engine() );
 
     // demotool task

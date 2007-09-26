@@ -16,7 +16,7 @@
 //  
 
 #include "Demotool.hpp"
-#include <matrix_wrapper.h>
+#include <bfl/wrappers/matrix/matrix_wrapper.h>
 #include <kdl/frames_io.hpp>
 
 #define GRAVITY_CONSTANT    9.81
@@ -106,8 +106,8 @@ namespace OCL
   bool Demotool::startup()    
   {
     // get command from wrench component, to add offset
-    TaskContext* wrench_sensor = getPeer("Wrenchsensor");
-    if (!wrench_sensor) log(Error) <<this->getName()<<": peer Wrenchsensor not found."<<endlog();
+    TaskContext* wrench_sensor = getPeer("WrenchSensor");
+    if (!wrench_sensor) log(Error) <<this->getName()<<": peer WrenchSensor not found."<<endlog();
  
     _add_offset = wrench_sensor->commands()->getCommand<bool(Wrench)>("addOffset");
     if (!_add_offset.ready()) log(Error) <<this->getName()<<": command addOffset not found."<<endlog();
@@ -177,10 +177,10 @@ namespace OCL
 	for (unsigned int j=0; j<3; j++)
 	  vec_temp(j) = residu(j+1, i+1);
 	error += vec_temp.Norm() /_num_visible_leds;
-      if (error > 0.001){
-	log(Warning) << "SensorDemotool: Error while solving LED position equation = " 
-		      << error << " > 0.001" << endlog();
-      }
+      //if (error > 0.001){
+	//log(Warning) << "SensorDemotool: Error while solving LED position equation = " 
+	//	      << error << " > 0.001" << endlog();
+      //}
     }
     
 

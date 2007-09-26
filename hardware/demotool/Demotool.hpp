@@ -68,10 +68,10 @@ namespace OCL
     RTT::ReadDataPort<std::vector<KDL::Vector> > _Vector_led_camera_port;
 
     // write ports
-    RTT::WriteDataPort<KDL::Wrench>  _Wrench_world_world_port, _Wrench_manip_manip_port;
-    RTT::WriteDataPort<KDL::Twist>   _Twist_world_world_port, _Twist_world_manip_port;
-    RTT::WriteDataPort<KDL::Frame>   _Frame_world_manip_port;
-    RTT::WriteDataPort<unsigned int> _num_visible_leds_port;
+    RTT::DataPort<KDL::Wrench>  _Wrench_world_world_port, _Wrench_manip_manip_port;
+    RTT::DataPort<KDL::Twist>   _Twist_world_world_port, _Twist_world_manip_port;
+    RTT::DataPort<KDL::Frame>        _Frame_world_manip_port;
+    RTT::DataPort<unsigned int> _num_visible_leds_port;
 
     // commands
     RTT::Command<bool(KDL::Wrench)>  _add_offset;

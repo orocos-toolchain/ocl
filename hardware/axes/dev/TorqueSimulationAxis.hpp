@@ -48,9 +48,6 @@ namespace RTT
 	double _position, _velocity, _min, _max;
 	TimeService::ticks _previous_time;
 	TimeService::Seconds _delta_time;
-	/** The value of _first_drive is true as long as the setDrive()
-	    method has not been called
-	*/
 	bool _first_drive;
 
     }; // class
@@ -78,9 +75,6 @@ namespace RTT
 	double _velocity, _acceleration, _maxvel;
 	TimeService::ticks _previous_time;
 	TimeService::Seconds _delta_time;
-	/** The value of _first_drive is true as long as the setDrive()
-	    method has not been called
-	*/
 	bool _first_drive;
 
     }; // class
