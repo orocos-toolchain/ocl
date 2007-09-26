@@ -120,7 +120,7 @@ namespace OCL
         
         log(Info)<<"Creating Comedi Devices."<<endlog();
         comediDev        = new ComediDevice( 1 );
-        comediSubdevAOut = new ComediSubDeviceAOut( _comediDev, "Kuka361" );
+        comediSubdevAOut = new ComediSubDeviceAOut( comediDev, "Kuka361" );
         log(Info)<<"Creating APCI Devices."<<endlog();
         apci1710         = new EncoderSSI_apci1710_board( 0, 1 );
         apci2200         = new RelayCardapci2200( "Kuka361" );
@@ -199,7 +199,7 @@ namespace OCL
         prepareForShutdown_cmd();
     
         // brake, drive, sensors and switches are deleted by each axis
-        if(simulation_prop.value())
+        if(simulation)
             for (unsigned int i = 0; i < KUKA361_NUM_AXES; i++)
                 delete axes[i];
     
@@ -313,7 +313,7 @@ namespace OCL
     bool Kuka361nAxesVelocityController::prepareForUseCompleted()const
     {
 #if (defined OROPKG_OS_LXRT)
-        if(!simulation_prop.rvalue())
+        if(!simulation)
             return (apci1032->isOn(12) && apci1032->isOn(14));
         else
 #endif
@@ -326,7 +326,7 @@ namespace OCL
         stopAllAxes();
         lockAllAxes();
 #if (defined OROPKG_OS_LXRT)
-        if(!_simulation.value()){
+        if(!simulation){
             apci2200->switchOff( 12 );
             apci2200->switchOff( 14 );
         }
@@ -389,7 +389,7 @@ namespace OCL
             driveOffset_prop.value()[i] += offset[i];
 #if (defined OROPKG_OS_LXRT)
             if (!simulation)
-                ((Axis*)(axes[i]))->getDrive()->addOffset(offset[axis]);
+	      ((Axis*)(axes[i]))->getDrive()->addOffset(offset[i]);
 #endif
         }
         return true;

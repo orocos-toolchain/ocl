@@ -109,7 +109,7 @@ namespace OCL
           _positionOutOfRange("positionOutOfRange"),
           _propertyfile(propertyfile),
           _velresolved(velresolved),
-          _TorqueMode(6,false),
+          _TorqueMode(false),
           _activated(false),
           _positionConvertFactor(KUKA361_NUM_AXES),
           _driveConvertFactor(KUKA361_NUM_AXES),
@@ -132,8 +132,8 @@ namespace OCL
           _tachometer(KUKA361_NUM_AXES),
           _currentInput(KUKA361_NUM_AXES),
           _currentSensor(KUKA361_NUM_AXES),
-          _TorqueModeSwitch(KUKA361_NUM_AXES),
-          //_TorqueModeCheck(KUKA361_NUM_AXES),
+          //_TorqueModeSwitch(KUKA361_NUM_AXES),
+          _TorqueModeCheck(KUKA361_NUM_AXES),
 #endif
           _axes(KUKA361_NUM_AXES),
           _axes_simulation(KUKA361_NUM_AXES),
@@ -175,9 +175,8 @@ namespace OCL
             log(Error) << "Failed to read the property file, continueing with default values." << endlog();
         }
 
-	for (unsigned int i=0;i<KUKA361_NUM_AXES;i++){
-		_TorqueMode[i] = !_velresolved;
-	}
+	_TorqueMode = !_velresolved;
+	
 
 #if (defined (OROPKG_OS_LXRT))
         int encoderOffsets[KUKA361_NUM_AXES] = KUKA361_ENCODEROFFSETS;
@@ -187,14 +186,19 @@ namespace OCL
         _apci1710         = new EncoderSSI_apci1710_board( 0, 1 );
         _apci2200         = new RelayCardapci2200( "Kuka361" );
         _apci1032         = new SwitchDigitalInapci1032( "Kuka361" );
-        _comediDev_NI6024  = new ComediDevice( 4 );
+        _comediDev_NI6024  = new ComediDevice( 0 );
         _comediSubdevAIn_NI6024  = new ComediSubDeviceAIn( _comediDev_NI6024, "Kuka361", 0 );
         _comediSubdevDIn_NI6024  = new ComediSubDeviceDIn( _comediDev_NI6024, "Kuka361", 2 );
-        _comediDev_NI6527  = new ComediDevice( 3 );
-        _comediSubdevDOut_NI6527  = new ComediSubDeviceDOut( _comediDev_NI6527, "Kuka361", 1 );
+        // Remove 10/08/07 - Card no longer present
+        //_comediDev_NI6527  = new ComediDevice( 3 );
+        _comediSubdevDOut_NI6713  = new ComediSubDeviceDOut( _comediDev, "Kuka361", 2 );
 
-
-
+	torqueModeSwitch = new DigitalOutput(_comediSubdevDOut_NI6713,0);
+	if(_TorqueMode)
+	  torqueModeSwitch->switchOn();
+	else
+	  torqueModeSwitch->switchOff();
+	
         for (unsigned int i = 0; i < KUKA361_NUM_AXES; i++){
             //Setting up encoders
             _encoderInterface[i] = new EncoderSSI_apci1710( i + 1, _apci1710 );
@@ -216,40 +220,42 @@ namespace OCL
             _comediSubdevAIn_NI6024->arefSet(i+CURRENT_OFFSET, AnalogInInterface<unsigned int>::Common);
             _currentSensor[i] = new AnalogSensor( _currentInput[i], _comediSubdevAIn_NI6024->lowest(i+CURRENT_OFFSET), _comediSubdevAIn_NI6024->highest(i+CURRENT_OFFSET), 1.0 , 0); // 1.0 / _shunt_R[i]
 
-            _TorqueModeSwitch[i] = new DigitalOutput( _comediSubdevDOut_NI6527, i+MODE_OFFSET ); //Velocity or torque control, selected by relay board
-//            _TorqueModeCheck[i] = new DigitalInput( _comediSubdevDIn_NI6024, i );
+            // Remove 10/08/07 - Card no longer present
+            _TorqueModeCheck[i] = new DigitalInput( _comediSubdevDIn_NI6024, i );
 
             _ref[i]   = new AnalogOutput<unsigned int>( _comediSubdevAOut, i );
             _enable[i] = new DigitalOutput( _apci2200, i );
 
             //Put mode back to velocitycontrol
-            _TorqueModeSwitch[i]->switchOff();
+            // Remove 10/08/07 - Card no longer present
+	    
 
-            if ( _TorqueMode[i] ){
-		     //log(Warning)<<"Relais "<<i<<" On."<<endlog();
-                     _TorqueModeSwitch[i]->switchOn();
-//                     if ( !_TorqueModeCheck[i]->isOn() ) {
-//                                log(Error) << "Failed to switch relay of channel " << i << " to torque control mode" << endlog();
-//                     }
-                     _drive[i]  = new AnalogDrive( _ref[i], _enable[i], _curReg_a[i] / _shunt_R[i], - _shunt_c[i] - (_curReg_b[i] / _shunt_R[i]));
-//                     _drive[i]  = new AnalogDrive( _ref[i], _enable[i], 1.0, 0.0);
+            if ( _TorqueMode ){
+	      //log(Warning)<<"Relais "<<i<<" On."<<endlog();
 
-}
-            else{
-                     _drive[i]  = new AnalogDrive( _ref[i], _enable[i], 1.0 / vel2volt[i], _velDriveOffset.value()[i]);
+
+	      // Remove 10/08/07 - Card no longer present
+	      if ( !_TorqueModeCheck[i]->isOn() ) {
+		log(Error) << "Failed to switch relay of channel " << i << " to torque control mode" << endlog();
+	      }
+	      _drive[i]  = new AnalogDrive( _ref[i], _enable[i], _curReg_a[i] / _shunt_R[i], - _shunt_c[i] - (_curReg_b[i] / _shunt_R[i]));
+	      //_drive[i]  = new AnalogDrive( _ref[i], _enable[i], 1.0, 0.0);
+
+	    }else{
+	      _drive[i]  = new AnalogDrive( _ref[i], _enable[i], 1.0 / vel2volt[i], _velDriveOffset.value()[i]);
             }
-
+	    
             _axes_hardware[i] = new RTT::Axis( _drive[i] );
             _axes_hardware[i]->setBrake( _brake[i] );
             _axes_hardware[i]->setSensor( "Position", _encoder[i] );
             _axes_hardware[i]->setSensor( "Velocity", _tachometer[i] );
             _axes_hardware[i]->setSensor( "Current", _currentSensor[i] );
-//            _axes_hardware[i]->setSwitch( "Mode", _TorqueModeCheck[i] );
+	    _axes_hardware[i]->setSwitch( "Mode", _TorqueModeCheck[i] );
 
-            if ( _TorqueMode[i] ){
-                     _axes_hardware[i]->limitDrive(-_currentLimits.value()[i], _currentLimits.value()[i], _currentOutOfRange);
+            if ( _TorqueMode ){
+	      _axes_hardware[i]->limitDrive(-_currentLimits.value()[i], _currentLimits.value()[i], _currentOutOfRange);
             }else{
-                     _axes_hardware[i]->limitDrive(-_velocityLimits.value()[i], _velocityLimits.value()[i], _velocityOutOfRange);
+	      _axes_hardware[i]->limitDrive(-_velocityLimits.value()[i], _velocityLimits.value()[i], _velocityOutOfRange);
             }
         }
 
@@ -264,7 +270,7 @@ namespace OCL
 
 #endif
         for (unsigned int i = 0; i <KUKA361_NUM_AXES; i++){
-             if ( _TorqueMode[i] ) {
+             if ( _TorqueMode ) {
                    _axes_simulation[i] = new RTT::TorqueSimulationAxis(_initialPosition.value()[i], _lowerPositionLimits.value()[i], _upperPositionLimits.value()[i],_velocityLimits.value()[i]);
             } else {
                    _axes_simulation[i] = new RTT::SimulationAxis(_initialPosition.value()[i], _lowerPositionLimits.value()[i], _upperPositionLimits.value()[i]);
@@ -364,8 +370,10 @@ namespace OCL
         delete _comediDev_NI6024;
         delete _comediSubdevAIn_NI6024;
         delete _comediSubdevDIn_NI6024;
-        delete _comediDev_NI6527;
-        delete _comediSubdevDOut_NI6527;
+
+        // Remove 10/08/07 - Card no longer present
+        // delete _comediDev_NI6527;
+        // delete _comediSubdevDOut_NI6527;
 #endif
     }
 
@@ -435,7 +443,7 @@ namespace OCL
 
                 // send the drive value to hw and performs checks, convert torque to current if torque controlled
                 if (_axes[axis]->isDriven()) {
-                    if( _TorqueMode[axis] ){
+                    if( _TorqueMode ){
                         _axes[axis]->drive(_driveValue[axis]->Get() / _Km[axis]); // accepts a current
                         //_axes[axis]->drive(_driveValue[axis]->Get());
                     }
@@ -446,21 +454,23 @@ namespace OCL
 #if (defined (OROPKG_OS_LXRT))
 	if(!_simulation.rvalue()) {
                 // Set the measured current
-		//if( _TorqueMode[axis] ){
-                	_torqueValue[axis]->Set((_axes[axis]->getSensor("Current")->readSensor() / _shunt_R[axis] + _shunt_c[axis]) * _Km[axis]);
-                	//_torqueValue[axis]->Set(_axes[axis]->getSensor("Current")->readSensor());
-		//}
+	  if( _TorqueMode){
+	    _torqueValue[axis]->Set((_axes[axis]->getSensor("Current")->readSensor() / _shunt_R[axis] + _shunt_c[axis]) * _Km[axis]);
+	    //_torqueValue[axis]->Set(_axes[axis]->getSensor("Current")->readSensor());
+	  }
 	}
 #endif
             }
 // 		//Temp for motor current measurements with stroomtang
 // 		_motorCurrentValue->Set(_motorCurrentSensor->readSensor());
 
-            //log(Debug) <<"pos (rad): "<<_positionValue[3]->Get()<<" | vel (rad/s): "<<_velocityValue[3]->Get()<<" | drive (A): "<<_driveValue[3]->Get()<<" | cur (A): "<<_torqueValue[3]->Get()<<endlog();
-     }
+	    //log(Debug) <<"pos (rad): "<<_positionValue[3]->Get()<<" | vel (rad/s): "<<_velocityValue[3]->Get()<<" | drive (A): "<<_driveValue[3]->Get()<<" | cur (A): "<<_torqueValue[3]->Get()<<endlog();
+    }
+  
+	    
 
     void Kuka361nAxesTorqueController::shutdown()
-    {
+      {
         //Make sure machine is shut down
         prepareForShutdown();
         //Write properties back to file
@@ -498,8 +508,10 @@ namespace OCL
         lockAllAxes();
 #if (defined (OROPKG_OS_LXRT))
         //Put mode back to velocitycontrol
-        for(unsigned int i=0;i<KUKA361_NUM_AXES;i++)
-            _TorqueModeSwitch[i]->switchOff();
+        // Remove 10/08/07 - Card no longer present
+        //for(unsigned int i=0;i<KUKA361_NUM_AXES;i++)
+	torqueModeSwitch->switchOff();
+        
         if(!_simulation.value()){
             _apci2200->switchOff( 12 );
             _apci2200->switchOff( 14 );

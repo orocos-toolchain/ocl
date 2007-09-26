@@ -341,7 +341,7 @@ namespace OCL
 	/**
          * Selection of control mode (velocity = 0 or torque = 1) for each axis
          */
-        std::vector<bool>     _TorqueMode;
+        bool     _TorqueMode;
 
     
         /**
@@ -422,8 +422,9 @@ namespace OCL
         RTT::ComediDevice*                    _comediDev_NI6024; 
         RTT::ComediSubDeviceAIn*              _comediSubdevAIn_NI6024; 
         RTT::ComediSubDeviceDIn*              _comediSubdevDIn_NI6024;
-        RTT::ComediDevice*                    _comediDev_NI6527;
-        RTT::ComediSubDeviceDOut*             _comediSubdevDOut_NI6527;
+        // Remove 10/08/07 - Card no longer present
+        // RTT::ComediDevice*                    _comediDev_NI6527;
+        RTT::ComediSubDeviceDOut*             _comediSubdevDOut_NI6713;
         
         std::vector<RTT::EncoderInterface*>           _encoderInterface;
         std::vector<RTT::AbsoluteEncoderSensor*>      _encoder;
@@ -435,8 +436,10 @@ namespace OCL
         std::vector<RTT::AnalogSensor*>               _tachometer; 
         std::vector<RTT::AnalogInput<unsigned int>*>  _currentInput; 
         std::vector<RTT::AnalogSensor*>               _currentSensor; 
-        std::vector<RTT::DigitalOutput*>              _TorqueModeSwitch;
-        std::vector<RTT::DigitalInput*>               _modeCheck; 
+        //std::vector<RTT::DigitalOutput*>
+        //_TorqueModeSwitch;
+        RTT::DigitalOutput*                             torqueModeSwitch;
+        std::vector<RTT::DigitalInput*>               _TorqueModeCheck; 
 
 // 	//Temp
 // 	RTT::AnalogInput<unsigned int>*  _motorCurrentInput; 

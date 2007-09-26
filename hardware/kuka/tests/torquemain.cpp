@@ -27,7 +27,7 @@ int ORO_main(int argc, char* argv[])
 //              << " See also file 'orocos.log'." << endlog();
 //  }
 
-  TaskContext* my_robot = new Kuka361nAxesTorqueController("Kuka361");
+  TaskContext* my_robot = new Kuka361nAxesTorqueController("Kuka361",false);
   
   EmergencyStop _emergency(my_robot);
   

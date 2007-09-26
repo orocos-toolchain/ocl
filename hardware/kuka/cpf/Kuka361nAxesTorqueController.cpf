@@ -1,25 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE properties SYSTEM "cpf.dtd">
 <properties>
-  <struct name="velocityLimits" type="std::vector&lt;double&gt;">
+  <struct name="velocityLimits" type="array">
      <description>velocity limits of the axes, (rad/s)</description>
-     <simple name="Size" type="long"><description>Dimension of the Vector</description><value>6</value></simple>
-     <simple name="0" type="double"><value>4</value></simple>
-     <simple name="1" type="double"><value>3</value></simple>
-     <simple name="2" type="double"><value>5</value></simple>
-     <simple name="3" type="double"><value>3</value></simple>
-     <simple name="4" type="double"><value>3</value></simple>
-     <simple name="5" type="double"><value>3</value></simple>
+     <simple name="velocityLimits" type="double"><value>4</value></simple>
+     <simple type="double"><value>3</value></simple>
+     <simple type="double"><value>5</value></simple>
+     <simple type="double"><value>3</value></simple>
+     <simple type="double"><value>3</value></simple>
+     <simple type="double"><value>3</value></simple>
   </struct>
-  <struct name="currentLimits" type="std::vector&lt;double&gt;">
+  <struct name="currentLimits" type="array">
      <description>current limits of the axes, (V)</description>
-     <simple name="Size" type="long"><description>Dimension of the Vector</description><value>6</value></simple>
-     <simple name="0" type="double"><value>5.1</value></simple>
-     <simple name="1" type="double"><value>5.1</value></simple>
-     <simple name="2" type="double"><value>5.1</value></simple>
-     <simple name="3" type="double"><value>5.1</value></simple>
-     <simple name="4" type="double"><value>5.1</value></simple>
-     <simple name="5" type="double"><value>5.1</value></simple>
+     <simple name="currentLimits" type="double"><value>5.1</value></simple>
+     <simple type="double"><value>5.1</value></simple>
+     <simple type="double"><value>5.1</value></simple>
+     <simple type="double"><value>5.1</value></simple>
+     <simple type="double"><value>5.1</value></simple>
+     <simple type="double"><value>5.1</value></simple>
   </struct>
   <struct name="mode" type="std::vector&lt;double&gt;">
      <description>Select velocity(0) controller or current(1) controller</description>
@@ -31,45 +29,41 @@
      <simple name="4" type="double"><value>1</value></simple>
      <simple name="5" type="double"><value>1</value></simple>
   </struct>
-  <struct name="LowerPositionLimits" type="std::vector&lt;double&gt;">
+  <struct name="LowerPositionLimits" type="array">
      <description>Lower position limits (rad)</description>
-     <simple name="Size" type="long"><description>Dimension of the Vector</description><value>6</value></simple>
-     <simple name="0" type="double"><value>-30.14</value></simple>
-     <simple name="1" type="double"><value>-30.14</value></simple>
-     <simple name="2" type="double"><value>-30.14</value></simple>
-     <simple name="3" type="double"><value>-80</value></simple>
-     <simple name="4" type="double"><value>-30.14</value></simple>
-     <simple name="5" type="double"><value>-60.14</value></simple>
+     <simple name="LowerPositionLimits" type="double"><value>-30.14</value></simple>
+     <simple type="double"><value>-30.14</value></simple>
+     <simple type="double"><value>-30.14</value></simple>
+     <simple type="double"><value>-80</value></simple>
+     <simple type="double"><value>-30.14</value></simple>
+     <simple type="double"><value>-60.14</value></simple>
   </struct>
-  <struct name="UpperPositionLimits" type="std::vector&lt;double&gt;">
+  <struct name="UpperPositionLimits" type="array">
      <description>Upper position limits (rad)</description>
-     <simple name="Size" type="long"><description>Dimension of the Vector</description><value>6</value></simple>
-     <simple name="0" type="double"><value>30.14</value></simple>
-     <simple name="1" type="double"><value>30.14</value></simple>
-     <simple name="2" type="double"><value>30.14</value></simple>
-     <simple name="3" type="double"><value>30</value></simple>
-     <simple name="4" type="double"><value>30.14</value></simple>
-     <simple name="5" type="double"><value>60.14</value></simple>
+     <simple name="UpperPositionLimits" type="double"><value>30.14</value></simple>
+     <simple type="double"><value>30.14</value></simple>
+     <simple type="double"><value>30.14</value></simple>
+     <simple type="double"><value>30</value></simple>
+     <simple type="double"><value>30.14</value></simple>
+     <simple type="double"><value>60.14</value></simple>
   </struct>
-  <struct name="initialPosition" type="std::vector&lt;double&gt;">
+  <struct name="initialPosition" type="array">
      <description>Initial position (rad) for simulation or hardware</description>
-     <simple name="Size" type="long"><description>Dimension of the Vector</description><value>6</value></simple>
-     <simple name="0" type="double"><value>0</value></simple>
-     <simple name="1" type="double"><value>0</value></simple>
-     <simple name="2" type="double"><value>1.2426</value></simple>
-     <simple name="3" type="double"><value>1.0373</value></simple>
-     <simple name="4" type="double"><value>1.197</value></simple>
-     <simple name="5" type="double"><value>-1.0373</value></simple>
+     <simple name="initialPosition" type="double"><value>0</value></simple>
+     <simple type="double"><value>0</value></simple>
+     <simple type="double"><value>1.2426</value></simple>
+     <simple type="double"><value>1.0373</value></simple>
+     <simple type="double"><value>1.197</value></simple>
+     <simple type="double"><value>-1.0373</value></simple>
   </struct>
-  <struct name="velDriveOffset" type="std::vector&lt;double&gt;">
+  <struct name="velDriveOffset" type="array">
      <description>offset (in rad/s) to the drive value.</description>
-     <simple name="Size" type="long"><description>Dimension of the Vector</description><value>6</value></simple>
-     <simple name="0" type="double"><value>-0.0446398</value></simple>
-     <simple name="1" type="double"><value>-0.0468358</value></simple>
-     <simple name="2" type="double"><value>-0.0783923</value></simple>
-     <simple name="3" type="double"><value>-0.0516316</value></simple>
-     <simple name="4" type="double"><value>-0.0482902</value></simple>
-     <simple name="5" type="double"><value>-0.0535116</value></simple>
+     <simple name="velDriveOffset" type="double"><value>-0.0446398</value></simple>
+     <simple type="double"><value>-0.0468358</value></simple>
+     <simple type="double"><value>-0.0783923</value></simple>
+     <simple type="double"><value>-0.0516316</value></simple>
+     <simple type="double"><value>-0.0482902</value></simple>
+     <simple type="double"><value>-0.0535116</value></simple>
   </struct>
   <simple name="simulation" type="boolean"><description>true if simulationAxes should be used</description><value>0</value></simple>
 </properties>
