@@ -153,12 +153,12 @@ namespace TCP
 
     void Datasender::writeOut(PropertyBase* v) 
     { 
-        *os<<"202 "<<v->getName()<<std::endl;
+        *os<<"202 "<<v->getName()<<"\n";
         Property<PropertyBag>* bag = dynamic_cast< Property<PropertyBag>* >( v );
         if ( bag )
             this->writeOut( bag->value() );
         else {
-            *os<<"205 " <<v->getDataSource()<<std::endl;
+            *os<<"205 " <<v->getDataSource()<<"\n";
         }
         
     }
@@ -212,7 +212,7 @@ namespace TCP
         
         lock.lock();
         if( !subscriptions.empty() && ( limit == 0 || curframe <= limit ) ){
-            *os << "201 " <<curframe << " -- begin of frame" << std::endl;
+            *os << "201 " <<curframe << " -- begin of frame\n";
             checkbag(v);
             *os << "203 " << curframe << " -- end of frame" << std::endl;
             curframe++;

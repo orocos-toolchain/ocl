@@ -141,7 +141,7 @@ namespace OCL
                 this->NonPeriodicActivity::start();
             }
 
-            // This method should only be called when theadCreationLock is locked.
+        // This method should only be called when theadCreationLock is locked.
             void removeInstance()
             {
               if( _instance )
