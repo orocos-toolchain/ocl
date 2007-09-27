@@ -73,7 +73,7 @@ namespace OCL
     unsigned int _num_leds;
 
     std::vector<KDL::Vector> _ledPositions_local;
-    RTT::WriteDataPort<std::vector<KDL::Vector> > _ledPositions;
+    RTT::DataPort<std::vector<KDL::Vector> > _ledPositions;
   };
 };//namespace
 

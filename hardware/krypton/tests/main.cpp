@@ -17,7 +17,7 @@
 
 #include <rtt/RTT.hpp>
 #include <rtt/os/main.h>
-#include <kdl/toolkit.hpp>
+#include <kdl/bindings/rtt/toolkit.hpp>
 #include "hardware/krypton/KryptonK600Sensor.hpp"
 #include "taskbrowser/TaskBrowser.hpp"
 #include "reporting/FileReporting.hpp"
