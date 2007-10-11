@@ -20,11 +20,8 @@
  * \defgroup nAxesComponents The Joint Control Components
  */
 
-#include "nAxesSensor.hpp"
 #include "nAxesGeneratorPos.hpp"
 #include "nAxesGeneratorVel.hpp"
 #include "nAxesControllerPos.hpp"
 #include "nAxesControllerPosVel.hpp"
 #include "nAxesControllerVel.hpp"
-#include "nAxesEffectorVel.hpp"
-#include "ReferenceSensor.hpp"
