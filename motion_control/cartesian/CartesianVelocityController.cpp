@@ -18,6 +18,7 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "CartesianVelocityController.hpp"
+#include <kdl/kinfam_io.hpp>
 
 namespace OCL
 {
@@ -75,7 +76,7 @@ namespace OCL
         //Initialize: calculate everything once
         this->update();
         //Check if there were any problems calculating the kinematics
-        return kinematics_status;
+        return kinematics_status>=0;
     }
     
     void CartesianVelocityController::updateHook()
@@ -92,15 +93,19 @@ namespace OCL
                 jointpositions(i)=naxesposition[i];
 
             //Calculate forward position kinematics
-            kinematics_status = (0<fksolver->JntToCart(jointpositions,cartpos));
+            kinematics_status = fksolver->JntToCart(jointpositions,cartpos);
             //Only set result to port if it was calcuted correctly
-            if(kinematics_status)
+            if(kinematics_status>=0)
                 cartpos_port.Set(cartpos);
-
+            else
+                log(Error)<<"Could not calculate forward kinematics"<<endlog();
+            
             //Calculate inverse velocity kinematics
-            kinematics_status = (0<iksolver->CartToJnt(jointpositions,cartvel,jointvelocities));
-            if(!kinematics_status)
+            kinematics_status = iksolver->CartToJnt(jointpositions,cartvel,jointvelocities);
+            if(kinematics_status<0){
                 SetToZero(jointvelocities);
+                log(Error)<<"Could not calculate inverse kinematics"<<endlog();
+            }
             
             for(unsigned int i=0;i<nj;i++)
                 naxesvelocities[i]=jointvelocities(i);
@@ -108,7 +113,7 @@ namespace OCL
             naxesvel_port.Set(naxesvelocities);
         }
         else
-            kinematics_status=false;
+            kinematics_status=-1;
     }
 }
 

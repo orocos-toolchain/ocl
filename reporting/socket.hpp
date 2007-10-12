@@ -66,7 +66,7 @@ namespace TCP {
              * Available data.
              */
             /* buflength should be at least msglength * 2 in order to avoid problems with memcpy! */
-            #define BUFLENGTH 1000
+            #define BUFLENGTH 2000
             char buffer[BUFLENGTH];
             int begin;
             int ptrpos;

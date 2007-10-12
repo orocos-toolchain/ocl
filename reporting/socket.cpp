@@ -38,7 +38,7 @@ using RTT::Logger;
 #endif
 
 namespace {
-    const unsigned int bufsize = 512;
+    const unsigned int bufsize = 2048;
     class sockbuf : public std::streambuf
     {
         private:
