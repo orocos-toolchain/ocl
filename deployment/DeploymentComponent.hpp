@@ -319,6 +319,11 @@ namespace OCL
       bool stopComponents();
 
       /**
+       * Cleanup all loaded and not running components.
+       */
+      bool cleanupComponents();
+
+      /**
        * Unload all loaded and not running components.
        */
       bool unloadComponents();
@@ -328,6 +333,11 @@ namespace OCL
          * in a row, given no failures occur along the way.
          */
         bool kickStart(const std::string& file_name);
+
+        /**
+         * Stop, cleanup and unload all components which were loaded by this component.
+         */
+        bool kickOut();
 
         using TaskCore::configure;
 

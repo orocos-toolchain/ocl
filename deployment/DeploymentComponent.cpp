@@ -83,12 +83,16 @@ namespace OCL
                                     "Start the components configured for AutoStart.");
         this->methods()->addMethod( RTT::method("stopComponents", &DeploymentComponent::stopComponents, this),
                                     "Stop all the configured components (with or without AutoStart).");
+        this->methods()->addMethod( RTT::method("cleanupComponents", &DeploymentComponent::cleanupComponents, this),
+                                    "Cleanup all the configured components (with or without AutoConf).");
         this->methods()->addMethod( RTT::method("unloadComponents", &DeploymentComponent::unloadComponents, this),
                                     "Unload all the previously loaded components.");
 
         this->methods()->addMethod( RTT::method("kickStart", &DeploymentComponent::kickStart, this),
                                     "Calls loadComponents, configureComponents and startComponents in a row.",
                                     "File", "The file which contains the XML configuration to use.");
+        this->methods()->addMethod( RTT::method("kickOut", &DeploymentComponent::kickOut, this),
+                                    "Calls stopComponents, cleanupComponents and unloadComponents in a row.");
 
         // Work around compiler ambiguity:
         typedef bool(DeploymentComponent::*DCFun)(const std::string&, const std::string&);
@@ -304,6 +308,11 @@ namespace OCL
     bool DeploymentComponent::kickStart(const std::string& configurationfile)
     {
         return this->loadComponents(configurationfile) && this->configureComponents() && this->startComponents();
+    }
+
+    bool DeploymentComponent::kickOut()
+    {
+        return this->stopComponents() && this->cleanupComponents() && this->unloadComponents();
     }
 
     bool DeploymentComponent::loadConfiguration(const std::string& configurationfile)
@@ -780,6 +789,25 @@ namespace OCL
 	  }
 	}
 	return valid;
+    }
+
+    bool DeploymentComponent::cleanupComponents()
+    {
+        Logger::In in("DeploymentComponent::cleanupComponents");
+        bool valid = true;
+        // 1. Cleanup all activities, give components chance to cleanup.
+        for ( CompList::iterator cit = comps.begin(); cit != comps.end(); ++cit) {
+            ComponentData* it = &(cit->second);
+            if ( it->loaded ) {
+                if ( it->instance->getTaskState() == TaskCore::Stopped && it->instance->cleanup() ) {
+                    log(Info) << "Cleaned up "<< it->instance->getName() <<endlog();
+                } else {
+                    log(Error) << "Could not cleanup loaded Component "<< it->instance->getName() << " (not Stopped)"<<endlog();
+                    valid = false;
+                }
+            }
+        }
+        return valid;
     }
 
   bool DeploymentComponent::unloadComponents()
