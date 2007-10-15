@@ -33,7 +33,8 @@ namespace RTT
 
     ComediPulseTrainGenerator::ComediPulseTrainGenerator(ComediDevice * cd, unsigned int subd, 
                                                          unsigned int encNr, const std::string& name)
-        : _myCard(cd), _subDevice(subd), _channel(encNr),
+        : PulseTrainGeneratorInterface(name),
+          _myCard(cd), _subDevice(subd), _channel(encNr),
           _pulse_width(1000000), _pulse_period(1000000), _running(false)
     {
         init();
