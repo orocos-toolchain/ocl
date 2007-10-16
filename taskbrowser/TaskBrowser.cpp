@@ -90,10 +90,10 @@ namespace OCL
     void ctrl_c_catcher(int sig)
     {
         ::signal(sig, SIG_IGN);
-        cerr <<nl<<"TaskBrowser intercepted Ctrl-C. Type 'quit' to exit."<<endl;
+//        cerr <<nl<<"TaskBrowser intercepted Ctrl-C. Type 'quit' to exit."<<endl;
 //         rl_delete_text(0, rl_end);
 //         //cerr << "deleted " <<deleted <<endl;
-//         rl_free_line_state();
+        rl_free_line_state();
 //         rl_cleanup_after_signal();
         ::signal(SIGINT, ctrl_c_catcher);
     }
@@ -111,10 +111,12 @@ namespace OCL
         /* Get a line from the user. */
         std::string p;
         if ( !macrorecording ) {
-            p = coloroff + prompt + green;
+            p = prompt;
         } else {
             p = "> ";
         }
+        if (rl_set_signals() != 0)
+            cerr << "Error setting signals !" <<endl;
         line_read = readline ( p.c_str() );
 
         /* If the line has any text in it,
@@ -525,8 +527,10 @@ namespace OCL
         // Intercept Ctrl-C
         ::signal( SIGINT, ctrl_c_catcher );
         // Let readline intercept relevant signals
-        assert(rl_catch_signals);
-        rl_set_signals();
+        if(rl_catch_signals == 0)
+            cerr << "Error: not catching signals !"<<endl;
+        if (rl_set_signals() != 0)
+            cerr << "Error setting signals !" <<endl;
 
         cout << nl<<
             coloron <<
@@ -582,11 +586,12 @@ namespace OCL
                 // Check port status:
                 checkPorts();
                 // Call readline wrapper :
+                ::signal( SIGINT, ctrl_c_catcher ); // catch ctrl_c only when editting a line.
                 std::string command( rl_gets() ); // copy over to string
+                ::signal( SIGINT, SIG_DFL );        // do not catch ctrl_c
                 cout << coloroff;
                 if ( command == "quit" ) {
                     // Intercept no Ctrl-C
-                    ::signal( SIGINT, SIG_DFL );
                     cout << endl;
                     return;
                 } else if ( command == "help") {
@@ -707,7 +712,8 @@ namespace OCL
             delete command;
             command = 0;
         }
-        this->switchTaskContext( taskHistory.front() );
+
+        this->switchTaskContext( taskHistory.front(), false ); // store==false
         lastc = 0;
         taskHistory.pop_front();
     }
@@ -796,11 +802,11 @@ namespace OCL
         this->switchTaskContext( peer );
     }
 
-    void TaskBrowser::switchTaskContext(TaskContext* tc) {
+    void TaskBrowser::switchTaskContext(TaskContext* tc, bool store) {
         // put current on the stack :
         if (taskHistory.size() == 20 )
             taskHistory.pop_back();
-        if ( taskcontext )
+        if ( taskcontext && store)
             taskHistory.push_front( taskcontext );
 
         // We need to release the comms, since taskcontext is changing,

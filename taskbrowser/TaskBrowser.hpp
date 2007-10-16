@@ -154,8 +154,11 @@ namespace OCL
 
         /**
          * Connect the TaskBrowser to another Taskcontext.
+         * @param tc the new Task to connect to
+         * @param store set to \a true in order to store the \b current task
+         * in the history.
          */
-        void switchTaskContext( RTT::TaskContext* tc);
+        void switchTaskContext( RTT::TaskContext* tc, bool store = true);
 
         /**
          * Go to the previous peer in the visit history.
