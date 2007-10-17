@@ -13,6 +13,6 @@ IF ( BUILD_DEMOTOOL )
   GLOBAL_ADD_INCLUDE( ocl ${HPPS})
 
   TARGET_LINK_LIBRARIES( orocos-demotool orocos-wrench orocos-krypton
-  orocos-bfl)
+  orocos-bfl orocos-kdl)
 
 ENDIF ( BUILD_DEMOTOOL )

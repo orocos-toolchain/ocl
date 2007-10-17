@@ -26,7 +26,6 @@
 #include <rtt/Method.hpp>
 #include <rtt/Command.hpp>
 #include <rtt/TimeService.hpp>
-#include <kdl/toolkit.hpp>
 #include <kdl/frames.hpp>
 
 #include <ocl/OCL.hpp>

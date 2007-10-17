@@ -18,7 +18,7 @@
 #include <rtt/RTT.hpp>
 #include <rtt/PeriodicActivity.hpp>
 #include <rtt/os/main.h>
-#include <kdl/toolkit.hpp>
+#include <kdl/bindings/rtt/toolkit.hpp>
 #include "hardware/demotool/Demotool.hpp"
 #include "hardware/krypton/KryptonK600Sensor.hpp"
 #include "hardware/wrench/WrenchSensor.hpp"
