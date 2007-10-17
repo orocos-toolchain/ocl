@@ -3,9 +3,9 @@ OPTION( BUILD_TIMER "Build Timer Component" ON )
 IF ( BUILD_TIMER )
 
   # Better inform user instead of hiding the option.
-  IF(NOT OROCOS_RTT_1.2 )
+  IF(NOT OROCOS_RTT_1.4 )
     MESSAGE(FATAL_ERROR "Timer Component requires Orocos RTT 1.4.0 or newer." )
-  ENDIF(NOT OROCOS_RTT_1.2 )
+  ENDIF(NOT OROCOS_RTT_1.4 )
 
     # This gathers all the .cpp files into the variable 'SRCS'
     FILE( GLOB HPPS [^.]*.hpp )
