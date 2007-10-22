@@ -1049,6 +1049,11 @@ namespace OCL
         if ( factory ) {
             log(Info) <<"Found factory for Component type "<<type<<endlog();
         } else {
+            // if a type was given, bail out immediately.
+            if ( type.find("::") != string::npos) {
+                log(Error) << "Unable to locate Orocos plugin '"<<type<<"': unknown component type." <<endlog();
+                return false;
+            }
             // Second: try dynamic loading:
             if ( loadLibrary(type) == false )
                 return false;
