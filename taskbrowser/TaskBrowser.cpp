@@ -1603,14 +1603,21 @@ namespace OCL
                     PortInterface::PortType pt = port->getPortType();
                     // Port type R/W
                     cout << nl << " " << (pt == PortInterface::ReadPort ?
-                        " R " : pt == PortInterface::WritePort ? " W " : "RW ");
+                        " R" : pt == PortInterface::WritePort ? " W" : "RW");
                     // Port data type + name
                     if ( !port->ready() || !port->connection() )
-                        cout << setw(11)<<right<< "(unconnected)";
+                        cout << "(U) " << setw(11)<<right<< port->getTypeInfo()->getTypeName();
                     else
-                        cout << setw(11)<<right<<port->connection()->getDataSource()->getType();
+                        cout << "(C) " << setw(11)<<right<< port->connection()->getDataSource()->getType();
                     cout << " "
                          << coloron <<setw( 14 )<<left<< *it << coloroff;
+                    if ( port->connection() ) 
+                        cout << " = " <<port->connection()->getDataSource();
+                    else {
+                        ConnectionInterface::shared_ptr c = port->createConnection();
+                        if ( c )
+                            cout << " = " << c->getDataSource();
+                    }
                     // Port description
 //                     if ( peer->getObject(*it) )
 //                         cout << " ( "<< taskobject->getObject(*it)->getDescription() << " ) ";
