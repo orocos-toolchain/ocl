@@ -19,14 +19,10 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-#include "PerformerMK2nAxesVelocityController.hpp"
+#include "PerformernAxesVelocityController.hpp"
 
 #include <rtt/Logger.hpp>
-#include <stdlib.h>
-#include <unistd.h>
-#include <termios.h>
-#include <fcntl.h>
-#include <bitset>
+#include <sstream>
 
 namespace OCL
 {
@@ -75,6 +71,9 @@ namespace OCL
       driveOffset_prop("driveOffset","offset (in rad/s) to the drive value.",vector<double>(PERFORMERMK2_NUM_AXES,0)),
       simulation_prop("simulation","true if simulationAxes should be used",true),
       simulation(true),
+      servoIntegrationFactor_prop("ServoIntegrationFactor","Inverse of Integration time for servoloop",vector<double>(PERFORMERMK2_NUM_AXES,0)),
+      servoGain_prop("ServoGain","Feedback Gain for servoloop",vector<double>(PERFORMERMK2_NUM_AXES,0)),
+      servoFFScale_prop("ServoFFScale","Feedforward scale for servoloop",vector<double>(PERFORMERMK2_NUM_AXES,0)),
       num_axes_attr("NUM_AXES",PERFORMERMK2_NUM_AXES),
       chain_attr("Kinematics"),
       driveOutOfRange_evt("driveOutOfRange"),
@@ -94,9 +93,8 @@ namespace OCL
       vref(PERFORMERMK2_NUM_AXES),
       enable(PERFORMERMK2_NUM_AXES),
       drive(PERFORMERMK2_NUM_AXES),
-      driveFailure(PERFORMERMK2_NUM_AXES),
 #endif
-      axes(PERFORMERMK2_NUM_AXES),
+      axes(PERFORMERMK2_NUM_AXES)
   {
     Logger::In in(this->getName().data());
     double ticks2rad[PERFORMERMK2_NUM_AXES] = PERFORMERMK2_TICKS2RAD;
@@ -119,11 +117,11 @@ namespace OCL
         SubDOut_NI6602 = new ComediSubDeviceDOut(NI6602,"Enables",2);
 	
 	brakeAxis2 = new DigitalOutput(SubDOut_NI6713,6,true);
-	brakeAxis2->switchOn()
+	brakeAxis2->switchOn();
 	brakeAxis3 = new DigitalOutput(SubDOut_NI6713,7,true);
-	brakeAxis3->switchOn()
-	
-        armPowerOn = new DigitalInput(SubDIn,15);
+	brakeAxis3->switchOn();
+		
+        armPowerOn = new DigitalInput(SubDIn_NI6713,15);
         
 
         for (unsigned int i = 0; i < PERFORMERMK2_NUM_AXES; i++){
@@ -133,7 +131,7 @@ namespace OCL
             encoderInterface[i] = new ComediEncoder(NI6602,0,i);
             encoder[i] = new IncrementalEncoderSensor( encoderInterface[i], 1.0 / ticks2rad[i],
 						       encoderOffsets[i],
-						       -10, 10,PERFORMERMK2_ENC_RES );
+						       -10, 10,0 );
                         
             log(Info)<<"Setting up drive ..."<<endlog();
             vref[i]   = new AnalogOutput<unsigned int>(SubAOut_NI6713, i );
@@ -215,8 +213,7 @@ namespace OCL
 #if (defined OROPKG_OS_LXRT)
         for (unsigned int i = 0; i < PERFORMERMK2_NUM_AXES; i++){
             delete axes_hardware[i];
-            delete driveFailure[i];
-        }
+	}
         delete armPowerOn;
         delete brakeAxis2;
         delete brakeAxis3;
@@ -328,14 +325,18 @@ namespace OCL
 	  if( (velocityValues[i] < -velocityLimits_prop.value()[i]) ||
 	      (velocityValues[i] > velocityLimits_prop.value()[i]) )
 	    {
-	      log(Warning)<<"Velocity of PerformerMK2 Axis "<< i <<" is out of range: "<<velocityValues[i]<<endlog();
-	      velocityOutOfRange_evt(msg);
+	      stringstream msg;
+	      msg<<"Velocity of PerformerMK2 Axis "<< i <<" is out of range: "<<velocityValues[i];
+	      log(Warning)<<msg.str()<<endlog();
+	      velocityOutOfRange_evt(msg.str()+"\n");
 	    }
 	  // emit event when position is out of range
 	  if( (positionValues[i] < lowerPositionLimits_prop.value()[i]) ||
 	      (positionValues[i] > upperPositionLimits_prop.value()[i]) ){
-	    log(Warning)<<"Position of PerformerMK2 Axis "<<i<<" is out of range: "<<positionValues[i]<<endlog();
-	    positionOutOfRange_evt(msg);
+	      stringstream msg;
+	      msg<<"Position of PerformerMK2 Axis "<<i<<" is out of range: "<<positionValues[i];
+	      log(Warning)<<msg.str()<<endlog();
+	      positionOutOfRange_evt(msg.str()+"\n");
 	  }
 	
 	  // send the drive value to hw and performs checks
@@ -383,6 +384,7 @@ namespace OCL
 	log(Warning) <<"Release Emergency stop and push button to start ...."<<endlog();
       }
 #endif
+      activated = true;
       return true;
     }
     
@@ -395,7 +397,6 @@ namespace OCL
 #endif
 	  {
 	    
-	    activated = true;
 	    return true;
 	  }
 	

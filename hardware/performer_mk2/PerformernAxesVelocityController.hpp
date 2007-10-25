@@ -191,7 +191,10 @@ namespace OCL
         Property<bool > simulation_prop;
         bool            simulation;
         
-        
+        Property<std::vector<double> > servoIntegrationFactor_prop;
+        Property<std::vector<double> > servoGain_prop;
+        Property<std::vector<double> > servoFFScale_prop;
+
         /**
          * Constant Attribute: number of axes
          */
@@ -304,7 +307,7 @@ namespace OCL
         DigitalOutput*                           brakeAxis3;
         DigitalInput*                            armPowerOn;
 
-        std::vector<DigitalIntput*>              homingSwitch;
+        std::vector<DigitalInput*>              homingSwitch;
         
 #endif
         std::vector<AxisInterface*>      axes;
