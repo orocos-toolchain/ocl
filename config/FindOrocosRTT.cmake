@@ -1,8 +1,13 @@
-# Locate Orocos::RTT install directory
+# Lookup the Orocos::RTT compile and link flags and uses 
+# LINK_DIRECTORIES and INCLUDE_DIRECTORIES to export them.
+# It depends on FindPkgConfig.cmake and component_rules.cmake
+# If you want to re-use this file, remove the lines
+#   INCLUDE (${PROJ_SOURCE_DIR}/config/component_rules.cmake)
+#   OROCOS_PKGCONFIG_REQUIRES( ... ) 
+# As they are OCL specific.
 
-# This module defines
-# OROCOS_RTT_HOME where to find include, lib, bin, etc.
-# OROCOS_RTT_FOUND, is set to true
+#This module requires OROCOS_INSTALL to be set in order to know
+# where it can/should be found.
 
 # Sets the following variables (example: target = lxrt)
 #
