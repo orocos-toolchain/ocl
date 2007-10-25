@@ -1,10 +1,6 @@
 # Lookup the Orocos::RTT compile and link flags and uses 
 # LINK_DIRECTORIES, INCLUDE_DIRECTORIES and ADD_DEFINITIONS to export them.
-# It depends on FindPkgConfig.cmake and component_rules.cmake
-# If you want to re-use this file, remove the lines
-#   INCLUDE (${PROJ_SOURCE_DIR}/config/component_rules.cmake)
-#   OROCOS_PKGCONFIG_REQUIRES( ... ) 
-# As they are OCL specific.
+# It depends on FindPkgConfig.cmake.
 
 #This module requires OROCOS_INSTALL to be set in order to know
 # where it can/should be found.
@@ -26,7 +22,6 @@
 # For example, if OROCOS_RTT_1.4 is defined, then OROCOS_RTT_1.2 and OROCOS_RTT will also be defined.
 
 INCLUDE (${PROJ_SOURCE_DIR}/config/FindPkgConfig.cmake)
-INCLUDE (${PROJ_SOURCE_DIR}/config/component_rules.cmake)
 
 IF ( CMAKE_PKGCONFIG_EXECUTABLE AND NOT SKIP_BUILD)
 
@@ -61,7 +56,6 @@ IF ( CMAKE_PKGCONFIG_EXECUTABLE AND NOT SKIP_BUILD)
 	INCLUDE_DIRECTORIES( ${OROCOS_RTT_INCLUDE_DIRS} )
         LINK_DIRECTORIES( ${OROCOS_RTT_LINK_DIRS} )
 	ADD_DEFINITIONS( ${OROCOS_RTT_DEFINES} )
-	OROCOS_PKGCONFIG_REQUIRES("orocos-rtt-${FLAVOR_TARGET}")
 
 	SET(OS_${FLAVOR_TARGET_CAP} 1)
 
@@ -88,10 +82,6 @@ IF ( CMAKE_PKGCONFIG_EXECUTABLE AND NOT SKIP_BUILD)
 	INCLUDE_DIRECTORIES( ${OROCOS_RTT_INCLUDE_DIRS} )
         LINK_DIRECTORIES( ${OROCOS_RTT_LINK_DIRS} )
 	ADD_DEFINITIONS( ${OROCOS_RTT_DEFINES} )
-	#OROCOS_PKGCONFIG_INCPATH("${OROCOS_RTT_INCLUDE_DIRS}")
-	#OROCOS_PKGCONFIG_LIBPATH("${OROCOS_RTT_LINK_DIRS}")
-	#OROCOS_PKGCONFIG_LIBS("-lorocos-rtt")
-	OROCOS_PKGCONFIG_REQUIRES("orocos-rtt")
 
 	# Detect OS:
 	# FIND_XXX has a special treatment if the variable's value is XXX-NOTFOUND

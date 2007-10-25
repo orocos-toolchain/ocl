@@ -108,10 +108,16 @@ SET( ENV{OROCOS_COMPONENTS_LINKFLAGS} "")
 SET( ENV{OROCOS_COMPONENTS_REQUIRES} "")
 
 INCLUDE(${PROJ_SOURCE_DIR}/config/global_setup.cmake)
+INCLUDE(${PROJ_SOURCE_DIR}/config/component_rules.cmake)
 
 ## Find Orocos RTT.
 
 INCLUDE (${PROJ_SOURCE_DIR}/config/FindOrocosRTT.cmake)
+IF (OROCOS_RTT_1.4)
+  OROCOS_PKGCONFIG_REQUIRES("orocos-rtt-${OROCOS_TARGET}")
+ELSE (OROCOS_RTT_1.4)
+  OROCOS_PKGCONFIG_REQUIRES("orocos-rtt")
+ENDIF (OROCOS_RTT_1.4)
 
 ## Find KDL
 
@@ -140,8 +146,7 @@ ADD_CUSTOM_TARGET(uninstall
 #                                                         #
 ###########################################################
 
-INCLUDE(config/check_depend.cmake)
-INCLUDE(config/component_rules.cmake)
+INCLUDE(${PROJ_SOURCE_DIR}/config/check_depend.cmake)
 
 #First unset the LOCAL_LIBRARIES
 SET(ENV{SELECTED_LIBS} "")
