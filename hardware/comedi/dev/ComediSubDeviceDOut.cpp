@@ -55,12 +55,16 @@ namespace RTT
                 // channels remains '0'.
                 return;
             }
-        log(Info) << "Setting all dio on subdevice "<<subDevice<<" to output type." << endlog();
-        
+
         channels = comedi_get_n_channels(myCard->getDevice()->it, subDevice);
         
-        for (unsigned int i=0; i<channels; ++i)
-            comedi_dio_config(myCard->getDevice()->it, subDevice, i, COMEDI_OUTPUT);
+        // Only for DIO
+        if ( ( myCard->getSubDeviceType( subDevice ) != COMEDI_SUBD_DIO) ) {
+            log(Info) << "Setting all dio on subdevice "<<subDevice<<" to output type." << endlog();
+        
+            for (unsigned int i=0; i<channels; ++i)
+                comedi_dio_config(myCard->getDevice()->it, subDevice, i, COMEDI_OUTPUT);
+        }
 
     }
 
@@ -108,35 +112,14 @@ namespace RTT
                 value = value << start_bit;
                 comedi_dio_bitfield(myCard->getDevice()->it, subDevice, write_mask, &value);
             }
-        // FIXME: why is this needed ??? does bitfield change DIO mode ?
-        // Make sure every bit is back to output
-        for (unsigned int i=0; i<channels; ++i)
-            comedi_dio_config(myCard->getDevice()->it, subDevice, i, COMEDI_OUTPUT);
     }
 
     bool ComediSubDeviceDOut::checkBit( unsigned int bit) const
     {
         unsigned int value = 0;
-        // At this moment, only supported for DIO subdevices (not DO)
-        if ( myCard->getSubDeviceType( subDevice ) != COMEDI_SUBD_DIO)
-            {
-                //rtos_printf( "Comedi Digital Out : CheckBit not implemented for DO (only DIO), returning true\n" );
-                //rtos_printf( "Type = %d \n", myCard->getSubDeviceType( subDevice ));
-                return true;
-            }
-        // Read all channels
-        comedi_dio_bitfield(myCard->getDevice()->it, subDevice, 0x0, &value);
-        // Filter data from these channels
-        unsigned int write_mask = (0x1 << bit);
-        // Erase other bits that we read
-        value = value & write_mask ;
-        // Shift value bits to the right
-        value = value >> bit;
-        // FIXME: Is this needed ??
-        // Make sure every bit is back to output
-        for (unsigned int i=0; i<channels; ++i)
-            comedi_dio_config(myCard->getDevice()->it, subDevice, i, COMEDI_OUTPUT);
-        return value;
+        // read DO or DIO
+        comedi_dio_read(myCard->getDevice()->it, subDevice, bit, &value);
+        return value == 1;
     }
 
     unsigned int ComediSubDeviceDOut::checkSequence (unsigned int start_bit, unsigned int stop_bit) const
