@@ -65,10 +65,12 @@ namespace RTT
                 myCard = 0;
                 return;
             }
-        log(Info) << "Setting all dio on subdevice "<<_subDevice<<" to input type." << endlog();
-        unsigned int num_chan = this->nbOfInputs();
-        for (unsigned int i=0; i<num_chan; ++i)
-            comedi_dio_config(myCard->getDevice()->it, _subDevice, i, COMEDI_INPUT);
+        if ( ( myCard->getSubDeviceType( _subDevice ) != COMEDI_SUBD_DIO) ) {
+            log(Info) << "Setting all dio on subdevice "<<_subDevice<<" to input type." << endlog();
+            unsigned int num_chan = this->nbOfInputs();
+            for (unsigned int i=0; i<num_chan; ++i)
+                comedi_dio_config(myCard->getDevice()->it, _subDevice, i, COMEDI_INPUT);
+        }
     }
 
   bool ComediSubDeviceDIn::isOn( unsigned int bit /*= 0*/) const
