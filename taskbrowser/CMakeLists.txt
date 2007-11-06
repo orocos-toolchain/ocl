@@ -2,11 +2,11 @@ OPTION( BUILD_TASKBROWSER "Build TaskBrowser" ON )
 
 IF ( BUILD_TASKBROWSER )
 
-    IF(NOT CURSES)
+    IF(NOT CURSES AND NOT READLINE)
        MESSAGE( FATAL_ERROR "Can not build TaskBrowser without the
-       ncurses library. Try 'sudo apt-get install libncurses5-dev' or
+       ncurses/readline library. Try 'sudo apt-get install libncurses5-dev libreadline5-dev' or
        disable the TaskBrowser" )
-    ELSE(NOT CURSES)
+    ELSE(NOT CURSES AND NOT READLINE)
        OROCOS_PKGCONFIG_LIBS("-lncurses -lreadline")
 
        # This gathers all the .cpp files into the variable 'SRCS'

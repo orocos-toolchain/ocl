@@ -70,6 +70,15 @@ ELSE ( CURSES_INCLUDE_DIR )
     SET( CURSES 0 CACHE INTERNAL "libncurses" )
 ENDIF ( CURSES_INCLUDE_DIR )
 
+CHECK_INCLUDE_FILE( readline/readline.h READLINE_H )
+IF ( READLINE_H )
+    MESSAGE("-- Looking for readline/readline.h - found")
+    SET( READLINE 1 CACHE INTERNAL "libreadline" )
+ELSE ( READLINE_H  )
+    MESSAGE("-- Looking for readline/readline.h - not found")
+    SET( READLINE 0 CACHE INTERNAL "libreadline" )
+ENDIF ( READLINE_H )
+
 # Check for ZLIB
 INCLUDE (${CMAKE_ROOT}/Modules/FindZLIB.cmake)
 SET( HAVE_ZLIB ${ZLIB} )
