@@ -1,9 +1,0 @@
-usr/include/orocos/gnulinux-corba/ocl/dev/ComediDevice.hpp
-usr/include/orocos/gnulinux-corba/ocl/dev/ComediEncoder.hpp
-usr/include/orocos/gnulinux-corba/ocl/dev/ComediPulseTrainGenerator.hpp
-usr/include/orocos/gnulinux-corba/ocl/dev/ComediSubDeviceAIn.hpp
-usr/include/orocos/gnulinux-corba/ocl/dev/ComediSubDeviceAOut.hpp
-usr/include/orocos/gnulinux-corba/ocl/dev/ComediSubDeviceDIn.hpp
-usr/include/orocos/gnulinux-corba/ocl/dev/ComediSubDeviceDOut.hpp
-usr/include/orocos/gnulinux-corba/ocl/dev/ComediThreadScope.hpp
-usr/lib/liborocos-comedi-gnulinux-corba.so

@@ -1,9 +1,0 @@
-usr/include/orocos/gnulinux-corba/ocl/IOComponent.hpp
-usr/include/orocos/gnulinux-corba/ocl/dev/FakeAnalogDevice.hpp
-usr/include/orocos/gnulinux-corba/ocl/dev/FakeDigitalDevice.hpp
-usr/include/orocos/gnulinux-corba/ocl/dev/FakeEncoder.hpp
-usr/include/orocos/gnulinux-corba/ocl/dev/ParallelPort.hpp
-usr/include/orocos/gnulinux-corba/ocl/dev/TemplateDigitalIn.hpp
-usr/include/orocos/gnulinux-corba/ocl/dev/TemplateDigitalOut.hpp
-usr/include/orocos/gnulinux-corba/ocl/dev/TemplateRegister.hpp
-usr/lib/liborocos-io-gnulinux-corba.so
