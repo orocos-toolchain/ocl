@@ -1,0 +1,6 @@
+orocos-ocl for Debian
+---------------------
+
+This package depends on comedilib for hardware IO.
+
+ -- Peter Soetens <peter.soetens@fmtc.be>  Thu, 26 Jul 2007 16:54:00 +0200

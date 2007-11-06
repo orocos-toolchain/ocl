@@ -1,0 +1,13 @@
+usr/include/ocl/AxesComponent.hpp
+usr/include/ocl/dev/AbsoluteEncoderSensor.hpp
+usr/include/ocl/dev/AnalogDrive.hpp
+usr/include/ocl/dev/AnalogSensor.hpp
+usr/include/ocl/dev/Axis.hpp
+usr/include/ocl/dev/EncoderPositionSensor.hpp
+usr/include/ocl/dev/EndLimitDetector.hpp
+usr/include/ocl/dev/EndPositionDetector.hpp
+usr/include/ocl/dev/HomePositionDetector.hpp
+usr/include/ocl/dev/IncrementalEncoderSensor.hpp
+usr/include/ocl/dev/SimulationAxis.hpp
+usr/include/ocl/dev/TorqueSimulationAxis.hpp
+usr/lib/liborocos-axes-lxrt.so

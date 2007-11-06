@@ -1,0 +1,9 @@
+usr/include/ocl/IOComponent.hpp
+usr/include/ocl/dev/FakeAnalogDevice.hpp
+usr/include/ocl/dev/FakeDigitalDevice.hpp
+usr/include/ocl/dev/FakeEncoder.hpp
+usr/include/ocl/dev/ParallelPort.hpp
+usr/include/ocl/dev/TemplateDigitalIn.hpp
+usr/include/ocl/dev/TemplateDigitalOut.hpp
+usr/include/ocl/dev/TemplateRegister.hpp
+usr/lib/liborocos-io-lxrt.so

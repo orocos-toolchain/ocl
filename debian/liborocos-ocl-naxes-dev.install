@@ -1,0 +1,10 @@
+usr/include/ocl/nAxesComponents.hpp
+usr/include/ocl/nAxesControllerPos.hpp
+usr/include/ocl/nAxesControllerPosVel.hpp
+usr/include/ocl/nAxesControllerVel.hpp
+usr/include/ocl/nAxesEffectorVel.hpp
+usr/include/ocl/nAxesGeneratorPos.hpp
+usr/include/ocl/nAxesGeneratorVel.hpp
+usr/include/ocl/nAxesSensor.hpp
+usr/include/ocl/ReferenceSensor.hpp
+usr/lib/liborocos-naxes-lxrt.so
