@@ -97,6 +97,9 @@ namespace RTT
 
       // Ask status
       DWORD status() const;
+
+      // Return pcan device handle  
+      HANDLE handle() const;
       
     protected:
       // Maximum number of CAN channels
