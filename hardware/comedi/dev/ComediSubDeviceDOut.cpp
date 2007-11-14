@@ -59,7 +59,7 @@ namespace RTT
         channels = comedi_get_n_channels(myCard->getDevice()->it, subDevice);
         
         // Only for DIO
-        if ( ( myCard->getSubDeviceType( subDevice ) != COMEDI_SUBD_DIO) ) {
+        if ( ( myCard->getSubDeviceType( subDevice ) == COMEDI_SUBD_DIO) ) {
             log(Info) << "Setting all dio on subdevice "<<subDevice<<" to output type." << endlog();
         
             for (unsigned int i=0; i<channels; ++i)
