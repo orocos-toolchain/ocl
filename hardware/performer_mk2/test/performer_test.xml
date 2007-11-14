@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "cpf.dtd">
+<properties>
+  <simple name="Import" type="string"><value>/install/build-lxrt/lib</value></simple>
+  <struct name="Robot" type="OCL::PerformerMK2nAxesVelocityController">
+    <struct name="Activity" type="PeriodicActivity">
+      <simple name="Period" type="double"><value>0.005</value></simple>
+      <simple name="Priority" type="short"><value>0</value></simple>
+      <simple name="Scheduler" type="string"><value>ORO_SCHED_RT</value></simple>
+    </struct> 
+  </struct> 
+    
+</properties>
