@@ -149,7 +149,7 @@ namespace OCL
          */
         DataPort<std::vector<double> >  positionValues_port;
         DataPort<std::vector<double> >  velocityValues_port;
-        DataPort< double >            deltaTime_port;
+        DataPort< double >              deltaTime_port;
 
         /**
          * The absolute value of the velocity will be limited to this property.  
@@ -233,7 +233,7 @@ namespace OCL
         virtual bool prepareForUseCompleted() const;
         virtual bool prepareForShutdown();
         virtual bool prepareForShutdownCompleted() const;
-    
+      
         /**
          * A local copy of the name of the propertyfile so we can store
          * changed properties.
@@ -295,7 +295,6 @@ namespace OCL
         
         ComediSubDeviceAOut*             SubAOut_NI6713;
         ComediSubDeviceDIn*              SubDIn_NI6713;
-        ComediSubDeviceDOut*             SubDOut_NI6713;
         ComediSubDeviceDOut*             SubDOut_NI6602;
         
         std::vector<EncoderInterface*>           encoderInterface;
@@ -306,13 +305,13 @@ namespace OCL
         DigitalOutput*                           brakeAxis2;
         DigitalOutput*                           brakeAxis3;
         DigitalInput*                            armPowerOn;
-
-        std::vector<DigitalInput*>              homingSwitch;
+        DigitalOutput*                           armPowerEnable;
+        std::vector<DigitalInput*>               homingSwitch;
         
 #endif
-        std::vector<AxisInterface*>      axes;
-	std::vector<TimeService::ticks>         _previous_time;
-	TimeService::Seconds                    _delta_time;
+        std::vector<AxisInterface*>              axes;
+	TimeService::ticks                       previous_time;
+	TimeService::Seconds                     delta_time;
     
     };//class PerformerMK2nAxesVelocityController
 }//namespace Orocos

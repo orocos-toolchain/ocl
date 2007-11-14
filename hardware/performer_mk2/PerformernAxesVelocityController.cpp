@@ -21,6 +21,8 @@
 
 #include "PerformernAxesVelocityController.hpp"
 
+#include <ocl/ComponentLoader.hpp>
+
 #include <rtt/Logger.hpp>
 #include <sstream>
 
@@ -71,9 +73,9 @@ namespace OCL
       driveOffset_prop("driveOffset","offset (in rad/s) to the drive value.",vector<double>(PERFORMERMK2_NUM_AXES,0)),
       simulation_prop("simulation","true if simulationAxes should be used",true),
       simulation(true),
-      servoIntegrationFactor_prop("ServoIntegrationFactor","Inverse of Integration time for servoloop",vector<double>(PERFORMERMK2_NUM_AXES,0)),
-      servoGain_prop("ServoGain","Feedback Gain for servoloop",vector<double>(PERFORMERMK2_NUM_AXES,0)),
-      servoFFScale_prop("ServoFFScale","Feedforward scale for servoloop",vector<double>(PERFORMERMK2_NUM_AXES,0)),
+      //servoIntegrationFactor_prop("ServoIntegrationFactor","Inverse of Integration time for servoloop",vector<double>(PERFORMERMK2_NUM_AXES,0)),
+      //servoGain_prop("ServoGain","Feedback Gain for servoloop",vector<double>(PERFORMERMK2_NUM_AXES,0)),
+      //servoFFScale_prop("ServoFFScale","Feedforward scale for servoloop",vector<double>(PERFORMERMK2_NUM_AXES,0)),
       num_axes_attr("NUM_AXES",PERFORMERMK2_NUM_AXES),
       chain_attr("Kinematics"),
       driveOutOfRange_evt("driveOutOfRange"),
@@ -86,6 +88,7 @@ namespace OCL
       positionValues(PERFORMERMK2_NUM_AXES,0),
       driveValues(PERFORMERMK2_NUM_AXES,0),
       velocityValues(PERFORMERMK2_NUM_AXES,0),
+      outputvel(PERFORMERMK2_NUM_AXES,0),
 #if (defined OROPKG_OS_LXRT)
       axes_hardware(PERFORMERMK2_NUM_AXES),
       encoderInterface(PERFORMERMK2_NUM_AXES),
@@ -93,8 +96,10 @@ namespace OCL
       vref(PERFORMERMK2_NUM_AXES),
       enable(PERFORMERMK2_NUM_AXES),
       drive(PERFORMERMK2_NUM_AXES),
+      homingSwitch(PERFORMERMK2_NUM_AXES),
 #endif
       axes(PERFORMERMK2_NUM_AXES)
+      //_previous_time(PERFORMERMK2_NUM_AXES)
   {
     Logger::In in(this->getName().data());
     double ticks2rad[PERFORMERMK2_NUM_AXES] = PERFORMERMK2_TICKS2RAD;
@@ -109,21 +114,22 @@ namespace OCL
         
         log(Info)<<"Creating Comedi Devices."<<endlog();
         NI6713 = new ComediDevice(0);
-	NI6602 = new ComediDevice(2);
+    	NI6602 = new ComediDevice(2);
         
         SubAOut_NI6713 = new ComediSubDeviceAOut(NI6713,"DriveValues",1);
-        SubDIn_NI6713 = new ComediSubDeviceDIn(NI6713,"HomingSwitches",2);
-        SubDOut_NI6713 = new ComediSubDeviceDOut(NI6713,"Brakes",2);
-        SubDOut_NI6602 = new ComediSubDeviceDOut(NI6602,"Enables",2);
+        SubDIn_NI6713 = new ComediSubDeviceDIn(NI6713,"DigitalIn",2);
+        SubDOut_NI6602 = new ComediSubDeviceDOut(NI6602,"DigitalOut",1);
 	
-	brakeAxis2 = new DigitalOutput(SubDOut_NI6713,6,true);
+	brakeAxis2 = new DigitalOutput(SubDOut_NI6602,0,true);
 	brakeAxis2->switchOn();
-	brakeAxis3 = new DigitalOutput(SubDOut_NI6713,7,true);
+	brakeAxis3 = new DigitalOutput(SubDOut_NI6602,1,true);
 	brakeAxis3->switchOn();
 		
-        armPowerOn = new DigitalInput(SubDIn_NI6713,15);
-        
-
+        armPowerOn = new DigitalInput(SubDIn_NI6713,6);
+	armPowerEnable = new DigitalOutput(SubDOut_NI6602,7);
+	armPowerEnable->switchOff();
+		  
+	  
         for (unsigned int i = 0; i < PERFORMERMK2_NUM_AXES; i++){
             log(Info)<<"Creating Hardware axis "<<i<<endlog();
             //Setting up encoders
@@ -132,19 +138,23 @@ namespace OCL
             encoder[i] = new IncrementalEncoderSensor( encoderInterface[i], 1.0 / ticks2rad[i],
 						       encoderOffsets[i],
 						       -10, 10,0 );
-                        
+            //Setting up drive            
             log(Info)<<"Setting up drive ..."<<endlog();
             vref[i]   = new AnalogOutput<unsigned int>(SubAOut_NI6713, i );
             enable[i] = new DigitalOutput( SubDOut_NI6602, 2+i );
             enable[i]->switchOff();
             drive[i]  = new AnalogDrive( vref[i], enable[i], 1.0 / vel2volt[i], 0.0);
-
+	    
             axes_hardware[i] = new Axis( drive[i] );
             axes_hardware[i]->setSensor( "Position", encoder[i] );
 	    if(i==1)
 	      axes_hardware[i]->setBrake(brakeAxis2);
 	    if(i==2)
 	      axes_hardware[i]->setBrake(brakeAxis3);
+	    
+	    //Setting up homeswitches
+	    homingSwitch[i] = new DigitalInput(SubDIn_NI6713,i);
+	    axes_hardware[i]->setSwitch("HomingSwitch",homingSwitch[i]);
 	    
         }
 
@@ -172,12 +182,12 @@ namespace OCL
         events()->addEvent( &driveOutOfRange_evt, "Drive value of an Axis is out of range","message","Information about event" );
         events()->addEvent( &positionOutOfRange_evt, "Position of an Axis is out of range","message","Information about event");
         events()->addEvent( &velocityOutOfRange_evt, "Velocity of an Axis is out of range","message","Information about event");
-        
+
         /**
          * Dataflow Interface
          */
         ports()->addPort(&driveValues_port);
-        ports()->addPort(&servoValues_port);
+        //ports()->addPort(&servoValues_port);
         ports()->addPort(&positionValues_port);
         ports()->addPort(&velocityValues_port);
         ports()->addPort(&deltaTime_port);
@@ -192,9 +202,9 @@ namespace OCL
         properties()->addProperty( &initialPosition_prop);
         properties()->addProperty( &driveOffset_prop);
         properties()->addProperty( &simulation_prop);
-	properties()->addProperty( &servoIntegrationFactor_prop);
-        properties()->addProperty( &servoGain_prop);
-        properties()->addProperty( &servoFFScale_prop);
+	//properties()->addProperty( &servoIntegrationFactor_prop);
+        //properties()->addProperty( &servoGain_prop);
+        //properties()->addProperty( &servoFFScale_prop);
         attributes()->addConstant( &num_axes_attr);
         attributes()->addAttribute(&chain_attr);
 
@@ -206,7 +216,7 @@ namespace OCL
         prepareForShutdown_cmd();
     
         // brake, drive, sensors and switches are deleted by each axis
-        if(simulation_prop.value())
+        if(simulation)
             for (unsigned int i = 0; i < PERFORMERMK2_NUM_AXES; i++)
                 delete axes[i];
     
@@ -215,12 +225,10 @@ namespace OCL
             delete axes_hardware[i];
 	}
         delete armPowerOn;
-        delete brakeAxis2;
-        delete brakeAxis3;
+	delete armPowerEnable;
         
         delete SubAOut_NI6713;
         delete SubDIn_NI6713;
-        delete SubDOut_NI6713;
         delete SubDOut_NI6602;
         
         delete NI6602;
@@ -270,18 +278,19 @@ namespace OCL
         /**
          * Initializing servoloop
          */
-        servoGain = servoGain_prop.value();
-        servoIntegrationFactor = servoIntegrationFactor_prop.value();
-        servoFFScale = servoFFScale_prop.value();
+        //servoGain = servoGain_prop.value();
+        //servoIntegrationFactor = servoIntegrationFactor_prop.value();
+        //servoFFScale = servoFFScale_prop.value();
 	
         return true;
     }
       
     bool PerformerMK2nAxesVelocityController::startHook()
     {
+      previous_time = TimeService::Instance()->getTicks();
+
         for (int axis=0;axis<PERFORMERMK2_NUM_AXES;axis++) {
 #if defined OROPKG_OS_LXRT
-	  _previous_time[axis] = TimeService::Instance()->getTicks();
 	  positionValues[axis] = axes[axis]->getSensor("Position")->readSensor();
 #endif
         }
@@ -291,32 +300,33 @@ namespace OCL
   
     void PerformerMK2nAxesVelocityController::updateHook()
     {
-        for (int axis=0;axis<PERFORMERMK2_NUM_AXES;axis++) {
+      delta_time = TimeService::Instance()->secondsSince(previous_time);
+      previous_time = TimeService::Instance()->getTicks();
+      deltaTime_port.Set(delta_time);
+      
+      for (int axis=0;axis<PERFORMERMK2_NUM_AXES;axis++) {
 #if defined OROPKG_OS_LXRT
-	  _delta_time = TimeService::Instance()->secondsSince(_previous_time[axis]);
-	  velocityValues[axis] = (axes[axis]->getSensor("Position")->readSensor() - positionValues[axis])/_delta_time;
-	  _previous_time[axis] = TimeService::Instance()->getTicks();
+	  velocityValues[axis] = (axes[axis]->getSensor("Position")->readSensor() - positionValues[axis])/delta_time;
 	  positionValues[axis] = axes[axis]->getSensor("Position")->readSensor();
-	  deltaTime_port.Set(_delta_time);
 #endif
         }
-	positionValues_port.Set(positionValues);
+        positionValues_port.Set(positionValues);
 	velocityValues_port.Set(velocityValues);
 
 #if defined OROPKG_OS_LXRT
-        double dt;
+        //double dt;
         // Determine sampling time :
-        if (servoInitialized) {
-	  dt              = TimeService::Instance()->secondsSince(previousTime);
-	  previousTime    = TimeService::Instance()->getTicks();
-        } else {
-	  dt = 0.0; 
-	  for (unsigned int i=0;i<PERFORMERMK2_NUM_AXES;i++) {      
-	    servoIntError[i] = 0.0;
-	  }
-	  previousTime = TimeService::Instance()->getTicks();
-	  servoInitialized = true;
-	}
+        //if (servoInitialized) {
+	//  dt              = TimeService::Instance()->secondsSince(previousTime);
+	//  previousTime    = TimeService::Instance()->getTicks();
+        //} else {
+	//  dt = 0.0; 
+	//  for (unsigned int i=0;i<PERFORMERMK2_NUM_AXES;i++) {      
+	//    servoIntError[i] = 0.0;
+	//  }
+	//  previousTime = TimeService::Instance()->getTicks();
+	//  servoInitialized = true;
+	//}
 #endif
         driveValues_port.Get(driveValues);
         
@@ -343,9 +353,10 @@ namespace OCL
 	  if (axes[i]->isDriven()){
 #if defined OROPKG_OS_LXRT      
 	    // perform control action ( dt is zero the first time !) :
-	    double error        = driveValues[i] - velocityValues[i];
-	    servoIntError[i]    += dt*error;
-	    outputvel[i] = servoGain[i]*(error + servoIntegrationFactor[i]*servoIntError[i]) + servoFFScale[i]*driveValues[i];
+	    //   double error        = driveValues[i] - velocityValues[i];
+	    // servoIntError[i]    += dt*error;
+	    //outputvel[i] = servoGain[i]*(error + servoIntegrationFactor[i]*servoIntError[i]) + servoFFScale[i]*driveValues[i];
+	    outputvel[i] = driveValues[i];
 	  } else {
 	    outputvel[i] = 0.0;
 	  }
@@ -360,8 +371,7 @@ namespace OCL
 #endif
     }
 
-    servoValues_port.Set(driveValues);
-    }
+}
 
     
     
@@ -381,6 +391,7 @@ namespace OCL
     {
 #if (defined OROPKG_OS_LXRT)
       if(!simulation){
+	armPowerEnable->switchOn();
 	log(Warning) <<"Release Emergency stop and push button to start ...."<<endlog();
       }
 #endif
@@ -392,7 +403,7 @@ namespace OCL
     {
 #if (defined OROPKG_OS_LXRT)
         if(!simulation)
-	  return (!armPowerOn->isOn());
+	  return armPowerOn->isOn();
         else
 #endif
 	  {
@@ -407,6 +418,7 @@ namespace OCL
       //make sure all axes are stopped and locked
       stopAllAxes();
       lockAllAxes();
+      armPowerEnable->switchOff();
       activated = false;
       return true;
     }
@@ -475,3 +487,4 @@ namespace OCL
     }
 
 }//namespace orocos
+ORO_CREATE_COMPONENT(OCL::PerformerMK2nAxesVelocityController)
