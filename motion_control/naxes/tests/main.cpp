@@ -73,40 +73,33 @@ int ORO_main(int argc, char* argv[])
   _emergency.addEvent(my_robot,"positionOutOfRange");
 
   //nAxesComponents
-  nAxesSensor sensor("nAxesSensor",6);
   nAxesGeneratorPos generatorPos("nAxesGeneratorPos",6);
   nAxesGeneratorVel generatorVel("nAxesGeneratorVel",6);
   nAxesControllerPos controllerPos("nAxesControllerPos",6);
   nAxesControllerPosVel controllerPosVel("nAxesControllerPosVel",6);
   nAxesControllerVel controllerVel("nAxesControllerVel",6);
-  nAxesEffectorVel effector("nAxesEffectorVel",6);
   
-  //connecting sensor and effector to hardware
-  connectPorts(&sensor,my_robot);
-  connectPorts(&effector,my_robot);
-  
-  //connection naxes components to each other
-  connectPorts(&sensor,&generatorPos);
-  connectPorts(&sensor,&generatorVel);
-  connectPorts(&sensor,&controllerPos);
-  connectPorts(&sensor,&controllerPosVel);
-  connectPorts(&sensor,&controllerVel);
+  //connection naxes components to each other and the robot
+  connectPorts(my_robot,&generatorPos);
+  connectPorts(my_robot,&generatorVel);
+  connectPorts(my_robot,&controllerPos);
+  connectPorts(my_robot,&controllerPosVel);
+  connectPorts(my_robot,&controllerVel);
   connectPorts(&generatorPos,&controllerPos);
   connectPorts(&generatorPos,&controllerPosVel);
   connectPorts(&generatorVel,&controllerVel);
-  connectPorts(&controllerPos,&effector);
-  connectPorts(&controllerPosVel,&effector);
-  connectPorts(&controllerVel,&effector);
+  connectPorts(&controllerPos,my_robot);
+  connectPorts(&controllerPosVel,my_robot);
+  connectPorts(&controllerVel,my_robot);
     
   //Reporting
   FileReporting reporter("Reporting");
-  connectPorts(&reporter,&sensor);
+  connectPorts(&reporter,my_robot);
   connectPorts(&reporter,&generatorPos);
   connectPorts(&reporter,&generatorVel);
   connectPorts(&reporter,&controllerPos);
   connectPorts(&reporter,&controllerPosVel);
   connectPorts(&reporter,&controllerVel);
-  connectPorts(&reporter,&effector);  
 
   //Create supervising TaskContext
   TaskContext super("nAxes");
@@ -114,13 +107,11 @@ int ORO_main(int argc, char* argv[])
   // Link components to supervisor
   super.addPeer(my_robot);
   super.addPeer(&reporter);
-  super.addPeer(&sensor);    
   super.addPeer(&generatorPos); 
   super.addPeer(&generatorVel); 
   super.addPeer(&controllerPos);
   super.addPeer(&controllerPosVel);
   super.addPeer(&controllerVel);
-  super.addPeer(&effector);
   
   // Load programs in supervisor
   super.scripting()->loadPrograms("cpf/program_calibrate_offsets.ops");
@@ -130,20 +121,13 @@ int ORO_main(int argc, char* argv[])
   super.scripting()->loadStateMachines("cpf/states.osd");
 
   // Creating Tasks
-#if (defined OROPKG_OS_LXRT)
   PeriodicActivity _kukaTask(0,0.002, my_robot->engine() ); 
   PeriodicActivity superTask(1,0.002,super.engine());
-#else
-  PeriodicActivity _kukaTask(0,0.01, my_robot->engine() ); 
-  PeriodicActivity superTask(1,0.01,super.engine());
-#endif
-  PeriodicActivity _sensorTask(0,0.01, sensor.engine() ); 
   PeriodicActivity _generatorPosTask(0,0.01, generatorPos.engine() ); 
   PeriodicActivity _generatorVelTask(0,0.01, generatorVel.engine() ); 
   PeriodicActivity _controllerPosTask(0,0.01, controllerPos.engine() ); 
   PeriodicActivity _controllerPosVelTask(0,0.01, controllerPosVel.engine() ); 
   PeriodicActivity _controllerVelTask(0,0.01, controllerVel.engine() ); 
-  PeriodicActivity _effectorTask(0,0.01, effector.engine() ); 
   PeriodicActivity reportingTask(2,0.1,reporter.engine());
   
   TaskBrowser browser(&super);
