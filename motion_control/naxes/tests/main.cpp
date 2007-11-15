@@ -18,6 +18,7 @@
 //hardware interfaces
 #include <hardware/kuka/Kuka160nAxesVelocityController.hpp>
 #include <hardware/kuka/Kuka361nAxesVelocityController.hpp>
+#include <hardware/performer_mk2/PerformernAxesVelocityController.hpp>
 #include <hardware/kuka/EmergencyStop.hpp>
 
 //User interface
@@ -43,18 +44,27 @@ using namespace std;
 int ORO_main(int argc, char* argv[])
 {
   TaskContext* my_robot = NULL;
+  unsigned int number_of_axes = 0;
+
   if (argc > 1)
     {
       string s = argv[1];
       if(s == "Kuka361"){
 	log(Warning) <<"Choosing Kuka361"<<endlog();
 	my_robot = new Kuka361nAxesVelocityController("Robot");
+    number_of_axes = 6;
       }
       else if(s == "Kuka160"){
 	log(Warning) <<"Choosing Kuka160"<<endlog();
 	my_robot = new Kuka160nAxesVelocityController("Robot");
+    number_of_axes = 6;
       }
+      else if(s == "Performer"){
+    log(Warning) <<"Choosing Performer"<<endlog();
+    my_robot = new PerformerMK2nAxesVelocityController("Robot");
+    number_of_axes = 5;
     }
+   }
   else{
     log(Warning) <<"Using Default Kuka361"<<endlog();
     my_robot = new Kuka361nAxesVelocityController("Robot");
@@ -73,11 +83,11 @@ int ORO_main(int argc, char* argv[])
   _emergency.addEvent(my_robot,"positionOutOfRange");
 
   //nAxesComponents
-  nAxesGeneratorPos generatorPos("nAxesGeneratorPos",6);
-  nAxesGeneratorVel generatorVel("nAxesGeneratorVel",6);
-  nAxesControllerPos controllerPos("nAxesControllerPos",6);
-  nAxesControllerPosVel controllerPosVel("nAxesControllerPosVel",6);
-  nAxesControllerVel controllerVel("nAxesControllerVel",6);
+  nAxesGeneratorPos generatorPos("nAxesGeneratorPos",number_of_axes);
+  nAxesGeneratorVel generatorVel("nAxesGeneratorVel",number_of_axes);
+  nAxesControllerPos controllerPos("nAxesControllerPos",number_of_axes);
+  nAxesControllerPosVel controllerPosVel("nAxesControllerPosVel",number_of_axes);
+  nAxesControllerVel controllerVel("nAxesControllerVel",number_of_axes);
   
   //connection naxes components to each other and the robot
   connectPorts(my_robot,&generatorPos);
