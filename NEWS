@@ -7,7 +7,7 @@ major version (1.4) has been made identical to the RTT major version
 in order to ease matching the correct versions of both libraries. Some
 components of the OCL library are now also available as Debian 4.0
 'Etch' packages from 
- deb http://svn.fmtc.be/debian etch contrib
+ deb http://svn.fmtc.be/debian etch main
 
 A new stand-alone applications has been added as well:
  cdeployer: loads other components into the current process and
