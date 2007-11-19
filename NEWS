@@ -1,3 +1,26 @@
+         Orocos Components Library (OCL) v1.4.0
+
+This release of the Orocos Components Library is aimed at the
+Real-Time Toolkit v1.4.0. and offers improved functionality for
+loading and configuring components dynamically at run-time.  The OCL
+major version (1.4) has been made identical to the RTT major version
+in order to ease matching the correct versions of both libraries. Some
+components of the OCL library are now also available as Debian 4.0
+'Etch' packages from 
+ deb http://svn.fmtc.be/debian etch contrib
+
+A new stand-alone applications has been added as well:
+ cdeployer: loads other components into the current process and
+ is accessible over a network using the CORBA transport.
+
+An overview of the components is available here:
+  <http://www.orocos.org/stable/documentation/ocl/v1.4.x/doc-xml/ocl-overview.html>
+
+This release can be downloaded here:
+  <http://www.orocos.org/stable/ocl/v1.4.0/orocos-ocl-1.4.0-src.tar.bz2>
+
+
+------------------------------------------------------------------------
          Orocos Components Library (OCL) v0.4.1
 
 This release offers improvements to the TaskBrowser, Deployment and
