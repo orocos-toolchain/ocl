@@ -37,7 +37,7 @@ namespace OCL
           _position_desi_local(num_axes),
           _velocity_desi_local(num_axes),
           _moveTo( "moveTo",&MyType::moveTo,&MyType::moveFinished, this),
-          _reset( "reset", &MyType::reset, this),
+          _reset_position( "resetPosition", &MyType::resetPosition, this),
           _position_meas("nAxesSensorPosition"),
           _position_desi("nAxesDesiredPosition"),
           _velocity_desi("nAxesDesiredVelocity"),
@@ -62,7 +62,7 @@ namespace OCL
                                       "time", "minimum time to complete trajectory" );
 
         //Adding Methods
-        this->methods()->addMethod( &_reset, "Reset generator" );  
+        this->methods()->addMethod( &_reset_position, "Reset generator position" );  
 
     if(!marshalling()->readProperties(_propertyfile))
       log(Error) <<"(nAxesGeneratorPos) Reading Properties from "<<_propertyfile<<" failed!!"<<endlog();
@@ -174,7 +174,7 @@ namespace OCL
     return (!_is_moving);
   }
   
-  void nAxesGeneratorPos::reset()
+  void nAxesGeneratorPos::resetPosition()
   {
     _position_desi_local = _position_meas.Get();
     for(unsigned int i = 0; i < _num_axes; i++)

@@ -14,6 +14,10 @@ IF ( BUILD_CAN )
     LIST( REMOVE_ITEM DEVSRCS ${CMAKE_CURRENT_SOURCE_DIR}/can/PCANController.cpp)
     LIST( REMOVE_ITEM DEVHPPS ${CMAKE_CURRENT_SOURCE_DIR}/can/PCANController.hpp)
 
+    # Build orocos-can lib. [universal]
+    GLOBAL_ADD_COMPONENT( orocos-can ${DEVSRCS} )
+    GLOBAL_ADD_INCLUDE( ocl/can ${DEVHPPS} )
+
     # Build orocos-canpie lib. [HW specific]
     IF ( BUILD_CANPIE )
        GLOBAL_ADD_COMPONENT( orocos-canpie can/CANPieController.cpp drivers/canpie/canpie_lxrtlib.c)
@@ -24,7 +28,8 @@ IF ( BUILD_CAN )
     IF ( BUILD_PCAN )
        GLOBAL_ADD_COMPONENT( orocos-pcan can/PCANController.cpp)
        GLOBAL_ADD_INCLUDE( ocl/can can/PCANController.hpp )
-       TARGET_USE_LIB( orocos-pcan . orocos-can )
+       COMPONENT_ADD_DEPS( orocos-pcan orocos-can )
+       COMPONENT_ADD_LIBS( orocos-pcan pcan )
        OROCOS_PKGCONFIG_LIBS("-lpcan")
     ENDIF ( BUILD_PCAN )
 

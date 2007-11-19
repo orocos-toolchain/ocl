@@ -1,7 +1,7 @@
 Source: orocos-ocl
 Priority: extra
 Maintainer: Peter Soetens <peter.soetens@fmtc.be>
-Build-Depends: debhelper (>= 5), autotools-dev, liborocos-rtt-lxrt-dev ( >= 1.4 ), libcomedi-dev, libpcan-dev, liborocos-rtt-gnulinux-dev ( >= 1.4 ), pkg-config, libncurses5-dev ( >= 5.0 ), libreadline5-dev ( >= 5.0 ), comedi-modules
+Build-Depends: debhelper (>= 5), autotools-dev, liborocos-rtt-corba-lxrt-dev ( >= 1.4 ), libcomedi-dev, libpcan-dev, liborocos-rtt-corba-gnulinux-dev ( >= 1.4 ), pkg-config, libncurses5-dev ( >= 5.0 ), libreadline5-dev ( >= 5.0 ), comedi-modules
 Standards-Version: 3.7.2
 Section: libs
 
@@ -9,17 +9,17 @@ Package: orocos-ocl-lxrt-bin
 Section: libdevel
 Architecture: any
 Depends: liborocos-ocl-lxrt1.4 (= ${Source-Version})
-Description: Orocos Component Library with CORBA support - Binaries
- This package contains the ctaskbrowser and deployment applications.
+Description: Orocos Component Library  - Binaries
+ This package contains the ctaskbrowser, cdeployer and deployer applications.
 
 Package: orocos-ocl-lxrt-dev
 Section: libdevel
 Architecture: any
-Depends: liborocos-ocl-lxrt-dev (= ${Source-Version}),
+Depends: liborocos-ocl-lxrt-dev,
       liborocos-ocl-io-lxrt-dev, liborocos-ocl-can-lxrt-dev, liborocos-ocl-comedi-lxrt-dev,
       liborocos-ocl-axes-lxrt-dev
-Description: Orocos Component Library with CORBA support - All packages
- A super package for Orocos Component Library with CORBA support
+Description: Orocos Component Library  - All packages
+ A super package for Orocos Component Library 
  .
  Development files.
 
@@ -29,11 +29,20 @@ Architecture: any
 Depends: liborocos-ocl-lxrt1.4 (= ${Source-Version}),
       liborocos-ocl-io-lxrt1.4, liborocos-ocl-can-lxrt1.4, liborocos-ocl-comedi-lxrt1.4,
       liborocos-ocl-axes-lxrt1.4
-Description: Orocos Component Library with CORBA support - All packages
- A super package for Orocos Component Library with CORBA support
+Description: Orocos Component Library  - All packages
+ A super package for Orocos Component Library 
  .
  Libraries.
 
+
+Package: liborocos-ocl-dev
+Section: libdevel
+Architecture: any
+Depends: 
+Description: Orocos Component Library 
+ Orocos Component Library 
+ .
+ Header files.
 
 Package: liborocos-ocl-lxrt-dev
 Section: libdevel
@@ -111,14 +120,14 @@ Package: liborocos-ocl-axes-lxrt-dev
 Section: libdevel
 Architecture: any
 Depends: liborocos-ocl-axes-lxrt1.4 (= ${Source-Version}), liborocos-ocl-lxrt-dev
-Description: Orocos component for axis control with CORBA support
+Description: Orocos component for axis control 
  Development files.
 
 Package: liborocos-ocl-axes-lxrt1.4
 Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: Orocos component for axis control with CORBA support
+Description: Orocos component for axis control 
  An alternative to the naxes components for controlling N axes independently.
  .
  Library and tools.
@@ -128,18 +137,18 @@ Package: orocos-ocl-gnulinux-bin
 Section: libdevel
 Architecture: any
 Depends: liborocos-ocl-gnulinux1.4 (= ${Source-Version})
-Description: Orocos Component Library with CORBA support - Binaries
+Description: Orocos Component Library  - Binaries
  This package contains the ctaskbrowser and deployment applications.
 
 
 Package: orocos-ocl-gnulinux-dev
 Section: libdevel
 Architecture: any
-Depends: liborocos-ocl-gnulinux-dev (= ${Source-Version}),
+Depends: liborocos-ocl-gnulinux-dev,
 	liborocos-ocl-io-gnulinux-dev, liborocos-ocl-can-gnulinux-dev, liborocos-ocl-comedi-gnulinux-dev,
 	liborocos-ocl-axes-gnulinux-dev
-Description: Orocos Component Library with CORBA support - All packages
- A super package for Orocos Component Library with CORBA support
+Description: Orocos Component Library  - All packages
+ A super package for Orocos Component Library 
  .
  Development files.
 
@@ -149,8 +158,8 @@ Architecture: any
 Depends: liborocos-ocl-gnulinux1.4 (= ${Source-Version}),
 	liborocos-ocl-io-gnulinux1.4, liborocos-ocl-can-gnulinux1.4, liborocos-ocl-comedi-gnulinux1.4,
 	liborocos-ocl-axes-gnulinux1.4
-Description: Orocos Component Library with CORBA support - All packages
- A super package for Orocos Component Library with CORBA support
+Description: Orocos Component Library  - All packages
+ A super package for Orocos Component Library 
  .
  Libraries.
 

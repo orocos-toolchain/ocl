@@ -13,6 +13,8 @@ IF ( BUILD_DEPLOYMENT )
 
     GLOBAL_ADD_COMPONENT( orocos-deployment ${SRCS} )
     GLOBAL_ADD_INCLUDE( ocl ${HPPS})
+
+    COMPONENT_ADD_LIBS( orocos-deployment "dl" )
      
     ADD_SUBDIRECTORY( tests )
 

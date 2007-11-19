@@ -10,7 +10,8 @@ IF ( BUILD_KRYPTON_TEST )
     # Add a test program
     GLOBAL_ADD_TEST( krypton ${SRCS} )
     # Use  TARGET_LINK_LIBRARIES( report libs... ) to add library deps.
-    TARGET_LINK_LIBRARIES( krypton orocos-taskbrowser orocos-krypton orocos-reporting ${OROCOS_RTT_LIBS} orocos-kdltk orocos-kdl ${OROCOS_RTT_LIBS})
+    PROGRAM_ADD_DEPS( krypton orocos-taskbrowser orocos-krypton orocos-reporting )
+    TARGET_LINK_LIBRARIES( krypton ${OROCOS_RTT_LIBS} orocos-kdltk orocos-kdl ${OROCOS_RTT_LIBS})
 
 
 ENDIF ( BUILD_KRYPTON_TEST )

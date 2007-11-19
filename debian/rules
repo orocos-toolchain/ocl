@@ -35,13 +35,13 @@ build.gnulinux.corba/Makefile: configure
 	dh_testdir
 # Add here commands to configure the package.
 	mkdir -p  build.gnulinux.corba
-	cd build.gnulinux.corba ;  CFLAGS="$(CFLAGS)" LDFLAGS="-Wl,-z,defs" cmake -DCMAKE_INSTALL_PREFIX=/usr -DOROCOS_INSTALL=/usr -C $(CURDIR)/debian/CMakeCanComedi.txt -DOROCOS_RTT_FLAVOR:STRING=gnulinux-corba  ..
+	cd build.gnulinux.corba ;  CFLAGS="$(CFLAGS)" LDFLAGS="-Wl,-z,defs" cmake -DCMAKE_INSTALL_PREFIX=/usr -DOROCOS_INSTALL=/usr -C $(CURDIR)/debian/CMakeCanComedi.txt -DOROCOS_TARGET:STRING=gnulinux  ..
 
 build.lxrt.corba/Makefile: configure
 	dh_testdir
 # Add here commands to configure the package.
 	mkdir -p  build.lxrt.corba
-	cd build.lxrt.corba ;  CFLAGS="$(CFLAGS)" LDFLAGS="-Wl,-z,defs" cmake -DCMAKE_INSTALL_PREFIX=/usr -DOROCOS_INSTALL=/usr -C $(CURDIR)/debian/CMakeCanComedi.txt -DOROCOS_RTT_FLAVOR:STRING=lxrt-corba -DCOMEDI_INSTALL=/usr/realtime  ..
+	cd build.lxrt.corba ;  CFLAGS="$(CFLAGS)" LDFLAGS="-Wl,-z,defs" cmake -DCMAKE_INSTALL_PREFIX=/usr -DOROCOS_INSTALL=/usr -C $(CURDIR)/debian/CMakeCanComedi.txt -DOROCOS_TARGET:STRING=lxrt -DCOMEDI_INSTALL=/usr/realtime  ..
 
 
 build: build-stamp
@@ -49,8 +49,8 @@ build-stamp:  build.gnulinux.corba/Makefile build.lxrt.corba/Makefile
 	dh_testdir
 
 # Add here commands to compile the package.
-	cd build.gnulinux.corba ; $(MAKE) VERBOSE=1
-	cd build.lxrt.corba ; $(MAKE) VERBOSE=1
+	cd build.gnulinux.corba ; $(MAKE) $(MAKE_FLAGS)
+	cd build.lxrt.corba ; $(MAKE) $(MAKE_FLAGS)
 	touch $@
 
 clean:
@@ -60,13 +60,6 @@ clean:
 
 # Add here commands to clean up after the build process.
 	rm -rf build*
-ifneq "$(wildcard /usr/share/misc/config.sub)" ""
-	cp -f /usr/share/misc/config.sub config.sub
-endif
-ifneq "$(wildcard /usr/share/misc/config.guess)" ""
-	cp -f /usr/share/misc/config.guess config.guess
-endif
-
 
 	dh_clean 
 

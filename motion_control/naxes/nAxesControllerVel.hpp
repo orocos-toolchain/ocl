@@ -68,7 +68,7 @@ namespace OCL
         virtual void shutdown();
         
     private:
-        void reset();
+        void resetAll();
         void resetAxis(int axis);
         
         unsigned int                               _num_axes;
@@ -77,7 +77,7 @@ namespace OCL
         std::vector<double>                        _position_meas_local, _position_desi_local, _velocity_desi_local, _velocity_out_local;
     protected:
         /// Method to reset the controller of all axes
-        RTT::Method<void(void)>                    _reset;
+        RTT::Method<void(void)>                    _reset_all;
         /**
          * Method to reset the controller of axis
          * 

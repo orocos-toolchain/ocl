@@ -18,3 +18,5 @@ OPTION( BUILD_HARDWARE "Build Hardware Components" OFF )
     ADD_SUBDIRECTORY( lias )
     ADD_SUBDIRECTORY( robotsimulation )
     ADD_SUBDIRECTORY( staubli )
+#    ADD_SUBDIRECTORY( performer_mk2 )
+    

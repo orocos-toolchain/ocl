@@ -12,7 +12,7 @@ IF ( BUILD_DEMOTOOL )
   GLOBAL_ADD_COMPONENT( orocos-demotool ${SRCS} )
   GLOBAL_ADD_INCLUDE( ocl ${HPPS})
 
-  TARGET_LINK_LIBRARIES( orocos-demotool orocos-wrench orocos-krypton
-  orocos-bfl orocos-kdl)
+  COMPONENT_ADD_LIBS( orocos-demotool wrapper_matrix ltir orocos-bfl orocos-kdl )
+  COMPONENT_ADD_DEPS( orocos-demotool orocos-wrench orocos-krypton )
 
 ENDIF ( BUILD_DEMOTOOL )

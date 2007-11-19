@@ -37,7 +37,7 @@ namespace OCL{
           _position_desi_local(num_axes),
           _velocity_desi_local(num_axes),
           _velocity_out_local(num_axes),
-          _reset( "reset", &MyType::reset, this),
+          _reset_all( "resetAll", &MyType::resetAll, this),
           _resetAxis( "resetAxis", &MyType::resetAxis, this),
           _position_meas("nAxesSensorPosition"),
           _velocity_desi("nAxesDesiredVelocity"),
@@ -57,8 +57,8 @@ namespace OCL{
         this->properties()->addProperty(&_controller_gain);
   
         //Adding Methods
-        this->methods()->addMethod( &_reset,"reset the controller");
-        this->methods()->addMethod( &_resetAxis,"reset the controller",
+        this->methods()->addMethod( &_reset_all,"reset all axes of the controller");
+        this->methods()->addMethod( &_resetAxis,"reset a single axis of the controller",
                                     "axis","axis to reset");  
         
         if(!marshalling()->readProperties(_propertyfile))
@@ -116,7 +116,7 @@ namespace OCL{
         _velocity_out.Set(_velocity_out_local);
     }
     
-    void nAxesControllerVel::reset()
+    void nAxesControllerVel::resetAll()
     {
         for(unsigned int i=0; i<_num_axes; i++)
             _is_initialized[i] = false;

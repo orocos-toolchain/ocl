@@ -10,7 +10,7 @@ IF ( BUILD_STAUBLI_TEST )
 
     INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/hardware/axes ${PROJECT_SOURCE_DIR}/hardware/comedi)
     LINK_DIRECTORIES(${PROJECT_BINARY_DIR}/hardware/staubli )
-    TARGET_LINK_LIBRARIES( staubli orocos-taskbrowser orocos-reporting orocos-staubli ${OROCOS_RTT_LIBS})
+    PROGRAM_ADD_DEPS( staubli orocos-taskbrowser orocos-reporting orocos-staubli )
 
 
 ENDIF ( BUILD_STAUBLI_TEST )

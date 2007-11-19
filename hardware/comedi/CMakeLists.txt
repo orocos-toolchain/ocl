@@ -14,19 +14,19 @@ IF ( BUILD_COMEDI )
     GLOBAL_ADD_INCLUDE( ocl/dev ${DEVHPPS} )
 
     IF ( COMEDI_INCLUDE_DIRS )
-      SET_TARGET_PROPERTIES( orocos-comedi PROPERTIES COMPILE_FLAGS "-I${COMEDI_INCLUDE_DIRS}")
+      SET_TARGET_PROPERTIES( orocos-comedi-${OROCOS_TARGET} PROPERTIES COMPILE_FLAGS "-I${COMEDI_INCLUDE_DIRS}")
     ENDIF ( COMEDI_INCLUDE_DIRS )
 
     #ADD_SUBDIRECTORY( tests )
 
     IF( OS_GNULINUX )
-    TARGET_LINK_LIBRARIES(orocos-comedi comedi)
-    OROCOS_PKGCONFIG_LIBS("-lcomedi")
+      COMPONENT_ADD_LIBS(orocos-comedi comedi)
+      #OROCOS_PKGCONFIG_LIBS("-lcomedi")
     ENDIF( OS_GNULINUX )
 
     IF( OS_LXRT )
-    TARGET_LINK_LIBRARIES(orocos-comedi kcomedilxrt)
-    OROCOS_PKGCONFIG_LIBS("-lkcomedilxrt")
+      COMPONENT_ADD_LIBS(orocos-comedi kcomedilxrt)
+      #OROCOS_PKGCONFIG_LIBS("-lkcomedilxrt")
     ENDIF( OS_LXRT )
 
 ENDIF ( BUILD_COMEDI )

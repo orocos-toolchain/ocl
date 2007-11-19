@@ -3,6 +3,7 @@
 #include <hardware/lias/BaseVelocityController.hpp>
 #include <hardware/wrench/WrenchSensor.hpp>
 #include <taskbrowser/TaskBrowser.hpp>
+#include <rtt/PeriodicActivity.hpp>
 
 #include "TestTcpTaskContext.hpp"
 

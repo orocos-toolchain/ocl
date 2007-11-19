@@ -14,6 +14,9 @@
 #ifndef LIASCLIENT_H
 #define LIASCLIENT_H
 
+#ifndef _REENTRANT
+#define _REENTRANT
+#endif
 //-----------------------------------------------------------------------------
 #include "ace/SOCK_Connector.h"
 #include "ace/Svc_Handler.h"

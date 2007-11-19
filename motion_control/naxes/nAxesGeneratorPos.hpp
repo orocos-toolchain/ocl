@@ -75,7 +75,7 @@ namespace OCL
     private:
         bool moveTo(const std::vector<double>& position, double time=0);
         bool moveFinished() const;
-        void reset();
+        void resetPosition();
         
         unsigned int                              _num_axes;
         std::string                               _propertyfile;
@@ -98,7 +98,7 @@ namespace OCL
          * Method that resets the generators desired position to the
          * measured position and the desired velocity to zero
          */
-        RTT::Method<void(void)>                   _reset;
+        RTT::Method<void(void)>                   _reset_position;
         /// DataPort containing the current measured position, shared
         /// with OCL::nAxesSensor.
         RTT::ReadDataPort< std::vector<double> >  _position_meas;

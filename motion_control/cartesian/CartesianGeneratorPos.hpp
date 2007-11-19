@@ -70,7 +70,7 @@ namespace OCL
     private:
         bool moveTo(KDL::Frame frame, double time=0);
         bool moveFinished() const;
-        void reset();
+        void resetPosition();
   
         const std::string                 _propertyfile;
         
@@ -94,7 +94,7 @@ namespace OCL
          * Method that resets the generators desired frame tho the
          *current measured frame and the desired twist to zero.
          */
-        RTT::Method<void(void)>           _reset;
+        RTT::Method<void(void)>           _reset_position;
         /// Dataport containing the current measured end-effector
         /// frame, shared with OCL::CartesianSensor
         RTT::ReadDataPort< KDL::Frame >   _position_meas;

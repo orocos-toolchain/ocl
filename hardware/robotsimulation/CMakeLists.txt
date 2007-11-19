@@ -4,7 +4,7 @@ IF( BUILD_SIM_ROB )
 
   GLOBAL_ADD_COMPONENT(orocos-simrob nAxesVelocityController.cpp)
   INCLUDE_DIRECTORIES(${PROJ_SOURCE_DIR}/hardware/axes)
-  TARGET_LINK_LIBRARIES( orocos-simrob orocos-axes)
+  COMPONENT_ADD_DEPS( orocos-simrob orocos-axes)
 
   GLOBAL_ADD_INCLUDE( ocl nAxesVelocityController.hpp)
 

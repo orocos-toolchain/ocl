@@ -5,4 +5,3 @@ usr/include/ocl/CartesianControllerVel.hpp
 usr/include/ocl/CartesianEffectorVel.hpp
 usr/include/ocl/CartesianGeneratorPos.hpp
 usr/include/ocl/CartesianSensor.hpp
-usr/lib/liborocos-cartesian-lxrt.so

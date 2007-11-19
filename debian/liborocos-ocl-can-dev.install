@@ -10,5 +10,3 @@ usr/include/ocl/can/CANRequest.hpp
 usr/include/ocl/can/NodeGuard.hpp
 usr/include/ocl/can/PCANController.hpp
 usr/include/ocl/can/SyncWriter.hpp
-usr/lib/liborocos-can-lxrt.so
-usr/lib/liborocos-pcan-lxrt.so

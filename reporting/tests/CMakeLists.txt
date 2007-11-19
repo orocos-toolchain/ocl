@@ -7,11 +7,11 @@ IF ( BUILD_REPORTING_TEST )
 
     GLOBAL_ADD_TEST( report main.cpp )
     # Use  TARGET_LINK_LIBRARIES( report libs... ) to add library deps.
-    TARGET_LINK_LIBRARIES( report orocos-taskbrowser orocos-reporting  ${OROCOS_RTT_LIBS})
+    PROGRAM_ADD_DEPS( report orocos-taskbrowser orocos-reporting )
 
     GLOBAL_ADD_TEST( tcpreport tcpmain.cpp )
     # Use  TARGET_LINK_LIBRARIES( report libs... ) to add library deps.
-    TARGET_LINK_LIBRARIES( tcpreport orocos-taskbrowser orocos-reporting  ${OROCOS_RTT_LIBS})
+    PROGRAM_ADD_DEPS( tcpreport orocos-taskbrowser orocos-reporting )
 
 ENDIF ( BUILD_REPORTING_TEST )
 

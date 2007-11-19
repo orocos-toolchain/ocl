@@ -7,4 +7,3 @@ usr/include/ocl/nAxesGeneratorPos.hpp
 usr/include/ocl/nAxesGeneratorVel.hpp
 usr/include/ocl/nAxesSensor.hpp
 usr/include/ocl/ReferenceSensor.hpp
-usr/lib/liborocos-naxes-lxrt.so

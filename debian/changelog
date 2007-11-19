@@ -1,3 +1,9 @@
+orocos-ocl (1.4.0-1) unstable; urgency=low
+
+  * Upgrade OCL to RTT 1.4.0, use the same major.minor version number.
+
+ -- Peter Soetens <peter.soetens@fmtc.be>  Tue, 13 Nov 2007 12:10:40 +0100
+
 orocos-ocl (0.4.1-1) unstable; urgency=low
 
   * Initial release

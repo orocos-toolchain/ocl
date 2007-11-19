@@ -9,7 +9,7 @@ IF ( BUILD_TASKBROWSER_TEST )
     # Add a test program
     GLOBAL_ADD_TEST( taskb ${SRCS} )
     # Use  TARGET_LINK_LIBRARIES( report libs... ) to add library deps.
-    TARGET_LINK_LIBRARIES( taskb orocos-taskbrowser ${OROCOS_RTT_LIBS})
+    PROGRAM_ADD_DEPS( taskb orocos-taskbrowser)
 
 ENDIF ( BUILD_TASKBROWSER_TEST )
 

@@ -2,7 +2,6 @@
 #include <rtt/Attribute.hpp>
 #include <rtt/Ports.hpp>
 #include <kdl/frames.hpp>
-#include <kdl/toolkit.hpp>
 #include <math.h>
 
 using namespace RTT;

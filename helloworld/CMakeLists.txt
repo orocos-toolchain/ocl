@@ -8,6 +8,7 @@ IF ( BUILD_HELLOWORLD )
 
     ADD_EXECUTABLE( helloworld ${SRCS} )
 
-    TARGET_LINK_LIBRARIES( helloworld orocos-taskbrowser ${OROCOS_RTT_LIBS} )
+    TARGET_LINK_LIBRARIES( helloworld ${OROCOS_RTT_LIBS} )
+    PROGRAM_ADD_DEPS( helloworld orocos-taskbrowser )
     
 ENDIF ( BUILD_HELLOWORLD )

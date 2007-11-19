@@ -10,4 +10,3 @@ usr/include/ocl/dev/HomePositionDetector.hpp
 usr/include/ocl/dev/IncrementalEncoderSensor.hpp
 usr/include/ocl/dev/SimulationAxis.hpp
 usr/include/ocl/dev/TorqueSimulationAxis.hpp
-usr/lib/liborocos-axes-lxrt.so

@@ -33,7 +33,7 @@ namespace OCL
       _propertyfile(propertyfile),
       _moveTo( "moveTo", &CartesianGeneratorPos::moveTo,
                &CartesianGeneratorPos::moveFinished, this),
-      _reset( "reset", &CartesianGeneratorPos::reset, this),
+      _reset_position( "resetPosition", &CartesianGeneratorPos::resetPosition, this),
       _position_meas("CartesianSensorPosition"),
       _position_desi("CartesianDesiredPosition"),
       _velocity_desi("CartesianDesiredVelocity"),
@@ -58,7 +58,7 @@ namespace OCL
                                   "time", "minimum time to execute trajectory" );
     
     //Adding Methods
-    this->methods()->addMethod( &_reset, "Reset generator" );  
+    this->methods()->addMethod( &_reset_position, "Reset generator's position" );  
         
     // Instantiate Motion Profiles
     for( unsigned int i=0; i<6; i++)
@@ -173,7 +173,7 @@ namespace OCL
   }
   
   
-  void CartesianGeneratorPos::reset()
+  void CartesianGeneratorPos::resetPosition()
   {
     _position_desi_local = _position_meas.Get();
     SetToZero(_velocity_desi_local);

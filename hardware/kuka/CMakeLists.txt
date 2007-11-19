@@ -11,16 +11,17 @@ IF ( BUILD_KUKA )
   
   GLOBAL_ADD_COMPONENT( orocos-kuka ${SRCS} )
   INCLUDE_DIRECTORIES(${PROJ_SOURCE_DIR}/hardware/axes)
-  TARGET_LINK_LIBRARIES( orocos-kuka orocos-axes orocos-kdl)
+  COMPONENT_ADD_DEPS( orocos-kuka orocos-axes )
+  COMPONENT_ADD_LIBS( orocos-kuka orocos-kdl)
   
   IF ( BUILD_COMEDI )
     INCLUDE_DIRECTORIES(${PROJ_SOURCE_DIR}/hardware/comedi)
-    TARGET_LINK_LIBRARIES( orocos-kuka orocos-comedi )
+    COMPONENT_ADD_DEPS( orocos-kuka orocos-comedi )
   ENDIF ( BUILD_COMEDI )
   
   IF ( BUILD_APCI )
     INCLUDE_DIRECTORIES(${PROJ_SOURCE_DIR}/hardware/apci )
-    TARGET_LINK_LIBRARIES( orocos-kuka orocos-apci )
+    COMPONENT_ADD_DEPS( orocos-kuka orocos-apci )
   ENDIF ( BUILD_APCI )
   
   GLOBAL_ADD_INCLUDE( ocl ${HPPS})

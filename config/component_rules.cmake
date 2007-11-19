@@ -16,6 +16,31 @@ MACRO( GLOBAL_ADD_INCLUDE COMPONENT_LOCATION )
   INSTALL_FILES( /include/${COMPONENT_LOCATION} FILES ${ARGN})
 ENDMACRO( GLOBAL_ADD_INCLUDE COMPONENT_LOCATION )
 
+# Link a component library with an external library (qt3, gl, readline,....)
+# Usage: COMPONENT_ADD_LIBS( orocos-taskbrowser readline ncurses )
+MACRO( COMPONENT_ADD_LIBS COMPONENT_NAME  )
+  foreach( lib ${ARGN} )
+    TARGET_LINK_LIBRARIES( ${COMPONENT_NAME}-${OROCOS_TARGET} ${lib} )
+  endforeach( lib ${ARGN} )
+ENDMACRO( COMPONENT_ADD_LIBS COMPONENT_NAME )
+
+# Link a component library with another component library
+# Usage: COMPONENT_ADD_DEPS( orocos-taskbrowser orocos-reporting )
+MACRO( COMPONENT_ADD_DEPS COMPONENT_NAME )
+  foreach( lib ${ARGN} )
+    TARGET_LINK_LIBRARIES( ${COMPONENT_NAME}-${OROCOS_TARGET} ${lib}-${OROCOS_TARGET} )
+  endforeach( lib ${ARGN} )
+ENDMACRO( COMPONENT_ADD_DEPS COMPONENT_NAME )
+
+# Link a program with a component library
+# Usage: PROGRAM_ADD_DEPS( taskbrowser-test orocos-reporting )
+MACRO( PROGRAM_ADD_DEPS PROGRAM_NAME )
+  foreach( lib ${ARGN} )
+    TARGET_LINK_LIBRARIES( ${PROGRAM_NAME} ${lib}-${OROCOS_TARGET} )
+  endforeach( lib ${ARGN} )
+ENDMACRO( PROGRAM_ADD_DEPS PROGRAM_NAME )
+
+
 #
 # Components should add themselves by calling 'GLOBAL_ADD_COMPONENT' 
 # instead of 'ADD_LIBRARY' in CMakeLists.txt.
@@ -35,6 +60,8 @@ MACRO( GLOBAL_ADD_COMPONENT COMPONENT_NAME )
 #     #INSTALL_TARGETS( /bin ${COMPONENT_NAME} )
 #     TARGET_LINK_LIBRARIES( ${COMPONENT_NAME} ${OROCOS_RTT_LIBS} )
 #  ENDIF(STANDALONE_COMPONENTS)
+
+  SET( LIB_NAME "${COMPONENT_NAME}-${OROCOS_TARGET}")
   
   IF(GLOBAL_LIBRARY)
      MESSAGE( ERROR "BROKEN: Adding ${COMPONENT_NAME} to global sources:[ ${GLOBAL_LIBRARY_SRCS} ]" )
@@ -44,32 +71,35 @@ MACRO( GLOBAL_ADD_COMPONENT COMPONENT_NAME )
   IF(LOCAL_LIBRARY)
     IF (OROCOS_RTT_1.4)
       MESSAGE( "Building Shared library for ${COMPONENT_NAME}" )
-      ADD_LIBRARY( ${COMPONENT_NAME} SHARED ${ARGN} )
-      SET_TARGET_PROPERTIES( ${COMPONENT_NAME} PROPERTIES 
+      ADD_LIBRARY( ${LIB_NAME} SHARED ${ARGN} )
+      SET_TARGET_PROPERTIES( ${LIB_NAME} PROPERTIES 
 	DEFINE_SYMBOL OCL_DLL_EXPORT 
 	SOVERSION ${OCL_VERSION}
 	)
-      TARGET_LINK_LIBRARIES( ${COMPONENT_NAME} orocos-rtt-${OROCOS_TARGET} )
+      foreach(lib ${OROCOS_RTT_LIBS})
+ 	TARGET_LINK_LIBRARIES( ${LIB_NAME} ${lib} )
+      endforeach(lib in ${OROCOS_RTT_LIBS})
+
     ELSE (OROCOS_RTT_1.4)
       IF (OROCOS_RTT_1.2)
 	MESSAGE( "Building Shared library for ${COMPONENT_NAME}" )
-	ADD_LIBRARY( ${COMPONENT_NAME} SHARED ${ARGN} )
-	SET_TARGET_PROPERTIES( ${COMPONENT_NAME} PROPERTIES 
+	ADD_LIBRARY( ${LIB_NAME} SHARED ${ARGN} )
+	SET_TARGET_PROPERTIES( ${LIB_NAME} PROPERTIES 
 	  DEFINE_SYMBOL OCL_DLL_EXPORT 
 	  SOVERSION ${OCL_VERSION}
 	  )
-	TARGET_LINK_LIBRARIES( ${COMPONENT_NAME} orocos-rtt )
+	TARGET_LINK_LIBRARIES( ${LIB_NAME} orocos-rtt )
       ELSE (OROCOS_RTT_1.2)
 	MESSAGE( "Building Static library for ${COMPONENT_NAME}" )
-	ADD_LIBRARY( ${COMPONENT_NAME} STATIC ${ARGN} )
+	ADD_LIBRARY( ${LIB_NAME} STATIC ${ARGN} )
       ENDIF (OROCOS_RTT_1.2)
     ENDIF (OROCOS_RTT_1.4)
 
-    INSTALL_TARGETS( /lib ${COMPONENT_NAME} )
+    INSTALL_TARGETS( /lib ${LIB_NAME} )
     #The later a component is added, the earlier it apears in the -l list.
-    SET (ENV{SELECTED_LIBS} "-l${COMPONENT_NAME} $ENV{SELECTED_LIBS} ")
+    SET (ENV{SELECTED_LIBS} "-l${LIB_NAME} $ENV{SELECTED_LIBS} ")
     #This is an ugly work around
-    #FILE(APPEND ${PROJ_BINARY_DIR}/bibs.txt "-l${COMPONENT_NAME} ")
+    #FILE(APPEND ${PROJ_BINARY_DIR}/bibs.txt "-l${LIB_NAME} ")
 
     LINK_DIRECTORIES( ${CMAKE_CURRENT_BINARY_DIR} )
     SET (ENV{SELECTED_DIRS} "$ENV{SELECTED_DIRS} ${CMAKE_CURRENT_SOURCE_DIR}")
@@ -112,8 +142,8 @@ ENDMACRO( GLOBAL_ADD_TEST TEST_NAME )
 #
 MACRO( GLOBAL_ADD_DEPENDENCY  )
   
-    SEPARATE_ARGUMENTS( NARGS )
-    SET( COMPONENTS_LIBRARY_DEPS "${COMPONENTS_LIBRARY_DEPS};${NARGS}" )
+    SEPARATE_ARGUMENTS( ARGN )
+    SET( COMPONENTS_LIBRARY_DEPS "${COMPONENTS_LIBRARY_DEPS};${ARGN}" )
 
 ENDMACRO( GLOBAL_ADD_DEPENDENCY  )
 
@@ -182,22 +212,22 @@ ENDMACRO( OROCOS_PKGCONFIG_CFLAGS TO_ADD)
 # Use this to add an include path which get written to the .pc file
 MACRO( OROCOS_PKGCONFIG_INCPATH TO_ADD)
   foreach( ITEM ${TO_ADD} )
-  if ( NOT "${ITEM}" STREQUAL "/usr/include" AND NOT "${ITEM}" STREQUAL "/usr/local/include" )
+  if ( NOT "${ITEM}" STREQUAL "/usr/include" AND NOT "${ITEM}" STREQUAL "/usr/local/include")
     SET( ENV{OROCOS_COMPONENTS_CFLAGS} "$ENV{OROCOS_COMPONENTS_CFLAGS} -I${ITEM}")
-  else ( NOT "${ITEM}" STREQUAL "/usr/include" AND NOT "${ITEM}" STREQUAL "/usr/local/include" )
-    MESSAGE( "Skipping include path ${ITEM}")
-  endif ( NOT "${ITEM}" STREQUAL "/usr/include" AND NOT "${ITEM}" STREQUAL "/usr/local/include" )
+  else ( NOT "${ITEM}" STREQUAL "/usr/include" AND NOT "${ITEM}" STREQUAL "/usr/local/include")
+    MESSAGE( "Skipping include path '${ITEM}'")
+  endif ( NOT "${ITEM}" STREQUAL "/usr/include" AND NOT "${ITEM}" STREQUAL "/usr/local/include")
   endforeach( ITEM )
 ENDMACRO( OROCOS_PKGCONFIG_INCPATH TO_ADD)
 
 # Use this to add a library path which get written to the .pc file
 MACRO( OROCOS_PKGCONFIG_LIBPATH TO_ADD)
   foreach( ITEM ${TO_ADD} )
-  if ( NOT "${ITEM}" STREQUAL "/usr/lib" AND NOT "${ITEM}" STREQUAL "/usr/local/lib" )
+  if ( NOT "${ITEM}" STREQUAL "/usr/lib" AND NOT "${ITEM}" STREQUAL "/usr/local/lib")
     SET( ENV{OROCOS_COMPONENTS_LINKFLAGS} "$ENV{OROCOS_COMPONENTS_LINKFLAGS} -L${ITEM}")
-  else ( NOT "${ITEM}" STREQUAL "/usr/lib" AND NOT "${ITEM}" STREQUAL "/usr/local/lib" )
+  else ( NOT "${ITEM}" STREQUAL "/usr/lib" AND NOT "${ITEM}" STREQUAL "/usr/local/lib")
     MESSAGE( "Skipping lib path ${ITEM}")
-  endif ( NOT "${ITEM}" STREQUAL "/usr/lib" AND NOT "${ITEM}" STREQUAL "/usr/local/lib" )
+  endif ( NOT "${ITEM}" STREQUAL "/usr/lib" AND NOT "${ITEM}" STREQUAL "/usr/local/lib")
   endforeach( ITEM )
 ENDMACRO( OROCOS_PKGCONFIG_LIBPATH TO_ADD)
 

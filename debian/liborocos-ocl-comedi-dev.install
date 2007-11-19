@@ -6,4 +6,3 @@ usr/include/ocl/dev/ComediSubDeviceAOut.hpp
 usr/include/ocl/dev/ComediSubDeviceDIn.hpp
 usr/include/ocl/dev/ComediSubDeviceDOut.hpp
 usr/include/ocl/dev/ComediThreadScope.hpp
-usr/lib/liborocos-comedi-lxrt.so

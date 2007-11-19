@@ -11,7 +11,7 @@ IF ( BUILD_CAMERA )
 
     GLOBAL_ADD_COMPONENT( orocos-camera ${SRCS} )
     GLOBAL_ADD_INCLUDE( ocl ${HPPS})
-    TARGET_LINK_LIBRARIES(orocos-camera ${OpenCV_LIBRARIES}
+    COMPONENT_ADD_LIBS( orocos-camera ${OpenCV_LIBRARIES}
       ${GTHREAD_LIBS} ${GTK_LIBS} 
       jpeg
       raw1394

@@ -11,7 +11,8 @@ IF ( BUILD_LASERDISTANCE_TEST )
     # Add a test program
     GLOBAL_ADD_TEST( laserdistance ${SRCS} )
     # Use  TARGET_LINK_LIBRARIES( report libs... ) to add library deps.
-    TARGET_LINK_LIBRARIES( laserdistance ${COMEDI_LIBS} orocos-taskbrowser orocos-reporting ${OROCOS_RTT_LIBS} ${COMEDI_LIBS} orocos-comedi orocos-laserdistance ${OROCOS_RTT_LIBS} ${COMEDI_LIBS} orocos-comedi)
+    PROGRAM_ADD_DEPS( laserdistance orocos-taskbrowser orocos-reporting orocos-laserdistance orocos-comedi )
+    TARGET_LINK_LIBRARIES( laserdistance ${COMEDI_LIBS} ${OROCOS_RTT_LIBS} )
 
 ENDIF ( BUILD_LASERDISTANCE_TEST )
 ENDIF ( BUILD_TESTS)
