@@ -799,7 +799,7 @@ namespace OCL
         for ( CompList::iterator cit = comps.begin(); cit != comps.end(); ++cit) {
             ComponentData* it = &(cit->second);
             if ( it->loaded ) {
-                if ( it->instance->getTaskState() == TaskCore::Stopped && it->instance->cleanup() ) {
+                if ( it->instance->getTaskState() < TaskCore::Stopped || it->instance->cleanup() ) {
                     log(Info) << "Cleaned up "<< it->instance->getName() <<endlog();
                 } else {
                     log(Error) << "Could not cleanup loaded Component "<< it->instance->getName() << " (not Stopped)"<<endlog();
