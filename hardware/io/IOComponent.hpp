@@ -39,6 +39,10 @@ namespace OCL
      *
      * The Comedi package contains implementations of these interfaces
      * and thus devices supported by comedi can be added to this component.
+     *
+     * This component uses the nameservers of the RTT::AnalogInInterface, RTT::AnalogOutInterface,
+     * RTT::DigitalInInterface and RTT::DigitalOutInterface classes, thus you
+     * must register your device with a name.
      */
     class IOComponent
         : public TaskContext
@@ -128,11 +132,16 @@ namespace OCL
          * inputs.
          *
          * @param Portname The name of the interface, which will also be given to the DataPort.
-         * @param input   The AnalogInInterface for reading the input.
+         * @param inputname   The AnalogInInterface for reading the input.
          */
-        bool addAnalogInInterface( const std::string& Portname, AnalogInInterface<unsigned int>* input)
+        bool addAnalogInInterface( const std::string& Portname, const std::string& inputname)
         {
             Logger::In("addAnalogInInterface");
+            AnalogInInterface<unsigned int>* input =  AnalogInInterface<unsigned int>::nameserver.getObject(inputname);
+            if ( !input ) {
+                log(Error) << "AnalogIn: "<< inputname <<" not found."<<endlog();
+                return false;
+            }
             if ( ai_interface.count(Portname) != 0 ){
                 log(Error) << "Portname: "<< Portname <<" already in use."<<endlog();
                 return false;
@@ -187,13 +196,19 @@ namespace OCL
          * The resulting value is : value = value_raw*scale + offset
          *
          * @param Portname The name of the DataObject.
-         * @param input   The AnalogInInterface for reading the input.
+         * @param inputname   The AnalogInInterface for reading the input.
          * @param channel The channel of the input.
          */
-        bool addAnalogInput( const std::string& Portname, AnalogInInterface<unsigned int>* input, int channel)
+        bool addAnalogInput( const std::string& Portname, const std::string& inputname, int channel)
         {
             if ( a_in.count(Portname) != 0  || this->isRunning() )
                 return false;
+
+            AnalogInInterface<unsigned int>* input =  AnalogInInterface<unsigned int>::nameserver.getObject(inputname);
+            if ( !input ) {
+                log(Error) << "AnalogIn: "<< inputname <<" not found."<<endlog();
+                return false;
+            }
 
             a_in[Portname] =
                 boost::make_tuple( new AnalogInput<unsigned int>( input, channel ),
@@ -239,16 +254,21 @@ namespace OCL
          * The resulting value is : value = value_raw*scale + offset
          *
          * @param virt_channel The virtual channel (in software).
-         * @param input   The AnalogInInterface for reading the input.
+         * @param inputname   The AnalogInInterface for reading the input.
          * @param channel The physical channel of the input (in hardware).
          * @param offset  The offset to be added to the converted value of the input.
          * @param scale   Conversion factor for the raw input value.
          */
-        bool addInputChannel(int virt_channel, AnalogInInterface<unsigned int>* input, int channel )
+        bool addInputChannel(int virt_channel, const std::string& inputname, int channel )
         {
             if ( inchannels[virt_channel] != 0 || this->isRunning() )
                 return false;
 
+            AnalogInInterface<unsigned int>* input =  AnalogInInterface<unsigned int>::nameserver.getObject(inputname);
+            if ( !input ) {
+                log(Error) << "AnalogIn: "<< inputname <<" not found."<<endlog();
+                return false;
+            }
             ++usingInChannels;
 
             inchannels[virt_channel] = new AnalogInput<unsigned int>( input, channel ) ;
@@ -278,14 +298,20 @@ namespace OCL
          * interface.
          *
          * @param name    The name of the Digital Input.
-         * @param input   The DigitalInInterface for reading the input.
+         * @param inputname   The DigitalInInterface for reading the input.
          * @param channel The channel of the input.
          * @param invert  True if the input must be inverted, false(default) otherwise.
          */
-        bool addDigitalInput( const std::string& name, DigitalInInterface* input, int channel, bool invert=false)
+        bool addDigitalInput( const std::string& name, const std::string& inputname, int channel, bool invert=false)
         {
             if ( d_in.count(name) != 0 || this->isRunning() )
                 return false;
+
+            DigitalInInterface* input =  DigitalInInterface::nameserver.getObject(inputname);
+            if ( !input ) {
+                log(Error) << "DigitalIn: "<< inputname <<" not found."<<endlog();
+                return false;
+            }
 
             d_in[name] = new DigitalInput( input, channel, invert );
 
@@ -315,11 +341,16 @@ namespace OCL
          * inputs.
          *
          * @param Portname The name of the interface, which will also be given to the DataPort.
-         * @param input   The AnalogOutInterface for reading the input.
+         * @param outputname   The AnalogOutInterface for reading the input.
          */
-        bool addAnalogOutInterface( const std::string& Portname, AnalogOutInterface<unsigned int>* input)
+        bool addAnalogOutInterface( const std::string& Portname, const std::string& outputname)
         {
             Logger::In("addAnalogOutInterface");
+            AnalogOutInterface<unsigned int>* output =  AnalogOutInterface<unsigned int>::nameserver.getObject(outputname);
+            if ( !output ) {
+                log(Error) << "AnalogOut: "<< outputname <<" not found."<<endlog();
+                return false;
+            }
             if ( ao_interface.count(Portname) != 0 ){
                 log(Error) << "Portname: "<< Portname <<" already in use."<<endlog();
                 return false;
@@ -330,7 +361,7 @@ namespace OCL
             }
 
             ao_interface[Portname] =
-                std::make_pair(input, new ReadDataPort<std::vector<double> >(Portname) );
+                std::make_pair(output, new ReadDataPort<std::vector<double> >(Portname) );
 
             this->ports()->addPort( ao_interface[Portname].second, "Analog Output value.");
 
@@ -368,15 +399,21 @@ namespace OCL
          * @brief Add an AnalogOutput which reads from an Output DataObject.
          * 
          * @param portname    The portname of the DataObject to read.
-         * @param output  The Analog Device to write to.
+         * @param outputname  The Analog Device to write to.
          * @param channel The channel of the Device to write to.
          * 
          * @return true on success, false otherwise 
          */
-        bool addAnalogOutput( const std::string& portname, AnalogOutInterface<unsigned int>* output, int channel )
+        bool addAnalogOutput( const std::string& portname, const std::string& outputname, int channel )
         {
             if ( a_out.count(portname) != 0 || this->isRunning() )
                 return false;
+
+            AnalogOutInterface<unsigned int>* output =  AnalogOutInterface<unsigned int>::nameserver.getObject(outputname);
+            if ( !output ) {
+                log(Error) << "AnalogOut: "<< outputname <<" not found."<<endlog();
+                return false;
+            }
 
             a_out[portname] = std::make_pair( new AnalogOutput<unsigned int>( output, channel ), new ReadDataPort<double>(portname) );
 
@@ -412,15 +449,22 @@ namespace OCL
          * @brief Add a virtual channel for reading an analog value from the OutputDataObject
          * 
          * @param virt_channel The Channel number of the DataObject.
-         * @param output       The Device to write the data to.
+         * @param outputname       The Device to write the data to.
          * @param channel      The channel of the device to use.
          * 
          * @return true on success, false otherwise.
          */
-        bool addOutputChannel( int virt_channel, AnalogOutInterface<unsigned int>* output, int channel )
+        bool addOutputChannel( int virt_channel, const std::string& outputname, int channel )
         {
             if ( outchannels[virt_channel] != 0 || this->isRunning() )
                 return false;
+
+            AnalogOutInterface<unsigned int>* output =  AnalogOutInterface<unsigned int>::nameserver.getObject(outputname);
+            if ( !output ) {
+                log(Error) << "AnalogOut: "<< outputname <<" not found."<<endlog();
+                return false;
+            }
+
 
             outchannels[virt_channel] = new AnalogOutput<unsigned int>( output, channel );
             ++usingOutChannels;
@@ -447,13 +491,19 @@ namespace OCL
          * @brief Add a complete DigitalOutInterface.
          * 
          * @param name    The base name of the DigitalOutputs. Their name will be appended with a number.
-         * @param output  The Device to write to.
+         * @param outputname  The Device to write to.
          * 
          */
-        bool addDigitalOutInterface( const std::string& name, DigitalOutInterface* output)
+        bool addDigitalOutInterface( const std::string& name, const std::string& outputname)
         {
             if ( this->isRunning() )
                 return false;
+
+            DigitalOutInterface* output =  DigitalOutInterface::nameserver.getObject(outputname);
+            if ( !output ) {
+                log(Error) << "DigitalOut: "<< outputname <<" not found."<<endlog();
+                return false;
+            }
 
             std::stringstream name_number;
             for(unsigned int i=0; i != output->nbOfOutputs(); ++i) {
@@ -496,15 +546,21 @@ namespace OCL
          * @brief Add a single DigitalOutput.
          * 
          * @param name    The name of the DigitalOutput.
-         * @param output  The Device to write to.
+         * @param outputname  The Device to write to.
          * @param channel The channel/bit of the device to use
          * @param invert  Invert the output or not.
          * 
          */
-        bool addDigitalOutput( const std::string& name, DigitalOutInterface* output, int channel, bool invert=false)
+        bool addDigitalOutput( const std::string& name, const std::string& outputname, int channel, bool invert=false)
         {
             if ( d_out.count(name) != 0 || this->isRunning() )
                 return false;
+
+            DigitalOutInterface* output =  DigitalOutInterface::nameserver.getObject(outputname);
+            if ( !output ) {
+                log(Error) << "DigitalOut: "<< outputname <<" not found."<<endlog();
+                return false;
+            }
 
             d_out[name] = new DigitalOutput( output, channel, invert );
 
