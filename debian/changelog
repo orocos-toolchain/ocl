@@ -1,3 +1,10 @@
+orocos-ocl (1.4.0-2) unstable; urgency=low
+
+  * Fix missing headers in packages and missing dependencies
+  * Set VERSION and SOVERSION correctly
+
+ -- Peter Soetens <peter.soetens@fmtc.be>  Wed, 21 Nov 2007 08:32:12 +0100
+
 orocos-ocl (1.4.0-1) unstable; urgency=low
 
   * Upgrade OCL to RTT 1.4.0, use the same major.minor version number.

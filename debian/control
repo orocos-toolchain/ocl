@@ -8,7 +8,7 @@ Section: libs
 Package: orocos-ocl-lxrt-bin
 Section: libdevel
 Architecture: any
-Depends: liborocos-ocl-lxrt1.4 (= ${Source-Version}), tao-naming, libncurses5, libreadline5
+Depends: liborocos-ocl-lxrt1.4 (= ${Source-Version}), liborocos-rtt-corba-lxrt1.4, tao-naming
 Description: Orocos Component Library  - Binaries
  This package contains the ctaskbrowser, cdeployer and deployer applications.
 
@@ -84,7 +84,7 @@ Package: liborocos-ocl-lxrt-dev
 Section: libdevel
 Architecture: any
 Depends: liborocos-ocl-lxrt1.4 (= ${Source-Version}), liborocos-rtt-lxrt-dev ( >= 1.4 ),
-     liborocos-ocl-dev
+     liborocos-ocl-dev, libncurses5-dev, libreadline5-dev
 Description: Orocos Component Library 
  Orocos Component Library 
  .
@@ -173,7 +173,7 @@ Description: Orocos component for axis control
 Package: orocos-ocl-gnulinux-bin
 Section: libdevel
 Architecture: any
-Depends: liborocos-ocl-gnulinux1.4 (= ${Source-Version}), tao-naming, libncurses5, libreadline5
+Depends: liborocos-ocl-gnulinux1.4 (= ${Source-Version}), liborocos-rtt-corba-gnulinux1.4, tao-naming
 Description: Orocos Component Library  - Binaries
  This package contains the ctaskbrowser and deployment applications.
 
@@ -205,7 +205,7 @@ Package: liborocos-ocl-gnulinux-dev
 Section: libdevel
 Architecture: any
 Depends: liborocos-ocl-gnulinux1.4 (= ${Source-Version}), liborocos-rtt-gnulinux-dev ( >= 1.4 ),
-     liborocos-ocl-dev
+     liborocos-ocl-dev, libncurses5-dev, libreadline5-dev
 Description: Orocos Component Library 
  Orocos Component Library 
  .
