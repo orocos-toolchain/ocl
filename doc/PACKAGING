@@ -1,8 +1,8 @@
 Orocos Components can be packaged using cpack or using standard
-packaging tools.
+packaging tools, or as a Debian package.
 
-1. Using cpack
-==============
+1. Using cpack [not recommended]
+================================
 
 * Make sure you have cmake 2.4 or newer, since older releases do
   not include cpack
@@ -42,3 +42,10 @@ C. do 'cpack -G TBZ2' or similar, which allows finer tuning.
 
   before invoking 'make install'
 * Proceed as your packaging format requires.
+
+3. Using Debian
+===============
+
+* From the orocos-ocl-<version> directory, type:
+  dpkg-buildpackage -rfakeroot -tc -sa
+* The .deb packages can be found in the parent directory.

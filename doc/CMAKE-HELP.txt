@@ -74,10 +74,30 @@ MACRO( GLOBAL_ADD_COMPONENT COMPONENT_NAME )
 #
 MACRO( GLOBAL_ADD_TEST TEST_NAME )
 
+#
+# Components supply header files which should be included when 
+# using these components. Each component should use this macro
+# to supply its header-files.
+#
+# Usage: GLOBAL_ADD_INCLUDE( RELATIVE_LOCATION hpp1, hpp2 ...)
+MACRO( GLOBAL_ADD_INCLUDE COMPONENT_LOCATION )
+
+# Link a component library with an external library (qt3, gl, readline,....)
+# Usage: COMPONENT_ADD_LIBS( orocos-taskbrowser readline ncurses )
+MACRO( COMPONENT_ADD_LIBS COMPONENT_NAME  )
+
+# Link a component library with another component library
+# Usage: COMPONENT_ADD_DEPS( orocos-taskbrowser orocos-reporting )
+MACRO( COMPONENT_ADD_DEPS COMPONENT_NAME )
+
+# Link a program with a component library
+# Usage: PROGRAM_ADD_DEPS( taskbrowser-test orocos-reporting )
+MACRO( PROGRAM_ADD_DEPS PROGRAM_NAME )
 
 In addition, you can use the traditional CMake commmands, knowing that
-COMPONENT_NAME is a library and TEST_NAME is an executable. Set your
-editor\'s mode to 'shell-script' highlighting for better syntax highlighting.
+COMPONENT_NAME is a library with -${OROCOS_TARGET} as suffix and
+TEST_NAME is an executable. Set your editor's mode to 'shell-script'
+highlighting for better syntax highlighting.
 
 To add a component's directory to the build system, see the bottom of
 the top-level CMakeLists.txt for adding it with ADD_SUBDIRECTORY and
