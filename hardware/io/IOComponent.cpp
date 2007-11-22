@@ -46,6 +46,17 @@ namespace OCL
                                     "PortName", "The name of the port to create.",
                                     "Outputname", "The name of the AnalogOutInterface device to use.");
 
+        this->methods()->addMethod( method( "addInputChannel", &IOComponent::addInputChannel, this),
+                                    "Add an analog input signal into InputValues",
+                                    "Pos", "The position of the signal in ChannelValues.",
+                                    "InputName", "The name of the AnalogInInterface device to use.",
+                                    "Channel", "The channel of the device to use.");
+        this->methods()->addMethod( method( "addOutputChannel", &IOComponent::addOutputChannel, this),
+                                    "Add an analog input signal into OutputValues",
+                                    "Pos", "The position of the signal in ChannelValues.",
+                                    "OutputName", "The name of the AnalogOutInterface device to use.",
+                                    "Channel", "The channel of the device to use.");
+
         // Digital/Analog querries
         this->methods()->addMethod( method( "switchOn", &IOComponent::switchOn, this),
                                     "Switch A Digital Output on",
