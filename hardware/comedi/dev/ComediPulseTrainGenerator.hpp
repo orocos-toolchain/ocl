@@ -85,7 +85,8 @@ namespace RTT
     psecs _pulse_width;
     psecs _pulse_period;
     /// Smallest step (related to the chosen timebase on the board)
-    psecs _smallest_step;
+    /// This value is not certain to be an integer, even in pico seconds.
+    double _smallest_step;
     bool _running;
   };
 

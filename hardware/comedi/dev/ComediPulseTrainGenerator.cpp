@@ -66,7 +66,8 @@ namespace RTT
                          << " -> There will be a rounding error" << endlog();
         }
         */
-        return picos / _smallest_step;
+        // rounding:
+        return (unsigned int)round( double(picos) / _smallest_step );
     }
     
     void ComediPulseTrainGenerator::init()
