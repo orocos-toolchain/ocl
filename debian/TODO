@@ -1,0 +1,4 @@
+* auto-generate the control file:
+  a control_template.in file is substituded to control.lxrt, control.gnulinux,...
+  a control.common file contains all os-independent packages
+  Finally cat control.* > control
