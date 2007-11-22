@@ -7,7 +7,7 @@ IF ( BUILD_TIMER_TEST )
 
     GLOBAL_ADD_TEST( timer main.cpp )
     # Use  TARGET_LINK_LIBRARIES( timer libs... ) to add library deps.
-    TARGET_LINK_LIBRARIES( timer orocos-taskbrowser orocos-timer  ${OROCOS_RTT_LIBS})
+    PROGRAM_ADD_DEPS( timer orocos-taskbrowser orocos-timer )
 
 ENDIF ( BUILD_TIMER_TEST )
 

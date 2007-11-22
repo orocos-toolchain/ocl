@@ -8,7 +8,7 @@ IF ( BUILD_AXES_TEST )
     GLOBAL_ADD_TEST( axes ${MSRCS} )
     GLOBAL_ADD_TEST( axes_channels ${MCSRCS} )
     # Use  TARGET_LINK_LIBRARIES( report libs... ) to add library deps.
-    TARGET_LINK_LIBRARIES( axes orocos-taskbrowser orocos-axes ${OROCOS_RTT_LIBS})
-    TARGET_LINK_LIBRARIES( axes_channels orocos-taskbrowser orocos-axes ${OROCOS_RTT_LIBS})
+    PROGRAM_ADD_DEPS( axes orocos-taskbrowser orocos-axes )
+    PROGRAM_ADD_DEPS( axes_channels orocos-taskbrowser orocos-axes )
 
 ENDIF ( BUILD_AXES_TEST )

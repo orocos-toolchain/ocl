@@ -8,6 +8,6 @@ IF ( BUILD_DEPLOYMENT_TEST )
 
     GLOBAL_ADD_TEST( deploy ${SRCS} )
     # Use  TARGET_LINK_LIBRARIES( report libs... ) to add library deps.
-    TARGET_LINK_LIBRARIES( deploy orocos-taskbrowser orocos-deployment ${OROCOS_RTT_LIBS})
+    PROGRAM_ADD_DEPS( deploy orocos-taskbrowser orocos-deployment )
 
 ENDIF ( BUILD_DEPLOYMENT_TEST )
