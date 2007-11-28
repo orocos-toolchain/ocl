@@ -35,29 +35,15 @@ namespace RTT
     {
         PCANController::PCANController(int priority, Seconds period, unsigned int minor,
                                        WORD bitrate, int CANMsgType) 
-            : PeriodicActivity(priority,period), _handle(NULL),
+            : PeriodicActivity(ORO_SCHED_OTHER, priority,period), _handle(NULL),
               _status(CAN_ERR_OK), _bitrate(bitrate),
               _CANMsgType(CANMsgType),_channel(0),
               total_recv(0), total_trns(0), failed_recv(0), failed_trns(0)
         {
             Logger::In in("PCANController");
       
-            if (this->thread()->isRunning()){
-                if (this->thread()->stop()){
-                    if (!this->thread()->setScheduler(ORO_SCHED_OTHER))
-                        log(Error) <<  "Error setting scheduler to ORO_SCHED_OTHER" << endlog();
-                    if (!this->thread()->start())
-                        log(Error) <<  "Error restarting thread" << endlog();
-                }
-                else 
-                    log(Error) <<  "Error stopping thread" << endlog();
-            }
-            else {
-                if (!this->thread()->setScheduler(ORO_SCHED_OTHER))
-                    log(Error) <<  "Error setting scheduler to ORO_SCHED_OTHER" << endlog();
-            }
             // This is a Non-Realtime driver!!
-            log(Warning) <<  "This is NOT a real-time driver" << endlog();
+            log(Info) <<  "This is NOT a real-time CAN driver." << endlog();
       
             char DeviceName[ 12 ]; // don't specify /dev/pcan100 or more, you moron
             snprintf(DeviceName,12, "/dev/pcan%d", minor );
