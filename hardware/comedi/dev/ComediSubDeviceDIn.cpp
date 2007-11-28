@@ -67,8 +67,8 @@ namespace RTT
                 return;
             }
 
+        unsigned int channels = this->nbOfInputs();
         if ( ( myCard->getSubDeviceType( _subDevice ) == COMEDI_SUBD_DIO) ) {
-            unsigned int channels = this->nbOfInputs();
             log(Info) << "Configuring first "<<channels<<" dio channels on subdevice "<<_subDevice<<" as input type." << endlog();
         
             for (unsigned int i=0; i<channels; ++i)
