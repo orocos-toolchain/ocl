@@ -32,7 +32,7 @@
 
 #include <rtt/Activities.hpp>
 #include <rtt/TaskContext.hpp>
-//#include <rtt/Logger.hpp>
+#include <rtt/Logger.hpp>
 #include <rtt/os/main.h>
 
 using namespace Orocos;
@@ -52,28 +52,28 @@ int ORO_main(int argc, char* argv[])
       if(s == "Kuka361"){
 	log(Warning) <<"Choosing Kuka361"<<endlog();
 	my_robot = new Kuka361nAxesVelocityController("Robot");
-    number_of_axes = 6;
+	number_of_axes = 6;
       }
       else if(s == "Kuka160"){
 	log(Warning) <<"Choosing Kuka160"<<endlog();
 	my_robot = new Kuka160nAxesVelocityController("Robot");
-    number_of_axes = 6;
+	number_of_axes = 6;
       }
       else if(s == "Performer"){
-    log(Warning) <<"Choosing Performer"<<endlog();
-    my_robot = new PerformerMK2nAxesVelocityController("Robot");
-    number_of_axes = 5;
+	log(Warning) <<"Choosing Performer"<<endlog();
+	my_robot = new PerformerMK2nAxesVelocityController("Robot");
+	number_of_axes = 5;
+      }
     }
-   }
   else{
     log(Warning) <<"Using Default Kuka361"<<endlog();
     my_robot = new Kuka361nAxesVelocityController("Robot");
   }
-
+  
   if ( Logger::log().getLogLevel() < Logger::Info ) {
     Logger::log().setLogLevel( Logger::Info );
     log(Info) << argv[0] << " manually raises LogLevel to 'Info' (5)."
-		  << " See also file 'orocos.log'."<<endlog();
+	      << " See also file 'orocos.log'."<<endlog();
   }
   
   EmergencyStop _emergency(my_robot);
@@ -96,20 +96,20 @@ int ORO_main(int argc, char* argv[])
   connectPorts(my_robot,&controllerPosVel);
   connectPorts(my_robot,&controllerVel);
   connectPorts(&generatorPos,&controllerPos);
-  connectPorts(&generatorPos,&controllerPosVel);
   connectPorts(&generatorVel,&controllerVel);
+  connectPorts(&generatorPos,&controllerPosVel);
+  connectPorts(&controllerVel,my_robot);
   connectPorts(&controllerPos,my_robot);
   connectPorts(&controllerPosVel,my_robot);
-  connectPorts(&controllerVel,my_robot);
-    
+  
   //Reporting
   FileReporting reporter("Reporting");
-  connectPorts(&reporter,my_robot);
-  connectPorts(&reporter,&generatorPos);
-  connectPorts(&reporter,&generatorVel);
-  connectPorts(&reporter,&controllerPos);
-  connectPorts(&reporter,&controllerPosVel);
-  connectPorts(&reporter,&controllerVel);
+  connectPeers(&reporter,my_robot);
+  connectPeers(&reporter,&generatorPos);
+  connectPeers(&reporter,&generatorVel);
+  connectPeers(&reporter,&controllerPos);
+  connectPeers(&reporter,&controllerPosVel);
+  connectPeers(&reporter,&controllerVel);
 
   //Create supervising TaskContext
   TaskContext super("nAxes");
@@ -131,27 +131,34 @@ int ORO_main(int argc, char* argv[])
   super.scripting()->loadStateMachines("cpf/states.osd");
 
   // Creating Tasks
-  PeriodicActivity _kukaTask(0,0.002, my_robot->engine() ); 
-  PeriodicActivity superTask(1,0.002,super.engine());
-  PeriodicActivity _generatorPosTask(0,0.01, generatorPos.engine() ); 
-  PeriodicActivity _generatorVelTask(0,0.01, generatorVel.engine() ); 
-  PeriodicActivity _controllerPosTask(0,0.01, controllerPos.engine() ); 
-  PeriodicActivity _controllerPosVelTask(0,0.01, controllerPosVel.engine() ); 
-  PeriodicActivity _controllerVelTask(0,0.01, controllerVel.engine() ); 
-  PeriodicActivity reportingTask(2,0.1,reporter.engine());
+  PeriodicActivity _kukaTask(0,0.0002, my_robot->engine() ); 
+  PeriodicActivity superTask(1,0.0002,super.engine());
+  PeriodicActivity _generatorPosTask(0,0.001, generatorPos.engine() ); 
+  PeriodicActivity _generatorVelTask(0,0.001, generatorVel.engine() ); 
+  PeriodicActivity _controllerPosTask(0,0.001, controllerPos.engine() ); 
+  PeriodicActivity _controllerPosVelTask(0,0.001, controllerPosVel.engine() ); 
+  PeriodicActivity _controllerVelTask(0,0.001, controllerVel.engine() ); 
+  PeriodicActivity reportingTask(2,0.01,reporter.engine());
   
   TaskBrowser browser(&super);
-  browser.setColorTheme( TaskBrowser::whitebg );
-  
+  //browser.setColorTheme( TaskBrowser::whitebg );
+
+  my_robot->configure();
+      
   superTask.start();
   _kukaTask.start();
   
   //Load Reporterconfiguration and start Reporter
   //reporter.load();
-  //reportingTask.start();
+  reporter.reportPort("nAxesGeneratorVel","nAxesDesiredVelocity");
+  reporter.reportPort("Robot","nAxesSensorPosition");
+  reporter.reportPort("Robot","nAxesSensorVelocity");
+  reporter.reportPort("Robot","nAxesOutputVelocity");
   
   // Start the console reader.
   browser.loop();
+  
+  my_robot->marshalling()->writeProperties("cpf/PerformerMK2nAxesVelocityController.cpf");
   
   return 0;
 }

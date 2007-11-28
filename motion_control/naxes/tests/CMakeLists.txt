@@ -10,7 +10,7 @@ IF ( BUILD_NAXES_TEST )
     INCLUDE_DIRECTORIES( ${PROJECT_SOURCE_DIR}/hardware/axes/ ${PROJECT_SOURCE_DIR}/hardware/comedi/ ${PROJECT_SOURCE_DIR}/hardware/apci/ )
     GLOBAL_ADD_TEST( naxes ${SRCS} )
     # Use  TARGET_LINK_LIBRARIES( report libs... ) to add library deps.
-    PROGRAM_ADD_DEPS( naxes orocos-taskbrowser orocos-reporting orocos-naxes orocos-kuka orocos-axes )
+    PROGRAM_ADD_DEPS( naxes orocos-taskbrowser orocos-reporting orocos-naxes orocos-kuka orocos-performer orocos-axes )
     TARGET_LINK_LIBRARIES( naxes orocos-kdl )
 
     IF ( BUILD_COMEDI )

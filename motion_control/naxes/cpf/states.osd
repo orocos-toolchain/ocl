@@ -27,17 +27,13 @@ StateMachine Default
         select MoveToState
     }
     entry {
-      do nAxesSensor.start()
       do nAxesGeneratorPos.start()
       do nAxesControllerPos.start()
-      do nAxesEffectorVel.start()
       do CalibrateOffsetsProg.start()
     }
     exit {
-      do nAxesSensor.stop()
       do nAxesGeneratorPos.stop()
       do nAxesControllerPos.stop()
-      do nAxesEffectorVel.stop()
     }
     transitions {
       if !CalibrateOffsetsProg.isRunning then
@@ -51,33 +47,32 @@ StateMachine Default
         select StopRobotState
     }
     entry {
-      do nAxesSensor.start()
-      do nAxesGeneratorPos.start()
-      do nAxesControllerPosVel.start()
-      do nAxesEffectorVel.start()
+      do nAxesGeneratorVel.start()
+      do nAxesControllerVel.start() 
+      //do nAxesGeneratorPos.start()
+      //do nAxesControllerPosVel.start() 
+      do Reporting.start()
 
-      var array MoveToPos(6)
-      set MoveToPos[0] = Robot.positionValue0.Get()
-      set MoveToPos[1] = Robot.positionValue1.Get()
-      set MoveToPos[2] = Robot.positionValue2.Get()
-      set MoveToPos[3] = Robot.positionValue3.Get()
-      set MoveToPos[4] = Robot.positionValue4.Get()
-      set MoveToPos[5] = Robot.positionValue5.Get()
+        do nAxesGeneratorVel.applyVelocity(4, 0.1 ,7.0)
+        do nAxesGeneratorVel.applyVelocity(4, -0.1,7.0)
+        do nAxesGeneratorVel.applyVelocity(4, 0.0,2.0)
+        do nAxesGeneratorVel.applyVelocity(4, 0.2 ,7.0)
+        do nAxesGeneratorVel.applyVelocity(4, -0.2 ,7.0)
+        do nAxesGeneratorVel.applyVelocity(4, 0.0 ,2.0)
+        do nAxesGeneratorVel.applyVelocity(4, 0.4 ,7.0)
+        do nAxesGeneratorVel.applyVelocity(4, -0.4 ,7.0)
+        do nAxesGeneratorVel.applyVelocity(4, 0.0 ,2.0)
+        do nAxesGeneratorVel.applyVelocity(4, 0.8 ,7.0)
+        do nAxesGeneratorVel.applyVelocity(4, -0.8 ,7.0)
+        do nAxesGeneratorVel.applyVelocity(4, 0.0 ,2.0)
 
-      set MoveToPos[0] = 0.
-      set MoveToPos[1] = pi/4
-      set MoveToPos[2] = pi/4
-      set MoveToPos[3] = MoveToPos[3]
-      set MoveToPos[4] = 0.
-      set MoveToPos[5] = 0.
-      
-      do nAxesGeneratorPos.moveTo(MoveToPos, 0.0)
     }
     exit {
-	 do nAxesEffectorVel.stop()
-	 do nAxesControllerPosVel.stop()
-	 do nAxesGeneratorPos.stop()
-	 do nAxesSensor.stop()
+	 //do nAxesControllerPosVel.stop()
+	 do nAxesControllerVel.stop()
+	 //do nAxesGeneratorPosVel.stop()
+	 do nAxesGeneratorVel.stop()
+	 do Reporting.stop()
     }
     transitions {
       select StopRobotState

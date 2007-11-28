@@ -34,7 +34,7 @@ namespace OCL
           _propertyfile(propertyfile),
           _duration_desired(num_axes),      
           _duration_trajectory(num_axes),      
-          _velocity_out_local(num_axes),
+          _velocity_out_local(num_axes,0.0),
           _maintain_velocity(num_axes),
           _time_begin(num_axes),
           _time_passed(num_axes),
@@ -92,6 +92,9 @@ namespace OCL
         
         if(!marshalling()->readProperties(_propertyfile))
             log(Error) <<"(nAxesGeneratorVel) Reading Properties from "<<_propertyfile<<" failed!!"<<endlog();
+
+	//Initialise port
+        _velocity_desi.Set(_velocity_out_local);
 
     }
     

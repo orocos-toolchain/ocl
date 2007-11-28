@@ -3,14 +3,12 @@
  */
 
 program CalibrateOffsetsProg{
-  const double sleep     = 4.0
+  const double sleep     = 5.0
   const int number_of_samples = 100
   var int i
 
   do nAxesControllerPos.measureOffset(sleep, number_of_samples)
   var array offset = nAxesControllerPos.getOffset()
-  for(set i=0;i<6;set i=i+1){
-    do Robot.addDriveOffset(i,offset[i])
-  }
-  do nAxesGeneratorPos.reset()
+  do Robot.addDriveOffset(offset)
+  do nAxesGeneratorPos.resetPosition()
 }    

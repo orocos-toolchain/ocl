@@ -102,7 +102,7 @@ namespace OCL{
         for(unsigned int i=0; i<_num_axes; i++){
             double time_difference = TimeService::Instance()->secondsSince(_time_begin[i]);
             _position_desi_local[i] += _velocity_desi_local[i] * time_difference;
-            _velocity_out_local[i] = (_controller_gain.value()[i] * (_position_desi_local[i] - _position_meas_local[i])) + _velocity_desi_local[i];
+            _velocity_out_local[i] = (_controller_gain.value()[i] * (_position_desi_local[i] - _position_meas_local[i])); //+ _velocity_desi_local[i];
             _time_begin[i] = TimeService::Instance()->getTicks();
         }
         _velocity_out.Set(_velocity_out_local);
