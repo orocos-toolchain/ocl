@@ -47,7 +47,7 @@ namespace OCL
 #define PERFORMERMK2_TICKS2RAD { M_PI_2 / PERFORMERMK2_CONV1 ,M_PI_2 / PERFORMERMK2_CONV2 ,M_PI_2 / PERFORMERMK2_CONV3 ,M_PI_2 / PERFORMERMK2_CONV4 ,M_PI_2 / PERFORMERMK2_CONV5 }
   
   // Conversion from angular speed to voltage
-#define PERFORMERMK2_RADproSEC2VOLT { 1, 1, 1, 1, 1}
+#define PERFORMERMK2_RADproSEC2VOLT { 5.25, 9.3, -4.0, 4.4, 3.1}
 
   typedef PerformerMK2nAxesVelocityController MyType;
     
@@ -75,7 +75,7 @@ namespace OCL
       simulation(true),
       //servoIntegrationFactor_prop("ServoIntegrationFactor","Inverse of Integration time for servoloop",vector<double>(PERFORMERMK2_NUM_AXES,0)),
       //servoGain_prop("ServoGain","Feedback Gain for servoloop",vector<double>(PERFORMERMK2_NUM_AXES,0)),
-      //servoFFScale_prop("ServoFFScale","Feedforward scale for servoloop",vector<double>(PERFORMERMK2_NUM_AXES,0)),
+      servoFFScale_prop("ServoFFScale","Feedforward scale for servoloop",vector<double>(PERFORMERMK2_NUM_AXES,0)),
       num_axes_attr("NUM_AXES",PERFORMERMK2_NUM_AXES),
       chain_attr("Kinematics"),
       driveOutOfRange_evt("driveOutOfRange"),
@@ -140,7 +140,10 @@ namespace OCL
 						       -10, 10,0 );
             //Setting up drive            
             log(Info)<<"Setting up drive ..."<<endlog();
-            vref[i]   = new AnalogOutput<unsigned int>(SubAOut_NI6713, i );
+	    //	    if(i==2)
+	    //	      vref[i]   = new AnalogOutput<unsigned int>(SubAOut_NI6713, 5 );
+	    //else
+	    vref[i]   = new AnalogOutput<unsigned int>(SubAOut_NI6713, i );
             enable[i] = new DigitalOutput( SubDOut_NI6602, 2+i );
             enable[i]->switchOff();
             drive[i]  = new AnalogDrive( vref[i], enable[i], 1.0 / vel2volt[i], 0.0);
@@ -187,7 +190,7 @@ namespace OCL
          * Dataflow Interface
          */
         ports()->addPort(&driveValues_port);
-        //ports()->addPort(&servoValues_port);
+        ports()->addPort(&servoValues_port);
         ports()->addPort(&positionValues_port);
         ports()->addPort(&velocityValues_port);
         ports()->addPort(&deltaTime_port);
@@ -204,7 +207,7 @@ namespace OCL
         properties()->addProperty( &simulation_prop);
 	//properties()->addProperty( &servoIntegrationFactor_prop);
         //properties()->addProperty( &servoGain_prop);
-        //properties()->addProperty( &servoFFScale_prop);
+        properties()->addProperty( &servoFFScale_prop);
         attributes()->addConstant( &num_axes_attr);
         attributes()->addAttribute(&chain_attr);
 
@@ -280,7 +283,7 @@ namespace OCL
          */
         //servoGain = servoGain_prop.value();
         //servoIntegrationFactor = servoIntegrationFactor_prop.value();
-        //servoFFScale = servoFFScale_prop.value();
+        servoFFScale = servoFFScale_prop.value();
 	
         return true;
     }
@@ -356,7 +359,8 @@ namespace OCL
 	    //   double error        = driveValues[i] - velocityValues[i];
 	    // servoIntError[i]    += dt*error;
 	    //outputvel[i] = servoGain[i]*(error + servoIntegrationFactor[i]*servoIntError[i]) + servoFFScale[i]*driveValues[i];
-	    outputvel[i] = driveValues[i];
+	    outputvel[i] = servoFFScale[i]*driveValues[i];
+
 	  } else {
 	    outputvel[i] = 0.0;
 	  }
