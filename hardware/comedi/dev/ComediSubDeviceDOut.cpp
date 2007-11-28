@@ -42,6 +42,7 @@ namespace RTT
 
     void ComediSubDeviceDOut::init()
     {
+        Logger::In in( nameserver.getName( this ).c_str() );
         if (!myCard) {
             log(Error) << "Error creating ComediSubDeviceDOut: null ComediDevice given." <<endlog();
             return;
@@ -60,11 +61,14 @@ namespace RTT
         
         // Only for DIO
         if ( ( myCard->getSubDeviceType( subDevice ) == COMEDI_SUBD_DIO) ) {
-            log(Info) << "Setting all dio on subdevice "<<subDevice<<" to output type." << endlog();
+            log(Info) << "Configuring first "<<channels<<" dio channels on subdevice "<<subDevice<<" as output type." << endlog();
         
             for (unsigned int i=0; i<channels; ++i)
                 comedi_dio_config(myCard->getDevice()->it, subDevice, i, COMEDI_OUTPUT);
-        }
+        } else {
+            log(Info) << "Subdevice "<<subDevice<<" is digital output with "<<channels << " channels." << endlog();
+        }            
+        
 
     }
 

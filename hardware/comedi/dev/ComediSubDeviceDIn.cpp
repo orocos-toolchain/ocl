@@ -52,6 +52,7 @@ namespace RTT
 
     void ComediSubDeviceDIn::init()
     {
+        Logger::In in( nameserver.getName( this ).c_str() );
         if (!myCard) {
             log(Error) << "Error creating ComediSubDeviceDIn: null ComediDevice given." <<endlog();
             return;
@@ -65,12 +66,16 @@ namespace RTT
                 myCard = 0;
                 return;
             }
-        if ( ( myCard->getSubDeviceType( _subDevice ) != COMEDI_SUBD_DIO) ) {
-            log(Info) << "Setting all dio on subdevice "<<_subDevice<<" to input type." << endlog();
-            unsigned int num_chan = this->nbOfInputs();
-            for (unsigned int i=0; i<num_chan; ++i)
+
+        if ( ( myCard->getSubDeviceType( _subDevice ) == COMEDI_SUBD_DIO) ) {
+            unsigned int channels = this->nbOfInputs();
+            log(Info) << "Configuring first "<<channels<<" dio channels on subdevice "<<_subDevice<<" as input type." << endlog();
+        
+            for (unsigned int i=0; i<channels; ++i)
                 comedi_dio_config(myCard->getDevice()->it, _subDevice, i, COMEDI_INPUT);
-        }
+        } else {
+            log(Info) << "Subdevice "<<_subDevice<<" is digital input with "<<channels << " channels." << endlog();
+        }            
     }
 
   bool ComediSubDeviceDIn::isOn( unsigned int bit /*= 0*/) const
