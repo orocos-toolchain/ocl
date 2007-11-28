@@ -1,7 +1,7 @@
 Source: orocos-ocl
 Priority: extra
 Maintainer: Peter Soetens <peter.soetens@fmtc.be>
-Build-Depends: debhelper (>= 5), autotools-dev, liborocos-rtt-corba-lxrt-dev ( >= 1.4 ), libcomedi-dev, libpcan-dev, liborocos-rtt-corba-gnulinux-dev ( >= 1.4 ), pkg-config, libncurses5-dev ( >= 5.0 ), libreadline5-dev ( >= 5.0 ), comedi-modules
+Build-Depends: debhelper (>= 5), autotools-dev, liborocos-rtt-corba-lxrt-dev ( >= 1.4 ), libcomedi-dev, libpcan-dev, liborocos-rtt-corba-gnulinux-dev ( >= 1.4 ), pkg-config, libncurses5-dev ( >= 5.0 ), libreadline5-dev ( >= 5.0 ), comedi-headers
 Standards-Version: 3.7.2
 Section: libs
 
