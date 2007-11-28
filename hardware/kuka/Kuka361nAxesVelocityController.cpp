@@ -40,7 +40,7 @@ namespace OCL
 //#define KUKA361_ENCODEROFFSETS { 1000004, 1000000, 1000002, 449784,
 //#1035056, 1230656 }
 //New values 29/05/2006
-#define KUKA361_ENCODEROFFSETS { 1000004, 1000000, 1000002, 953136, 985928, 1230656 }
+#define KUKA361_ENCODEROFFSETS { 1000004, 1000000, 502652, 953136, 985928, 1230656 }
 
 #define KUKA361_CONV1  94.14706
 #define KUKA361_CONV2  -103.23529
@@ -122,7 +122,7 @@ namespace OCL
         comediDev        = new ComediDevice( 1 );
         comediSubdevAOut = new ComediSubDeviceAOut( comediDev, "Kuka361" );
         log(Info)<<"Creating APCI Devices."<<endlog();
-        apci1710         = new EncoderSSI_apci1710_board( 0, 1 );
+        apci1710         = new EncoderSSI_apci1710_board( 0, 1 , 2);
         apci2200         = new RelayCardapci2200( "Kuka361" );
         apci1032         = new SwitchDigitalInapci1032( "Kuka361" );
         
@@ -131,7 +131,10 @@ namespace OCL
             log(Info)<<"Creating Hardware axis "<<i<<endlog();
             //Setting up encoders
             log(Info)<<"Setting up encoder ..."<<endlog();
-            encoderInterface[i] = new EncoderSSI_apci1710( i + 1, apci1710 );
+	    if(i==2)
+	      encoderInterface[i] = new EncoderSSI_apci1710( 7, apci1710 );
+	    else
+	      encoderInterface[i] = new EncoderSSI_apci1710( 7, apci1710 );
             encoder[i]          = new AbsoluteEncoderSensor( encoderInterface[i], 1.0 / ticks2rad[i], encoderOffsets[i], -10, 10 );
             
             log(Info)<<"Setting up brake ..."<<endlog();

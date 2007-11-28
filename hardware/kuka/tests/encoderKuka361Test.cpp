@@ -15,7 +15,7 @@
 //#include <Kuka361Constants.hpp>
 
 //#define KUKA361_ENCODEROFFSETS { 1000004, 1000000, 1000002, 449784, 1035056 , 1230656 }
-#define KUKA361_ENCODEROFFSETS { 1000004, 1000000, 1000002, 953136, 984660 , 1230656 }
+#define KUKA361_ENCODEROFFSETS { 1000004, 1000000, 502652, 953136, 984660 , 1230656 }
 
 #define KUKA361_CONV1  94.14706
 #define KUKA361_CONV2  -103.23529
@@ -40,7 +40,7 @@ class EncWriter : public PeriodicActivity
 /*1{{{*/
 public:
     EncWriter( EncoderSSI_apci1710_board& ssiBoard, bool radiants = false)
-        :  PeriodicActivity(RTT::OS::HighestPriority, 0.001 ),  enc1( 1, &ssiBoard ),  enc2( 2, &ssiBoard ),  enc3( 3, &ssiBoard )
+        :  PeriodicActivity(RTT::OS::HighestPriority, 0.001 ),  enc1( 1, &ssiBoard ),  enc2( 2, &ssiBoard ),  enc3( 7, &ssiBoard )
                                       ,  enc4( 4, &ssiBoard ),  enc5( 5, &ssiBoard ),  enc6( 6, &ssiBoard )
                                       ,  output("encoderKuka361.txt", std::ios::out)
     {
@@ -121,7 +121,7 @@ class EncReader : public PeriodicActivity
 /*{{{*/
 public:
     EncReader( EncoderSSI_apci1710_board& ssiBoard, bool radiants = false)
-        :  PeriodicActivity(RTT::OS::LowestPriority, 0.1 ),  enc1( 1, &ssiBoard ),  enc2( 2, &ssiBoard ),  enc3( 3, &ssiBoard )
+        :  PeriodicActivity(RTT::OS::LowestPriority, 0.1 ),  enc1( 1, &ssiBoard ),  enc2( 2, &ssiBoard ),  enc3( 7, &ssiBoard )
                                  ,  enc4( 4, &ssiBoard ),  enc5( 5, &ssiBoard ),  enc6( 6, &ssiBoard )
     {
         rad = radiants;
@@ -172,7 +172,7 @@ private:
 int ORO_main(int argc, char** argv)
 {
     
-    EncoderSSI_apci1710_board  encSSIboard(0, 1);
+    EncoderSSI_apci1710_board  encSSIboard(0, 1, 2);
     
     std::cout << "Read in encoder ticks?  (y/n) " << std::endl;
     char c, d;
