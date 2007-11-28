@@ -8,3 +8,4 @@ usr/include/ocl/ConsoleReporting.hpp
 usr/include/ocl/FileReporting.hpp
 usr/include/ocl/NiceHeaderMarshaller.hpp
 usr/include/ocl/HMIConsoleOutput.hpp
+usr/include/ocl/TimerComponent.hpp

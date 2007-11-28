@@ -86,7 +86,7 @@ binary-arch: build install
 	dh_installdocs
 	dh_installexamples
 # see orocos-ocl.install file to see what gets installed.
-	dh_install --sourcedir=$(CURDIR)/debian/tmp
+	dh_install --sourcedir=$(CURDIR)/debian/tmp --list-missing
 #	dh_installmenu
 #	dh_installdebconf	
 #	dh_installlogrotate

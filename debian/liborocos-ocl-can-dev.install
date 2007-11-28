@@ -1,12 +1,1 @@
-usr/include/ocl/can/CANBusInterface.hpp
-usr/include/ocl/can/CANConfigurator.hpp
-usr/include/ocl/can/CANControllerInterface.hpp
-usr/include/ocl/can/CANDeviceInterface.hpp
-usr/include/ocl/can/CANDeviceRegistrator.hpp
-usr/include/ocl/can/CAN.hpp
-usr/include/ocl/can/CANMessage.hpp
-usr/include/ocl/can/CANOpenBus.hpp
-usr/include/ocl/can/CANRequest.hpp
-usr/include/ocl/can/NodeGuard.hpp
-usr/include/ocl/can/PCANController.hpp
-usr/include/ocl/can/SyncWriter.hpp
+usr/include/ocl/can/*
