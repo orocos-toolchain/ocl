@@ -5,6 +5,7 @@ StateMachine Simple_nAxes_Test
   var bool move_to               = true
 
   const double pi = 3.14159265358979
+  var array pos = array(6,0.1)
 
   initial state StartRobotState {
     entry {
@@ -51,7 +52,6 @@ StateMachine Simple_nAxes_Test
       do nAxesControllerPosVel.start() 
       //do Reporting.start()
 
-      var array pos = array(6,0.1)
       do nAxesGeneratorPos.moveTo(pos,7.0)
     }
     exit {
