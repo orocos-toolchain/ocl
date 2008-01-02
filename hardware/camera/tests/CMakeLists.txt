@@ -14,8 +14,7 @@ IF(GTHREAD_FOUND AND GTK_FOUND)
     # Add a test program
     GLOBAL_ADD_TEST( camera ${SRCS} )
     # Use  TARGET_LINK_LIBRARIES( report libs... ) to add library deps.
-    
-    TARGET_LINK_LIBRARIES( camera orocos-taskbrowser orocos-camera ${OROCOS_RTT_LIBS})
+    PROGRAM_ADD_DEPS( camera orocos-taskbrowser orocos-camera)
   ELSE(GTHREAD_FOUND AND GTK_FOUND)
     MESSAGE(WARNING "Could not find needed libs for camera-test")
   ENDIF(GTHREAD_FOUND AND GTK_FOUND)
