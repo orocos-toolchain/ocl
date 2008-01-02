@@ -36,9 +36,9 @@ namespace OCL
           p_m_port("nAxesSensorPosition"),
           p_d_port("nAxesDesiredPosition"),
           v_d_port("nAxesDesiredVelocity"),
-          num_axes_prop("num_axes","Number of Axes"),
           v_max_prop("max_vel", "Maximum Velocity in Trajectory"),
-          a_max_prop("max_acc", "Maximum Acceleration in Trajectory")
+          a_max_prop("max_acc", "Maximum Acceleration in Trajectory"),
+          num_axes_prop("num_axes","Number of Axes")
     {
         //Creating TaskContext
         
