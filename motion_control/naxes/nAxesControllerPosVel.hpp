@@ -37,12 +37,6 @@ namespace OCL
      * and velocity feedforward to calculate an output velocity. 
      * velocity_out = K_gain * ( position_desired - position_measured)
      * + velocity_desired.
-     * It can share dataports with
-     * OCL::nAxesSensor to get the measured positions, with
-     * OCL::nAxesGeneratorPos to get its desired positions and
-     * velocities and with
-     * OCL::nAxesEffectorVel to send its output velocities to the
-     * hardware/simulation axes.
      * 
      * \ingroup nAxesComponents 
      */
@@ -55,40 +49,36 @@ namespace OCL
          * Constructor of the class
          * 
          * @param name name of the TaskContext
-         * @param num_axes number of axes
-         * @param propertyfile location of the propertyfile. Default:
-         * cpf/nAxesControllerPosVel.cpf 
-         * 
+         *
          */
-        nAxesControllerPosVel(std::string name, unsigned int num_axes, 
-                              std::string propertyfile="cpf/nAxesControllerPosVel.cpf");
+        nAxesControllerPosVel(std::string name);
         virtual ~nAxesControllerPosVel();
     
-        virtual bool startup();
-        virtual void update();
-        virtual void shutdown();
+        virtual bool configureHook();
+        virtual bool startHook();
+        virtual void updateHook();
+        virtual void stopHook();
     
     private:
-        unsigned int                              _num_axes;
-        std::string                               _propertyfile;
+        unsigned int                              num_axes;
     
-        std::vector<double>                       _position_meas_local, _position_desi_local, _velocity_desi_local, _velocity_out_local;
+        std::vector<double>                       p_meas, p_desi, v_desi, v_out, gain;
     protected:
         /// DataPort containing the measured positions, shared with
         /// OCL::nAxesSensor 
-        RTT::ReadDataPort< std::vector<double> >  _position_meas;
+        RTT::ReadDataPort< std::vector<double> >  p_meas_port;
         /// DataPort containing the desired positions, shared with
         /// OCL::nAxesGeneratorPos
-        RTT::ReadDataPort< std::vector<double> >  _position_desi;
+        RTT::ReadDataPort< std::vector<double> >  p_desi_port;
         /// DataPort containing the desired velocities, shared with
         /// OCL::nAxesGeneratorPos
-        RTT::ReadDataPort< std::vector<double> >  _velocity_desi;
+        RTT::ReadDataPort< std::vector<double> >  v_desi_port;
         /// DataPort containing the output velocities, shared with
         /// OCL::nAxesEffectorVel 
-        RTT::WriteDataPort< std::vector<double> > _velocity_out;
+        RTT::WriteDataPort< std::vector<double> > v_out_port;
         /// Vector with the control gain value for each axis.
-        RTT::Property< std::vector<double> >      _controller_gain;
-  
-  }; // class
+        RTT::Property< std::vector<double> >      gain_prop;
+        RTT::Property< unsigned int > num_axes_prop; 
+    }; // class
 }//namespace
 #endif // __N_AXES_CONTROLLER_POS_VEL_H__

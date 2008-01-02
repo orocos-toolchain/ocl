@@ -7,8 +7,7 @@ program CalibrateOffsetsProg{
   const int number_of_samples = 100
   var int i
 
-  do nAxesControllerPos.measureOffset(sleep, number_of_samples)
-  var array offset = nAxesControllerPos.getOffset()
-  do Robot.addDriveOffset(offset)
+  do nAxesControllerPos.measureVelocityOffset(sleep, number_of_samples)
+  do Robot.addDriveOffset(nAxesController.nAxesVelocityOffset)
   do nAxesGeneratorPos.resetPosition()
 }    

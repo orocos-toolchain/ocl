@@ -38,11 +38,6 @@ namespace OCL
      * velocity_out = K_gain * ( position_desired - position_measured)
      * + velocity_desired.
      * The desired position is calculated by integrating the desired velocity
-     * It can share dataports with
-     * OCL::nAxesSensor to get the measured positions, with
-     * OCL::nAxesGeneratorVel to get its desired velocities and with
-     * OCL::nAxesEffectorVel to send its output velocities to the
-     * hardware/simulation axes.
      * 
      * \ingroup nAxesComponents 
      */
@@ -54,52 +49,49 @@ namespace OCL
          * Constructor of the class
          * 
          * @param name name of the TaskContext
-         * @param num_axes number of axes
-         * @param propertyfile location of the propertyfile. Default:
-         * cpf/nAxesControllerPosVel.cpf 
          * 
          */
-        nAxesControllerVel(std::string name,unsigned int num_axes, 
-                           std::string propertyfile="cpf/nAxesControllerVel.cpf");
+        nAxesControllerVel(std::string name);
         virtual ~nAxesControllerVel();
         
-        virtual bool startup();
-        virtual void update();
-        virtual void shutdown();
+        virtual bool configureHook();
+        virtual bool startHook();
+        virtual void updateHook();
+        virtual void stopHook();
         
     private:
         void resetAll();
         void resetAxis(int axis);
         
-        unsigned int                               _num_axes;
-        std::string                                _propertyfile;
+        unsigned int  num_axes;
   					       
-        std::vector<double>                        _position_meas_local, _position_desi_local, _velocity_desi_local, _velocity_out_local;
+        std::vector<double>  p_m, p_d, v_d, v_out, gain;
     protected:
         /// Method to reset the controller of all axes
-        RTT::Method<void(void)>                    _reset_all;
+        RTT::Method<void(void)>  reset_all_mtd;
         /**
          * Method to reset the controller of axis
          * 
          * @param axis axis controller to be reset
          */
-        RTT::Method<void(int)>                     _resetAxis;
+        RTT::Method<void(int)>   resetAxis_mtd;
         
         /// DataPort containing the measured positions, shared with
         /// OCL::nAxesSensor 
-        RTT::ReadDataPort< std::vector<double> >   _position_meas;
+        RTT::ReadDataPort< std::vector<double> >   p_m_port;
         /// DataPort containing the desired velocities, shared with
         /// OCL::nAxesGeneratorVel
-        RTT::ReadDataPort< std::vector<double> >   _velocity_desi;
+        RTT::ReadDataPort< std::vector<double> >   v_d_port;
         /// DataPort containing the output velocities, shared with
         /// OCL::nAxesEffectorVel 
-        RTT::WriteDataPort< std::vector<double> >  _velocity_out;
+        RTT::WriteDataPort< std::vector<double> >  v_out_port;
         /// Vector with the control gain value for each axis.
-        RTT::Property< std::vector<double> >       _controller_gain;
+        RTT::Property< std::vector<double> >       gain_prop;
+        RTT::Property<unsigned int> num_axes_prop;
         
     private:
-        std::vector<bool>                          _is_initialized;
-        std::vector<RTT::TimeService::ticks>       _time_begin;
+        std::vector<bool>                          is_initialized;
+        std::vector<RTT::TimeService::ticks>       time_begin;
         
     
   }; // class

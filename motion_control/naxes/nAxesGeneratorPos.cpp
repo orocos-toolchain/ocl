@@ -19,6 +19,7 @@
 //  
 
 #include "nAxesGeneratorPos.hpp"
+#include <ocl/ComponentLoader.hpp>
 #include <assert.h>
 
 namespace OCL
@@ -28,162 +29,184 @@ namespace OCL
     using namespace std;
     typedef nAxesGeneratorPos MyType;
 
-    nAxesGeneratorPos::nAxesGeneratorPos(string name,unsigned int num_axes,
-                                         string propertyfile)
-        : TaskContext(name),
-          _num_axes(num_axes), 
-          _propertyfile(propertyfile),
-          _position_meas_local(num_axes),
-          _position_desi_local(num_axes),
-          _velocity_desi_local(num_axes),
-          _moveTo( "moveTo",&MyType::moveTo,&MyType::moveFinished, this),
-          _reset_position( "resetPosition", &MyType::resetPosition, this),
-          _position_meas("nAxesSensorPosition"),
-          _position_desi("nAxesDesiredPosition"),
-          _velocity_desi("nAxesDesiredVelocity"),
-          _motion_profile(num_axes),
-          _maximum_velocity("max_vel", "Maximum Velocity in Trajectory",vector<double>(num_axes,0)),
-          _maximum_acceleration("max_acc", "Maximum Acceleration in Trajectory",vector<double>(num_axes,0))
+    nAxesGeneratorPos::nAxesGeneratorPos(string name)
+        : TaskContext(name,PreOperational),
+          moveTo_cmd( "moveTo",&MyType::moveTo,&MyType::moveFinished, this),
+          reset_position_mtd( "resetPosition", &MyType::resetPosition, this),
+          p_m_port("nAxesSensorPosition"),
+          p_d_port("nAxesDesiredPosition"),
+          v_d_port("nAxesDesiredVelocity"),
+          num_axes_prop("num_axes","Number of Axes"),
+          v_max_prop("max_vel", "Maximum Velocity in Trajectory"),
+          a_max_prop("max_acc", "Maximum Acceleration in Trajectory")
     {
         //Creating TaskContext
         
         //Adding properties
-        this->properties()->addProperty(&_maximum_velocity);
-        this->properties()->addProperty(&_maximum_acceleration);
+        this->properties()->addProperty(&num_axes_prop);
+        this->properties()->addProperty(&v_max_prop);
+        this->properties()->addProperty(&a_max_prop);
         
         //Adding ports
-        this->ports()->addPort(&_position_meas);
-        this->ports()->addPort(&_position_desi);
-        this->ports()->addPort(&_velocity_desi);
+        this->ports()->addPort(&p_m_port);
+        this->ports()->addPort(&p_d_port);
+        this->ports()->addPort(&v_d_port);
     
         //Adding Commands
-        this->commands()->addCommand( &_moveTo,"Set the position setpoint",
+        this->commands()->addCommand( &moveTo_cmd,"Set the position setpoint",
                                       "setpoint", "joint setpoint for all axes",
                                       "time", "minimum time to complete trajectory" );
 
         //Adding Methods
-        this->methods()->addMethod( &_reset_position, "Reset generator position" );  
+        this->methods()->addMethod( &reset_position_mtd, "Reset generator position" );  
 
-    if(!marshalling()->readProperties(_propertyfile))
-      log(Error) <<"(nAxesGeneratorPos) Reading Properties from "<<_propertyfile<<" failed!!"<<endlog();
-
-    // Instantiate Motion Profiles
-    for( unsigned int i=0; i<_num_axes; i++)
-      _motion_profile[i] = new VelocityProfile_Trap( 0, 0 );
-  }
-    
-  nAxesGeneratorPos::~nAxesGeneratorPos()
-  {
-    for( unsigned int i=0; i<_num_axes; i++)
-      if( _motion_profile[i]) delete _motion_profile[i];
-  }
-  
-  bool nAxesGeneratorPos::startup()
-  {
-
-    //Check if readPort is connected
-    if (!_position_meas.connected())
-      log(Warning) <<"(nAxesGeneratorPos) Port "<<_position_meas.getName()<<" not connected"<<endlog();
-    
-    
-    // check size of properties
-    if(_maximum_velocity.value().size() != _num_axes || _maximum_acceleration.value().size() != _num_axes){
-      log(Error) <<"Sizes of properies not equal to num_axes"<<endlog();
-      return false;
     }
     
-    for( unsigned int i=0; i<_num_axes; i++)
-      _motion_profile[i]->SetMax(_maximum_velocity.value()[i], _maximum_acceleration.value()[i]);
-    
-    // initialize
-    _position_desi_local = _position_meas.Get();
-    for(unsigned int i = 0; i < _num_axes; i++){
-      _velocity_desi_local[i] = 0;
+    nAxesGeneratorPos::~nAxesGeneratorPos()
+    {}
+
+    bool nAxesGeneratorPos::configureHook()
+    {
+        num_axes=num_axes_prop.rvalue();
+        if(v_max_prop.value().size()!=num_axes){
+            Logger::In in(this->getName().data());
+            log(Error)<<"Size of "<<v_max_prop.getName()
+                      <<" does not match "<<num_axes_prop.getName()
+                      <<endlog();
+            return false;
+        }
+
+        if(a_max_prop.value().size()!=num_axes){
+            Logger::In in(this->getName().data());
+            log(Error)<<"Size of "<<a_max_prop.getName()
+                      <<" does not match "<<num_axes_prop.getName()
+                      <<endlog();
+            return false;
+        }
+        
+        v_max=v_max_prop.rvalue();
+        a_max=a_max_prop.rvalue();
+        
+        //Resizing all containers to correct size
+        p_m.resize(num_axes);
+        p_d.resize(num_axes);
+        v_d.resize(num_axes);
+        motion_profile.resize(num_axes);
+        
+        //Initialise motion profiles
+        for(unsigned int i=0;i<num_axes;i++)
+            motion_profile[i].SetMax(v_max[i],a_max[i]);
+                    
+        //Initialise output ports:
+        p_d.assign(num_axes,0);
+        p_d_port.Set(p_d);
+        v_d.assign(num_axes,0);
+        v_d_port.Set(v_d);
+        return true;
     }
-    _position_desi.Set(_position_desi_local);
-    _velocity_desi.Set(_velocity_desi_local);
+
+
+    bool nAxesGeneratorPos::startHook()
+    {
+        //check connection and sizes of input-ports
+        if(!p_m_port.ready()){
+            Logger::In in(this->getName().data());
+            log(Error)<<p_m_port.getName()<<" not ready"<<endlog();
+            return false;
+        }
+        if(p_m_port.Get().size()!=num_axes){
+            Logger::In in(this->getName().data());
+            log(Error)<<"Size of "<<p_m_port.getName()<<": "<<p_m_port.Get().size()<<" != " << num_axes<<endlog();
+            return false;
+        }
+
+        is_moving = false;
     
-    _is_moving = false;
-    
-    return true;
-  }
+        return true;
+    }
   
-  void nAxesGeneratorPos::update()
-  {
-    if (_is_moving)
-      {
-	_time_passed = TimeService::Instance()->secondsSince(_time_begin);
-	if ( _time_passed > _max_duration )// Profile is ended
-	  {
-	    // set end position
-	    for (unsigned int i=0; i<_num_axes; i++){
-	      _position_desi_local[i] = _motion_profile[i]->Pos( _max_duration );
-	      _velocity_desi_local[i] = 0;//_motion_profile[i]->Vel( _max_duration );
-	      _is_moving = false;
-	    }
-	  }
-	else
-	  {
-	    for(unsigned int i=0; i<_num_axes; i++){
-	      _position_desi_local[i] = _motion_profile[i]->Pos( _time_passed );
-	      _velocity_desi_local[i] = _motion_profile[i]->Vel( _time_passed );
-	    }
-	  }
-	_position_desi.Set(_position_desi_local);
-	_velocity_desi.Set(_velocity_desi_local);
-      }
-  }
+    void nAxesGeneratorPos::updateHook()
+    {
+        if (is_moving){
+            time_passed = TimeService::Instance()->secondsSince(time_begin);
+            if ( time_passed > max_duration ){// Profile is ended
+                // set end position
+                for (unsigned int i=0; i<num_axes; i++){
+                    p_d[i] = motion_profile[i].Pos( max_duration );
+                    v_d[i] = 0;//_motion_profile[i]->Vel( _max_duration );
+                    is_moving = false;
+                }
+            }else{
+                for(unsigned int i=0; i<num_axes; i++){
+                    p_d[i] = motion_profile[i].Pos( time_passed );
+                    v_d[i] = motion_profile[i].Vel( time_passed );
+                }
+            }
+            p_d_port.Set(p_d);
+            v_d_port.Set(v_d);
+        }
+    }
   
   
-  void nAxesGeneratorPos::shutdown()
-  {
+    void nAxesGeneratorPos::stopHook()
+    {
+    }
   
-  }
-  
-  bool nAxesGeneratorPos::moveTo(const vector<double>& position, double time)
-  {
-      // if previous movement is finished
-      if (!_is_moving){
-          assert(position.size() == _num_axes);
-          _max_duration = 0;
-          // get current position/
-          _position_meas_local = _position_meas.Get();
-          for (unsigned int i=0; i<_num_axes; i++){
-              // Set motion profiles
-              _motion_profile[i]->SetProfileDuration( _position_meas_local[i], position[i], time );
-              // Find lengthiest trajectory
-              _max_duration = max( _max_duration, _motion_profile[i]->Duration() );
-          }
-          // Rescale trajectories to maximal duration
-          for(unsigned int i = 0; i < _num_axes; i++)
-              _motion_profile[i]->SetProfileDuration( _position_meas_local[i], position[i], _max_duration );
+    bool nAxesGeneratorPos::moveTo(const vector<double>& position, double time)
+    {
+        if(position.size()!=num_axes){
+            Logger::In in((this->getName()+moveTo_cmd.getName()).data());
+            log(Error)<<"Size of position != "<<num_axes<<endlog();
+            return false;
+        }
+        
+        // if previous movement is finished
+        if (!is_moving){
+            max_duration = 0;
+            // get current position/
+            p_m = p_m_port.Get();
+            for (unsigned int i=0; i<num_axes; i++){
+                // Set motion profiles
+                motion_profile[i].SetProfileDuration( p_m[i], position[i], time );
+                // Find lengthiest trajectory
+                max_duration = max( max_duration, motion_profile[i].Duration() );
+            }
+            // Rescale trajectories to maximal duration
+            for(unsigned int i = 0; i < num_axes; i++)
+                motion_profile[i].SetProfileDuration( p_m[i], position[i], max_duration );
           
-          _time_begin = TimeService::Instance()->getTicks();
-          _time_passed = 0;
+            time_begin = TimeService::Instance()->getTicks();
+            time_passed = 0;
           
-          _is_moving = true;
-          return true;
-      }
-      // still moving
-      else
-          return false;
-  }
+            is_moving = true;
+            return true;
+        }
+        // still moving
+        else{
+            Logger::In in((this->getName()+moveTo_cmd.getName()).data());
+            log(Error)<<"Still moving, not executing new command."<<endlog();
+            return false;
+        }
+        
+    }
   
-  bool nAxesGeneratorPos::moveFinished() const
-  {
-    return (!_is_moving);
-  }
+    bool nAxesGeneratorPos::moveFinished() const
+    {
+        return (!is_moving);
+    }
   
-  void nAxesGeneratorPos::resetPosition()
-  {
-    _position_desi_local = _position_meas.Get();
-    for(unsigned int i = 0; i < _num_axes; i++)
-      _velocity_desi_local[i] = 0;
-    _position_desi.Set(_position_desi_local);
-    _velocity_desi.Set(_velocity_desi_local);
-    _is_moving = false;
-  }
+    void nAxesGeneratorPos::resetPosition()
+    {
+        p_d = p_m_port.Get();
+        for(unsigned int i = 0; i < num_axes; i++)
+            v_d[i] = 0;
+        p_d_port.Set(p_d);
+        v_d_port.Set(v_d);
+        is_moving = false;
+    }
 }//namespace
+
+ORO_LIST_COMPONENT_TYPE( OCL::nAxesGeneratorPos )
 
 
 

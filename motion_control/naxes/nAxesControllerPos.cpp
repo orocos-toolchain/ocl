@@ -20,6 +20,8 @@
 
 
 #include "nAxesControllerPos.hpp"
+#include <ocl/ComponentLoader.hpp>
+
 #include <assert.h>
 
 namespace OCL
@@ -30,112 +32,149 @@ namespace OCL
     typedef nAxesControllerPos MyType;
 
   
-    nAxesControllerPos::nAxesControllerPos(string name,unsigned int num_axes, 
-                                           string propertyfile)
-        : TaskContext(name),
-          _num_axes(num_axes), 
-          _propertyfile(propertyfile),
-          _position_meas_local(num_axes),
-          _position_desi_local(num_axes),
-          _velocity_out_local(num_axes),
-          _offset_measurement(num_axes),
-          _measureOffset( "measureOffset", &MyType::startMeasuringOffsets,
-                          &MyType::finishedMeasuringOffsets, this),
-          _getOffset( "getOffset", &MyType::getMeasurementOffsets, this),
-          _position_meas("nAxesSensorPosition"),
-          _position_desi("nAxesDesiredPosition"),
-          _velocity_out("nAxesOutputVelocity"),
-          _controller_gain("K", "Proportional Gain")
+    nAxesControllerPos::nAxesControllerPos(string name)
+        : TaskContext(name,PreOperational),
+          measureOffset( "measureVelocityOffset", &MyType::startMeasuringOffsets,
+                         &MyType::finishedMeasuringOffsets, this),
+          p_meas_port("nAxesSensorPosition"),
+          p_desi_port("nAxesDesiredPosition"),
+          v_out_port("nAxesOutputVelocity"),
+          offset_port("nAxesVelocityOffset"),
+          gain_prop("K", "Proportional Gain"),
+          num_axes_prop("num_axes","Number of Axes")
     {
         //Creating TaskContext
         
         //Adding Ports
-        this->ports()->addPort(&_position_meas);
-        this->ports()->addPort(&_position_desi);
-        this->ports()->addPort(&_velocity_out);
+        this->ports()->addPort(&p_meas_port);
+        this->ports()->addPort(&p_desi_port);
+        this->ports()->addPort(&v_out_port);
+        this->ports()->addPort(&offset_port);
         
         //Adding Properties
-        this->properties()->addProperty(&_controller_gain);
+        this->properties()->addProperty(&num_axes_prop);
+        this->properties()->addProperty(&gain_prop);
         
         //Adding Commands
-        this->commands()->addCommand( &_measureOffset,
+        this->commands()->addCommand( &measureOffset,
                                       "calculate the velocity offset on the axes",
                                       "time_sleep", "time to wait before starting measurement",
                                       "num_samples", "number of samples to take");
-        //Adding Methods
-        
-        this->methods()->addMethod( &_getOffset,"Get offset measurements");
-
-        if(!marshalling()->readProperties(_propertyfile)){
-            log(Error) <<"(nAxesControllerPos) Reading Properties from "<<_propertyfile<<" failed!!"<<endlog();
-        }
-        
     }
     
     nAxesControllerPos::~nAxesControllerPos(){};
-    
-    bool nAxesControllerPos::startup()
+
+    bool nAxesControllerPos::configureHook()
     {
-        
-        // check size of properties
-        if(_controller_gain.value().size() != _num_axes)
+        //Check and read all properties
+        num_axes=num_axes_prop.rvalue();
+        if(gain_prop.value().size()!=num_axes){
+            Logger::In in(this->getName().data());
+            log(Error)<<"Size of "<<gain_prop.getName()
+                      <<" does not match "<<num_axes_prop.getName()
+                      <<endlog();
             return false;
+        }
         
+        gain=gain_prop.rvalue();
+        
+        //Resizing all containers to correct size
+        p_meas.resize(num_axes);
+        p_desi.resize(num_axes);
+        offset_measurement.resize(num_axes);
+        
+        //Initialise output ports:
+        v_out.assign(num_axes,0);
+        v_out_port.Set(v_out);
+        return true;
+    }
+                  
+    
+    bool nAxesControllerPos::startHook()
+    {
+        //check connection and sizes of input-ports
+        if(!p_meas_port.ready()){
+            Logger::In in(this->getName().data());
+            log(Error)<<p_meas_port.getName()<<" not ready"<<endlog();
+            return false;
+        }
+        if(!p_desi_port.ready()){
+            Logger::In in(this->getName().data());
+            log(Error)<<p_desi_port.getName()<<" not ready"<<endlog();
+            return false;
+        }
+        if(p_meas_port.Get().size()!=num_axes){
+            Logger::In in(this->getName().data());
+            log(Error)<<"Size of "<<p_meas_port.getName()<<": "<<p_meas_port.Get().size()<<" != " << num_axes<<endlog();
+            return false;
+        }
+        if(p_desi_port.Get().size()!=num_axes){
+            Logger::In in(this->getName().data());
+            log(Error)<<"Size of "<<p_desi_port.getName()<<": "<<p_desi_port.Get().size()<<" != " << num_axes<<endlog();
+            return false;
+        }        
         
         //Initialize
-        _is_measuring = false;
+        is_measuring = false;
         
         return true;
         
     }
     
     
-    void nAxesControllerPos::update()
+    void nAxesControllerPos::updateHook()
     {
         // copy Input and Setpoint to local values
-        _position_meas_local = _position_meas.Get();
-        _position_desi_local = _position_desi.Get();
+        p_meas = p_meas_port.Get();
+        p_desi = p_desi_port.Get();
   
         // position feedback
-        for(unsigned int i=0; i<_num_axes; i++)
-            _velocity_out_local[i] = _controller_gain.value()[i] * (_position_desi_local[i] - _position_meas_local[i]);
-  
+        for(unsigned int i=0; i<num_axes; i++)
+            v_out[i] = gain[i] * (p_desi[i] - p_meas[i]);
+        
         // measure offsets
-        if (_is_measuring && TimeService::Instance()->secondsSince(_time_begin) > _time_sleep){
-            for (unsigned int i=0; i<_num_axes; i++)
-                _offset_measurement[i] += _velocity_out_local[i] / _num_samples;
-            _num_samples_taken++;
-            if (_num_samples_taken == _num_samples)  _is_measuring = false;
+        if (is_measuring && TimeService::Instance()->secondsSince(time_begin) > time_sleep){
+            for (unsigned int i=0; i<num_axes; i++)
+                offset_measurement[i] += v_out[i] / num_samples;
+            num_samples_taken++;
+            if (num_samples_taken == num_samples){
+                is_measuring = false;
+                offset_port.Set(offset_measurement);
+            }
         }
-        _velocity_out.Set(_velocity_out_local);
+        
+        v_out_port.Set(v_out);
     }
   
-    void nAxesControllerPos::shutdown()
+    
+    
+    void nAxesControllerPos::stopHook()
     {
-        for(unsigned int i=0; i<_num_axes; i++){
-            _velocity_out_local[i] = 0.0;
+        for(unsigned int i=0; i<num_axes; i++){
+            v_out[i] = 0.0;
         }
-        _velocity_out.Set(_velocity_out_local);
+        v_out_port.Set(v_out);
     }
   
-    bool nAxesControllerPos::startMeasuringOffsets(double time_sleep, int num_samples)
+    bool nAxesControllerPos::startMeasuringOffsets(double _time_sleep, int _num_samples)
     {
-        log(Debug) <<"(nAxesControllerPos) start measuring offsets"<<endlog();
+        Logger::In in(this->getName().data());        
+        log(Info) <<"Start measuring offsets"<<endlog();
         
         // don't do anything if still measuring
-        if (_is_measuring)
+        if (is_measuring)
             return false;
         
         // get new measurement
         else{
-            for (unsigned int i=0; i<_num_axes; i++){
-                _offset_measurement[i] = 0;
+            for (unsigned int i=0; i<num_axes; i++){
+                offset_measurement[i] = 0;
             }
-            _time_sleep        = max(1.0, time_sleep);  // min 1 sec
-            _time_begin        = TimeService::Instance()->getTicks();
-            _num_samples       = max(1,num_samples);    // min 1 sample
-            _num_samples_taken = 0;
-            _is_measuring      = true;
+            time_sleep        = max(1.0, _time_sleep);  // min 1 sec
+            time_begin        = TimeService::Instance()->getTicks();
+            num_samples       = max(1,_num_samples);    // min 1 sample
+            num_samples_taken = 0;
+            is_measuring      = true;
             return true;
         }
     }
@@ -143,15 +182,13 @@ namespace OCL
   
     bool nAxesControllerPos::finishedMeasuringOffsets() const
     {
-        return !_is_measuring;
+        return !is_measuring;
     }
   
   
-    const std::vector<double>& nAxesControllerPos::getMeasurementOffsets()
-    {
-        return _offset_measurement;
-    }
 }//namespace
 
+ORO_CREATE_COMPONENT_TYPE()
+ORO_LIST_COMPONENT_TYPE( OCL::nAxesControllerPos )
 
 

@@ -18,6 +18,7 @@
 //  
 
 #include "nAxesGeneratorVel.hpp"
+#include <ocl/ComponentLoader.hpp>
 #include <assert.h>
 
 namespace OCL
@@ -27,138 +28,149 @@ namespace OCL
     using namespace std;
     typedef nAxesGeneratorVel MyType;
     
-    nAxesGeneratorVel::nAxesGeneratorVel(string name,unsigned int num_axes,
-                                         string propertyfile)
-        : TaskContext(name),
-          _num_axes(num_axes), 
-          _propertyfile(propertyfile),
-          _duration_desired(num_axes),      
-          _duration_trajectory(num_axes),      
-          _velocity_out_local(num_axes,0.0),
-          _maintain_velocity(num_axes),
-          _time_begin(num_axes),
-          _time_passed(num_axes),
-          _vel_profile(num_axes),
-          _applyVelocity( "applyVelocity", &MyType::applyVelocity,
+    nAxesGeneratorVel::nAxesGeneratorVel(string name)
+        : TaskContext(name,PreOperational),
+          applyVelocity_cmd( "applyVelocity", &MyType::applyVelocity,
                           &MyType::velocityFinished, this),
-          _applyVelocities( "applyVelocities", &MyType::applyVelocities,
+          applyVelocities_cmd( "applyVelocities", &MyType::applyVelocities,
                             &MyType::velocitiesFinished, this),
-          _gotoVelocity( "gotoVelocity", &MyType::gotoVelocity,
+          gotoVelocity_cmd( "gotoVelocity", &MyType::gotoVelocity,
                          &MyType::velocityFinished, this),
-          _gotoVelocities( "gotoVelocities", &MyType::gotoVelocities,
+          gotoVelocities_cmd( "gotoVelocities", &MyType::gotoVelocities,
                            &MyType::velocitiesFinished, this),
-          _setInitVelocity( "setInitVelocity", &MyType::setInitVelocity, this),
-          _setInitVelocities( "setInitVelocities", &MyType::setInitVelocities, this),
-          _velocity_desi("nAxesDesiredVelocity"),
-          _max_acc("max_acc", "Maximum Acceleration in Trajectory",vector<double>(num_axes,0)),
-          _max_jerk("max_jerk", "Maximum Jerk in Trajectory",vector<double>(num_axes,0))
+          setInitVelocity_mtd( "setInitVelocity", &MyType::setInitVelocity, this),
+          setInitVelocities_mtd( "setInitVelocities", &MyType::setInitVelocities, this),
+          v_d_port("nAxesDesiredVelocity"),
+          a_max_prop("max_acc", "Maximum Acceleration in Trajectory"),
+          j_max_prop("max_jerk", "Maximum Jerk in Trajectory"),
+          num_axes_prop("num_axes","Number of Axes")
     {
         //Creating TaskContext
         
         //Adding Properties
-        this->properties()->addProperty(&_max_acc);
-        this->properties()->addProperty(&_max_jerk);
+        this->properties()->addProperty(&num_axes_prop);
+        this->properties()->addProperty(&a_max_prop);
+        this->properties()->addProperty(&j_max_prop);
   
         //Adding Ports
-        this->ports()->addPort(&_velocity_desi);
+        this->ports()->addPort(&v_d_port);
     
         //Creating commands
-        this->commands()->addCommand( &_applyVelocities,"Set the velocity",
+        this->commands()->addCommand( &applyVelocities_cmd,"Set the velocity",
                                       "velocity", "joint velocity for all axes",
                                       "duration", "duration of movement" );
-        this->commands()->addCommand( &_applyVelocity,"Set the velocity for one axis",
+        this->commands()->addCommand( &applyVelocity_cmd,"Set the velocity for one axis",
                                       "axis", "selected axis",
                                       "velocity", "joint velocity for axis",
                                       "duration", "duration of movement" );
-        this->commands()->addCommand( &_gotoVelocities,"Set the velocities",
+        this->commands()->addCommand( &gotoVelocities_cmd,"Set the velocities",
                                       "velocities", "joint velocities for all axes",
                                       "duration", "duration of movement" );
-        this->commands()->addCommand( &_gotoVelocity,"Set the velocity for one axis",
+        this->commands()->addCommand( &gotoVelocity_cmd,"Set the velocity for one axis",
                                       "axis", "selected axis",
                                       "velocity", "joint velocity for axis",
                                       "duration", "duration of movement" );
   
         //Creating Methods
         
-        this->methods()->addMethod( &_setInitVelocity,"set initial velocity", 
+        this->methods()->addMethod( &setInitVelocity_mtd,"set initial velocity", 
                                     "axis", "axis where to set velocity",
                                     "velocity", "velocity to set" );
-        this->methods()->addMethod( &_setInitVelocities,"set initial velocity", 
+        this->methods()->addMethod( &setInitVelocities_mtd,"set initial velocity", 
                                     "velocities", "velocities to set" );
         
-        // Instantiate Motion Profiles
-        for( unsigned int i=0; i<_num_axes; i++)
-            _vel_profile[i] = new VelocityProfile_Trap( 0,0);
-        
-        if(!marshalling()->readProperties(_propertyfile))
-            log(Error) <<"(nAxesGeneratorVel) Reading Properties from "<<_propertyfile<<" failed!!"<<endlog();
-
-	//Initialise port
-        _velocity_desi.Set(_velocity_out_local);
-
     }
     
     nAxesGeneratorVel::~nAxesGeneratorVel()
+    {}
+    
+    bool nAxesGeneratorVel::configureHook()
     {
-        for( unsigned int i=0; i<_num_axes; i++)
-            // velocity profiles are only instantiated if updateProperties is called.
-            if(_vel_profile[i]) delete _vel_profile[i];
+        num_axes=num_axes_prop.rvalue();
+        if(a_max_prop.value().size()!=num_axes){
+            Logger::In in(this->getName().data());
+            log(Error)<<"Size of "<<a_max_prop.getName()
+                      <<" does not match "<<num_axes_prop.getName()
+                      <<endlog();
+            return false;
+        }
+
+        if(j_max_prop.value().size()!=num_axes){
+            Logger::In in(this->getName().data());
+            log(Error)<<"Size of "<<j_max_prop.getName()
+                      <<" does not match "<<num_axes_prop.getName()
+                      <<endlog();
+            return false;
+        }
+        
+        a_max=a_max_prop.rvalue();
+        j_max=j_max_prop.rvalue();
+        
+        //Resizing all containers to correct size
+        duration_desired.resize(num_axes);
+        duration_trajectory.resize(num_axes);
+        maintain_velocity.resize(num_axes);
+        time_begin.resize(num_axes);
+        time_passed.resize(num_axes);
+        vel_profile.resize(num_axes);
+        
+        //Initialise motion profiles
+        for(unsigned int i=0;i<num_axes;i++)
+            vel_profile[i].SetMax(a_max[i],j_max[i]);
+        
+        //Initialise output ports:
+        v_d.assign(num_axes,0);
+        v_d_port.Set(v_d);
+        return true;
     }
     
-    bool nAxesGeneratorVel::startup()
+
+    bool nAxesGeneratorVel::startHook()
     {
-        // check size of properties
-        if(_max_acc.value().size() != _num_axes || _max_jerk.value().size() != _num_axes)
-            return false;
-        
-        for (unsigned int i=0; i<_num_axes; i++)
-            _vel_profile[i]->SetMax(_max_acc.value()[i], _max_jerk.value()[i]);
-        
-        // by default initial velocity is set to zero
-        for (unsigned int i=0; i<_num_axes; i++){
-            _velocity_out_local[i] = 0;
-            _maintain_velocity[i] = false;
+        for (unsigned int i=0; i<num_axes; i++){
+            maintain_velocity[i] = false;
         }
         
         // generate initial trajectory to maintain current velocity
-        for (unsigned int i=0; i<_num_axes; i++)
-            applyVelocity(i, _velocity_out_local[i], 0.0);
+        for (unsigned int i=0; i<num_axes; i++)
+            applyVelocity(i, v_d[i], 0.0);
         
         return true;
     }
   
     
-    void nAxesGeneratorVel::update()
+    void nAxesGeneratorVel::updateHook()
     {
-        for (unsigned int i = 0 ; i < _num_axes ; i++)
-            _time_passed[i] = TimeService::Instance()->secondsSince(_time_begin[i]);
+        for (unsigned int i = 0 ; i < num_axes ; i++)
+            time_passed[i] = TimeService::Instance()->secondsSince(time_begin[i]);
         
-        for (unsigned int i = 0 ; i < _num_axes ; i++){
+        for (unsigned int i = 0 ; i < num_axes ; i++){
             // still moving
-            if (_maintain_velocity[i] || _time_passed[i] <= _duration_desired[i] || _duration_desired[i] == 0)
-                _velocity_out_local[i] = _vel_profile[i]->Pos( min(_time_passed[i], _duration_trajectory[i]) );
+            if (maintain_velocity[i] || time_passed[i] <= duration_desired[i] || duration_desired[i] == 0)
+                v_d[i] = vel_profile[i].Pos( min(time_passed[i], duration_trajectory[i]) );
             
             // stop moving if time is up
             else
                 applyVelocity(i, 0.0, 0.0);
         }
         
-        _velocity_desi.Set(_velocity_out_local);
+        v_d_port.Set(v_d);
     }
     
-    void nAxesGeneratorVel::shutdown()
+    void nAxesGeneratorVel::stopHook()
     {
     }
     
     
-    bool nAxesGeneratorVel::setInitVelocity(const int axis, const double velocity)
+    bool nAxesGeneratorVel::setInitVelocity(const unsigned int axis, const double velocity)
     {
-        
-        if ( axis < 0 || axis >= (int)_num_axes)
+        if (axis >= num_axes){
+            Logger::In in((this->getName()+setInitVelocity_mtd.getName()).data());
+            log(Error)<<"parameter axis "<<axis<<" to big."<<endlog();
             return false;
-        else{
-            _velocity_out_local[axis] = velocity;
-            applyVelocity(axis, _velocity_out_local[axis], 0.0);
+        }else{
+            v_d[axis] = velocity;
+            applyVelocity(axis, v_d[axis], 0.0);
             return true;
         }
     }
@@ -166,89 +178,121 @@ namespace OCL
     
     bool nAxesGeneratorVel::setInitVelocities(const vector<double>& velocity)
     {
-        assert(velocity.size() == _num_axes);
-        
-        bool success = true;
-        for (unsigned int i=0; i<_num_axes; i++)
-            if (!setInitVelocity(i, velocity[i]))
-                success = false;
-        return success;
+        if(velocity.size()!=num_axes){
+            Logger::In in((this->getName()+setInitVelocities_mtd.getName()).data());
+            log(Error)<<"Size of parameter velocity != "<<num_axes<<endlog();
+            return false;
+        }
+        for (unsigned int i=0; i<num_axes; i++)
+            setInitVelocity(i, velocity[i]);
+        return true;
     }
     
-    bool nAxesGeneratorVel::gotoVelocity(const int axis, const double velocity, double duration)
+    bool nAxesGeneratorVel::gotoVelocity(const unsigned int axis, const double velocity, double duration)
     {
-        if ( duration < 0 || axis < 0 || axis >= (int)_num_axes)   
+        if (axis >= num_axes){
+            Logger::In in((this->getName()+gotoVelocity_cmd.getName()).data());
+            log(Error)<<"parameter axis "<<axis<<" to big."<<endlog();
             return false;
-        else{
-            _time_begin[axis]        = TimeService::Instance()->getTicks();
-            _time_passed[axis]       = 0;
-            _maintain_velocity[axis] = true;
-            
-            // calculate velocity profile
-            _vel_profile[axis]->SetProfileDuration(_velocity_out_local[axis], velocity, duration);
-            
-            // get duration of acceleration
-            _duration_trajectory[axis] = _vel_profile[axis]->Duration();
-            _duration_desired[axis] = _duration_trajectory[axis];
-            
-            return true;
         }
+        if (duration < 0){
+            Logger::In in((this->getName()+gotoVelocity_cmd.getName()).data());
+            log(Error)<<"parameter duration < 0"<<endlog();
+            return false;
+        }
+        
+        time_begin[axis]        = TimeService::Instance()->getTicks();
+        time_passed[axis]       = 0;
+        maintain_velocity[axis] = true;
+        
+        // calculate velocity profile
+        vel_profile[axis].SetProfileDuration(v_d[axis], velocity, duration);
+        
+        // get duration of acceleration
+        duration_trajectory[axis] = vel_profile[axis].Duration();
+        duration_desired[axis] = duration_trajectory[axis];
+        
+        return true;
     }
-  
+    
     
     bool nAxesGeneratorVel::gotoVelocities(const vector<double>& velocity, double duration)
     {
-        assert(velocity.size() == _num_axes);
-  
-        bool success = true;
-        for (unsigned int i=0; i<_num_axes; i++)
-            if (!gotoVelocity(i, velocity[i], duration))
-                success = false;
-        return success;
+        if (duration < 0){
+            Logger::In in((this->getName()+gotoVelocities_cmd.getName()).data());
+            log(Error)<<"parameter duration < 0"<<endlog();
+            return false;
+        }
+        if(velocity.size()!=num_axes){
+            Logger::In in((this->getName()+gotoVelocities_cmd.getName()).data());
+            log(Error)<<"Size of parameter velocity != "<<num_axes<<endlog();
+            return false;
+        }
+        
+        for (unsigned int i=0; i<num_axes; i++)
+            gotoVelocity(i, velocity[i], duration);
+        
+        return true;
     }
   
-    bool nAxesGeneratorVel::applyVelocity(const int axis, const double velocity, double duration)
+    bool nAxesGeneratorVel::applyVelocity(const unsigned int axis, const double velocity, double duration)
     {
-        if ( duration < 0 || axis < 0 || axis >= (int)_num_axes)   
+        if (axis >= num_axes){
+            Logger::In in((this->getName()+applyVelocity_cmd.getName()).data());
+            log(Error)<<"parameter axis "<<axis<<" to big."<<endlog();
             return false;
-        else{
-            _time_begin[axis]        = TimeService::Instance()->getTicks();
-            _time_passed[axis]       = 0;
-            _duration_desired[axis]  = duration;
-            _maintain_velocity[axis] = false;
-  
-            // calculate velocity profile
-            _vel_profile[axis]->SetProfile(_velocity_out_local[axis], velocity);
-            
-            // get duration of acceleration
-            _duration_trajectory[axis] = _vel_profile[axis]->Duration();
-            
-            return true;
         }
+        if (duration < 0){
+            Logger::In in((this->getName()+applyVelocity_cmd.getName()).data());
+            log(Error)<<"parameter duration < 0"<<endlog();
+            return false;
+        }
+        
+        time_begin[axis]        = TimeService::Instance()->getTicks();
+        time_passed[axis]       = 0;
+        duration_desired[axis]  = duration;
+        maintain_velocity[axis] = false;
+        
+        // calculate velocity profile
+        vel_profile[axis].SetProfile(v_d[axis], velocity);
+        
+        // get duration of acceleration
+        duration_trajectory[axis] = vel_profile[axis].Duration();
+        
+        return true;
+        
     }
     
     
     bool nAxesGeneratorVel::applyVelocities(const vector<double>& velocity, double duration)
     {
-        assert(velocity.size() == _num_axes);
+        if (duration < 0){
+            Logger::In in((this->getName()+applyVelocities_cmd.getName()).data());
+            log(Error)<<"parameter duration < 0"<<endlog();
+            return false;
+        }
+        if(velocity.size()!=num_axes){
+            Logger::In in((this->getName()+applyVelocities_cmd.getName()).data());
+            log(Error)<<"Size of parameter velocity != "<<num_axes<<endlog();
+            return false;
+        }
         
-        bool success = true;
-        for (unsigned int i=0; i<_num_axes; i++)
-            if (!applyVelocity(i, velocity[i], duration))
-                success = false;
-        return success;
+        for (unsigned int i=0; i<num_axes; i++)
+            applyVelocity(i, velocity[i], duration);
+        
+        return true;
     }
     
-    bool nAxesGeneratorVel::velocityFinished(const int axis) const
+    bool nAxesGeneratorVel::velocityFinished(const unsigned int axis) const
     {
-        return (_time_passed[axis] > _duration_desired[axis] || _duration_desired[axis] == 0);
+        return (time_passed[axis] > duration_desired[axis] || duration_desired[axis] == 0);
     }
   
   
     bool nAxesGeneratorVel::velocitiesFinished() const
     {
         bool returnValue=true;
-        for (unsigned int i = 0 ; i < _num_axes ; i++)
+        for (unsigned int i = 0 ; i < num_axes ; i++)
             if (! velocityFinished(i))
                 returnValue = false;
         
@@ -256,4 +300,5 @@ namespace OCL
     }
 }//namespace
 
+ORO_LIST_COMPONENT_TYPE( OCL::nAxesGeneratorVel )
 

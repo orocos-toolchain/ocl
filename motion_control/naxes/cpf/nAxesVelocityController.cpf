@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "cpf.dtd">
+<properties>
+<struct name="initialPositions" type="array">
+   <description>Initial position (rad) for simulation or hardware</description>
+   <simple name="0" type="double"><value>0</value></simple>
+   <simple name="1" type="double"><value>0</value></simple>
+   <simple name="2" type="double"><value>0</value></simple>
+   <simple name="3" type="double"><value>0</value></simple>
+   <simple name="4" type="double"><value>0</value></simple>
+   <simple name="5" type="double"><value>0</value></simple>
+</struct>
+<simple name="naxes" type="ushort"><description></description><value>6</value></simple>
+</properties>

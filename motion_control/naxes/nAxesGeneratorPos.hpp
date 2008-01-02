@@ -43,11 +43,7 @@ namespace OCL
      * paths of all joints are synchronised, this means that all axes
      * movements are scaled in time to the longest axes-movements. The
      * interpolation uses a trapezoidal velocity profile using a
-     * maximum acceleration and a maximum velocity. It takes the
-     * current position from a dataport shared with
-     * OCL::nAxesSensor and generates position and velocity
-     * setpoints which can be use by OCL::nAxesControllerPos,
-     * OCL::nAxesControllerPosVel or OCL::nAxesControllerVel.
+     * maximum acceleration and a maximum velocity.
      * 
      * \ingroup nAxesComponents
      */
@@ -59,28 +55,23 @@ namespace OCL
          * Constructor of the class.
          * 
          * @param name name of the TaskContext
-         * @param num_axes number of axes
-         * @param propertyfile location of the propertyfile. Default:
-         * cpf/nAxesGeneratorPos.cpf 
          * 
          */
-        nAxesGeneratorPos(std::string name,unsigned int num_axes, 
-                          std::string propertyfile="cpf/nAxesGeneratorPos.cpf");
+        nAxesGeneratorPos(std::string name);
         virtual ~nAxesGeneratorPos();
         
-        virtual bool startup();
-        virtual void update();
-        virtual void shutdown();
+        virtual bool configureHook();
+        virtual bool startHook();
+        virtual void updateHook();
+        virtual void stopHook();
         
     private:
         bool moveTo(const std::vector<double>& position, double time=0);
         bool moveFinished() const;
         void resetPosition();
         
-        unsigned int                              _num_axes;
-        std::string                               _propertyfile;
-        
-        std::vector<double>                       _position_meas_local,  _position_desi_local, _velocity_desi_local;
+        unsigned int num_axes;
+        std::vector<double> p_m, p_d, v_d, v_max, a_max;
     protected:
         /**
          * Command that generates the motion. The command waits until
@@ -93,35 +84,36 @@ namespace OCL
          * 
          * @return false if another motion is still going on, true otherwise.
          */
-        RTT::Command<bool(std::vector<double>,double)> _moveTo;
+        RTT::Command<bool(std::vector<double>,double)> moveTo_cmd;
         /**
          * Method that resets the generators desired position to the
          * measured position and the desired velocity to zero
          */
-        RTT::Method<void(void)>                   _reset_position;
+        RTT::Method<void(void)> reset_position_mtd;
         /// DataPort containing the current measured position, shared
         /// with OCL::nAxesSensor.
-        RTT::ReadDataPort< std::vector<double> >  _position_meas;
+        RTT::ReadDataPort< std::vector<double> >  p_m_port;
         /// DataPort containing the current desired position, shared
         /// with OCL::nAxesControllerPos and OCL::nAxesControllerPosVel.
-        RTT::WriteDataPort< std::vector<double> > _position_desi;
+        RTT::WriteDataPort< std::vector<double> > p_d_port;
         /// DataPort containing the current desired velocity, shared
         /// with OCL::nAxesControllerPosVel and OCL::nAxesControllerVel.
-        RTT::WriteDataPort< std::vector<double> > _velocity_desi;
+        RTT::WriteDataPort< std::vector<double> > v_d_port;
     private:
-        std::vector<KDL::VelocityProfile_Trap*>    _motion_profile;
-        RTT::TimeService::ticks                   _time_begin;
-        RTT::TimeService::Seconds                 _time_passed;
-        double                                    _max_duration;
+        std::vector<KDL::VelocityProfile_Trap>    motion_profile;
+        RTT::TimeService::ticks                   time_begin;
+        RTT::TimeService::Seconds                 time_passed;
+        double                                    max_duration;
         
-        bool                                      _is_moving;
+        bool                                      is_moving;
     protected:
         /// Property containing a vector with the maximum velocity of
         /// each axis
-        RTT::Property< std::vector<double> >      _maximum_velocity;
+        RTT::Property< std::vector<double> >      v_max_prop;
         /// Property containing a vector with the maximum acceleration of
         /// each axis
-        RTT::Property< std::vector<double> >      _maximum_acceleration;
+        RTT::Property< std::vector<double> >      a_max_prop;
+        RTT::Property< unsigned int > num_axes_prop; 
     }; // class
 }//namespace
 #endif // __N_AXES_GENERATOR_POS_H__

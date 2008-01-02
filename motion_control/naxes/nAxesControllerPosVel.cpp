@@ -21,75 +21,118 @@
 
 #include "nAxesControllerPosVel.hpp"
 #include <rtt/Logger.hpp>
+#include <ocl/ComponentLoader.hpp>
+
 #include <assert.h>
 
 namespace OCL
 {
-  using namespace RTT;
-  using namespace std;
+    using namespace RTT;
+    using namespace std;
+    
+    nAxesControllerPosVel::nAxesControllerPosVel(string name)
+        : TaskContext(name,PreOperational),
+          p_meas_port("nAxesSensorPosition"),
+          p_desi_port("nAxesDesiredPosition"),
+          v_desi_port("nAxesDesiredVelocity"),
+          v_out_port("nAxesOutputVelocity"),
+          gain_prop("K", "Proportional Gain"),
+          num_axes_prop("num_axes","Number of Axes")
+    {
+        //Creating TaskContext
+        
+        //Adding ports
+        this->ports()->addPort(&p_meas_port);
+        this->ports()->addPort(&p_desi_port);
+        this->ports()->addPort(&v_desi_port);
+        this->ports()->addPort(&v_out_port);
+        
+        //Adding properties
+        this->properties()->addProperty(&num_axes_prop);
+        this->properties()->addProperty(&gain_prop);
+        
+    }
+    
+    nAxesControllerPosVel::~nAxesControllerPosVel(){};
+    
+    bool nAxesControllerPosVel::configureHook(){
+        num_axes=num_axes_prop.rvalue();
+        if(gain_prop.value().size()!=num_axes){
+            Logger::In in(this->getName().data());
+            log(Error)<<"Size of "<<gain_prop.getName()
+                      <<" does not match "<<num_axes_prop.getName()
+                      <<endlog();
+            return false;
+        }
+        
+        gain=gain_prop.rvalue();
+        
+        //Resizing all containers to correct size
+        p_meas.resize(num_axes);
+        p_desi.resize(num_axes);
+        v_desi.resize(num_axes);
+                
+        //Initialise output ports:
+        v_out.assign(num_axes,0);
+        v_out_port.Set(v_out);
+        return true;
 
-  nAxesControllerPosVel::nAxesControllerPosVel(string name,unsigned int num_axes, 
-  					     string propertyfile)
-    : TaskContext(name),
-      _num_axes(num_axes), 
-      _propertyfile(propertyfile),
-      _position_meas_local(num_axes),
-      _position_desi_local(num_axes),
-      _velocity_desi_local(num_axes),
-      _velocity_out_local(num_axes),
-      _position_meas("nAxesSensorPosition"),
-      _position_desi("nAxesDesiredPosition"),
-      _velocity_desi("nAxesDesiredVelocity"),
-      _velocity_out("nAxesOutputVelocity"),
-      _controller_gain("K", "Proportional Gain")
-  {
-    //Creating TaskContext
-  
-    //Adding ports
-    this->ports()->addPort(&_position_meas);
-    this->ports()->addPort(&_position_desi);
-    this->ports()->addPort(&_velocity_desi);
-    this->ports()->addPort(&_velocity_out);
+    }
     
-    //Adding properties
-    this->properties()->addProperty(&_controller_gain);
-  
-    if(!marshalling()->readProperties(_propertyfile))
-      log(Error) <<"(nAxesControllerPosVel) Reading Properties from "<<_propertyfile<<" failed!!"<<endlog();
+
+    bool nAxesControllerPosVel::startHook(){
+        //check connection and sizes of input-ports
+        if(!p_meas_port.ready()){
+            Logger::In in(this->getName().data());
+            log(Error)<<p_meas_port.getName()<<" not ready"<<endlog();
+            return false;
+        }
+        if(!p_desi_port.ready()){
+            Logger::In in(this->getName().data());
+            log(Error)<<p_desi_port.getName()<<" not ready"<<endlog();
+            return false;
+        }
+        if(!v_desi_port.ready()){
+            Logger::In in(this->getName().data());
+            log(Error)<<v_desi_port.getName()<<" not ready"<<endlog();
+            return false;
+        }
+        if(p_meas_port.Get().size()!=num_axes){
+            Logger::In in(this->getName().data());
+            log(Error)<<"Size of "<<p_meas_port.getName()<<": "<<p_meas_port.Get().size()<<" != " << num_axes<<endlog();
+            return false;
+        }
+        if(p_desi_port.Get().size()!=num_axes){
+            Logger::In in(this->getName().data());
+            log(Error)<<"Size of "<<p_desi_port.getName()<<": "<<p_desi_port.Get().size()<<" != " << num_axes<<endlog();
+            return false;
+        }        
+        if(v_desi_port.Get().size()!=num_axes){
+            Logger::In in(this->getName().data());
+            log(Error)<<"Size of "<<v_desi_port.getName()<<": "<<v_desi_port.Get().size()<<" != " << num_axes<<endlog();
+            return false;
+        }        
+   
+        return true;
+    }
     
-  }
+    void nAxesControllerPosVel::updateHook(){
+        // copy Input and Setpoint to local values
+        p_meas = p_meas_port.Get();
+        p_desi = p_desi_port.Get();
+        v_desi = v_desi_port.Get();
+        
+        for(unsigned int i=0; i<num_axes; i++)
+            v_out[i] = (gain[i] * (p_desi[i] - p_meas[i])) + v_desi[i];
+        
+        v_out_port.Set(v_out);
+    }
   
-  nAxesControllerPosVel::~nAxesControllerPosVel(){};
-  
-  bool nAxesControllerPosVel::startup()
-  {
-    
-    // check size of properties
-    if(_controller_gain.value().size() != _num_axes)
-      return false;
-    
-    return true;
-  }
-  
-  void nAxesControllerPosVel::update()
-  {
-    // copy Input and Setpoint to local values
-    _position_meas_local = _position_meas.Get();
-    _position_desi_local = _position_desi.Get();
-    _velocity_desi_local = _velocity_desi.Get();
-  
-    for(unsigned int i=0; i<_num_axes; i++)
-      _velocity_out_local[i] = (_controller_gain.value()[i] * (_position_desi_local[i] - _position_meas_local[i])) + _velocity_desi_local[i];
-  
-    _velocity_out.Set(_velocity_out_local);
-  }
-  
-  void nAxesControllerPosVel::shutdown()
-  {
-    for(unsigned int i=0; i<_num_axes; i++){
-		_velocity_out_local[i] = 0.0;
-	}
-	_velocity_out.Set(_velocity_out_local);
- 
-  }
+    void nAxesControllerPosVel::stopHook(){
+        for(unsigned int i=0; i<num_axes; i++){
+            v_out[i] = 0.0;
+        }
+        v_out_port.Set(v_out);
+    }
 }//namespace
+ORO_LIST_COMPONENT_TYPE( OCL::nAxesControllerPosVel )

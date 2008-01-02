@@ -19,7 +19,7 @@
 //  
 
 #include "nAxesControllerVel.hpp"
-
+#include <ocl/ComponentLoader.hpp>
 #include <assert.h>
 
 namespace OCL{
@@ -28,104 +28,136 @@ namespace OCL{
     using namespace std;
     typedef nAxesControllerVel MyType;
     
-    nAxesControllerVel::nAxesControllerVel(string name, unsigned int num_axes, 
-                                           string propertyfile)
-        : TaskContext(name),
-          _num_axes(num_axes), 
-          _propertyfile(propertyfile),
-          _position_meas_local(num_axes),
-          _position_desi_local(num_axes),
-          _velocity_desi_local(num_axes),
-          _velocity_out_local(num_axes),
-          _reset_all( "resetAll", &MyType::resetAll, this),
-          _resetAxis( "resetAxis", &MyType::resetAxis, this),
-          _position_meas("nAxesSensorPosition"),
-          _velocity_desi("nAxesDesiredVelocity"),
-          _velocity_out("nAxesOutputVelocity"),
-          _controller_gain("K", "Proportional Gain"),
-          _is_initialized(num_axes),
-          _time_begin(num_axes)
+    nAxesControllerVel::nAxesControllerVel(string name)
+        : TaskContext(name,PreOperational),
+          reset_all_mtd( "resetAll", &MyType::resetAll, this),
+          resetAxis_mtd( "resetAxis", &MyType::resetAxis, this),
+          p_m_port("nAxesSensorPosition"),
+          v_d_port("nAxesDesiredVelocity"),
+          v_out_port("nAxesOutputVelocity"),
+          gain_prop("K", "Proportional Gain"),
+          num_axes_prop("num_axes","Number of Axes")
     {
         //Creating TaskContext
         
         //Adding Ports
-        this->ports()->addPort(&_position_meas);
-        this->ports()->addPort(&_velocity_desi);
-        this->ports()->addPort(&_velocity_out);
+        this->ports()->addPort(&p_m_port);
+        this->ports()->addPort(&v_d_port);
+        this->ports()->addPort(&v_out_port);
     
         //Adding Properties
-        this->properties()->addProperty(&_controller_gain);
+        this->properties()->addProperty(&num_axes_prop);
+        this->properties()->addProperty(&gain_prop);
   
         //Adding Methods
-        this->methods()->addMethod( &_reset_all,"reset all axes of the controller");
-        this->methods()->addMethod( &_resetAxis,"reset a single axis of the controller",
+        this->methods()->addMethod( &reset_all_mtd,"reset all axes of the controller");
+        this->methods()->addMethod( &resetAxis_mtd,"reset a single axis of the controller",
                                     "axis","axis to reset");  
-        
-        if(!marshalling()->readProperties(_propertyfile))
-            log(Error) <<"(nAxesControllerVel) Reading Properties from "<<_propertyfile<<" failed!!"<<endlog();
         
     }
   
   
     nAxesControllerVel::~nAxesControllerVel(){};
-  
-    bool nAxesControllerVel::startup()
-    {
-  
-        // check size of properties
-        if(_controller_gain.value().size() != _num_axes)
+
+    bool nAxesControllerVel::configureHook(){
+        num_axes=num_axes_prop.rvalue();
+        if(gain_prop.value().size()!=num_axes){
+            Logger::In in(this->getName().data());
+            log(Error)<<"Size of "<<gain_prop.getName()
+                      <<" does not match "<<num_axes_prop.getName()
+                      <<endlog();
             return false;
-    
+        }
+        
+        gain=gain_prop.rvalue();
+        
+        //Resizing all containers to correct size
+        p_m.resize(num_axes);
+        v_d.resize(num_axes);
+        is_initialized.resize(num_axes);
+        time_begin.resize(num_axes);
+        
+        //Initialise output ports:
+        v_out.assign(num_axes,0);
+        v_out_port.Set(v_out);
+        return true;
+
+    }
+  
+    bool nAxesControllerVel::startHook()
+    {
+                //check connection and sizes of input-ports
+        if(!p_m_port.ready()){
+            Logger::In in(this->getName().data());
+            log(Error)<<p_m_port.getName()<<" not ready"<<endlog();
+            return false;
+        }
+        if(!v_d_port.ready()){
+            Logger::In in(this->getName().data());
+            log(Error)<<v_d_port.getName()<<" not ready"<<endlog();
+            return false;
+        }
+        if(p_m_port.Get().size()!=num_axes){
+            Logger::In in(this->getName().data());
+            log(Error)<<"Size of "<<p_m_port.getName()<<": "<<p_m_port.Get().size()<<" != " << num_axes<<endlog();
+            return false;
+        }
+        if(v_d_port.Get().size()!=num_axes){
+            Logger::In in(this->getName().data());
+            log(Error)<<"Size of "<<v_d_port.getName()<<": "<<v_d_port.Get().size()<<" != " << num_axes<<endlog();
+            return false;
+        }        
+   
         // reset integrator
-        for(unsigned int i=0; i<_num_axes; i++)
-            _is_initialized[i] = false;
+        for(unsigned int i=0; i<num_axes; i++)
+            is_initialized[i] = false;
         
         return true;
     }
   
-    void nAxesControllerVel::update()
+    void nAxesControllerVel::updateHook()
     {
         // copy Input and Setpoint to local values
-        _position_meas_local = _position_meas.Get();
-        _velocity_desi_local = _velocity_desi.Get();
+        p_m = p_m_port.Get();
+        v_d = v_d_port.Get();
         
-        // initialize
-        for (unsigned int i=0; i<_num_axes; i++){
-            if (!_is_initialized[i]){
-                _is_initialized[i] = true;
-                _position_desi_local[i] = _position_meas_local[i];
-                _time_begin[i] = TimeService::Instance()->getTicks();
+        // initialize integrator
+        for (unsigned int i=0; i<num_axes; i++){
+            if (!is_initialized[i]){
+                is_initialized[i] = true;
+                p_d[i] = p_m[i];
+                time_begin[i] = TimeService::Instance()->getTicks();
             }
         }
-        // position feedback on integrated velocity
         
-        for(unsigned int i=0; i<_num_axes; i++){
-            double time_difference = TimeService::Instance()->secondsSince(_time_begin[i]);
-            _position_desi_local[i] += _velocity_desi_local[i] * time_difference;
-            _velocity_out_local[i] = (_controller_gain.value()[i] * (_position_desi_local[i] - _position_meas_local[i])); //+ _velocity_desi_local[i];
-            _time_begin[i] = TimeService::Instance()->getTicks();
+        // position feedback on integrated velocity
+        for(unsigned int i=0; i<num_axes; i++){
+            double time_difference = TimeService::Instance()->secondsSince(time_begin[i]);
+            p_d[i] += v_d[i] * time_difference;
+            v_out[i] = (gain[i] * (p_d[i] - p_m[i])); //+ _velocity_desi_local[i];
+            time_begin[i] = TimeService::Instance()->getTicks();
         }
-        _velocity_out.Set(_velocity_out_local);
+        v_out_port.Set(v_out);
     }
     
-    void nAxesControllerVel::shutdown()
+    void nAxesControllerVel::stopHook()
     {
-        for(unsigned int i=0; i<_num_axes; i++){
-            _velocity_out_local[i] = 0.0;
+        for(unsigned int i=0; i<num_axes; i++){
+            v_out[i] = 0.0;
         }
-        _velocity_out.Set(_velocity_out_local);
+        v_out_port.Set(v_out);
     }
     
     void nAxesControllerVel::resetAll()
     {
-        for(unsigned int i=0; i<_num_axes; i++)
-            _is_initialized[i] = false;
+        for(unsigned int i=0; i<num_axes; i++)
+            is_initialized[i] = false;
     }
     
     void nAxesControllerVel::resetAxis(int axis)
     {
-        _is_initialized[axis] = false;
+        is_initialized[axis] = false;
     }
 }//namespace
-
+ORO_LIST_COMPONENT_TYPE( OCL::nAxesControllerVel )
 

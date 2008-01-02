@@ -38,11 +38,6 @@ namespace OCL
      * positionValues of an axis. It uses a simple position-feedback
      * to calculate an output velocity. 
      * velocity_out = K_gain * ( position_desired - position_measured)
-     * It can share dataports with
-     * OCL::nAxesSensor to get the measured positions, with
-     * OCL::nAxesGeneratorPos to get its desired positions and with
-     * OCL::nAxesEffectorVel to send its output velocities to the
-     * hardware/simulation axes.
      * 
      * \ingroup nAxesComponents 
      */
@@ -54,29 +49,24 @@ namespace OCL
          * Constructor of the class
          * 
          * @param name name of the TaskContext
-         * @param num_axes number of axes
-         * @param propertyfile location of the propertyfile. Default:
-         * cpf/nAxesControllerPos.cpf 
          * 
          */
-        nAxesControllerPos(std::string name, unsigned int num_axes,
-                           std::string propertyfile="cpf/nAxesControllerPos.cpf");
+        nAxesControllerPos(std::string name);
         
         virtual ~nAxesControllerPos();
         
-        virtual bool startup();
-        virtual void update();
-        virtual void shutdown();
-  
+        virtual bool configureHook();
+        virtual bool startHook();
+        virtual void updateHook();
+        virtual void stopHook();
+        
     private:
         bool startMeasuringOffsets(double treshold_moving, int num_samples);
         bool finishedMeasuringOffsets() const;
-        const std::vector<double>& getMeasurementOffsets();
-    
-        unsigned int                                _num_axes;
-        std::string                                 _propertyfile;
         
-        std::vector<double>                         _position_meas_local, _position_desi_local, _velocity_out_local, _offset_measurement;
+        unsigned int        num_axes;
+        
+        std::vector<double> p_meas,p_desi,v_out,offset_measurement,gain;
     protected:
         /** 
          * Command to measure a velocity offset on the axes. The idea
@@ -89,33 +79,29 @@ namespace OCL
          * 
          * @return false if still measurering, true otherwise
          */
-        RTT::Command<bool(double,int)>              _measureOffset;
-        /** 
-         * Method to get the calculated offsets. Use it only after the
-         *nAxesControllerPos::_measureOffset command.
-         * 
-         * 
-         * @return vector with the offset value for each axis.
-         */
-        RTT::Method<std::vector<double>(void)>      _getOffset;
-        /// DataPort containing the measured positions, shared with
+        RTT::Command<bool(double,int)>              measureOffset;
         /// OCL::nAxesSensor 
-        RTT::ReadDataPort< std::vector<double> >    _position_meas;
+        RTT::ReadDataPort< std::vector<double> >    p_meas_port;
         /// DataPort containing the desired positions, shared with
         /// OCL::nAxesGeneratorPos 
-        RTT::ReadDataPort< std::vector<double> >    _position_desi;
+        RTT::ReadDataPort< std::vector<double> >    p_desi_port;
         /// DataPort containing the output velocities, shared with
         /// OCL::nAxesEffectorVel 
-        RTT::WriteDataPort< std::vector<double> >   _velocity_out;
+        RTT::WriteDataPort< std::vector<double> >   v_out_port;
+        ///DataPort containing the calculated offsets after executing
+        ///the measureOffset Command
+        RTT::WriteDataPort<std::vector<double> > offset_port;
+        
     private:
-        int                                         _num_samples, _num_samples_taken;
-        double                                      _time_sleep;
-        RTT::TimeService::ticks                     _time_begin;
-        bool                                        _is_measuring;
+        int                       num_samples, num_samples_taken;
+        double                    time_sleep;
+        RTT::TimeService::ticks   time_begin;
+        bool                      is_measuring;
     protected:
         /// Vector with the control gain value for each axis.
-        RTT::Property< std::vector<double> >        _controller_gain;
-        
+        RTT::Property< std::vector<double> >  gain_prop;
+        RTT::Property< unsigned int > num_axes_prop;
+                
     }; // class
 }//namespace
 #endif // __N_AXES_CONTROLLER_POS_H__

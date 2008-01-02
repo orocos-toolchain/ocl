@@ -1,14 +1,14 @@
-StateMachine Default
+StateMachine Simple_nAxes_Test
 {
 
-  var bool calibrate_offsets     = true
+  var bool calibrate_offsets     = false
   var bool move_to               = true
 
   const double pi = 3.14159265358979
 
   initial state StartRobotState {
     entry {
-      do Robot.prepareForUse()
+      //do Robot.prepareForUse()
     }
     exit {
       do Robot.unlockAllAxes()
@@ -29,14 +29,14 @@ StateMachine Default
     entry {
       do nAxesGeneratorPos.start()
       do nAxesControllerPos.start()
-      do CalibrateOffsetsProg.start()
+//      do CalibrateOffsetsProg.start()
     }
     exit {
       do nAxesGeneratorPos.stop()
       do nAxesControllerPos.stop()
     }
     transitions {
-      if !CalibrateOffsetsProg.isRunning then
+  //    if !CalibrateOffsetsProg.isRunning then
        select MoveToState
     }
   }      
@@ -47,32 +47,17 @@ StateMachine Default
         select StopRobotState
     }
     entry {
-      do nAxesGeneratorVel.start()
-      do nAxesControllerVel.start() 
-      //do nAxesGeneratorPos.start()
-      //do nAxesControllerPosVel.start() 
-      do Reporting.start()
+      do nAxesGeneratorPos.start()
+      do nAxesControllerPosVel.start() 
+      //do Reporting.start()
 
-        do nAxesGeneratorVel.applyVelocity(4, 0.1 ,7.0)
-        do nAxesGeneratorVel.applyVelocity(4, -0.1,7.0)
-        do nAxesGeneratorVel.applyVelocity(4, 0.0,2.0)
-        do nAxesGeneratorVel.applyVelocity(4, 0.2 ,7.0)
-        do nAxesGeneratorVel.applyVelocity(4, -0.2 ,7.0)
-        do nAxesGeneratorVel.applyVelocity(4, 0.0 ,2.0)
-        do nAxesGeneratorVel.applyVelocity(4, 0.4 ,7.0)
-        do nAxesGeneratorVel.applyVelocity(4, -0.4 ,7.0)
-        do nAxesGeneratorVel.applyVelocity(4, 0.0 ,2.0)
-        do nAxesGeneratorVel.applyVelocity(4, 0.8 ,7.0)
-        do nAxesGeneratorVel.applyVelocity(4, -0.8 ,7.0)
-        do nAxesGeneratorVel.applyVelocity(4, 0.0 ,2.0)
-
+      var array pos = array(6,0.1)
+      do nAxesGeneratorPos.moveTo(pos,7.0)
     }
     exit {
-	 //do nAxesControllerPosVel.stop()
-	 do nAxesControllerVel.stop()
-	 //do nAxesGeneratorPosVel.stop()
-	 do nAxesGeneratorVel.stop()
-	 do Reporting.stop()
+	 do nAxesControllerPosVel.stop()
+	 do nAxesGeneratorPos.stop()
+	// do Reporting.stop()
     }
     transitions {
       select StopRobotState
@@ -86,9 +71,9 @@ StateMachine Default
       do Robot.lockAllAxes()
     }
     exit {
-      do Robot.prepareForShutdown()
+    //  do Robot.prepareForShutdown()
     }
   }
 }
 
-RootMachine Default Default
+RootMachine Simple_nAxes_Test SimpleMoveTo

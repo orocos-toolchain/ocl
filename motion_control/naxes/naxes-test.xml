@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "cpf.dtd">
+<properties>
+<simple name="Import" type="string"><value>/home/rsmits/orocos/install</value></simple>
+
+<struct name="nAxesControllerPos" type="OCL::nAxesControllerPos">
+  <struct name="Activity" type="PeriodicActivity">
+    <simple name="Period" type="double"><value>0.01</value></simple>
+    <simple name="Priority" type="short"><value>99</value></simple>
+    <simple name="Scheduler" type="string"><value>ORO_SCHED_RT</value></simple>
+  </struct>
+  <simple name="AutoConf" type="boolean"><value>1</value></simple>
+  <simple name="AutoStart" type="boolean"><value>0</value></simple>
+  <simple name="PropertyFile" type="string"><value>cpf/nAxesControllerPos.cpf</value></simple>
+<!--   <struct name="Peers" type="PropertyBag"> -->
+<!--      <simple type="string"><value>Robot</value></simple> -->
+<!--      <simple type="string"><value>nAxesGeneratorPos</value></simple> -->
+<!--   </struct> -->
+  <struct name="Ports" type="PropertyBag">
+     <simple name="nAxesSensorPosition" type="string"><value>nAxesSensorPosition</value></simple>
+     <simple name="nAxesDesiredPosition" type="string"><value>nAxesDesiredPosition</value></simple>
+     <simple name="nAxesOutputVelocity" type="string"><value>nAxesOutputVelocity</value></simple>
+  </struct>
+</struct>
+
+<struct name="nAxesControllerPosVel" type="OCL::nAxesControllerPosVel">
+  <struct name="Activity" type="PeriodicActivity">
+    <simple name="Period" type="double"><value>0.01</value></simple>
+    <simple name="Priority" type="short"><value>99</value></simple>
+    <simple name="Scheduler" type="string"><value>ORO_SCHED_RT</value></simple>
+  </struct>
+  <simple name="AutoConf" type="boolean"><value>1</value></simple>
+  <simple name="AutoStart" type="boolean"><value>0</value></simple>
+  <simple name="PropertyFile" type="string"><value>cpf/nAxesControllerPosVel.cpf</value></simple>
+<!--   <struct name="Peers" type="PropertyBag"> -->
+<!--      <simple type="string"><value>Robot</value></simple> -->
+<!--      <simple type="string"><value>nAxesGeneratorPos</value></simple> -->
+<!--      <simple type="string"><value>nAxesGeneratorVel</value></simple> -->
+<!--   </struct> -->
+  <struct name="Ports" type="PropertyBag">
+     <simple name="nAxesSensorPosition" type="string"><value>nAxesSensorPosition</value></simple>
+     <simple name="nAxesDesiredPosition" type="string"><value>nAxesDesiredPosition</value></simple>
+     <simple name="nAxesDesiredVelocity" type="string"><value>nAxesDesiredVelocity</value></simple>
+     <simple name="nAxesOutputVelocity" type="string"><value>nAxesOutputVelocity</value></simple>
+  </struct>
+</struct>
+
+<struct name="nAxesControllerVel" type="OCL::nAxesControllerVel">
+  <struct name="Activity" type="PeriodicActivity">
+    <simple name="Period" type="double"><value>0.01</value></simple>
+    <simple name="Priority" type="short"><value>99</value></simple>
+    <simple name="Scheduler" type="string"><value>ORO_SCHED_RT</value></simple>
+  </struct>
+  <simple name="AutoConf" type="boolean"><value>1</value></simple>
+  <simple name="AutoStart" type="boolean"><value>0</value></simple>
+  <simple name="PropertyFile" type="string"><value>cpf/nAxesControllerVel.cpf</value></simple>
+<!--   <struct name="Peers" type="PropertyBag"> -->
+<!--      <simple type="string"><value>Robot</value></simple> -->
+<!--      <simple type="string"><value>nAxesGeneratorVel</value></simple> -->
+<!--   </struct> -->
+  <struct name="Ports" type="PropertyBag">
+     <simple name="nAxesSensorPosition" type="string"><value>nAxesSensorPosition</value></simple>
+     <simple name="nAxesDesiredVelocity" type="string"><value>nAxesDesiredVelocity</value></simple>
+     <simple name="nAxesOutputVelocity" type="string"><value>nAxesOutputVelocity</value></simple>
+  </struct>
+</struct>
+
+<struct name="nAxesGeneratorPos" type="OCL::nAxesGeneratorPos">
+  <struct name="Activity" type="PeriodicActivity">
+    <simple name="Period" type="double"><value>0.01</value></simple>
+    <simple name="Priority" type="short"><value>99</value></simple>
+    <simple name="Scheduler" type="string"><value>ORO_SCHED_RT</value></simple>
+  </struct>
+  <simple name="AutoConf" type="boolean"><value>1</value></simple>
+  <simple name="AutoStart" type="boolean"><value>0</value></simple>
+  <simple name="PropertyFile" type="string"><value>cpf/nAxesGeneratorPos.cpf</value></simple>
+<!--   <struct name="Peers" type="PropertyBag"> -->
+<!--      <simple type="string"><value>Robot</value></simple> -->
+<!--      <simple type="string"><value>nAxesControllerPos</value></simple> -->
+<!--      <simple type="string"><value>nAxesControllerPosVel</value></simple> -->
+<!--   </struct> -->
+  <struct name="Ports" type="PropertyBag">
+     <simple name="nAxesSensorPosition" type="string"><value>nAxesSensorPosition</value></simple>
+     <simple name="nAxesDesiredVelocity" type="string"><value>nAxesDesiredVelocity</value></simple>
+     <simple name="nAxesDesiredPosition" type="string"><value>nAxesDesiredPosition</value></simple>
+  </struct>
+</struct>
+
+<struct name="nAxesGeneratorVel" type="OCL::nAxesGeneratorVel">
+  <struct name="Activity" type="PeriodicActivity">
+    <simple name="Period" type="double"><value>0.01</value></simple>
+    <simple name="Priority" type="short"><value>99</value></simple>
+    <simple name="Scheduler" type="string"><value>ORO_SCHED_RT</value></simple>
+  </struct>
+  <simple name="AutoConf" type="boolean"><value>1</value></simple>
+  <simple name="AutoStart" type="boolean"><value>0</value></simple>
+  <simple name="PropertyFile" type="string"><value>cpf/nAxesGeneratorVel.cpf</value></simple>
+<!--   <struct name="Peers" type="PropertyBag"> -->
+<!--      <simple type="string"><value>Robot</value></simple> -->
+<!--      <simple type="string"><value>nAxesControllerVel</value></simple> -->
+<!--   </struct> -->
+  <struct name="Ports" type="PropertyBag">
+     <simple name="nAxesDesiredVelocity" type="string"><value>nAxesDesiredVelocity</value></simple>
+  </struct>
+</struct>
+
+<struct name="Robot" type="OCL::nAxesVelocityController">
+  <struct name="Activity" type="PeriodicActivity">
+    <simple name="Period" type="double"><value>0.001</value></simple>
+    <simple name="Priority" type="short"><value>99</value></simple>
+    <simple name="Scheduler" type="string"><value>ORO_SCHED_RT</value></simple>
+  </struct> 
+  <simple name="AutoConf" type="boolean"><value>1</value></simple>
+  <simple name="AutoStart" type="boolean"><value>1</value></simple>
+  <simple name="PropertyFile" type="string"><value>cpf/nAxesVelocityController.cpf</value></simple>
+  <struct name="Ports" type="PropertyBag">
+     <simple name="nAxesSensorPosition" type="string"><value>nAxesSensorPosition</value></simple>
+     <simple name="nAxesOutputVelocity" type="string"><value>nAxesOutputVelocity</value></simple>
+  </struct>
+  <struct name="Peers" type="PropertyBag">
+     <simple type="string"><value>nAxesGeneratorVel</value></simple>
+     <simple type="string"><value>nAxesGeneratorPos</value></simple>
+     <simple type="string"><value>nAxesControllerVel</value></simple>
+     <simple type="string"><value>nAxesControllerPosVel</value></simple>
+     <simple type="string"><value>nAxesControllerPos</value></simple>
+  </struct>
+<!--   <simple name="ProgramScript" type="string"><value>cpf/program_calibrate_offsets.ops</value></simple> -->
+  <simple name="StateMachineScript" type="string"><value>cpf/states.osd</value></simple>
+</struct>
+
+</properties>
