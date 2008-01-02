@@ -42,22 +42,20 @@ namespace OCL
     class nAxesVelocityController: public RTT::TaskContext
     {
     public:
-        nAxesVelocityController(std::string name,unsigned int nrofjoints, std::string propertyfile="cpf/nAxesVelocityController.cpf");
+        nAxesVelocityController(std::string name);
         virtual ~nAxesVelocityController(){};
     
     private:
-        virtual bool startAxes();
-        virtual bool stopAxes();
-        virtual bool lockAxes();
-        virtual bool unlockAxes();
+        virtual bool startAllAxes();
+        virtual bool stopAllAxes();
+        virtual bool lockAllAxes();
+        virtual bool unlockAllAxes();
         
         virtual bool configureHook();
         virtual bool startHook();
         virtual void updateHook();
-        virtual void cleanupHook();
         virtual void stopHook();
-        
-        const std::string propertyfile;
+        virtual void cleanupHook();
         
         unsigned int naxes;
         
@@ -67,17 +65,16 @@ namespace OCL
         std::vector<RTT::SimulationAxis*> simulation_axes;
 
     protected:
-        Method<bool(void)> M_startAxes;
-        Method<bool(void)> M_stopAxes;
-        Method<bool(void)> M_unlockAxes;
-        Method<bool(void)> M_lockAxes; 
+        Method<bool(void)> M_startAllAxes;
+        Method<bool(void)> M_stopAllAxes;
+        Method<bool(void)> M_unlockAllAxes;
+        Method<bool(void)> M_lockAllAxes; 
         
         RTT::DataPort<std::vector<double> > D_driveValues;
         RTT::DataPort<std::vector<double> > D_positionValues;
         
         RTT::Property<std::vector<double> > P_initialPositions;
-        
-        RTT::Constant<unsigned int> A_naxes;
+        RTT::Property<unsigned int> P_naxes;
         
     };
 }

@@ -16,7 +16,7 @@
 //  
 
 #include "nAxesVelocityController.hpp"
-
+#include <ocl/ComponentLoader.hpp>
 #include <rtt/Logger.hpp>
 
 namespace OCL
@@ -24,47 +24,67 @@ namespace OCL
     using namespace RTT;
     using namespace std;
     
-    nAxesVelocityController::nAxesVelocityController(string name, unsigned int _naxes, string _propertyfile)
+    nAxesVelocityController::nAxesVelocityController(string name)
         : TaskContext(name,PreOperational),
-          propertyfile(_propertyfile),
-          naxes(_naxes),
-          driveValues(naxes,0),
-          positionValues(naxes,0),
-          simulation_axes(naxes),
-          M_startAxes("startAxes",&nAxesVelocityController::startAxes,this),
-          M_stopAxes("stopAxes",&nAxesVelocityController::stopAxes,this),
-          M_unlockAxes("unlockAxes",&nAxesVelocityController::unlockAxes,this),
-          M_lockAxes("lockAxes",&nAxesVelocityController::lockAxes,this),
-          D_driveValues("nAxesOutputVelocity",driveValues),
-          D_positionValues("nAxesSensorPosition",positionValues),
-          P_initialPositions("initialPositions","initial positions (rad) for the axes",positionValues),
-          A_naxes("naxes",naxes)
+          M_startAllAxes("startAllAxes",&nAxesVelocityController::startAllAxes,this),
+          M_stopAllAxes("stopAllAxes",&nAxesVelocityController::stopAllAxes,this),
+          M_unlockAllAxes("unlockAllAxes",&nAxesVelocityController::unlockAllAxes,this),
+          M_lockAllAxes("lockAllAxes",&nAxesVelocityController::lockAllAxes,this),
+          D_driveValues("nAxesOutputVelocity"),
+          D_positionValues("nAxesSensorPosition"),
+          P_initialPositions("initialPositions","initial positions (rad) for the axes"),
+          P_naxes("naxes","number of axes")
     {
-        methods()->addMethod(&M_startAxes,"start the simulation axes");
-        methods()->addMethod(&M_stopAxes,"stop the simulation axes");
-        methods()->addMethod(&M_lockAxes,"lock the simulation axes");
-        methods()->addMethod(&M_unlockAxes,"unlock the simulation axes");
+        methods()->addMethod(&M_startAllAxes,"start the simulation axes");
+        methods()->addMethod(&M_stopAllAxes,"stop the simulation axes");
+        methods()->addMethod(&M_lockAllAxes,"lock the simulation axes");
+        methods()->addMethod(&M_unlockAllAxes,"unlock the simulation axes");
         
         ports()->addPort(&D_driveValues);
         ports()->addPort(&D_positionValues);
         
         properties()->addProperty(&P_initialPositions);
-        attributes()->addAttribute(&A_naxes);
+        properties()->addProperty(&P_naxes);
         
     }
     
     bool nAxesVelocityController::configureHook()
     {
-        this->marshalling()->readProperties(propertyfile);
+        naxes=P_naxes.value();
+        if(P_initialPositions.value().size()!=naxes){
+            Logger::In in(this->getName().data());
+            log(Error)<<"Size of "<<P_initialPositions.getName()
+                      <<" does not match "<<P_naxes.getName()
+                      <<endlog();
+            return false;
+        }
+        
+        driveValues.resize(naxes);
+        positionValues=P_initialPositions.value();
         
         for (unsigned int i = 0; i <naxes; i++){
-            simulation_axes[i] = new SimulationAxis(P_initialPositions.value()[i]);
+            simulation_axes[i] = new SimulationAxis(positionValues[i]);
         }
+
+        D_positionValues.Set(positionValues);
+        
         return true;
     }
 
     bool nAxesVelocityController::startHook()
     {
+        //check connection and sizes of input-ports
+        if(!D_driveValues.ready()){
+            Logger::In in(this->getName().data());
+            log(Error)<<D_driveValues.getName()<<" not ready"<<endlog();
+            return false;
+        }
+        if(D_driveValues.Get().size()!=naxes){
+            Logger::In in(this->getName().data());
+            log(Error)<<"Size of "<<D_driveValues.getName()<<": "<<D_driveValues.Get().size()<<" != " << naxes<<endlog();
+            return false;
+        }
+        
         return true;
     }
     
@@ -88,7 +108,7 @@ namespace OCL
     {
     }
     
-    bool nAxesVelocityController::startAxes()
+    bool nAxesVelocityController::startAllAxes()
     {
         bool retval=true;
         for(vector<SimulationAxis*>::iterator axis=simulation_axes.begin();
@@ -97,7 +117,7 @@ namespace OCL
         return retval;
     }
 
-    bool nAxesVelocityController::stopAxes()
+    bool nAxesVelocityController::stopAllAxes()
     {
             bool retval=true;
         for(vector<SimulationAxis*>::iterator axis=simulation_axes.begin();
@@ -106,7 +126,7 @@ namespace OCL
         return retval;
     }
 
-    bool nAxesVelocityController::lockAxes()
+    bool nAxesVelocityController::lockAllAxes()
     {
     bool retval=true;
         for(vector<SimulationAxis*>::iterator axis=simulation_axes.begin();
@@ -116,16 +136,15 @@ namespace OCL
         
     }
 
-    bool nAxesVelocityController::unlockAxes()
+    bool nAxesVelocityController::unlockAllAxes()
     {
     bool retval=true;
         for(vector<SimulationAxis*>::iterator axis=simulation_axes.begin();
             axis!=simulation_axes.end();axis++)
             retval&=(*axis)->unlock();
         return retval;
-    
     }
 }
-
+ORO_CREATE_COMPONENT(OCL::nAxesVelocityController)
         
           
