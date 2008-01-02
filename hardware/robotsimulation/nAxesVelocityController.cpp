@@ -61,8 +61,9 @@ namespace OCL
         
         driveValues.resize(naxes);
         positionValues=P_initialPositions.value();
+        simulation_axes.resize(naxes);
         
-        for (unsigned int i = 0; i <naxes; i++){
+        for (unsigned int i = 0; i<naxes; i++){
             simulation_axes[i] = new SimulationAxis(positionValues[i]);
         }
 
