@@ -50,11 +50,10 @@ namespace OCL
          * The contructor of the class.
          * 
          * @param name Name of the TaskContext
-         * @param propertyfilename name of the propertyfile to
          * configure the component with, default: cpf/Kuka361nAxesVelocityController.cpf
          * 
          */
-        Kuka361nAxesVelocityController(std::string name,std::string propertyfilename="cpf/Kuka361nAxesVelocityController.cpf");
+        Kuka361nAxesVelocityController(std::string name);
         virtual ~Kuka361nAxesVelocityController();
     
     protected:  
@@ -222,12 +221,6 @@ namespace OCL
         virtual bool prepareForUseCompleted() const;
         virtual bool prepareForShutdown();
         virtual bool prepareForShutdownCompleted() const;
-    
-        /**
-         * A local copy of the name of the propertyfile so we can store
-         * changed properties.
-         */
-        const std::string propertyfile;
     
         /**
          * Activation state of robot

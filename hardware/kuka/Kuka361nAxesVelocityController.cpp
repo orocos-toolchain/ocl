@@ -25,6 +25,7 @@
  ***************************************************************************/ 
 
 #include "Kuka361nAxesVelocityController.hpp"
+#include <ocl/ComponentLoader.hpp>
 
 #include <rtt/Logger.hpp>
 #include <stdlib.h>
@@ -65,7 +66,7 @@ namespace OCL
     
     typedef Kuka361nAxesVelocityController MyType;
     
-    Kuka361nAxesVelocityController::Kuka361nAxesVelocityController(string name,string _propertyfile)
+    Kuka361nAxesVelocityController::Kuka361nAxesVelocityController(string name)
         : TaskContext(name,PreOperational),
           startAllAxes_mtd( "startAllAxes", &MyType::startAllAxes, this),
           stopAllAxes_mtd( "stopAllAxes", &MyType::stopAllAxes, this),
@@ -88,7 +89,6 @@ namespace OCL
           chain_attr("Kinematics"),
           driveOutOfRange_evt("driveOutOfRange"),
           positionOutOfRange_evt("positionOutOfRange"),
-          propertyfile(_propertyfile),
           activated(false),
           positionConvertFactor(KUKA361_NUM_AXES),
           driveConvertFactor(KUKA361_NUM_AXES),
@@ -221,10 +221,6 @@ namespace OCL
     {
         Logger::In in(this->getName().data());
         
-        if (!marshalling()->readProperties(propertyfile)) {
-            log(Error) << "Failed to read the property file, continueing with default values." << endlog();
-            return false;
-        }  
         simulation=simulation_prop.value();
 
         if(!(driveLimits_prop.value().size()==KUKA361_NUM_AXES&&
@@ -296,8 +292,6 @@ namespace OCL
 
     void Kuka361nAxesVelocityController::cleanupHook()
     {
-        //Write properties back to file
-        marshalling()->writeProperties(propertyfile);
     }
         
     bool Kuka361nAxesVelocityController::prepareForUse()
@@ -442,3 +436,5 @@ namespace OCL
     
       
 }//namespace orocos
+ORO_CREATE_COMPONENT_TYPE()
+ORO_LIST_COMPONENT_TYPE( OCL::Kuka361nAxesVelocityController )
