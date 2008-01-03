@@ -391,7 +391,7 @@
 
   /* ... ComponentX implementation file ... */
   // <emphasis>once</emphasis>:
-  ORO_CREATE_COMPONENT_TYPE
+  ORO_CREATE_COMPONENT_TYPE()
   // <emphasis>For the ComponentX type</emphasis>:
   ORO_LIST_COMPONENT_TYPE( NS::ComponentX )</programlisting>
          <para>
