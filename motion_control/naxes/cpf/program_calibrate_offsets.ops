@@ -8,6 +8,6 @@ program CalibrateOffsetsProg{
   var int i
 
   do nAxesControllerPos.measureVelocityOffset(sleep, number_of_samples)
-  do Robot.addDriveOffset(nAxesController.nAxesVelocityOffset)
+  do Robot.addDriveOffset(nAxesControllerPos.nAxesVelocityOffset)
   do nAxesGeneratorPos.resetPosition()
 }    

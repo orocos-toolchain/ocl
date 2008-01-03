@@ -39,7 +39,7 @@ namespace OCL
           p_meas_port("nAxesSensorPosition"),
           p_desi_port("nAxesDesiredPosition"),
           v_out_port("nAxesOutputVelocity"),
-          offset_port("nAxesVelocityOffset"),
+          offset_attr("nAxesVelocityOffset"),
           gain_prop("K", "Proportional Gain"),
           num_axes_prop("num_axes","Number of Axes")
     {
@@ -49,11 +49,11 @@ namespace OCL
         this->ports()->addPort(&p_meas_port);
         this->ports()->addPort(&p_desi_port);
         this->ports()->addPort(&v_out_port);
-        this->ports()->addPort(&offset_port);
         
         //Adding Properties
         this->properties()->addProperty(&num_axes_prop);
         this->properties()->addProperty(&gain_prop);
+        this->attributes()->addAttribute(&offset_attr);
         
         //Adding Commands
         this->commands()->addCommand( &measureOffset,
@@ -86,6 +86,7 @@ namespace OCL
         //Initialise output ports:
         v_out.assign(num_axes,0);
         v_out_port.Set(v_out);
+        offset_attr.set(offset_measurement);
         return true;
     }
                   
@@ -139,7 +140,7 @@ namespace OCL
             num_samples_taken++;
             if (num_samples_taken == num_samples){
                 is_measuring = false;
-                offset_port.Set(offset_measurement);
+                offset_attr.set(offset_measurement);
             }
         }
         

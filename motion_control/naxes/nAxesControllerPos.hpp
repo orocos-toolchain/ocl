@@ -88,9 +88,9 @@ namespace OCL
         /// DataPort containing the output velocities, shared with
         /// OCL::nAxesEffectorVel 
         RTT::WriteDataPort< std::vector<double> >   v_out_port;
-        ///DataPort containing the calculated offsets after executing
+        ///Attribute containing the calculated offsets after executing
         ///the measureOffset Command
-        RTT::WriteDataPort<std::vector<double> > offset_port;
+        RTT::Attribute<std::vector<double> > offset_attr;
         
     private:
         int                       num_samples, num_samples_taken;

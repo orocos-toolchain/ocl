@@ -1,15 +1,15 @@
 StateMachine Simple_nAxes_Test
 {
 
-  var bool calibrate_offsets     = false
+  var bool calibrate_offsets     = true
   var bool move_to               = true
 
   const double pi = 3.14159265358979
-  var array pos = array(6,0.1)
+  var array pos = array(6,0.0)
 
   initial state StartRobotState {
     entry {
-      //do Robot.prepareForUse()
+      do Robot.prepareForUse()
     }
     exit {
       do Robot.unlockAllAxes()
@@ -30,14 +30,14 @@ StateMachine Simple_nAxes_Test
     entry {
       do nAxesGeneratorPos.start()
       do nAxesControllerPos.start()
-//      do CalibrateOffsetsProg.start()
+      do CalibrateOffsetsProg.start()
     }
     exit {
       do nAxesGeneratorPos.stop()
       do nAxesControllerPos.stop()
     }
     transitions {
-  //    if !CalibrateOffsetsProg.isRunning then
+       if !CalibrateOffsetsProg.isRunning then
        select MoveToState
     }
   }      
@@ -71,7 +71,7 @@ StateMachine Simple_nAxes_Test
       do Robot.lockAllAxes()
     }
     exit {
-    //  do Robot.prepareForShutdown()
+      do Robot.prepareForShutdown()
     }
   }
 }
