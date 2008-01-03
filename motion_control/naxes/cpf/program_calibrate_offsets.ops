@@ -4,7 +4,7 @@
 
 program CalibrateOffsetsProg{
   const double sleep     = 5.0
-  const int number_of_samples = 100
+  const int number_of_samples = 400
   var int i
 
   do nAxesControllerPos.measureVelocityOffset(sleep, number_of_samples)

@@ -119,7 +119,8 @@ namespace OCL
             log(Error)<<"Size of "<<p_m_port.getName()<<": "<<p_m_port.Get().size()<<" != " << num_axes<<endlog();
             return false;
         }
-
+	p_d = p_m_port.Get();
+	p_d_port.Set(p_d);
         is_moving = false;
     
         return true;

@@ -30,6 +30,7 @@ StateMachine Simple_nAxes_Test
     entry {
       do nAxesGeneratorPos.start()
       do nAxesControllerPos.start()
+      //do Reporter.start()
       do CalibrateOffsetsProg.start()
     }
     exit {
@@ -50,14 +51,14 @@ StateMachine Simple_nAxes_Test
     entry {
       do nAxesGeneratorPos.start()
       do nAxesControllerPosVel.start() 
-      //do Reporting.start()
-
+      set pos = nAxesSensorPosition.Get()
+      set pos[0]=pos[0]+0.1
       do nAxesGeneratorPos.moveTo(pos,7.0)
     }
     exit {
 	 do nAxesControllerPosVel.stop()
 	 do nAxesGeneratorPos.stop()
-	// do Reporting.stop()
+	 //do Reporter.stop()
     }
     transitions {
       select StopRobotState

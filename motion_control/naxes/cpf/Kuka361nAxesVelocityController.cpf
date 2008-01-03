@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "cpf.dtd">
+<properties>
+  <struct name="driveLimits" type="array">
+     <description>velocity limits of the axes, (rad/s)</description>
+     <simple name="0" type="double"><value>1</value></simple>
+     <simple name="1" type="double"><value>1</value></simple>
+     <simple name="2" type="double"><value>1</value></simple>
+     <simple name="3" type="double"><value>1</value></simple>
+     <simple name="4" type="double"><value>1</value></simple>
+     <simple name="5" type="double"><value>1</value></simple>
+  </struct>
+  <struct name="LowerPositionLimits" type="array">
+     <description>Lower position limits (rad)</description>
+     <simple name="0" type="double"><value>-30.14</value></simple>
+     <simple name="1" type="double"><value>-30.14</value></simple>
+     <simple name="2" type="double"><value>-30.14</value></simple>
+     <simple name="3" type="double"><value>-80</value></simple>
+     <simple name="4" type="double"><value>-30.14</value></simple>
+     <simple name="5" type="double"><value>-60.14</value></simple>
+  </struct>
+  <struct name="UpperPositionLimits" type="array">
+     <description>Upper position limits (rad)</description>
+     <simple name="0" type="double"><value>30.14</value></simple>
+     <simple name="1" type="double"><value>30.14</value></simple>
+     <simple name="2" type="double"><value>30.14</value></simple>
+     <simple name="3" type="double"><value>30</value></simple>
+     <simple name="4" type="double"><value>30.14</value></simple>
+     <simple name="5" type="double"><value>60.14</value></simple>
+  </struct>
+  <struct name="initialPosition" type="array">
+     <description>Initial position (rad) for simulation or hardware</description>
+     <simple name="0" type="double"><value>0</value></simple>
+     <simple name="1" type="double"><value>0</value></simple>
+     <simple name="2" type="double"><value>1.2426</value></simple>
+     <simple name="3" type="double"><value>1.0373</value></simple>
+     <simple name="4" type="double"><value>1.197</value></simple>
+     <simple name="5" type="double"><value>-1.0373</value></simple>
+  </struct>
+  <struct name="driveOffset" type="array">
+     <description>offset (in rad/s) to the drive value.</description>
+     <simple name="0" type="double"><value>0.0</value></simple>
+     <simple name="1" type="double"><value>0.0</value></simple>
+     <simple name="2" type="double"><value>0.0</value></simple>
+     <simple name="3" type="double"><value>0.0</value></simple>
+     <simple name="4" type="double"><value>0.0</value></simple>
+     <simple name="5" type="double"><value>0.0</value></simple>
+  </struct>
+  <simple name="simulation" type="boolean"><description>true if simulationAxes should be used</description><value>0</value></simple>
+  <simple name="geometric" type="boolean"><description>true if geometric values should be used</description><value>0</value></simple>
+</properties>

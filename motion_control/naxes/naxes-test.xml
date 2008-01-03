@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE properties SYSTEM "cpf.dtd">
 <properties>
-<simple name="Import" type="string"><value>/home/rsmits/orocos/install</value></simple>
+<simple name="Import" type="string"><value>/install/build-trunk-lxrt/lib</value></simple>
 
 <struct name="nAxesControllerPos" type="OCL::nAxesControllerPos">
   <struct name="Activity" type="PeriodicActivity">
     <simple name="Period" type="double"><value>0.01</value></simple>
-    <simple name="Priority" type="short"><value>99</value></simple>
+    <simple name="Priority" type="short"><value>0</value></simple>
     <simple name="Scheduler" type="string"><value>ORO_SCHED_RT</value></simple>
   </struct>
   <simple name="AutoConf" type="boolean"><value>1</value></simple>
@@ -26,7 +26,7 @@
 <struct name="nAxesControllerPosVel" type="OCL::nAxesControllerPosVel">
   <struct name="Activity" type="PeriodicActivity">
     <simple name="Period" type="double"><value>0.01</value></simple>
-    <simple name="Priority" type="short"><value>99</value></simple>
+    <simple name="Priority" type="short"><value>0</value></simple>
     <simple name="Scheduler" type="string"><value>ORO_SCHED_RT</value></simple>
   </struct>
   <simple name="AutoConf" type="boolean"><value>1</value></simple>
@@ -48,7 +48,7 @@
 <struct name="nAxesControllerVel" type="OCL::nAxesControllerVel">
   <struct name="Activity" type="PeriodicActivity">
     <simple name="Period" type="double"><value>0.01</value></simple>
-    <simple name="Priority" type="short"><value>99</value></simple>
+    <simple name="Priority" type="short"><value>0</value></simple>
     <simple name="Scheduler" type="string"><value>ORO_SCHED_RT</value></simple>
   </struct>
   <simple name="AutoConf" type="boolean"><value>1</value></simple>
@@ -68,7 +68,7 @@
 <struct name="nAxesGeneratorPos" type="OCL::nAxesGeneratorPos">
   <struct name="Activity" type="PeriodicActivity">
     <simple name="Period" type="double"><value>0.01</value></simple>
-    <simple name="Priority" type="short"><value>99</value></simple>
+    <simple name="Priority" type="short"><value>0</value></simple>
     <simple name="Scheduler" type="string"><value>ORO_SCHED_RT</value></simple>
   </struct>
   <simple name="AutoConf" type="boolean"><value>1</value></simple>
@@ -89,7 +89,7 @@
 <struct name="nAxesGeneratorVel" type="OCL::nAxesGeneratorVel">
   <struct name="Activity" type="PeriodicActivity">
     <simple name="Period" type="double"><value>0.01</value></simple>
-    <simple name="Priority" type="short"><value>99</value></simple>
+    <simple name="Priority" type="short"><value>0</value></simple>
     <simple name="Scheduler" type="string"><value>ORO_SCHED_RT</value></simple>
   </struct>
   <simple name="AutoConf" type="boolean"><value>1</value></simple>
@@ -107,7 +107,7 @@
 <struct name="Robot" type="OCL::Kuka361nAxesVelocityController">
   <struct name="Activity" type="PeriodicActivity">
     <simple name="Period" type="double"><value>0.001</value></simple>
-    <simple name="Priority" type="short"><value>99</value></simple>
+    <simple name="Priority" type="short"><value>0</value></simple>
     <simple name="Scheduler" type="string"><value>ORO_SCHED_RT</value></simple>
   </struct> 
   <simple name="AutoConf" type="boolean"><value>1</value></simple>
@@ -126,6 +126,20 @@
   </struct>
   <simple name="ProgramScript" type="string"><value>cpf/program_calibrate_offsets.ops</value></simple>
   <simple name="StateMachineScript" type="string"><value>cpf/states.osd</value></simple>
+</struct>
+<struct name="Reporter" type="OCL::FileReporting">
+   <struct name="Activity" type="PeriodicActivity">
+      <simple name="Period" type="double"><value>0.005</value></simple>
+      <simple name="Priority" type="short"><value>0</value></simple>
+      <simple name="Scheduler" type="string"><value>ORO_SCHED_OTHER</value></simple>
+   </struct>
+   <simple name="AutoConf" type="boolean"><value>1</value></simple>
+   <simple name="AutoStart" type="boolean"><value>1</value></simple>
+   <simple name="PropertyFile" type="string"><value>cpf/file-reporting.cpf</value></simple>
+   <struct name="Peers" type="PropertyBag">
+      <simple type="string"><value>Robot</value></simple>
+      <simple type="string"><value>nAxesControllerPos</value></simple>
+   </struct>
 </struct>
 
 </properties>
