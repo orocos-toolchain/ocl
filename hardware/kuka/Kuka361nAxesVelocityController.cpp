@@ -127,14 +127,19 @@ namespace OCL
         apci1032         = new SwitchDigitalInapci1032( "Kuka361" );
         
         
+	//Setting up encoderinterfaces:
+	encoderInterface[0] = new EncoderSSI_apci1710( 1, apci1710 );
+	encoderInterface[1] = new EncoderSSI_apci1710( 2, apci1710 );
+	encoderInterface[2] = new EncoderSSI_apci1710( 7, apci1710 );
+	encoderInterface[3] = new EncoderSSI_apci1710( 8, apci1710 );
+	encoderInterface[4] = new EncoderSSI_apci1710( 5, apci1710 );
+	encoderInterface[5] = new EncoderSSI_apci1710( 6, apci1710 );
+	
+	
         for (unsigned int i = 0; i < KUKA361_NUM_AXES; i++){
             log(Info)<<"Creating Hardware axis "<<i<<endlog();
             //Setting up encoders
             log(Info)<<"Setting up encoder ..."<<endlog();
-	    if(i==2)
-	      encoderInterface[i] = new EncoderSSI_apci1710( 7, apci1710 );
-	    else
-	      encoderInterface[i] = new EncoderSSI_apci1710( 7, apci1710 );
             encoder[i]          = new AbsoluteEncoderSensor( encoderInterface[i], 1.0 / ticks2rad[i], encoderOffsets[i], -10, 10 );
             
             log(Info)<<"Setting up brake ..."<<endlog();
@@ -236,8 +241,8 @@ namespace OCL
                 axes_hardware[i]->limitDrive(-driveLimits_prop.value()[i], driveLimits_prop.value()[i], driveOutOfRange_evt);
                 axes[i] = axes_hardware[i];
                 ((Axis*)(axes[i]))->getDrive()->addOffset(driveOffset_prop.value()[i]);
-                log(Info) << "Hardware version of Kuka361nAxesVelocityController has started" << endlog();
             }
+	    log(Info) << "Hardware version of Kuka361nAxesVelocityController has started" << endlog();
         }
         else{
 #endif
