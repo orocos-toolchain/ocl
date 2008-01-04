@@ -10,6 +10,8 @@
 #include <rtt/Properties.hpp>
 #include <rtt/Command.hpp>
 
+#include "VectorTemplateComposition.hpp"
+
 #if defined (OROPKG_OS_LXRT)
 #include <rtt/dev/AnalogOutput.hpp>
 #include <rtt/dev/DigitalOutput.hpp>
@@ -183,7 +185,12 @@ namespace OCL
          * actuator values.
          */
         Property<bool > geometric_prop;
-        
+
+        /** 
+         * List of Events that should result in an emergencystop
+         */
+        Property<std::vector<std::string> > EmergencyEvents_prop;
+                
         /**
          * Constant Attribute: number of axes
          */
@@ -221,7 +228,17 @@ namespace OCL
         virtual bool prepareForUseCompleted() const;
         virtual bool prepareForShutdown();
         virtual bool prepareForShutdownCompleted() const;
-    
+
+        void EmergencyStop(std::string message)
+        {
+            log(Error) << "---------------------------------------------" << endlog();
+            log(Error) << "--------- EMERGENCY STOP --------------------" << endlog();
+            log(Error) << "---------------------------------------------" << endlog();
+            log(Error) << message << endlog();
+            this->fatal();
+        };
+        std::vector<RTT::Handle> EmergencyEventHandlers;
+                
         /**
          * Activation state of robot
          */
@@ -286,5 +303,6 @@ namespace OCL
         std::vector<AxisInterface*>      axes;
     
     };//class Kuka361nAxesVelocityController
+
 }//namespace Orocos
 #endif // KUKA361NAXESVELOCITYCONTROLLER

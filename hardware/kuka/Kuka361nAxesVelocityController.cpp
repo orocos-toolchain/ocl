@@ -85,6 +85,7 @@ namespace OCL
           simulation_prop("simulation","true if simulationAxes should be used",true),
           simulation(true),
           geometric_prop("geometric","true if drive and positions should be converted for kinematic use",true),
+          EmergencyEvents_prop("EmergencyEvents","List of events that will result in an emergencystop of the robot"),
           num_axes_attr("NUM_AXES",KUKA361_NUM_AXES),
           chain_attr("Kinematics"),
           driveOutOfRange_evt("driveOutOfRange"),
@@ -107,6 +108,8 @@ namespace OCL
 #endif
           axes(KUKA361_NUM_AXES)
     {
+        RTT::TypeInfoRepository::Instance()->addType( new StdVectorTemplateTypeInfo<string>("vectorString") );
+      
         Logger::In in(this->getName().data());
         double ticks2rad[KUKA361_NUM_AXES] = KUKA361_TICKS2RAD;
         double vel2volt[KUKA361_NUM_AXES] = KUKA361_RADproSEC2VOLT;
@@ -197,8 +200,10 @@ namespace OCL
         properties()->addProperty( &driveOffset_prop);
         properties()->addProperty( &simulation_prop);
         properties()->addProperty( &geometric_prop);
+        properties()->addProperty( &EmergencyEvents_prop);
         attributes()->addConstant( &num_axes_attr);
         attributes()->addAttribute(&chain_attr);
+
     }
     
     Kuka361nAxesVelocityController::~Kuka361nAxesVelocityController()
@@ -254,6 +259,34 @@ namespace OCL
 #if (defined OROPKG_OS_LXRT)
         }
 #endif
+        for(unsigned int i=0;i<EmergencyEvents_prop.value().size();i++){
+            string name = EmergencyEvents_prop.value()[i];
+            string::size_type idx = name.find('.');
+            if(idx==string::npos)
+                log(Warning)<<"Could not connect EmergencyStop to "<<name<<"\n Syntax of "
+                          <<name<<" is not correct. I want a ComponentName.EventName "<<endlog();
+            string peername = name.substr(0,idx);
+            string eventname = name.substr(idx+1);
+            TaskContext* peer;
+            if(peername==this->getName())
+                peer = this;
+            else if(this->hasPeer(peername)){
+                peer = this->getPeer(peername);
+            }else{
+                log(Warning)<<"Could not connect EmergencyStop to "<<name<<", "<<peername<<" is not a peer of "<<this->getName()<<endlog();
+                continue;
+            }
+            
+            if(peer->events()->hasEvent(eventname)){
+                Handle handle = peer->events()->setupConnection(eventname).callback(this,&Kuka361nAxesVelocityController::EmergencyStop).handle();
+                if(handle.connect()){
+                    EmergencyEventHandlers.push_back(handle);
+                    log(Info)<<"EmergencyStop connected to "<< name<<" event."<<endlog();
+                }else
+                    log(Warning)<<"Could not connect EmergencyStop to "<<name<<", "<<eventname<<" has to have a message parameter."<<endlog();
+            }else
+                log(Warning)<<"Could not connect EmergencyStop to "<<name<<", "<<eventname <<" not found in "<<peername<<"s event-list"<<endlog();
+        }
         return true;
     }
       

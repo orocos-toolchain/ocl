@@ -12,40 +12,47 @@
   </struct>
   <struct name="LowerPositionLimits" type="array">
      <description>Lower position limits (rad)</description>
-     <simple name="0" type="double"><value>-30.14</value></simple>
-     <simple name="1" type="double"><value>-30.14</value></simple>
-     <simple name="2" type="double"><value>-30.14</value></simple>
-     <simple name="3" type="double"><value>-80</value></simple>
-     <simple name="4" type="double"><value>-30.14</value></simple>
-     <simple name="5" type="double"><value>-60.14</value></simple>
+     <simple name="0" type="double"><value>-30</value></simple>
+     <simple name="1" type="double"><value>-30</value></simple>
+     <simple name="2" type="double"><value>-30</value></simple>
+     <simple name="3" type="double"><value>-30</value></simple>
+     <simple name="4" type="double"><value>-30</value></simple>
+     <simple name="5" type="double"><value>-30</value></simple>
   </struct>
   <struct name="UpperPositionLimits" type="array">
      <description>Upper position limits (rad)</description>
-     <simple name="0" type="double"><value>30.14</value></simple>
-     <simple name="1" type="double"><value>30.14</value></simple>
-     <simple name="2" type="double"><value>30.14</value></simple>
+     <simple name="0" type="double"><value>30</value></simple>
+     <simple name="1" type="double"><value>30</value></simple>
+     <simple name="2" type="double"><value>30</value></simple>
      <simple name="3" type="double"><value>30</value></simple>
-     <simple name="4" type="double"><value>30.14</value></simple>
-     <simple name="5" type="double"><value>60.14</value></simple>
+     <simple name="4" type="double"><value>30</value></simple>
+     <simple name="5" type="double"><value>30</value></simple>
   </struct>
   <struct name="initialPosition" type="array">
      <description>Initial position (rad) for simulation or hardware</description>
      <simple name="0" type="double"><value>0</value></simple>
      <simple name="1" type="double"><value>0</value></simple>
-     <simple name="2" type="double"><value>1.2426</value></simple>
-     <simple name="3" type="double"><value>1.0373</value></simple>
-     <simple name="4" type="double"><value>1.197</value></simple>
-     <simple name="5" type="double"><value>-1.0373</value></simple>
+     <simple name="2" type="double"><value>0</value></simple>
+     <simple name="3" type="double"><value>0</value></simple>
+     <simple name="4" type="double"><value>0</value></simple>
+     <simple name="5" type="double"><value>0</value></simple>
   </struct>
   <struct name="driveOffset" type="array">
      <description>offset (in rad/s) to the drive value.</description>
-     <simple name="0" type="double"><value>-0.0430144</value></simple>
-     <simple name="1" type="double"><value>-0.0464819</value></simple>
-     <simple name="2" type="double"><value>-0.0764242</value></simple>
-     <simple name="3" type="double"><value>-0.0510695</value></simple>
-     <simple name="4" type="double"><value>-0.0474882</value></simple>
-     <simple name="5" type="double"><value>-0.05419</value></simple>
+     <simple name="0" type="double"><value>0</value></simple>
+     <simple name="1" type="double"><value>0</value></simple>
+     <simple name="2" type="double"><value>0</value></simple>
+     <simple name="3" type="double"><value>0</value></simple>
+     <simple name="4" type="double"><value>0</value></simple>
+     <simple name="5" type="double"><value>0</value></simple>
   </struct>
-  <simple name="simulation" type="boolean"><description>true if simulationAxes should be used</description><value>0</value></simple>
-  <simple name="geometric" type="boolean"><description>true if geometric values should be used</description><value>0</value></simple>
+  <simple name="simulation" type="boolean"><description>true if simulationAxes should be used</description><value>1</value></simple>
+  <simple name="geometric" type="boolean"><description>true if geometric values should be used</description><value>1</value></simple>
+  <struct name="EmergencyEvents" type="vector">
+     <description>List of events that will result in an emergencystop of the robot</description>
+     <simple name="Event 1" type="string"><description></description><value>Robot.driveOutOfRange</value></simple>
+     <simple name="Event 2" type="string"><description></description><value>Robot.positionOutOfRange</value></simple>
+     <simple name="Event 3" type="string"><description></description><value>NonExistingRobot.positionOutOfRange</value></simple>
+     <simple name="Event 3" type="string"><description></description><value>Robot.NonExistingEvent</value></simple>
+   </struct>
 </properties>
