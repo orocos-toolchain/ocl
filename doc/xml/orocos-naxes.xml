@@ -1,0 +1,513 @@
+<?xml version='1.0'?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
+"http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd"
+[
+<!ENTITY orocos      "<acronym>Orocos</acronym>">
+]
+>
+
+<article>
+<articleinfo>
+  <title>The nAxes Components</title>
+  <copyright>
+    <year>2008</year>
+    <holder>Ruben Smits</holder>
+  </copyright>
+  <legalnotice>
+    <para>
+      Permission is granted to copy, distribute and/or modify this document
+      under the terms of the GNU Free Documentation License, Version 1.1 or
+      any later version published by the Free Software Foundation, with no
+      Invariant Sections, with no Front-Cover Texts, and with no Back-Cover
+      Texts. A copy of this license can be found at
+      <ulink
+      url="http://www.fsf.org/copyleft/fdl.html">http://www.fsf.org/copyleft/fdl.html</ulink>.
+    </para>
+  </legalnotice>
+
+</articleinfo>
+
+<sect1 id="Introduction">
+  <title>Introduction</title>
+  <para>
+  This document describes the Orocos nAxesComponents for the motion
+  control of multiple axes simultaneously. 
+  </para>
+  <sect2 id="Principle">
+    <title>Principle</title>
+    <para>
+    Most of the robot-hardware components in OCL are interfaces to
+    machines with multiple hardware velocity controllers. These
+    components read out the position sensors and send velocity signals
+    to the hardware drives of the multiple axes. The nAxesComponents
+    offer a set of components for the motion generation and control of
+    these axes.
+    </para>
+  </sect2>
+  <sect2 id="Common usage">
+    <title>Common usage</title>
+    <para>
+      A common usage scenario of the nAxesComponents contains a
+      trajectory generator and a controller. The trajectory generator
+      calculates a complete trajectory of setpoints from the current
+      position/velocity to the desired position/velocity. The controller
+      will control the position/velocity using a feedback controller
+      and sends the output to the hardware component.<xref
+    linkend="fig-naxes-overview" /> shows a typical usage scenario.
+    </para>
+    <figure id="fig-naxes-overview"><title>nAxesComponents usage example</title>
+      <mediaobject>
+	<imageobject role="html">
+	  <imagedata fileref="images/naxes.png" />
+	</imageobject>
+	<imageobject role="fo">
+	  <imagedata fileref="images/naxes.png" />
+	</imageobject>
+      </mediaobject>
+    </figure>
+  </sect2>
+</sect1>
+<sect1 id="Available components">
+  <title>Available components</title>
+  <sect2 id="nAxesGeneratorPos">
+    <title><classname>OCL::nAxesGeneratorPos</classname></title>
+    <sect3>
+      <title>Principle</title>
+      <para>
+	The nAxesGenerator uses a trapezoidal velocity profile with a
+	maximum acceleration and maximun velocity to calculate a
+	trajectory from the current position of an axis to a new
+	desired position in a given time-frame when the command
+	<function>moveTo</function> is called. The starting and ending
+	velocity and acceleration are zero. The motions of all the
+	axes are synchronised, so all axes stop at the same time. From
+	now on, during <function> update </function>, new position and
+      velocity setpoints are stored in there respective DataPorts,
+      until the command is finished.
+      </para>
+    </sect3>
+    <sect3>
+      <title>Interface</title>
+      <para>
+	<variablelist>
+	  <title>Properties</title>
+	  <varlistentry><term>num_axes</term>
+	    <listitem><para>
+	      number of axes use the component with
+	      </para></listitem>
+	  </varlistentry>
+	  <varlistentry><term>max_vel</term>
+	    <listitem><para>
+	      Vector with the maximum velocities for the respective
+		axes. The size of the vector has to match
+		<varname>num_axes</varname>
+	      </para></listitem>
+	  </varlistentry>
+	  <varlistentry><term>max_acc</term>
+	    <listitem><para>
+	      Vector with the maximum accelerations for the respective
+		axes. The size of the vector has to match
+	      <varname>num_axes</varname>
+	      </para></listitem>
+	  </varlistentry>
+	</variablelist>
+	<variablelist>
+	  <title>Commands</title>
+	  <varlistentry><term><function>moveTo(array destination,
+	      double duration)</function>
+	    </term>
+	    <listitem><para>
+	      Calculates all new trajectories. Is finished after
+		<varname> duration </varname>. If <varname> duration
+	      </varname> is zero, the motion will be as fast as
+	      possible.
+	      </para></listitem>
+	  </varlistentry>
+	</variablelist>
+	<variablelist>
+	  <title>Methods</title>
+	  <varlistentry><term><function>resetPosition()</function>
+	    </term>
+	    <listitem><para>
+	      Resets the generator by setting the desired position to
+	      the measured position, and the desired velocity to zero.
+	      </para></listitem>
+	  </varlistentry>
+	</variablelist>
+	<variablelist>
+	  <title>Ports</title>
+	  <varlistentry><term><function>nAxesSensorPosition</function>
+	    </term>
+	    <listitem><para>
+	      Contains the measured positions of the axes. It should
+	      be connected to a hardware (or simulation) component.
+	      </para></listitem>
+	  </varlistentry>
+	  <varlistentry><term><function>nAxesDesiredPosition</function>
+	    </term>
+	    <listitem><para>
+	      Contains the calculated desired positions for the
+	      axes. It should be connected to a controller component.
+	      </para></listitem>
+	  </varlistentry>
+	  <varlistentry><term><function>nAxesDesiredVelocity</function>
+	    </term>
+	    <listitem><para>
+	      Contains the calculated desired velocities of the
+	      axes. It should be connected to a controller component.
+	      </para></listitem>
+	  </varlistentry>
+	</variablelist>
+      </para>
+    </sect3>
+  </sect2>
+  <sect2 id="nAxesGeneratorVel">
+    <title><classname>OCL::nAxesGeneratorVel</classname></title>
+    <sect3>
+      <title>Principle</title>
+      <para>
+	The nAxesGeneratorVel uses a trapezoidal acceleration profile
+	with a maximum acceleration, <varname> max_acc </varname> and
+	maximun jerk, <varname> max_jerk </varname> to calculate a
+	velocity trajectories using two types of commands. <function>
+	applyVelocity </function> and <function>
+	applyVelocities</function> calculate velocity trajectories
+	with a desired velocity for a given amount of time, starting
+	from an initial velocity.  <function> gotoVelocity </function>
+	and <function> gotoVelocities </function> calculate velocity
+	trajectories to accelerate from an initial velocity to a
+	desired velocity in a given time-frame. The initial velocities
+	can be set with methods <function> setInitVelocity </function>
+	or <function> setInitVelocities </function>.
+      </para>
+    </sect3>
+    <sect3>
+      <title>Interface</title>
+      <para>
+	<variablelist>
+	  <title>Properties</title>
+	  <varlistentry><term>num_axes</term>
+	    <listitem><para>
+	      number of axes used in the component
+	      </para></listitem>
+	  </varlistentry>
+	  <varlistentry><term>max_acc</term>
+	    <listitem><para>
+	      Vector with the maximum accelerations for the respective
+		axes. The size of the vector has to match <varname>
+		num_axes </varname>
+	      </para></listitem>
+	  </varlistentry>
+	  <varlistentry><term>max_jerk</term>
+	    <listitem><para>
+	      Vector with the maximum jerks for the respective
+	      axes. The size of the vector has to match <varname>
+	      num_axes </varname>
+	      </para></listitem>
+	  </varlistentry>
+	</variablelist>
+	<variablelist>
+	  <title>Commands</title>
+	  <varlistentry><term><function>applyVelocity( uint axis, double
+	      velocity, double duration)</function>
+	    </term>
+	    <listitem><para>
+		Calculates a new velocity trajectory for <varname>
+		axis </varname> that will accelerate as fast as
+		possible to <varname> velocity </varname> and will
+		continue until <varname> duration </varname> is
+		passed.
+	      </para></listitem>
+	  </varlistentry>
+	  <varlistentry><term><function>applyVelocities(array
+	      velocities, double duration)</function> 
+	    </term>
+	    <listitem><para>
+		The same as <function>applyVelocity</function>, but
+	      for all axes at the same time.
+	      </para></listitem>
+	  </varlistentry>
+	  <varlistentry><term><function>gotoVelocity( uint axis, double
+	      velocity, double duration)</function>
+	    </term>
+	    <listitem><para>
+		Calculates a new velocity trajectory <varname> axis
+		</varname> that will accelerate to <varname> velocity
+		</varname> in <varname> duration </varname>
+		seconds. If <varname> duration </varname> is zero the
+		trajectory will accelerate as fast as possible.
+	      </para></listitem>
+	  </varlistentry>
+	  <varlistentry><term><function>gotoVelocities(array
+	      velocities, double duration)</function> 
+	    </term>
+	    <listitem><para>
+		The same as <function>gotoVelocity</function>, but
+	      for all axes at the same time.
+	      </para></listitem>
+	  </varlistentry>
+	
+	</variablelist>
+	<variablelist>
+	  <title>Methods</title>
+	  <varlistentry><term><function>setInitVelocity(uint axis,
+	      double velocity)</function>
+	    </term>
+	    <listitem><para>
+		Sets the initial velocity for the trajectory of axis.
+	      </para></listitem>
+	  </varlistentry>
+	  <varlistentry><term><function>setInitVelocities(array velocities)</function>
+	    </term>
+	    <listitem><para>
+		Sets the initial velocities for all trajectories.
+		Returns <returnvalue>false</returnvalue> if the size
+		of the array does not match <varname>num_axes</varname>
+	      </para></listitem>
+	  </varlistentry>
+	
+	</variablelist>
+	<variablelist>
+	  <title>Ports</title>
+	  <varlistentry><term><function>nAxesDesiredVelocity</function>
+	    </term>
+	    <listitem><para>
+	      Contains the calculated desired velocities of the
+	      axes. It should be connected to a controller component.
+	      </para></listitem>
+	  </varlistentry>
+	</variablelist>
+      </para>
+    </sect3>
+  </sect2>
+  <sect2 id="nAxesControllerPos">
+    <title><classname>OCL::nAxesControllerPos</classname></title>
+    <sect3>
+    <title>Principle</title>
+    This controller uses a simple position feedback law to calculate
+    the velocity output from the measured and desired positions.
+    <figure id="fig-naxescontrollerpos"><title>Control scheme used in
+	the nAxesControllerPos</title>
+      <mediaobject>
+	<imageobject role="html">
+	  <imagedata fileref="images/naxescontrollerpos.png" />
+	</imageobject>
+	<imageobject role="fo">
+	  <imagedata fileref="images/naxescontrollerpos.png" />
+	</imageobject>
+      </mediaobject>
+    </figure>
+    </sect3>
+    <sect3>
+      <title>Interface</title>
+      <variablelist>
+	<title>Properties</title>
+	<varlistentry><term><function>num_axes</function>
+	  </term>
+	  <listitem><para>
+	    number of axes used in the component
+	    </para></listitem>
+	</varlistentry>
+	<varlistentry><term><function>K</function>
+	  </term>
+	  <listitem><para>
+	    The feedback gain values used in the controle scheme. The
+	      size has to match <varname> num_axes </varname>.
+	    </para></listitem>
+	</varlistentry>
+      </variablelist>
+      <variablelist>
+	<title>Commands</title>
+	<varlistentry><term><function>measureOffset(double duration,
+	    int number_of_samples)</function>
+	  </term>
+	  <listitem><para>
+	      Command to measure a velocity offset on the axes. The
+	      idea is to keep the robot at the same position for
+	      <varname> duration </varname> seconds. If a velocity
+	      output is needed to do this, this is the offset you need
+	      on your axes output. The command stops after the
+	      measurement. The calculated offset from <varname>
+	      number_of_samples </varname> samples is stored in the
+	      <varname> nAxesVelocityOffset </varname> attribute.
+	    </para></listitem>
+	</varlistentry>
+      </variablelist>
+      <variablelist>
+	<title>Attributes</title>
+	<varlistentry><term><function>nAxesVelocityOffset</function>
+	  </term>
+	  <listitem><para>
+	      Contains the calculated velocity offset from the
+	      <function> measureOffset </function> command.
+	    </para></listitem>
+	</varlistentry>
+      </variablelist>
+      <variablelist>
+	<title>Ports</title>
+	<varlistentry><term><function>nAxesSensorPosition</function>
+	  </term>
+	  <listitem><para>
+	    Contains the measured axes positions.
+	    </para></listitem>
+	</varlistentry>
+	<varlistentry><term><function>nAxesDesiredPosition</function>
+	  </term>
+	  <listitem><para>
+	    Contains the desired axes positions.
+	    </para></listitem>
+	</varlistentry>
+	<varlistentry><term><function>nAxesOutputVelocity</function>
+	  </term>
+	  <listitem><para>
+	    Contains the calculated axes output velocities.
+	    </para></listitem>
+	</varlistentry>
+      </variablelist>
+    </sect3>
+  </sect2>
+  <sect2 id="nAxesControllerPosVel">
+    <title><classname>OCL::nAxesControllerPosVel</classname></title>
+    <sect3>
+      <title>Principle</title>
+    This controller uses a simple position feedback with velocity
+    feedforward law to calculate the velocity
+    output from the measured and desired positions and the desired
+    velocities.
+    <figure id="fig-naxescontrollerposvel"><title>Control scheme used in
+	the nAxesControllerPosVel</title>
+      <mediaobject>
+	<imageobject role="html">
+	  <imagedata fileref="images/naxescontrollerposvel.png" />
+	</imageobject>
+	<imageobject role="fo">
+	  <imagedata fileref="images/naxescontrollerposvel.png" />
+	</imageobject>
+      </mediaobject>
+    </figure>
+    </sect3>
+    <sect3>
+      <title>Interface</title>
+      <variablelist>
+	<title>Properties</title>
+	<varlistentry><term><function>num_axes</function>
+	  </term>
+	  <listitem><para>
+	    number of axes used in the component
+	    </para></listitem>
+	</varlistentry>
+	<varlistentry><term><function>K</function>
+	  </term>
+	  <listitem><para>
+	    The feedback gain values used in the controle scheme. The
+	      size has to match <varname> num_axes </varname>.
+	    </para></listitem>
+	</varlistentry>
+      </variablelist>
+      <variablelist>
+	<title>Ports</title>
+	<varlistentry><term><function>nAxesSensorPosition</function>
+	  </term>
+	  <listitem><para>
+	    Contains the measured axes positions.
+	    </para></listitem>
+	</varlistentry>
+	<varlistentry><term><function>nAxesDesiredPosition</function>
+	  </term>
+	  <listitem><para>
+	    Contains the desired axes positions.
+	    </para></listitem>
+	</varlistentry>
+	<varlistentry><term><function>nAxesDesiredVelocity</function>
+	  </term>
+	  <listitem><para>
+	    Contains the desired axes velocities.
+	    </para></listitem>
+	</varlistentry>
+	<varlistentry><term><function>nAxesOutputVelocity</function>
+	  </term>
+	  <listitem><para>
+	    Contains the calculated axes output velocities.
+	    </para></listitem>
+	</varlistentry>
+      </variablelist>
+    </sect3>
+  </sect2>
+  <sect2 id="nAxesControllerVel">
+    <title><classname>OCL::nAxesControllerVel</classname></title>
+      <sect3>
+    <title>Principle</title>
+    This controller uses a simple position feedback law to calculate
+    the velocity output from the measured positions and desired
+    positions, which are calculated by integrating the desired velocity.
+    <figure id="fig-naxescontrollervel"><title>Control scheme used in
+	the nAxesControllerVel</title>
+      <mediaobject>
+	<imageobject role="html">
+	  <imagedata fileref="images/naxescontrollervel.png" />
+	</imageobject>
+	<imageobject role="fo">
+	  <imagedata fileref="images/naxescontrollervel.png" />
+	</imageobject>
+      </mediaobject>
+    </figure>
+  </sect3>
+    <sect3>
+      <title>Interface</title>
+      <variablelist>
+	<title>Properties</title>
+	<varlistentry><term><function>num_axes</function>
+	  </term>
+	  <listitem><para>
+	    number of axes used in the component
+	    </para></listitem>
+	</varlistentry>
+	<varlistentry><term><function>K</function>
+	  </term>
+	  <listitem><para>
+	    The feedback gain values used in the controle scheme. The
+	      size has to match <varname> num_axes </varname>.
+	    </para></listitem>
+	</varlistentry>
+      </variablelist>
+      <variablelist>
+	<title>Methods</title>
+	<varlistentry><term><function>resetAxis(uint axis)</function>
+	  </term>
+	  <listitem><para>
+	      Method to reset the integrator for the position of
+	      <varname> axis </varname>.
+	    </para></listitem>
+	</varlistentry>
+	<varlistentry><term><function>resetAll()</function>
+	  </term>
+	  <listitem><para>
+	    Method to reset all the integrators for the positions.
+	    </para></listitem>
+	</varlistentry>
+      </variablelist>
+      <variablelist>
+	<title>Ports</title>
+	<varlistentry><term><function>nAxesSensorPosition</function>
+	  </term>
+	  <listitem><para>
+	    Contains the measured axes positions.
+	    </para></listitem>
+	</varlistentry>
+	<varlistentry><term><function>nAxesDesiredVelocity</function>
+	  </term>
+	  <listitem><para>
+	    Contains the desired axes velocities.
+	    </para></listitem>
+	</varlistentry>
+	<varlistentry><term><function>nAxesOutputVelocity</function>
+	  </term>
+	  <listitem><para>
+	    Contains the calculated axes output velocities.
+	    </para></listitem>
+	</varlistentry>
+      </variablelist>
+    </sect3>
+  </sect2>
+</sect1>
+</article>
