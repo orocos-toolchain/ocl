@@ -44,7 +44,8 @@ namespace OCL
         struct ComponentData {
             ComponentData() 
                 : instance(0), act(0), loaded(false),
-                  autostart(false), autoconf(false)
+                  autostart(false), autoconf(false),
+                  autoconnect(false)
             {}
             /**
              * The component instance.
@@ -58,7 +59,7 @@ namespace OCL
              * If it was loaded by DeploymentComponent.
              */
             bool loaded;
-            bool autostart, autoconf;
+            bool autostart, autoconf, autoconnect;
         };
 
         /**

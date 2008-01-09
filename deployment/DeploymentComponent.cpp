@@ -504,6 +504,15 @@ namespace OCL
 
                         // Other options:
                         for (PropertyBag::const_iterator optit= comp.rvalue().begin(); optit != comp.rvalue().end();optit++) {
+                            if ( (*optit)->getName() == "AutoConnect" ) {
+                                Property<bool> ps = comp.rvalue().getProperty<bool>("AutoConnect");
+                                if (!ps.ready()) {
+                                    log(Error) << "AutoConnect must be of type <boolean>" << endlog();
+                                    valid = false;
+                                } else
+                                    comps[comp.getName()].autoconnect = ps.get();
+                                continue;
+                            }
                             if ( (*optit)->getName() == "AutoStart" ) {
                                 Property<bool> ps = comp.rvalue().getProperty<bool>("AutoStart");
                                 if (!ps.ready()) {
@@ -685,6 +694,28 @@ namespace OCL
             // writer,reader was a clone or anticlone.
             delete writer;
             delete reader;
+        }
+
+        // Autoconnect ports.
+        for (PropertyBag::iterator it= root.begin(); it!=root.end();it++) {
+            if ( (*it)->getName() == "Import" ) {
+                continue;
+            }
+            
+            Property<PropertyBag> comp = *it;
+
+            TaskContext* peer = this->getPeer( comp.getName() );
+
+            // only autoconnect if AutoConnect == 1 and peer has AutoConnect == 1
+            if ( comps[comp.getName()].autoconnect ) {
+                TaskContext::PeerList peers = peer->getPeerList();
+                for(TaskContext::PeerList::iterator pit = peers.begin(); pit != peers.end(); ++pit) {
+                    if ( comps.count( *pit ) && comps[ *pit ].autoconnect ) {
+                        assert( peer->getPeer( *pit ) );
+                        ::RTT::connectPorts( peer, peer->getPeer( *pit ) );
+                    }
+                }
+            }
         }
 
         // Main configuration
