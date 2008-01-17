@@ -2,6 +2,7 @@
 #define PERFORMERMK2_NAXES_VELOCITY_CONTROLLER_HPP
 
 #include <vector>
+#include <deque>
 #include <rtt/RTT.hpp>
 
 #include <rtt/TaskContext.hpp>
@@ -61,15 +62,23 @@ namespace OCL
         PerformerMK2nAxesVelocityController(std::string name,std::string propertyfilename="cpf/PerformerMK2nAxesVelocityController.cpf");
         virtual ~PerformerMK2nAxesVelocityController();
     
-    protected:  
+    protected: 
+
+
+        Method<bool(int)> resetController_mtd;
         /** 
-         * Method to start all axes .
+         * method to reset the velocity Controller.
          *
-         * Sets the axis in the DRIVEN state. Only possible if the axis
-         * is int the STOPPED state. If succesfull the drive value of
+         */
+ 
+        /** 
+         * method to start all axes .
+         *
+         * sets the axis in the driven state. only possible if the axis
+         * is int the stopped state. if succesfull the drive value of
          * the axis is setted to zero and will be updated periodically
          * 
-         * @return Can only succeed if all axis are in the DRIVEN state
+         * @return can only succeed if all axis are in the driven state
          */
         Method<bool(void)> startAllAxes_mtd; 
         
@@ -133,6 +142,18 @@ namespace OCL
          */
         Method<bool(std::vector<double>)> addDriveOffset_mtd;
       
+      /**
+       * Method to set the position of an axis to its initial
+       * position.
+       *
+       * Sets the PerformernAxesVelocityController::_positionValue to
+       * the PerformernAxesVelocityController::_initialPosition from the 
+       * property-file. This is needed because the Performer needs to be homed.
+       * 
+       * @param axis nr of axis
+       */
+	Method<bool(int)>  _initPosition;
+
         /**
          * DataPort which contain the output velocities
          * of the axes.  
@@ -149,6 +170,8 @@ namespace OCL
          */
         DataPort<std::vector<double> >  positionValues_port;
         DataPort<std::vector<double> >  velocityValues_port;
+        DataPort<std::vector<double> >  jValues_port;
+        DataPort<std::vector<double> >  homingSwitchValues_port;
         DataPort< double >              deltaTime_port;
 
         /**
@@ -194,6 +217,9 @@ namespace OCL
         Property<std::vector<double> > servoIntegrationFactor_prop;
         Property<std::vector<double> > servoGain_prop;
         Property<std::vector<double> > servoFFScale_prop;
+    	Property<std::vector<double> > PIDkp_prop;
+        Property<std::vector<double> > PIDTi_prop;
+	Property<std::vector<double> > PIDTd_prop;
 
         /**
          * Constant Attribute: number of axes
@@ -224,11 +250,14 @@ namespace OCL
         
     private:    
 
+        virtual bool resetController(const int& axis_id);
         virtual bool startAllAxes();
         virtual bool stopAllAxes();
         virtual bool lockAllAxes();
         virtual bool unlockAllAxes();
         virtual bool addDriveOffset(const std::vector<double>& offset);
+	virtual bool initPosition(int axis);
+      	virtual bool initPositionCompleted(int axis) const;
         virtual bool prepareForUse();
         virtual bool prepareForUseCompleted() const;
         virtual bool prepareForShutdown();
@@ -262,12 +291,14 @@ namespace OCL
 
 
         ///Local copy for the position and drive values:
-        std::vector<double> positionValues, driveValues, velocityValues;
+        std::vector<double> positionValues, driveValues, velocityValues, jValues;
+	std::deque<double> positionDeque_axis1, positionDeque_axis2, positionDeque_axis3, positionDeque_axis4, positionDeque_axis5, timeDeque;
+        std::vector<double>   homingSwitchValues;
         ///local copy for the servoloop parameters
         std::vector<double> servoIntError,outputvel;
-        std::vector<double> servoIntegrationFactor,servoGain,servoFFScale;
-
-        bool servoInitialized;
+        std::vector<double> servoIntegrationFactor,servoGain,servoFFScale, PIDkp, PIDTi, PIDTd;
+        std::vector<double> outputvel_kmin1,outputvel_kmin2,velocity_error_k,velocity_error_kmin1,velocity_error_kmin2,position_error_k,position_desired_k;
+	bool servoInitialized;
         RTT::TimeService::ticks    previousTime;
 
     public:
@@ -307,12 +338,12 @@ namespace OCL
         DigitalInput*                            armPowerOn;
         DigitalOutput*                           armPowerEnable;
         std::vector<DigitalInput*>               homingSwitch;
-        
+
 #endif
         std::vector<AxisInterface*>              axes;
-	TimeService::ticks                       previous_time;
-	TimeService::Seconds                     delta_time;
+	TimeService::ticks                       previous_time, initial_time;
+	TimeService::Seconds                     delta_time, total_time;
     
     };//class PerformerMK2nAxesVelocityController
 }//namespace Orocos
-#endif // STAUBLIRX130NAXESVELOCITYCONTROLLER
+#endif // PERFORMERNAXESVELOCITYCONTROLLER

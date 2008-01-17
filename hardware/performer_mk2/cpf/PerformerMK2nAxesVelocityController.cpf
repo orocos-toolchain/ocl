@@ -3,39 +3,39 @@
 <properties>
   <struct name="driveLimits" type="array">
      <description>velocity limits of the axes, (rad/s)</description>
-     <simple type="double"><value>1</value></simple>
-     <simple type="double"><value>1</value></simple>
-     <simple type="double"><value>1</value></simple>
-     <simple type="double"><value>1</value></simple>
-     <simple type="double"><value>1</value></simple>
+     <simple name="driveLimits" type="double"><value>3</value></simple>
+     <simple type="double"><value>3</value></simple>
+     <simple type="double"><value>3</value></simple>
+     <simple type="double"><value>3</value></simple>
+     <simple type="double"><value>3</value></simple>
   </struct>
   <struct name="LowerPositionLimits" type="array">
      <description>Lower position limits (rad)</description>
+     <simple name="LowerPositionLimits" type="double"><value>-10</value></simple>
      <simple type="double"><value>-10</value></simple>
      <simple type="double"><value>-10</value></simple>
      <simple type="double"><value>-10</value></simple>
-     <simple type="double"><value>-10</value></simple>
-     <simple type="double"><value>-10</value></simple>
+     <simple type="double"><value>-100</value></simple>
   </struct>
   <struct name="UpperPositionLimits" type="array">
      <description>Upper position limits (rad)</description>
+     <simple name="UpperPositionLimits" type="double"><value>10</value></simple>
      <simple type="double"><value>10</value></simple>
      <simple type="double"><value>10</value></simple>
      <simple type="double"><value>10</value></simple>
-     <simple type="double"><value>10</value></simple>
-     <simple type="double"><value>10</value></simple>
+     <simple type="double"><value>100</value></simple>
   </struct>
   <struct name="velocityLimits" type="array">
      <description>velocity limits of the axes, (rad/s)</description>
-     <simple type="double"><value>1</value></simple>
-     <simple type="double"><value>1</value></simple>
-     <simple type="double"><value>1</value></simple>
-     <simple type="double"><value>1</value></simple>
-     <simple type="double"><value>1</value></simple>
+     <simple name="velocityLimits" type="double"><value>2</value></simple>
+     <simple type="double"><value>2</value></simple>
+     <simple type="double"><value>2</value></simple>
+     <simple type="double"><value>2</value></simple>
+     <simple type="double"><value>2</value></simple>
   </struct>
   <struct name="initialPosition" type="array">
      <description>Initial position (rad) for simulation or hardware</description>
-     <simple type="double"><value>0</value></simple>
+     <simple name="initialPosition" type="double"><value>0</value></simple>
      <simple type="double"><value>0</value></simple>
      <simple type="double"><value>0</value></simple>
      <simple type="double"><value>0</value></simple>
@@ -43,16 +43,16 @@
   </struct>
   <struct name="driveOffset" type="array">
      <description>offset (in rad/s) to the drive value.</description>
-     <simple type="double"><value>0</value></simple>
-     <simple type="double"><value>0</value></simple>
-     <simple type="double"><value>0</value></simple>
-     <simple type="double"><value>0</value></simple>
-     <simple type="double"><value>0</value></simple>
+     <simple name="driveOffset" type="double"><value>-0.0430144</value></simple>
+     <simple type="double"><value>-0.0464819</value></simple>
+     <simple type="double"><value>-0.0764242</value></simple>
+     <simple type="double"><value>-0.0510695</value></simple>
+     <simple type="double"><value>-0.0474882</value></simple>
   </struct>
   <simple name="simulation" type="boolean"><description>true if simulationAxes should be used</description><value>0</value></simple>
   <struct name="ServoIntegrationFactor" type="array">
      <description>Inverse of Integration time for servoloop</description>
-     <simple type="double"><value>0</value></simple>
+     <simple name="ServoIntegrationFactor" type="double"><value>0</value></simple>
      <simple type="double"><value>0</value></simple>
      <simple type="double"><value>0</value></simple>
      <simple type="double"><value>0</value></simple>
@@ -60,7 +60,7 @@
   </struct>
   <struct name="ServoGain" type="array">
      <description>Feedback Gain for servoloop</description>
-     <simple type="double"><value>0</value></simple>
+     <simple name="ServoGain" type="double"><value>0</value></simple>
      <simple type="double"><value>0</value></simple>
      <simple type="double"><value>0</value></simple>
      <simple type="double"><value>0</value></simple>
@@ -68,10 +68,35 @@
   </struct>
   <struct name="ServoFFScale" type="array">
      <description>Feedforward scale for servoloop</description>
+     <simple name="ServoFFScale" type="double"><value>1</value></simple>
      <simple type="double"><value>1</value></simple>
      <simple type="double"><value>1</value></simple>
      <simple type="double"><value>1</value></simple>
      <simple type="double"><value>1</value></simple>
-     <simple type="double"><value>1</value></simple>
+  </struct>
+  <simple name="geometric" type="boolean"><description>true if drive and positions should be converted for kinematic use</description><value>0</value></simple>
+  <struct name="PIDkp" type="array">
+     <description>PID proportional gain</description>
+     <simple name="PIDkp" type="double"><value>0.35</value></simple>
+     <simple type="double"><value>0</value></simple>
+     <simple type="double"><value>0</value></simple>
+     <simple type="double"><value>0.4533</value></simple>
+     <simple type="double"><value>0.3033</value></simple>
+  </struct>
+  <struct name="PIDTi" type="array">
+     <description>PID integration time</description>
+     <simple name="PIDTi" type="double"><value>0.035</value></simple>
+     <simple type="double"><value>0.0</value></simple>
+     <simple type="double"><value>0.0</value></simple>
+     <simple type="double"><value>0.0106</value></simple>
+     <simple type="double"><value>0.0099</value></simple>
+  </struct>
+  <struct name="PIDTd" type="array">
+     <description>PID differentiation time</description>
+     <simple name="PIDTd" type="double"><value>0</value></simple>
+     <simple type="double"><value>0</value></simple>
+     <simple type="double"><value>0</value></simple>
+     <simple type="double"><value>0</value></simple>
+     <simple type="double"><value>0</value></simple>
   </struct>
 </properties>
