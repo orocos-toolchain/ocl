@@ -45,7 +45,6 @@ namespace OCL
   
     this->ports()->addPort(&_image);
     this->ports()->addPort(&_capture_time);
-    _empty = cvCreateImage(cvSize(640,480),8,3);
     //Adding Properties
     //=================
     this->properties()->addProperty( &_capture_mode );
@@ -65,7 +64,7 @@ namespace OCL
   
   CaptureCamera::~CaptureCamera()
   {
-    cvReleaseImage(&_empty);
+      //cvReleaseImage(_empty);
   }
   
   bool CaptureCamera::startup()
@@ -94,15 +93,14 @@ namespace OCL
     //Initialize dataflow
     //===================
     _capture_time.Set(TimeService::Instance()->ticksGet());
-    _image.Set(*cvQueryFrame(_capture));
-    if(_show_image.value()){
-      cvNamedWindow(_image.getName().c_str(),CV_WINDOW_AUTOSIZE);
-      cvShowImage(_image.getName().c_str(),&_empty);
-      cvWaitKey(3);
-      cvShowImage(_image.getName().c_str(),&_empty);
-      cvWaitKey(3);
-    }
     
+    _empty=cvQueryFrame(_capture);
+    _image.Set(*_empty);
+    if(_show_image.value()){
+        cvNamedWindow(_image.getName().c_str(),CV_WINDOW_AUTOSIZE);
+        cvShowImage(_image.getName().c_str(),_empty);
+        cvWaitKey(3);
+    }
     return true;
   
   }
@@ -137,11 +135,14 @@ namespace OCL
     }
     
     _capture_time.Set(TimeService::Instance()->ticksGet());
-    _image.Set(*cvQueryFrame(_capture));
+    _empty = cvQueryFrame(_capture);
+    _image.Set(*_empty);
     
-    if(_show_image.value())
-      cvShowImage(_image.getName().c_str(),&_empty);
-        
+    if(_show_image.value()){
+        cvShowImage(_image.getName().c_str(),_empty);
+        cvWaitKey(3);
+    }
+    
     if(_show_time.value()){
       _elapsed = TimeService::Instance()->secondsSince( _timestamp );
       log(Info) << "time used for capturing: "<< _elapsed << endlog();

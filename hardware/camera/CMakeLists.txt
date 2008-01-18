@@ -11,12 +11,12 @@ IF ( BUILD_CAMERA )
 
     GLOBAL_ADD_COMPONENT( orocos-camera ${SRCS} )
     GLOBAL_ADD_INCLUDE( ocl ${HPPS})
-    COMPONENT_ADD_LIBS( orocos-camera ${OpenCV_LIBRARIES}
-      ${GTHREAD_LIBS} ${GTK_LIBS} 
-      jpeg
-      raw1394
-      dc1394_control
-      avcodec
-      avformat)
-
+    COMPONENT_ADD_LIBS( orocos-camera ${OpenCV_LIBRARIES})
+#      ${GTHREAD_LIBS} ${GTK_LIBS} 
+#      jpeg
+#      raw1394
+#      dc1394_control
+#      avcodec
+#      avformat)
+#
 ENDIF ( BUILD_CAMERA )

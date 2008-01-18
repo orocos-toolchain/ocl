@@ -99,6 +99,7 @@ namespace OCL
         RTT::Seconds                        _elapsed;
         
         IplImage* _empty;
+                
         bool _update;
     };
 }//namespace
