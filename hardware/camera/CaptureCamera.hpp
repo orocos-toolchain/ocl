@@ -48,37 +48,47 @@ namespace OCL
     
     public:
         /** 
-         * Constructor of the CaptureCamera component.
+         * Creates an unconfigured CaptureCamera component. 
          * 
          * @param name Name of the component
-         * @param propertyfile name of the propertyfile. Defaults to cpf/CaptureCamera
          * 
          * @return
          */
-        CaptureCamera(std::string name,std::string propertyfile="cpf/CaptureCamera");
+        CaptureCamera(std::string name);
         virtual ~CaptureCamera();
-        virtual bool startup();
-        virtual void update();
-        virtual void shutdown();
+        virtual bool configureHook();
+        virtual bool startHook();
+        virtual void updateHook();
+        virtual void cleanupHook();
         
     protected:
         /// Dataport which contains grabbed image
-        RTT::DataPort<IplImage>             _image;
+        RTT::WriteDataPort<IplImage>        _image;
         /// Dataport which contains grabbing timestamp
         RTT::WriteDataPort<RTT::TimeService::ticks> _capture_time;
         /// Command to grab image
         RTT::Command<bool(void)>            _newImage;
+        /// Command to update the camera properties
+        RTT::Command<bool(void)>            _setProperties;
 
-        /// capturing mode, check dc1394 for values
+        /// camera id
+        RTT::Property<int>                  _camera_index;
+        /// select video driver: autodetect, v4l or firewire
+        RTT::Property<std::string>          _video_driver;
+        /// capturing mode, check dc1394 for values (firewire)
         RTT::Property<int>                  _capture_mode;
-        /// shutter time in micro seconds
+        /// shutter time in micro seconds (firewire)
         RTT::Property<int>                  _capture_shutter;
         /// capturing gain
         RTT::Property<int>                  _capture_gain;
-        /// set true if opencv should convert the grabbed image to RGB
+        /// set true if opencv should convert the grabbed image to RGB (firewire)
         RTT::Property<int>                  _capture_convert;
-        /// framerate of camera
+        /// framerate of camera (firewire)
         RTT::Property<double>               _capture_fps;
+        /// capture frame width
+        RTT::Property<int>                  _capture_width;
+        /// capture frame height
+        RTT::Property<int>                  _capture_height;
         /// boolean whether to print capturing time information
         RTT::Property<bool>                 _show_time;
         /// boolean whether to show the captured image in a window
@@ -87,20 +97,16 @@ namespace OCL
     private:
         virtual bool updateImage();
         virtual bool updateImageFinished()const;
-        
-       
-        std::string                          _propertyfile;
+        virtual bool setProperties();
+        virtual bool setPropertiesFinished()const;
         
         CvCapture                            *_capture;
-        
-        
-        
         RTT::TimeService::ticks             _timestamp;
         RTT::Seconds                        _elapsed;
         
-        IplImage* _empty;
-                
+        IplImage*                           _frame;
         bool _update;
+        bool                                _update_properties;
     };
 }//namespace
 

@@ -1,3 +1,4 @@
+// Copyright (C) 2008 Francois Cauwe <francois at lastname dot org>
 // Copyright (C) 2006 Ruben Smits <ruben dot smits at mech dot kuleuven dot be>
 //  
 // This program is free software; you can redistribute it and/or modify
@@ -17,139 +18,232 @@
 
 #include "CaptureCamera.hpp"
 #include <libdc1394/dc1394_control.h>
+#include <ocl/ComponentLoader.hpp>
+
+// Make this component deployable
+ORO_CREATE_COMPONENT(OCL::CaptureCamera)
 
 namespace OCL
 {
   
-  using namespace RTT;
-  using namespace std;
+    using namespace RTT;
+    using namespace std;
+    
+    CaptureCamera::CaptureCamera(string name):
+        TaskContext(name, PreOperational),
+        _image("RawImage"),
+        _capture_time("CaptureTimestamp"),
+        _newImage("updateImage",&CaptureCamera::updateImage,&CaptureCamera::updateImageFinished, this),
+        _setProperties("setProperties",&CaptureCamera::setProperties,&CaptureCamera::setPropertiesFinished, this),
+        _camera_index("camera_index","Camera Index",-1),
+        _video_driver("video_driver","Video driver: autodetect, v4l or firewire.","firewire"),
+        _capture_mode("mode","Capture Mode (firewire), check dc1394 for values",MODE_640x480_MONO),
+        _capture_shutter("shutter","Capture Shutter in ms(firewire)",500),
+        _capture_gain("gain","Capture Gain",200),
+        _capture_convert("convert","Capture Convert to RGB(firewire)",0),
+        _capture_fps("fps","Capture Framerate (firewire)",30),
+        _capture_width("image_width","Capture frame width (V4L)",640),
+        _capture_height("image_height","Capture frame height (V4L)",480),
+        _show_time("show_time","True if i have to log capture times (WARNING: only for debugging)",false),
+        _show_image("show_image","True if i have to show captured image (WARNING: only for debugging)",false),
+        _update(false)
+    {
   
-  CaptureCamera::CaptureCamera(string name,string propertyfile)
-    :TaskContext(name),
-     _image("RawImage"),
-     _capture_time("CaptureTimestamp"),
-     _newImage("updateImage",&CaptureCamera::updateImage,&CaptureCamera::updateImageFinished, this),
-     _capture_mode("mode","Capture Mode",MODE_640x480_MONO),
-     _capture_shutter("shutter","Capture Shutter",500),
-     _capture_gain("gain","Capture Gain",200),
-     _capture_convert("convert","Capture Convert",0),
-     _capture_fps("fps","Capture Framerate",30),
-     _show_time("show_time","True if i have to log capture times",false),
-     _show_image("show_image","True if i have to show captured image",false),
-     _propertyfile(propertyfile),
-     _update(false)
-  {
-    //    TemplateMethodFactory<CaptureCamera> _my_methodfactory = newMethodFactory( this );
-    //    this->methods()->addMethod( method("getImage",&CaptureCamera::getFrame, this),"Capturing new image");
-    //    methodFactory.registerObject("this",_my_methodfactory);
-  
-    this->ports()->addPort(&_image);
-    this->ports()->addPort(&_capture_time);
-    //Adding Properties
-    //=================
-    this->properties()->addProperty( &_capture_mode );
-    this->properties()->addProperty( &_capture_shutter );
-    this->properties()->addProperty( &_capture_gain );
-    this->properties()->addProperty( &_capture_convert );
-    this->properties()->addProperty( &_capture_fps );
-    this->properties()->addProperty( &_show_time );
-    this->properties()->addProperty( &_show_image );
-
-    //Adding command
-    //==============
-
-    this->commands()->addCommand( &_newImage,"Grab new image and store in DataPort");
+        //Adding dataports
+        //================
+        this->ports()->addPort(&_image);
+        this->ports()->addPort(&_capture_time);
+    
+        //Adding Properties
+        //=================
+        this->properties()->addProperty( &_camera_index );
+        this->properties()->addProperty( &_video_driver );
+        this->properties()->addProperty( &_capture_mode );
+        this->properties()->addProperty( &_capture_shutter );
+        this->properties()->addProperty( &_capture_gain );
+        this->properties()->addProperty( &_capture_convert );
+        this->properties()->addProperty( &_capture_fps );
+        this->properties()->addProperty( &_capture_width );
+        this->properties()->addProperty( &_capture_height );
+        this->properties()->addProperty( &_show_time );
+        this->properties()->addProperty( &_show_image );
         
-  }
-  
-  CaptureCamera::~CaptureCamera()
-  {
-      //cvReleaseImage(_empty);
-  }
-  
-  bool CaptureCamera::startup()
-  {
-    
-    marshalling()->readProperties("cpf/CaptureCamera.cpf");
-          
-    //Initialize capturing
-    //=====================
-    _capture = cvCaptureFromCAM(0);
-    if( !_capture )
-      {
-        log(Error) << "(CaptureCamera) Could not initialize capturing..." << endlog();
-        return false;
-      }
-    log(Info) << "(CaptureCamera) Capturing started..." << endlog();
-  
-    //Setting properties for camera
-    //=============================
-    cvSetCaptureProperty(_capture,CV_CAP_PROP_MODE,_capture_mode.value());
-    cvSetCaptureProperty(_capture,FEATURE_SHUTTER,_capture_shutter.value());
-    cvSetCaptureProperty(_capture,CV_CAP_PROP_GAIN,_capture_gain.value());    
-    cvSetCaptureProperty(_capture,CV_CAP_PROP_CONVERT_RGB,_capture_convert.value());    
-    cvSetCaptureProperty(_capture,CV_CAP_PROP_FPS,_capture_fps.value());
-  
-    //Initialize dataflow
-    //===================
-    _capture_time.Set(TimeService::Instance()->ticksGet());
-    
-    _empty=cvQueryFrame(_capture);
-    _image.Set(*_empty);
-    if(_show_image.value()){
-        cvNamedWindow(_image.getName().c_str(),CV_WINDOW_AUTOSIZE);
-        cvShowImage(_image.getName().c_str(),_empty);
-        cvWaitKey(3);
-    }
-    return true;
-  
-  }
-  
-  void CaptureCamera::shutdown()
-  {
-    if(_show_image.value())
-      cvDestroyAllWindows();
-    
-    log(Info) << "(CaptureCamera) stopping Capture..." << endlog();
-    cvReleaseCapture( &_capture );
-  }
-  
-  bool CaptureCamera::updateImage()
-  {
-    return true;
-  }
-  
-  bool CaptureCamera::updateImageFinished()const
-  {
-      return _update;
-  }
-  
-  void CaptureCamera::update()
-  {
-    _update = false;
-    
-    if(_show_time.value()){
-      _elapsed = TimeService::Instance()->secondsSince( _timestamp );
-      log(Info) << "time since last capture: "<< _elapsed << endlog();
-      _timestamp = TimeService::Instance()->ticksGet();
+        //Adding command
+        //==============
+        this->commands()->addCommand( &_newImage,"Grab new image and store in DataPort");
+        this->commands()->addCommand( &_setProperties,"Commit new capture properties to camera");
+        
     }
     
-    _capture_time.Set(TimeService::Instance()->ticksGet());
-    _empty = cvQueryFrame(_capture);
-    _image.Set(*_empty);
-    
-    if(_show_image.value()){
-        cvShowImage(_image.getName().c_str(),_empty);
-        cvWaitKey(3);
+    CaptureCamera::~CaptureCamera()
+    {
+        //nothing to do
     }
     
-    if(_show_time.value()){
-      _elapsed = TimeService::Instance()->secondsSince( _timestamp );
-      log(Info) << "time used for capturing: "<< _elapsed << endlog();
-      _timestamp = TimeService::Instance()->ticksGet();
+    
+    bool CaptureCamera::configureHook()
+    {
+        Logger::In in(this->getName().data());
+        
+        // Read config file
+        //=================
+        if ( this->marshalling()->readProperties( this->getName() + ".cpf" ) == false)
+            return false;
+        
+        //Initialize capturing
+        //====================
+        if (_video_driver.value()=="firewire"){
+            _capture = cvCaptureFromCAM(_camera_index.value()+CV_CAP_IEEE1394);
+        }else if(_video_driver.value()=="v4l"){
+            _capture = cvCaptureFromCAM(_camera_index.value()+CV_CAP_V4L);
+        }else if(_video_driver.value()=="autodetect"){
+            _capture = cvCaptureFromCAM(_camera_index.value());
+        }else{
+            log(Error) << "Unkown video driver! Please choose firewire, v4l or autodetect." << endlog();
+            return false;
+        }
+        
+        if( !_capture ){
+            log(Error) << "Could not initialize capturing..." << endlog();
+            return false;
+        }
+        
+        // Set properties
+        //===============
+        this->setProperties();
+        
+        // Grab one frame
+        //===============
+        _frame=cvQueryFrame(_capture);
+        _image.Set(*_frame);
+        if(_show_image.value()){
+            cvNamedWindow(this->getName().c_str(),CV_WINDOW_AUTOSIZE);
+            cvWaitKey(3);//wait 3 ms for main loop of graphical server
+            cvShowImage(this->getName().c_str(),_frame);
+            cvWaitKey(3);//wait 3 ms for main loop of graphical server
+        }
+        
+        log(Info) << "Capturing initialized..." << endlog();
+        return true;
     }
-    _update = true;
-  }
+    
+    
+    
+    bool CaptureCamera::startHook()
+    {          
+        //Start capturing
+        //===============
+        _capture_time.Set(TimeService::Instance()->ticksGet());
+        
+        return true;
+    }
+    
+    void CaptureCamera::cleanupHook()
+    {
+        Logger::In in(this->getName().data());
+        
+        // Close window
+        if(_show_image.value()){
+            cvDestroyWindow(this->getName().c_str());
+            cvWaitKey(3);//wait 3 ms for main loop of graphical server
+        }
+        
+        // Release capture device
+        cvReleaseCapture( &_capture );
+    }
+    
+    bool CaptureCamera::updateImage()
+    {
+        return true;
+    }
+    
+    bool CaptureCamera::updateImageFinished()const
+    {
+        return _update;
+    }
+    
+    void CaptureCamera::updateHook()
+    {
+        Logger::In in(this->getName().data());
+        
+        _update = false;
+        
+        // Show time since last capture
+        if(_show_time.value()){
+            _elapsed = TimeService::Instance()->secondsSince( _timestamp );
+            log(Info) << "time since last capture: "<< _elapsed << endlog();
+            _timestamp = TimeService::Instance()->ticksGet();
+        }
+        
+        // Capture new frame
+        _capture_time.Set(TimeService::Instance()->ticksGet());
+        
+        if(!cvGrabFrame(_capture)){
+            log(Error) << "Failed to grab a new frame." << endlog();
+            this->error();
+        }
+        _frame = cvRetrieveFrame(_capture);
+        
+        _image.Set(*_frame);
+        
+        // Show image 
+        if(_show_image.value()){
+            cvShowImage(this->getName().c_str(),_frame);
+            cvWaitKey(3);//wait 3 ms for main loop of graphical server
+        }
+        
+        // Show time used for capturing
+        if(_show_time.value()){
+            _elapsed = TimeService::Instance()->secondsSince( _timestamp );
+            log(Info) << "time used for capturing: "<< _elapsed << endlog();
+            _timestamp = TimeService::Instance()->ticksGet();
+        }
+        
+        _update = true;
+    }
+    
+    
+    bool CaptureCamera::setProperties()
+    {
+        Logger::In in(this->getName().data());
+        
+        _update_properties=false;
+        
+        //Setting properties for camera
+        //=============================
+        
+        // Global settings
+        if(cvSetCaptureProperty(_capture,CV_CAP_PROP_GAIN,_capture_gain.value())<1)
+            log(Warning) << "Could not set the capturing gain property!" << endlog();
+    
+        // Settings only for firewire
+        if(_video_driver.value()=="firewire"){
+            if(cvSetCaptureProperty(_capture,CV_CAP_PROP_MODE,_capture_mode.value())<1)
+                log(Warning) << "Could not set the capturing mode property!" << endlog();
+            if(cvSetCaptureProperty(_capture,FEATURE_SHUTTER,_capture_shutter.value())<1)
+                log(Warning) << "Could not set the shutter speed property!" << endlog();
+            if(cvSetCaptureProperty(_capture,CV_CAP_PROP_CONVERT_RGB,_capture_convert.value())<1)
+                log(Warning) << "Could not set the RGB conversion property!" << endlog();
+            if(cvSetCaptureProperty(_capture,CV_CAP_PROP_FPS,_capture_fps.value())<1)
+                log(Warning) << "Could not set the fps property!" << endlog();
+        }
+        
+        // Settings only for V4L
+        if(_video_driver.value()=="v4l"){
+            // First set width then height. The first command always returns a error!
+            cvSetCaptureProperty(_capture,CV_CAP_PROP_FRAME_WIDTH,_capture_width.value());
+            if(cvSetCaptureProperty(_capture,CV_CAP_PROP_FRAME_HEIGHT,_capture_height.value())<1)
+                log(Warning) <<"Could not set the frame width and height property!" << endlog();
+        }
+        
+        _update_properties = true;
+        return true;
+    }
+    
+    bool CaptureCamera::setPropertiesFinished()const
+    {
+        return _update_properties;
+    }
 }//namespace
 
 

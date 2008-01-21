@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE properties SYSTEM "cpf.dtd">
 <properties>
-  <simple name="mode" type="long"><description>Capture Mode</description><value>70</value></simple>
-  <simple name="shutter" type="long"><description>Capture Shutter</description><value>500</value></simple>
-  <simple name="gain" type="long"><description>Capture Gain</description><value>200</value></simple>
-  <simple name="convert" type="long"><description>Capture Convert</description><value>1</value></simple>
-  <simple name="fps" type="double"><description>Capture Framerate</description><value>15</value></simple>
-  <simple name="show_time" type="boolean"><description>Show Capture times</description><value>1</value></simple>
-  <simple name="show_image" type="boolean"><description>Show Captured image</description><value>1</value></simple>
+  <simple name="camera_index" type="long"><description>Index of the camera to be used (use -1 for autoselection)</description><value>0</value></simple>
+  <simple name="video_driver" type="string"><description>Select video driver: autodetect, v4l or firewire</description><value>autodetect</value></simple>
+  <simple name="mode" type="long"><description>Capture Mode (1394) (see dc1394 for values)</description><value>70</value></simple>
+  <simple name="image_width" type="long"><description>Capture width (V4L)</description><value>640</value></simple>
+  <simple name="image_height" type="long"><description>Capture higth (V4L)</description><value>480</value></simple>
+  <simple name="shutter" type="long"><description>Capture Shutter in ms(1394)</description><value>500</value></simple>
+  <simple name="gain" type="long"><description>Capture Gain (1394)</description><value>200</value></simple>
+  <simple name="convert" type="long"><description>Capture Convert to RGB(1394)</description><value>0</value></simple>
+  <simple name="fps" type="double"><description>Capture Framerate (1394)</description><value>15</value></simple>
+  <simple name="show_time" type="boolean"><description>Show Capture times (WARNING: only for debugging)</description><value>1</value></simple>
+  <simple name="show_image" type="boolean"><description>Show Captured image (WARNING: onlu for debugging)</description><value>1</value></simple>
 </properties>
