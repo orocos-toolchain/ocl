@@ -1,7 +1,7 @@
 // $Id: nAxisControllerVel.hpp,v 1.1.1.1 2003/12/02 20:32:06 kgadeyne Exp $
 // Copyright (C) 2003 Klaas Gadeyne <klaas.gadeyne@mech.kuleuven.ac.be>
 //                    Wim Meeussen  <wim.meeussen@mech.kuleuven.ac.be>
-// Copyright (C) 2006 Ruben Smits <ruben.smits@mech.kuleuven.be>
+// Copyright (C) 2006-2008 Ruben Smits <ruben.smits@mech.kuleuven.be>
 //  
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -32,13 +32,14 @@
 namespace OCL
 {
     /**
-     * This class implements a TaskContext that controlls the
-     * velocities of an axis. It uses a simple position-feedback
-     * and velocity feedforward to calculate an output velocity. 
-     * velocity_out = K_gain * ( position_desired - position_measured)
-     * + velocity_desired.
-     * The desired position is calculated by integrating the desired velocity
+     * This component can control the velocities of multiple axes. It
+     * uses a simple position-feedback and velocity feedforward to
+     * calculate an output velocity.  velocity_out = K_gain * (
+     * position_desired - position_measured) + velocity_desired.  The
+     * desired position is calculated by integrating the desired
+     * velocity
      * 
+     * The initial state of the component is PreOperational
      * \ingroup nAxesComponents 
      */
   
@@ -53,9 +54,29 @@ namespace OCL
          */
         nAxesControllerVel(std::string name);
         virtual ~nAxesControllerVel();
-        
+        /** 
+         * Configures the component, make sure the properties are
+         * updated using the OCL::DeploymentComponent or the marshalling
+         * interface of the component.
+         * 
+         * The number of axes and the control gains are updated.
+         * 
+         * @return false if the gains property does not match the
+         * number of axes, true otherwise
+         */
         virtual bool configureHook();
+        /** 
+         * Starts the component 
+         * 
+         * @return failes if the input-ports are not ready or the size
+         * of the input-ports does not match the number of axes this
+         * component is configured for.
+         */
         virtual bool startHook();
+        /** 
+         * Updates the output using the control equation, the measured
+         * and the desired position
+         */
         virtual void updateHook();
         virtual void stopHook();
         
@@ -76,17 +97,15 @@ namespace OCL
          */
         RTT::Method<void(int)>   resetAxis_mtd;
         
-        /// DataPort containing the measured positions, shared with
-        /// OCL::nAxesSensor 
+        /// The measured positions
         RTT::ReadDataPort< std::vector<double> >   p_m_port;
-        /// DataPort containing the desired velocities, shared with
-        /// OCL::nAxesGeneratorVel
+        /// The desired velocities
         RTT::ReadDataPort< std::vector<double> >   v_d_port;
-        /// DataPort containing the output velocities, shared with
-        /// OCL::nAxesEffectorVel 
+        /// The calculated output velocities
         RTT::WriteDataPort< std::vector<double> >  v_out_port;
-        /// Vector with the control gain value for each axis.
+        /// The control gain value for each axis.
         RTT::Property< std::vector<double> >       gain_prop;
+        /// The number of axes to configure the components with.
         RTT::Property<unsigned int> num_axes_prop;
         
     private:

@@ -1,7 +1,7 @@
 // $Id: nAxisControllerPos.hpp,v 1.1.1.1 2003/12/02 20:32:06 kgadeyne Exp $
 // Copyright (C) 2003 Klaas Gadeyne <klaas.gadeyne@mech.kuleuven.ac.be>
 //                    Wim Meeussen  <wim.meeussen@mech.kuleuven.ac.be>
-// Copyright (C) 2006 Ruben Smits <ruben.smits@mech.kuleuven.be>
+// Copyright (C) 2006-2008 Ruben Smits <ruben.smits@mech.kuleuven.be>
 //  
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -34,11 +34,12 @@
 namespace OCL
 {
     /**
-     * This class implements a TaskContext that controlls the
-     * positionValues of an axis. It uses a simple position-feedback
-     * to calculate an output velocity. 
-     * velocity_out = K_gain * ( position_desired - position_measured)
+     * This component can control the positions of multiple axes. It
+     * uses a simple position-feedback to calculate an output
+     * velocity.  velocity_out = K_gain * ( position_desired -
+     * position_measured)
      * 
+     * The initial state of the component is PreOperational
      * \ingroup nAxesComponents 
      */
 
@@ -48,15 +49,35 @@ namespace OCL
         /** 
          * Constructor of the class
          * 
-         * @param name name of the TaskContext
+         * @param name name of the component
          * 
          */
         nAxesControllerPos(std::string name);
         
         virtual ~nAxesControllerPos();
-        
+        /** 
+         * Configures the component, make sure the properties are
+         * updated using the OCL::DeploymentComponent or the marshalling
+         * interface of the component.
+         * 
+         * The number of axes and the control gains are updated.
+         * 
+         * @return false if the gains property does not match the
+         * number of axes, true otherwise
+         */
         virtual bool configureHook();
+        /** 
+         * Starts the component 
+         * 
+         * @return failes if the input-ports are not ready or the size
+         * of the input-ports does not match the number of axes this
+         * component is configured for.
+         */
         virtual bool startHook();
+        /** 
+         * Updates the output using the control equation, the measured
+         * and the desired position
+         */
         virtual void updateHook();
         virtual void stopHook();
         
@@ -71,8 +92,8 @@ namespace OCL
         /** 
          * Command to measure a velocity offset on the axes. The idea
          * is to keep the robot at the same position. If a velocity
-         * output is needed to do this, this is the offset you need on you
-         * axes output. The command stops after the measurement
+         * output is needed to do this, this is the offset you need on
+         * your axes output. The command stops after the measurement.
          * 
          * @param treshold_moving duration of the measurement
          * @param num_samples number of samples.
@@ -80,13 +101,11 @@ namespace OCL
          * @return false if still measurering, true otherwise
          */
         RTT::Command<bool(double,int)>              measureOffset;
-        /// OCL::nAxesSensor 
+        /// The measured positions
         RTT::ReadDataPort< std::vector<double> >    p_meas_port;
-        /// DataPort containing the desired positions, shared with
-        /// OCL::nAxesGeneratorPos 
+        /// The desired positions
         RTT::ReadDataPort< std::vector<double> >    p_desi_port;
-        /// DataPort containing the output velocities, shared with
-        /// OCL::nAxesEffectorVel 
+        /// The output velocities 
         RTT::WriteDataPort< std::vector<double> >   v_out_port;
         ///Attribute containing the calculated offsets after executing
         ///the measureOffset Command
@@ -98,8 +117,9 @@ namespace OCL
         RTT::TimeService::ticks   time_begin;
         bool                      is_measuring;
     protected:
-        /// Vector with the control gain value for each axis.
+        /// The control gain values for the axes.
         RTT::Property< std::vector<double> >  gain_prop;
+        /// The number of axes to configure the components with.
         RTT::Property< unsigned int > num_axes_prop;
                 
     }; // class
