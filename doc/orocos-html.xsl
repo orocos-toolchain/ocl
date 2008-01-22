@@ -51,7 +51,7 @@
      Otherwise, the default docbook style is applied.
 -->
   <xsl:variable name="orocos.doxygen.path.ocl" select="'../api/html'" />
-  <xsl:variable name="orocos.doxygen.path.rtt" select="'../../../rtt/v1.0.x/api/html'" />
+  <xsl:variable name="orocos.doxygen.path.rtt" select="'../../../rtt/v1.4.x/api/html'" />
   <xsl:variable name="orocos.doxygen.path.kdl" select="'../../../kdl/v0.2.x/api/html'" />
   <xsl:variable name="orocos.doxygen.ext" select="'html'" />
   <xsl:template match="classname">
