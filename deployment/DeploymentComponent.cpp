@@ -1109,13 +1109,12 @@ namespace OCL
             return false;
         }
 
-        log(Error) << "Adding "<< newcomp.instance->getName() << " as new peer: ";
         if (!this->addPeer( newcomp.instance ) ) {
-            log(Error) << "Failed !" << endlog(Error);
+            log(Error) << "Adding "<< newcomp.instance->getName() << " as new peer: Failed !" << endlog(Error);
             delete newcomp.instance;
             return false;
         }
-        log(Info) << " OK."<< endlog(Info);
+        log(Info) << "Adding "<< newcomp.instance->getName() << " as new peer:  OK."<< endlog(Info);
         comps[name] = newcomp;
         return true;
     }
