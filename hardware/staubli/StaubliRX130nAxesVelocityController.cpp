@@ -23,6 +23,9 @@
 // Erwin Aertbelien
 
 #include "StaubliRX130nAxesVelocityController.hpp"
+#include <ocl/ComponentLoader.hpp>
+
+ORO_CREATE_COMPONENT( OCL::StaubliRX130nAxesVelocityController );
 
 #include <rtt/Logger.hpp>
 #include <stdlib.h>
@@ -76,7 +79,7 @@ namespace OCL
     
     typedef StaubliRX130nAxesVelocityController MyType;
     
-    StaubliRX130nAxesVelocityController::StaubliRX130nAxesVelocityController(string name,string _propertyfile)
+    StaubliRX130nAxesVelocityController::StaubliRX130nAxesVelocityController(string name)
         : TaskContext(name,PreOperational),
           startAllAxes_mtd( "startAllAxes", &MyType::startAllAxes, this),
           stopAllAxes_mtd( "stopAllAxes", &MyType::stopAllAxes, this),
@@ -106,7 +109,6 @@ namespace OCL
           servoIntegrationFactor_prop("ServoIntegrationFactor","Inverse of Integration time for servoloop",vector<double>(STAUBLIRX130_NUM_AXES,0)),
           servoGain_prop("ServoGain","Feedback Gain for servoloop",vector<double>(STAUBLIRX130_NUM_AXES,0)),
           servoFFScale_prop("ServoFFScale","Feedforward scale for servoloop",vector<double>(STAUBLIRX130_NUM_AXES,0)),
-          propertyfile(_propertyfile),
           activated(false),
           positionConvertFactor(STAUBLIRX130_NUM_AXES,0),
           driveConvertFactor(STAUBLIRX130_NUM_AXES,0),
@@ -268,8 +270,7 @@ namespace OCL
     {
         Logger::In in(this->getName().data());
         
-        if (!marshalling()->readProperties(propertyfile)) {
-            log(Error) << "Failed to read the property file, continueing with default values." << endlog();
+        if (!marshalling()->readProperties(this->getName()+".cpf")) {
             return false;
         }  
         simulation=simulation_prop.value();
@@ -632,7 +633,7 @@ namespace OCL
     void StaubliRX130nAxesVelocityController::cleanupHook()
     {
         //Write properties back to file
-        marshalling()->writeProperties(propertyfile);
+        marshalling()->writeProperties(this->getName()+".cpf");
     }
         
     bool StaubliRX130nAxesVelocityController::prepareForUse()

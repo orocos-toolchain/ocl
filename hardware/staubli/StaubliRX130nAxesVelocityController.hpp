@@ -58,7 +58,7 @@ namespace OCL
          * configure the component with, default: cpf/StaubliRX130nAxesVelocityController.cpf
          * 
          */
-        StaubliRX130nAxesVelocityController(std::string name,std::string propertyfilename="cpf/StaubliRX130nAxesVelocityController.cpf");
+        StaubliRX130nAxesVelocityController(std::string name);
         virtual ~StaubliRX130nAxesVelocityController();
     
     protected:  
@@ -235,12 +235,6 @@ namespace OCL
         virtual bool prepareForUseCompleted() const;
         virtual bool prepareForShutdown();
         virtual bool prepareForShutdownCompleted() const;
-    
-        /**
-         * A local copy of the name of the propertyfile so we can store
-         * changed properties.
-         */
-        const std::string propertyfile;
     
         /**
          * Activation state of robot
