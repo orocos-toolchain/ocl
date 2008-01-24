@@ -46,7 +46,7 @@ namespace OCL
 #define KUKA361_CONV1  94.14706
 #define KUKA361_CONV2  -103.23529
 #define KUKA361_CONV3  51.44118
-#define KUKA361_CONV4  175
+#define KUKA361_CONV4  -175
 #define KUKA361_CONV5  150
 #define KUKA361_CONV6  131.64395
 
@@ -57,7 +57,7 @@ namespace OCL
   
   // Conversion from angular speed to voltage
 //#define KUKA361_RADproSEC2VOLT { 2.5545, 2.67804024532652, 1.37350318088664, 2.34300679603342, 2.0058, 3.3786 } //18 april 2006
-#define KUKA361_RADproSEC2VOLT { 2.5545, 2.67804024532652, 1.37350318088664, 2.34300679603342, 2.0058, 1.7573 } //24 april 2007
+#define KUKA361_RADproSEC2VOLT { 2.5545, 2.67804024532652, 1.37350318088664, -2.34300679603342, 2.0058, 1.7573 } //24 april 2007
 
 #define KINEMATICS_EPS 0.0001
 #define SQRT3d2 0.8660254037844386
@@ -166,8 +166,8 @@ namespace OCL
         kinematics.addSegment(Segment(Joint(Joint::RotX),Frame(Vector(0.0,0.0,0.480))));
         kinematics.addSegment(Segment(Joint(Joint::RotX),Frame(Vector(0.0,0.0,0.645))));
         kinematics.addSegment(Segment(Joint(Joint::RotZ)));
-        kinematics.addSegment(Segment(Joint(Joint::RotX),Frame(Vector(0.0,0.0,0.120))));
-        kinematics.addSegment(Segment(Joint(Joint::RotZ)));
+        kinematics.addSegment(Segment(Joint(Joint::RotX)));
+        kinematics.addSegment(Segment(Joint(Joint::RotZ),Frame(Vector(0.0,0.0,0.120))));
         
         chain_attr.set(kinematics);
         
@@ -243,9 +243,9 @@ namespace OCL
 #if (defined OROPKG_OS_LXRT)
         if(!simulation){
             for (unsigned int i = 0; i <KUKA361_NUM_AXES; i++){
-                axes_hardware[i]->limitDrive(-driveLimits_prop.value()[i], driveLimits_prop.value()[i], driveOutOfRange_evt);
-                axes[i] = axes_hardware[i];
-                ((Axis*)(axes[i]))->getDrive()->addOffset(driveOffset_prop.value()[i]);
+	      axes_hardware[i]->limitDrive(-driveLimits_prop.value()[i], driveLimits_prop.value()[i], driveOutOfRange_evt);
+	      axes[i] = axes_hardware[i];
+	      ((Axis*)(axes[i]))->getDrive()->addOffset(driveOffset_prop.value()[i]);
             }
 	    log(Info) << "Hardware version of Kuka361nAxesVelocityController has started" << endlog();
         }
@@ -312,6 +312,7 @@ namespace OCL
         for (unsigned int axis=0;axis<KUKA361_NUM_AXES;axis++){
             if (axes[axis]->isDriven())
                 axes[axis]->drive(driveValues[axis]);
+	    
             // emit event when position is out of range
             if( (positionValues[axis] < lowerPositionLimits_prop.value()[axis]) ||
                 (positionValues[axis] > upperPositionLimits_prop.value()[axis]) )
