@@ -46,7 +46,7 @@ namespace OCL
 #define KUKA361_CONV1  94.14706
 #define KUKA361_CONV2  -103.23529
 #define KUKA361_CONV3  51.44118
-#define KUKA361_CONV4  -175
+#define KUKA361_CONV4  175
 #define KUKA361_CONV5  150
 #define KUKA361_CONV6  131.64395
 
@@ -57,7 +57,7 @@ namespace OCL
   
   // Conversion from angular speed to voltage
 //#define KUKA361_RADproSEC2VOLT { 2.5545, 2.67804024532652, 1.37350318088664, 2.34300679603342, 2.0058, 3.3786 } //18 april 2006
-#define KUKA361_RADproSEC2VOLT { 2.5545, 2.67804024532652, 1.37350318088664, -2.34300679603342, 2.0058, 1.7573 } //24 april 2007
+#define KUKA361_RADproSEC2VOLT { 2.5545, 2.67804024532652, 1.37350318088664, 2.34300679603342, 2.0058, 1.7573 } //24 april 2007
 
 #define KINEMATICS_EPS 0.0001
 #define SQRT3d2 0.8660254037844386
@@ -122,7 +122,7 @@ namespace OCL
         int encoderOffsets[KUKA361_NUM_AXES] = KUKA361_ENCODEROFFSETS;
         
         log(Info)<<"Creating Comedi Devices."<<endlog();
-        comediDev        = new ComediDevice( 1 );
+        comediDev        = new ComediDevice( 0 );
         comediSubdevAOut = new ComediSubDeviceAOut( comediDev, "Kuka361" );
         log(Info)<<"Creating APCI Devices."<<endlog();
         apci1710         = new EncoderSSI_apci1710_board( 0, 1 , 2);
@@ -422,10 +422,22 @@ namespace OCL
             return false;
         
         for(unsigned int i=0;i<KUKA361_NUM_AXES;i++){
+        if(geometric_prop.value() && (i==0 || i==3 || i==5) )
+        {
+            driveOffset_prop.value()[i] -= offset[i];
+        }
+        else
+        {
             driveOffset_prop.value()[i] += offset[i];
+        }
 #if (defined OROPKG_OS_LXRT)
             if (!simulation)
-	      ((Axis*)(axes[i]))->getDrive()->addOffset(offset[i]);
+            {
+                if(geometric_prop.value() && (i==0 || i==3 || i==5) )
+	              ((Axis*)(axes[i]))->getDrive()->addOffset(-offset[i]);
+                else
+	              ((Axis*)(axes[i]))->getDrive()->addOffset(offset[i]);
+            } 
 #endif
         }
         return true;
@@ -433,6 +445,12 @@ namespace OCL
 
     void Kuka361nAxesVelocityController::convertGeometric()
     {
+        positionValues[0] = -positionValues[0];
+        positionValues[3] = -positionValues[3];
+        positionValues[5] = -positionValues[5];
+        driveValues[0] = -driveValues[0];
+        driveValues[3] = -driveValues[3];
+        driveValues[5] = -driveValues[5];
         for(unsigned int i = 0; i < 3 ; i++){
             positionValues_kin[i] = positionValues[i];
             driveValues_rob[i] = driveValues[i];

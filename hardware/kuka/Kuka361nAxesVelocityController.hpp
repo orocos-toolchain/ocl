@@ -216,7 +216,9 @@ namespace OCL
          *  event is not handled.
          */ 
         Event< void(std::string) > positionOutOfRange_evt;
-        
+
+      
+
     private:    
 
         virtual bool startAllAxes();
@@ -279,7 +281,7 @@ namespace OCL
     private:
         
         void convertGeometric();
-        
+              
         // 
         // Members implementing the interface to the hardware
         //
