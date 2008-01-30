@@ -346,6 +346,8 @@ namespace OCL
         // execute the copy commands (fast).
         for(Reports::iterator it = root.begin(); it != root.end(); ++it )
             (it->get<2>())->execute();
+        if( this->engine()->getActivity() )
+            this->engine()->getActivity()->trigger();
     }
 
     bool ReportingComponent::reportDataSource(std::string tag, std::string type, DataSourceBase::shared_ptr orig)
