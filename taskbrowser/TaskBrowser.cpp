@@ -196,6 +196,10 @@ namespace OCL
                     if ( startpos == std::string::npos || startpos+1 == line.length() || i->find( line.substr(startpos+1)) == 0 )
                         completes.push_back( path + *i );
             }
+            // Stop here if 'cd'
+            if (line.find(std::string("cd ")) == 0)
+                return;
+            // Add objects for 'ls'.
             v = peer->getObjectList();
             for (TaskContext::PeerList::iterator i = v.begin(); i != v.end(); ++i) {
                 std::string path;
