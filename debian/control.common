@@ -8,7 +8,7 @@ Section: libs
 Package: liborocos-ocl-dev
 Section: libdevel
 Architecture: any
-Depends: 
+Depends: liborocos-ocl-gnulinux-dev | liborocos-ocl-lxrt-dev | liborocos-ocl-xenomai-dev
 Description: Orocos Component Library 
  Orocos Component Library 
  .
@@ -17,7 +17,7 @@ Description: Orocos Component Library
 Package: liborocos-ocl-io-dev
 Section: libdevel
 Architecture: any
-Depends: 
+Depends: liborocos-ocl-io-gnulinux-dev | liborocos-ocl-io-lxrt-dev | liborocos-ocl-io-xenomai-dev
 Description: Orocos IO Component
  Orocos Component Library 
  .
@@ -26,7 +26,7 @@ Description: Orocos IO Component
 Package: liborocos-ocl-axes-dev
 Section: libdevel
 Architecture: any
-Depends: 
+Depends: liborocos-ocl-axes-gnulinux-dev | liborocos-ocl-axes-lxrt-dev | liborocos-ocl-axes-xenomai-dev
 Description: Orocos Axes Component 
  Orocos Component Library 
  .
@@ -35,7 +35,7 @@ Description: Orocos Axes Component
 Package: liborocos-ocl-comedi-dev
 Section: libdevel
 Architecture: any
-Depends: 
+Depends: liborocos-ocl-comedi-gnulinux-dev | liborocos-ocl-comedi-lxrt-dev | liborocos-ocl-comedi-xenomai-dev
 Description: Orocos Component Library : Comedi devices
  Orocos Component Library 
  .
@@ -44,7 +44,7 @@ Description: Orocos Component Library : Comedi devices
 Package: liborocos-ocl-can-dev
 Section: libdevel
 Architecture: any
-Depends: 
+Depends: liborocos-ocl-can-gnulinux-dev | liborocos-ocl-can-lxrt-dev | liborocos-ocl-can-xenomai-dev
 Description: Orocos Component Library : CAN devices
  Orocos Component Library 
  .
