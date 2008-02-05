@@ -147,6 +147,8 @@ namespace OCL
         }
         /** @} */
 
+        PeriodicActivity act;
+
     public:
         /**
          * This example sets the interface up in the Constructor
@@ -169,8 +171,21 @@ namespace OCL
               // Name, command function pointer, completion condition function pointer, object
               command("the_command", &HelloWorld::mycommand, &HelloWorld::mycomplete, this),
               // Name
-              event("the_event")
+              event("the_event"),
+
+              // Create the activity which runs the task's engine:
+              // 0: Priority
+              // 0.01: Period (100Hz)
+              // engine(): is being executed.
+              act(0, 0.01, this->engine() )
         {
+            // Set log level more verbose than default,
+            // such that we can see output :
+            if ( log().getLogLevel() < Logger::Info ) {
+                log().setLogLevel( Logger::Info );
+                log(Info) << "HelloWorld manually raises LogLevel to 'Info' (5). See also file 'orocos.log'."<<endlog();
+            }
+
             // Check if all initialisation was ok:
             assert( property.ready() );
             assert( attribute.ready() );
@@ -199,9 +214,19 @@ namespace OCL
             // Adding an asynchronous callback:
             h = this->events()->setupConnection("the_event").callback(this, &HelloWorld::mycallback, this->engine()->events() ).handle();
             h.connect();
+
+            log(Info) << "**** Starting the 'Hello' component ****" <<endlog();
+            // Start the component's activity:
+            this->start();
         }
     };
 }
+
+
+// This define allows to compile the hello world component as a library
+// liborocos-helloworld.so or as a program (helloworld). Your component
+// should only be compiled as a library.
+#ifndef OCL_COMPONENT_ONLY
 
 int ORO_main(int argc, char** argv)
 {
@@ -217,15 +242,6 @@ int ORO_main(int argc, char** argv)
     log(Info) << "**** Creating the 'Hello' component ****" <<endlog();
     // Create the task:
     HelloWorld hello("Hello");
-    // Create the activity which runs the task's engine:
-    // 1: Priority
-    // 0.01: Period (100Hz)
-    // hello.engine(): is being executed.
-    PeriodicActivity act(1, 0.01, hello.engine() );
-
-    log(Info) << "**** Starting the 'Hello' component ****" <<endlog();
-    // Start the component's activity:
-    act.start();
 
     log(Info) << "**** Using the 'Hello' component    ****" <<endlog();
 
@@ -260,3 +276,10 @@ int ORO_main(int argc, char** argv)
 
     return 0;
 }
+
+#else
+
+#include "ocl/ComponentLoader.hpp"
+ORO_CREATE_COMPONENT( OCL::HelloWorld )
+
+#endif
