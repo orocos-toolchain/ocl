@@ -301,7 +301,7 @@ namespace RTT
             insn.chanspec=CR_PACK(_channel,0,0);
             ret = comedi_do_insn(_myCard->getDevice()->it,&insn);
             if(ret<0){
-                log(Error) << "ComediPTG::start() failed, ret = " << ret << endlog();
+                log(Error) << "ComediPTG::stop() failed, ret = " << ret << endlog();
                 return false;
             }
             _running = false;

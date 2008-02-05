@@ -44,6 +44,7 @@ namespace RTT
 
     void ComediEncoder::init()
     {
+        Logger::In in("ComediEncoder");
         log(Info) << "Creating ComediEncoder\n" << endlog();
         // Check if subd is counter...
         if ( _myCard->getSubDeviceType( _subDevice ) != COMEDI_SUBD_COUNTER )
@@ -58,8 +59,6 @@ namespace RTT
                 log(Error) << "Comedi Counter : Only " << nchan 
                            << " channels on this counter subdevice" << endlog();
             }
-        _resolution = (int) comedi_get_maxdata(_myCard->getDevice()->it,_subDevice, 
-                                               _channel);
         /* Configure the counter subdevice
            Configure the GPCT for use as an encoder 
         */
@@ -85,7 +84,13 @@ namespace RTT
         if(ret<0)
             log(Error) << "Comedi Counter : Instruction to configure counter -> encoder failed" << endlog();
         else
-            log(Info) << "Comedi Counter configured as encoder now\n" << endlog();
+            log(Info) << "Comedi Counter : configured as encoder now" << endlog();
+
+        _resolution = comedi_get_maxdata(_myCard->getDevice()->it,_subDevice, 
+                                               _channel);
+        if ( _resolution == 0) {
+            log(Error) << "Comedi Counter : Could not retrieve encoder resolution !"<<endlog();
+        } 
     }
   
     ComediEncoder::~ComediEncoder(){}

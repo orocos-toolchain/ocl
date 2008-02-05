@@ -38,7 +38,7 @@ namespace RTT
    * when to take into account the indexpulse or reset the counter
    * when the index pulse arrives.  Also see the comments of the
    * encodertest.c program 
-   * See <http://people.mech.kuleuven.ac.be/~kgadeyne/linux/> for more
+   * See <http://people.mech.kuleuven.be/~kgadeyne/linux/> for more
    * information about all this stuff
    * @todo subdevice locking
    * @todo Throw exception when constructor fails instead of just
