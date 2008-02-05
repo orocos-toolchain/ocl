@@ -1,0 +1,2 @@
+usr/lib/liborocos-can-@TARGET@.so
+usr/lib/liborocos-pcan-@TARGET@.so

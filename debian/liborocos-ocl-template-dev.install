@@ -1,0 +1,5 @@
+usr/lib/liborocos-ocl-common-@TARGET@.so
+usr/lib/liborocos-deployment-@TARGET@.so
+usr/lib/liborocos-taskbrowser-@TARGET@.so
+usr/lib/liborocos-reporting-@TARGET@.so
+usr/lib/liborocos-timer-@TARGET@.so

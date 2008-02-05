@@ -1,0 +1,3 @@
+usr/bin/ctaskbrowser-@TARGET@
+usr/bin/cdeployer-@TARGET@
+usr/bin/deployer-@TARGET@

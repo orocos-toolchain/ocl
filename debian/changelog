@@ -1,3 +1,29 @@
+orocos-ocl (1.4.0-6) unstable; urgency=low
+
+  * Fix missing timer component (r28767.)
+  * Fix bugs in comedi DIO layer (r28768.)
+
+ -- Peter Soetens <peter.soetens@fmtc.be>  Wed, 28 Nov 2007 15:29:09 +0100
+
+orocos-ocl (1.4.0-5) unstable; urgency=low
+
+  * Fix missing can/ headers
+
+ -- Peter Soetens <peter.soetens@fmtc.be>  Wed, 28 Nov 2007 15:03:44 +0100
+
+orocos-ocl (1.4.0-4) unstable; urgency=low
+
+  * Change build dependency from comedi-modules to comedi-headers
+  * Add missing .install files for .pc files.
+
+ -- Peter Soetens <peter.soetens@fmtc.be>  Tue, 27 Nov 2007 13:58:56 +0100
+
+orocos-ocl (1.4.0-3) unstable; urgency=low
+
+  * Build package from orocos-ocl-1.4.0.src.tar.gz
+
+ -- Peter Soetens <peter.soetens@fmtc.be>  Fri, 23 Nov 2007 16:08:47 +0100
+
 orocos-ocl (1.4.0-2) unstable; urgency=low
 
   * Fix missing headers in packages and missing dependencies

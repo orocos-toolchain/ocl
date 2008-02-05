@@ -1,39 +1,9 @@
 Source: orocos-ocl
 Priority: extra
 Maintainer: Peter Soetens <peter.soetens@fmtc.be>
-Build-Depends: debhelper (>= 5), autotools-dev, liborocos-rtt-corba-lxrt-dev ( >= 1.4 ), libcomedi-dev, libpcan-dev, liborocos-rtt-corba-gnulinux-dev ( >= 1.4 ), pkg-config, libncurses5-dev ( >= 5.0 ), libreadline5-dev ( >= 5.0 ), comedi-headers
+Build-Depends: debhelper (>= 5), autotools-dev, liborocos-rtt-corba-lxrt-dev ( >= 1.4 ), libcomedi-dev, libpcan-dev, liborocos-rtt-corba-gnulinux-dev ( >= 1.4 ), liborocos-rtt-corba-xenomai-dev ( >= 1.4 ), pkg-config, libncurses5-dev ( >= 5.0 ), libreadline5-dev ( >= 5.0 ), comedi-headers
 Standards-Version: 3.7.2
 Section: libs
-
-Package: orocos-ocl-lxrt-bin
-Section: libdevel
-Architecture: any
-Depends: liborocos-ocl-lxrt1.4 (= ${Source-Version}), liborocos-rtt-corba-lxrt1.4, tao-naming
-Description: Orocos Component Library  - Binaries
- This package contains the ctaskbrowser, cdeployer and deployer applications.
-
-Package: orocos-ocl-lxrt-dev
-Section: libdevel
-Architecture: any
-Depends: liborocos-ocl-lxrt-dev,
-      liborocos-ocl-io-lxrt-dev, liborocos-ocl-can-lxrt-dev, liborocos-ocl-comedi-lxrt-dev,
-      liborocos-ocl-axes-lxrt-dev
-Description: Orocos Component Library  - All packages
- A super package for Orocos Component Library 
- .
- Development files.
-
-Package: orocos-ocl-lxrt1.4
-Section: libdevel
-Architecture: any
-Depends: liborocos-ocl-lxrt1.4 (= ${Source-Version}),
-      liborocos-ocl-io-lxrt1.4, liborocos-ocl-can-lxrt1.4, liborocos-ocl-comedi-lxrt1.4,
-      liborocos-ocl-axes-lxrt1.4
-Description: Orocos Component Library  - All packages
- A super package for Orocos Component Library 
- .
- Libraries.
-
 
 Package: liborocos-ocl-dev
 Section: libdevel
@@ -79,6 +49,157 @@ Description: Orocos Component Library : CAN devices
  Orocos Component Library 
  .
  Header files.
+
+Package: orocos-ocl-gnulinux-bin
+Section: libdevel
+Architecture: any
+Depends: liborocos-ocl-gnulinux1.4 (= ${Source-Version}), liborocos-rtt-corba-gnulinux1.4, tao-naming
+Description: Orocos Component Library  - Binaries
+ This package contains the ctaskbrowser-gnulinux, 
+ cdeployer-gnulinux and deployer-gnulinux applications.
+
+Package: orocos-ocl-gnulinux-dev
+Section: libdevel
+Architecture: any
+Depends: liborocos-ocl-gnulinux-dev,
+      liborocos-ocl-io-gnulinux-dev, liborocos-ocl-can-gnulinux-dev, liborocos-ocl-comedi-gnulinux-dev,
+      liborocos-ocl-axes-gnulinux-dev
+Description: Orocos Component Library  - All packages
+ A super package for Orocos Component Library 
+ .
+ Development files.
+
+Package: orocos-ocl-gnulinux1.4
+Section: libdevel
+Architecture: any
+Depends: liborocos-ocl-gnulinux1.4 (= ${Source-Version}),
+      liborocos-ocl-io-gnulinux1.4, liborocos-ocl-can-gnulinux1.4, liborocos-ocl-comedi-gnulinux1.4,
+      liborocos-ocl-axes-gnulinux1.4
+Description: Orocos Component Library  - All packages
+ A super package for Orocos Component Library 
+ .
+ Libraries.
+
+
+Package: liborocos-ocl-gnulinux-dev
+Section: libdevel
+Architecture: any
+Depends: liborocos-ocl-gnulinux1.4 (= ${Source-Version}), liborocos-rtt-gnulinux-dev ( >= 1.4 ),
+     liborocos-ocl-dev, libncurses5-dev, libreadline5-dev
+Description: Orocos Component Library 
+ Orocos Component Library 
+ .
+ Development files.
+
+Package: liborocos-ocl-gnulinux1.4
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Orocos Component Library 
+ This package contains the Reporting, TaskBrowser and Deployment
+ components. The included deployer application can be used to
+ load components into an application.
+ .
+ Library and tools.
+
+
+Package: liborocos-ocl-io-gnulinux-dev
+Section: libdevel
+Architecture: any
+Depends: liborocos-ocl-io-gnulinux1.4 (= ${Source-Version}), liborocos-ocl-io-dev, liborocos-ocl-gnulinux-dev
+Description: Orocos hardware IO Component 
+ Development files.
+
+Package: liborocos-ocl-io-gnulinux1.4
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Orocos hardware IO Component 
+ Manages digital and analog IO.
+ .
+ Library and tools.
+
+
+Package: liborocos-ocl-comedi-gnulinux-dev
+Section: libdevel
+Architecture: any
+Depends: liborocos-ocl-comedi-gnulinux1.4 (= ${Source-Version}), liborocos-ocl-comedi-dev, liborocos-ocl-gnulinux-dev, 
+	 liborocos-ocl-io-gnulinux-dev, libcomedi-dev
+Description: Orocos Comedi drivers 
+ Development files.
+
+Package: liborocos-ocl-comedi-gnulinux1.4
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Orocos Comedi drivers 
+ Maps the comedi devices to Orocos C++ interfaces.
+ .
+ Library and tools.
+
+
+Package: liborocos-ocl-can-gnulinux-dev
+Section: libdevel
+Architecture: any
+Depends: liborocos-ocl-can-gnulinux1.4 (= ${Source-Version}), liborocos-ocl-can-dev, liborocos-ocl-gnulinux-dev, libpcan-dev
+Description: Orocos CAN interfaces 
+ Development files.
+
+Package: liborocos-ocl-can-gnulinux1.4
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Orocos CAN interfaces 
+ Offers C++ CAN interfaces to the Peak CAN Linux drivers.
+ .
+ Library and tools.
+
+Package: liborocos-ocl-axes-gnulinux-dev
+Section: libdevel
+Architecture: any
+Depends: liborocos-ocl-axes-gnulinux1.4 (= ${Source-Version}), liborocos-ocl-axes-dev, liborocos-ocl-gnulinux-dev
+Description: Orocos component for axis control 
+ Development files.
+
+Package: liborocos-ocl-axes-gnulinux1.4
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Orocos component for axis control 
+ An alternative to the naxes components for controlling N axes independently.
+ .
+ Library and tools.
+
+Package: orocos-ocl-lxrt-bin
+Section: libdevel
+Architecture: any
+Depends: liborocos-ocl-lxrt1.4 (= ${Source-Version}), liborocos-rtt-corba-lxrt1.4, tao-naming
+Description: Orocos Component Library  - Binaries
+ This package contains the ctaskbrowser-lxrt, 
+ cdeployer-lxrt and deployer-lxrt applications.
+
+Package: orocos-ocl-lxrt-dev
+Section: libdevel
+Architecture: any
+Depends: liborocos-ocl-lxrt-dev,
+      liborocos-ocl-io-lxrt-dev, liborocos-ocl-can-lxrt-dev, liborocos-ocl-comedi-lxrt-dev,
+      liborocos-ocl-axes-lxrt-dev
+Description: Orocos Component Library  - All packages
+ A super package for Orocos Component Library 
+ .
+ Development files.
+
+Package: orocos-ocl-lxrt1.4
+Section: libdevel
+Architecture: any
+Depends: liborocos-ocl-lxrt1.4 (= ${Source-Version}),
+      liborocos-ocl-io-lxrt1.4, liborocos-ocl-can-lxrt1.4, liborocos-ocl-comedi-lxrt1.4,
+      liborocos-ocl-axes-lxrt1.4
+Description: Orocos Component Library  - All packages
+ A super package for Orocos Component Library 
+ .
+ Libraries.
+
 
 Package: liborocos-ocl-lxrt-dev
 Section: libdevel
@@ -169,49 +290,48 @@ Description: Orocos component for axis control
  .
  Library and tools.
 
-
-Package: orocos-ocl-gnulinux-bin
+Package: orocos-ocl-xenomai-bin
 Section: libdevel
 Architecture: any
-Depends: liborocos-ocl-gnulinux1.4 (= ${Source-Version}), liborocos-rtt-corba-gnulinux1.4, tao-naming
+Depends: liborocos-ocl-xenomai1.4 (= ${Source-Version}), liborocos-rtt-corba-xenomai1.4, tao-naming
 Description: Orocos Component Library  - Binaries
- This package contains the ctaskbrowser and deployment applications.
+ This package contains the ctaskbrowser-xenomai, 
+ cdeployer-xenomai and deployer-xenomai applications.
 
-
-Package: orocos-ocl-gnulinux-dev
+Package: orocos-ocl-xenomai-dev
 Section: libdevel
 Architecture: any
-Depends: liborocos-ocl-gnulinux-dev,
-	liborocos-ocl-io-gnulinux-dev, liborocos-ocl-can-gnulinux-dev, liborocos-ocl-comedi-gnulinux-dev,
-	liborocos-ocl-axes-gnulinux-dev
+Depends: liborocos-ocl-xenomai-dev,
+      liborocos-ocl-io-xenomai-dev, liborocos-ocl-can-xenomai-dev, liborocos-ocl-comedi-xenomai-dev,
+      liborocos-ocl-axes-xenomai-dev
 Description: Orocos Component Library  - All packages
  A super package for Orocos Component Library 
  .
  Development files.
 
-Package: orocos-ocl-gnulinux1.4
+Package: orocos-ocl-xenomai1.4
 Section: libdevel
 Architecture: any
-Depends: liborocos-ocl-gnulinux1.4 (= ${Source-Version}),
-	liborocos-ocl-io-gnulinux1.4, liborocos-ocl-can-gnulinux1.4, liborocos-ocl-comedi-gnulinux1.4,
-	liborocos-ocl-axes-gnulinux1.4
+Depends: liborocos-ocl-xenomai1.4 (= ${Source-Version}),
+      liborocos-ocl-io-xenomai1.4, liborocos-ocl-can-xenomai1.4, liborocos-ocl-comedi-xenomai1.4,
+      liborocos-ocl-axes-xenomai1.4
 Description: Orocos Component Library  - All packages
  A super package for Orocos Component Library 
  .
  Libraries.
 
 
-Package: liborocos-ocl-gnulinux-dev
+Package: liborocos-ocl-xenomai-dev
 Section: libdevel
 Architecture: any
-Depends: liborocos-ocl-gnulinux1.4 (= ${Source-Version}), liborocos-rtt-gnulinux-dev ( >= 1.4 ),
+Depends: liborocos-ocl-xenomai1.4 (= ${Source-Version}), liborocos-rtt-xenomai-dev ( >= 1.4 ),
      liborocos-ocl-dev, libncurses5-dev, libreadline5-dev
 Description: Orocos Component Library 
  Orocos Component Library 
  .
  Development files.
 
-Package: liborocos-ocl-gnulinux1.4
+Package: liborocos-ocl-xenomai1.4
 Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
@@ -223,14 +343,14 @@ Description: Orocos Component Library
  Library and tools.
 
 
-Package: liborocos-ocl-io-gnulinux-dev
+Package: liborocos-ocl-io-xenomai-dev
 Section: libdevel
 Architecture: any
-Depends: liborocos-ocl-io-gnulinux1.4 (= ${Source-Version}), liborocos-ocl-io-dev, liborocos-ocl-gnulinux-dev
+Depends: liborocos-ocl-io-xenomai1.4 (= ${Source-Version}), liborocos-ocl-io-dev, liborocos-ocl-xenomai-dev
 Description: Orocos hardware IO Component 
  Development files.
 
-Package: liborocos-ocl-io-gnulinux1.4
+Package: liborocos-ocl-io-xenomai1.4
 Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
@@ -240,15 +360,15 @@ Description: Orocos hardware IO Component
  Library and tools.
 
 
-Package: liborocos-ocl-comedi-gnulinux-dev
+Package: liborocos-ocl-comedi-xenomai-dev
 Section: libdevel
 Architecture: any
-Depends: liborocos-ocl-comedi-gnulinux1.4 (= ${Source-Version}), liborocos-ocl-comedi-dev, liborocos-ocl-gnulinux-dev, 
-	 liborocos-ocl-io-gnulinux-dev, libcomedi-dev
+Depends: liborocos-ocl-comedi-xenomai1.4 (= ${Source-Version}), liborocos-ocl-comedi-dev, liborocos-ocl-xenomai-dev, 
+	 liborocos-ocl-io-xenomai-dev, libcomedi-dev
 Description: Orocos Comedi drivers 
  Development files.
 
-Package: liborocos-ocl-comedi-gnulinux1.4
+Package: liborocos-ocl-comedi-xenomai1.4
 Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
@@ -258,14 +378,14 @@ Description: Orocos Comedi drivers
  Library and tools.
 
 
-Package: liborocos-ocl-can-gnulinux-dev
+Package: liborocos-ocl-can-xenomai-dev
 Section: libdevel
 Architecture: any
-Depends: liborocos-ocl-can-gnulinux1.4 (= ${Source-Version}), liborocos-ocl-can-dev, liborocos-ocl-gnulinux-dev, libpcan-dev
+Depends: liborocos-ocl-can-xenomai1.4 (= ${Source-Version}), liborocos-ocl-can-dev, liborocos-ocl-xenomai-dev, libpcan-dev
 Description: Orocos CAN interfaces 
  Development files.
 
-Package: liborocos-ocl-can-gnulinux1.4
+Package: liborocos-ocl-can-xenomai1.4
 Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
@@ -274,15 +394,14 @@ Description: Orocos CAN interfaces
  .
  Library and tools.
 
-
-Package: liborocos-ocl-axes-gnulinux-dev
+Package: liborocos-ocl-axes-xenomai-dev
 Section: libdevel
 Architecture: any
-Depends: liborocos-ocl-axes-gnulinux1.4 (= ${Source-Version}), liborocos-ocl-axes-dev, liborocos-ocl-gnulinux-dev
+Depends: liborocos-ocl-axes-xenomai1.4 (= ${Source-Version}), liborocos-ocl-axes-dev, liborocos-ocl-xenomai-dev
 Description: Orocos component for axis control 
  Development files.
 
-Package: liborocos-ocl-axes-gnulinux1.4
+Package: liborocos-ocl-axes-xenomai1.4
 Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
