@@ -381,7 +381,7 @@ namespace OCL
         return false;
     }
 
-    bool ReportingComponent::startup() {
+    bool ReportingComponent::startHook() {
         Logger::In in("ReportingComponent");
         if (marshallers.begin() == marshallers.end()) {
             log(Error) << "Need at least one marshaller to write reports." <<endlog();
@@ -421,7 +421,7 @@ namespace OCL
         deletePropertyBag( report );
     }
 
-    void ReportingComponent::update() {
+    void ReportingComponent::updateHook() {
         // Step 1: Make copies in order to 'snapshot' all data with a timestamp
         if ( autotrigger )
             this->snapshot();
@@ -439,7 +439,7 @@ namespace OCL
         this->cleanReport();
     }
 
-    void ReportingComponent::shutdown() {
+    void ReportingComponent::stopHook() {
         // tell body marshallers that serialization is done.
         for(Marshallers::iterator it=marshallers.begin(); it != marshallers.end(); ++it) {
             it->second->flush();

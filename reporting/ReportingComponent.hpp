@@ -205,16 +205,16 @@ namespace OCL
 
         bool unreportDataSource(std::string tag);
 
-        virtual bool startup();
+        virtual bool startHook();
 
         void makeReport();
 
         /**
          * This not real-time function processes the copied data.
          */
-        virtual void update();
+        virtual void updateHook();
 
-        virtual void shutdown();
+        virtual void stopHook();
 
         typedef std::vector< std::pair<boost::shared_ptr<RTT::Marshaller>, boost::shared_ptr<RTT::Marshaller> > > Marshallers;
         Marshallers marshallers;
