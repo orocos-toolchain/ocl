@@ -23,6 +23,9 @@ namespace OCL
 
     std::vector<pair<string,void*> > DeploymentComponent::LoadedLibs;
 
+#define ORO_str(s) ORO__str(s)
+#define ORO__str(s) #s
+
     DeploymentComponent::DeploymentComponent(std::string name)
         : RTT::TaskContext(name, Stopped),
           compPath("ComponentPath",
@@ -35,10 +38,14 @@ namespace OCL
           sched_RT("ORO_SCHED_RT", ORO_SCHED_RT ),
           sched_OTHER("ORO_SCHED_OTHER", ORO_SCHED_OTHER ),
           lowest_Priority("LowestPriority", RTT::OS::LowestPriority ),
-          highest_Priority("HighestPriority", RTT::OS::HighestPriority )
+          highest_Priority("HighestPriority", RTT::OS::HighestPriority ),
+          target("Target",
+                 "The Orocos Target component suffix. Will be used in import statements to find matching components. Only change this if you know what you are doing.",
+                 ORO_str(OROCOS_TARGET) )
     {
         this->properties()->addProperty( &compPath );
         this->properties()->addProperty( &autoUnload );
+        this->properties()->addProperty( &target );
 
         this->attributes()->addAttribute( &validConfig );
         this->attributes()->addAttribute( &sched_RT );
@@ -567,7 +574,7 @@ namespace OCL
                 }
         } catch (...)
             {
-                log(Error)<< "Uncaught exception in deserialize !"<< endlog();
+                log(Error)<< "Uncaught exception in loadcomponents() !"<< endlog();
                 failure = true;
             }
         return !failure && valid;
@@ -950,15 +957,31 @@ namespace OCL
     bool DeploymentComponent::loadLibrary(const std::string& name)
     {
         Logger::In in("DeploymentComponent::loadLibrary");
+        // Accepted abbreviated syntax:
+        // loadLibrary("liborocos-helloworld-gnulinux.so")
+        // loadLibrary("liborocos-helloworld-gnulinux")
+        // loadLibrary("liborocos-helloworld")
+        // loadLibrary("orocos-helloworld")
+        // With a path:
+        // loadLibrary("/usr/lib/liborocos-helloworld-gnulinux.so")
+        // loadLibrary("/usr/lib/liborocos-helloworld-gnulinux")
+        // loadLibrary("/usr/lib/liborocos-helloworld")
 
-        // try dynamic loading:
+        // Discover what 'name' is.
+        bool name_is_path = false;
+        bool name_is_so = false;
+        if ( name.find("/") != std::string::npos )
+            name_is_path = true;
+
         std::string so_name(name);
         if ( so_name.rfind(".so") == std::string::npos)
             so_name += ".so";
+        else
+            name_is_so = true;
 
         // Extract the libname such that we avoid double loading (crashes in case of two # versions).
-        libname = so_name;
-        if ( libname.find("/") != string::npos ) 
+        libname = name;
+        if ( name_is_path ) 
             libname = libname.substr( so_name.rfind("/")+1 );
         if ( libname.find("lib") == 0 ) {
             libname = libname.substr(3);
@@ -975,17 +998,66 @@ namespace OCL
         }
 
         std::vector<string> errors;
+        // try form "liborocos-helloworld-gnulinux.so"
         handle = dlopen ( so_name.c_str(), RTLD_NOW | RTLD_GLOBAL );
         // if no path is given:
-        if (!handle && so_name.find("/") == std::string::npos ) {
+        if (!handle && !name_is_path ) {
+
+            // with target provided:
             errors.push_back(string( dlerror() ));
-            cout << so_name.substr(0,3) <<endl;
+            //cout << so_name.substr(0,3) <<endl;
+            // try "orocos-helloworld-gnulinux.so"
             if ( so_name.substr(0,3) != "lib") {
                 so_name = "lib" + so_name;
                 handle = dlopen ( so_name.c_str(), RTLD_NOW | RTLD_GLOBAL);
                 if (!handle)
                     errors.push_back(string( dlerror() ));
             }
+            // try "liborocos-helloworld-gnulinux.so" in compPath
+            if (!handle) {
+                handle = dlopen ( string(compPath.get() + "/" + so_name).c_str(), RTLD_NOW | RTLD_GLOBAL);
+            }
+
+            if ( !name_is_so ) {
+                // no so given, try to append target:
+                so_name = name + "-" + target.get() + ".so";
+                errors.push_back(string( dlerror() ));
+                //cout << so_name.substr(0,3) <<endl;
+                // try "orocos-helloworld"
+                if ( so_name.substr(0,3) != "lib")
+                    so_name = "lib" + so_name;
+                handle = dlopen ( so_name.c_str(), RTLD_NOW | RTLD_GLOBAL);
+                if (!handle)
+                    errors.push_back(string( dlerror() ));
+            }
+            // try "liborocos-helloworld" in compPath
+            if (!handle) {
+                handle = dlopen ( string(compPath.get() + "/" + so_name).c_str(), RTLD_NOW | RTLD_GLOBAL);
+            }
+
+        }
+        // if a path is given:
+        if (!handle && name_is_path) {
+            // just append target.so or .so"
+            // with target provided:
+            errors.push_back(string( dlerror() ));
+            // try "/path/liborocos-helloworld-gnulinux.so" in compPath
+            if (!handle) {
+                handle = dlopen ( string(compPath.get() + "/" + so_name).c_str(), RTLD_NOW | RTLD_GLOBAL);
+            }
+
+            if ( !name_is_so ) {
+                // no so given, try to append target:
+                so_name = name + "-" + target.get() + ".so";
+                errors.push_back(string( dlerror() ));
+                //cout << so_name.substr(0,3) <<endl;
+                // try "/path/liborocos-helloworld"
+                handle = dlopen ( so_name.c_str(), RTLD_NOW | RTLD_GLOBAL);
+                if (!handle)
+                    errors.push_back(string( dlerror() ));
+            }
+
+            // try "/path/liborocos-helloworld" in compPath
             if (!handle) {
                 handle = dlopen ( string(compPath.get() + "/" + so_name).c_str(), RTLD_NOW | RTLD_GLOBAL);
             }
@@ -1101,8 +1173,12 @@ namespace OCL
         }
         
         ComponentData newcomp;
-        newcomp.instance = (*factory)(name);
-        newcomp.loaded = true;
+        try {
+            newcomp.instance = (*factory)(name);
+            newcomp.loaded = true;
+        } catch(...) {
+            log(Error) <<"The constructor of component type "<<type<<" threw an exception!"<<endlog();
+        }
 
         if ( newcomp.instance == 0 ) {
             log(Error) <<"Failed to load component with name "<<name<<": refused to be created."<<endlog();

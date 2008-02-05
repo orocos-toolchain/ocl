@@ -35,6 +35,7 @@ namespace OCL
         RTT::Constant<int> sched_OTHER;
         RTT::Constant<int> lowest_Priority;
         RTT::Constant<int> highest_Priority;
+        RTT::Property<std::string> target;
 
         /**
          * Each configured component is stored in a struct like this.
