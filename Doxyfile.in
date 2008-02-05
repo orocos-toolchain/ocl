@@ -17,7 +17,7 @@
 # The PROJECT_NAME tag is a single word (or a sequence of words surrounded 
 # by quotes) that should identify the project.
 
-PROJECT_NAME           =  @PROJECT_NAME@
+PROJECT_NAME           =  Orocos Component Library
 
 # The PROJECT_NUMBER tag can be used to enter a project or revision number. 
 # This could be handy for archiving the generated documentation or 
@@ -462,6 +462,7 @@ WARN_LOGFILE           =
 INPUT                  = @PROJ_SOURCE_DIR@/doc/usage.dox \
 	@PROJ_SOURCE_DIR@/ocl \
 	@PROJ_SOURCE_DIR@/taskbrowser \
+	@PROJ_SOURCE_DIR@/timer \
 	@PROJ_SOURCE_DIR@/hardware \
 	@PROJ_SOURCE_DIR@/deployment \
 	@PROJ_SOURCE_DIR@/reporting \
@@ -564,7 +565,7 @@ FILTER_SOURCE_FILES    = NO
 # Note: To get rid of all source code in the generated output, make sure also 
 # VERBATIM_HEADERS is set to NO.
 
-SOURCE_BROWSER         = NO
+SOURCE_BROWSER         = YES
 
 # Setting the INLINE_SOURCES tag to YES will include the body 
 # of functions and classes directly in the documentation.
@@ -1049,8 +1050,8 @@ SKIP_FUNCTION_MACROS   = YES
 # If a tag file is not located in the directory in which doxygen 
 # is run, you must also specify the path to the tagfile here.
 
-TAGFILES               = @OROCOS_INSTALL@/doc/rtt.tag=../../../../rtt/v1.0.x/api/html \
-			 @OROCOS_INSTALL@/doc/kdl.tag=../../../../kdl/v0.2.x/api/html
+TAGFILES               = @OROCOS_INSTALL@/doc/liborocos-rtt/rtt.tag=../../../../rtt/@RTT_VVERSION@/api/html \
+			 @OROCOS_INSTALL@/doc/liborocos-kdl/kdl.tag=../../../../kdl/@KDL_VVERSION@/api/html
 
 # When a file name is specified after GENERATE_TAGFILE, doxygen will create 
 # a tag file that is based on the input files it reads.
