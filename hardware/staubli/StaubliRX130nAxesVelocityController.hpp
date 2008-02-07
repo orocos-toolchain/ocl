@@ -225,7 +225,8 @@ namespace OCL
 
 
     private:    
-
+        bool readAbsolutePosition(std::vector<double>& initPos);
+        
         virtual bool startAllAxes();
         virtual bool stopAllAxes();
         virtual bool lockAllAxes();
@@ -265,7 +266,7 @@ namespace OCL
 
         bool servoInitialized;
         RTT::TimeService::ticks    previousTime;
-
+        
     public:
         
         virtual bool configureHook();
@@ -310,10 +311,10 @@ namespace OCL
       int fd;
       
 #endif
-        std::vector<AxisInterface*>      axes;
-	std::vector<TimeService::ticks>         _previous_time;
-	TimeService::Seconds                    _delta_time;
-    
+        std::vector<AxisInterface*>             axes;
+        std::vector<TimeService::ticks>         _previous_time;
+        TimeService::Seconds                    _delta_time;
+        
     };//class StaubliRX130nAxesVelocityController
 }//namespace Orocos
 #endif // STAUBLIRX130NAXESVELOCITYCONTROLLER
