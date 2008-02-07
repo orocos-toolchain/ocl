@@ -175,7 +175,7 @@ namespace OCL
         
 #endif
         //Definition of kinematics for the StaubliRX130 
-        kinematics.addSegment(Segment(Joint(Joint::RotZ),Frame(Vector(0.0,0.0,0.208+0.505))));
+        kinematics.addSegment(Segment(Joint(Joint::RotZ),Frame(Vector(0.0,0.0,0.2075+0.550))));
         kinematics.addSegment(Segment(Joint(Joint::RotX),Frame(Vector(0.0,0.0,0.625))));
         kinematics.addSegment(Segment(Joint(Joint::RotX),Frame(Vector(0.0,0.0,0.625))));
         kinematics.addSegment(Segment(Joint(Joint::RotZ)));
