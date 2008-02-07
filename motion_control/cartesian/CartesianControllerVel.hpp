@@ -42,14 +42,6 @@ namespace OCL
      * output twist.  
      * twist_out = K_gain * ( frame_desired - frame_measured) + 
      *             twist_desired.
-     * The desired frame is calculated by integrating the desired twist.
-     * It can share dataports with
-     * OCL::CartesianSensor to get the measured frame, with
-     * OCL::CartesianGeneratorPos to get its desired frame and with
-     * OCL::CartesianEffectorVel to convert the output twist to
-     * output velocities and send them to the hardware/simulation
-     * axes.
-     * 
      */
     class CartesianControllerVel : public RTT::TaskContext
     {
@@ -59,22 +51,23 @@ namespace OCL
          * Constructor of the class
          * 
          * @param name name of the TaskContext
-         * @param propertyfile location of the propertyfile. Default:
-         * cpf/CartesianControllerPosVel.cpf 
-         * 
          */
-        CartesianControllerVel(std::string name,std::string propertyfile);
+        CartesianControllerVel(std::string name);
         virtual ~CartesianControllerVel();
         
-        virtual bool startup();
-        virtual void update();
-        virtual void shutdown();
+        virtual bool configureHook();
+        virtual bool startHook();
+        virtual void updateHook();
+        virtual void stopHook();
+        virtual void cleanupHook();
         
     private:
-        const std::string                         _propertyfile;
-        
         KDL::Frame                       _position_meas_local, _position_integrated;
         KDL::Twist                       _velocity_out_local, _velocity_desi_local, _velocity_feedback;
+        std::vector<double>              _gain_local;
+        
+        RTT::TimeService::ticks                   _time_begin;
+        bool                                      _is_initialized;
         
     protected:
         /// DataPort containing the measured frame, shared with
@@ -90,10 +83,6 @@ namespace OCL
         RTT::WriteDataPort< KDL::Twist > _velocity_out;
         /// Vector with the control gain value for each dof.
         RTT::Property< std::vector<double> >      _controller_gain;
-        
-    private:
-        RTT::TimeService::ticks                   _time_begin;
-        bool                                      _is_initialized;
         
     }; // class
 }//namespace

@@ -20,7 +20,7 @@ IF ( BUILD_CARTESIAN_TEST )
     program_add_deps( cartesian orocos-apci )
     ENDIF ( BUILD_APCI )
     
-    TARGET_LINK_LIBRARIES( cartesian ${OROCOS_RTT_LIBS} ${KDL_LIBS} ${KDLTK_LIBS})
+    TARGET_LINK_LIBRARIES( cartesian ${OROCOS_RTT_LIBS} ${KDL_LIBS} ${KDLTK_LIBS} ${KDLTKCORBA_LIBS} orocos-rtt-${FLAVOR_TARGET})
 
 
 ENDIF ( BUILD_CARTESIAN_TEST )

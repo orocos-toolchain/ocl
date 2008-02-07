@@ -21,71 +21,85 @@
 #include "CartesianControllerPosVel.hpp"
 #include <rtt/Logger.hpp>
 #include <assert.h>
+#include <ocl/ComponentLoader.hpp>
+
+ORO_LIST_COMPONENT_TYPE( OCL::CartesianControllerPosVel );
 
 namespace OCL
 {
-  using namespace RTT;
-  using namespace KDL;
-  using namespace std;
+    using namespace RTT;
+    using namespace KDL;
+    using namespace std;
   
-  CartesianControllerPosVel::CartesianControllerPosVel(string name,string propertyfile)
-    : TaskContext(name),
-      _propertyfile(propertyfile),
-      _position_meas("CartesianSensorPosition"),
-      _position_desi("CartesianDesiredPosition"),
-      _velocity_desi("CartesianDesiredVelocity"),
-      _velocity_out("CartesianOutputVelocity"),
-      _controller_gain("K", "Proportional Gain")
+    CartesianControllerPosVel::CartesianControllerPosVel(string name)
+        : TaskContext(name,PreOperational),
+          _gain_local(6,0.0),
+          _position_meas("CartesianSensorPosition"),
+          _position_desi("CartesianDesiredPosition"),
+          _velocity_desi("CartesianDesiredVelocity"),
+          _velocity_out("CartesianOutputVelocity"),
+          _controller_gain("K", "Proportional Gain",vector<double>(6,0.0))
     {
-      //Creating TaskContext
+        //Creating TaskContext
+        
+        //Adding Ports
+        this->ports()->addPort(&_position_meas);
+        this->ports()->addPort(&_position_desi);
+        this->ports()->addPort(&_velocity_desi);
+        this->ports()->addPort(&_velocity_out);
+        
+        //Adding Properties
+        this->properties()->addProperty(&_controller_gain);
 
-      //Adding Ports
-      this->ports()->addPort(&_position_meas);
-      this->ports()->addPort(&_position_desi);
-      this->ports()->addPort(&_velocity_desi);
-      this->ports()->addPort(&_velocity_out);
-   
-      //Adding Properties
-      this->properties()->addProperty(&_controller_gain);
+    }
+    
+    
+    CartesianControllerPosVel::~CartesianControllerPosVel(){};
+    
+    bool CartesianControllerPosVel::configureHook()
+    {
+        //        if(!marshalling()->readProperties(this->getName()+".cpf"))
+        //            return false;
+        //Check if size is correct
+        if(_controller_gain.value().size()!=6)
+            return false;
+        //copy property values in local variable
+        _gain_local=_controller_gain.value();
+        return true;
+    }
+    
+    
+    bool CartesianControllerPosVel::startHook()
+    {
+        return true;
+    }
+  
+    void CartesianControllerPosVel::updateHook()
+    {
+        // copy Input and Setpoint to local values
+        _position_meas_local = _position_meas.Get();
+        _position_desi_local = _position_desi.Get();
+        _velocity_desi_local = _velocity_desi.Get();
+    
+        // feedback on position
+        _velocity_feedback = diff(_position_meas_local, _position_desi_local);
+        for(unsigned int i=0; i<6; i++)
+            _velocity_feedback(i) *= _gain_local[i];
 
-      if(!marshalling()->readProperties(_propertyfile))
-	log(Error) <<"(CartesianControllerPosVel) Reading Properties from "<<_propertyfile<<" failed!!"<<endlog();
-  }
+        //Add desired velocity as feedforward
+        _velocity_out_local = _velocity_desi_local + _velocity_feedback;
+        
+        _velocity_out.Set(_velocity_out_local);
+    }
   
-  
-  CartesianControllerPosVel::~CartesianControllerPosVel(){};
     
-  
-  bool CartesianControllerPosVel::startup()
-  {
-    // check size of properties
-    if(_controller_gain.value().size() != 6)
-      return false;
-
-    return true;
-  }
-  
-  void CartesianControllerPosVel::update()
-  {
-    // copy Input and Setpoint to local values
-    _position_meas_local = _position_meas.Get();
-    _position_desi_local = _position_desi.Get();
-    _velocity_desi_local = _velocity_desi.Get();
+    void CartesianControllerPosVel::stopHook()
+    {
+    }
     
-    // feedback on position
-    _velocity_feedback = diff(_position_meas_local, _position_desi_local);
-    for(unsigned int i=0; i<6; i++)
-      _velocity_feedback(i) *= _controller_gain.value()[i];
+    void CartesianControllerPosVel::cleanupHook()
+    {
+    }
     
-    _velocity_out_local = _velocity_desi_local + _velocity_feedback;
-    
-    _velocity_out.Set(_velocity_out_local);
-  }
-  
-  
-  void CartesianControllerPosVel::shutdown()
-  {
-  
-  }
 }//namespace
 

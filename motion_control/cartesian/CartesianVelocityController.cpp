@@ -19,6 +19,11 @@
 
 #include "CartesianVelocityController.hpp"
 #include <kdl/kinfam_io.hpp>
+#include <kdl/chainiksolvervel_pinv.hpp>
+#include <kdl/chainfksolverpos_recursive.hpp>
+
+#include <ocl/ComponentLoader.hpp>
+ORO_LIST_COMPONENT_TYPE( OCL::CartesianVelocityController );
 
 namespace OCL
 {
@@ -26,23 +31,15 @@ namespace OCL
     using namespace RTT;
     using namespace KDL;
 
-    CartesianVelocityController::CartesianVelocityController(string name,const KDL::Chain& _chain, 
-                                                             KDL::ChainIkSolverVel* _iksolver,
-                                                             KDL::ChainFkSolverPos* _fksolver) :
-        TaskContext(name),
-        chain(_chain),
-        fksolver(_fksolver),
-        iksolver(_iksolver),
-        nj(chain.getNrOfJoints()),
-        jointpositions(nj),
-        jointvelocities(nj),
-        naxesposition(nj),
-        naxesvelocities(nj),
+    CartesianVelocityController::CartesianVelocityController(string name) :
+        TaskContext(name,PreOperational),
         cartpos_port("CartesianSensorPosition",KDL::Frame::Identity()),
         cartvel_port("CartesianOutputVelocity",KDL::Twist::Zero()),
-        naxespos_port("nAxesSensorPosition",std::vector<double>(nj,0)),
-        naxesvel_port("nAxesOutputVelocity",std::vector<double>(nj,0)),
-        kinematics_status(true),own_fk(false),own_ik(false)
+        naxespos_port("nAxesSensorPosition"),
+        naxesvel_port("nAxesOutputVelocity"),
+        chain_location("ChainLocation","Location of the chain to use"),
+        toolframe("ToolLocation","Offset between the robot's end effector and the tool location"),
+        kinematics_status(true)
     {
         //Create the ports
         this->ports()->addPort(&cartpos_port);
@@ -50,31 +47,66 @@ namespace OCL
         this->ports()->addPort(&naxespos_port);
         this->ports()->addPort(&naxesvel_port);
         
-        //If no solvers are given create our own:
-        if(iksolver==NULL){
-            iksolver=new ChainIkSolverVel_pinv(chain);
-            own_ik=true;
-        }
-        if(fksolver==NULL){
-            fksolver=new ChainFkSolverPos_recursive(chain);
-            own_fk=true;
-        }
+        this->properties()->addProperty(&chain_location);
+        this->properties()->addProperty(&toolframe);
         
     }
 
     CartesianVelocityController::~CartesianVelocityController()
     {
-        if (own_fk)
-            delete fksolver;
-        if (own_ik)
-            delete iksolver;
+    }
+
+    bool CartesianVelocityController::configureHook()
+    {
+        Logger::In in(this->getName().data());
+        string name = chain_location.value();
+        string::size_type idx = name.find('.');
+        if(idx==string::npos)
+            log(Warning)<<"Could not find "<<chain_location.value()<<".\n Syntax Error."<<endlog();
+        string peername = name.substr(0,idx);
+        string chainname = name.substr(idx+1);
+        TaskContext* peer;
+        if(this->hasPeer(peername))
+            peer = this->getPeer(peername);
+        else{
+            log(Warning)<<"Could not find "<<name<<"\n "
+                        <<peername<<" is not a peer of "<<this->getName()<<endlog();
+            return false;
+        }
+        
+        if(peer->attributes()->hasAttribute(chainname))
+            chain = peer->attributes()->getAttribute<Chain>(chainname)->get();
+        else{
+            log(Warning)<<"Could not find "<<chainname<<" in "<<peername<<endlog();
+            return false;
+        }
+        
+        chain.addSegment(Segment(Joint(Joint::None),toolframe.value()));
+        
+        nj = chain.getNrOfJoints();
+        jointpositions=new JntArray(nj);
+        jointvelocities=new JntArray(nj);
+        naxesposition.resize(nj);
+        naxesvelocities.resize(nj);
+
+        fksolver=new ChainFkSolverPos_recursive(chain);
+        iksolver=new ChainIkSolverVel_pinv(chain);
+        return true;
+        
     }
     
-
+    void CartesianVelocityController::cleanupHook()
+    {
+        delete jointpositions;
+        delete jointvelocities;
+        delete fksolver;
+        delete iksolver;
+    }
+    
     bool CartesianVelocityController::startHook()
     {
         //Initialize: calculate everything once
-        this->update();
+        this->updateHook();
         //Check if there were any problems calculating the kinematics
         return kinematics_status>=0;
     }
@@ -90,10 +122,10 @@ namespace OCL
             
             //copy into KDL-type
             for(unsigned int i=0;i<nj;i++)
-                jointpositions(i)=naxesposition[i];
+                (*jointpositions)(i)=naxesposition[i];
 
             //Calculate forward position kinematics
-            kinematics_status = fksolver->JntToCart(jointpositions,cartpos);
+            kinematics_status = fksolver->JntToCart(*jointpositions,cartpos);
             //Only set result to port if it was calcuted correctly
             if(kinematics_status>=0)
                 cartpos_port.Set(cartpos);
@@ -101,21 +133,30 @@ namespace OCL
                 log(Error)<<"Could not calculate forward kinematics"<<endlog();
             
             //Calculate inverse velocity kinematics
-            kinematics_status = iksolver->CartToJnt(jointpositions,cartvel,jointvelocities);
+            kinematics_status = iksolver->CartToJnt(*jointpositions,cartvel,*jointvelocities);
             if(kinematics_status<0){
-                SetToZero(jointvelocities);
+                SetToZero(*jointvelocities);
                 log(Error)<<"Could not calculate inverse kinematics"<<endlog();
             }
             
             for(unsigned int i=0;i<nj;i++)
-                naxesvelocities[i]=jointvelocities(i);
+                naxesvelocities[i]=(*jointvelocities)(i);
             
             naxesvel_port.Set(naxesvelocities);
         }
         else
             kinematics_status=-1;
     }
+
+    void CartesianVelocityController::stopHook()
+    {
+        for(unsigned int i=0;i<nj;i++)
+            naxesvelocities[i]=0.0;
+        naxesvel_port.Set(naxesvelocities);
+    }
+    
 }
+
 
                                  
                                  

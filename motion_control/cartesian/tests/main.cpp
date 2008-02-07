@@ -34,12 +34,13 @@ int ORO_main(int argc, char* argv[])
     Kuka361nAxesVelocityController my_robot("Robot");
     
     //CartesianComponents
-    CartesianVelocityController cartesianrobot("CartesianRobot",my_robot.getKinematics());
+    CartesianVelocityController cartesianrobot("CartesianRobot");
     CartesianGeneratorPos generator("CartesianGenerator");
     CartesianControllerPosVel controller("CartesianController");
     
     //connecting ports
     connectPorts(&cartesianrobot,&my_robot);
+    connectPeers(&cartesianrobot,&my_robot);
     connectPorts(&cartesianrobot,&generator);
     connectPorts(&cartesianrobot,&controller);
     connectPorts(&generator,&controller);

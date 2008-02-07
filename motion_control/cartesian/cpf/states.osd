@@ -3,6 +3,7 @@ StateMachine Default
 
   var bool move_to               = true
   const double pi = 3.14159265358979
+  var frame f
 
   initial state StartRobotState {
     entry {
@@ -25,15 +26,19 @@ StateMachine Default
         select StopRobotState
     }
     entry {
-	  var frame f = frame(vector(0.0,-1.0,1.2), rotation(0.0,pi,0.0))
-	  do MoveToCartesian(f)
-	  set f = frame(vector(0.,-1.0,1.2), rotation(0.0,pi,0.0))
-	  do MoveToCartesian(f)
+      do CartesianGeneratorPos.start()
+      do CartesianControllerPosVel.start()
+      set f = frame(vector(0.0,-1.0,1.2), rotation(0.0,pi,0.0))
+      do CartesianGeneratorPos.moveTo(f,0.0)
+      
     }
     exit {
+      do CartesianControllerPosVel.stop()
+      do CartesianGeneratorPos.stop()
     }
     transitions {
-      select StopRobotState
+      if (move_to==false) then
+        select StopRobotState
     }
   }
 
@@ -49,4 +54,4 @@ StateMachine Default
   }
 }
 
-RootMachine Default Default
+RootMachine Default Main

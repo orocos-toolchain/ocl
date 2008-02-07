@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "cpf.dtd">
+<properties>
+  <simple name="ChainLocation" type="string"><description>Location of the chain to use</description><value>Robot.Kinematics</value></simple>
+  <struct name="ToolLocation" type="MotCon::Frame">
+     <description>Offset between the robot's end effector and the tool location</description>
+     <struct name="Position" type="MotCon::Vector">
+        <simple name="X" type="double"><description>X Value</description><value>0</value></simple>
+        <simple name="Y" type="double"><description>Y Value</description><value>0</value></simple>
+        <simple name="Z" type="double"><description>Z Value</description><value>0</value></simple>
+     </struct>
+     <struct name="Rotation" type="MotCon::RPY">
+        <simple name="R" type="double"><description>First rotate around X with R(oll) in radians</description><value>0</value></simple>
+        <simple name="P" type="double"><description>Next rotate around old Y with P(itch) in radians</description><value>-0</value></simple>
+        <simple name="Y" type="double"><description>Next rotate around old Z with Y(aw) in radians</description><value>0</value></simple>
+     </struct>
+  </struct>
+</properties>

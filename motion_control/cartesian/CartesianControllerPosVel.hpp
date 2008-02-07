@@ -41,13 +41,6 @@ namespace OCL
      * output twist.  
      * twist_out = K_gain * ( frame_desired - frame_measured) + 
      *             twist_desired.
-     * It can share dataports with
-     * OCL::CartesianSensor to get the measured frame, with
-     * OCL::CartesianGeneratorPos to get its desired frame and with
-     * OCL::CartesianEffectorVel to convert the output twist to
-     * output velocities and send them to the hardware/simulation
-     * axes.
-     * 
      */
     class CartesianControllerPosVel : public RTT::TaskContext
     {
@@ -56,22 +49,22 @@ namespace OCL
          * Constructor of the class
          * 
          * @param name name of the TaskContext
-         * @param propertyfile location of the propertyfile. Default:
-         * cpf/CartesianControllerPosVel.cpf 
          * 
          */
-        CartesianControllerPosVel(std::string name,std::string propertyfile="cpf/CartesianControllerPosVel.cpf");
+        CartesianControllerPosVel(std::string name);
         virtual ~CartesianControllerPosVel();
-        
-        virtual bool startup();
-        virtual void update();
-        virtual void shutdown();
+       
+        virtual bool configureHook();
+        virtual bool startHook();
+        virtual void updateHook();
+        virtual void stopHook();
+        virtual void cleanupHook();
         
     private:
-        const std::string           _propertyfile;
         KDL::Frame                  _position_meas_local, _position_desi_local;
         KDL::Twist                  _velocity_out_local, _velocity_desi_local, _velocity_feedback;
-
+        std::vector<double>         _gain_local;
+        
     protected:
         /// DataPort containing the measured frame, shared with
         /// OCL::CartesianSensor 

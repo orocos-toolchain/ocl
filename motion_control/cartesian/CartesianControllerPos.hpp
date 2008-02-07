@@ -39,12 +39,6 @@ namespace OCL
      * end-effector frame of a robot. It uses a simple position-feedback
      * to calculate an output twist. 
      * twist_out = K_gain * ( frame_desired - frame_measured)
-     * It can share dataports with
-     * OCL::CartesianSensor to get the measured frame, with
-     * OCL::CartesianGeneratorPos to get its desired frame and with
-     * OCL::CartesianEffectorVel to convert the output twist to
-     * output velocities and send them to the
-     * hardware/simulation axes.
      * 
      */
 
@@ -55,23 +49,24 @@ namespace OCL
          * Constructor of the class
          * 
          * @param name name of the TaskContext
-         * @param propertyfile location of the propertyfile. Default:
-         * cpf/CartesianControllerPos.cpf 
          * 
          */
-        CartesianControllerPos(std::string name, std::string propertyfile="cpf/CartesianControllerPos.cpf");
+        CartesianControllerPos(std::string name);
         
         virtual ~CartesianControllerPos();
         
-        virtual bool startup();
-        virtual void update();
-        virtual void shutdown();
-  
+        virtual bool configureHook();
+        virtual bool startHook();
+        virtual void updateHook();
+        virtual void stopHook();
+        virtual void cleanupHook();
+        
     private:
-        const std::string                _propertyfile;
-  
+          
         KDL::Frame                       _position_meas_local, _position_desi_local;
         KDL::Twist                       _velocity_out_local;
+        std::vector<double>              _gain_local;
+
     protected:
         /// DataPort containing the measured frame, shared with
         /// OCL::CartesianSensor 

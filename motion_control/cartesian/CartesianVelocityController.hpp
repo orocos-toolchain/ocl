@@ -23,8 +23,6 @@
 #include <kdl/chain.hpp>
 #include <kdl/chainfksolver.hpp>
 #include <kdl/chainiksolver.hpp>
-#include <kdl/chainiksolvervel_pinv.hpp>
-#include <kdl/chainfksolverpos_recursive.hpp>
 
 #include <rtt/TaskContext.hpp>
 #include <rtt/Ports.hpp>
@@ -49,25 +47,23 @@ namespace OCL
     class CartesianVelocityController : public RTT::TaskContext
     {
     public:
-        CartesianVelocityController(std::string name,const KDL::Chain& chain, 
-                                    KDL::ChainIkSolverVel* iksolver=NULL,
-                                    KDL::ChainFkSolverPos* fksolver=NULL);
+        CartesianVelocityController(std::string name);
         ~CartesianVelocityController();
         
-        virtual bool configureHook(){return true;};
+        virtual bool configureHook();
         virtual bool startHook();
         virtual void updateHook();
-        virtual void stopHook(){};
-        virtual void cleanupHook(){};
+        virtual void stopHook();
+        virtual void cleanupHook();
         
     private:
-        const KDL::Chain& chain;
+        KDL::Chain chain;
         KDL::ChainFkSolverPos* fksolver;
         KDL::ChainIkSolverVel* iksolver;
         
         unsigned int nj;
         
-        KDL::JntArray jointpositions,jointvelocities;
+        KDL::JntArray *jointpositions,*jointvelocities;
         std::vector<double> naxesposition,naxesvelocities;
         
         KDL::Twist    cartvel;
@@ -78,7 +74,10 @@ namespace OCL
         RTT::DataPort<std::vector<double> > naxespos_port;
         RTT::DataPort<std::vector<double> > naxesvel_port;
         
-        bool kinematics_status,own_fk, own_ik;
+        RTT::Property<std::string> chain_location;
+        RTT::Property<KDL::Frame> toolframe;
+        
+        bool kinematics_status;
         
     };
 }

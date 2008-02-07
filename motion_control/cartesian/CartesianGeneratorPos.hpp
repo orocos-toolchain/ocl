@@ -56,27 +56,32 @@ namespace OCL
          * Constructor of the class.
          * 
          * @param name name of the TaskContext
-         * @param propertyfile location of the propertyfile. Default:
-         * cpf/CartesianGeneratorPos.cpf 
-         * 
          */
-        CartesianGeneratorPos(std::string name,std::string propertyfile="cpf/CartesianGeneratorPos.cpf");
+        CartesianGeneratorPos(std::string name);
         virtual ~CartesianGeneratorPos();
         
-        virtual bool startup();
-        virtual void update();
-        virtual void shutdown();
-  
+        virtual bool configureHook();
+        virtual bool startHook();
+        virtual void updateHook();
+        virtual void stopHook();
+        virtual void cleanupHook();
+        
     private:
         bool moveTo(KDL::Frame frame, double time=0);
         bool moveFinished() const;
         void resetPosition();
   
-        const std::string                 _propertyfile;
-        
         KDL::Frame                        _traject_end, _traject_begin;
         KDL::Frame                        _position_desi_local;
         KDL::Twist                        _velocity_desi_local, _velocity_begin_end, _velocity_delta;
+        std::vector<double>               _maximum_velocity_local, _maximum_acceleration_local;
+        
+        std::vector<KDL::VelocityProfile_Trap>      _motion_profile;
+        RTT::TimeService::ticks                     _time_begin;
+        RTT::TimeService::Seconds                   _time_passed;
+        double                                      _max_duration;
+        
+        bool                                        _is_moving;
 
     protected:
         /** 
@@ -113,15 +118,6 @@ namespace OCL
         /// each dof
         RTT::Property< std::vector<double> >  _maximum_acceleration;
 
-    private:  
-        std::vector<KDL::VelocityProfile_Trap*>     _motion_profile;
-        RTT::TimeService::ticks                     _time_begin;
-        RTT::TimeService::Seconds                   _time_passed;
-        double                                      _max_duration;
-        
-        bool                                        _is_moving;
-
-    
   }; // class
 }//namespace
 

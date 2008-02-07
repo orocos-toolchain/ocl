@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "cpf.dtd">
+<properties>
+<simple name="Import" type="string"><value>/usr/lib/orocos</value></simple>
+
+<struct name="CartesianControllerPosVel" type="OCL::CartesianControllerPosVel">
+  <struct name="Activity" type="PeriodicActivity">
+    <simple name="Period" type="double"><value>0.01</value></simple>
+    <simple name="Priority" type="short"><value>0</value></simple>
+    <simple name="Scheduler" type="string"><value>ORO_SCHED_RT</value></simple>
+  </struct>
+  <simple name="AutoConf" type="boolean"><value>1</value></simple>
+  <simple name="AutoStart" type="boolean"><value>0</value></simple>
+  <simple name="PropertyFile" type="string"><value>cpf/CartesianControllerPosVel.cpf</value></simple>
+  <struct name="Ports" type="PropertyBag">
+     <simple name="CartesianSensorPosition" type="string"><value>CartesianSensorPosition</value></simple>
+     <simple name="CartesianDesiredPosition" type="string"><value>CartesianDesiredPosition</value></simple>
+     <simple name="CartesianDesiredVelocity" type="string"><value>CartesianDesiredVelocity</value></simple>
+     <simple name="CartesianOutputVelocity" type="string"><value>CartesianOutputVelocity</value></simple>
+  </struct>
+</struct>
+
+<struct name="CartesianGeneratorPos" type="OCL::CartesianGeneratorPos">
+  <struct name="Activity" type="PeriodicActivity">
+    <simple name="Period" type="double"><value>0.01</value></simple>
+    <simple name="Priority" type="short"><value>0</value></simple>
+    <simple name="Scheduler" type="string"><value>ORO_SCHED_RT</value></simple>
+  </struct>
+  <simple name="AutoConf" type="boolean"><value>1</value></simple>
+  <simple name="AutoStart" type="boolean"><value>0</value></simple>
+  <simple name="PropertyFile" type="string"><value>cpf/CartesianGeneratorPos.cpf</value></simple>
+  <struct name="Ports" type="PropertyBag">
+     <simple name="CartesianSensorPosition" type="string"><value>CartesianSensorPosition</value></simple>
+     <simple name="CartesianDesiredVelocity" type="string"><value>CartesianDesiredVelocity</value></simple>
+     <simple name="CartesianDesiredPosition" type="string"><value>CartesianDesiredPosition</value></simple>
+  </struct>
+</struct>
+
+<struct name="CartesianRobot" type="OCL::CartesianVelocityController">
+  <struct name="Activity" type="PeriodicActivity">
+    <simple name="Period" type="double"><value>0.01</value></simple>
+    <simple name="Priority" type="short"><value>0</value></simple>
+    <simple name="Scheduler" type="string"><value>ORO_SCHED_RT</value></simple>
+  </struct>
+  <simple name="AutoConf" type="boolean"><value>1</value></simple>
+  <simple name="AutoStart" type="boolean"><value>1</value></simple>
+  <simple name="PropertyFile" type="string"><value>cpf/CartesianRobot.cpf</value></simple>
+  <struct name="Ports" type="PropertyBag">
+     <simple name="CartesianOutputVelocity" type="string"><value>CartesianOutputVelocity</value></simple>
+     <simple name="CartesianSensorPosition" type="string"><value>CartesianSensorPosition</value></simple>
+     <simple name="nAxesSensorPosition" type="string"><value>nAxesSensorPosition</value></simple>
+     <simple name="nAxesOutputVelocity" type="string"><value>nAxesOutputVelocity</value></simple>
+  </struct>
+  <struct name="Peers" type="PropertyBag">
+     <simple type="string"><value>Robot</value></simple>
+     <simple type="string"><value>CartesianGeneratorPos</value></simple>
+     <simple type="string"><value>CartesianControllerPosVel</value></simple>
+  </struct>
+  <simple name="StateMachineScript" type="string"><value>cpf/states.osd</value></simple>
+</struct>
+
+
+<struct name="Robot" type="OCL::StaubliRX130nAxesVelocityController">
+  <struct name="Activity" type="PeriodicActivity">
+    <simple name="Period" type="double"><value>0.001</value></simple>
+    <simple name="Priority" type="short"><value>0</value></simple>
+    <simple name="Scheduler" type="string"><value>ORO_SCHED_RT</value></simple>
+  </struct> 
+  <simple name="AutoConf" type="boolean"><value>1</value></simple>
+  <simple name="AutoStart" type="boolean"><value>1</value></simple>
+  <simple name="PropertyFile" type="string"><value>cpf/nAxesVelocityController.cpf</value></simple>
+  <struct name="Ports" type="PropertyBag">
+     <simple name="nAxesSensorPosition" type="string"><value>nAxesSensorPosition</value></simple>
+     <simple name="nAxesOutputVelocity" type="string"><value>nAxesOutputVelocity</value></simple>
+  </struct>
+</struct>
+</properties>
