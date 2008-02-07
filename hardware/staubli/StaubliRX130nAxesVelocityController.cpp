@@ -260,9 +260,6 @@ namespace OCL
     {
         Logger::In in(this->getName().data());
         
-        if (!marshalling()->readProperties(this->getName()+".cpf")) {
-            return false;
-        }  
         simulation=simulation_prop.value();
         
         if(!(driveLimits_prop.value().size()==STAUBLIRX130_NUM_AXES&&
