@@ -32,6 +32,7 @@
 #include <rtt/dev/AxisInterface.hpp>
 
 #include <ocl/OCL.hpp>
+#include <ocl/VectorTemplateComposition.hpp>
 
 #include <kdl/chain.hpp>
 
@@ -223,6 +224,12 @@ namespace OCL
         Property<std::vector<double> > servoGain_prop;
         Property<std::vector<double> > servoFFScale_prop;
 
+        /** 
+         * List of Events that should result in an emergencystop
+         */
+        Property<std::vector<std::string> > EmergencyEvents_prop;
+
+
 
     private:    
         bool readAbsolutePosition(std::vector<double>& initPos);
@@ -237,6 +244,16 @@ namespace OCL
         virtual bool prepareForShutdown();
         virtual bool prepareForShutdownCompleted() const;
     
+        void EmergencyStop(std::string message)
+        {
+            log(Error) << "---------------------------------------------" << endlog();
+            log(Error) << "--------- EMERGENCY STOP --------------------" << endlog();
+            log(Error) << "---------------------------------------------" << endlog();
+            log(Error) << message << endlog();
+            this->fatal();
+        };
+        std::vector<RTT::Handle> EmergencyEventHandlers;
+
         /**
          * Activation state of robot
          */

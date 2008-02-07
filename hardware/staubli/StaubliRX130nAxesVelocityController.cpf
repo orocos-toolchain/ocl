@@ -55,7 +55,7 @@
      <simple type="double"><value>-0.0517566</value></simple>
      <simple type="double"><value>-0.163301</value></simple>
   </struct>
-  <simple name="simulation" type="boolean"><description>true if simulationAxes should be used</description><value>0</value></simple>
+  <simple name="simulation" type="boolean"><description>true if simulationAxes should be used</description><value>1</value></simple>
   <struct name="ServoIntegrationFactor" type="array">
      <description>Inverse of Integration time for servoloop</description>
      <simple name="ServoIntegrationFactor" type="double"><value>0.04</value></simple>
@@ -82,5 +82,10 @@
      <simple type="double"><value>1</value></simple>
      <simple type="double"><value>1</value></simple>
      <simple type="double"><value>1</value></simple>
+  </struct>
+  <struct name="EmergencyEvents" type="list">
+     <description>List of events that will result in an emergencystop of the robot</description>
+     <simple name="MaxVelEvent" type="string"><value>Robot.driveOutOfRange</value></simple>
+     <simple name="MaxPosEvent" type="string"><value>Robot.positionOutOfRange</value></simple>
   </struct>
 </properties>

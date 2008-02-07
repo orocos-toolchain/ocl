@@ -97,6 +97,7 @@ namespace OCL
           servoIntegrationFactor_prop("ServoIntegrationFactor","Inverse of Integration time for servoloop",vector<double>(STAUBLIRX130_NUM_AXES,0)),
           servoGain_prop("ServoGain","Feedback Gain for servoloop",vector<double>(STAUBLIRX130_NUM_AXES,0)),
           servoFFScale_prop("ServoFFScale","Feedforward scale for servoloop",vector<double>(STAUBLIRX130_NUM_AXES,0)),
+          EmergencyEvents_prop("EmergencyEvents","List of events that will result in an emergencystop of the robot"),
           activated(false),
           positionConvertFactor(STAUBLIRX130_NUM_AXES,0),
           driveConvertFactor(STAUBLIRX130_NUM_AXES,0),
@@ -219,6 +220,7 @@ namespace OCL
         properties()->addProperty( &servoIntegrationFactor_prop);
         properties()->addProperty( &servoGain_prop);
         properties()->addProperty( &servoFFScale_prop);
+        properties()->addProperty( &EmergencyEvents_prop);
         attributes()->addConstant( &num_axes_attr);
         attributes()->addAttribute(&chain_attr);
         
@@ -307,6 +309,39 @@ namespace OCL
         servoIntegrationFactor = servoIntegrationFactor_prop.value();
         servoFFScale = servoFFScale_prop.value();
 	
+        /**
+         * Creating event handlers
+         */
+        log(Info)<<"Creating EmergencyEvent Handlers"<<endlog();
+        
+        for(vector<string>::const_iterator it=EmergencyEvents_prop.rvalue().begin();it!=EmergencyEvents_prop.rvalue().end();it++){
+            string::size_type idx = (*it).find('.');
+            if(idx==string::npos)
+                log(Warning)<<"Could not connect EmergencyStop to "<<(*it)<<"\n Syntax of "
+                            <<(*it)<<" is not correct. I want a ComponentName.EventName "<<endlog();
+            string peername = (*it).substr(0,idx);
+            string eventname = (*it).substr(idx+1);
+            TaskContext* peer;
+            if(peername==this->getName())
+                peer = this;
+            else if(this->hasPeer(peername)){
+                peer = this->getPeer(peername);
+            }else{
+                log(Warning)<<"Could not connect EmergencyStop to "<<(*it)<<", "<<peername<<" is not a peer of "<<this->getName()<<endlog();
+                continue;
+            }
+            
+            if(peer->events()->hasEvent(eventname)){
+                Handle handle = peer->events()->setupConnection(eventname).callback(this,&StaubliRX130nAxesVelocityController::EmergencyStop).handle();
+                if(handle.connect()){
+                    EmergencyEventHandlers.push_back(handle);
+                    log(Info)<<"EmergencyStop connected to "<< (*it)<<" event."<<endlog();
+                }else
+                    log(Warning)<<"Could not connect EmergencyStop to "<<(*it)<<", "<<eventname<<" has to have a message parameter."<<endlog();
+            }else
+                log(Warning)<<"Could not connect EmergencyStop to "<<(*it)<<", "<<eventname <<" not found in "<<peername<<"s event-list"<<endlog();
+        }
+        
         return true;
     }
       
@@ -382,7 +417,7 @@ namespace OCL
 #if defined OROPKG_OS_LXRT
             if (driveFailure[i]->isOn()){
                 log(Error)<<"Failure drive "<<i<<", stopping all axes"<<endlog();
-                prepareForShutdown();
+                this->fatal();
             }
 #endif
             
