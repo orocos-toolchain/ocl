@@ -425,10 +425,12 @@ namespace OCL
             driveValues[i] = outputvel[i];
             axes[i]->drive(driveValues[i]);
         }
-        
+               
 #else
-            axes[i]->drive(driveValues[i]);
-        }
+                axes[i]->drive(driveValues[i]);
+            }
+        } 
+
 #endif
         servoValues_port.Set(driveValues);
     }
@@ -549,6 +551,7 @@ bool StaubliRX130nAxesVelocityController::addDriveOffset(const vector<double>& o
 
     bool StaubliRX130nAxesVelocityController::readAbsolutePosition(std::vector<double>& initPos)
     {
+#if (defined OROPKG_OS_LXRT)
         //Initialising serial communication
         port="/dev/ttyS0";
         fd=open(port,O_RDWR | O_NOCTTY | O_NDELAY);
@@ -627,7 +630,7 @@ bool StaubliRX130nAxesVelocityController::addDriveOffset(const vector<double>& o
         //Converting to radians
         for(unsigned int i=0;i<initPos.size();i++)
             initPos[i]*=M_PI/180;
-        
+#endif
         return true;
     }
     
