@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE properties SYSTEM "cpf.dtd">
 <properties>
-<simple name="Import" type="string"><value>/home/rsmits/orocos/install/lib</value></simple>
+<simple name="Import" type="string"><value>/usr/lib/orocos</value></simple>
 <struct name="Robot" type="OCL::Kuka361nAxesVelocityController">
   <struct name="Activity" type="PeriodicActivity">
     <simple name="Period" type="double"><value>0.001</value></simple>

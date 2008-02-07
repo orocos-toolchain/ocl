@@ -10,7 +10,6 @@
 #include <rtt/Properties.hpp>
 #include <rtt/Command.hpp>
 
-#include "VectorTemplateComposition.hpp"
 
 #if defined (OROPKG_OS_LXRT)
 #include <rtt/dev/AnalogOutput.hpp>
@@ -30,6 +29,7 @@
 #include <rtt/dev/AxisInterface.hpp>
 
 #include <ocl/OCL.hpp>
+#include <ocl/VectorTemplateComposition.hpp>
 
 #include <kdl/chain.hpp>
 

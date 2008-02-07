@@ -108,8 +108,6 @@ namespace OCL
 #endif
           axes(KUKA361_NUM_AXES)
     {
-        RTT::TypeInfoRepository::Instance()->addType( new StdVectorTemplateTypeInfo<string>("vectorString") );
-      
         Logger::In in(this->getName().data());
         double ticks2rad[KUKA361_NUM_AXES] = KUKA361_TICKS2RAD;
         double vel2volt[KUKA361_NUM_AXES] = KUKA361_RADproSEC2VOLT;
@@ -130,13 +128,13 @@ namespace OCL
         apci1032         = new SwitchDigitalInapci1032( "Kuka361" );
         
         
-	//Setting up encoderinterfaces:
-	encoderInterface[0] = new EncoderSSI_apci1710( 1, apci1710 );
-	encoderInterface[1] = new EncoderSSI_apci1710( 2, apci1710 );
-	encoderInterface[2] = new EncoderSSI_apci1710( 7, apci1710 );
-	encoderInterface[3] = new EncoderSSI_apci1710( 8, apci1710 );
-	encoderInterface[4] = new EncoderSSI_apci1710( 5, apci1710 );
-	encoderInterface[5] = new EncoderSSI_apci1710( 6, apci1710 );
+        //Setting up encoderinterfaces:
+        encoderInterface[0] = new EncoderSSI_apci1710( 1, apci1710 );
+        encoderInterface[1] = new EncoderSSI_apci1710( 2, apci1710 );
+        encoderInterface[2] = new EncoderSSI_apci1710( 7, apci1710 );
+        encoderInterface[3] = new EncoderSSI_apci1710( 8, apci1710 );
+        encoderInterface[4] = new EncoderSSI_apci1710( 5, apci1710 );
+        encoderInterface[5] = new EncoderSSI_apci1710( 6, apci1710 );
 	
 	
         for (unsigned int i = 0; i < KUKA361_NUM_AXES; i++){

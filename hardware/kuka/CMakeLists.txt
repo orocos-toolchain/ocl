@@ -11,7 +11,7 @@ IF ( BUILD_KUKA )
   
   GLOBAL_ADD_COMPONENT( orocos-kuka ${SRCS} )
   INCLUDE_DIRECTORIES(${PROJ_SOURCE_DIR}/hardware/axes)
-  COMPONENT_ADD_DEPS( orocos-kuka orocos-axes )
+  COMPONENT_ADD_DEPS( orocos-kuka orocos-axes orocos-ocl-common)
   COMPONENT_ADD_LIBS( orocos-kuka orocos-kdl)
   
   IF ( BUILD_COMEDI )
