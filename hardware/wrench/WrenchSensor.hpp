@@ -37,28 +37,17 @@ namespace OCL
 
     class WrenchSensor : public RTT::TaskContext
     {
-        /**
-         * Task's Data Ports.
-         */
     public:
-        /** 
-         * The constructor of the component.
-         * 
-         * @param samplePeriod period of the filter which should be used
-         * @param name name of the TaskContext (default: WrenchSensor)
-         * @param DSP number of connector that should be used (some
-         * pci-cards have two connections)
-         * @param propertyfile location of propertyfile (default: cpf/WrenchSensor.cpf)
-         * 
-         */
-        WrenchSensor(double samplePeriod, std::string name="WrenchSensor",unsigned int DSP=0,std::string propertyfile="cpf/WrenchSensor.cpf");
-        virtual ~WrenchSensor();
+        WrenchSensor(std::string name);
+        virtual ~WrenchSensor(){};
         
     protected:
-        virtual bool startup();
-        virtual void update();
-        virtual void shutdown();
-
+        virtual bool configureHook();
+        virtual bool startHook();
+        virtual void updateHook();
+        virtual void stopHook();
+        virtual void cleanupHook(){};
+        
         /// DataPort which contains Wrench information
         RTT::DataPort<KDL::Wrench> outdatPort;
         
@@ -67,17 +56,21 @@ namespace OCL
         RTT::Event<void(std::string)> maximumLoadEvent;
         
         /// Method to get the maximum measurement value
-        RTT::Method<KDL::Wrench(void)> _maxMeasurement;
+        RTT::Method<KDL::Wrench(void)> maxMeasurement_mtd;
         /// Method to get the minimum measurement value
-        RTT::Method<KDL::Wrench(void)> _minMeasurement;
+        RTT::Method<KDL::Wrench(void)> minMeasurement_mtd;
         /// Method to get the zero measurement value
-        RTT::Method<KDL::Wrench(void)> _zeroMeasurement;
+        RTT::Method<KDL::Wrench(void)> zeroMeasurement_mtd;
         /// Command to choose a different filter
-        RTT::Command<bool(double)> _chooseFilter;
+        RTT::Command<bool(double)> chooseFilter_cmd;
         /// Method to set the zero measurement offset
-        RTT::Command<bool(KDL::Wrench)> _setOffset;
+        RTT::Command<bool(KDL::Wrench)> setOffset_cmd;
         /// Method to add an offset to the zero measurement
-        RTT::Command<bool(KDL::Wrench)> _addOffset;
+        RTT::Command<bool(KDL::Wrench)> addOffset_cmd;
+
+        RTT::Property<KDL::Wrench>   offset;  
+        RTT::Property<unsigned int>  dsp_prop;
+        RTT::Property<double>        filter_period_prop;
         
     private:
         virtual KDL::Wrench maxMeasurement() const;
@@ -87,18 +80,15 @@ namespace OCL
         virtual bool chooseFilter(double period); 
         virtual bool chooseFilterDone() const;
         
-        virtual bool setOffset(KDL::Wrench); 
-        virtual bool addOffset(KDL::Wrench); 
+        virtual bool setOffset(KDL::Wrench in); 
+        virtual bool addOffset(KDL::Wrench in); 
         virtual bool setOffsetDone() const;
         
-        unsigned int  _filterToReadFrom;
-        unsigned int  _dsp;
-        std::string   _propertyfile;
-    
-        
-        KDL::Wrench*  _writeBuffer;
-        RTT::Property<KDL::Wrench>   _offset;  
-        s16Forces              _write_struct,_full_scale;
+        unsigned int  filterToReadFrom;
+        unsigned int  dsp;
+
+        KDL::Wrench  writeBuffer;
+        s16Forces    write_struct,full_scale;
         
     };
 }//namespace
