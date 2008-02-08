@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "cpf.dtd">
+<properties>
+  <simple name="AutoTrigger" type="boolean"><description>When set to 1, the data is taken upon each update(), otherwise, the data is only taken when the user invokes 'snapshot()'.</description><value>1</value></simple>
+  <simple name="Configuration" type="string"><description>The name of the property file which lists what is to be reported.</description><value>cpf/reporter-configuration.cpf</value></simple>
+  <simple name="WriteHeader" type="boolean"><description>Set to true to start each report with a header.</description><value>1</value></simple>
+</properties>

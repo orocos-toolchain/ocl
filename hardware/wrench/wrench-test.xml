@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE properties SYSTEM "cpf.dtd">
 <properties>
-<simple name="Import" type="string"><value>/usr/lib/orocos</value></simple>
+<simple name="Import" type="string"><value>/install/build-ruben/lib</value></simple>
 
 <struct name="WrenchSensor" type="OCL::WrenchSensor">
   <struct name="Activity" type="PeriodicActivity">
@@ -11,9 +11,22 @@
   </struct>
   <simple name="AutoConf" type="boolean"><value>1</value></simple>
   <simple name="AutoStart" type="boolean"><value>1</value></simple>
-  <simple name="PropertyFile" type="string"><value>WrenchSensor.cpf</value></simple>
+  <simple name="PropertyFile" type="string"><value>cpf/WrenchSensor.cpf</value></simple>
   <struct name="Ports" type="PropertyBag">
      <simple name="WrenchData" type="string"><value>WrenchData</value></simple>
+  </struct>
+</struct>
+<struct name="Reporter" type="OCL::ConsoleReporting">
+  <struct name="Activity" type="PeriodicActivity">
+    <simple name="Period" type="double"><value>1</value></simple>
+    <simple name="Priority" type="short"><value>0</value></simple>
+    <simple name="Scheduler" type="string"><value>ORO_SCHED_OTHER</value></simple>
+  </struct>
+  <simple name="AutoConf" type="boolean"><value>1</value></simple>
+  <simple name="AutoStart" type="boolean"><value>1</value></simple>
+  <simple name="PropertyFile" type="string"><value>cpf/reporter.cpf</value></simple>
+  <struct name="Peers" type="PropertyBag">
+     <simple name="Peer" type="string"><value>WrenchSensor</value></simple>
   </struct>
 </struct>
 

@@ -16,4 +16,6 @@
         <simple name="Z" type="double"><description>Z Value</description><value>0</value></simple>
      </struct>
   </struct>
+  <simple name="dsp" type="ulong"><description>connection socket, can be 0 or 1</description><value>0</value></simple>
+  <simple name="filterperiod" type="double"><description>period of filter for measurements</description><value>0.01</value></simple>
 </properties>
