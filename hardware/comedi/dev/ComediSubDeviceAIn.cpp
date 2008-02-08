@@ -59,9 +59,13 @@ namespace RTT
 
     void ComediSubDeviceAIn::init()
     {
+        if ( !myCard) {
+            log(Error) << "Error creating ComediSubDeviceAIn: null ComediDevice given." <<endlog();
+            return;
+        }
       if ( myCard->getSubDeviceType( _subDevice ) != COMEDI_SUBD_AI )
 	{
-	  rtos_printf( "comedi_get_subdevice_type failed\n" );
+        log(Error) <<  "comedi_get_subdevice_type failed" << endlog();
 	}
 
       channels = comedi_get_n_channels(myCard->getDevice()->it, _subDevice);
@@ -82,7 +86,7 @@ namespace RTT
 	{
 	  _sd_range[chan] = range;
 	}
-      else rtos_printf("Channel does not exist\n");
+      else log(Error) << "Channel does not exist" << endlog();
     }
 
   void ComediSubDeviceAIn::arefSet(unsigned int chan, unsigned int aref /*=AREF_GROUND*/)
@@ -91,19 +95,19 @@ namespace RTT
 	{
 	  _aref[chan] = aref;
 	}
-      else rtos_printf("Channel does not exist\n");
+      else log(Error) << "Channel does not exist" << endlog();
     }
 
     void ComediSubDeviceAIn::read( unsigned int chan, unsigned int& value ) const
     {
-      if ( myCard->read( _subDevice,chan, _sd_range[chan],
+      if ( myCard && myCard->read( _subDevice,chan, _sd_range[chan],
 			 _aref[chan], value ) != -1);
-      else rtos_printf("read on subdevAIn failed\n");
+      else log(Error) << "read on subdevAIn failed" << endlog();
     }
 
     unsigned int ComediSubDeviceAIn::binaryRange() const
     {
-      return myCard->getMaxData(_subDevice);
+        return myCard ? myCard->getMaxData(_subDevice) : 0;
     }
 
     unsigned int ComediSubDeviceAIn::binaryLowest() const 
@@ -113,11 +117,13 @@ namespace RTT
 
     unsigned int ComediSubDeviceAIn::binaryHighest() const
     {
-      return myCard->getMaxData(_subDevice);
+        return myCard ? myCard->getMaxData(_subDevice) : 0;
     }
         
     double ComediSubDeviceAIn::lowest(unsigned int chan) const
     {
+        if (!myCard)
+            return 0.0;
       /* Damned: kcomedilib does not know comedi_range structure but
 	 uses as comedi_krange struct (probably not to enforce
 	 floating point support in your RT threads?)
@@ -145,7 +151,7 @@ namespace RTT
 	}
       else
 	{
-	  rtos_printf("Error getting comedi_range struct\n");
+	  log(Error) << "Error getting comedi_range struct" << endlog();
 	  return -1.0;
 	}
 #endif // Userspace
@@ -154,6 +160,8 @@ namespace RTT
 
     double ComediSubDeviceAIn::highest(unsigned int chan) const
     {
+        if (!myCard)
+            return 0.0;
       /* Damned: kcomedilib does not know comedi_range structure but
 	 uses as comedi_krange struct (probably not to enforce
 	 floating point support in your RT threads?)
@@ -181,7 +189,7 @@ namespace RTT
 	}
       else
 	{
-	  rtos_printf("Error getting comedi_range struct\n");
+	  log(Error) << "Error getting comedi_range struct" << endlog();
 	  return -1.0;
 	}
 #endif // Userspace
@@ -190,6 +198,8 @@ namespace RTT
 
     double ComediSubDeviceAIn::resolution(unsigned int chan) const
     {
+        if (!myCard)
+            return 0.0;
       return binaryRange() / ( highest(chan) - lowest(chan) );
     }
 
