@@ -21,7 +21,7 @@ namespace OCL
         this->properties()->addProperty( &repfile );
     }
 
-    bool FileReporting::startup()
+    bool FileReporting::startHook()
     {
         mfile.open( repfile.get().c_str() );
         if (mfile) {
@@ -39,7 +39,7 @@ namespace OCL
         return ReportingComponent::startup();
     }
 
-    void FileReporting::shutdown()
+    void FileReporting::stopHook()
     {
         ReportingComponent::shutdown();
 

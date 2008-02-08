@@ -30,9 +30,9 @@ namespace OCL
     public:
         FileReporting(const std::string& fr_name);
 
-        bool startup();
+        bool startHook();
 
-        void shutdown();
+        void stopHook();
 
         /**
          * Writes the interface status of \a comp to 

@@ -18,7 +18,7 @@ namespace OCL
     {
     }
 
-        bool ConsoleReporting::startup()
+        bool ConsoleReporting::startHook()
         {
             RTT::Logger::In in("ConsoleReporting::startup");
             if (mconsole) {
@@ -38,7 +38,7 @@ namespace OCL
             return ReportingComponent::startup();
         }
 
-        void ConsoleReporting::shutdown()
+        void ConsoleReporting::stopHook()
         {
             ReportingComponent::shutdown();
 

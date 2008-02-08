@@ -26,9 +26,9 @@ namespace OCL
          */
         ConsoleReporting(std::string fr_name = "ReportingComponent", std::ostream& console = std::cerr);
 
-        bool startup();
+        bool startHook();
 
-        void shutdown();
+        void stopHook();
 
         /**
          * Writes the interface status of \a comp to 
