@@ -314,12 +314,31 @@ namespace OCL
 
     bool DeploymentComponent::kickStart(const std::string& configurationfile)
     {
-        return this->loadComponents(configurationfile) && this->configureComponents() && this->startComponents();
+        if ( this->loadComponents(configurationfile) ) {
+            if (this->configureComponents() ) {
+                if ( this->startComponents() ) {
+                    log(Info) <<"Successfully loaded, configured and started components from "<< configurationfile <<endlog();
+                    return true;
+                } else {
+                    log(Error) <<"Failed to start a component: aborting kick-start."<<endlog();
+                }
+            } else {
+                log(Error) <<"Failed to configure a component: aborting kick-start."<<endlog();
+            }
+        } else {
+            log(Error) <<"Failed to load a component: aborting kick-start."<<endlog();
+        }
+        return false;
     }
 
     bool DeploymentComponent::kickOut()
     {
-        return this->stopComponents() && this->cleanupComponents() && this->unloadComponents();
+        if ( this->stopComponents() && this->cleanupComponents() && this->unloadComponents() ) {
+            log(Info) << "Kick-out succesful."<<endlog();
+            return true;
+        }
+        log(Error) << "Kick-out failed." <<endlog();
+        return false;
     }
 
     bool DeploymentComponent::loadConfiguration(const std::string& configurationfile)
