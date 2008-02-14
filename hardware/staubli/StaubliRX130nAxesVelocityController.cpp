@@ -162,25 +162,32 @@ namespace OCL
                                                        -10, 10,STAUBLIRX130_ENC_RES );
             
             log(Info)<<"Setting up drive ..."<<endlog();
+            log(Debug)<<"Creating AnalogOutput"<<endlog();
             vref[i]   = new AnalogOutput<unsigned int>(SubAOut, i );
+            log(Debug)<<"Creating Digital Output Enable"<<endlog();
             enable[i] = new DigitalOutput( SubDOut, 18+i );
+            log(Debug)<<"Initial switch off brake"<<endlog();
             enable[i]->switchOff();
+            log(Debug)<<"Creating AnalogDrive"<<endlog();
             drive[i]  = new AnalogDrive( vref[i], enable[i], 1.0 / vel2volt[i], 0.0);
             
+            log(Debug)<<"Creating Digital Input DriveFailure"<<endlog();
             driveFailure[i] = new DigitalInput(SubDIn,8+i);
+            log(Debug)<<"Creating Axis"<<endlog();
             axes_hardware[i] = new Axis( drive[i] );
+            log(Debug)<<"Adding Position Sensor to Axis"<<endlog();
             axes_hardware[i]->setSensor( "Position", encoder[i] );
         }
         
         
 #endif
         //Definition of kinematics for the StaubliRX130 
-        kinematics.addSegment(Segment(Joint(Joint::RotZ),Frame(Vector(0.0,0.0,0.2075+0.550))));
+        kinematics.addSegment(Segment(Joint(Joint::RotZ),Frame(Rotation::RotZ(M_PI_2),Vector(0.0,0.0,0.2075+0.550))));
         kinematics.addSegment(Segment(Joint(Joint::RotX),Frame(Vector(0.0,0.0,0.625))));
         kinematics.addSegment(Segment(Joint(Joint::RotX),Frame(Vector(0.0,0.0,0.625))));
         kinematics.addSegment(Segment(Joint(Joint::RotZ)));
         kinematics.addSegment(Segment(Joint(Joint::RotX),Frame(Vector(0.0,0.0,0.110))));
-        kinematics.addSegment(Segment(Joint(Joint::RotZ)));
+        kinematics.addSegment(Segment(Joint(Joint::RotZ),Frame(Rotation::RotZ(-M_PI_2))));
         
         chain_attr.set(kinematics);
         
@@ -634,7 +641,7 @@ bool StaubliRX130nAxesVelocityController::addDriveOffset(const vector<double>& o
         if(dot=='.')
             log(Info)<<"Serial communication with Adept Controller OK."<<endlog();
         else{
-            log(Error)<<"Serial communication with Adept Controller broken!"<<endlog();
+            log(Error)<<"Serial communication with Adept Controller not ready!"<<endlog();
             return false;
         }
         
