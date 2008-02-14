@@ -27,13 +27,13 @@
 
 </articleinfo>
 
-<sect1 id="Introduction">
+<section id="Introduction">
   <title>Introduction</title>
   <para>
-  This document describes the Orocos nAxesComponents for the motion
+  This document describes the &orocos; nAxesComponents for the motion
   control of multiple axes simultaneously. 
   </para>
-  <sect2 id="Principle">
+  <section id="Principle">
     <title>Principle</title>
     <para>
     Most of the robot-hardware components in OCL are interfaces to
@@ -43,8 +43,8 @@
     offer a set of components for the motion generation and control of
     these axes.
     </para>
-  </sect2>
-  <sect2 id="Common usage">
+  </section>
+  <section id="Commonusage">
     <title>Common usage</title>
     <para>
       A common usage scenario of the nAxesComponents contains a
@@ -65,13 +65,13 @@
 	</imageobject>
       </mediaobject>
     </figure>
-  </sect2>
-</sect1>
-<sect1 id="Available components">
+  </section>
+</section>
+<section id="Availablecomponents">
   <title>Available components</title>
-  <sect2 id="nAxesGeneratorPos">
+  <section id="nAxesGeneratorPos">
     <title><classname>OCL::nAxesGeneratorPos</classname></title>
-    <sect3>
+    <section>
       <title>Principle</title>
       <para>
 	The nAxesGenerator uses a trapezoidal velocity profile with a
@@ -104,8 +104,8 @@
     </figure>
       
       </para>
-    </sect3>
-    <sect3>
+    </section>
+    <section>
       <title>Interface</title>
       <para>
 	<variablelist>
@@ -178,11 +178,11 @@
 	  </varlistentry>
 	</variablelist>
       </para>
-    </sect3>
-  </sect2>
-  <sect2 id="nAxesGeneratorVel">
+    </section>
+  </section>
+  <section id="nAxesGeneratorVel">
     <title><classname>OCL::nAxesGeneratorVel</classname></title>
-    <sect3>
+    <section>
       <title>Principle</title>
       <para>
 	The nAxesGeneratorVel uses a trapezoidal acceleration profile
@@ -199,8 +199,8 @@
 	can be set with methods <function> setInitVelocity </function>
 	or <function> setInitVelocities </function>.
       </para>
-    </sect3>
-    <sect3>
+    </section>
+    <section>
       <title>Interface</title>
       <para>
 	<variablelist>
@@ -297,14 +297,15 @@
 	  </varlistentry>
 	</variablelist>
       </para>
-    </sect3>
-  </sect2>
-  <sect2 id="nAxesControllerPos">
+    </section>
+  </section>
+  <section id="nAxesControllerPos">
     <title><classname>OCL::nAxesControllerPos</classname></title>
-    <sect3>
+    <section>
     <title>Principle</title>
-    This controller uses a simple position feedback law to calculate
-    the velocity output from the measured and desired positions.
+    <para>
+      This controller uses a simple position feedback law to calculate
+      the velocity output from the measured and desired positions.
     <figure id="fig-naxescontrollerpos"><title>Control scheme used in
 	the nAxesControllerPos</title>
       <mediaobject>
@@ -316,8 +317,9 @@
 	</imageobject>
       </mediaobject>
     </figure>
-    </sect3>
-    <sect3>
+    </para>
+    </section>
+    <section>
       <title>Interface</title>
       <variablelist>
 	<title>Properties</title>
@@ -383,16 +385,17 @@
 	    </para></listitem>
 	</varlistentry>
       </variablelist>
-    </sect3>
-  </sect2>
-  <sect2 id="nAxesControllerPosVel">
+    </section>
+  </section>
+  <section id="nAxesControllerPosVel">
     <title><classname>OCL::nAxesControllerPosVel</classname></title>
-    <sect3>
+    <section>
       <title>Principle</title>
-    This controller uses a simple position feedback with velocity
-    feedforward law to calculate the velocity
-    output from the measured and desired positions and the desired
-    velocities.
+      <para>
+	This controller uses a simple position feedback with velocity
+	feedforward law to calculate the velocity
+	output from the measured and desired positions and the desired
+	velocities.
     <figure id="fig-naxescontrollerposvel"><title>Control scheme used in
 	the nAxesControllerPosVel</title>
       <mediaobject>
@@ -404,8 +407,9 @@
 	</imageobject>
       </mediaobject>
     </figure>
-    </sect3>
-    <sect3>
+      </para>
+    </section>
+    <section>
       <title>Interface</title>
       <variablelist>
 	<title>Properties</title>
@@ -450,12 +454,13 @@
 	    </para></listitem>
 	</varlistentry>
       </variablelist>
-    </sect3>
-  </sect2>
-  <sect2 id="nAxesControllerVel">
+    </section>
+  </section>
+  <section id="nAxesControllerVel">
     <title><classname>OCL::nAxesControllerVel</classname></title>
-      <sect3>
+      <section>
     <title>Principle</title>
+    <para>
     This controller uses a simple position feedback law to calculate
     the velocity output from the measured positions and desired
     positions, which are calculated by integrating the desired velocity.
@@ -470,8 +475,9 @@
 	</imageobject>
       </mediaobject>
     </figure>
-  </sect3>
-    <sect3>
+    </para>
+  </section>
+    <section>
       <title>Interface</title>
       <variablelist>
 	<title>Properties</title>
@@ -526,14 +532,14 @@
 	    </para></listitem>
 	</varlistentry>
       </variablelist>
-    </sect3>
-  </sect2>
-</sect1>
-<sect1 id="Example">
+    </section>
+  </section>
+</section>
+<section id="Example">
 <title>Examples</title>
   <para>
     Configuration of the components and activities, to
-    use with the <class>OCL::DeployementComponent</class>:
+    use with the <classname>OCL::DeployementComponent</classname>:
     <programlisting><![CDATA[
 	<?xml version="1.0" encoding="UTF-8"?>
 	<!DOCTYPE properties SYSTEM "cpf.dtd">
@@ -644,5 +650,5 @@
 	</properties>]]>
       </programlisting>
     </para>
-  </sect1>
+  </section>
 </article>
