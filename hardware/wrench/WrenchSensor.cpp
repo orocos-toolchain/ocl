@@ -1,5 +1,28 @@
+// Copyright  (C)  2007  Ruben Smits <ruben dot smits at mech dot kuleuven dot be>
+
+// Version: 1.0
+// Author: Ruben Smits <ruben dot smits at mech dot kuleuven dot be>
+// Maintainer: Ruben Smits <ruben dot smits at mech dot kuleuven dot be>
+// URL: http://www.orocos.org/ocl
+
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2 of the License, or
+// (at your option) any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
+
 #include "WrenchSensor.hpp"
 #include <kdl/frames_io.hpp>
+#include <rtt/Logger.hpp>
 #include <ocl/ComponentLoader.hpp>
 
 ORO_CREATE_COMPONENT( OCL::WrenchSensor );
@@ -68,8 +91,10 @@ namespace OCL
         dsp = dsp_prop.value();
 #if defined (OROPKG_OS_LXRT)            
         chooseFilter(filter_period_prop.value());
-        if(!JR3DSP_check_sensor_and_DSP(dsp))
+        if(!JR3DSP_check_sensor_and_DSP(dsp)){
+            log(Error)<<"WrenchSensor not plugged in connected!!!!"<<endlog();
             return false;
+        }
         
         JR3DSP_set_units(1, dsp);
         
