@@ -69,12 +69,10 @@ namespace RTT
 
             it = comedi_open( devString );
 
-            log(Error) << "Trying to open ";
-
             if ( it == 0 )
-                log() << devString << ": no such device." << endlog(Error);
+                log(Error) <<"Could not open "<< devString << ": no such device or invalid rights." << endlog();
             else
-                log() << devString << ": success." << endlog(Info);
+                log(Info) << "Opened " << devString << ": success." << endlog();
 
 
         }
