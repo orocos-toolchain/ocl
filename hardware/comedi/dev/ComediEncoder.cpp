@@ -139,11 +139,10 @@ namespace RTT
               insn.data=&readdata;
               insn.subdev=_subDevice;
               insn.chanspec=CR_PACK(_channel,0,0);
-              //rtos_printf("just before insn->insn = 0x%x\n",insn.insn);
               int ret=comedi_do_insn(_myCard->getDevice(),&insn);
               if(ret<0)
               {
-              rtos_printf("Comedi Counter : Reading counter -> encoder failed\n");
+                 log(Error) << "Comedi Counter : reading encoder failed, ret = " << ret << endlog();
               }
               pos = readdata;
         */

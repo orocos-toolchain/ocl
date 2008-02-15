@@ -167,7 +167,6 @@ namespace RTT
         CANMessage msg(this, 0x200 + nodeId(), 0, 1);
         msg.setData(0, digitalOutputs.checkSequence(0,7) );
         bus->write(&msg);
-        //rtos_printf("%i\n", digitalOutputs.checkSequence(0,7));
         //write aouts on sync.
             
         msg.setStdId( 0x300 + nodeId() );

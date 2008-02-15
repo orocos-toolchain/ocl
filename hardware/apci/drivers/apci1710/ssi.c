@@ -57,8 +57,6 @@ int apci1710_ssi_init( apci1710_device* dev, int moduleNb, int ssiProfile, int p
     else 
       return -1;
 
-    //rtos_printf("Writing in register %d\n",timervalue);
-
     // ssi profile
     // ssi.ssiProfile[ moduleNb ] = ssiProfile;
 
