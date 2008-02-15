@@ -802,6 +802,17 @@ namespace OCL
                     valid = false;
         }
 
+        // Finally, report success/failure:
+        if (!valid) {
+            for ( CompList::iterator cit = comps.begin(); cit != comps.end(); ++cit) {
+                ComponentData* cd = &(cit->second);
+                if ( cd->loaded && cd->autoconf && cd->instance->getTaskState() != TaskCore::Stopped )
+                    log(Error) << "Failed to configure component "<< cd->instance->getName() <<endlog();
+            }
+        } else {
+            log(Info) << "Configuration succesful." <<endlog();
+        }
+
         validConfig.set(valid);
         return valid;
     }
@@ -823,6 +834,16 @@ namespace OCL
             if (comps[(*it)->getName()].autostart )
                 if ( peer->start() == false) 
                     valid = false;
+        }
+        // Finally, report success/failure:
+        if (!valid) {
+            for ( CompList::iterator cit = comps.begin(); cit != comps.end(); ++cit) {
+                ComponentData* it = &(cit->second);
+                if ( it->loaded && it->autostart && it->instance->getTaskState() != TaskCore::Running )
+                    log(Error) << "Failed to start component "<< it->instance->getName() <<endlog();
+            }
+        } else {
+            log(Info) << "Startup succesful." <<endlog();
         }
         return valid;
     }
