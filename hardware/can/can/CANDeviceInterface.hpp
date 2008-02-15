@@ -34,7 +34,8 @@ namespace RTT
     class CANMessage;
 
     /**
-     * A CANListenerInterface instance receives any message posted on the bus.
+     * A CANListenerInterface instance receives any message posted on the CAN bus.
+     * It is protocol independent.
      */
     struct CANListenerInterface
     {
@@ -51,8 +52,12 @@ namespace RTT
     };
     
 	/**
-	 * An interface describing a generic CANOpenDevice. 
+	 * An interface describing a generic CANOpenDevice.
      * This can be the controller or a normal slave.
+     * CANOpen devices on a CANOpenBus receive only CANMessage objects
+     * for their node id.
+     * @see CANOpenBus for message delivery between your CANOpen devices.
+     * @see CANMessage for (de-)composing messages.
 	 */
 	struct CANDeviceInterface 
         : public CANListenerInterface

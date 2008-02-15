@@ -40,6 +40,9 @@
 namespace RTT
 {namespace CAN
 {
+    /**
+     * A dummy CANOpen device with node ID 255.
+     */
     struct CANDummyDevice : public CANDeviceInterface
     {
         virtual void process(const CANMessage* msg)
@@ -66,7 +69,7 @@ namespace RTT
 		: public CANBase
 	{
 		/**
-		 * The type for message ids.
+		 * The type for CAN message ids. It can be standard or extended
 		 */
 		typedef unsigned int ID;
 		/**
@@ -79,22 +82,24 @@ namespace RTT
 		typedef unsigned char Data;
 
         /**
-         * Create an empty CANMessage
+         * Create an empty CANMessage.
+         * The origin is set to the CANDummyDevice.
          */
         CANMessage() : origin( &candevice_dummy ) { clear(); }
 
         /**
-         * Create an empty CANMessage
+         * Create an empty CANMessage with a CANOpen device as origin.
          */
         CANMessage(CANDeviceInterface* _origin) : origin(_origin) { clear(); }
         
 		/**
 		 * Create a Standard CANMessage with default flags.
 		 *
-		 * @param _origin The CAN device which created this CANMessage.
-		 * @param _msgid  The ID of the message.
+		 * @param _origin The CANOpen device which created this CANMessage.
+		 * @param _msgid  The Standard CAN ID of the message.
 		 * @param _data   A pointer to the data to be used (will be copied).
 		 * @param _length The length of the data, the number of items in the data array (max 8)
+         * @see createStandard for the equivalent factory function.
 		 */
 		CANMessage(CANDeviceInterface* _origin, ID _msgid, Data* _data, unsigned int _length)
 			: origin(_origin)
@@ -106,6 +111,13 @@ namespace RTT
                 setData(i,_data[i]);
         }
 
+        /**
+         * Create an Extended CAN Message with default flags.
+		 * @param _origin The CANOpen device which created this CANMessage.
+		 * @param _msgid  The Extended CAN ID of the message.
+		 * @param _data   A pointer to the data to be used (will be copied).
+		 * @param _length The length of the data, the number of items in the data array (max 8)
+         */
         static CANMessage* createExtended(CANDeviceInterface* _origin, ID _msgid, Data* _data, unsigned int _length) 
         { 
             CANMessage* cm = new CANMessage(_origin, _msgid, _data, _length); 
@@ -113,11 +125,25 @@ namespace RTT
             return cm;
         }
 
+        /**
+         * Create a Standard CAN Message with default flags.
+		 * @param _origin The CANOpen device which created this CANMessage.
+		 * @param _msgid  The Standard CAN ID of the message.
+		 * @param _data   A pointer to the data to be used (will be copied).
+		 * @param _length The length of the data, the number of items in the data array (max 8)
+         */
         static CANMessage* createStandard(CANDeviceInterface* _origin, ID _msgid, Data* _data, unsigned int _length) 
         {
             return new CANMessage(_origin, _msgid, _data, _length); 
         }
 
+        /**
+         * Create a Standard CAN Message with the Remote flag set.
+		 * @param _origin The CANOpen device which created this CANMessage.
+		 * @param _msgid  The Standard CAN ID of the message.
+		 * @param _data   A pointer to the data to be used (will be copied).
+		 * @param _length The length of the data, the number of items in the data array (max 8)
+         */
         static CANMessage* createStdRemote(CANDeviceInterface* _origin, ID _msgid, Data* _data, unsigned int _length) 
         {
             CANMessage* cm= new CANMessage(_origin, _msgid, _data, _length); 
@@ -125,6 +151,13 @@ namespace RTT
             return cm;
         }
 
+        /**
+         * Create an Extended CAN Message with the Remote flag set.
+		 * @param _origin The CANOpen device which created this CANMessage.
+		 * @param _msgid  The Extended CAN ID of the message.
+		 * @param _data   A pointer to the data to be used (will be copied).
+		 * @param _length The length of the data, the number of items in the data array (max 8)
+         */
         static CANMessage* createExtRemote(CANDeviceInterface* _origin, ID _msgid, Data* _data, unsigned int _length) 
         {
             CANMessage* cm= new CANMessage(_origin, _msgid, _data, _length); 
@@ -134,16 +167,34 @@ namespace RTT
         }
 
 
+        /**
+         * Clear the ID and flags of this CANMessage, except the origin.
+         */
         void clear() { CpMacMsgClear(this); }
         
+        /**
+         * Check the remote flag.
+         */
         bool isRemote() const { return CpMacIsRemote(this); }
         
+        /**
+         * Set the remote flag.
+         */
         void setRemote() { CpMacSetRemote(this); }
 
+        /**
+         * Return data element at position \a pos, starting from 0.
+         */
         Data getData(unsigned int pos) const { return CpMacGetData(this,pos); }
 
+        /**
+         * Set the data element at position \a pos with value \a d, starting from 0.
+         */
         void setData(unsigned int pos, Data d) { CpMacSetData(this,pos,d); } 
 
+        /**
+         * Set the Data and Data Length Code of this CANMessage.
+         */
         void setDataDLC(Data* _data, unsigned int _length) 
         { 
             CpMacSetDlc(this, _length); 
@@ -151,8 +202,14 @@ namespace RTT
                 setData(i,_data[i]);
         }
         
+        /**
+         * Get the Data Length Code of this CANMessage.
+         */
         unsigned int getDLC() const { return CpMacGetDlc(this); }
 
+        /**
+         * Set the Data Length Code of this CANMessage.
+         */
         void setDLC(unsigned int length) { CpMacSetDlc(this,length); }
 
         bool isExtended() const { return CpMacIsExtended(this); }
@@ -167,6 +224,10 @@ namespace RTT
         
         void setExtId(unsigned int id) { CpMacSetExtId(this,id); }
 
+        /**
+         * Compare this CANMessage with another CANMessage.
+         * The complete message is compared, except the origin.
+         */
         bool operator==(CANMessage& other) const
         {
             if ( isStandard() == other.isStandard() && ( getStdId() == other.getStdId() ) && ( getDLC() == other.getDLC() ) )
@@ -186,7 +247,11 @@ namespace RTT
                 }
             return false;
         }
-                            
+
+        /**
+         * Assign a CANMessage \a msg to this CANMessage.
+         * The complete message is copied, except the origin.
+         */
         CANMessage& operator=(const CpStruct_CAN &msg)
         {
             v_MsgId = msg.v_MsgId;
