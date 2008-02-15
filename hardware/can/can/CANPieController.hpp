@@ -51,7 +51,7 @@ namespace RTT
   {
   public:
     /**
-     * Create a CANPie Controller on channel \a channel and
+     * Create a CANPie Controller and
      * indicate if received messages are put on the bus with
      * an interrupt or if they are polled.
      */

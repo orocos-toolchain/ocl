@@ -35,17 +35,14 @@ namespace RTT
     {
         PCANController::PCANController(int priority, Seconds period, unsigned int minor,
                                        WORD bitrate, int CANMsgType) 
-            : PeriodicActivity(ORO_SCHED_OTHER, priority,period), _handle(NULL),
+            : PeriodicActivity(ORO_SCHED_OTHER, priority, period), _handle(NULL),
               _status(CAN_ERR_OK), _bitrate(bitrate),
               _CANMsgType(CANMsgType),_channel(0),
               total_recv(0), total_trns(0), failed_recv(0), failed_trns(0)
         {
             Logger::In in("PCANController");
       
-            // This is a Non-Realtime driver!!
-            log(Info) <<  "This is NOT a real-time CAN driver." << endlog();
-      
-            char DeviceName[ 12 ]; // don't specify /dev/pcan100 or more, you moron
+            char DeviceName[ 12 ]; // don't specify /dev/pcan100 or more.
             snprintf(DeviceName,12, "/dev/pcan%d", minor );
             log(Info) << "Trying to open " << DeviceName << endlog();
             _handle = LINUX_CAN_Open(DeviceName, O_RDWR);
@@ -56,22 +53,25 @@ namespace RTT
                 char version_string[VERSIONSTRING_LEN];
                 DWORD err = CAN_VersionInfo(_handle, version_string);
                 if (!err)
-                    log(Info) <<  "Driver Version = " << version_string << endlog();
+                    log(Info) <<  DeviceName << ": ok. Driver Version = " << version_string << endlog();
                 else 
-                    log(Warning) << "Error getting driver version info" << endlog();
+                    log(Warning) << DeviceName <<": warning. Error getting driver version info" << endlog();
             }
             else {
-                log(Error) << "Error opening " << DeviceName << endlog();
-                // Add assert here?
+                log(Error) << DeviceName << ": failed. Could not open device." << endlog();
             }
         }
             
         PCANController::~PCANController()
         {
             Logger::In in("PCANController");
-            log(Info) << "PCAN Controller Statistics :"<<endlog();
-            log(Info) << " Total Received    : "<<total_recv<< ".  Failed to Receive : "<< failed_recv<< endlog();
-            log(Info) << " Total Transmitted : "<<total_trns<< ".  Failed to Transmit : "<< failed_trns<< endlog();
+            if (_handle != NULL )
+                _status = CAN_Close(_handle);
+            else
+                _status = !CAN_ERR_OK;
+            if (_status != CAN_ERR_OK)
+                log(Error) << "Error shutting down driver, status = " << status() << endlog();
+
         }
 
         HANDLE PCANController::handle() const {
@@ -80,31 +80,27 @@ namespace RTT
 
         bool PCANController::initialize() {
             Logger::In in("PCANController");
+            if ( _handle == NULL )
+                return false;
             _status = CAN_Init(_handle, _bitrate, _CANMsgType);
             if (_status != CAN_ERR_OK)
                 log(Warning) << "Error initializing driver, status = " << status() << endlog();
-            //  else 
-            // Happens in a realtime thread
-            // log(Info) <<  "Driver initialized..." << endlog();
             return (_status == CAN_ERR_OK);
         }
 
         void PCANController::step() 
         {
             while ( this->readFromBuffer(_CANMsg) ){
-                _CANMsg.origin = this;
                 _bus->write(&_CANMsg); // we own _CANMsg;
             }
         }
-        
+
         void PCANController::finalize() {
             Logger::In in("PCANController");
-            _status = CAN_Close(_handle);
-            if (_status != CAN_ERR_OK)
-                log(Error) << "Error shutting down driver, status = " << status() << endlog();
-            // else 
-            // Happens in a realtime thread
-            // log(Info) <<  "Can_Close succeeded..." << endlog();
+            log(Info) << "PCAN Controller stopped. Last run statistics :"<<endlog();
+            log(Info) << " Total Received    : "<<total_recv<< ".  Failed to Receive : "<< failed_recv<< endlog();
+            log(Info) << " Total Transmitted : "<<total_trns<< ".  Failed to Transmit : "<< failed_trns<< endlog();
+            total_recv = failed_recv = total_trns = failed_trns = 0;
         }
 
         void PCANController::addBus( unsigned int chan, CANBusInterface* bus)

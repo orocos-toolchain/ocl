@@ -36,18 +36,15 @@ namespace RTT
 {
   CANPieController::CANPieController( double period,  bool interrupt ) :
     PeriodicActivity( RTT::OS::HighestPriority, period ), 
-    CANPieChannel(0),  process_in_int(interrupt), 
-    total_recv(0), total_trns(0), failed_recv(0), failed_trns(0)
+    CANPieStatus( CpErr_INIT_MISSING ),
+    CANPieChannel(0), process_in_int(interrupt), 
+    total_recv(0), total_trns(0), failed_recv(0), failed_trns(0), generic_trns(0)
   {
   }
             
         CANPieController::~CANPieController()
         {
             CpUserAppDeInit(0);
-            log(Info) << "CANPie Controller Statistics :"<<Logger::nl;
-            Logger::log() << " Total Received    : "<<total_recv<< ".  Failed to Receive (FIFO empty) : "<< failed_recv<<Logger::nl;
-            Logger::log() << " Total Transmitted : "<<total_trns<< ".  Failed to Transmit (FIFO full) : "<< failed_trns<<
-                ".  Generic Transmit Errors: "<<generic_trns<<endlog();
         }
 
         bool CANPieController::initialize() 
@@ -64,7 +61,14 @@ namespace RTT
                 }
         }
         
-        void CANPieController::finalize() {}
+        void CANPieController::finalize() {
+            Logger::In in("CANPieController");
+            log(Info) << "CANPie Controller stopped. Last run statistics :"<<endlog();
+            Logger::log() << " Total Received    : "<<total_recv<< ".  Failed to Receive (FIFO empty) : "<< failed_recv<<Logger::nl;
+            Logger::log() << " Total Transmitted : "<<total_trns<< ".  Failed to Transmit (FIFO full) : "<< failed_trns<<
+                ".  Generic Transmit Errors: "<<generic_trns<<endlog();
+            total_recv = failed_recv = total_trns = failed_trns = generic_trns = 0;
+        }
 
         void CANPieController::addBus( unsigned int chan, CANBusInterface* _bus)
         {
