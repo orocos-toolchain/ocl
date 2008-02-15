@@ -45,12 +45,18 @@ namespace RTT
     void ComediEncoder::init()
     {
         Logger::In in("ComediEncoder");
+        if (!_myCard) {
+            log(Error) << "Error creating ComediEncoder: null ComediDevice given." <<endlog();
+            return;
+        }
         log(Info) << "Creating ComediEncoder\n" << endlog();
         // Check if subd is counter...
         if ( _myCard->getSubDeviceType( _subDevice ) != COMEDI_SUBD_COUNTER )
             {
                 log(Error) << "Comedi Counter : subdev is not a counter, type = "  
                            << _myCard->getSubDeviceType(_subDevice) << endlog();
+                _myCard = 0;
+                return;
             }
         // Check how many counters this subdevice actually has
         unsigned int nchan = comedi_get_n_channels(_myCard->getDevice()->it,_subDevice);
@@ -58,6 +64,8 @@ namespace RTT
             {
                 log(Error) << "Comedi Counter : Only " << nchan 
                            << " channels on this counter subdevice" << endlog();
+                _myCard = 0;
+                return;
             }
         /* Configure the counter subdevice
            Configure the GPCT for use as an encoder 
@@ -81,9 +89,10 @@ namespace RTT
         insn.subdev=_subDevice;
         insn.chanspec=CR_PACK(_channel,0,0);
         int ret=comedi_do_insn(_myCard->getDevice()->it,&insn);
-        if(ret<0)
+        if(ret<0) {
             log(Error) << "Comedi Counter : Instruction to configure counter -> encoder failed" << endlog();
-        else
+            _myCard = 0;
+        } else
             log(Info) << "Comedi Counter : configured as encoder now" << endlog();
 
         _resolution = comedi_get_maxdata(_myCard->getDevice()->it,_subDevice, 
@@ -97,6 +106,8 @@ namespace RTT
 
     void ComediEncoder::positionSet(int p)
     {
+        if (!_myCard)
+            return;
         //int can be negative, by casting the int to lsampl_t(unsigned int)
         // we write the right value to the encoderdevice     
         comedi_data_write(_myCard->getDevice()->it, _subDevice,
@@ -108,6 +119,9 @@ namespace RTT
 
     int ComediEncoder::positionGet() const
     {
+        if (!_myCard)
+            return 0;
+
         typedef unsigned int Data;
         //int pos;
         lsampl_t pos[20];
