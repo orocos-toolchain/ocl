@@ -128,7 +128,7 @@ namespace RTT
 
             if ( controller == 0 )
                 return;
-            if (msg->origin == 0 || msg->origin->nodeId() !=  controller->nodeId() )
+            if ( msg->origin != controller )
                 {
                     //rt_std::cout <<"to controller !\n";
                     controller->process(msg);
