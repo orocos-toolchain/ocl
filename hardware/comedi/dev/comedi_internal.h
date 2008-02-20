@@ -65,7 +65,7 @@ namespace RTT
             : devminor(dm), it(0)
         {
             char devString[ 15 ];
-            sprintf( devString, "/dev/comedi%d", devminor );
+            snprintf( devString, 15, "/dev/comedi%d", devminor );
 
             it = comedi_open( devString );
 
