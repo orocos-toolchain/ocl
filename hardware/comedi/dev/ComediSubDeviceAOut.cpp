@@ -67,6 +67,7 @@ namespace RTT
         if ( myCard->getSubDeviceType( _subDevice ) != COMEDI_SUBD_AO )
             {
                 log(Error) <<  "comedi_get_subdevice_type failed" <<endlog();
+                myCard = 0;
                 return;
             }
 
