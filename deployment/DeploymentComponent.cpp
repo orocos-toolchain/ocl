@@ -404,15 +404,9 @@ namespace OCL
                         assert(c);
 
                         // set PropFile name if present
-                        std::string filename = (*it)->getName() + ".cpf";
                         if ( comp.get().getProperty<std::string>("PropFile") )  // PropFile is deprecated
                             comp.get().getProperty<std::string>("PropFile")->setName("PropertyFile");
 
-                        if ( comp.get().getProperty<std::string>("PropertyFile") )
-                            if ( !comp.get().getProperty<std::string>("PropertyFile") ) {
-                                valid = false;
-                            }
-                            
                         // connect ports 'Ports' tag is optional.
                         Property<PropertyBag>* ports = comp.get().getProperty<PropertyBag>("Ports");
                         if ( ports != 0 ) {
@@ -555,6 +549,22 @@ namespace OCL
                                     valid = false;
                                 } else
                                     comps[comp.getName()].autoconf = ps.get();
+                                continue;
+                            }
+                            if ( (*optit)->getName() == "PropertyFile" ) {
+                                PropertyBase* ps = comp.rvalue().getProperty<string>("PropertyFile");
+                                if (!ps) {
+                                    log(Error) << "PropertyFile must be of type <string>" << endlog();
+                                    valid = false;
+                                }
+                                continue;
+                            }
+                            if ( (*optit)->getName() == "UpdateProperties" ) {
+                                PropertyBase* ps = comp.rvalue().getProperty<string>("UpdateProperties");
+                                if (!ps) {
+                                    log(Error) << "UpdateProperties must be of type <string>" << endlog();
+                                    valid = false;
+                                }
                                 continue;
                             }
                             if ( (*optit)->getName() == "ProgramScript" ) {
@@ -751,22 +761,24 @@ namespace OCL
             }
             
             Property<PropertyBag> comp = *it;
-
+            Property<string> dummy;
             TaskContext* peer = this->getPeer( comp.getName() );
 
-            // set PropFile name if present
-            std::string filename;
-            if ( comp.get().getProperty<std::string>("PropertyFile") ){
-                filename = comp.get().getProperty<std::string>("PropertyFile")->get();
-            }
-            if ( !filename.empty() ) {
-                PropertyLoader pl;
-                bool ret = pl.configure( filename, peer, true ); // strict:true 
-                if (!ret) {
-                    log(Error) << "Failed to configure properties for component "<< comp.getName() <<endlog();
-                    valid = false;
-                } else {
-                    log(Info) << "Configured Properties of "<< comp.getName() <<endlog();
+            // Iterate over all elements
+            for (PropertyBag::const_iterator pf = comp.rvalue().begin(); pf!= comp.rvalue().end(); ++pf) {
+                // set PropFile name if present
+                if ( (*pf)->getName() == "PropertyFile" || (*pf)->getName() == "UpdateProperties" ){
+                    dummy = *pf; // convert to type.
+                    string filename = dummy.get();
+                    PropertyLoader pl;
+                    bool strict = (*pf)->getName() == "PropertyFile" ? true : false;
+                    bool ret = pl.configure( filename, peer, strict );
+                    if (!ret) {
+                        log(Error) << "Failed to configure properties for component "<< comp.getName() <<endlog();
+                        valid = false;
+                    } else {
+                        log(Info) << "Configured Properties of "<< comp.getName() <<endlog();
+                    }
                 }
             }
 
@@ -782,18 +794,20 @@ namespace OCL
                 assert( peer->engine()->getActivity() == comps[comp.getName()].act );
             }
 
-            // Load programs
-            Property<string> pscript;
-            if (comp.get().getProperty<std::string>("ProgramScript") )
-                pscript = comp.get().getProperty<std::string>("ProgramScript"); // work around RTT 1.0.2 bug
-            if ( pscript.ready() ) {
-                valid = valid && peer->scripting()->loadPrograms( pscript.get(), false );
-            }
-            Property<string> sscript;
-            if (comp.get().getProperty<std::string>("StateMachineScript") )
-                sscript = comp.get().getProperty<std::string>("StateMachineScript");
-            if ( sscript.ready() ) {
-                valid = valid && peer->scripting()->loadStateMachines( sscript.get(), false );
+            // Load scripts in order of appearance
+            for (PropertyBag::const_iterator ps = comp.rvalue().begin(); ps!= comp.rvalue().end(); ++ps) {
+                Property<string> pscript;
+                if ( (*ps)->getName() == "ProgramScript" )
+                    pscript = *ps;
+                if ( pscript.ready() ) {
+                    valid = valid && peer->scripting()->loadPrograms( pscript.get(), false ); // no exceptions
+                }
+                Property<string> sscript;
+                if ( (*ps)->getName() == "StateMachineScript" )
+                    sscript = *ps;
+                if ( sscript.ready() ) {
+                    valid = valid && peer->scripting()->loadStateMachines( sscript.get(), false ); // no exceptions
+                }
             }
 
             // AutoConf
