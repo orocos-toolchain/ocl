@@ -61,7 +61,7 @@
 	  <imagedata fileref="images/Deployment.png" />
 	</imageobject>
 	<imageobject role="fo">
-	  <imagedata fileref="images/Deployment.png" />
+	  <imagedata width="8cm" fileref="images/hires/Deployment.png" />
 	</imageobject>
 	<caption><para>Components are located on your disk using the 'import' statement,
 	loaded using 'loadComponents' and configured using 'configureComponents'.
@@ -145,7 +145,7 @@
 	  <imagedata fileref="images/DeploymentFlow.png" />
 	</imageobject>
 	<imageobject role="fo">
-	  <imagedata fileref="images/DeploymentFlow.png" />
+	  <imagedata width="12cm" fileref="images/hires/DeploymentFlow.png" />
 	</imageobject>
 	<caption><para>The Deployment component API consists of import, 
 	loadComponents, configureComponents and startComponents.
@@ -174,11 +174,11 @@
       </para>
       <figure id="fig-deployment-example"><title>Deployment Example Application</title>
       <mediaobject>
-	<imageobject>
-	  <imagedata role="html" fileref="images/deployment-example" />
+	<imageobject role="html">
+	  <imagedata fileref="images/deployment-example.png" />
 	</imageobject>
-	<imageobject>
-	  <imagedata role="pdf" fileref="images/hires/deployment-example" />
+	<imageobject role="fo">
+	  <imagedata fileref="images/hires/deployment-example.png" />
 	</imageobject>
 	<caption><para>A Reporter component monitors communication
 	between Plant and Controller. The Deployment component itself
@@ -313,7 +313,9 @@
     <simple name="AutoStart" type="boolean"><value>1</value></simple>
     <simple name="AutoConnect" type="boolean"><value>1</value></simple>
 
-    <simple name="PropertyFile" type="string"><value>controller.cpf</value></simple>
+    <!-- Note: difference between 'PropertyFile' and 'UpdateProperties' (see below) -->
+    <simple name="PropertyFile" type="string"><value>controller-main.cpf</value></simple>
+    <simple name="UpdateProperties" type="string"><value>controller-opts.cpf</value></simple>
 
     <struct name="Ports" type="PropertyBag">
       <simple name="SensorValues" type="string"><value>SensorValuesConnection</value></simple>
@@ -375,9 +377,12 @@
 	  default, <option>AutoConnect</option> is 0 (off).
 	</para>
 	<para>
-	  The <option>PropertyFile</option> section specifies from which file each component is
-	  configured.  The CPF files contain XML properties as well
-	  which are read during the
+	  The <option>PropertyFile</option> section specifies from
+	  which XML file each component is configured and
+	  <emphasis>must</emphasis> contain values for all properties
+	  of the component. In case you only want to update part of
+	  the properties, use the <option>UpdateProperties</option>
+	  element. The properties are read during the
 	  <function>configureComponents()</function> step of the
 	  DeploymentComponent.
 	</para>
@@ -403,9 +408,10 @@
 	  The Controller has at the end two additional elements
 	  describing which script files must be loaded into that
 	  component: <option>ProgramScript</option> and
-	  <option>StateMachineScript</option>. Both Orocos program
-	  scripts and state machine scripts can be loaded. This is
-	  again done during the
+	  <option>StateMachineScript</option>. Any number of scripts
+	  can be loaded and they are loaded in order.  Both Orocos
+	  program scripts and state machine scripts can be
+	  loaded. This is again done during the
 	  <function>configureComponents()</function> step.
 	</para>
       </section>
