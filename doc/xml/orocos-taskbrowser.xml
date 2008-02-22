@@ -54,11 +54,11 @@
     </para>
     <figure><title>Task Browsing</title>
     <mediaobject>
-      <imageobject>
-	<imagedata role="html" fileref="images/taskbrowsing" />
+      <imageobject role="html" >
+	<imagedata fileref="images/taskbrowsing" />
       </imageobject>
-      <imageobject>
-	<imagedata role="pdf" fileref="images/hires/taskbrowsing" />
+      <imageobject role="fo" >
+	<imagedata width="8cm" fileref="images/hires/taskbrowsing" />
       </imageobject>
       <caption><para>The TaskBrowser is initially connected to a
       component. It can 'enter' a component, which shows a perspective
