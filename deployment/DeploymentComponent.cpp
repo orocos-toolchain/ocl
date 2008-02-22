@@ -32,7 +32,7 @@ namespace OCL
                    "Location to look for components in addition to the local directory and system paths.",
                    "/usr/local/orocos/lib"),
           autoUnload("AutoUnload",
-                     "Stop and unload all components loaded by the DeploymentComponent when it is destroyed.",
+                     "Stop, cleanup and unload all components loaded by the DeploymentComponent when it is destroyed.",
                      true),
           validConfig("Valid", false),
           sched_RT("ORO_SCHED_RT", ORO_SCHED_RT ),
@@ -157,8 +157,7 @@ namespace OCL
       clearConfiguration();
       // Should we unload all loaded components here ?
       if ( autoUnload.get() ) {
-	stopComponents();
-	unloadComponents();
+          kickOut();
       }
     }
 
@@ -333,11 +332,22 @@ namespace OCL
 
     bool DeploymentComponent::kickOut()
     {
-        if ( this->stopComponents() && this->cleanupComponents() && this->unloadComponents() ) {
-            log(Info) << "Kick-out succesful."<<endlog();
+        bool sret = this->stopComponents();
+        bool cret = this->cleanupComponents();
+        bool uret = this->unloadComponents();
+        if ( sret && cret && uret) {
+            log(Info) << "Kick-out successful."<<endlog();
             return true;
         }
-        log(Error) << "Kick-out failed." <<endlog();
+        // Diagnostics:
+        log(Critical) << "Kick-out failed: ";
+        if (!sret)
+            log(Critical) << " stopComponents() failed.";
+        if (!cret)
+            log(Critical) << " cleanupComponents() failed.";
+        if (!uret)
+            log(Critical) << " unloadComponents() failed.";
+        log(Critical) << endlog();
         return false;
     }
 
@@ -609,12 +619,6 @@ namespace OCL
         return !failure && valid;
     }
 
-    /** 
-     * Configure the components with a loaded configuration.
-     * 
-     * 
-     * @return true if all components could be succesfully configured.
-     */
     bool DeploymentComponent::configureComponents()
     {
         Logger::In in("DeploymentComponent::configureComponents");
@@ -824,7 +828,7 @@ namespace OCL
                     log(Error) << "Failed to configure component "<< cd->instance->getName() <<endlog();
             }
         } else {
-            log(Info) << "Configuration succesful." <<endlog();
+            log(Info) << "Configuration successful." <<endlog();
         }
 
         validConfig.set(valid);
@@ -857,7 +861,7 @@ namespace OCL
                     log(Error) << "Failed to start component "<< it->instance->getName() <<endlog();
             }
         } else {
-            log(Info) << "Startup succesful." <<endlog();
+            log(Info) << "Startup successful." <<endlog();
         }
         return valid;
     }
@@ -1266,7 +1270,7 @@ namespace OCL
         peer->disconnect(); // if it is no longer a peer of this, that's ok.
         delete peer;
         comps.erase(name);
-        log(Info) << "Succesfully unloaded component "<<name<<"."<<endlog();
+        log(Info) << "Successfully unloaded component "<<name<<"."<<endlog();
         return true;
     }
 
