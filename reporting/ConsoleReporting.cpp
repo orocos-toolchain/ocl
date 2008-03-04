@@ -35,12 +35,12 @@ namespace OCL
                 log(Error) << "Could not write to console for reporting."<<RTT::endlog();
             }
 
-            return ReportingComponent::startup();
+            return ReportingComponent::startHook();
         }
 
         void ConsoleReporting::stopHook()
         {
-            ReportingComponent::shutdown();
+            ReportingComponent::stopHook();
 
             this->removeMarshallers();
         }

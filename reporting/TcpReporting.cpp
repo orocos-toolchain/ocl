@@ -223,21 +223,21 @@ namespace OCL
         return &report;
     }
 
-    bool TcpReporting::startup()
+    bool TcpReporting::startHook()
     {
         RTT::Logger::In in("TcpReporting::startup");
         fbody = new RTT::SocketMarshaller(this);
         this->addMarshaller( 0, fbody );
         ListenThread::createInstance( fbody, 3142 );
-        return ReportingComponent::startup();
+        return ReportingComponent::startHook();
     }
 
-    void TcpReporting::shutdown()
+    void TcpReporting::stopHook()
     {
         _finishing = true;
         ListenThread::destroyInstance();
         fbody->shutdown();
-        ReportingComponent::shutdown();
+        ReportingComponent::stopHook();
         this->removeMarshallers();
     }
 }

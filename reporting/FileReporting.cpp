@@ -36,12 +36,12 @@ namespace OCL
             log(Error) << "Could not open file "+repfile.get()+" for reporting."<<endlog();
         }
 
-        return ReportingComponent::startup();
+        return ReportingComponent::startHook();
     }
 
     void FileReporting::stopHook()
     {
-        ReportingComponent::shutdown();
+        ReportingComponent::stopHook();
 
         this->removeMarshallers();
         if (mfile)

@@ -194,9 +194,9 @@ namespace OCL
         TcpReporting(std::string fr_name = "ReportingComponent", unsigned short port = 3142);
         ~TcpReporting();
 
-        bool startup();
+        bool startHook();
 
-        void shutdown();
+        void stopHook();
         
         /**
          * Return a property bag.
