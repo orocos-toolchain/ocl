@@ -97,6 +97,11 @@ namespace OCL
          * Name of last loaded libarary.
          */
         std::string libname;
+
+        /**
+         * Imports available plugins.
+         */
+        bool configureHook();
     public:
         DeploymentComponent(std::string name = "Configurator");
         

@@ -149,9 +149,23 @@ namespace OCL
                                     "Period", "The period of the activity."
                                     );
         
-        
+
+        this->configure();
     }
-        
+
+    bool DeploymentComponent::configureHook()
+    {
+        string toolpath = compPath.get() + "/rtt/"+ target.get() +"/plugins";
+        DIR* res = opendir( toolpath.c_str() );
+        if (res) {
+            log(Info) << "Loading plugins from " + toolpath <<endlog();
+            import( toolpath );
+        } else {
+            log(Info) << "No plugins present in " + toolpath << endlog();
+        }
+        return true;
+    }
+
     DeploymentComponent::~DeploymentComponent()
     {
       clearConfiguration();
@@ -1133,7 +1147,7 @@ namespace OCL
         log(Debug) <<"Storing "<< libname <<endlog();
         dlerror();    /* Clear any existing error */
         
-        // Lookup factories:
+        // Lookup Component factories:
         FactoryMap* (*getfactory)(void) = 0;
         FactoryMap* fmap = 0;
         char* error = 0;
@@ -1180,6 +1194,41 @@ namespace OCL
             log(Debug) << error << endlog();
         }
 
+        // Lookup plugins:
+        dlerror();    /* Clear any existing error */
+
+        bool (*loadPlugin)(TaskContext*) = 0;
+        std::string(*pluginName)(void) = 0;
+        loadPlugin = (bool(*)(TaskContext*))(dlsym(handle, "loadRTTPlugin") );
+        if ((error = dlerror()) == NULL) {
+            string plugname;
+            pluginName = (std::string(*)(void))(dlsym(handle, "getRTTPluginName") );
+            if ((error = dlerror()) == NULL) {
+                plugname = (*pluginName)();
+            } else {
+                plugname  = libname;
+            }
+
+            // ok; try to load it.
+            bool success = false;
+            try {
+                success = (*loadPlugin)(this);
+            } catch(...) {
+                log(Error) << "Unexpected exception in loadRTTPlugin !"<<endlog();
+            }
+
+            if ( success )
+                log(Info) << "Loaded RTT Plugin '"<< plugname <<"'"<<endlog();
+            else {
+                log(Error) << "Failed to load RTT Plutin '" <<plugname<<"': plugin refused to load into this TaskContext." <<endlog();
+                return false;
+            }
+            return true;
+        } else {
+            log(Debug) << error << endlog();
+        }
+
+
         // plain library
         log(Info) << "Loaded shared library '"<< so_name <<"'"<<endlog();
         return true;
@@ -1208,7 +1257,7 @@ namespace OCL
         }
                 
         if ( factory ) {
-            log(Info) <<"Found factory for Component type "<<type<<endlog();
+            log(Debug) <<"Found factory for Component type "<<type<<endlog();
         } else {
             // if a type was given, bail out immediately.
             if ( type.find("::") != string::npos) {
@@ -1274,7 +1323,7 @@ namespace OCL
         return true;
     }
 
-    void DeploymentComponent::displayComponentTypes() const\
+    void DeploymentComponent::displayComponentTypes() const
     {
         OCL::FactoryMap::iterator it;
         cout << "I can create the following component types: " <<endl;
