@@ -250,7 +250,7 @@ namespace RTT
 
         /**
          * Assign a CANMessage \a msg to this CANMessage.
-         * The complete message is copied, except the origin.
+         * The complete message is copied.
          */
         CANMessage& operator=(const CpStruct_CAN &msg)
         {
