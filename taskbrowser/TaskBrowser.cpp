@@ -520,6 +520,15 @@ namespace OCL
         return toupper(ps[0]);
     }
 
+    void str_trim(string& str, char to_trim)
+    {
+        string::size_type pos1 = str.find_first_not_of(to_trim);
+        string::size_type pos2 = str.find_last_not_of(to_trim);
+        str = str.substr(pos1 == string::npos ? 0 : pos1,
+                         pos2 == string::npos ? str.length() - 1 : pos2 - pos1 + 1);
+    }
+
+
     /**
      * @brief Call this method from ORO_main() to 
      * process keyboard input.
@@ -592,6 +601,7 @@ namespace OCL
                 // Call readline wrapper :
                 ::signal( SIGINT, ctrl_c_catcher ); // catch ctrl_c only when editting a line.
                 std::string command( rl_gets() ); // copy over to string
+                str_trim( command, ' ');
                 ::signal( SIGINT, SIG_DFL );        // do not catch ctrl_c
                 cout << coloroff;
                 if ( command == "quit" ) {
