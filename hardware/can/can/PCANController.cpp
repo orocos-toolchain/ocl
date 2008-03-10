@@ -116,7 +116,10 @@ namespace RTT
             // Construct message
             TPCANMsg pcan_msg;
             for (unsigned int i=0; i < 8; i++){
-                pcan_msg.DATA[i]=msg->getData(i);
+                if ( i < msg->getDLC() )
+                    pcan_msg.DATA[i]=msg->getData(i);
+                else
+                    pcan_msg.DATA[i]=0;
             }
             // The data length code (Bit 0 - Bit 3) contains the number of
             // data bytes which are transmitted by a message. The possible
