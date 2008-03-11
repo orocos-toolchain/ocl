@@ -43,14 +43,21 @@ build.lxrt.corba/Makefile: configure
 	mkdir -p  build.lxrt.corba
 	cd build.lxrt.corba ;  CFLAGS="$(CFLAGS)" LDFLAGS="-Wl,-z,defs" cmake -DCMAKE_INSTALL_PREFIX=/usr -DOROCOS_INSTALL=/usr -C $(CURDIR)/debian/CMakeCanComedi.txt -DOROCOS_TARGET:STRING=lxrt -DCOMEDI_INSTALL=/usr/realtime  ..
 
+build.xenomai.corba/Makefile: configure
+	dh_testdir
+# Add here commands to configure the package.
+	mkdir -p  build.xenomai.corba
+	cd build.xenomai.corba ;  CFLAGS="$(CFLAGS)" LDFLAGS="-Wl,-z,defs" cmake -DCMAKE_INSTALL_PREFIX=/usr -DOROCOS_INSTALL=/usr -C $(CURDIR)/debian/CMakeCanComedi.txt -DOROCOS_TARGET:STRING=xenomai -DCOMEDI_INSTALL=/usr  ..
+
 
 build: build-stamp
-build-stamp:  build.gnulinux.corba/Makefile build.lxrt.corba/Makefile
+build-stamp:  build.gnulinux.corba/Makefile build.lxrt.corba/Makefile build.xenomai.corba/Makefile
 	dh_testdir
 
 # Add here commands to compile the package.
 	cd build.gnulinux.corba ; $(MAKE) $(MAKE_FLAGS)
 	cd build.lxrt.corba ; $(MAKE) $(MAKE_FLAGS)
+	cd build.xenomai.corba ; $(MAKE) $(MAKE_FLAGS)
 	touch $@
 
 clean:
@@ -72,6 +79,7 @@ install: build
 # Add here commands to install the package into debian/tmp
 	cd build.gnulinux.corba ; $(MAKE) DESTDIR=$(CURDIR)/debian/tmp install
 	cd build.lxrt.corba ; $(MAKE) DESTDIR=$(CURDIR)/debian/tmp install
+	cd build.xenomai.corba ; $(MAKE) DESTDIR=$(CURDIR)/debian/tmp install
 
 
 # Build architecture-independent files here.
