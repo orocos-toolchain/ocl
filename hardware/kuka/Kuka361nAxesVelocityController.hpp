@@ -250,7 +250,7 @@ namespace OCL
          * conversion factor between position value and the encoder input.
          * position = (encodervalue)/scale
          */
-        
+      
         std::vector<double> positionConvertFactor;
     
     

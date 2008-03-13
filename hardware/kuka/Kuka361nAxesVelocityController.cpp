@@ -120,7 +120,7 @@ namespace OCL
         int encoderOffsets[KUKA361_NUM_AXES] = KUKA361_ENCODEROFFSETS;
         
         log(Info)<<"Creating Comedi Devices."<<endlog();
-        comediDev        = new ComediDevice( 0 );
+        comediDev        = new ComediDevice( 1 );
         comediSubdevAOut = new ComediSubDeviceAOut( comediDev, "Kuka361" );
         log(Info)<<"Creating APCI Devices."<<endlog();
         apci1710         = new EncoderSSI_apci1710_board( 0, 1 , 2);

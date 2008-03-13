@@ -182,12 +182,12 @@ namespace OCL
 #if (defined (OROPKG_OS_LXRT))
         int encoderOffsets[KUKA361_NUM_AXES] = KUKA361_ENCODEROFFSETS;
 
-        _comediDev        = new ComediDevice( 0 );
+        _comediDev        = new ComediDevice( 1 );
         _comediSubdevAOut = new ComediSubDeviceAOut( _comediDev, "Kuka361" );
         _apci1710         = new EncoderSSI_apci1710_board( 0, 1 );
         _apci2200         = new RelayCardapci2200( "Kuka361" );
         _apci1032         = new SwitchDigitalInapci1032( "Kuka361" );
-        _comediDev_NI6024  = new ComediDevice( 1 );
+        _comediDev_NI6024  = new ComediDevice( 0 );
         _comediSubdevAIn_NI6024  = new ComediSubDeviceAIn( _comediDev_NI6024, "Kuka361", 0 );
         _comediSubdevDIn_NI6024  = new ComediSubDeviceDIn( _comediDev_NI6024, "Kuka361", 2 );
         // Remove 10/08/07 - Card no longer present
