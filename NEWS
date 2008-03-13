@@ -1,3 +1,33 @@
+         Orocos Components Library (OCL) v1.4.1
+
+This is the first bug fix release of the Orocos Components Library v1.4
+and only contains backwards compatible fixes.
+
+Some components are available as Debian 'Etch' packages for GNU/Linux,
+RTAI/LXRT and Xenomai. They can be found here: 
+ deb http://svn.fmtc.be/debian etch main
+
+An overview of the components is available here:
+  <http://www.orocos.org/stable/documentation/ocl/v1.4.x/doc-xml/ocl-overview.html>
+
+This release can be downloaded here:
+  <http://www.orocos.org/stable/ocl/v1.4.1/orocos-ocl-1.4.1-src.tar.bz2>
+
+The following reported bugs were fixed in this release:
+
+ ID    Vers  TargetM  Summary
+ 209   trunk  1.4.1   Device driver code still uses rtos_printf
+ 489   1.4.0  1.4.1   PCANController needs cleanup
+ 499   trunk  1.4.1   Segmentation fault in Deployment component
+ 500   trunk  1.4.1   Howto load external toolkits
+ 502   1.4.0  1.4.1   [OCL] Improve detection of KDL/BFL libraries
+ 503   1.4.0  1.4.1   Make OCL::HelloWorld available as a loadable component
+ 504   1.4.0  1.4.1   DeploymentComponent should know about 'targets'
+ 510   trunk  1.4.1   loading multiple programscripts, statemachines and property files
+ 511   1.4.0  1.4.1   Error when creating TimerComponent
+ 518   1.4.0  1.4.1   Deployment AutoUnload & kickOut() do not cleanup nicely
+
+------------------------------------------------------------------------
          Orocos Components Library (OCL) v1.4.0
 
 This release of the Orocos Components Library is aimed at the
