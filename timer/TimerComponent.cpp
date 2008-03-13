@@ -34,7 +34,7 @@ namespace OCL
         this->methods()->addMethod( method( "killTimer", &Timer::killTimer , this),
                                     "Kill (disable) an armed or started timer.",
                                     "timerId", "A numeric id of the timer to kill.");
-        this->methods()->addMethod( method( "isArmed", &Timer::isActive , this),
+        this->methods()->addMethod( method( "isArmed", &Timer::isArmed , this),
                                     "Check if a given timer is armed or started.",
                                     "timerId", "A numeric id of the timer to check.");
         this->methods()->addMethod( method( "setMaxTimers", &Timer::setMaxTimers , this),
