@@ -42,17 +42,19 @@ extern "C" {
 #undef DECLARE
 #define DECLARE static inline
 
-    // Need this for u32 etc type definitions
+  // Need this for u32 etc type definitions
 #ifndef __KERNEL__
+#warning __KERNEL__ not defined
 #define __KERNEL__
 #include <asm/types.h>
 #undef __KERNEL__
 #else
+#warning __KERNEL__ defined
 #include <asm/types.h>
 #endif
 
-    
 #ifdef __KERNEL__
+#warning __KERNEL__ defined
     /* APCI1032 Prototype functions */
     int i_APCI1032_CheckAndGetPCISlotNumber ( unsigned char *pb_SlotArray );
     int i_APCI1032_SetBoardInformation ( unsigned char b_SlotNumber, int * pi_BoardHandle );
@@ -69,6 +71,7 @@ extern "C" {
 typedef void apci2200_device;
 
 #ifdef __KERNEL__
+#warning __KERNEL__ defined
     apci2200_device* apci2200_get_device( void );
     unsigned int apci2200_get_input_status( apci2200_device* dev );
     unsigned int apci2200_get_output_status( apci2200_device* dev );
@@ -89,6 +92,7 @@ typedef void apci1710_device;
 typedef void apci1710_module;
 
 #ifdef __KERNEL__
+#warning __KERNEL__ defined
     apci1710_device* apci1710_get_device( void );
     int apci1710_ssi_init( apci1710_device* dev, int moduleNb, int ssiProfile, int positionBitLength, int turnBitLength, int countingMode, unsigned int ssiOutputClock );
     int apci1710_ssi_read( apci1710_device* dev, int moduleNb, int selectedSSI, unsigned int* result );
@@ -98,6 +102,7 @@ typedef void apci1710_module;
     int apci1710_ssi_read_latest_all( apci1710_device* dev, int moduleNb, unsigned int* result );
 
     // INCREMENTAL ENCODER FUNCTIONS
+  /*
     apci1710_module* apci1710_incr_create_module(void);
     int apci1710_incr_cleanup_module(apci1710_module* module);
     int apci1710_incr_init( apci1710_device* dev, unsigned int moduleNb, int counterRange, int firstCounterModus, int firstCounterOption, int secondCounterModus, int secondCounterOption, apci1710_module* module );
@@ -121,6 +126,7 @@ typedef void apci1710_module;
     int apci1710_incr_set_digital_channel_on( apci1710_module* module );
     int apci1710_incr_set_digital_channel_off( apci1710_module* module );
     int apci1710_incr_cleanup_module( apci1710_module* module );
+  */
 #endif
     
 
@@ -157,7 +163,7 @@ typedef void apci1710_module;
 #define APCI1710_SSI_REFRESH                     25
 #define APCI1710_SSI_READLATEST                  26
 #define APCI1710_SSI_READLATESTALL               27
-
+  /*
 #define APCI1710_INCR_INIT                       30
 #define APCI1710_INCR_COUNTER_AUTOTEST           31
 #define APCI1710_INCR_CLEAR_COUNTER              32
@@ -179,7 +185,7 @@ typedef void apci1710_module;
 #define APCI1710_INCR_SET_DIG_CHANNEL_OFF        48
 #define APCI1710_INCR_CLEANUP                    49
 #define APCI1710_INCR_CREATE                     50
-
+  */
 
 
 
@@ -307,8 +313,8 @@ DECLARE apci1710_device* apci1710_get_device( void )
 
 DECLARE int apci1710_ssi_init( apci1710_device* dev, int moduleNb, int ssiProfile, int positionBitLength, int turnBitLength, int countingMode, unsigned int ssiOutputClock )
 {
-  struct { apci1710_device* dev; int moduleNb; int ssiProfile; int positionBitLength; int turnBitLength; int countingMode; unsigned int ssiOutputClock; } 
-    arg = { dev, moduleNb, ssiProfile,  positionBitLength, turnBitLength, countingMode, ssiOutputClock };
+  rt_printk("LXRT: Mnr: %d, prof: %d, posbit: %d, turnbit: %d, cMode: %d, clock: %d", moduleNb, ssiProfile, positionBitLength, turnBitLength, countingMode, ssiOutputClock );
+  struct { apci1710_device* _dev; int _moduleNb; int _ssiProfile; int _positionBitLength; int _turnBitLength; int _countingMode; unsigned int _ssiOutputClock; } arg = { dev, moduleNb, ssiProfile,  positionBitLength, turnBitLength, countingMode, ssiOutputClock };
   return rtai_lxrt(MYIDX, SIZARG, APCI1710_SSI_INIT, &arg).i[LOW];
 }
 
@@ -351,67 +357,66 @@ DECLARE int apci1710_ssi_read_latest_all( apci1710_device* dev, int moduleNb, un
 /**
  * Not yet implemented, but analog to the ssi stuff.
  */
-DECLARE int apci1710_incr_init( apci1710_device* dev, unsigned int moduleNb, int counterRange, int firstCounterModus, int firstCounterOption, int secondCounterModus, int secondCounterOption, apci1710_module* module )
-{
-  struct { apci1710_device* dev; unsigned int moduleNb; int counterRange; int firstCounterModus; int firstCounterOption; int secondCounterModus;  int secondCounterOption; apci1710_module* module; } 
-    arg = { dev, moduleNb, counterRange, firstCounterModus, firstCounterOption, secondCounterModus, secondCounterOption, module };
-  return rtai_lxrt(MYIDX, SIZARG, APCI1710_INCR_INIT, &arg).i[LOW];
-}
-
-DECLARE apci1710_module* apci1710_incr_create_module()
-{
-  struct { int val; } 
-    arg = { 0 };
-  return rtai_lxrt(MYIDX, SIZARG, APCI1710_INCR_CREATE, &arg).v[LOW];
-}
-
-DECLARE int apci1710_incr_cleanup_module( apci1710_module* module )
-{
-  struct { apci1710_module* module; } 
-    arg = { module };
-  return rtai_lxrt(MYIDX, SIZARG, APCI1710_INCR_CLEANUP, &arg).i[LOW];
-}
-
-DECLARE int apci1710_incr_latch_counter( apci1710_module* module, unsigned int latchRegister )
-{
-  struct { apci1710_module* module; unsigned int latchRegister; } 
-    arg = { module, latchRegister };
-  return rtai_lxrt(MYIDX, SIZARG, APCI1710_INCR_LATCH_COUNTER, &arg).i[LOW];
-}
-DECLARE int apci1710_incr_read_latch_register_value( apci1710_module* module, unsigned int latchRegister, unsigned int* result )
-{
-  struct { apci1710_module* module; unsigned int latchRegister; unsigned int* result; } 
-    arg = { module, latchRegister, result};
-  return rtai_lxrt(MYIDX, SIZARG, APCI1710_INCR_READ_LATCH_REGVALUE, &arg).i[LOW];
-}
-
-DECLARE int apci1710_incr_clear_counter_value( apci1710_module* module )
-{
-  struct { apci1710_module* module; } 
-    arg = { module };
-  return rtai_lxrt(MYIDX, SIZARG, APCI1710_INCR_CLEAR_COUNTER, &arg).i[LOW];
-}
-
 /*
-int apci1710_incr_counter_auto_test( apci1710_module* module );
-int apci1710_incr_clear_all_counter_value( apci1710_module* module );
-int apci1710_incr_set_input_filter( apci1710_module* module, int PCIclock, int filter );
-int apci1710_incr_read_latch_register_status( apci1710_module* module, unsigned int latchRegister, int* latchStatus );
+  DECLARE int apci1710_incr_init( apci1710_device* dev, unsigned int moduleNb, int counterRange, int firstCounterModus, int firstCounterOption, int secondCounterModus, int secondCounterOption, apci1710_module* module )
+  {
+  struct { apci1710_device* dev; unsigned int moduleNb; int counterRange; int firstCounterModus; int firstCounterOption; int secondCounterModus;  int secondCounterOption; apci1710_module* module; } 
+  arg = { dev, moduleNb, counterRange, firstCounterModus, firstCounterOption, secondCounterModus, secondCounterOption, module };
+  return rtai_lxrt(MYIDX, SIZARG, APCI1710_INCR_INIT, &arg).i[LOW];
+  }
+  
+  DECLARE apci1710_module* apci1710_incr_create_module()
+  {
+  struct { int val; } 
+  arg = { 0 };
+  return rtai_lxrt(MYIDX, SIZARG, APCI1710_INCR_CREATE, &arg).v[LOW];
+  }
+  
+  DECLARE int apci1710_incr_cleanup_module( apci1710_module* module )
+  {
+  struct { apci1710_module* module; } 
+  arg = { module };
+  return rtai_lxrt(MYIDX, SIZARG, APCI1710_INCR_CLEANUP, &arg).i[LOW];
+  }
+  
+  DECLARE int apci1710_incr_latch_counter( apci1710_module* module, unsigned int latchRegister )
+  {
+  struct { apci1710_module* module; unsigned int latchRegister; } 
+  arg = { module, latchRegister };
+  return rtai_lxrt(MYIDX, SIZARG, APCI1710_INCR_LATCH_COUNTER, &arg).i[LOW];
+  }
+  DECLARE int apci1710_incr_read_latch_register_value( apci1710_module* module, unsigned int latchRegister, unsigned int* result )
+  {
+  struct { apci1710_module* module; unsigned int latchRegister; unsigned int* result; } 
+  arg = { module, latchRegister, result};
+  return rtai_lxrt(MYIDX, SIZARG, APCI1710_INCR_READ_LATCH_REGVALUE, &arg).i[LOW];
+  }
+  
+  DECLARE int apci1710_incr_clear_counter_value( apci1710_module* module )
+  {
+  struct { apci1710_module* module; } 
+  arg = { module };
+  return rtai_lxrt(MYIDX, SIZARG, APCI1710_INCR_CLEAR_COUNTER, &arg).i[LOW];
+  }
 
-int apci1710_incr_read_16bit_counter_value( apci1710_module* module, unsigned int latchRegister, u32* result );
-int apci1710_incr_enable_latch_interrupt( apci1710_module* module );
-int apci1710_incr_disable_latch_interrupt( apci1710_module* module );
-int apci1710_incr_read_32bit_counter_value( apci1710_module* module, u32* result );
-int apci1710_incr_write_16bit_counter_value( apci1710_module* module, unsigned int selectedCounter, u32 writeValue );
-int apci1710_incr_write_32bit_counter_value( apci1710_module* module, u32 writeValue );
-int apci1710_incr_init_index( apci1710_module* module, int referenceAction, int indexOperation, int autoMode, int interruptMode );
-int apci1710_incr_enable_index( apci1710_module* module );
-int apci1710_incr_disable_index( apci1710_module* module );
-int apci1710_incr_get_index_status( apci1710_module* module, int* result );
-int apci1710_incr_set_digital_channel_on( apci1710_module* module );
-int apci1710_incr_set_digital_channel_off( apci1710_module* module );
-*
-**/
+  int apci1710_incr_counter_auto_test( apci1710_module* module );
+  int apci1710_incr_clear_all_counter_value( apci1710_module* module );
+  int apci1710_incr_set_input_filter( apci1710_module* module, int PCIclock, int filter );
+  int apci1710_incr_read_latch_register_status( apci1710_module* module, unsigned int latchRegister, int* latchStatus );
+  
+  int apci1710_incr_read_16bit_counter_value( apci1710_module* module, unsigned int latchRegister, u32* result );
+  int apci1710_incr_enable_latch_interrupt( apci1710_module* module );
+  int apci1710_incr_disable_latch_interrupt( apci1710_module* module );
+  int apci1710_incr_read_32bit_counter_value( apci1710_module* module, u32* result );
+  int apci1710_incr_write_16bit_counter_value( apci1710_module* module, unsigned int selectedCounter, u32 writeValue );
+  int apci1710_incr_write_32bit_counter_value( apci1710_module* module, u32 writeValue );
+  int apci1710_incr_init_index( apci1710_module* module, int referenceAction, int indexOperation, int autoMode, int interruptMode );
+  int apci1710_incr_enable_index( apci1710_module* module );
+  int apci1710_incr_disable_index( apci1710_module* module );
+  int apci1710_incr_get_index_status( apci1710_module* module, int* result );
+  int apci1710_incr_set_digital_channel_on( apci1710_module* module );
+  int apci1710_incr_set_digital_channel_off( apci1710_module* module );
+*/
 
 #endif /* __KERNEL__ */
 

@@ -89,7 +89,7 @@ static struct rt_fun_entry rt_apci_fun[] = {
     [ APCI1710_SSI_READLATEST    ] = { 0,apci1710_ssi_read_latest },
 //    [ APCI1710_SSI_READLATESTALL ] = { 0,apci1710_ssi_read_latest_all },
     [ APCI1710_SSI_READLATESTALL ] = { UW1(3,4),apci1710_ssi_read_latest_all },
-
+    /*
     [ APCI1710_INCR_INIT                ] = { 0, apci1710_incr_init},
     [ APCI1710_INCR_COUNTER_AUTOTEST    ] = { 0, apci1710_incr_counter_auto_test},
     [ APCI1710_INCR_CLEAR_COUNTER       ] = { 0, apci1710_incr_clear_counter_value},
@@ -111,6 +111,7 @@ static struct rt_fun_entry rt_apci_fun[] = {
     [ APCI1710_INCR_SET_DIG_CHANNEL_OFF ] = { 0, apci1710_incr_set_digital_channel_off},
     [ APCI1710_INCR_CREATE ] = { 0, apci1710_incr_create_module},
     [ APCI1710_INCR_CLEANUP ] = { 0, apci1710_incr_cleanup_module},
+    */
 #endif
 };
 

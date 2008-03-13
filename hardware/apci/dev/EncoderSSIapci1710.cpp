@@ -76,7 +76,9 @@ EncoderSSI_apci1710_board::EncoderSSI_apci1710_board( unsigned int mNr1 )
     readbuffer  = buffer1;
     writebuffer = buffer2;
     
-    log() << "(EncoderSSI_apci1710) Creating EncoderSSI..." << endlog(Info);
+    log() << "(EncoderSSI_apci1710) Creating EncoderSSI with module:" << moduleNr1<<", ssi-profile: "<< ORONUM_DEVICE_DRIVERS_APCI1710_SSI_PROFILE
+      	  <<", positionbits: "<< ORONUM_DEVICE_DRIVERS_APCI1710_SSI_POSITION_BITS<<", turnbits: "<< ORONUM_DEVICE_DRIVERS_APCI1710_SSI_TURN_BITS
+	  <<", countingmode: ,"<< COUNTINGMODE_BINARY<<" frequency: "<<ORONUM_DEVICE_DRIVERS_APCI1710_SSI_FREQ << endlog(Info);
     dev = apci1710_get_device();
     int res = 0;
     if ( 0 != (res = apci1710_ssi_init( dev, moduleNr1,
@@ -85,8 +87,9 @@ EncoderSSI_apci1710_board::EncoderSSI_apci1710_board( unsigned int mNr1 )
                                         ORONUM_DEVICE_DRIVERS_APCI1710_SSI_TURN_BITS,
                                         COUNTINGMODE_BINARY,
                                         ORONUM_DEVICE_DRIVERS_APCI1710_SSI_FREQ ) ) )      //in Hz (25kHz is ok)
-        log() << "\n(EncoderSSI_apci1710) Error "<< res << " : Module " << moduleNr1 << " is not ready for SSI\n" << endlog(Error);
-
+      
+    log() << "\n(EncoderSSI_apci1710) Error "<< res << " : Module " << moduleNr1 << " is not ready for SSI\n" << endlog(Error);
+    
 #ifdef OROPKG_CORELIB_TIMING
     // init one buffer, display some statistics
     TimeService::ticks t=TimeService::Instance()->getTicks();
@@ -185,9 +188,9 @@ EncoderSSI_apci1710_board::EncoderSSI_apci1710_board( unsigned int mNr1, unsigne
         log() << "\n(EncoderSSI_apci1710) Error "<< res << " : Module " << moduleNr2 << " is not ready for SSI\n" << endlog(Error);
 
     if ( 0 != (res = apci1710_ssi_init( dev, moduleNr3,
-                                        ORONUM_DEVICE_DRIVERS_APCI1710_SSI_PROFILE,
+                                        ORONUM_DEVICE_DRIVERS_APCI1710_SSI_PROFILE2,
                                         ORONUM_DEVICE_DRIVERS_APCI1710_SSI_POSITION_BITS,
-                                        ORONUM_DEVICE_DRIVERS_APCI1710_SSI_TURN_BITS,
+                                        ORONUM_DEVICE_DRIVERS_APCI1710_SSI_TURN_BITS2,
                                         COUNTINGMODE_BINARY,
                                         ORONUM_DEVICE_DRIVERS_APCI1710_SSI_FREQ ) ) )      //in Hz (25kHz is ok)
         log() << "\n(EncoderSSI_apci1710) Error "<< res << " : Module " << moduleNr3 << " is not ready for SSI\n" << endlog(Error);

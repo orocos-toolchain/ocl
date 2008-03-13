@@ -69,15 +69,14 @@ int init_module( void )
     }
 
     // checks and request the IO regions
-    if ( check_region( apci1710.ioaddr[ 0 ], 64 ) || check_region( apci1710.ioaddr[ 1 ], 8 ) || check_region( apci1710.ioaddr[ 2 ], 256 ) )
-        return -3;
+    //if ( request_region( apci1710.ioaddr[ 0 ], 64 ) || request_region( apci1710.ioaddr[ 1 ], 8 ) || request_region( apci1710.ioaddr[ 2 ], 256 ) )
+    //    return -3;
 
-    request_region( apci1710.ioaddr[ 0 ], 64, "APCI-1710" );
-
-    request_region( apci1710.ioaddr[ 1 ], 8, "APCI-1710" );
-
-    request_region( apci1710.ioaddr[ 2 ], 256, "APCI-1710" );
-
+    if(NULL==request_region( apci1710.ioaddr[ 0 ], 64, "APCI-1710" )||
+       NULL==request_region( apci1710.ioaddr[ 1 ], 8, "APCI-1710" )||
+       NULL==request_region( apci1710.ioaddr[ 2 ], 256, "APCI-1710" ))
+      return -3;
+    
     // Sets initerruptinit to 0
     interruptinit = 0;
 
