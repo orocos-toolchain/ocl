@@ -1,5 +1,5 @@
 // Copyright (C) 2006 Wim Meeussen <wim dot meeussen at mech dot kuleuven dot be>
-//  
+//               2008 Ruben Smits < first dot last at mech etc>   
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
@@ -36,53 +36,52 @@ namespace SickDriver
 
 
 namespace OCL {
-  /**
-   * This class implements a TaskContext which construct an
-   * interface to the automated Laser initialising a link to the
-   * digital IO PCI cards. 
-   */
-  class LaserScanner 
-    :public RTT::TaskContext, 
-     public RTT::NonPeriodicActivity {
-  public:
-    /** 
-     * Constructor of the class
-     * 
-     * @param name name of the TaskContext
-     * @param propertyfilename location of the
-     * propertyfile. Default: cpf/LaserScanner.cpf
-     * 
+    /**
+     * This class implements a TaskContext which construct an
+     * interface to the automated Laser initialising a link to the
+     * digital IO PCI cards. 
      */
-    LaserScanner(std::string name, std::string propertyfilename="cpf/LaserScanner.cpf", unsigned int priority=0);
-    virtual~LaserScanner();
+    class LaserScanner 
+        :public RTT::TaskContext, 
+         public RTT::NonPeriodicActivity {
+    public:
+        /** 
+         * Constructor of the class
+         * 
+         * @param name name of the TaskContext
+         * @param propertyfilename location of the
+         * propertyfile. Default: cpf/LaserScanner.cpf
+         * 
+         */
+        LaserScanner(std::string name);
+        virtual~LaserScanner();
+        virtual bool configureHook();
+        virtual bool startHook();
+        virtual void updateHook();  // taskcontext
+        virtual void stopHook();
+        virtual void loop();  // nonperiodicactivity
     
-    virtual bool startup();
-    virtual void update();  // taskcontext
-    virtual void shutdown();
-    virtual void loop();  // nonperiodicactivity
-    
-  protected:
-    RTT::Property<std::string> _port;
-    RTT::Property<int> _range_mode;
-    RTT::Property<double> _res_mode;
-    RTT::Property<std::string> _unit_mode;
-    
-    /// Dataport which contains the measurements
-    RTT::WriteDataPort<std::vector<double> > _distances, _angles;
-    
-    /// Event which is fired if the distance is out of range
-    RTT::Event< void(int,double)>  _distanceOutOfRange;
-    
-  private:
-    SickDriver::SickLMS200* _sick_laserscanner;
-    std::vector<double> _distances_local, _angles_local;
-    
-    const char* _port_char;
-    unsigned char _range_mode_char, _res_mode_char, _unit_mode_char;
-    unsigned int _num_meas;
-    bool _loop_ended, _keep_running;
-    std::string _propertyfile;
-    
+    protected:
+        RTT::Property<int>         priority;
+        RTT::Property<std::string> port;
+        RTT::Property<int>         range_mode;
+        RTT::Property<double>      res_mode;
+        RTT::Property<std::string> unit_mode;
+        
+        /// Dataport which contains the measurements
+        RTT::WriteDataPort<std::vector<double> > distances, angles;
+        
+        /// Event which is fired if the distance is out of range
+        RTT::Event< void(int,double)>  distanceOutOfRange;
+        
+    private:
+        SickDriver::SickLMS200* sick_laserscanner;
+        std::vector<double> distances_local, angles_local;
+        
+        const char* port_char;
+        unsigned char range_mode_char, res_mode_char, unit_mode_char;
+        unsigned int num_meas;
+        bool loop_ended, keep_running;
     
   }; // class
 } // namespace
