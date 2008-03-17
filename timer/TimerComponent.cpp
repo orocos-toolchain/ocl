@@ -116,6 +116,6 @@ namespace OCL
 
     bool TimerComponent::isTimerExpired(RTT::Timer::TimerId id) const
     {
-        return !Timer::isActive(id);
+        return !Timer::isArmed(id);
     }
 }
