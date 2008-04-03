@@ -7,7 +7,7 @@ IF ( BUILD_TASKBROWSER )
        ncurses/readline library. Try 'sudo apt-get install libncurses5-dev libreadline5-dev' or
        disable the TaskBrowser" )
     ELSE(NOT CURSES AND NOT READLINE)
-       OROCOS_PKGCONFIG_LIBS("-lncurses -lreadline")
+       OROCOS_PKGCONFIG_LIBS("ncurses readline")
 
        # This gathers all the .cpp files into the variable 'SRCS'
        FILE( GLOB HPPS [^.]*.hpp )
