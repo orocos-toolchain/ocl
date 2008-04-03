@@ -30,7 +30,7 @@ IF ( BUILD_CAN )
        GLOBAL_ADD_INCLUDE( ocl/can can/PCANController.hpp )
        COMPONENT_ADD_DEPS( orocos-pcan orocos-can )
        COMPONENT_ADD_LIBS( orocos-pcan pcan )
-       OROCOS_PKGCONFIG_LIBS("-lpcan")
+       OROCOS_PKGCONFIG_LIBS( pcan )
     ENDIF ( BUILD_PCAN )
 
     # Build orocos-can lib. [universal]
