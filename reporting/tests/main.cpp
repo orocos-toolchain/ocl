@@ -64,8 +64,8 @@ int ORO_main( int argc, char** argv)
 		      << " manually raises LogLevel to 'Info' (5). See also file 'orocos.log'."<<endlog();
     }
 
-
-    PeriodicActivity act(10, 1.0);
+    // Reporter's activity: not real-time !
+    PeriodicActivity act(ORO_SCHED_OTHER, 0, 1.0);
     ConsoleReporting rc("Reporting");
     TestTaskContext gtc("MyPeer");
     TestTaskContext2 gtc2("MyPeer2");
@@ -75,7 +75,7 @@ int ORO_main( int argc, char** argv)
     rc.addPeer( &gtc );
     rc.addPeer( &gtc2 );
     rc.addPeer( &gtc3 );
-    gtc.connectPeers( &gtc2 );
+    gtc.connectPorts( &gtc2 );
 
     TaskBrowser tb( &rc );
 
