@@ -298,15 +298,13 @@ namespace OCL
             PortInterface* ourport = porti->antiClone();
             assert(ourport);
 
-            ConnectionInterface::shared_ptr ci = porti->createConnection( ourport );
-            if ( !ci ) 
-                ci = ourport->createConnection( porti );
-            if ( !ci )
+            if ( porti->connectTo( ourport ) == false ) {
+                delete ourport;
                 return false;
-            ci->connect();
+            }
             
             delete ourport;
-            this->reportDataSource( component + "." + porti->getName(), "Port", ci->getDataSource() );
+            this->reportDataSource( component + "." + porti->getName(), "Port", porti->connection()->getDataSource() );
             log(Info) << "Created connection for port " << porti->getName()<<" : ok."<<endlog();
         }
         return true;

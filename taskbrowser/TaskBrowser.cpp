@@ -1622,7 +1622,7 @@ namespace OCL
                     if ( !port->ready() || !port->connection() )
                         cout << "(U) " << setw(11)<<right<< port->getTypeInfo()->getTypeName();
                     else
-                        cout << "(C) " << setw(11)<<right<< port->connection()->getDataSource()->getType();
+                        cout << "(C) " << setw(11)<<right<< port->getTypeInfo()->getTypeName();
                     cout << " "
                          << coloron <<setw( 14 )<<left<< *it << coloroff;
                     if ( port->connection() ) 

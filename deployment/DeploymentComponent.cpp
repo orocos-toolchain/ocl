@@ -725,7 +725,7 @@ namespace OCL
             }
                 
             log(Info) << "Creating Connection "<<it->first<<":"<<endlog();
-            ConnectionInterface::shared_ptr con = writer->createConnection( reader );
+            ConnectionInterface::shared_ptr con = writer->createConnection();
             if ( con ) {
                 con->connect();
                 // connect all ports to connection
