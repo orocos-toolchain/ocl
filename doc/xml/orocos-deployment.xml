@@ -121,18 +121,25 @@
 	of the options.
       </para>
       <para>
-	There are two related programs to the deployer application.
+	There are three related programs to the deployer application.
 	<itemizedlist>
-	  <listitem><para><command>cdeployer-&lt;target&gt;</command> : like
-	  above but starts the CORBA enabled deployer application. You are not presented
-	  with a TaskBrowser prompt, but the cdeployer tries to connect to a
-	  CORBA Naming Service, and if that fails, prints the IOR to a file and to
-	  the screen.</para></listitem>
+	  <listitem><para><command>cdeployer-&lt;target&gt;</command>:
+	  like above but starts the CORBA enabled non-interactive
+	  deployer application. You are not presented with a
+	  TaskBrowser prompt, but the cdeployer tries to connect to a
+	  CORBA Naming Service, and if that fails, prints the IOR to a
+	  file and to the screen.</para></listitem>
 	  <listitem><para><command>ctaskbrowser-&lt;target&gt;
-	  ComponentName|IOR</command> : Connects to a remote component
-	  using the CORBA <emphasis>IOR</emphasis> address or using
-	  the CORBA Naming Service using
+	  ComponentName|IOR</command>: Connects to a remote component
+	  (like the cdeployer above) using the CORBA
+	  <emphasis>IOR</emphasis> address or using the CORBA Naming
+	  Service using
 	  <emphasis>ComponentName</emphasis>.</para></listitem>
+	  <listitem><para><command>deployer-corba-&lt;target&gt;</command>:
+	  Combines the cdeployer and deployer applications. It presents
+	  the TaskBrowser console and sets up a CORBA server. It can thus be
+	  commanded locally and accessed over a network. If you quit
+	  the TaskBrowser prompt, the application exits.</para></listitem>
 	</itemizedlist>
       </para>
     </section>
@@ -413,6 +420,43 @@
 	  program scripts and state machine scripts can be
 	  loaded. This is again done during the
 	  <function>configureComponents()</function> step.
+	</para>
+      </section>
+      <section>
+	<title>CORBA extensions</title>
+	<para>
+	  The deployer XML format allows two CORBA specific boolean
+	  properties, which are optional: <option>Server</option>
+	  (defaults to '0') and <option>UseNamingService</option>
+	  (defaults to '1'). These properties are only used when you
+	  use the CORBA enabled
+	  <command>cdeployer-&lt;target&gt;</command> or
+	  <command>deployer-corba-&lt;target&gt;</command>
+	  applications.
+	</para>
+	<para>
+	  <programlisting><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "cpf.dtd">
+<properties>
+  <!-- ... -->
+
+  <struct name="Reporter" type="OCL::FileReporting">
+
+    <!-- CORBA specific extensions -->
+    <simple name="Server" type="boolean"><value>1</value></simple>
+    <simple name="UseNamingService" type="boolean"><value>1</value></simple>
+
+  </struct>
+
+</properties>]]></programlisting>
+	</para>
+	<para>
+	  By default, only the 'Deployer' starts as a CORBA
+	  server. You can have other components to start as a server
+	  as well by setting the <option>Server</option> property to
+	  1. By default, the component will try to use the CORBA
+	  Naming Service to register its name. If this is not wanted,
+	  set the <option>UseNamingService</option> property to 0.
 	</para>
       </section>
     </section>
