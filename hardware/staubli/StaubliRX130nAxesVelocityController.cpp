@@ -163,7 +163,7 @@ namespace OCL
             
             log(Info)<<"Setting up drive ..."<<endlog();
             log(Debug)<<"Creating AnalogOutput"<<endlog();
-            vref[i]   = new AnalogOutput<unsigned int>(SubAOut, i );
+            vref[i]   = new AnalogOutput(SubAOut, i );
             log(Debug)<<"Creating Digital Output Enable"<<endlog();
             enable[i] = new DigitalOutput( SubDOut, 18+i );
             log(Debug)<<"Initial switch off brake"<<endlog();

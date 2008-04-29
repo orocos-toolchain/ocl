@@ -341,7 +341,7 @@ namespace OCL
 
         std::vector<RTT::EncoderInterface*>           _encoderInterface;
         std::vector<RTT::AbsoluteEncoderSensor*>      _encoder;
-        std::vector<RTT::AnalogOutput<unsigned int>*> _vref;
+        std::vector<RTT::AnalogOutput*> _vref;
         std::vector<RTT::DigitalOutput*>              _enable;
         std::vector<RTT::AnalogDrive*>                _drive;
         std::vector<RTT::DigitalOutput*>              _brake;

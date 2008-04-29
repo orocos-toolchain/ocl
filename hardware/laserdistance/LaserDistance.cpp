@@ -71,7 +71,7 @@ namespace OCL
     _comediSubdevAIn     = new ComediSubDeviceAIn( _comediDev_NI6024, "Laser", subd );
     for(unsigned int i = 0; i < nr_chan;i++){
       log(Debug) <<this->getName()<<": Creating AnalogInput "<<i<<endlog();
-      _LaserInput[i] = new AnalogInput<unsigned int>(_comediSubdevAIn, i+OFFSET); //channel number starting from 0
+      _LaserInput[i] = new AnalogInput(_comediSubdevAIn, i+OFFSET); //channel number starting from 0
     }
 #endif
     

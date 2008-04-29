@@ -6,7 +6,7 @@
 #include <rtt/dev/AnalogOutInterface.hpp>
 #include <iostream>
 
-class IP_FastDAC_AOutInterface : public RTT::AnalogOutInterface<unsigned int>
+class IP_FastDAC_AOutInterface : public RTT::AnalogOutInterface
 {
 public:
     IP_FastDAC_AOutInterface(const std::string& name);

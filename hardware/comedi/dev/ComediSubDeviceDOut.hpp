@@ -31,17 +31,17 @@
 #ifndef COMEDISUBDEVICEDOUT_HPP
 #define COMEDISUBDEVICEDOUT_HPP
 
-#include "rtt/dev/DigitalOutInterface.hpp"
+#include <rtt/dev/DigitalOutInterface.hpp>
 #include "ComediDevice.hpp"
 
-namespace RTT
+namespace OCL
 {
 
   /**
    * This logical device represents one subdevice of a Comedi device.
    */
   class ComediSubDeviceDOut
-    : public DigitalOutInterface
+    : public RTT::DigitalOutInterface
   {
 
   public:

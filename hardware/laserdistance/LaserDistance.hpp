@@ -68,7 +68,7 @@ namespace OCL {
 #if defined (OROPKG_DEVICE_DRIVERS_COMEDI)
         ComediDevice* _comediDev_NI6024; //NI-6024 for analog in
         ComediSubDeviceAIn* _comediSubdevAIn;
-        std::vector<RTT::AnalogInput<unsigned int>*> _LaserInput;
+        std::vector<RTT::AnalogInput*> _LaserInput;
 #endif
     
         unsigned int _nr_chan;

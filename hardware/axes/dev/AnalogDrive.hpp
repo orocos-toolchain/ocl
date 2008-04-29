@@ -74,7 +74,7 @@ namespace RTT
          * @param _scale The scale of unit per volt such that unit = volt * _scale
          * @param _offset The offset to be added to the unit such that new_unit = vel + offset
          */
-        AnalogDrive( AnalogOutput<unsigned int>* an_out,
+        AnalogDrive( AnalogOutput* an_out,
                DigitalOutput* dig_out, double _scale=1.0, double _offset=0.0 )
             : analogDevice( an_out ),
               enableDevice(dig_out), mySpeed(0.0),
@@ -194,7 +194,7 @@ namespace RTT
 
     protected:
 
-        AnalogOutput<unsigned int>* analogDevice;
+        AnalogOutput* analogDevice;
         DigitalOutput* enableDevice;
 
         double mySpeed;

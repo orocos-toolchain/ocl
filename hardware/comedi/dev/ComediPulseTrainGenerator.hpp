@@ -25,7 +25,7 @@
 #include <string>
 #include <rtt/Time.hpp>
 
-namespace RTT
+namespace OCL
 {
   /**
    * A class for generation of pulse trains using comedi the hardware
@@ -41,7 +41,7 @@ namespace RTT
    * this yet
    */
   class ComediPulseTrainGenerator :
-    public PulseTrainGeneratorInterface
+     public RTT::PulseTrainGeneratorInterface
   {
   public:
     /**
@@ -67,8 +67,8 @@ namespace RTT
     virtual ~ComediPulseTrainGenerator();
 
     // Redefinition of Pure virtuals    
-    virtual bool pulseWidthSet(psecs picos);
-    virtual bool pulsePeriodSet(psecs picos);
+    virtual bool pulseWidthSet(RTT::psecs picos);
+    virtual bool pulsePeriodSet(RTT::psecs picos);
     virtual bool start();
     virtual bool stop();
 
@@ -76,14 +76,14 @@ namespace RTT
     // All constructors use this method
     void init();
     /// Convert picoseconds to a multiple of the chosen Timebase
-    unsigned int psecs_to_timebase(psecs picos);
+    unsigned int psecs_to_timebase(RTT::psecs picos);
     
     ComediDevice * _myCard;
     unsigned int _subDevice;
     unsigned int _channel;
     
-    psecs _pulse_width;
-    psecs _pulse_period;
+    RTT::psecs _pulse_width;
+    RTT::psecs _pulse_period;
     /// Smallest step (related to the chosen timebase on the board)
     /// This value is not certain to be an integer, even in pico seconds.
     double _smallest_step;

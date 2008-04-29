@@ -23,7 +23,7 @@
 
 #include "comedi_internal.h"
 
-namespace RTT
+namespace OCL
 {
     ComediEncoder::ComediEncoder(ComediDevice * cd, unsigned int subd, 
                                  unsigned int encNr, const std::string& name)

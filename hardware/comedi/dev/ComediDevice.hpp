@@ -27,7 +27,7 @@
 
 #include <boost/shared_ptr.hpp>
 
-namespace RTT
+namespace OCL
 {
   /**
    * Minimal C++ API to a comedi device.

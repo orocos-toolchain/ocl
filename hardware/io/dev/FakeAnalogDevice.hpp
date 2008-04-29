@@ -38,8 +38,8 @@ namespace RTT
      * It reproduces on the output what it gets on the input.
      */
     struct FakeAnalogDevice :
-        public AnalogInInterface<unsigned int>,
-        public AnalogOutInterface<unsigned int>
+        public AnalogInInterface,
+        public AnalogOutInterface
     {
         unsigned int nbofchans;
         unsigned int* mchannels;
@@ -47,8 +47,8 @@ namespace RTT
         double mlowest, mhighest;
 
         FakeAnalogDevice(unsigned int channels=32, unsigned int bin_range=4096, double lowest = -5.0, double highest = +5.0)
-            : AnalogInInterface<unsigned int>("FakeAnalogDevice"),
-              AnalogOutInterface<unsigned int>("FakeAnalogDevice"),
+            : AnalogInInterface("FakeAnalogDevice"),
+              AnalogOutInterface("FakeAnalogDevice"),
               nbofchans(channels),
               mchannels( new unsigned int[channels] ),
               mbin_range( bin_range),
@@ -70,13 +70,13 @@ namespace RTT
             return nbofchans;
         }
 
-        virtual void read( unsigned int chan, unsigned int& value ) const 
+        virtual void read( unsigned int chan, int& value ) const 
         {
             if (chan < nbofchans)
                 value = mchannels[chan];
         }
 
-        virtual void write( unsigned int chan, unsigned int value ) {
+        virtual void write( unsigned int chan, int value ) {
             if (chan < nbofchans)
                 mchannels[chan] = value;
         }
@@ -86,12 +86,12 @@ namespace RTT
             return mbin_range;
         }
 
-        virtual unsigned int binaryLowest() const 
+        virtual int binaryLowest() const 
         {
             return 0;
         }
 
-        virtual unsigned int binaryHighest() const
+        virtual int binaryHighest() const
         {
             return mbin_range;
         }

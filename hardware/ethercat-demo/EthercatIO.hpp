@@ -61,8 +61,8 @@ namespace OCL
 			
 			DigitalInInterface* getDigitalIn() { return &diginputs;}
 			DigitalOutInterface* getDigitalOut() { return &digoutputs;}
-			AnalogInInterface<unsigned int>* getAnalogIn() { return &anainputs;}
-			AnalogOutInterface<unsigned int>* getAnalogOut() { return &anaoutputs;}
+			AnalogInInterface* getAnalogIn() { return &anainputs;}
+			AnalogOutInterface* getAnalogOut() { return &anaoutputs;}
 
 	     /**
          *  This function contains the application's startup code.

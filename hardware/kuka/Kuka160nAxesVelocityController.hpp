@@ -221,7 +221,7 @@ namespace OCL
         RTT::ComediSubDeviceDOut*             comediSubdevDOut;
         std::vector<RTT::EncoderInterface*>   encoderInterface;
         
-        std::vector<RTT::AnalogOutput<unsigned int>*> vref;
+        std::vector<RTT::AnalogOutput*> vref;
         std::vector<RTT::IncrementalEncoderSensor*>   encoder;
         std::vector<RTT::DigitalOutput*>      enable;
         std::vector<RTT::AnalogDrive*>        drive;

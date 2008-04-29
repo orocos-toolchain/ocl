@@ -32,7 +32,7 @@
 #include "ComediDevice.hpp"
 #include "ComediSubDeviceDOut.hpp"
 
-namespace RTT
+namespace OCL
 {
 
     /**

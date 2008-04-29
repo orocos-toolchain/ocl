@@ -138,12 +138,12 @@ namespace OCL
             _brake[i]->switchOn();
             
             log(Info)<<"Setting up drive ..."<<endlog();
-            _vref[i]   = new AnalogOutput<unsigned int>( _comediSubdevAOut, i );
+            _vref[i]   = new AnalogOutput( _comediSubdevAOut, i );
             _enable[i] = new DigitalOutput( _apci2200, i );
             _drive[i]  = new AnalogDrive( _vref[i], _enable[i], 1.0 / vel2volt[i], _driveOffset.value()[i]);
             
-            //_tacho[i] = new AnalogInput<unsigned int>(_comediSubdevAIn,i)
-            //_current[i] = new AnalogInput<unsigned int>(_comediSubdevAIn,i+offset0)
+            //_tacho[i] = new AnalogInput(_comediSubdevAIn,i)
+            //_current[i] = new AnalogInput(_comediSubdevAIn,i+offset0)
             //_modeswitch[i] = new DigitalOutput(_comediSubdevDOut,i+offset1)
             //_modecheck[i] =  new DigitalInput(_comediSubdevDIn,i+offset2)
 

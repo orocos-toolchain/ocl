@@ -27,7 +27,7 @@
 #define INSN_CONFIG_GPCT_DISARM 1005
 #endif
 
-namespace RTT
+namespace OCL
 {
     typedef unsigned int Data;
 

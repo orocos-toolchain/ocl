@@ -31,17 +31,17 @@
 #ifndef COMEDISUBDEVICEAOUT_HPP
 #define COMEDISUBDEVICEAOUT_HPP
 
-#include "rtt/dev/AnalogOutInterface.hpp"
+#include <rtt/dev/AnalogOutInterface.hpp>
 #include "ComediDevice.hpp"
 
-namespace RTT
+namespace OCL
 {
 
   /**
    * This logical device represents one subdevice of a Comedi device.
    */
   class ComediSubDeviceAOut
-    : public AnalogOutInterface<unsigned int>
+    : public RTT::AnalogOutInterface
   {
 
   public:
@@ -63,15 +63,17 @@ namespace RTT
 
     virtual void rangeSet(unsigned int chan, unsigned int range=0);
 
-    virtual void arefSet(unsigned int chan, unsigned int aref=AnalogOutInterface<unsigned int>::Ground);
+    virtual void arefSet(unsigned int chan, unsigned int aref=AnalogOutInterface::Ground);
 
-    virtual void write( unsigned int chan, unsigned int value );
+    virtual int rawWrite( unsigned int chan, unsigned int value );
 
-    virtual unsigned int binaryRange() const;
+    virtual int rawRead( unsigned int chan, unsigned int& value );
 
-    virtual unsigned int binaryLowest() const;
+    virtual unsigned int rawRange() const;
 
-    virtual unsigned int binaryHighest() const;
+    virtual int write( unsigned int chan, double value );
+
+    virtual int read( unsigned int chan, double& value );
 
     virtual double lowest(unsigned int chan) const;
 
@@ -94,7 +96,9 @@ namespace RTT
     unsigned int * _sd_range;
     unsigned int * _aref;
     unsigned int channels;
-  };
+    mutable unsigned int rrange;
+    double *max, *min;
+   };
 
 };
 

@@ -167,7 +167,7 @@ CRSnAxesVelocityController::CRSnAxesVelocityController(const std::string& name,c
         _encoderInterface[i] = new IP_Encoder_6_EncInterface( *_IP_Encoder_6_task, i ); // Encoder 0, 1, 2, 3, 4 and 5.
         _encoder[i] = new IncrementalEncoderSensor( _encoderInterface[i], 1.0 / ticks2rad[i], encoderOffsets[i], -180, 180, LiAS_ENC_RES );
         
-        _vref[i]   = new AnalogOutput<unsigned int>( _IP_FastDac_AOut, i + 1 ); 
+        _vref[i]   = new AnalogOutput( _IP_FastDac_AOut, i + 1 ); 
         _combined_enable[i] = new DigitalOutput( _combined_enable_DOutInterface, i );
         _drive[i] = new AnalogDrive( _vref[i], _combined_enable[i], 1.0 / radpsec2volt[i], driveOffsets[i] / radpsec2volt[i]);
         

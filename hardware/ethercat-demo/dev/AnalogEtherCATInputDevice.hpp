@@ -10,7 +10,7 @@ namespace RTT
 	 * It reproduces on the output what it gets on the input.
 	  */
     struct AnalogEtherCATInputDevice :
-			 public AnalogInInterface<unsigned int>
+			 public AnalogInInterface
 			 {
 				 unsigned char* mstartaddress;
 				 unsigned int nbofchans;
@@ -18,7 +18,7 @@ namespace RTT
 				 double mlowest, mhighest;
 
 				 AnalogEtherCATInputDevice(unsigned char* startaddress, unsigned int channels=2, unsigned int bin_range=4096, double lowest = -5.0, double highest = +5.0)
-					 : AnalogInInterface<unsigned int>("AnalogInDevice"),
+					 : AnalogInInterface("AnalogInDevice"),
 				 mstartaddress(startaddress),
 				 nbofchans(channels),
 				 mbin_range( bin_range),
@@ -38,21 +38,25 @@ namespace RTT
 					 return nbofchans;
 				 }
 
-				 virtual void read( unsigned int chan, unsigned int& value ) const {
+				 virtual int rawRead( unsigned int chan, unsigned int& value ) {
 					 if (chan < nbofchans) {
 						 unsigned int tmp = mstartaddress[(chan * 3) + 2];
 						 tmp = tmp<<8;
 						 tmp = tmp | mstartaddress[(chan * 3) + 1];
 						 value = tmp;
+                         return 0;
 					 }
+                     return -1;
 				 }
 		  
-				 virtual void read( unsigned int chan, double& value ) const {
+				 virtual int read( unsigned int chan, double& value ) {
 					 if (chan < nbofchans) {
 						 unsigned int tmp;
 						 read(chan, tmp);
 						 value = 1.0 * tmp * (mhighest - mlowest) / mbin_range + mlowest;
+                         return 0;
 					 }
+                     return -1;
 				 }
 
 				 virtual unsigned int binaryRange() const

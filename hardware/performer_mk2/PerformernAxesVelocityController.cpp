@@ -177,9 +177,9 @@ driveConvertFactor[i] = vel2volt[i];
 	//Setting up drive            
 	log(Info)<<"Setting up drive ..."<<endlog();
 	//	    if(i==2)
-	//	      vref[i]   = new AnalogOutput<unsigned int>(SubAOut_NI6713, 5 );
+	//	      vref[i]   = new AnalogOutput(SubAOut_NI6713, 5 );
 	//else
-	vref[i]   = new AnalogOutput<unsigned int>(SubAOut_NI6713, i );
+	vref[i]   = new AnalogOutput(SubAOut_NI6713, i );
 	enable[i] = new DigitalOutput( SubDOut_NI6602, 2+i );
 	enable[i]->switchOff();
 	drive[i]  = new AnalogDrive( vref[i], enable[i], 1.0 / vel2volt[i], 0.0);

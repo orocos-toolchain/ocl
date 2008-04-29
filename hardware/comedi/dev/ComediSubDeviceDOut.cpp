@@ -25,7 +25,7 @@
 
 #include "comedi_internal.h"
 
-namespace RTT
+namespace OCL
 {
     ComediSubDeviceDOut::ComediSubDeviceDOut( ComediDevice* cd, const std::string& name, unsigned int subdevice)
         : DigitalOutInterface( name ),

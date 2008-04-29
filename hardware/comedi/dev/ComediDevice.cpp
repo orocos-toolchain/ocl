@@ -41,7 +41,7 @@ extern "C"
 #include <cerrno>
 }
 
-namespace RTT
+namespace OCL
 {
   typedef unsigned int Data;
 

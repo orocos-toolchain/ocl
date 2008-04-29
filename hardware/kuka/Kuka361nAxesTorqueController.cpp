@@ -209,22 +209,22 @@ namespace OCL
             log(Info)<<"Setting brake "<<i<<" On."<<endlog();
             _brake[i]->switchOn();
 
-           _tachoInput[i] = new AnalogInput<unsigned int>(_comediSubdevAIn_NI6024, i+TACHO_OFFSET);
+           _tachoInput[i] = new AnalogInput(_comediSubdevAIn_NI6024, i+TACHO_OFFSET);
            unsigned int range = 0; // The input range is -10 to 10 V, so range 0
            _comediSubdevAIn_NI6024->rangeSet(i+TACHO_OFFSET, range);
-           _comediSubdevAIn_NI6024->arefSet(i+TACHO_OFFSET, AnalogInInterface<unsigned int>::Common);
+           _comediSubdevAIn_NI6024->arefSet(i+TACHO_OFFSET, AnalogInInterface::Common);
            _tachometer[i] = new AnalogSensor( _tachoInput[i], _comediSubdevAIn_NI6024->lowest(i+TACHO_OFFSET), _comediSubdevAIn_NI6024->highest(i+TACHO_OFFSET), _tachoConvertScale[i], _tachoConvertOffset[i]);
 
-            _currentInput[i] = new AnalogInput<unsigned int>(_comediSubdevAIn_NI6024, i+CURRENT_OFFSET);
+            _currentInput[i] = new AnalogInput(_comediSubdevAIn_NI6024, i+CURRENT_OFFSET);
             range = 1; // for a input range -5 to 5 V, range is 1
             _comediSubdevAIn_NI6024->rangeSet(i+CURRENT_OFFSET, range);
-            _comediSubdevAIn_NI6024->arefSet(i+CURRENT_OFFSET, AnalogInInterface<unsigned int>::Common);
+            _comediSubdevAIn_NI6024->arefSet(i+CURRENT_OFFSET, AnalogInInterface::Common);
             _currentSensor[i] = new AnalogSensor( _currentInput[i], _comediSubdevAIn_NI6024->lowest(i+CURRENT_OFFSET), _comediSubdevAIn_NI6024->highest(i+CURRENT_OFFSET), 1.0 , 0); // 1.0 / _shunt_R[i]
 
             // Remove 10/08/07 - Card no longer present
             _TorqueModeCheck[i] = new DigitalInput( _comediSubdevDIn_NI6024, i );
 
-            _ref[i]   = new AnalogOutput<unsigned int>( _comediSubdevAOut, i );
+            _ref[i]   = new AnalogOutput( _comediSubdevAOut, i );
             _enable[i] = new DigitalOutput( _apci2200, i );
 
             //Put mode back to velocitycontrol
@@ -262,10 +262,10 @@ namespace OCL
 
 
 // 	//Temp for motor current measurements with stroomtang
-//         _motorCurrentInput = new AnalogInput<unsigned int>(_comediSubdevAIn_NI6024, 0);
+//         _motorCurrentInput = new AnalogInput(_comediSubdevAIn_NI6024, 0);
 //         unsigned int range2 = 1; // for a input range -5 to 5 V, range is 1
 //         _comediSubdevAIn_NI6024->rangeSet(0, range2);
-//         _comediSubdevAIn_NI6024->arefSet(0, AnalogInInterface<unsigned int>::Common);
+//         _comediSubdevAIn_NI6024->arefSet(0, AnalogInInterface::Common);
 //         _motorCurrentSensor = new AnalogSensor( _motorCurrentInput, _comediSubdevAIn_NI6024->lowest(1), _comediSubdevAIn_NI6024->highest(1), 1.0 , 0);
 
 

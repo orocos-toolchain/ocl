@@ -428,13 +428,13 @@ namespace OCL
         
         std::vector<RTT::EncoderInterface*>           _encoderInterface;
         std::vector<RTT::AbsoluteEncoderSensor*>      _encoder;
-        std::vector<RTT::AnalogOutput<unsigned int>*> _ref;
+        std::vector<RTT::AnalogOutput*> _ref;
         std::vector<RTT::DigitalOutput*>              _enable;
         std::vector<RTT::AnalogDrive*>                _drive;
         std::vector<RTT::DigitalOutput*>              _brake;
-        std::vector<RTT::AnalogInput<unsigned int>*>  _tachoInput; 
+        std::vector<RTT::AnalogInput*>  _tachoInput; 
         std::vector<RTT::AnalogSensor*>               _tachometer; 
-        std::vector<RTT::AnalogInput<unsigned int>*>  _currentInput; 
+        std::vector<RTT::AnalogInput*>  _currentInput; 
         std::vector<RTT::AnalogSensor*>               _currentSensor; 
         //std::vector<RTT::DigitalOutput*>
         //_TorqueModeSwitch;
@@ -442,7 +442,7 @@ namespace OCL
         std::vector<RTT::DigitalInput*>               _TorqueModeCheck; 
 
 // 	//Temp
-// 	RTT::AnalogInput<unsigned int>*  _motorCurrentInput; 
+// 	RTT::AnalogInput*  _motorCurrentInput; 
 // 	RTT::AnalogSensor*               _motorCurrentSensor; 
 // 	RTT::DataPort<double>*       			_motorCurrentValue;
     

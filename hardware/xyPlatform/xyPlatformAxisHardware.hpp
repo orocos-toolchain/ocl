@@ -72,7 +72,7 @@ private:
   std::vector<RTT::AxisInterface*> _axesInterface;
   
   RTT::EncoderInterface*             _encoderInterface[XY_NUM_AXIS];
-  AnalogOutput<unsigned int>*      _vref[XY_NUM_AXIS];
+  AnalogOutput*      _vref[XY_NUM_AXIS];
   IncrementalEncoderSensor*        _encoder[XY_NUM_AXIS];
   DigitalOutput*                   _enable[XY_NUM_AXIS];
   AnalogDrive*                     _drive[XY_NUM_AXIS];

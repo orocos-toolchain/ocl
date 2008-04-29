@@ -276,7 +276,7 @@ private:
   
     RTT::DigitalOutInterface*               _IP_Digital_24_DOut;
     IP_Encoder_6_Task*                                      _IP_Encoder_6_task;
-    RTT::AnalogOutInterface<unsigned int>*  _IP_FastDac_AOut;
+    RTT::AnalogOutInterface*  _IP_FastDac_AOut;
     RTT::DigitalInInterface*                _IP_OptoInput_DIn;
   
     RTT::DigitalOutput*                    _enable;
@@ -288,7 +288,7 @@ private:
 
     RTT::EncoderInterface*              _encoderInterface[LiAS_NUM_AXIS];
     RTT::IncrementalEncoderSensor*         _encoder[LiAS_NUM_AXIS];
-    RTT::AnalogOutput<unsigned int>*       _vref[LiAS_NUM_AXIS];
+    RTT::AnalogOutput*       _vref[LiAS_NUM_AXIS];
     RTT::AnalogDrive*                      _drive[LiAS_NUM_AXIS];
     RTT::DigitalInput*                     _reference[LiAS_NUM_AXIS];  
   #endif

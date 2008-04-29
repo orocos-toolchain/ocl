@@ -37,14 +37,14 @@
 #include "rtt/dev/AnalogInInterface.hpp"
 #include "ComediDevice.hpp"
 
-namespace RTT
+namespace OCL
 {
 
   /**
    * This logical device represents one subdevice of a Comedi device.
    */
   class ComediSubDeviceAIn
-    : public AnalogInInterface<unsigned int>
+      : public RTT::AnalogInInterface
   {
 
   public:
@@ -66,15 +66,13 @@ namespace RTT
 
     virtual void rangeSet(unsigned int chan, unsigned int range=0);
 
-    virtual void arefSet(unsigned int chan, unsigned int aref=AnalogInInterface<unsigned int>::Ground);
+    virtual void arefSet(unsigned int chan, unsigned int aref=AnalogInInterface::Ground);
 
-    virtual void read( unsigned int chan, unsigned int& value ) const;
+    virtual int rawRead( unsigned int chan, unsigned int& value );
 
-    virtual unsigned int binaryRange() const;
+    virtual int read( unsigned int chan, double& value );
 
-    virtual unsigned int binaryLowest() const;
-
-    virtual unsigned int binaryHighest() const;
+    virtual unsigned int rawRange() const;
         
     virtual double lowest(unsigned int chan) const;
 
@@ -97,6 +95,8 @@ namespace RTT
     unsigned int * _sd_range;
     unsigned int * _aref;
     unsigned int channels;
+    mutable unsigned int rrange;
+    double *max, *min;
   };
 
 };

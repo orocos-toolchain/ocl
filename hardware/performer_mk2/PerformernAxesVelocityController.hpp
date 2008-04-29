@@ -330,7 +330,7 @@ namespace OCL
         
         std::vector<EncoderInterface*>           encoderInterface;
         std::vector<IncrementalEncoderSensor*>   encoder;
-        std::vector<AnalogOutput<unsigned int>*> vref;
+        std::vector<AnalogOutput*> vref;
         std::vector<DigitalOutput*>              enable;
         std::vector<AnalogDrive*>                drive;
         DigitalOutput*                           brakeAxis2;

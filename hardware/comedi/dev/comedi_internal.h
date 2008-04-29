@@ -51,8 +51,10 @@
 
 #include <rtt/Logger.hpp>
 
-namespace RTT
+namespace OCL
 {
+    using namespace RTT;
+
     /**
      * This class stores a comedi_t struct. If \a it is zero, the
      * comedi_open failed.

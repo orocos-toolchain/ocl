@@ -31,22 +31,24 @@
 #include "comedi_internal.h"
 #include <rtt/os/fosi.h>
 
-namespace RTT
+namespace OCL
 {
   
   
 
     ComediSubDeviceAIn::ComediSubDeviceAIn( ComediDevice* cd, const std::string& name, unsigned int subdevice /*=0*/)
-      : AnalogInInterface<unsigned int>( name ),
+        : RTT::AnalogInInterface( name ),
         myCard( cd ), _subDevice( subdevice ),
-        _sd_range(0), _aref(0), channels(0)
+        _sd_range(0), _aref(0), channels(0), rrange(0),
+        max(0), min(0)
     {
         init();
     }
 
     ComediSubDeviceAIn::ComediSubDeviceAIn( ComediDevice* cd, unsigned int subdevice /*=0*/ )
         : myCard( cd ), _subDevice( subdevice ),
-          _sd_range(0), _aref(0), channels(0)
+          _sd_range(0), _aref(0), channels(0), rrange(0),
+          max(0), min(0)
     {
         init();
     }
@@ -55,6 +57,8 @@ namespace RTT
     {
         delete[] _sd_range;
         delete[] _aref;
+        delete[] max;
+        delete[] min;
     }
 
     void ComediSubDeviceAIn::init()
@@ -74,11 +78,15 @@ namespace RTT
 
         _sd_range = new unsigned int[channels];
         _aref = new unsigned int[channels];
+        max = new double[channels];
+        min = new double[channels];
         // Put default range and _aref into every channel
         for (unsigned int i = 0; i < channels ; i++)
             {
                 _sd_range[i] = 0;
                 _aref[i] = AREF_GROUND;
+                highest(i);
+                lowest(i);
             }
     }
 
@@ -87,6 +95,8 @@ namespace RTT
         if ( chan < channels )
             {
                 _sd_range[chan] = range;
+                highest(chan);
+                lowest(chan);
             }
         else log(Error) << "Channel does not exist" << endlog();
     }
@@ -96,30 +106,34 @@ namespace RTT
         if ( chan < channels )
             {
                 _aref[chan] = aref;
+                highest(chan);
+                lowest(chan);
             }
         else log(Error) << "Channel does not exist" << endlog();
     }
 
-    void ComediSubDeviceAIn::read( unsigned int chan, unsigned int& value ) const
+    int ComediSubDeviceAIn::rawRead( unsigned int chan, unsigned int& value )
     {
+        if ( myCard )
+            return myCard->read( _subDevice,chan, _sd_range[chan],
+                                 _aref[chan], value );
+        return -1;
+    }
+
+    int ComediSubDeviceAIn::read( unsigned int chan, double& value )
+    {
+        unsigned int ival = 0;
         if ( myCard && myCard->read( _subDevice,chan, _sd_range[chan],
-                                     _aref[chan], value ) != -1);
-        else log(Error) << "read on subdevAIn failed" << endlog();
+                                     _aref[chan], ival ) ) {
+            value = min[chan] + ival / resolution(chan);
+            return 0;
+        }
+        return -1;
     }
 
-    unsigned int ComediSubDeviceAIn::binaryRange() const
+    unsigned int ComediSubDeviceAIn::rawRange() const
     {
-        return myCard ? myCard->getMaxData(_subDevice) : 0;
-    }
-
-    unsigned int ComediSubDeviceAIn::binaryLowest() const 
-    {
-        return 0;
-    }
-
-    unsigned int ComediSubDeviceAIn::binaryHighest() const
-    {
-        return myCard ? myCard->getMaxData(_subDevice) : 0;
+        return myCard ? (rrange = myCard->getMaxData(_subDevice)) : (rrange = 0);
     }
         
     double ComediSubDeviceAIn::lowest(unsigned int chan) const
@@ -135,25 +149,25 @@ namespace RTT
         comedi_krange range;
         comedi_get_krange(myCard->getDevice()->it, _subDevice, chan, 
                           _sd_range[chan], &range);
-        return (double) range.min / 1000000;
+        return (min[chan] = (double) range.min / 1000000.);
 #else
 #ifdef OROPKG_OS_LXRT
         //#define __KERNEL__
         comedi_krange range;
         comedi_get_krange(myCard->getDevice()->it, _subDevice, chan, 
                           _sd_range[chan], &range);
-        return (double) range.min / 1000000;
+        return (min[chan] = (double) range.min / 1000000.);
 #else // Userspace
         comedi_range * range_p;
         if ((range_p = comedi_get_range(myCard->getDevice()->it, 
                                         _subDevice, chan, 
                                         _sd_range[chan])) != 0)
             {
-                return range_p->min;
+                return (min[chan] = range_p->min);
             }
         else
             {
-                log(Error) << "Error getting comedi_range struct" << endlog();
+                log(Error) << "Error getting comedi_range struct for channel " << chan << endlog();
                 return -1.0;
             }
 #endif // Userspace
@@ -173,25 +187,25 @@ namespace RTT
         comedi_krange range;
         comedi_get_krange(myCard->getDevice()->it, _subDevice, chan, 
                           _sd_range[chan], &range);
-        return (double) range.max / 1000000;
+        return (max[chan] = (double) range.max / 1000000.);
 #else
 #ifdef OROPKG_OS_LXRT
         //#define __KERNEL__
         comedi_krange range;
         comedi_get_krange(myCard->getDevice()->it, _subDevice, chan, 
                           _sd_range[chan], &range);
-        return (double) range.max / 1000000;
+        return (max[chan] = (double) range.max / 1000000.);
 #else // Userspace
         comedi_range * range_p;
         if ((range_p = comedi_get_range(myCard->getDevice()->it, 
                                         _subDevice, chan, 
                                         _sd_range[chan])) != 0)
             {
-                return range_p->max;
+                return (max[chan] = range_p->max);
             }
         else
             {
-                log(Error) << "Error getting comedi_range struct" << endlog();
+                log(Error) << "Error getting comedi_range struct for channel " << chan << endlog();
                 return -1.0;
             }
 #endif // Userspace
@@ -202,7 +216,7 @@ namespace RTT
     {
         if (!myCard)
             return 0.0;
-        return binaryRange() / ( highest(chan) - lowest(chan) );
+        return rrange / ( max[chan] - min[chan] );
     }
 
     unsigned int ComediSubDeviceAIn::nbOfChannels() const

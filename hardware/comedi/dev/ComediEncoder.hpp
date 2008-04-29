@@ -22,12 +22,11 @@
 #define __COMEDI_ENCODER_INCREMENTAL_HPP
 
 
-#include "rtt/dev/SensorInterface.hpp"
-#include "rtt/dev/EncoderInterface.hpp"
+#include <rtt/dev/EncoderInterface.hpp>
 #include "ComediDevice.hpp"
 #include <string>
 
-namespace RTT
+namespace OCL
 {
   /**
    * A class for reading an encoder using the comedi hardware
@@ -49,7 +48,7 @@ namespace RTT
    * to occur in our case.
    */
   class ComediEncoder :
-    public EncoderInterface
+     public RTT::EncoderInterface
   {
   public:
     /**

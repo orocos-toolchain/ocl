@@ -296,7 +296,7 @@ namespace OCL
 
         std::vector<EncoderInterface*>           encoderInterface;
         std::vector<AbsoluteEncoderSensor*>      encoder;
-        std::vector<AnalogOutput<unsigned int>*> vref;
+        std::vector<AnalogOutput*> vref;
         std::vector<DigitalOutput*>              enable;
         std::vector<AnalogDrive*>                drive;
         std::vector<DigitalOutput*>              brake;

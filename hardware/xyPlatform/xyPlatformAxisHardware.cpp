@@ -110,7 +110,7 @@ xyPlatformAxisHardware::xyPlatformAxisHardware(Event<void(void)>& maximumDrive, 
     _brake[i] = new DigitalOutput( ); // Virtual (software) signal
     // _brake[i]->switchOn();
     
-    _vref[i]   = new AnalogOutput<unsigned int>( _comediSubdevAOut, i + 6 );
+    _vref[i]   = new AnalogOutput( _comediSubdevAOut, i + 6 );
     _enable[i] = new DigitalOutput( );// Virtual (software) signal
     //_reference[i] = new DigitalInput( _comediSubdevDIn, 23 - i);
     _drive[i] = new AnalogDrive( _vref[i], _enable[i], 1.0 / mmpsec2volt[i], driveOffsets[i] / mmpsec2volt[i]);

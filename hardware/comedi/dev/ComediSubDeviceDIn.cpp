@@ -31,7 +31,7 @@
 #include <rtt/os/fosi.h>
 #include "comedi_internal.h"
 
-namespace RTT
+namespace OCL
 {
 
   

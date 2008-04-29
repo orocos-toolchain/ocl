@@ -149,7 +149,7 @@ namespace OCL
             brake[i]->switchOn();
             
             log(Info)<<"Setting up drive ..."<<endlog();
-            vref[i]   = new AnalogOutput<unsigned int>( comediSubdevAOut, i );
+            vref[i]   = new AnalogOutput( comediSubdevAOut, i );
             enable[i] = new DigitalOutput( apci2200, i );
             drive[i]  = new AnalogDrive( vref[i], enable[i], 1.0 / vel2volt[i], 0.0);
             

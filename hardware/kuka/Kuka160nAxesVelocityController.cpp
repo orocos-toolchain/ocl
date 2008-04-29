@@ -136,7 +136,7 @@ namespace OCL{
             brake[i] = new DigitalOutput( comediSubdevDOut, 23 - i,true);
             brake[i]->switchOn();
             
-            vref[i]   = new AnalogOutput<unsigned int>( comediSubdevAOut, i );
+            vref[i]   = new AnalogOutput( comediSubdevAOut, i );
             enable[i] = new DigitalOutput( comediSubdevDOut, 13 - i );
             reference[i] = new DigitalInput( comediSubdevDIn, 23 - i);
             drive[i]  = new AnalogDrive( vref[i], enable[i], 1.0 / vel2volt[i], driveOffset_prop.value()[i]);
