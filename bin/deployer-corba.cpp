@@ -1,20 +1,24 @@
 #include <rtt/os/main.h>
 #include <rtt/RTT.hpp>
+#include <taskbrowser/TaskBrowser.hpp>
 #include <deployment/CorbaDeploymentComponent.hpp>
 #include <rtt/corba/ControlTaskServer.hpp>
 #include <iostream>
 
 using namespace std;
+using namespace RTT;
+using namespace RTT::Corba;
 
 void usage(const char* name)
 {
-    cout << "usage: " << name << " [DeployerName] [--start config-file.xml] [ -- TAO options]"<<endl;
+    cout << "usage: " << name << " [DeployerName] [--start config-file.xml]"<<endl;
     cout << endl;
 }
 
 int ORO_main(int argc, char** argv)
 {
-    // deployer [DeployerName] [ -- TAO options ]
+    // deployer --help
+    // deployer [DeployerName] [--start config-file.xml]
     char* name = 0;
     char* script = 0;
     int i = 1;
@@ -46,21 +50,24 @@ int ORO_main(int argc, char** argv)
 
     if (name == 0)
         name = "Deployer";
+
+    ControlTaskServer::InitOrb(argc, argv);
+    
     OCL::CorbaDeploymentComponent dc( name );
 
     if (script)
         dc.kickStart( script );
-
-    /**
-     * If CORBA is enabled, export the DeploymentComponent
-     * as CORBA server.
-     */
-    using namespace RTT::Corba;
+    
     ControlTaskServer::InitOrb( argc, argv );
 
     ControlTaskServer::Create( &dc );
 
-    ControlTaskServer::RunOrb();
+    // The orb thread accepts incomming CORBA calls.
+    ControlTaskServer::ThreadOrb();
+
+    OCL::TaskBrowser tb( &dc );
+
+    tb.loop();
 
     ControlTaskServer::ShutdownOrb();
 

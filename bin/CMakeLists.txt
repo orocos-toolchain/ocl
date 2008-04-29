@@ -23,9 +23,14 @@ ENDIF ( BUILD_TASKBROWSER AND CORBA_ENABLED)
 IF ( BUILD_DEPLOYMENT AND CORBA_ENABLED)
 
     ADD_EXECUTABLE( cdeployer-${OROCOS_TARGET} cdeployer.cpp )
-    PROGRAM_ADD_DEPS( cdeployer-${OROCOS_TARGET} orocos-deployment )
+    PROGRAM_ADD_DEPS( cdeployer-${OROCOS_TARGET} orocos-deployment-corba )
     TARGET_LINK_LIBRARIES( cdeployer-${OROCOS_TARGET} ${OROCOS_RTT_LIBS} orocos-rtt-corba-${OROCOS_TARGET} )
     INSTALL_TARGETS( /bin cdeployer-${OROCOS_TARGET} )
+
+    ADD_EXECUTABLE( deployer-corba-${OROCOS_TARGET} deployer-corba.cpp )
+    PROGRAM_ADD_DEPS( deployer-corba-${OROCOS_TARGET} orocos-deployment-corba orocos-taskbrowser )
+    TARGET_LINK_LIBRARIES( deployer-corba-${OROCOS_TARGET} ${OROCOS_RTT_LIBS} orocos-rtt-corba-${OROCOS_TARGET} )
+    INSTALL_TARGETS( /bin deployer-corba-${OROCOS_TARGET} )
 
 ENDIF ( BUILD_DEPLOYMENT AND CORBA_ENABLED)
 

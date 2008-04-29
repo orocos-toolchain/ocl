@@ -2,7 +2,7 @@
 <!DOCTYPE properties SYSTEM "cpf.dtd">
 <properties>
 
-  <!-- Component 1 -->
+  <!-- Component 1, already loaded in the application ! -->
   <struct name="ComponentA" type="PropertyBag">
     <struct name="Peers"  type="PropertyBag">
       <simple type="string"><value>ComponentB</value></simple>
@@ -14,7 +14,18 @@
     </struct>
   </struct>
 
-  <!-- Component 2 -->
+  <!-- Component 2 , already loaded in the application ! -->
+  <struct name="ComponentB" type="PropertyBag">
+    <struct name="Peers"  type="PropertyBag">
+      <simple type="string"><value>ComponentA</value></simple>
+    </struct>
+
+    <struct name="Ports"  type="PropertyBag">
+      <simple name="p2" type="string"><value>AConnection</value></simple>
+      <simple name="p1" type="string"><value>BConnection</value></simple>
+    </struct>
+  </struct>
+
   <struct name="ComponentB" type="PropertyBag">
     <struct name="Peers"  type="PropertyBag">
       <simple type="string"><value>ComponentA</value></simple>

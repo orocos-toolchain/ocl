@@ -166,6 +166,8 @@ namespace OCL
         return true;
     }
 
+    bool DeploymentComponent::componentLoaded(TaskContext* c) { return true; }
+
     DeploymentComponent::~DeploymentComponent()
     {
       clearConfiguration();
@@ -413,6 +415,87 @@ namespace OCL
                             valid = false;
                             continue;
                         }
+                        // Parse the options before creating the component:
+                        for (PropertyBag::const_iterator optit= comp.rvalue().begin(); optit != comp.rvalue().end();optit++) {
+                            if ( (*optit)->getName() == "AutoConnect" ) {
+                                Property<bool> ps = comp.rvalue().getProperty<bool>("AutoConnect");
+                                if (!ps.ready()) {
+                                    log(Error) << "AutoConnect must be of type <boolean>" << endlog();
+                                    valid = false;
+                                } else
+                                    comps[comp.getName()].autoconnect = ps.get();
+                                continue;
+                            }
+                            if ( (*optit)->getName() == "AutoStart" ) {
+                                Property<bool> ps = comp.rvalue().getProperty<bool>("AutoStart");
+                                if (!ps.ready()) {
+                                    log(Error) << "AutoStart must be of type <boolean>" << endlog();
+                                    valid = false;
+                                } else
+                                    comps[comp.getName()].autostart = ps.get();
+                                continue;
+                            }
+                            if ( (*optit)->getName() == "AutoConf" ) {
+                                Property<bool> ps = comp.rvalue().getProperty<bool>("AutoConf");
+                                if (!ps.ready()) {
+                                    log(Error) << "AutoConf must be of type <boolean>" << endlog();
+                                    valid = false;
+                                } else
+                                    comps[comp.getName()].autoconf = ps.get();
+                                continue;
+                            }
+                            if ( (*optit)->getName() == "Server" ) {
+                                Property<bool> ps = comp.rvalue().getProperty<bool>("Server");
+                                if (!ps.ready()) {
+                                    log(Error) << "Server must be of type <boolean>" << endlog();
+                                    valid = false;
+                                } else
+                                    comps[comp.getName()].server = ps.get();
+                                continue;
+                            }
+                            if ( (*optit)->getName() == "UseNamingService" ) {
+                                Property<bool> ps = comp.rvalue().getProperty<bool>("UseNamingService");
+                                if (!ps.ready()) {
+                                    log(Error) << "UseNamingService must be of type <boolean>" << endlog();
+                                    valid = false;
+                                } else
+                                    comps[comp.getName()].use_naming = ps.get();
+                                continue;
+                            }
+                            if ( (*optit)->getName() == "PropertyFile" ) {
+                                PropertyBase* ps = comp.rvalue().getProperty<string>("PropertyFile");
+                                if (!ps) {
+                                    log(Error) << "PropertyFile must be of type <string>" << endlog();
+                                    valid = false;
+                                }
+                                continue;
+                            }
+                            if ( (*optit)->getName() == "UpdateProperties" ) {
+                                PropertyBase* ps = comp.rvalue().getProperty<string>("UpdateProperties");
+                                if (!ps) {
+                                    log(Error) << "UpdateProperties must be of type <string>" << endlog();
+                                    valid = false;
+                                }
+                                continue;
+                            }
+                            if ( (*optit)->getName() == "ProgramScript" ) {
+                                PropertyBase* ps = comp.rvalue().getProperty<string>("ProgramScript");
+                                if (!ps) {
+                                    log(Error) << "ProgramScript must be of type <string>" << endlog();
+                                    valid = false;
+                                }
+                                continue;
+                            }
+                            if ( (*optit)->getName() == "StateMachineScript" ) {
+                                PropertyBase* ps = comp.rvalue().getProperty<string>("StateMachineScript");
+                                if (!ps) {
+                                    log(Error) << "StateMachineScript must be of type <string>" << endlog();
+                                    valid = false;
+                                }
+                                continue;
+                            }
+                        }
+
                         // Check if we know this component.
                         TaskContext* c = this->getPeer( (*it)->getName() );
                         if ( !c ) {
@@ -423,6 +506,9 @@ namespace OCL
                                 continue;
                             }
                             c = this->getPeer( (*it)->getName() );
+                        } else {
+                            // If the user added c as a peer (outside of Deployer) store the pointer
+                            comps[(*it)->getName()].instance = c;
                         }
 
                         assert(c);
@@ -544,69 +630,6 @@ namespace OCL
                         } else {
                             // no 'Activity' element, default to Slave:
                             //this->setActivity(comp.getName(), "SlaveActivity", 0.0, 0, 0 );
-                        }
-
-                        // Other options:
-                        for (PropertyBag::const_iterator optit= comp.rvalue().begin(); optit != comp.rvalue().end();optit++) {
-                            if ( (*optit)->getName() == "AutoConnect" ) {
-                                Property<bool> ps = comp.rvalue().getProperty<bool>("AutoConnect");
-                                if (!ps.ready()) {
-                                    log(Error) << "AutoConnect must be of type <boolean>" << endlog();
-                                    valid = false;
-                                } else
-                                    comps[comp.getName()].autoconnect = ps.get();
-                                continue;
-                            }
-                            if ( (*optit)->getName() == "AutoStart" ) {
-                                Property<bool> ps = comp.rvalue().getProperty<bool>("AutoStart");
-                                if (!ps.ready()) {
-                                    log(Error) << "AutoStart must be of type <boolean>" << endlog();
-                                    valid = false;
-                                } else
-                                    comps[comp.getName()].autostart = ps.get();
-                                continue;
-                            }
-                            if ( (*optit)->getName() == "AutoConf" ) {
-                                Property<bool> ps = comp.rvalue().getProperty<bool>("AutoConf");
-                                if (!ps.ready()) {
-                                    log(Error) << "AutoConf must be of type <boolean>" << endlog();
-                                    valid = false;
-                                } else
-                                    comps[comp.getName()].autoconf = ps.get();
-                                continue;
-                            }
-                            if ( (*optit)->getName() == "PropertyFile" ) {
-                                PropertyBase* ps = comp.rvalue().getProperty<string>("PropertyFile");
-                                if (!ps) {
-                                    log(Error) << "PropertyFile must be of type <string>" << endlog();
-                                    valid = false;
-                                }
-                                continue;
-                            }
-                            if ( (*optit)->getName() == "UpdateProperties" ) {
-                                PropertyBase* ps = comp.rvalue().getProperty<string>("UpdateProperties");
-                                if (!ps) {
-                                    log(Error) << "UpdateProperties must be of type <string>" << endlog();
-                                    valid = false;
-                                }
-                                continue;
-                            }
-                            if ( (*optit)->getName() == "ProgramScript" ) {
-                                PropertyBase* ps = comp.rvalue().getProperty<string>("ProgramScript");
-                                if (!ps) {
-                                    log(Error) << "ProgramScript must be of type <string>" << endlog();
-                                    valid = false;
-                                }
-                                continue;
-                            }
-                            if ( (*optit)->getName() == "StateMachineScript" ) {
-                                PropertyBase* ps = comp.rvalue().getProperty<string>("StateMachineScript");
-                                if (!ps) {
-                                    log(Error) << "StateMachineScript must be of type <string>" << endlog();
-                                    valid = false;
-                                }
-                                continue;
-                            }
                         }
 
                     }
@@ -1239,7 +1262,7 @@ namespace OCL
     {
         Logger::In in("DeploymentComponent::loadComponent");
 
-        if ( this->getPeer(name) || comps.find(name) != comps.end() ) {
+        if ( this->getPeer(name) || ( comps.find(name) != comps.end() && comps[name].instance != 0) ) {
             log(Error) <<"Failed to load component with name "<<name<<": already present as peer or loaded."<<endlog();
             return false;
         }
@@ -1292,11 +1315,14 @@ namespace OCL
             return false;
         }
 
-        if (!this->addPeer( newcomp.instance ) ) {
-            log(Error) << "Adding "<< newcomp.instance->getName() << " as new peer: Failed !" << endlog(Error);
+        if (!this->componentLoaded( newcomp.instance ) ) {
+            log(Error) << "This deployer type refused to connect to "<< newcomp.instance->getName() << ": aborting !" << endlog(Error);
             delete newcomp.instance;
             return false;
         }
+
+        // unlikely that this fails (checked at entry)!
+        this->addPeer( newcomp.instance );
         log(Info) << "Adding "<< newcomp.instance->getName() << " as new peer:  OK."<< endlog(Info);
         comps[name] = newcomp;
         return true;
@@ -1311,6 +1337,7 @@ namespace OCL
             return false;
         }
         TaskContext* peer = comps[name].instance;
+        assert(peer);
         if ( peer->isRunning() ) {
             log(Error) << "Can't unload component "<<name<<" since it is still running."<<endlog();
             return false;
@@ -1436,5 +1463,10 @@ namespace OCL
             
         PropertyLoader pl;
         return pl.configure( filename, c, true ); // strict:true 
+    }
+
+    FactoryMap& DeploymentComponent::getFactories()
+    {
+        return ComponentFactories::Instance();
     }
 }

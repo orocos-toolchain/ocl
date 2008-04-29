@@ -7,6 +7,7 @@
 #include <rtt/Attribute.hpp>
 #include <rtt/Ports.hpp>
 #include <ocl/OCL.hpp>
+#include <ocl/ComponentLoader.hpp>
 #include <vector>
 #include <map>
 
@@ -46,7 +47,8 @@ namespace OCL
             ComponentData() 
                 : instance(0), act(0), loaded(false),
                   autostart(false), autoconf(false),
-                  autoconnect(false)
+                  autoconnect(false), server(false),
+                  use_naming(true)
             {}
             /**
              * The component instance.
@@ -61,6 +63,7 @@ namespace OCL
              */
             bool loaded;
             bool autostart, autoconf, autoconnect;
+            bool server, use_naming;
         };
 
         /**
@@ -102,6 +105,15 @@ namespace OCL
          * Imports available plugins.
          */
         bool configureHook();
+
+        /**
+         * Hook function for subclasses. Allows a subclass
+         * to abort or extend the loading of a component.
+         * By default, this function returns true.
+         * @return false if the component should be unloaded again,
+         * true if loading was succesful.
+         */
+        virtual bool componentLoaded(TaskContext* c);
     public:
         DeploymentComponent(std::string name = "Configurator");
         
@@ -393,6 +405,11 @@ namespace OCL
          */
         bool loadConfigurationString(const std::string& config_text);
 
+        /**
+         * Returns the factory singleton which creates all types of components
+         * for the DeploymentComponent.
+         */
+        FactoryMap& getFactories();
     };
 
 

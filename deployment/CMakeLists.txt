@@ -8,13 +8,19 @@ IF ( BUILD_DEPLOYMENT )
   ENDIF(NOT OROCOS_RTT_1.2 )
 
     # This gathers all the .cpp files into the variable 'SRCS'
-    FILE( GLOB HPPS [^.]*.hpp )
-    FILE( GLOB SRCS [^.]*.cpp )
+    SET( HPPS DeploymentComponent.hpp )
+    SET( SRCS DeploymentComponent.cpp ComponentLoader.cpp )
 
     GLOBAL_ADD_COMPONENT( orocos-deployment ${SRCS} )
     GLOBAL_ADD_INCLUDE( ocl ${HPPS})
 
     COMPONENT_ADD_LIBS( orocos-deployment "dl" )
+    
+    IF (CORBA_ENABLED)
+        GLOBAL_ADD_COMPONENT(orocos-deployment-corba CorbaDeploymentComponent.cpp)
+        GLOBAL_ADD_INCLUDE( ocl CorbaDeploymentComponent.hpp)
+        COMPONENT_ADD_DEPS( orocos-deployment-corba orocos-deployment )
+    ENDIF(CORBA_ENABLED)
      
     ADD_SUBDIRECTORY( tests )
 
