@@ -65,9 +65,9 @@ namespace OCL
 
     virtual void arefSet(unsigned int chan, unsigned int aref=AnalogOutInterface::Ground);
 
-    virtual int rawWrite( unsigned int chan, unsigned int value );
+    virtual int rawWrite( unsigned int chan, int value );
 
-    virtual int rawRead( unsigned int chan, unsigned int& value );
+    virtual int rawRead( unsigned int chan, int& value );
 
     virtual unsigned int rawRange() const;
 

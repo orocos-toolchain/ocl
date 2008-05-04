@@ -113,26 +113,29 @@ namespace OCL
         else log(Error) << "Channel does not exist" << endlog();
     }
 
-    int ComediSubDeviceAOut::rawWrite( unsigned int chan, unsigned int value )
+    int ComediSubDeviceAOut::rawWrite( unsigned int chan, int value )
     {
         if ( myCard )
             return myCard->write( _subDevice, chan, _sd_range[chan], 
-                                  _aref[chan], value );
+                                  _aref[chan], (unsigned int)(value) );
         return -1;
     }
 
-    int ComediSubDeviceAOut::rawRead( unsigned int chan, unsigned int& value)
+    int ComediSubDeviceAOut::rawRead( unsigned int chan, int& value)
     {
         if ( myCard ) {
-            return myCard->read( _subDevice, chan, _sd_range[chan], 
-                          _aref[chan], value );
+            unsigned int uval;
+            int ret = myCard->read( _subDevice, chan, _sd_range[chan], 
+                          _aref[chan], uval );
+            value = uval;
+            return ret;
         }
         return -1;
     }
 
     int ComediSubDeviceAOut::write( unsigned int chan, double dvalue )
     {
-        unsigned int value(dvalue * resolution(chan) - min[chan]);
+        unsigned int value = (unsigned int)(dvalue * resolution(chan) - min[chan]);
         if ( myCard )
             return myCard->write( _subDevice, chan, _sd_range[chan], 
                                   _aref[chan], value );

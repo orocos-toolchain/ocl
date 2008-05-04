@@ -112,11 +112,15 @@ namespace OCL
         else log(Error) << "Channel does not exist" << endlog();
     }
 
-    int ComediSubDeviceAIn::rawRead( unsigned int chan, unsigned int& value )
+    int ComediSubDeviceAIn::rawRead( unsigned int chan, int& value )
     {
-        if ( myCard )
-            return myCard->read( _subDevice,chan, _sd_range[chan],
-                                 _aref[chan], value );
+        if ( myCard ) {
+            unsigned int uval;
+            int ret = myCard->read( _subDevice,chan, _sd_range[chan],
+                                 _aref[chan], uval );
+            value = uval;
+            return ret;
+        }
         return -1;
     }
 

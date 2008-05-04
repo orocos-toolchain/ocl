@@ -68,7 +68,7 @@ namespace OCL
 
     virtual void arefSet(unsigned int chan, unsigned int aref=AnalogInInterface::Ground);
 
-    virtual int rawRead( unsigned int chan, unsigned int& value );
+    virtual int rawRead( unsigned int chan, int& value );
 
     virtual int read( unsigned int chan, double& value );
 
