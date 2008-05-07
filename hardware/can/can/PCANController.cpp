@@ -33,12 +33,13 @@ namespace RTT
 {
     namespace CAN
     {
-        PCANController::PCANController(int priority, Seconds period, unsigned int minor,
+        PCANController::PCANController(int priority, unsigned int minor,
                                        WORD bitrate, int CANMsgType) 
-            : PeriodicActivity(ORO_SCHED_OTHER, priority, period), _handle(NULL),
+            : NonPeriodicActivity(ORO_SCHED_OTHER, priority), _handle(NULL),
               _status(CAN_ERR_OK), _bitrate(bitrate),
               _CANMsgType(CANMsgType),_channel(0),
-              total_recv(0), total_trns(0), failed_recv(0), failed_trns(0)
+              total_recv(0), total_trns(0), failed_recv(0), failed_trns(0),
+              exit(false)
         {
             Logger::In in("PCANController");
       
@@ -65,6 +66,7 @@ namespace RTT
         PCANController::~PCANController()
         {
             Logger::In in("PCANController");
+            this->stop();
             if (_handle != NULL )
                 _status = CAN_Close(_handle);
             else
@@ -82,17 +84,25 @@ namespace RTT
             Logger::In in("PCANController");
             if ( _handle == NULL )
                 return false;
+            exit = false;
             _status = CAN_Init(_handle, _bitrate, _CANMsgType);
             if (_status != CAN_ERR_OK)
                 log(Warning) << "Error initializing driver, status = " << status() << endlog();
             return (_status == CAN_ERR_OK);
         }
 
-        void PCANController::step() 
+        void PCANController::loop() 
         {
-            while ( this->readFromBuffer(_CANMsg) ){
+            while ( !exit ){
+                this->readFromBuffer(_CANMsg);
                 _bus->write(&_CANMsg); // we own _CANMsg;
             }
+        }
+
+        bool PCANController::breakLoop()
+        {
+            exit = true;
+            return true;
         }
 
         void PCANController::finalize() {
@@ -178,7 +188,8 @@ namespace RTT
         {
             Logger::In in("PCANController");
             TPCANRdMsg pcan_msg;
-            if ( (_status = LINUX_CAN_Read_Timeout(_handle, &pcan_msg, 0) ) == CAN_ERR_OK ){
+            const int usecs = 100 * 1000; // 100ms
+            if ( (_status = LINUX_CAN_Read_Timeout(_handle, &pcan_msg, usecs) ) == CAN_ERR_OK ){
                 msg.clear();
                 // DLC
                 msg.setDLC(pcan_msg.Msg.LEN);

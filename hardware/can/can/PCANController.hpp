@@ -35,7 +35,7 @@
 #include "CANBusInterface.hpp"
 #include "CANMessage.hpp"
 
-#include <rtt/PeriodicActivity.hpp>
+#include <rtt/NonPeriodicActivity.hpp>
 
 #include <libpcan.h>
 
@@ -52,7 +52,7 @@ namespace RTT
      */
     class PCANController
       : public CANControllerInterface
-      , public PeriodicActivity
+      , public NonPeriodicActivity
     {
     public:
       /**
@@ -76,7 +76,6 @@ namespace RTT
        * @bug The node id of the controller is always 0 currently
        */
       PCANController(int priority, 
-		     Seconds period, 
 		     unsigned int minor=0, 
 		     WORD bitrate=CAN_BAUD_500K, 
 		     int CANMsgType=CAN_INIT_TYPE_EX);
@@ -85,7 +84,8 @@ namespace RTT
 
       // Redefine PeriodicActivity methods
       bool initialize();
-      void step();
+      void loop();
+      bool breakLoop();
       void finalize();
 
       // Redefine CANControllerInterface
@@ -121,6 +121,8 @@ namespace RTT
       unsigned int total_trns;
       unsigned int failed_recv;
       unsigned int failed_trns;
+
+      bool exit;
     };
   }
 }
