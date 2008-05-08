@@ -27,20 +27,20 @@
 
 namespace OCL
 {
-    ComediSubDeviceDOut::ComediSubDeviceDOut( ComediDevice* cd, const std::string& name, unsigned int subdevice)
+    ComediSubDeviceDOut::ComediSubDeviceDOut( ComediDevice* cd, const std::string& name, unsigned int subdevice, bool all_bits)
         : DigitalOutInterface( name ),
           myCard( cd ), subDevice( subdevice ), channels(0)
     {
-        init();
+        init(all_bits);
     }
 
-    ComediSubDeviceDOut::ComediSubDeviceDOut( ComediDevice* cd, unsigned int subdevice )
+    ComediSubDeviceDOut::ComediSubDeviceDOut( ComediDevice* cd, unsigned int subdevice, bool all_bits )
         : myCard( cd ), subDevice( subdevice ), channels(0)
     {
-        init();
+        init(all_bits);
     }
 
-    void ComediSubDeviceDOut::init()
+    void ComediSubDeviceDOut::init(bool all_bits)
     {
         Logger::In in( nameserver.getName( this ).c_str() );
         if (!myCard) {
@@ -60,7 +60,7 @@ namespace OCL
         channels = comedi_get_n_channels(myCard->getDevice()->it, subDevice);
         
         // Only for DIO
-        if ( ( myCard->getSubDeviceType( subDevice ) == COMEDI_SUBD_DIO) ) {
+        if ( ( myCard->getSubDeviceType( subDevice ) == COMEDI_SUBD_DIO) && all_bits) {
             log(Info) << "Configuring first "<<channels<<" dio channels on subdevice "<<subDevice<<" as output type." << endlog();
         
             for (unsigned int i=0; i<channels; ++i)
@@ -70,6 +70,11 @@ namespace OCL
         }            
         
 
+    }
+
+    bool ComediSubDeviceDOut::useBit( unsigned int bit )
+    {
+        return comedi_dio_config(myCard->getDevice()->it, subDevice, bit, COMEDI_OUTPUT) == 0;
     }
 
     void ComediSubDeviceDOut::switchOn( unsigned int bit)

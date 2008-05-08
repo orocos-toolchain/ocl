@@ -37,6 +37,11 @@ namespace OCL
 
   /**
    * This logical device represents one 'Digital Input' subdevice of a Comedi device.
+   * The standard constructors assumes the whole subdevice is already configured for input.
+   * For DIO (reconfigurable IO devices) use the extra constructor argument to specify
+   * that this should not be assumed and use the useBit() method to indicate which bits
+   * should be used as input bits.
+   *
    */
   class ComediSubDeviceDIn
     : public RTT::DigitalInInterface
@@ -45,17 +50,23 @@ namespace OCL
   public:
     /**
      * Create a new ComediSubDeviceDIn with a given ComediDevice, subdevice number and
-     * a name for this sub device
+     * a name for this sub device.
      *
      * @param cd The ComediDevice to use for output
      * @param subdevice The subdevice number for this comedi device
      * @param name The name of this instance
+     * @param configure_all_bits Set to false to not configure all bits of this subdevice as inputs.
+     * @see useBit() for configuring bit-per-bit.
      */
-    ComediSubDeviceDIn( ComediDevice* cd, const std::string& name, unsigned int subdevice);
+    ComediSubDeviceDIn( ComediDevice* cd, const std::string& name, unsigned int subdevice, bool configure_all_bits = true );
 
-    ComediSubDeviceDIn( ComediDevice* cd, unsigned int subdevice );
+    ComediSubDeviceDIn( ComediDevice* cd, unsigned int subdevice, bool configure_all_bits = true);
 
-    void init();
+    /**
+     * If \a configure_all_bits was false, use this method (for each bit) to specify
+     * which bits must be configured as input.
+     */
+    bool useBit( unsigned int bit );
 
     virtual bool isOn( unsigned int bit = 0) const;
 
@@ -68,6 +79,9 @@ namespace OCL
     virtual unsigned int readSequence(unsigned int start_bit, unsigned int stop_bit) const;
     
   protected:
+
+      void init(bool all_bits);
+
       /**
        * The output device to write to
        */
@@ -77,6 +91,7 @@ namespace OCL
        * The subdevice number of this instance in \a myCard
        */
       unsigned int _subDevice;
+
       bool error;
     };
 

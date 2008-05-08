@@ -48,16 +48,22 @@ namespace OCL
     /**
      * Create a new ComediSubDeviceDOut with a given ComediDevice, subdevice number and
      * a name for this sub device
+     * The standard constructors assumes the whole subdevice is already configured for output.
+     * For DIO (reconfigurable IO devices) use the extra constructor argument to specify
+     * that this should not be assumed and use the useBit() method to indicate which bits
+     * should be used as output bits.
      *
      * @param cd The ComediDevice to use for output
      * @param subdevice The subdevice number for this comedi device
      * @param name The name of this instance
+     * @param configure_all_bits Set to false to not configure all bits of this subdevice as outputs.
+     * @see useBit() for configuring bit-per-bit.
      */
-    ComediSubDeviceDOut( ComediDevice* cd, const std::string& name, unsigned int subdevice);
+    ComediSubDeviceDOut( ComediDevice* cd, const std::string& name, unsigned int subdevice, bool configure_all_bits = true);
 
-    ComediSubDeviceDOut( ComediDevice* cd, unsigned int subdevice );
+    ComediSubDeviceDOut( ComediDevice* cd, unsigned int subdevice, bool configure_all_bits = true );
 
-    void init();
+    bool useBit( unsigned int bit );
 
     virtual void switchOn( unsigned int bit);
 
@@ -74,6 +80,8 @@ namespace OCL
     virtual unsigned int nbOfOutputs() const;
 
   protected:
+    void init(bool all_bits);
+
     /**
      * The output device to write to
      */

@@ -37,20 +37,20 @@ namespace OCL
   
   
 
-    ComediSubDeviceDIn::ComediSubDeviceDIn( ComediDevice* cd, const std::string& name, unsigned int subdevice)
+    ComediSubDeviceDIn::ComediSubDeviceDIn( ComediDevice* cd, const std::string& name, unsigned int subdevice, bool all_bits)
       : DigitalInInterface( name ),
         myCard( cd ), _subDevice( subdevice )
     {
-        init();
+        init(all_bits);
     }
 
-    ComediSubDeviceDIn::ComediSubDeviceDIn( ComediDevice* cd, unsigned int subdevice )
+    ComediSubDeviceDIn::ComediSubDeviceDIn( ComediDevice* cd, unsigned int subdevice, bool all_bits )
         : myCard( cd ), _subDevice( subdevice )
     {
-        init();
+        init(all_bits);
     }
 
-    void ComediSubDeviceDIn::init()
+    void ComediSubDeviceDIn::init(bool all_bits)
     {
         Logger::In in( nameserver.getName( this ).c_str() );
         if (!myCard) {
@@ -68,7 +68,7 @@ namespace OCL
             }
 
         unsigned int channels = this->nbOfInputs();
-        if ( ( myCard->getSubDeviceType( _subDevice ) == COMEDI_SUBD_DIO) ) {
+        if ( ( myCard->getSubDeviceType( _subDevice ) == COMEDI_SUBD_DIO) && all_bits ) {
             log(Info) << "Configuring first "<<channels<<" dio channels on subdevice "<<_subDevice<<" as input type." << endlog();
         
             for (unsigned int i=0; i<channels; ++i)
@@ -76,6 +76,11 @@ namespace OCL
         } else {
             log(Info) << "Subdevice "<<_subDevice<<" is digital input with "<<channels << " channels." << endlog();
         }            
+    }
+
+    bool ComediSubDeviceDIn::useBit( unsigned int bit )
+    {
+        return comedi_dio_config(myCard->getDevice()->it, _subDevice, bit, COMEDI_INPUT) == 0;
     }
 
   bool ComediSubDeviceDIn::isOn( unsigned int bit /*= 0*/) const
