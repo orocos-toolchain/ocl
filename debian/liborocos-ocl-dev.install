@@ -1,9 +1,14 @@
 usr/include/ocl/OCL.hpp
 usr/include/ocl/ComponentLoader.hpp
 usr/include/ocl/DeploymentComponent.hpp
-usr/include/ocl/ReportingComponent.hpp
 usr/include/ocl/TaskBrowser.hpp
 usr/include/ocl/ReportingComponent.hpp
+usr/include/ocl/command.hpp
+usr/include/ocl/datasender.hpp
+usr/include/ocl/socket.hpp
+usr/include/ocl/socketmarshaller.hpp
+usr/include/ocl/TcpReporting.hpp
+usr/include/ocl/FileReporting.hpp
 usr/include/ocl/ConsoleReporting.hpp
 usr/include/ocl/FileReporting.hpp
 usr/include/ocl/NiceHeaderMarshaller.hpp
