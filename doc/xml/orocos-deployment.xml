@@ -459,6 +459,42 @@
 	  set the <option>UseNamingService</option> property to 0.
 	</para>
       </section>
+      <section>
+	<title>Connecting to CORBA components</title>
+	<para>
+	  The corba enabled deployers allow to create a proxy for a
+	  remote component using the name service, the IOR or the IOR file.
+	</para>
+	<para>
+	  Say you have a remote Orocos component with the name
+	  'MyComponent'. It was created in one corba enabled deployer
+	  application with the <option>Server</option> property set to 1.
+	  You can connect to it from another deployer application by using the XML
+	  syntax:
+<![CDATA[ <!-- Uses Naming Service to lookup 'Mycomponent' -->
+ <struct name="MyComponent" type="CORBA">
+ </struct>
+
+ <!-- Uses IOR file to lookup 'Mycomponent' -->
+ <struct name="MyComponent.ior" type="IORFile">
+ </struct>
+
+ <!-- Uses literal IOR to lookup 'Mycomponent' -->
+ <struct name="IOR:...." type="IOR">
+ </struct>
+]]>
+          Which will make this component available in your current
+          application, using the same name as the original.  This also
+          works for the scripting deployer command 'loadComponent'.
+	  For example, you can type in the TaskBrowser:
+	  <programlisting>  loadComponent("MyComponent", "CORBA")
+  loadComponent("MyComponent.ior", "IORFile")
+  loadComponent("IOR:.....", "IOR")</programlisting>
+
+          which allows to quickly connect to a remote component once
+          you can copy/paste the IOR into the console.
+	</para>
+      </section>
     </section>
     <section>
       <title>Setting up a deployable component library</title>
