@@ -1,3 +1,24 @@
+         Orocos Components Library (OCL) v1.6.0
+
+This release of the Orocos Components Library is aimed at the
+Real-Time Toolkit v1.6.0. and offers improved functionality for
+distributed applications, motion interpolation and kinematics.  Some
+components of the OCL library are also available as Debian 4.0
+'Etch' packages from 
+ deb http://svn.fmtc.be/debian etch main
+
+A new stand-alone application has been added as well:
+ deployer-corba: can connect local components to remote components
+ by looking up the name, IOR file or plain IOR. It is a CORBA server itself
+ as well.
+
+An overview of the documented components is available here:
+  <http://www.orocos.org/stable/documentation/ocl/v1.6.x/doc-xml/ocl-overview.html>
+
+This release can be downloaded here:
+  <http://www.orocos.org/stable/ocl/v1.6.0/orocos-ocl-1.6.0-src.tar.bz2>
+
+------------------------------------------------------------------------
          Orocos Components Library (OCL) v1.4.1
 
 This is the first bug fix release of the Orocos Components Library v1.4
