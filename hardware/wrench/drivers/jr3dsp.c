@@ -379,15 +379,14 @@ static struct pci_driver jr3pci_driver =
   probe:jr3pci_probe,
   remove:__devexit_p(jr3pci_remove),
   suspend:NULL,
-  resume:NULL,
-  enable_wake:NULL
+  resume:NULL
 };
 
 
 int __init jr3pci_init_module(void)
 {
 	//printk("\njr3pci_init_module\n");
-	return pci_module_init(&jr3pci_driver);
+	return pci_register_driver(&jr3pci_driver);
 }
 
 
