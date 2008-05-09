@@ -86,10 +86,16 @@ SET( HAVE_ZLIB ${ZLIB} )
 # Look for boost
 CHECK_INCLUDE_FILE_CXX( boost/numeric/ublas/matrix.hpp BOOST )
 IF ( BOOST )
-    MESSAGE("-- Looking for Boost - found")
+    MESSAGE("-- Looking for Boost Ublas - found")
 ELSE ( BOOST )
-    MESSAGE("-- Looking for Boost - not found")
+    MESSAGE("-- Looking for Boost Ublas - not found")
 ENDIF ( BOOST )
+CHECK_INCLUDE_FILE_CXX( boost/program_options.hpp BOOST_OPTIONS )
+IF ( BOOST_OPTIONS )
+    MESSAGE("-- Looking for boost::program_options - found")
+ELSE ( BOOST_OPTIONS )
+    MESSAGE(FATAL_ERROR "-- Looking for boost::program_options - not found. \n ==> Please install libboost-program-options-dev or similar. Then remove CMakeCache.txt and re-run cmake." )
+ENDIF ( BOOST_OPTIONS )
 
 # Look for ulapack
 CHECK_INCLUDE_FILE_CXX( ulapack/eig.hpp ULAPACK )
