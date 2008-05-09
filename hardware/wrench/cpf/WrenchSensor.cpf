@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE properties SYSTEM "cpf.dtd">
 <properties>
-  <struct name="offset" type="MotCon::Wrench">
+  <struct name="offset" type="KDL::Wrench">
      <description>Offset for zero-measurement</description>
-     <struct name="Force" type="MotCon::Vector">
+     <struct name="Force" type="KDL::Vector">
         <description>Axial Force</description>
         <simple name="X" type="double"><description>X Value</description><value>0</value></simple>
         <simple name="Y" type="double"><description>Y Value</description><value>0</value></simple>
         <simple name="Z" type="double"><description>Z Value</description><value>0</value></simple>
      </struct>
-     <struct name="Torque" type="MotCon::Vector">
+     <struct name="Torque" type="KDL::Vector">
         <description>Axial Torque</description>
         <simple name="X" type="double"><description>X Value</description><value>0</value></simple>
         <simple name="Y" type="double"><description>Y Value</description><value>0</value></simple>
