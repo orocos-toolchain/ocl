@@ -213,12 +213,12 @@ namespace OCL
         // Members implementing the interface to the hardware
         //
 #if  (defined (OROPKG_OS_LXRT))
-        RTT::ComediDevice*                    comediDevAOut;
-        RTT::ComediDevice*                    comediDevEncoder;
-        RTT::ComediDevice*                    comediDevDInOut;
-        RTT::ComediSubDeviceAOut*             comediSubdevAOut;
-        RTT::ComediSubDeviceDIn*              comediSubdevDIn;
-        RTT::ComediSubDeviceDOut*             comediSubdevDOut;
+        ComediDevice*                    comediDevAOut;
+        ComediDevice*                    comediDevEncoder;
+        ComediDevice*                    comediDevDInOut;
+        ComediSubDeviceAOut*             comediSubdevAOut;
+        ComediSubDeviceDIn*              comediSubdevDIn;
+        ComediSubDeviceDOut*             comediSubdevDOut;
         std::vector<RTT::EncoderInterface*>   encoderInterface;
         
         std::vector<RTT::AnalogOutput*> vref;

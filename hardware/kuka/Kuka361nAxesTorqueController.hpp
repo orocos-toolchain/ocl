@@ -414,17 +414,17 @@ namespace OCL
 #if (defined (OROPKG_OS_LXRT))
         std::vector<RTT::Axis*>  _axes_hardware;
         
-        RTT::ComediDevice*                    _comediDev;
-        RTT::ComediSubDeviceAOut*             _comediSubdevAOut;
+        ComediDevice*                    _comediDev;
+        ComediSubDeviceAOut*             _comediSubdevAOut;
         RTT::EncoderSSI_apci1710_board*       _apci1710;
         RTT::RelayCardapci2200*               _apci2200;
         RTT::SwitchDigitalInapci1032*         _apci1032;
-        RTT::ComediDevice*                    _comediDev_NI6024; 
-        RTT::ComediSubDeviceAIn*              _comediSubdevAIn_NI6024; 
-        RTT::ComediSubDeviceDIn*              _comediSubdevDIn_NI6024;
+        ComediDevice*                    _comediDev_NI6024; 
+        ComediSubDeviceAIn*              _comediSubdevAIn_NI6024; 
+        ComediSubDeviceDIn*              _comediSubdevDIn_NI6024;
         // Remove 10/08/07 - Card no longer present
         // RTT::ComediDevice*                    _comediDev_NI6527;
-        RTT::ComediSubDeviceDOut*             _comediSubdevDOut_NI6713;
+        ComediSubDeviceDOut*             _comediSubdevDOut_NI6713;
         
         std::vector<RTT::EncoderInterface*>           _encoderInterface;
         std::vector<RTT::AbsoluteEncoderSensor*>      _encoder;
@@ -441,19 +441,19 @@ namespace OCL
         RTT::DigitalOutput*                             torqueModeSwitch;
         std::vector<RTT::DigitalInput*>               _TorqueModeCheck; 
 
-// 	//Temp
-// 	RTT::AnalogInput*  _motorCurrentInput; 
-// 	RTT::AnalogSensor*               _motorCurrentSensor; 
-// 	RTT::DataPort<double>*       			_motorCurrentValue;
+        // 	//Temp
+        // 	RTT::AnalogInput*  _motorCurrentInput; 
+        // 	RTT::AnalogSensor*               _motorCurrentSensor; 
+        // 	RTT::DataPort<double>*       			_motorCurrentValue;
     
 #endif
         std::vector<RTT::AxisInterface*>      _axes;
         std::vector<RTT::AxisInterface*>      _axes_simulation;
-	OCL::Kuka361TorqueSimulator*		_torqueSimulator;
+        OCL::Kuka361TorqueSimulator*		_torqueSimulator;
         std::vector<double> 			_tau_sim;
-	std::vector<double> 			_pos_sim;
-	std::vector<TimeService::ticks>		_previous_time;
-	TimeService::Seconds 			_delta_time;
+        std::vector<double> 			_pos_sim;
+        std::vector<TimeService::ticks>		_previous_time;
+        TimeService::Seconds 			_delta_time;
 
     };//class Kuka361nAxesTorqueController
 }//namespace Orocos
