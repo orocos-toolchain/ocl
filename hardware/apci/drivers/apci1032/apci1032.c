@@ -53,6 +53,8 @@
 #include "apci1032.h"
 #include <linux/module.h>
 #include <linux/pci.h>
+#include <linux/fs.h>
+#include <linux/interrupt.h>
 #include <asm/io.h>
 #include <asm/uaccess.h>
 
@@ -411,7 +413,7 @@ int init_module( void )
     /* Filling str_PCI_Information structure */
     printk( "PCI_BASE_ADDRESS_IO_MASK = %X\n", ( UINT ) PCI_BASE_ADDRESS_IO_MASK );
 
-    while ( ( pPCILinuxStruct = pci_find_device( APCI1032_BOARD_VENDOR_ID,
+    while ( ( pPCILinuxStruct = pci_get_device( APCI1032_BOARD_VENDOR_ID,
                                 APCI1032_BOARD_DEVICE_ID,
                                 pPCILinuxStruct ) ) != 0 )
     {
