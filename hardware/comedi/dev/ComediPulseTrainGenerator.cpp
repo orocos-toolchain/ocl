@@ -19,13 +19,7 @@
 #include <rtt/Logger.hpp>
 
 #include "comedi_internal.h"
-
-#ifndef INSN_CONFIG_GPCT_ARM
-#define INSN_CONFIG_GPCT_ARM 1004
-#endif
-#ifndef INSN_CONFIG_GPCT_DISARM
-#define INSN_CONFIG_GPCT_DISARM 1005
-#endif
+#include "comedi_common.h"
 
 namespace OCL
 {
@@ -89,15 +83,22 @@ namespace OCL
            FIXME:  Make this more flexible if comedi driver supports
            this.
         */
+        const unsigned clock_period_ns;
+        const unsigned tbase;
+        comedi_t *device = _myCard->getDevice()->it;
         switch(nchan){
         case 4:
-	  // Max Timebase of 6601 is 20 Mhz
-	  _smallest_step = PSECS_IN_SECS / 20000000;
-	  break;
+            // Max Timebase of 6601 is 20 Mhz
+            _smallest_step = PSECS_IN_SECS / 20000000;
+            clock_period_ns = 50;  /* 20MHz clock */
+            tbase = NI_GPCT_TIMEBASE_1_CLOCK_SRC_BITS;
+            break;
         case 8:
-	  // Max Timebase of 6602 is 80 Mhz
-	  _smallest_step = PSECS_IN_SECS / 80000000;
-	  break;
+            // Max Timebase of 6602 is 80 Mhz
+            _smallest_step = PSECS_IN_SECS / 80000000;
+            clock_period_ns = 12;  /* 80MHz clock */
+            tbase = NI_GPCT_TIMEBASE_3_CLOCK_SRC_BITS;
+            break;
         }
         if ( nchan <= _channel ){
             log(Error) << "Comedi Counter : Only " << nchan << " channels on this counter subdevice" << endlog();
@@ -105,22 +106,48 @@ namespace OCL
         /* Configure the counter subdevice
            Configure the GPCT for use as an PTG 
         */
-#define PTG_CONFIG_DATA 3
+        counter_mode = NI_GPCT_COUNTING_MODE_NORMAL_BITS;
+        // toggle output on terminal count
+        counter_mode |= NI_GPCT_OUTPUT_TC_TOGGLE_BITS;
+        // load on terminal count
+        counter_mode |= NI_GPCT_LOADING_ON_TC_BIT;
+        // alternate the reload source between the load a and load b registers
+        counter_mode |= NI_GPCT_RELOAD_SOURCE_SWITCHING_BITS;
+        // count down
+        counter_mode |= NI_GPCT_COUNTING_DIRECTION_DOWN_BITS;
+        // initialize load source as load b register
+        counter_mode |= NI_GPCT_LOAD_B_SELECT_BIT;
+        // don't stop on terminal count
+        counter_mode |= NI_GPCT_STOP_ON_GATE_BITS;
+        // don't disarm on terminal count or gate signal
+        counter_mode |= NI_GPCT_NO_HARDWARE_DISARM_BITS;
+        retval = set_counter_mode(device, _subDevice, counter_mode);
+        if(retval < 0) return retval;
 
-        comedi_insn insn;
-        Data config_data[PTG_CONFIG_DATA]; // Configuration data
+        /* 20MHz clock */
+        retval = set_clock_source(device, _subDevice, tbase, clock_period_ns, channel);
+        if(retval < 0) return retval;
 
-        insn.insn=INSN_CONFIG;
-        insn.n=1; /* Should be irrelevant for config, but is not for gnulinux! */
-        config_data[0] = INSN_CONFIG_GPCT_PULSE_TRAIN_GENERATOR;
-        config_data[1] = 0; // pulse_width
-        config_data[2] = 0; // pulse_period
+        up_ticks = (up_time_ns + clock_period_ns / 2) / clock_period_ns;
+        down_ticks = (period_ns + clock_period_ns / 2) / clock_period_ns - up_ticks;
+        /* set initial counter value by writing to channel 0 */
+        retval = comedi_data_write(device, _subDevice, 0, 0, 0, down_ticks);
+        if(retval < 0) return retval;
+        /* set "load a" register to the number of clock ticks the counter output should remain low
+           by writing to channel 1. */
+        comedi_data_write(device, _subDevice, 1, 0, 0, down_ticks);
+        if(retval < 0) return retval;
+        /* set "load b" register to the number of clock ticks the counter output should remain high
+           by writing to channel 2 */
+        comedi_data_write(device, _subDevice, 2, 0, 0, up_ticks);
+        if(retval < 0) return retval;
 
-        insn.data=config_data;
-        insn.subdev=_subDevice;
-        insn.chanspec=CR_PACK(_channel,0,0);
+        /*FIXME: check that device is counter */
+        printf("Generating pulse train on _subDevice %d.\n", _subDevice);
+        printf("Period = %d ns.\n", period_ns);
+        printf("Up Time = %d ns.\n", up_time);
+        printf("Down Time = %d ns.\n", period_ns - up_time);
 
-        int ret=comedi_do_insn(_myCard->getDevice()->it,&insn);
         if (ret<0)
             log(Error) << "Comedi Counter : Instruction to configure counter -> Pulse Train Generator failed, ret = " << ret << endlog();
         else
@@ -132,17 +159,7 @@ namespace OCL
         Logger::In in("ComediPulseTrainGenerator");
         if (!_myCard)
             return;
-        comedi_insn insn;
-	insn.insn=INSN_INTTRIG;
-        Data inttrig_data[1];
-        int ret;
-        
-        insn.n=1; // MUST BE ONE (see comedi_fops.c), don't know why
-        inttrig_data[0] = _channel;
-        insn.data=inttrig_data;
-        insn.subdev=_subDevice;
-        insn.chanspec=CR_PACK(_channel,0,0);
-        ret=comedi_do_insn(_myCard->getDevice()->it,&insn);
+
         if(ret<0){
             log(Error) << "Triggering reset on ComediPTG () failed, ret = " << ret << endlog();
         }
@@ -261,18 +278,8 @@ namespace OCL
         if (!_myCard)
             return false;
         if (_running == false){
-            comedi_insn insn;
-            Data config_data[1];
-            int ret;
-        
-            insn.insn=INSN_CONFIG;
-            insn.n=1; // Should be one!!!
 
-            config_data[0] = INSN_CONFIG_GPCT_ARM;
-            insn.data=config_data;
-            insn.subdev=_subDevice;
-            insn.chanspec=CR_PACK(_channel,0,0);
-            ret = comedi_do_insn(_myCard->getDevice()->it,&insn);
+            int ret = arm(_myCard->getDevice()->it, _subDevice, NI_GPCT_ARM_IMMEDIATE, _channel);
             if(ret<0){
                 log(Error) << "ComediPTG::start() failed, ret = " << ret << endlog();
                 return false;
@@ -288,21 +295,9 @@ namespace OCL
         if (!_myCard)
             return false;
         if (_running == true){
-            comedi_insn insn;
-            Data config_data[1];
-            int ret;
-        
-            insn.insn=INSN_CONFIG;
-            insn.n=0;
-
-            config_data[0] = INSN_CONFIG_GPCT_DISARM;
-            insn.data=config_data;
-            insn.subdev=_subDevice;
-            insn.chanspec=CR_PACK(_channel,0,0);
-            ret = comedi_do_insn(_myCard->getDevice()->it,&insn);
+            int ret = reset_counter(_myCard->getDevice()->it, _subDevice, _channel);
             if(ret<0){
                 log(Error) << "ComediPTG::stop() failed, ret = " << ret << endlog();
-                return false;
             }
             _running = false;
         }

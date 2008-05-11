@@ -22,6 +22,8 @@
 #include <rtt/Logger.hpp>
 
 #include "comedi_internal.h"
+#include "comedi_common.h"
+#include "comedi.h"
 
 namespace OCL
 {
@@ -69,28 +71,20 @@ namespace OCL
             }
         /* Configure the counter subdevice
            Configure the GPCT for use as an encoder 
+           Uses the functions from comedi_common.c
         */
-#define ENCODER_CONFIG_DATA 4
-        typedef unsigned int Data;
-    
-        comedi_insn insn;
-        Data config_data[ENCODER_CONFIG_DATA]; // Configuration data
+        int retval = reset_counter(_myCard->getDevice()->it, _subDevice, _channel);
+        /* set initial counter value by writing to channel 0 */
+        unsigned int initial_value = 0;
+        retval = comedi_data_write(_myCard->getDevice()->it, _subDevice, 0, 0, 0, initial_value);
 
-        insn.insn=INSN_CONFIG;
-        insn.n=1; /* Should be irrelevant for config, but is not for gnulinux! */
-        config_data[0] = INSN_CONFIG_GPCT_QUADRATURE_ENCODER;
-        // Should become an option
-        config_data[1] = GPCT_X4;
-        config_data[2] = GPCT_IndexPhaseHighHigh;
-#define GPCT_CONTINU_COUNTING_WHEN_INDEX_ARRIVES 0;
-        config_data[3] = GPCT_CONTINU_COUNTING_WHEN_INDEX_ARRIVES;
+        int counter_mode = (NI_GPCT_COUNTING_MODE_QUADRATURE_X4_BITS |
+                        NI_GPCT_COUNTING_DIRECTION_HW_UP_DOWN_BITS);
 
-        insn.data=config_data;
-        insn.subdev=_subDevice;
-        insn.chanspec=CR_PACK(_channel,0,0);
-        int ret=comedi_do_insn(_myCard->getDevice()->it,&insn);
-        if(ret<0) {
-            log(Error) << "Comedi Counter : Instruction to configure counter -> encoder failed" << endlog();
+        int retval1 = set_counter_mode(_myCard->getDevice()->it, _subDevice, counter_mode, _channel);
+        int retval2 = arm(_myCard->getDevice()->it, _subDevice, NI_GPCT_ARM_IMMEDIATE, _channel);
+        if(retval1 < 0 || retval1 < 0) {
+            log(Error) << "Comedi Counter : Instruction to configure counter -> encoder failed (ret:"<<retval1<<","<<retval2<<")" << endlog();
             _myCard = 0;
         } else
             log(Info) << "Comedi Counter : configured as encoder now" << endlog();

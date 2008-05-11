@@ -1302,29 +1302,27 @@ namespace OCL
             log(Info) << "Found Orocos plugin '"<< type <<"'"<<endlog();
         }
         
-        ComponentData newcomp;
         try {
-            newcomp.instance = (*factory)(name);
-            newcomp.loaded = true;
+            comps[name].instance = (*factory)(name);
         } catch(...) {
             log(Error) <<"The constructor of component type "<<type<<" threw an exception!"<<endlog();
         }
 
-        if ( newcomp.instance == 0 ) {
+        if ( comps[name].instance == 0 ) {
             log(Error) <<"Failed to load component with name "<<name<<": refused to be created."<<endlog();
             return false;
         }
 
-        if (!this->componentLoaded( newcomp.instance ) ) {
-            log(Error) << "This deployer type refused to connect to "<< newcomp.instance->getName() << ": aborting !" << endlog(Error);
-            delete newcomp.instance;
+        if (!this->componentLoaded( comps[name].instance ) ) {
+            log(Error) << "This deployer type refused to connect to "<< comps[name].instance->getName() << ": aborting !" << endlog(Error);
+            delete comps[name].instance;
             return false;
         }
 
         // unlikely that this fails (checked at entry)!
-        this->addPeer( newcomp.instance );
-        log(Info) << "Adding "<< newcomp.instance->getName() << " as new peer:  OK."<< endlog(Info);
-        comps[name] = newcomp;
+        this->addPeer( comps[name].instance );
+        log(Info) << "Adding "<< comps[name].instance->getName() << " as new peer:  OK."<< endlog(Info);
+        comps[name].loaded = true;
         return true;
     }
 

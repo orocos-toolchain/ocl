@@ -28,7 +28,7 @@ std::map<std::string, RTT::Logger::LogLevel>	logMap =
 int ORO_main(int argc, char** argv)
 {
 	std::string				script;
-	std::string				name;
+	std::string				name		= "Deployer";
 	std::string				logLevel	= "info";	// set to valid default
 	
 	po::options_description 			desc("Allowed options");
@@ -37,13 +37,13 @@ int ORO_main(int argc, char** argv)
 		("help", 
 		 "Show program usage")
 		("start", 
-		 po::value<std::string>(&script)->default_value("config-file.xml"),
-		 "Deployment configuration file")
+		 po::value<std::string>(&script),
+		 "Deployment configuration file (eg 'config-file.xml')")
 		("log-level", 
-		 po::value<std::string>(&logLevel)->default_value("Info"),
+		 po::value<std::string>(&logLevel),
 		 "Level at which to log (case-insensitive) Never,Fatal,Critical,Error,Warning,Info,Debug,Realtime")
 		("DeployerName", 
-		 po::value<std::string>(&name)->default_value("Deployer"),
+		 po::value<std::string>(&name),
 		 "Name of deployer component")
 		;
 	pos.add("DeployerName", 1);
@@ -62,22 +62,27 @@ int ORO_main(int argc, char** argv)
                 }
             boost::algorithm::to_lower(logLevel);	// always lower case
             // verify that is a valid logging level
-            if (vm.count("log-level") &&
-                (0 == logMap.count(logLevel)))
+		if (vm.count("log-level"))
                 {
+			if (0 != logMap.count(logLevel))
+			{
+				RTT::Logger::Instance()->setLogLevel(logMap[logLevel]);
+			}		
+			else
+			{
                     std::cout << "Did not understand log level: " 
                               << logLevel << std::endl 
                               << desc << std::endl;
                     return -1;
                 }
+		}	
         }
 	catch (std::logic_error e) 
         {
-            std::cerr << "Exception:" << std::endl << e.what() << std::endl;
+		std::cerr << "Exception:" << e.what() << std::endl << desc << std::endl;
             return -1;
         }	
 
-	RTT::Logger::Instance()->setLogLevel(logMap[logLevel]);
     OCL::DeploymentComponent dc( name );
 
     if ( !script.empty() )
