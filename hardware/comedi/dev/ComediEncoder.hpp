@@ -30,13 +30,19 @@ namespace OCL
 {
   /**
    * A class for reading an encoder using the comedi hardware
-   * abstraction layer.  Based on the comedilib API v0.8.
+   * abstraction layer.  Based on the comedi API of the home
+   * written driver for the NI660X card.
    * @todo Currently this wrapper does not support all functionality.
    * It always uses X4 encoding (maximum resolution), you cannot choose
    * when to take into account the indexpulse or reset the counter
-   * when the index pulse arrives. See the comedi demo gpct_encoder.c
+   * when the index pulse arrives.  Also see the comments of the
+   * encodertest.c program 
+   * See <http://people.mech.kuleuven.be/~kgadeyne/linux/> for more
+   * information about all this stuff
    * @todo subdevice locking
-   * @bug upcounting() is always true
+   * @todo Throw exception when constructor fails instead of just
+   * printing an error
+   * @bug upcounting is always true
    * @note The current implementation does not consider the _turn
    * parameter, since an overflow of the 32 bit register is unlikely
    * to occur in our case.
