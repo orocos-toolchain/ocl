@@ -12,6 +12,12 @@
       <simple name="p1" type="string"><value>AConnection</value></simple>
       <simple name="p2" type="string"><value>BConnection</value></simple>
     </struct>
+    <struct name="Activity" type="PeriodicActivity">
+      <simple name="Period" type="double"><value>0.1</value></simple>
+      <simple name="Priority" type="short"><value>0</value></simple>
+    </struct>
+    <simple name="AutoConf" type="boolean"><value>1</value></simple>
+    <simple name="AutoStart" type="boolean"><value>1</value></simple>
   </struct>
 
   <!-- Component 2 , already loaded in the application ! -->
@@ -24,17 +30,18 @@
       <simple name="p2" type="string"><value>AConnection</value></simple>
       <simple name="p1" type="string"><value>BConnection</value></simple>
     </struct>
+
+    <struct name="Activity" type="PeriodicActivity">
+      <simple name="Period" type="double"><value>0.1</value></simple>
+      <simple name="Priority" type="short"><value>0</value></simple>
+    </struct>
+    <simple name="AutoConf" type="boolean"><value>1</value></simple>
+    <simple name="AutoStart" type="boolean"><value>1</value></simple>
   </struct>
 
+  <!-- Component 2 , This overrides the options above -->
   <struct name="ComponentB" type="PropertyBag">
-    <struct name="Peers"  type="PropertyBag">
-      <simple type="string"><value>ComponentA</value></simple>
-    </struct>
-
-    <struct name="Ports"  type="PropertyBag">
-      <simple name="p2" type="string"><value>AConnection</value></simple>
-      <simple name="p1" type="string"><value>BConnection</value></simple>
-    </struct>
+    <simple name="AutoConf" type="boolean"><value>1</value></simple>
+    <simple name="AutoStart" type="boolean"><value>0</value></simple>
   </struct>
-
 </properties>
