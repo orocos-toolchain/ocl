@@ -47,7 +47,7 @@ int init_module( void )
 
 
     //see if we can find the device
-    apci1710.pci = pci_find_device( APCI1710_VENDOR_ID, APCI1710_DEVICE_ID, apci1710.pci );
+    apci1710.pci = pci_get_device( APCI1710_VENDOR_ID, APCI1710_DEVICE_ID, apci1710.pci );
 
     if ( apci1710.pci == NULL )
     {

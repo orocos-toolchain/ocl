@@ -77,7 +77,7 @@ int init_module( void )
 
 
     //see if we can find the device
-    apci2200.pci = pci_find_device( VENDOR_ID, DEVICE_ID, apci2200.pci );
+    apci2200.pci = pci_get_device( VENDOR_ID, DEVICE_ID, apci2200.pci );
 
     if ( apci2200.pci == NULL )
     {
