@@ -89,6 +89,8 @@ namespace OCL
                 highest(i);
                 lowest(i);
             }
+        // Load rrange value.
+        rawRange();
     }
 
     void ComediSubDeviceAOut::rangeSet(unsigned int chan, unsigned int range /*=0*/)
