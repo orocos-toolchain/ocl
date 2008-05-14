@@ -137,7 +137,7 @@ namespace OCL
 
     int ComediSubDeviceAOut::write( unsigned int chan, double dvalue )
     {
-        unsigned int value = (unsigned int)(dvalue * resolution(chan) - min[chan]);
+        unsigned int value = (unsigned int)(dvalue - min[chan]) * resolution(chan);
         if ( myCard )
             return myCard->write( _subDevice, chan, _sd_range[chan], 
                                   _aref[chan], value );
