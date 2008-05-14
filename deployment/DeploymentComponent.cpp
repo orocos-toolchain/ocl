@@ -393,7 +393,6 @@ namespace OCL
                         valid = false;
                     }
 
-                    ConMap connections;
                     //for (PropertyBag::Names::iterator it= nams.begin();it != nams.end();it++) {
                     for (PropertyBag::iterator it= from_file.begin(); it!=from_file.end();it++) {
                         // Read in global options.
@@ -405,6 +404,18 @@ namespace OCL
                                 continue;
                             }
                             if ( this->import( importp.get() ) == false )
+                                valid = false;
+                            continue;
+                        }
+                        if ( (*it)->getName() == "Include" ) {
+                            Property<std::string> includep = *it;
+                            if ( !includep.ready() ) {
+                                log(Error)<< "Found 'Include' statement, but it is not of type='string'."<<endlog();
+                                valid = false;
+                                continue;
+                            }
+                            // recursively call this function.
+                            if ( this->loadComponents( includep.get() ) == false )
                                 valid = false;
                             continue;
                         }
@@ -535,7 +546,7 @@ namespace OCL
                                 if (valid) {
                                     log(Debug)<<"storing Port: "<<c->getName()<<"."<<p->getName();
                                     log(Debug)<<" in " << ports->get().getProperty<std::string>(*pit)->get() <<endlog();
-                                    connections[ports->get().getProperty<std::string>(*pit)->get()].ports.push_back( p );
+                                    conmap[ports->get().getProperty<std::string>(*pit)->get()].ports.push_back( p );
                                 }
                             }
                         }
@@ -632,15 +643,16 @@ namespace OCL
                             //this->setActivity(comp.getName(), "SlaveActivity", 0.0, 0, 0 );
                         }
 
-                    }
-                        
-                    if ( valid ) {
-                        // put this config in the root config.
+                        // put this component in the root config.
                         // existing component options are updated, new components are
                         // added to the back.
-                        copyProperties( root, from_file );
-                        conmap.insert( connections.begin(), connections.end() );
+                        bool ret = updateProperty( root, from_file, comp.getName() );
+                        if (!ret) {
+                            log(Error) << "Failed to store deployment properties for component " << comp.getName() <<endlog();
+                            valid = false;
+                        }
                     }
+                        
                     deletePropertyBag( from_file );
                 }
             else
@@ -653,6 +665,7 @@ namespace OCL
                 log(Error)<< "Uncaught exception in loadcomponents() !"<< endlog();
                 failure = true;
             }
+        validConfig.set(valid);
         return !failure && valid;
     }
 
@@ -669,9 +682,6 @@ namespace OCL
 
         // Connect peers
         for (PropertyBag::iterator it= root.begin(); it!=root.end();it++) {
-            if ( (*it)->getName() == "Import" ) {
-                continue;
-            }
             
             Property<PropertyBag> comp = *it;
 
@@ -775,10 +785,6 @@ namespace OCL
 
         // Autoconnect ports.
         for (PropertyBag::iterator it= root.begin(); it!=root.end();it++) {
-            if ( (*it)->getName() == "Import" ) {
-                continue;
-            }
-            
             Property<PropertyBag> comp = *it;
 
             TaskContext* peer = this->getPeer( comp.getName() );
@@ -797,9 +803,6 @@ namespace OCL
 
         // Main configuration
         for (PropertyBag::iterator it= root.begin(); it!=root.end();it++) {
-            if ( (*it)->getName() == "Import" ) {
-                continue;
-            }
             
             Property<PropertyBag> comp = *it;
             Property<string> dummy;
@@ -881,8 +884,6 @@ namespace OCL
         }
         bool valid = true;
         for (PropertyBag::iterator it= root.begin(); it!=root.end();it++) {
-            if ( (*it)->getName() == "Import" )
-                continue;
             
             TaskContext* peer = this->getPeer( (*it)->getName() );
             // AutoStart
@@ -894,7 +895,7 @@ namespace OCL
         if (!valid) {
             for ( CompList::iterator cit = comps.begin(); cit != comps.end(); ++cit) {
                 ComponentData* it = &(cit->second);
-                if ( it->loaded && it->autostart && it->instance->getTaskState() != TaskCore::Running )
+                if ( it->autostart && it->instance->getTaskState() != TaskCore::Running )
                     log(Error) << "Failed to start component "<< it->instance->getName() <<endlog();
             }
         } else {
@@ -906,22 +907,20 @@ namespace OCL
     bool DeploymentComponent::stopComponents()
     {
         Logger::In in("DeploymentComponent::stopComponents");
-	bool valid = true;
-	// 1. Stop all activities, give components chance to cleanup.
-	for ( CompList::iterator cit = comps.begin(); cit != comps.end(); ++cit) {
-	  ComponentData* it = &(cit->second);
-	  if ( it->loaded ) {
-	    if ( it->instance->engine()->getActivity() == 0 || 
-		 it->instance->engine()->getActivity()->isActive() == false ||
-		 it->instance->stop() ) {
-	      log(Info) << "Stopped "<< it->instance->getName() <<endlog();
-	    } else {
-	      log(Error) << "Could not stop loaded Component "<< it->instance->getName() <<endlog();
-	      valid = false;
-	    }
-	  }
-	}
-	return valid;
+        bool valid = true;
+        // 1. Stop all activities, give components chance to cleanup.
+        for ( CompList::iterator cit = comps.begin(); cit != comps.end(); ++cit) {
+            ComponentData* it = &(cit->second);
+            if ( it->instance->engine()->getActivity() == 0 || 
+                 it->instance->engine()->getActivity()->isActive() == false ||
+                 it->instance->stop() ) {
+                log(Info) << "Stopped "<< it->instance->getName() <<endlog();
+            } else {
+                log(Error) << "Could not stop loaded Component "<< it->instance->getName() <<endlog();
+                valid = false;
+            }
+        }
+        return valid;
     }
 
     bool DeploymentComponent::cleanupComponents()
@@ -931,13 +930,11 @@ namespace OCL
         // 1. Cleanup all activities, give components chance to cleanup.
         for ( CompList::iterator cit = comps.begin(); cit != comps.end(); ++cit) {
             ComponentData* it = &(cit->second);
-            if ( it->loaded ) {
-                if ( it->instance->getTaskState() < TaskCore::Stopped || it->instance->cleanup() ) {
-                    log(Info) << "Cleaned up "<< it->instance->getName() <<endlog();
-                } else {
-                    log(Error) << "Could not cleanup loaded Component "<< it->instance->getName() << " (not Stopped)"<<endlog();
-                    valid = false;
-                }
+            if ( it->instance->getTaskState() < TaskCore::Stopped || it->instance->cleanup() ) {
+                log(Info) << "Cleaned up "<< it->instance->getName() <<endlog();
+            } else {
+                log(Error) << "Could not cleanup Component "<< it->instance->getName() << " (not Stopped)"<<endlog();
+                valid = false;
             }
         }
         return valid;

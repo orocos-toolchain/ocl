@@ -44,4 +44,6 @@
     <simple name="AutoConf" type="boolean"><value>1</value></simple>
     <simple name="AutoStart" type="boolean"><value>0</value></simple>
   </struct>
+
+  <simple name="Include" type="string"><value>deployment-include.cpf</value></simple>
 </properties>

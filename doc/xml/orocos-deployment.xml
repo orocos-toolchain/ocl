@@ -423,6 +423,37 @@
 	</para>
       </section>
       <section>
+	<title>Include XML files</title>
+	<para>
+	  The deployer XML format supports include directives, which
+	  allow you to manage your application configuration file in
+	  different files. This can be useful to separate the OS dependent
+	  settings from the OS independent settings, or share XML
+	  files between users. The include directive works similar like
+	  in "C":
+	</para>
+	  <programlisting><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "cpf.dtd">
+<properties>
+  <!-- ... -->
+
+  <simple name="Include" type="string"><value>common-settings.xml</value></simple>
+
+  <!-- ... -->
+
+</properties>]]></programlisting>
+        <para>
+	  You can override settings or components in an include file
+	  by redefining them after the include statement. The last
+	  seen setting is always used by the deployer.
+	</para>
+	<note>
+	  <para>Currently, include directives always look into the
+	  current working directory, also if an include file itself
+	  includes another file.</para>
+	</note>
+      </section>
+      <section>
 	<title>CORBA extensions</title>
 	<para>
 	  The deployer XML format allows two CORBA specific boolean
