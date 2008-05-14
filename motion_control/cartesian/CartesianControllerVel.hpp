@@ -76,7 +76,7 @@ namespace OCL
         /// DataPort containing the desired twist, represented in the
         /// base frame with end-effector reference point, shared with
         /// OCL::CartesianGeneratorPos 
-        RTT::ReadDataPort< KDL::Twist >  _velocity_desi;
+        RTT::DataPort< KDL::Twist >  _velocity_desi;
         /// DataPort containing the output twist, represented in the
         /// base frame with end-effector reference point, shared with
         /// OCL::CartesianEffectorVel 
