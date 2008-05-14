@@ -337,7 +337,7 @@ namespace OCL
         if(!simulation){
             apci2200->switchOn( 12 );
             apci2200->switchOn( 14 );
-            log(Warning) <<"Release Emergency stop and push button to start ...."<<endlog();
+            log(Warning) <<"Release Emergency stop of Kuka361 and push button to start ...."<<endlog();
         }
 #endif
         activated = true;

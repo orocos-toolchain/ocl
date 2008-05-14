@@ -70,7 +70,7 @@ namespace OCL
          * reference switch. It can be used for the homing of the robot.
          * 
          */
-        RTT::WriteDataPort<std::vector<bool> >    referenceValues_port;
+        RTT::DataPort<std::vector<bool> >    referenceValues_port;
         /**
          * vector of DataPorts which contain the values of the
          * position sensors. It is used by other components who need this
@@ -162,7 +162,7 @@ namespace OCL
         virtual bool unlockAllAxes();
         virtual bool addDriveOffset(const std::vector<double>& offset);
         
-        virtual bool initPosition();
+        virtual bool initPosition(const std::vector<double>& switchposition);
         
         virtual bool prepareForUse();
         virtual bool prepareForUseCompleted() const;

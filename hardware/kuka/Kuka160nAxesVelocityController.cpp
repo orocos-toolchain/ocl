@@ -35,12 +35,12 @@ namespace OCL{
     using namespace KDL;
     
 #define KUKA160_NUM_AXES 6
-#define KUKA160_CONV1  120*114*106*100/( 30*40*48*14)
-#define KUKA160_CONV2  168*139*111/(28*37*15)
-#define KUKA160_CONV3  168*125*106/(28*41*15)
-#define KUKA160_CONV4  150.857
-#define KUKA160_CONV5  155.17
-#define KUKA160_CONV6  100
+#define KUKA160_CONV1  -120*114*106*100/( 30*40*48*14)
+#define KUKA160_CONV2  -168*139*111/(28*37*15)
+#define KUKA160_CONV3  -168*125*106/(28*41*15)
+#define KUKA160_CONV4  -150.857
+#define KUKA160_CONV5  -155.17
+#define KUKA160_CONV6  -100
   
   // Resolution of the encoders
 #define KUKA160_ENC_RES  4096
@@ -49,7 +49,7 @@ namespace OCL{
 #define KUKA160_TICKS2RAD { 2*M_PI / (KUKA160_CONV1 * KUKA160_ENC_RES), 2*M_PI / (KUKA160_CONV2 * KUKA160_ENC_RES), 2*M_PI / (KUKA160_CONV3 * KUKA160_ENC_RES), 2*M_PI / (KUKA160_CONV4 * KUKA160_ENC_RES), 2*M_PI / (KUKA160_CONV5 * KUKA160_ENC_RES), 2*M_PI / (KUKA160_CONV6 * KUKA160_ENC_RES)}
   
   // Conversion from angular speed to voltage
-#define KUKA160_RADproSEC2VOLT { 3.97143, 4.40112, 3.65062, 3.38542, 4.30991, 2.75810 }
+#define KUKA160_RADproSEC2VOLT { -3.97143, -4.40112, -3.65062, -3.38542, -4.30991, -2.75810 }
   
     typedef Kuka160nAxesVelocityController MyType;
     
@@ -150,12 +150,12 @@ namespace OCL{
         
 #endif
         //Definition of kinematics for the Kuka160 
-        kinematics.addSegment(Segment(Joint(Joint::RotZ),Frame(Vector(0.0,0.0,1.020))));
-        kinematics.addSegment(Segment(Joint(Joint::RotX),Frame(Vector(0.0,0.0,0.480))));
-        kinematics.addSegment(Segment(Joint(Joint::RotX),Frame(Vector(0.0,0.0,0.645))));
+        kinematics.addSegment(Segment(Joint(Joint::RotZ),Frame(Vector(0.0,0.0,0.9))));
+        kinematics.addSegment(Segment(Joint(Joint::RotX),Frame(Vector(0.0,0.0,0.97))));
+        kinematics.addSegment(Segment(Joint(Joint::RotX),Frame(Vector(0.0,0.0,1.080))));
         kinematics.addSegment(Segment(Joint(Joint::RotZ)));
         kinematics.addSegment(Segment(Joint(Joint::RotX)));
-        kinematics.addSegment(Segment(Joint(Joint::RotZ),Frame(Vector(0.0,0.0,0.120))));
+        kinematics.addSegment(Segment(Joint(Joint::RotZ),Frame(Vector(0.0,0.0,0.18))));
         
         chain_attr.set(kinematics);
 
@@ -176,7 +176,8 @@ namespace OCL{
                                     "adds offset to the drive values",
                                     "offset","offset value in rad/s" );
         this->methods()->addMethod( RTT::method("initPosition",&MyType::initPosition,this),
-                                    "changes position value to the initial position" );
+                                    "changes position value of axis to the initial position",
+                                    "switchposition","recorded switchpositions");
         
         this->commands()->addCommand(RTT::command("prepareForUse",&MyType::prepareForUse,&MyType::prepareForUseCompleted,this),
                                      "prepares the robot for use"  );
@@ -350,7 +351,7 @@ namespace OCL{
 #if (defined OROPKG_OS_LXRT)
         if(!simulation){
             comediSubdevDOut->switchOn( 17 );
-            log(Warning) <<"Release Emergency stop and push button to start ...."<<endlog();
+            log(Warning) <<"Release Emergency stop of Kuka 160 and push button to start ...."<<endlog();
         }
 #endif
         activated = true;
@@ -440,12 +441,15 @@ namespace OCL{
         return true;
     }
   
-bool Kuka160nAxesVelocityController::initPosition()
+bool Kuka160nAxesVelocityController::initPosition(const vector<double>& switchposition)
     {
 #if (defined OROPKG_OS_LXRT)
         if(!simulation)
-            for(unsigned int i=0;i<KUKA160_NUM_AXES;i++)
-                ((IncrementalEncoderSensor*)axes[i]->getSensor("Position"))->writeSensor(initialPosition_prop.value()[i]);
+            for(unsigned int i=0;i<KUKA160_NUM_AXES;i++){
+                double act_pos = ((IncrementalEncoderSensor*)axes[i]->getSensor("Position"))->readSensor();
+                double new_pos = act_pos-switchposition[i]+initialPosition_prop.value()[i];
+                ((IncrementalEncoderSensor*)axes[i]->getSensor("Position"))->writeSensor(new_pos);
+            }
 #endif
         return true;
     }
