@@ -117,6 +117,8 @@ namespace OCL
 
     int ComediSubDeviceAOut::rawWrite( unsigned int chan, int value )
     {
+        if (value < 0) value = 0;
+        if (value > rrange) value = rrange;
         if ( myCard )
             return myCard->write( _subDevice, chan, _sd_range[chan], 
                                   _aref[chan], (unsigned int)(value) );
@@ -137,7 +139,10 @@ namespace OCL
 
     int ComediSubDeviceAOut::write( unsigned int chan, double dvalue )
     {
-        unsigned int value = (unsigned int)(dvalue - min[chan]) * resolution(chan);
+        //limit dvalue to min and max values
+        if(dvalue<min[chan]) dvalue=min[chan];
+        if(dvalue>max[chan]) dvalue=max[chan];
+        unsigned int value = (unsigned int)((dvalue - min[chan]) * resolution(chan));
         if ( myCard )
             return myCard->write( _subDevice, chan, _sd_range[chan], 
                                   _aref[chan], value );
