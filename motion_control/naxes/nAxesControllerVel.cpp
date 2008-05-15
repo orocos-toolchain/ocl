@@ -69,10 +69,12 @@ namespace OCL{
             return false;
         }
         
+        gain.resize(num_axes);
         gain=gain_prop.rvalue();
         
         //Resizing all containers to correct size
         p_m.resize(num_axes);
+        p_d.resize(num_axes);
         v_d.resize(num_axes);
         is_initialized.resize(num_axes);
         time_begin.resize(num_axes);
