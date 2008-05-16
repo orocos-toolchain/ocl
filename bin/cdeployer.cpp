@@ -3,53 +3,30 @@
 #include <deployment/CorbaDeploymentComponent.hpp>
 #include <rtt/corba/ControlTaskServer.hpp>
 #include <iostream>
+#include "deployer-funcs.hpp"
 
 using namespace std;
-
-void usage(const char* name)
-{
-    cout << "usage: " << name << " [DeployerName] [--start config-file.xml] [ -- TAO options]"<<endl;
-    cout << endl;
-}
+namespace po = boost::program_options;
 
 int ORO_main(int argc, char** argv)
 {
-    // deployer [DeployerName] [ -- TAO options ]
-    char* name = 0;
-    char* script = 0;
-    int i = 1;
-    while ( i < argc && std::string(argv[i]) != "--" ) {
-        std::string arg = argv[i];
-        if ( arg == "--help" ) {
-            usage(argv[0]);
-            return 0;
-        } else
-        if ( arg == "--start" ) {
-            ++i;
-            if ( i < argc ) {
-                script = argv[i];
-            } else {
-                cerr << "Please specify a filename after --start." <<endl;
-                usage(argv[0]);
-                return 0;
-            }
-        } else
-            if (name == 0)
-                name = argv[i];
-            else {
-                cerr << "Please specify only one name for the Deployer." <<endl;
-                usage(argv[0]);
-                return 0;
-            }
-        ++i;
-    }
+	std::string                 script;
+	std::string                 name("Deployer");
+	po::options_description     taoOptions("Additional options can also be passed to TAO");
+	// we don't actually list any options for TAO ...
 
-    if (name == 0)
-        name = "Deployer";
+	int rc = deployerParseCmdLine(argc, argv, script, name, &taoOptions);
+	if (0 != rc)
+	{
+		return rc;
+	}
+
     OCL::CorbaDeploymentComponent dc( name );
 
-    if (script)
+    if ( !script.empty() )
+	{
         dc.kickStart( script );
+	}
 
     /**
      * If CORBA is enabled, export the DeploymentComponent
