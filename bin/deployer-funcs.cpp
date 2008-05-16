@@ -60,7 +60,7 @@ int deployerParseCmdLine(int                        argc,
 		 "Deployment configuration file (eg 'config-file.xml')")
 		("log-level,l", 
 		 po::value<std::string>(&logLevel),
-		 "Level at which to log (case-insensitive) Never,Fatal,Critical,Error,Warning,Info,Debug,Realtime").set_name("level")
+		 "Level at which to log (case-insensitive) Never,Fatal,Critical,Error,Warning,Info,Debug,Realtime")
 		("DeployerName", 
 		 po::value<std::string>(&name),
 		 "Name of deployer component (the --DeployerName flag is optional)")
