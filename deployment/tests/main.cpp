@@ -29,16 +29,17 @@ public:
 
 int ORO_main(int, char**)
 {
-    DeploymentComponent dc;
     MyTask t1("ComponentA");
     MyTask t2("ComponentB");
 
-    dc.addPeer( &t1 );
-    dc.addPeer( &t2 );
+    {
+        DeploymentComponent dc;
+        dc.addPeer( &t1 );
+        dc.addPeer( &t2 );
 
-    TaskBrowser tb(&dc);
+        TaskBrowser tb(&dc);
 
-    tb.loop();
-
+        tb.loop();
+    }
     return 0;
 }

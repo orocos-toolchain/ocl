@@ -646,7 +646,9 @@ namespace OCL
                         // put this component in the root config.
                         // existing component options are updated, new components are
                         // added to the back.
-                        bool ret = updateProperty( root, from_file, comp.getName() );
+                        // great: a hack to allow 'CompName.ior' as property name.
+                        string delimiter("@!#?<!");
+                        bool ret = updateProperty( root, from_file, comp.getName(), delimiter );
                         if (!ret) {
                             log(Error) << "Failed to store deployment properties for component " << comp.getName() <<endlog();
                             valid = false;
@@ -888,13 +890,17 @@ namespace OCL
             TaskContext* peer = this->getPeer( (*it)->getName() );
             // AutoStart
             if (comps[(*it)->getName()].autostart )
-                if ( peer->start() == false) 
+                if ( !peer || peer->start() == false) 
                     valid = false;
         }
         // Finally, report success/failure:
         if (!valid) {
             for ( CompList::iterator cit = comps.begin(); cit != comps.end(); ++cit) {
                 ComponentData* it = &(cit->second);
+                if ( it->instance == 0 ) {
+                    log(Error) << "Failed to start component "<< cit->first << ": not found." << endlog();
+                    continue;
+                }
                 if ( it->autostart && it->instance->getTaskState() != TaskCore::Running )
                     log(Error) << "Failed to start component "<< it->instance->getName() <<endlog();
             }
@@ -911,14 +917,15 @@ namespace OCL
         // 1. Stop all activities, give components chance to cleanup.
         for ( CompList::iterator cit = comps.begin(); cit != comps.end(); ++cit) {
             ComponentData* it = &(cit->second);
-            if ( it->instance->engine()->getActivity() == 0 || 
-                 it->instance->engine()->getActivity()->isActive() == false ||
-                 it->instance->stop() ) {
-                log(Info) << "Stopped "<< it->instance->getName() <<endlog();
-            } else {
-                log(Error) << "Could not stop loaded Component "<< it->instance->getName() <<endlog();
-                valid = false;
-            }
+            if ( it->instance )
+                if ( it->instance->engine()->getActivity() == 0 || 
+                     it->instance->engine()->getActivity()->isActive() == false ||
+                     it->instance->stop() ) {
+                    log(Info) << "Stopped "<< it->instance->getName() <<endlog();
+                } else {
+                    log(Error) << "Could not stop loaded Component "<< it->instance->getName() <<endlog();
+                    valid = false;
+                }
         }
         return valid;
     }
@@ -930,61 +937,62 @@ namespace OCL
         // 1. Cleanup all activities, give components chance to cleanup.
         for ( CompList::iterator cit = comps.begin(); cit != comps.end(); ++cit) {
             ComponentData* it = &(cit->second);
-            if ( it->instance->getTaskState() < TaskCore::Stopped || it->instance->cleanup() ) {
-                log(Info) << "Cleaned up "<< it->instance->getName() <<endlog();
-            } else {
-                log(Error) << "Could not cleanup Component "<< it->instance->getName() << " (not Stopped)"<<endlog();
-                valid = false;
-            }
+            if (it->instance)
+                if ( it->instance->getTaskState() < TaskCore::Stopped || it->instance->cleanup() ) {
+                    log(Info) << "Cleaned up "<< it->instance->getName() <<endlog();
+                } else {
+                    log(Error) << "Could not cleanup Component "<< it->instance->getName() << " (not Stopped)"<<endlog();
+                    valid = false;
+                }
         }
         return valid;
     }
 
-  bool DeploymentComponent::unloadComponents()
-  {
-    // 2. Disconnect and destroy all components.
-    bool valid = true;
-    for ( CompList::iterator cit = comps.begin(); cit != comps.end(); ++cit) {
-      ComponentData* it = &(cit->second);
-		
-      if ( it->loaded && it->instance ) {
-	if ( it->instance->engine()->getActivity() == 0 ||
-	     it->instance->engine()->getActivity()->isActive() == false ) {
+    bool DeploymentComponent::unloadComponents()
+    {
+        // 2. Disconnect and destroy all components.
+        bool valid = true;
+        for ( CompList::iterator cit = comps.begin(); cit != comps.end(); ++cit) {
+            ComponentData* it = &(cit->second);
+          
+            if ( it->loaded && it->instance ) {
+                if ( it->instance->engine()->getActivity() == 0 ||
+                     it->instance->engine()->getActivity()->isActive() == false ) {
 		      
-	  std::string name = cit->first;
-	  log(Debug) << "Disconnecting " <<name <<endlog();
-	  it->instance->disconnect();
-	  log(Debug) << "Terminating " <<name <<endlog();
-	  // delete the activity before the TC !
-	  delete it->act;
-	  it->act = 0;
-	  delete it->instance;
-	  it->instance = 0;
-	  log(Info) << "Disconnected and destroyed "<< name <<endlog();
-	} else {
-	  log(Error) << "Could not unload Component "<< cit->first <<endlog();
-	  valid = false;
-	}
-      }
+                    std::string name = cit->first;
+                    log(Debug) << "Disconnecting " <<name <<endlog();
+                    it->instance->disconnect();
+                    log(Debug) << "Terminating " <<name <<endlog();
+                    // delete the activity before the TC !
+                    delete it->act;
+                    it->act = 0;
+                    delete it->instance;
+                    it->instance = 0;
+                    log(Info) << "Disconnected and destroyed "<< name <<endlog();
+                } else {
+                    log(Error) << "Could not unload Component "<< cit->first <<endlog();
+                    valid = false;
+                }
+            }
+        }
+        if ( !comps.empty() ) {
+            // cleanup from ComponentData map:
+            CompList::iterator cit = comps.begin(); 
+            do {
+                ComponentData* it = &(cit->second);
+                // if deleted and loaded by us:
+                if (it->instance == 0 && it->loaded) {
+                    log(Info) << "Completely removed "<< cit->first <<endlog();
+                    comps.erase(cit);
+                    cit = comps.begin();
+                } else {
+                    log(Info) << "Keeping info on "<< cit->first <<endlog();
+                    ++cit;
+                }
+            } while ( cit != comps.end() );
+        }   
+        return valid;
     }
-    if ( !comps.empty() ) {
-      // cleanup from ComponentData map:
-      CompList::iterator cit = comps.begin(); 
-      do {
-	ComponentData* it = &(cit->second);
-	// if deleted and loaded by us:
-	if (it->instance == 0 && it->loaded) {
-	  log(Info) << "Completely removed "<< cit->first <<endlog();
-	  comps.erase(cit);
-	  cit = comps.begin();
-	} else {
-	  log(Info) << "Keeping info on "<< cit->first <<endlog();
-	  ++cit;
-	}
-      } while ( cit != comps.end() );
-    }   
-    return valid;
-  }
 
     void DeploymentComponent::clearConfiguration()
     {
@@ -1258,6 +1266,9 @@ namespace OCL
     bool DeploymentComponent::loadComponent(const std::string& name, const std::string& type)
     {
         Logger::In in("DeploymentComponent::loadComponent");
+
+        if ( type == "PropertyBag" )
+            return false; // It should be present as peer.
 
         if ( this->getPeer(name) || ( comps.find(name) != comps.end() && comps[name].instance != 0) ) {
             log(Error) <<"Failed to load component with name "<<name<<": already present as peer or loaded."<<endlog();
