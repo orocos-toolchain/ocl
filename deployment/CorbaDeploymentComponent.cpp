@@ -25,13 +25,13 @@ namespace OCL
     {
         log(Debug) << "createControlTaskProxyIORFile" <<endlog();
         std::ifstream iorfile( iorfilename.c_str() );
-        if (iorfile) {
+        if (iorfile.is_open() && iorfile.good() ) {
             std::string ior;
             iorfile >> ior;
             return ::RTT::Corba::ControlTaskProxy::Create( ior, true);
         }
         else {
-            log(Error) << "Could not open IOR file: " << iorfilename << endlog();
+            log(Error) << "Could not open IORFile: '" << iorfilename <<"'."<< endlog();
             return 0;
         }
     }
