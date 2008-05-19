@@ -261,52 +261,19 @@ namespace OCL
             }
             log(Error) << "Port '"<< ap->getName() << "' of Component '"<<a->getName()
                        << "' and port '"<< bp->getName() << "' of Component '"<<b->getName()
-                       << "' are already connected but not to each other."<<endlog();
+                       << "' are already connected but (probably) not to each other."<<endlog();
             return false;
         }
 
-        // NOTE: all code below can be replaced by a single line:
-        // bp->connectTo( ap ) || ap->connectTo(bp);
-        // but that has less informational log messages.
-
-        if ( ap->connected() ) {
-            // ask peer to connect to us:
-            if ( bp->connectTo( ap ) ) {
-                log(Info)<< "Connected Port " << ap->getName()
-                         << " of peer Task "<<ap->getName() << " to existing connection." << endlog();
-                return true;
-            }
-            else {
-                log(Error)<< "Failed to connect Port " << ap->getName()
-                          << " of peer Task "<<ap->getName() << " to existing connection." << endlog();
-                return false;
-            }
+        // use the PortInterface implementation
+        if ( ap->connectTo( bp ) ) {
+            // all went fine.
+            log(Info)<< "Connected Port " << ap->getName() << " to peer Task "<< b->getName() <<"." << endlog();
+            return true;
+        } else {
+            log(Error)<< "Failed to connect Port " << ap->getName() << " to peer Task "<< b->getName() <<"." << endlog();
+            return true;
         }
-
-        // Peer port is connected thus our port is not connected.
-        if ( bp->connected() ) {
-            if ( ap->connectTo( bp ) ) {
-                log(Info)<< "Added Port " << ap->getName()
-                         << " to existing connection of Task "<<b->getName() << "." << endlog();
-                return true;
-            }
-            else {
-                log(Error)<< "Not connecting Port " << ap->getName()
-                          << " to existing connection of Task "<<b->getName() << "." << endlog();
-                return false;
-            }
-        }
-
-        // Last resort: both not connected: create new connection.
-        if ( !ap->connectTo( bp ) ) {
-            // real error msg will be produced by factory itself.
-            log(Warning)<< "Failed to connect Port " << ap->getName() << " of " << a->getName() << " to peer Task "<<b->getName() <<"." << endlog();
-            return false;
-        }
-        
-        // all went fine.
-        log(Info)<< "Connected Port " << ap->getName() << " to peer Task "<< b->getName() <<"." << endlog();
-        return true;
     }
 
     int string_to_oro_sched(const std::string& sched) {
@@ -726,63 +693,52 @@ namespace OCL
                 if ( (*p)->getPortType() == PortInterface::WritePort ) {
                     if (writer && writer->getPortType() == PortInterface::ReadWritePort )
                         reader = writer;
-                    writer = (*p)->clone();
+                    writer = (*p);
                 }
                 else
                     if ( (*p)->getPortType() == PortInterface::ReadPort ) {
                         if (reader && reader->getPortType() == PortInterface::ReadWritePort )
                             writer = reader;
-                        reader = (*p)->clone();
+                        reader = (*p);
                     }
                     else
                         if ( (*p)->getPortType() == PortInterface::ReadWritePort )
                             if (writer == 0) {
-                                writer = (*p)->clone();
+                                writer = (*p);
                             }
                             else {
-                                reader = (*p)->clone();
+                                reader = (*p);
                             }
-                    
                 ++p;
             }
-            // Idea is: create a clone or anticlone of a port
-            // use that one to setup the connection object
-            // then dispose it again.
+            // Inform the user of non-optimal connections:
             if ( writer == 0 ) {
                 log(Warning) << "Connecting only read-ports in connection " << it->first << endlog();
-                // solve this issue by using a temporary anti-port.
-                writer = it->second.ports.front()->antiClone();
+                // let connectTo() below figure it out.
+                writer = reader;
             }
             if ( reader == 0 ) {
                 log(Warning) << "Connecting only write-ports in connection " << it->first << endlog();
-                // make an anticlone of a writer
-                reader = it->second.ports.front()->antiClone();
             }
                 
             log(Info) << "Creating Connection "<<it->first<<":"<<endlog();
-            ConnectionInterface::shared_ptr con = writer->createConnection();
-            if ( con ) {
-                con->connect();
-                // connect all ports to connection
-                p = it->second.ports.begin();
-                while (p != it->second.ports.end() ) {
-                    if ((*p)->connectTo( con ) == false) {
+            // connect all ports to connection
+            p = it->second.ports.begin();
+            while (p != it->second.ports.end() ) {
+                // connect all readers to the first found writer.
+                if ( *p != writer ) {
+                    if ( (*p)->connectTo( writer ) == false) {
                         log(Error) << "Could not connect Port "<< (*p)->getName() << " to connection " <<it->first<<endlog();
                         if ((*p)->connected())
                             log(Error) << "Port "<< (*p)->getName() << " already connected !"<<endlog();
                         else
                             log(Error) << "Port "<< (*p)->getName() << " has wrong type !"<<endlog();
+                        valid = false;
                     } else
                         log(Info) << "Connected Port "<< (*p)->getName() <<" to connection " << it->first <<endlog();
-                    ++p;
                 }
-            } else {
-                log(Error) << "Could not create connection: incompatible port types."<<endlog();
-                valid = false;
+                ++p;
             }
-            // writer,reader was a clone or anticlone.
-            delete writer;
-            delete reader;
         }
 
         // Autoconnect ports.
