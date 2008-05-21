@@ -483,7 +483,7 @@ namespace OCL
                                 valid = false;
                                 continue;
                             }
-                            c = this->getPeer( (*it)->getName() );
+                            c = comps[(*it)->getName()].instance;
                         } else {
                             // If the user added c as a peer (outside of Deployer) store the pointer
                             comps[(*it)->getName()].instance = c;
@@ -654,7 +654,7 @@ namespace OCL
             
             Property<PropertyBag> comp = *it;
 
-            TaskContext* peer = this->getPeer( comp.getName() );
+            TaskContext* peer = comps[ comp.getName() ].instance;
             if ( !peer ) {
                 log(Error) << "Peer not found: "<< comp.getName() <<endlog();
                 valid=false;
@@ -744,16 +744,18 @@ namespace OCL
         // Autoconnect ports.
         for (PropertyBag::iterator it= root.begin(); it!=root.end();it++) {
             Property<PropertyBag> comp = *it;
+            if ( !comp.ready() )
+                continue;
 
-            TaskContext* peer = this->getPeer( comp.getName() );
+            TaskContext* peer = comps[ comp.getName() ].instance;
 
             // only autoconnect if AutoConnect == 1 and peer has AutoConnect == 1
             if ( comps[comp.getName()].autoconnect ) {
-                TaskContext::PeerList peers = peer->getPeerList();
+                TaskContext::PeerList peers = this->getPeerList();
                 for(TaskContext::PeerList::iterator pit = peers.begin(); pit != peers.end(); ++pit) {
-                    if ( comps.count( *pit ) && comps[ *pit ].autoconnect ) {
-                        assert( peer->getPeer( *pit ) );
-                        ::RTT::connectPorts( peer, peer->getPeer( *pit ) );
+                    if ( comps.count( *pit ) && comps[ *pit ].autoconnect && *pit != comp.getName() ) {
+                        TaskContext* other = this->getPeer( *pit );
+                        ::RTT::connectPorts( peer, other );
                     }
                 }
             }
@@ -764,7 +766,7 @@ namespace OCL
             
             Property<PropertyBag> comp = *it;
             Property<string> dummy;
-            TaskContext* peer = this->getPeer( comp.getName() );
+            TaskContext* peer = comps[ comp.getName() ].instance;
 
             // Iterate over all elements
             for (PropertyBag::const_iterator pf = comp.rvalue().begin(); pf!= comp.rvalue().end(); ++pf) {
@@ -843,7 +845,7 @@ namespace OCL
         bool valid = true;
         for (PropertyBag::iterator it= root.begin(); it!=root.end();it++) {
             
-            TaskContext* peer = this->getPeer( (*it)->getName() );
+            TaskContext* peer = comps[ (*it)->getName() ].instance;
             // AutoStart
             if (comps[(*it)->getName()].autostart )
                 if ( !peer || peer->start() == false) 
