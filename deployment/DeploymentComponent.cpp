@@ -751,10 +751,10 @@ namespace OCL
 
             // only autoconnect if AutoConnect == 1 and peer has AutoConnect == 1
             if ( comps[comp.getName()].autoconnect ) {
-                TaskContext::PeerList peers = this->getPeerList();
+                TaskContext::PeerList peers = peer->getPeerList();
                 for(TaskContext::PeerList::iterator pit = peers.begin(); pit != peers.end(); ++pit) {
-                    if ( comps.count( *pit ) && comps[ *pit ].autoconnect && *pit != comp.getName() ) {
-                        TaskContext* other = this->getPeer( *pit );
+                    if ( comps.count( *pit ) && comps[ *pit ].autoconnect ) {
+                        TaskContext* other = peer->getPeer( *pit );
                         ::RTT::connectPorts( peer, other );
                     }
                 }
