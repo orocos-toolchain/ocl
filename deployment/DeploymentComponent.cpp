@@ -569,7 +569,7 @@ namespace OCL
                                             valid = false;
                                     }
                                     if (valid) {
-                                        this->setActivity(comp.getName(), nm.rvalue().getType(), per.get(), prio.get(), scheduler );
+                                        this->setActivity(c->getName(), nm.rvalue().getType(), per.get(), prio.get(), scheduler );
                                     }
                                 } else
                                     if ( nm.rvalue().getType() == "NonPeriodicActivity" ) {
@@ -590,7 +590,7 @@ namespace OCL
                                                 valid = false;
                                         }
                                         if (valid) {
-                                            this->setActivity(comp.getName(), nm.rvalue().getType(), 0.0, prio.get(), scheduler );
+                                            this->setActivity(c->getName(), nm.rvalue().getType(), 0.0, prio.get(), scheduler );
                                         }
                                     } else
                                         if ( nm.rvalue().getType() == "SlaveActivity" ) {
@@ -598,7 +598,7 @@ namespace OCL
                                             if ( nm.rvalue().getProperty<double>("Period") )
                                                 period = nm.rvalue().getProperty<double>("Period")->get();
                                             if (valid) {
-                                                this->setActivity(comp.getName(), nm.rvalue().getType(), period, 0, 0 );
+                                                this->setActivity(c->getName(), nm.rvalue().getType(), period, 0, 0 );
                                             }
                                         } else {
                                             log(Error) << "Unknown activity type: " << nm.rvalue().getType()<<endlog();
@@ -607,7 +607,7 @@ namespace OCL
                             }
                         } else {
                             // no 'Activity' element, default to Slave:
-                            //this->setActivity(comp.getName(), "SlaveActivity", 0.0, 0, 0 );
+                            //this->setActivity(c->getName(), "SlaveActivity", 0.0, 0, 0 );
                         }
 
                         // put this component in the root config.
@@ -1369,7 +1369,7 @@ namespace OCL
                                           double period, int priority,
                                           int scheduler)
     {
-        TaskContext* peer;
+        TaskContext* peer = 0;
         if ( comp_name == this->getName() )
             peer = this;
         else
@@ -1378,6 +1378,7 @@ namespace OCL
             log(Error) << "Can't create Activity: component "<<comp_name<<" not found."<<endlog();
             return false;
         }
+        // this is required for lateron attaching the engine() to the activity.
         comps[comp_name].instance = peer;
         if ( peer->isRunning() ) {
             log(Error) << "Can't change activity of component "<<comp_name<<" since it is still running."<<endlog();
