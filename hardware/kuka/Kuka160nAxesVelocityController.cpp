@@ -215,9 +215,8 @@ namespace OCL{
     
     Kuka160nAxesVelocityController::~Kuka160nAxesVelocityController()
     {
-        // make sure robot is shut down
-        prepareForShutdown();
-    
+        this->cleanup();
+
         // brake, drive, sensors and switches are deleted by each axis
         if(simulation)
             for (unsigned int i = 0; i < KUKA160_NUM_AXES; i++)
