@@ -26,4 +26,7 @@
  ***************************************************************************/
 
 #include "HMIConsoleOutput.hpp"
+#include <ocl/ComponentLoader.hpp>
 
+ORO_CREATE_COMPONENT_TYPE()
+ORO_LIST_COMPONENT_TYPE( OCL::HMIConsoleOutput )

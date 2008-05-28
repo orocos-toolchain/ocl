@@ -62,13 +62,11 @@ namespace OCL
         RTT::OS::Mutex msg_lock;
         RTT::OS::Mutex log_lock;
 
-        RTT::PeriodicActivity runner;
     public :
         HMIConsoleOutput( const std::string& name = "cout")
             : TaskContext( name ),
               coloron("\033[1;34m"), coloroff("\033[0m"),
-              _prompt("HMIConsoleOutput :\n"),
-              runner(RTT::OS::LowestPriority, 0.1, this->engine() )
+              _prompt("HMIConsoleOutput :\n")
         {
             this->clear();
 
@@ -105,7 +103,6 @@ namespace OCL
                                "double","The Double to be logged"
                                 );
 
-            runner.start();
         }
 
         ~HMIConsoleOutput()
@@ -113,7 +110,7 @@ namespace OCL
             this->stop();
         }
 
-        void update()
+        void updateHook()
         {
             {
                 RTT::OS::MutexLock lock1( msg_lock );
@@ -177,6 +174,9 @@ namespace OCL
                 messages << backup.str();
                 messages << what << std::endl;
                 backup.rdbuf()->str("");
+                // support for non periodic logging:
+                if ( this->engine()->getActivity() )
+                    this->engine()->getActivity()->trigger();
             }
             else  // no lock, backup.
                 backup << what << std::endl;
