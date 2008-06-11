@@ -128,6 +128,7 @@ namespace OCL
         bool macrorecording;
         std::string macrotext;
         std::string macroname;
+        std::stringstream sresult;
         void recordMacro(std::string name);
         void cancelMacro();
         void endMacro();

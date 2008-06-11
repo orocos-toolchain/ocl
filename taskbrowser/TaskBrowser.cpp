@@ -1086,7 +1086,7 @@ namespace OCL
         OperationInterface* ops = context->getObject( comm );
         if ( ops ) // only object name was typed
             {
-                cout << nl << "Printing Interface of '"<< coloron << ops->getName() <<coloroff <<"' :"<<nl<<nl;
+                sresult << nl << "Printing Interface of '"<< coloron << ops->getName() <<coloroff <<"' :"<<nl<<nl;
                 std::vector<std::string> methods = ops->commands()->getNames();
                 std::for_each( methods.begin(), methods.end(), boost::bind(&TaskBrowser::printCommand, this, _1, ops) );
                 methods = ops->methods()->getNames();
@@ -1095,6 +1095,9 @@ namespace OCL
                     methods = taskcontext->events()->getNames();
                     std::for_each( methods.begin(), methods.end(), boost::bind(&TaskBrowser::printEvent, this, _1, taskcontext->events()) );
                 }
+                cout << sresult.str();
+                sresult.str("");
+
             }
         // Minor hack : also check if it was an attribute of current TC, for example, 
         // if both the object and attribute with that name exist. the if
@@ -1102,11 +1105,14 @@ namespace OCL
         // time to evaluate 'comm'. 
         if ( context->attributes()->getValue( comm ) ) {
                 this->printResult( context->attributes()->getValue( comm )->getDataSource().get(), true );
+                cout << sresult.str();
+                sresult.str("");
                 return;
         }
             
-        if ( ops )
+        if ( ops ) {
             return;
+        }
                     
         Parser _parser;
 
@@ -1118,7 +1124,8 @@ namespace OCL
             // methods and DS'es are processed immediately.
             if ( ds.get() != 0 ) {
                 this->printResult( ds.get(), false );
-                cout << nl;
+                cout << sresult.str() << nl;
+                sresult.str("");
                 return; // done here
             } else if (debug)
                 cerr << "returned zero !"<<nl;
@@ -1156,7 +1163,8 @@ namespace OCL
             // methods and DS'es are processed immediately.
             if ( ds.get() != 0 ) {
                 this->printResult( ds.get(), true );
-                cout << nl;
+                cout << sresult.str() << nl;
+                sresult.str("");
                 return; // done here
             } else if (debug)
                 cerr << "returned zero !"<<nl;
@@ -1193,8 +1201,10 @@ namespace OCL
             // check if it is a plain Action:
             if ( com && dynamic_cast<DispatchInterface*>(com) == 0 ) {
                 string prompt =" = ";
-                cout <<prompt<< setw(20)<<left;
-                cout << com->execute() << right;
+                sresult <<prompt<< setw(20)<<left;
+                sresult << com->execute() << right;
+                cout << sresult.str();
+                sresult.str("");
                 delete com;
                 return;
             }
@@ -1230,12 +1240,12 @@ namespace OCL
     void TaskBrowser::printResult( DataSourceBase* ds, bool recurse) { 
         std::string prompt(" = ");
         // setup prompt :
-        cout <<prompt<< setw(20)<<left;
+        sresult <<prompt<< setw(20)<<left;
         if ( ds )
             doPrint( ds, recurse );
         else
-            cout << "(null)";
-        cout << right;
+            sresult << "(null)";
+        sresult << right;
     }
 
     void TaskBrowser::doPrint( DataSourceBase* ds, bool recurse) {
@@ -1250,18 +1260,18 @@ namespace OCL
             if (!recurse) {
                 int siz = bag.getProperties().size();
                 int wdth = siz ? (20 - (siz / 10 + 1)) : 20;
-                cout <<setw(0)<< siz <<setw( wdth )<< " Properties";
+                sresult <<setw(0)<< siz <<setw( wdth )<< " Properties";
             } else {
             if ( ! bag.empty() ) {
-                cout <<setw(0)<<nl;
+                sresult <<setw(0)<<nl;
                 for( PropertyBag::iterator it= bag.getProperties().begin(); it!=bag.getProperties().end(); ++it) {
-                    cout <<setw(14)<<right<<(*it)->getType()<<" "<<coloron<<setw(14)<< (*it)->getName()<<coloroff;
+                    sresult <<setw(14)<<right<<(*it)->getType()<<" "<<coloron<<setw(14)<< (*it)->getName()<<coloroff;
                     DataSourceBase::shared_ptr propds = (*it)->getDataSource();
                     this->printResult( propds.get(), false );
-                    cout <<" ("<<(*it)->getDescription()<<')' << nl;
+                    sresult <<" ("<<(*it)->getDescription()<<')' << nl;
                 }
             } else {
-                cout <<prompt<<"(empty PropertyBag)";
+                sresult <<prompt<<"(empty PropertyBag)";
             }
             }
             return;
@@ -1269,7 +1279,7 @@ namespace OCL
 
         DataSourceBase::shared_ptr dsb(ds);
         dsb->evaluate();
-        cout << dsb;
+        sresult << dsb;
     }
 
     struct comcol
@@ -1543,112 +1553,112 @@ namespace OCL
         }
 
         if ( peer == taskobject ) 
-            cout <<nl<<" Listing TaskContext "<< green << peer->getName()<<coloroff<< " :"<<nl;
+            sresult <<nl<<" Listing TaskContext "<< green << peer->getName()<<coloroff<< " :"<<nl;
         else
-            cout <<nl<<" Listing TaskObject "<< green << taskobject->getName()<<coloroff<< " :"<<nl;
+            sresult <<nl<<" Listing TaskObject "<< green << taskobject->getName()<<coloroff<< " :"<<nl;
 
         // Only print Properties for TaskContexts
         if ( peer == taskobject ) {
-            cout <<nl<<" Configuration Properties: ";
+            sresult <<nl<<" Configuration Properties: ";
             PropertyBag* bag = peer->properties();
             if ( bag && bag->size() != 0 ) {
                 // Print Properties:
                 for( PropertyBag::iterator it = bag->begin(); it != bag->end(); ++it) {
                     DataSourceBase::shared_ptr pds = (*it)->getDataSource();
-                    cout << nl << setw(11)<< (*it)->getType()<< " "
+                    sresult << nl << setw(11)<< right << (*it)->getType()<< " "
                          << coloron <<setw(14)<<left<< (*it)->getName() << coloroff;
                     this->printResult( pds.get(), false ); // do not recurse
-                    cout<<" ("<< (*it)->getDescription() <<')';
+                    sresult<<" ("<< (*it)->getDescription() <<')';
                 }
             } else {
-                cout << "(none)";
+                sresult << "(none)";
             }
-            cout <<nl;
+            sresult <<nl;
         }
 
         // Print "this" interface (without detail) and then list objects...
-        cout <<nl<< " Execution Interface:";
+        sresult <<nl<< " Execution Interface:";
 
-        cout <<nl<< "  Attributes   : ";
+        sresult <<nl<< "  Attributes   : ";
         std::vector<std::string> objlist = taskobject->attributes()->names();
         if ( !objlist.empty() ) {
-            cout << nl;
+            sresult << nl;
             // Print Attributes:
             for( std::vector<std::string>::iterator it = objlist.begin(); it != objlist.end(); ++it) {
                 DataSourceBase::shared_ptr pds = taskobject->attributes()->getValue(*it)->getDataSource();
-                cout << setw(11)<< pds->getType()<< " "
+                sresult << setw(11)<< right << pds->getType()<< " "
                      << coloron <<setw( 14 )<<left<< *it << coloroff;
                 this->printResult( pds.get(), false ); // do not recurse
-                cout <<nl;
+                sresult <<nl;
             }
         } else {
-            cout << coloron << "(none)";
+            sresult << coloron << "(none)";
         }
         
-        cout <<coloroff<<nl<< "  Methods      : "<<coloron;
+        sresult <<coloroff<<nl<< "  Methods      : "<<coloron;
         objlist = taskobject->methods()->getNames();
         if ( !objlist.empty() ) {
-            copy(objlist.begin(), objlist.end(), std::ostream_iterator<std::string>(cout, " "));
+            copy(objlist.begin(), objlist.end(), std::ostream_iterator<std::string>(sresult, " "));
         } else {
-            cout << "(none)";
+            sresult << "(none)";
         }
-        cout <<coloroff<<nl<< "  Commands     : "<<coloron;
+        sresult <<coloroff<<nl<< "  Commands     : "<<coloron;
         objlist = taskobject->commands()->getNames();
         if ( !objlist.empty() ) {
-            copy(objlist.begin(), objlist.end(), std::ostream_iterator<std::string>(cout, " "));
+            copy(objlist.begin(), objlist.end(), std::ostream_iterator<std::string>(sresult, " "));
         } else {
-            cout << "(none)";
+            sresult << "(none)";
         }
-        cout <<coloroff<<nl<< "  Events       : "<<coloron;
+        sresult <<coloroff<<nl<< "  Events       : "<<coloron;
         objlist = taskobject->events()->getEvents();
         if ( !objlist.empty() ) {
-            copy(objlist.begin(), objlist.end(), std::ostream_iterator<std::string>(cout, " "));
+            copy(objlist.begin(), objlist.end(), std::ostream_iterator<std::string>(sresult, " "));
         } else {
-            cout << "(none)";
+            sresult << "(none)";
         }
-        cout << coloroff << nl;
+        sresult << coloroff << nl;
 
         if ( peer == taskobject ) {
-            cout <<nl<< " Data Flow Ports: ";
+            sresult <<nl<< " Data Flow Ports: ";
             objlist = peer->ports()->getPortNames();
             if ( !objlist.empty() ) {
                 for(vector<string>::iterator it = objlist.begin(); it != objlist.end(); ++it) {
                     PortInterface* port = peer->ports()->getPort(*it);
                     PortInterface::PortType pt = port->getPortType();
                     // Port type R/W
-                    cout << nl << " " << (pt == PortInterface::ReadPort ?
+                    sresult << nl << " " << (pt == PortInterface::ReadPort ?
                         " R" : pt == PortInterface::WritePort ? " W" : "RW");
                     // Port data type + name
                     if ( !port->ready() || !port->connection() )
-                        cout << "(U) " << setw(11)<<right<< port->getTypeInfo()->getTypeName();
+                        sresult << "(U) " << setw(11)<<right<< port->getTypeInfo()->getTypeName();
                     else
-                        cout << "(C) " << setw(11)<<right<< port->getTypeInfo()->getTypeName();
-                    cout << " "
+                        sresult << "(C) " << setw(11)<<right<< port->getTypeInfo()->getTypeName();
+                    sresult << " "
                          << coloron <<setw( 14 )<<left<< *it << coloroff;
                     if ( port->connection() ) 
-                        cout << " = " <<port->connection()->getDataSource();
+                        sresult << " = " <<port->connection()->getDataSource();
                     else {
                         ConnectionInterface::shared_ptr c = port->createConnection();
                         if ( c )
-                            cout << " = " << c->getDataSource();
+                            sresult << " = " << c->getDataSource();
                     }
                     // Port description
 //                     if ( peer->getObject(*it) )
-//                         cout << " ( "<< taskobject->getObject(*it)->getDescription() << " ) ";
+//                         sresult << " ( "<< taskobject->getObject(*it)->getDescription() << " ) ";
                 }
             } else {
-                cout << "(none)";
+                sresult << "(none)";
             }
-            cout << coloroff << nl;
+            sresult << coloroff << nl;
         }
 
         objlist = taskobject->getObjectList();
-        cout <<nl<< " Task Objects: "<<nl;
+        sresult <<nl<< " Task Objects: "<<nl;
         if ( !objlist.empty() ) {
             for(vector<string>::iterator it = objlist.begin(); it != objlist.end(); ++it)
-                cout <<coloron<< "  " << setw(14) << *it <<coloroff<< " ( "<< taskobject->getObject(*it)->getDescription() << " ) "<<nl;
+                sresult <<coloron<< "  " << setw(14) << *it <<coloroff<< " ( "<< taskobject->getObject(*it)->getDescription() << " ) "<<nl;
         } else {
-            cout <<coloron<< "(none)" <<coloroff <<nl;
+            sresult <<coloron<< "(none)" <<coloroff <<nl;
         }
 
         // TaskContext specific:
@@ -1656,36 +1666,38 @@ namespace OCL
 
             objlist = peer->scripting()->getPrograms();
             if ( !objlist.empty() ) {
-                cout << " Programs     : "<<coloron;
+                sresult << " Programs     : "<<coloron;
                 for(vector<string>::iterator it = objlist.begin(); it != objlist.end(); ++it)
-                    cout << *it << "["<<getProgramStatusChar(peer,*it)<<"] ";
-                cout << coloroff << nl;
+                    sresult << *it << "["<<getProgramStatusChar(peer,*it)<<"] ";
+                sresult << coloroff << nl;
             }
 
             objlist = peer->scripting()->getStateMachines();
             if ( !objlist.empty() ) {
-                cout << " StateMachines: "<<coloron;
+                sresult << " StateMachines: "<<coloron;
                 for(vector<string>::iterator it = objlist.begin(); it != objlist.end(); ++it)
-                    cout << *it << "["<<getStateMachineStatusChar(peer,*it)<<"] ";
-                cout << coloroff << nl;
+                    sresult << *it << "["<<getStateMachineStatusChar(peer,*it)<<"] ";
+                sresult << coloroff << nl;
             }
 
             // if we are in the TB, display the peers of our connected task:
             if ( context == tb ) 
-                cout <<nl<< " "<<peer->getName()<<" Peers : "<<coloron;
+                sresult <<nl<< " "<<peer->getName()<<" Peers : "<<coloron;
             else
-                cout << nl <<" Peers        : "<<coloron;
+                sresult << nl <<" Peers        : "<<coloron;
 
             objlist = peer->getPeerList();
             if ( !objlist.empty() )
 	      for(vector<string>::iterator it = objlist.begin(); it != objlist.end(); ++it) {
   		    assert( peer->getPeer(*it) );
-                    cout << *it << "["<<getTaskStatusChar(peer->getPeer(*it))<<"] ";
+                    sresult << *it << "["<<getTaskStatusChar(peer->getPeer(*it))<<"] ";
 	      }
             else
-                cout << "(none)";
+                sresult << "(none)";
         }
-        cout <<coloroff<<nl;
+        sresult <<coloroff<<nl;
+        cout << sresult.str();
+        sresult.str("");
     }
         
     void TaskBrowser::printCommand( const std::string m, OperationInterface* ops )
@@ -1693,57 +1705,57 @@ namespace OCL
         using boost::lambda::_1;
         std::vector<ArgumentDescription> args;
         args = ops->commands()->getArgumentList( m );
-        cout << "  Command    : bool " << coloron << m << coloroff<< "( ";
+        sresult << "  Command    : bool " << coloron << m << coloroff<< "( ";
         for (std::vector<ArgumentDescription>::iterator it = args.begin(); it != args.end(); ++it) {
-            cout << it->type <<" ";
-            cout << coloron << it->name << coloroff;
+            sresult << it->type <<" ";
+            sresult << coloron << it->name << coloroff;
             if ( it+1 != args.end() )
-                cout << ", ";
+                sresult << ", ";
             else
-                cout << " ";
+                sresult << " ";
         }
-        cout << ")"<<nl;
-        cout << "   " << ops->commands()->getDescription( m )<<nl;
+        sresult << ")"<<nl;
+        sresult << "   " << ops->commands()->getDescription( m )<<nl;
         for (std::vector<ArgumentDescription>::iterator it = args.begin(); it != args.end(); ++it)
-            cout <<"   "<< it->name <<" : " << it->description << nl;
+            sresult <<"   "<< it->name <<" : " << it->description << nl;
     }
                 
     void TaskBrowser::printMethod( const std::string m, OperationInterface* ops )
     {
         std::vector<ArgumentDescription> args;
         args = ops->methods()->getArgumentList( m );
-        cout << "  Method     : "<< ops->methods()->getResultType(m)<<" " << coloron << m << coloroff<< "( ";
+        sresult << "  Method     : "<< ops->methods()->getResultType(m)<<" " << coloron << m << coloroff<< "( ";
         for (std::vector<ArgumentDescription>::iterator it = args.begin(); it != args.end(); ++it) {
-            cout << it->type <<" ";
-            cout << coloron << it->name << coloroff;
+            sresult << it->type <<" ";
+            sresult << coloron << it->name << coloroff;
             if ( it+1 != args.end() )
-                cout << ", ";
+                sresult << ", ";
             else
-                cout << " ";
+                sresult << " ";
         }
-        cout << ")"<<nl;
-        cout << "   " << ops->methods()->getDescription( m )<<nl;
+        sresult << ")"<<nl;
+        sresult << "   " << ops->methods()->getDescription( m )<<nl;
         for (std::vector<ArgumentDescription>::iterator it = args.begin(); it != args.end(); ++it)
-            cout <<"   "<< it->name <<" : " << it->description << nl;
+            sresult <<"   "<< it->name <<" : " << it->description << nl;
     }
 
     void TaskBrowser::printEvent( const std::string m, EventService* ops )
     {
         std::vector<ArgumentDescription> args;
         args = ops->getArgumentList( m );
-        cout << "  Event     : "<< ops->getResultType(m)<<" " << coloron << m << coloroff<< "( ";
+        sresult << "  Event     : "<< ops->getResultType(m)<<" " << coloron << m << coloroff<< "( ";
         for (std::vector<ArgumentDescription>::iterator it = args.begin(); it != args.end(); ++it) {
-            cout << it->type <<" ";
-            cout << coloron << it->name << coloroff;
+            sresult << it->type <<" ";
+            sresult << coloron << it->name << coloroff;
             if ( it+1 != args.end() )
-                cout << ", ";
+                sresult << ", ";
             else
-                cout << " ";
+                sresult << " ";
         }
-        cout << ")"<<nl;
-        cout << "   " << ops->getDescription( m )<<nl;
+        sresult << ")"<<nl;
+        sresult << "   " << ops->getDescription( m )<<nl;
         for (std::vector<ArgumentDescription>::iterator it = args.begin(); it != args.end(); ++it)
-            cout <<"   "<< it->name <<" : " << it->description << nl;
+            sresult <<"   "<< it->name <<" : " << it->description << nl;
     }
 
 }
