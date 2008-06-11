@@ -13,6 +13,7 @@
 #include <dirent.h>
 #include <iostream>
 #include <fstream>
+#include <set>
 
 using namespace Orocos;
 
@@ -22,6 +23,11 @@ namespace OCL
     using namespace RTT;
 
     std::vector<pair<string,void*> > DeploymentComponent::LoadedLibs;
+
+    /**
+     * I'm using a set to speed up lookups.
+     */
+    static std::set<string> valid_names;
 
 #define ORO_str(s) ORO__str(s)
 #define ORO__str(s) #s
@@ -151,6 +157,21 @@ namespace OCL
         
 
         this->configure();
+
+        valid_names.insert("AutoUnload");
+        valid_names.insert("UseNamingService");
+        valid_names.insert("Server");
+        valid_names.insert("AutoConf");
+        valid_names.insert("AutoStart");
+        valid_names.insert("AutoConnect");
+        valid_names.insert("PropertyFile");
+        valid_names.insert("UpdateProperties");
+        valid_names.insert("ProgramScript");
+        valid_names.insert("StateMachineScript");
+        valid_names.insert("Ports");
+        valid_names.insert("Peers");
+        valid_names.insert("Activity");
+
     }
 
     bool DeploymentComponent::configureHook()
@@ -389,12 +410,17 @@ namespace OCL
                         // Check if it is a propertybag.
                         Property<PropertyBag> comp = *it;
                         if ( !comp.ready() ) {
-                            log(Error)<< "Property '"<< *it <<"' is not a PropertyBag." << endlog();
+                            log(Error)<< "Property '"<< *it <<"' is should be a struct, Include or Import statement." << endlog();
                             valid = false;
                             continue;
                         }
                         // Parse the options before creating the component:
                         for (PropertyBag::const_iterator optit= comp.rvalue().begin(); optit != comp.rvalue().end();optit++) {
+                            if ( valid_names.find( (*optit)->getName() ) == valid_names.end() ) {
+                                log(Error) << "Unknown type syntax: '"<< (*optit)->getName() << "' in component struct "<< comp.getName() <<endlog();
+                                valid = false;
+                                continue;
+                            }
                             if ( (*optit)->getName() == "AutoConnect" ) {
                                 Property<bool> ps = comp.rvalue().getProperty<bool>("AutoConnect");
                                 if (!ps.ready()) {
