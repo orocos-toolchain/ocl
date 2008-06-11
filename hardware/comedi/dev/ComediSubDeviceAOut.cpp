@@ -153,7 +153,7 @@ namespace OCL
     {
         unsigned int ival = 0;
         if ( myCard && myCard->read( _subDevice,chan, _sd_range[chan],
-                                     _aref[chan], ival ) ) {
+                                     _aref[chan], ival ) == 0 ) {
             dvalue = min[chan] + ival / resolution(chan);
             return 0;
         }
