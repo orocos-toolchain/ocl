@@ -47,23 +47,26 @@ namespace OCL
             ComponentData() 
                 : instance(0), act(0), loaded(false),
                   autostart(false), autoconf(false),
-                  autoconnect(false), server(false),
+                  autoconnect(false), proxy(false), server(false),
                   use_naming(true)
             {}
             /**
-             * The component instance.
+             * The component instance. This is always a valid pointer.
              */
             RTT::TaskContext* instance;
             /**
              * The activity created by DeploymentComponent.
+             * May be null or an activity that we own.
              */
             ActivityInterface* act;
             /**
-             * If it was loaded by DeploymentComponent.
+             * True if it was loaded and created by DeploymentComponent.
+             * If true, instance may be deleted during
+             * unloadComponent.
              */
             bool loaded;
             bool autostart, autoconf, autoconnect;
-            bool server, use_naming;
+            bool proxy, server, use_naming;
         };
 
         /**

@@ -65,7 +65,15 @@ CorbaDeploymentComponent::~CorbaDeploymentComponent()
     {
         if ( dynamic_cast<RTT::Corba::ControlTaskProxy*>(c) ) {
             // is a proxy.
-            return true;
+            for ( CompList::iterator cit = comps.begin(); cit != comps.end(); ++cit) {
+                if (cit->second.instance == c) {
+                    cit->second.proxy = true;
+                    return true;
+                }
+            }
+            // impossible: proxy not found
+            assert(false);
+            return false;
         }
         bool use_naming = comps[c->getName()].use_naming;
         bool server = comps[c->getName()].server;

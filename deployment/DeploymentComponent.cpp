@@ -1,4 +1,4 @@
-
+        
 #include <rtt/RTT.hpp>
 #include "DeploymentComponent.hpp"
 #include <rtt/Activities.hpp>
@@ -274,7 +274,7 @@ namespace OCL
         }
 
         // Detect already connected ports.
-        if ( ap->connected() && bp->connected() ) {
+        if ( ap->ready() && bp->ready() ) {
             if (ap->connection() == bp->connection() ) {
                 log(Info) << "Port '"<< ap->getName() << "' of Component '"<<a->getName()
                           << "' is already connected to port '"<< bp->getName() << "' of Component '"<<b->getName()<<"'."<<endlog();
@@ -696,7 +696,7 @@ namespace OCL
                 for (PropertyBag::const_iterator it= peers.rvalue().begin(); it != peers.rvalue().end();it++) {
                     Property<string> nm = (*it);
                     if ( nm.ready() )
-                        this->addPeer( comp.getName(), nm.value() );
+                        this->addPeer( comps[comp.getName()].instance->getName(), nm.value() );
                     else {
                         log(Error) << "Wrong property type in Peers struct. Expected property of type 'string',"
                                    << " got type "<< (*it)->getType() <<endlog();
@@ -901,7 +901,7 @@ namespace OCL
         // 1. Stop all activities, give components chance to cleanup.
         for ( CompList::iterator cit = comps.begin(); cit != comps.end(); ++cit) {
             ComponentData* it = &(cit->second);
-            if ( it->instance )
+            if ( it->instance && !it->proxy )
                 if ( it->instance->engine()->getActivity() == 0 || 
                      it->instance->engine()->getActivity()->isActive() == false ||
                      it->instance->stop() ) {
@@ -921,8 +921,9 @@ namespace OCL
         // 1. Cleanup all activities, give components chance to cleanup.
         for ( CompList::iterator cit = comps.begin(); cit != comps.end(); ++cit) {
             ComponentData* it = &(cit->second);
-            if (it->instance)
-                if ( it->instance->getTaskState() < TaskCore::Stopped || it->instance->cleanup() ) {
+            if (it->instance && !it->proxy)
+                if ( it->instance->getTaskState() <= TaskCore::Stopped ) {
+                    it->instance->cleanup();
                     log(Info) << "Cleaned up "<< it->instance->getName() <<endlog();
                 } else {
                     log(Error) << "Could not cleanup Component "<< it->instance->getName() << " (not Stopped)"<<endlog();
@@ -942,11 +943,13 @@ namespace OCL
             if ( it->loaded && it->instance ) {
                 if ( it->instance->engine()->getActivity() == 0 ||
                      it->instance->engine()->getActivity()->isActive() == false ) {
-		      
                     std::string name = cit->first;
-                    log(Debug) << "Disconnecting " <<name <<endlog();
-                    it->instance->disconnect();
-                    log(Debug) << "Terminating " <<name <<endlog();
+                    if (!it->proxy ) {
+                        log(Debug) << "Disconnecting " <<name <<endlog();
+                        it->instance->disconnect();
+                        log(Debug) << "Terminating " <<name <<endlog();
+                    } else
+                        log(Debug) << "Removing proxy for " <<name <<endlog();
                     // delete the activity before the TC !
                     delete it->act;
                     it->act = 0;
@@ -1321,21 +1324,36 @@ namespace OCL
 
     bool DeploymentComponent::unloadComponent(const std::string& name)
     {
-        if ( comps[name].loaded == false ) {
-            log(Error) << "Can't unload component "<<name<<": not loaded by "<<this->getName()<<endlog();
-            comps.erase(name);
-            return false;
+        std::string regname = name;
+        TaskContext* peer = this->getPeer(name);
+        if (peer) {
+            for(CompList::iterator it = comps.begin(); it != comps.end(); ++it)
+                if (it->second.instance == peer) {
+                    regname = it->first;
+                    break;
+                }
+        } else {
+            // no such peer: try looking for the map name
+            if ( comps.count( name ) == 0 || comps[name].loaded == false ) {
+                log(Error) << "Can't unload component '"<<name<<"': not loaded by "<<this->getName()<<endlog();
+                return false;
+                }
+            // regname and name are equal.
+            peer = comps[name].instance;
         }
-        TaskContext* peer = comps[name].instance;
+            
         assert(peer);
         if ( peer->isRunning() ) {
             log(Error) << "Can't unload component "<<name<<" since it is still running."<<endlog();
             return false;
         }
-        // todo: write properties ?
-        peer->disconnect(); // if it is no longer a peer of this, that's ok.
+        try {
+            peer->disconnect(); // if it is no longer a peer of this, that's ok.
+        } catch(...) {
+            log(Warning) << "Disconnecting caused exception." <<endlog();
+        }
         delete peer;
-        comps.erase(name);
+        comps.erase(regname);
         log(Info) << "Successfully unloaded component "<<name<<"."<<endlog();
         return true;
     }

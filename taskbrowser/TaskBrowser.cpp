@@ -639,7 +639,11 @@ namespace OCL
                 } else if ( macrorecording) {
                     macrotext += command +'\n';
                 } else {
-                    this->evalCommand( command );
+                    try {
+                        this->evalCommand( command );
+                    } catch(...){
+                        cerr << "The command '"<<command<<"' caused an unknown exception and could not be completed."<<endl;
+                    }
                     // a command was typed... clear storedline such that a next 'list'
                     // shows the 'IP' again.
                     storedline = -1;
@@ -1551,6 +1555,11 @@ namespace OCL
             cerr << "No such peer or object: " << peerp << endl;
             return;
         }
+        
+        if ( !peer || !peer->ready()) {
+            cout << nl << " Connection to peer "+peerp+" lost (peer->ready() == false)." <<endlog();
+            return;
+        }
 
         if ( peer == taskobject ) 
             sresult <<nl<<" Listing TaskContext "<< green << peer->getName()<<coloroff<< " :"<<nl;
@@ -1635,7 +1644,7 @@ namespace OCL
                         sresult << "(C) " << setw(11)<<right<< port->getTypeInfo()->getTypeName();
                     sresult << " "
                          << coloron <<setw( 14 )<<left<< *it << coloroff;
-                    if ( port->connection() ) 
+                    if ( port->ready() ) 
                         sresult << " = " <<port->connection()->getDataSource();
                     else {
                         ConnectionInterface::shared_ptr c = port->createConnection();
@@ -1688,8 +1697,8 @@ namespace OCL
 
             objlist = peer->getPeerList();
             if ( !objlist.empty() )
-	      for(vector<string>::iterator it = objlist.begin(); it != objlist.end(); ++it) {
-  		    assert( peer->getPeer(*it) );
+                for(vector<string>::iterator it = objlist.begin(); it != objlist.end(); ++it) {
+                    assert( peer->getPeer(*it) );
                     sresult << *it << "["<<getTaskStatusChar(peer->getPeer(*it))<<"] ";
 	      }
             else
