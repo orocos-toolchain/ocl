@@ -4,6 +4,7 @@
                            -------------------
     begin                : Fri Aug 4 2006
     copyright            : (C) 2006 Bas Kemper
+                           2007-2008 Ruben Smits
     email                : kst@ <my name> .be
  
  ***************************************************************************
@@ -38,6 +39,9 @@
 
 using RTT::Logger;
 using RTT::OS::Mutex;
+
+#include "ocl/ComponentLoader.hpp"
+ORO_LIST_COMPONENT_TYPE(OCL::TcpReporting);
 
 namespace OCL
 {
@@ -207,10 +211,12 @@ namespace OCL
 
 namespace OCL
 {
-    TcpReporting::TcpReporting(std::string fr_name /*= "Reporting"*/, unsigned short port)
-        : ReportingComponent( fr_name )
+    TcpReporting::TcpReporting(std::string fr_name /*= "Reporting"*/)
+        : ReportingComponent( fr_name ),
+          port_prop("port","port to listen/send to",3142)
     {
         _finishing = false;
+        this->properties()->addProperty(&port_prop);
     }
 
     TcpReporting::~TcpReporting()
@@ -222,13 +228,18 @@ namespace OCL
         makeReport();
         return &report;
     }
+    
+    bool TcpReporting::configureHook(){
+        port=port_prop.value();
+        return true;
+    }
 
     bool TcpReporting::startHook()
     {
         RTT::Logger::In in("TcpReporting::startup");
         fbody = new RTT::SocketMarshaller(this);
         this->addMarshaller( 0, fbody );
-        ListenThread::createInstance( fbody, 3142 );
+        ListenThread::createInstance( fbody, port );
         return ReportingComponent::startHook();
     }
 

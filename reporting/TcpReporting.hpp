@@ -177,7 +177,8 @@ namespace OCL
          * reported to the client anymore.
          */
         bool _finishing;
-
+        unsigned int port;
+        RTT::Property<unsigned int> port_prop;
     protected:
         /**
          * Marshaller
@@ -191,9 +192,10 @@ namespace OCL
          * @param fr_name   Name of the TCP reporting component.
          * @param port      Port to listen on.
          */
-        TcpReporting(std::string fr_name = "ReportingComponent", unsigned short port = 3142);
+        TcpReporting(std::string fr_name = "ReportingComponent");
         ~TcpReporting();
 
+        bool configureHook();
         bool startHook();
 
         void stopHook();
