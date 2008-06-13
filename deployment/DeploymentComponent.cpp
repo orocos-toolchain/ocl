@@ -1166,6 +1166,7 @@ namespace OCL
         FactoryMap* (*getfactory)(void) = 0;
         FactoryMap* fmap = 0;
         char* error = 0;
+        bool is_component = false;
         getfactory = (FactoryMap*(*)(void))( dlsym(handle, "getComponentFactoryMap") );
         if ((error = dlerror()) == NULL) {
             // symbol found, register factories...
@@ -1176,7 +1177,7 @@ namespace OCL
             for (FactoryMap::iterator it = fmap->begin(); it != fmap->end(); ++it)
                 log(Debug) <<" "<<it->first;
             log(Debug) << endlog();
-            return true;
+            is_component = true;
         } else {
             log(Debug) << error << endlog();
         }
@@ -1204,7 +1205,7 @@ namespace OCL
             } else {
                 log(Info) << "Loaded single component library '"<< libname <<"'"<<endlog();
             }
-            return true;
+            is_component = true;
         } else {
             log(Debug) << error << endlog();
         }
@@ -1245,7 +1246,8 @@ namespace OCL
 
 
         // plain library
-        log(Info) << "Loaded shared library '"<< so_name <<"'"<<endlog();
+        if (is_component == false)
+            log(Info) << "Loaded shared library '"<< so_name <<"'"<<endlog();
         return true;
     }
 
