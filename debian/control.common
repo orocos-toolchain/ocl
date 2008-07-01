@@ -5,6 +5,17 @@ Build-Depends: debhelper (>= 5), autotools-dev, liborocos-rtt-corba-lxrt-dev ( >
 Standards-Version: 3.7.2
 Section: libs
 
+Package: orocos-ocl-dbg
+Section: libdevel
+Priority: extra
+Architecture: any
+Depends: orocos-ocl-lxrt-bin (= ${binary:Version}), orocos-ocl-lxrt-dev (= ${binary:Version}),
+        orocos-ocl-gnulinux-bin (= ${binary:Version}), orocos-ocl-gnulinux-dev (= ${binary:Version})
+Description: Orocos Component Library (debug symbols)
+ The Orocos Component Library contains components for real-time control of robots and machines.
+ .
+ This package contains the debugging symbols.
+
 Package: liborocos-ocl-dev
 Section: libdevel
 Architecture: any
