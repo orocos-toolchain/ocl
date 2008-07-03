@@ -18,6 +18,10 @@ namespace OCL
     public:
         CorbaDeploymentComponent(const std::string& name);
         virtual ~CorbaDeploymentComponent();
+        /**
+         * Creates a ControlTask CORBA server for a given peer TaskContext.
+         */
+        bool createServer(const std::string& tc, bool use_naming);
     };
 
 }

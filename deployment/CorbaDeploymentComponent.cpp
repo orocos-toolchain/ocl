@@ -1,6 +1,7 @@
 #include "CorbaDeploymentComponent.hpp"
 #include <rtt/corba/ControlTaskProxy.hpp>
 #include <rtt/corba/ControlTaskServer.hpp>
+#include <rtt/Method.hpp>
 #include "ocl/ComponentLoader.hpp"
 #include <fstream>
 
@@ -47,19 +48,37 @@ namespace OCL
     }
     
 
-CorbaDeploymentComponent::CorbaDeploymentComponent(const std::string& name)
-: DeploymentComponent(name)
-{
-    log(Info) << "Registering ControlTaskProxy factory." <<endlog();
-    getFactories()["ControlTaskProxy"] = &createControlTaskProxy; 
-    getFactories()["CORBA"] = &createControlTaskProxy; 
-    getFactories()["IORFile"] = &createControlTaskProxyIORFile;
-    getFactories()["IOR"] = &createControlTaskProxyIOR;
-}
+    CorbaDeploymentComponent::CorbaDeploymentComponent(const std::string& name)
+        : DeploymentComponent(name)
+    {
+        log(Info) << "Registering ControlTaskProxy factory." <<endlog();
+        getFactories()["ControlTaskProxy"] = &createControlTaskProxy; 
+        getFactories()["CORBA"] = &createControlTaskProxy; 
+        getFactories()["IORFile"] = &createControlTaskProxyIORFile;
+        getFactories()["IOR"] = &createControlTaskProxyIOR;
 
-CorbaDeploymentComponent::~CorbaDeploymentComponent()
-{
-}
+        this->methods()->addMethod(method("server",&CorbaDeploymentComponent::createServer,this),
+                                   "Creates a CORBA ControlTask server for the given component",
+                                   "tc", "Name of the TaskContext (must be a peer).",
+                                   "UseNamingService","Set to true to use the naming service.");
+    }
+
+    CorbaDeploymentComponent::~CorbaDeploymentComponent()
+    {
+    }
+
+    bool CorbaDeploymentComponent::createServer(const std::string& tc, bool use_naming)
+    {
+        TaskContext* peer = this->getPeer(tc);
+        if (!peer) {
+            log(Error)<<"No such peer: "<< tc <<endlog();
+            return false;
+        }
+        if ( ::RTT::Corba::ControlTaskServer::Create(peer, use_naming) != 0 )
+            return true;
+        return false;
+    }
+
 
     bool CorbaDeploymentComponent::componentLoaded(TaskContext* c)
     {
