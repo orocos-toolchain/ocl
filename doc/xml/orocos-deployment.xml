@@ -142,6 +142,10 @@
 	  the TaskBrowser prompt, the application exits.</para></listitem>
 	</itemizedlist>
       </para>
+      <para>
+	For all three programs, use the <option>--help</option> command line
+	option to see all accepted program options.
+      </para>
     </section>
   </section>
   <section>
@@ -235,6 +239,31 @@
    OCL::ConsoleReporting
    OCL::FileReporting
 (void)</screen>
+	</para>
+	<para>
+	  In order to manage your XML files, one XML file can include
+	  another with the 'Include' directive. The include directive
+	  may occur at any place in the XML file (but under
+	  &lt;properties&gt;) and will be processed as-if the included
+	  file is inserted at that point.
+	</para>
+	<warning>
+	  <para>
+	    This option is new and experimental and may change in
+	    meaning and/or name in the future.
+	  </para>
+	</warning>
+	<para>
+	  In XML, the include statement looks like:
+	  <programlisting><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "cpf.dtd">
+<properties>
+  <!-- ....  -->
+
+  <simple name="Include" type="string"><value>default-imports.xml</value></simple>
+  <simple name="Include" type="string"><value>default-components.xml</value></simple>
+
+</properties>]]></programlisting>
 	</para>
       </section>
       <section>
@@ -374,7 +403,8 @@
 	  peer ports which have the same name and type.  This flag is
 	  read during the <function>configureComponents()</function>
 	  step of the DeploymentComponent.  Both components must have
-	  the <option>AutoConnect</option> element set to 1 in order
+	  the <option>AutoConnect</option> element set to 1 <emphasis>and
+	  one must be peer of the other</emphasis> in order
 	  to trigger automatic connection of ports. It is possible
 	  that a port is connected to one component using the Ports
 	  element and to another component using the
@@ -489,6 +519,12 @@
 	  Naming Service to register its name. If this is not wanted,
 	  set the <option>UseNamingService</option> property to 0.
 	</para>
+	<para>
+	  The script method equivalent of the above XML construct is:
+	  <programlisting>  server("Reporter", true)</programlisting>
+	  Which will create a CORBA server for the Reporter peer, after
+	  the Reporter was loaded with loadComponent().
+	</para>
       </section>
       <section>
 	<title>Connecting to CORBA components</title>
@@ -590,6 +626,14 @@
 	   allowed to put all the ORO_LIST_COMPONENT_TYPE macros
 	   in a single file. 
 	 </para>
+	 <note>
+	   <para>
+	     You may not mix ORO_CREATE_COMPONENT and
+	     ORO_CREATE_COMPONENT_TYPE/ORO_LIST_COMPONENT_TYPE macros
+	     in one library. You must stick to one system, even
+	     if you link libraries.
+	   </para>
+	 </note>
       </section>
       <section>
 	<title>Compiling and linking a component library</title>
