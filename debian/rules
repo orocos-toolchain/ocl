@@ -24,6 +24,8 @@ else
 	CFLAGS += -O2
 endif
 
+CXXFLAGS = $(CFLAGS)
+
 # shared library versions, option 1
 #version=2.0.5
 #major=2
@@ -35,7 +37,7 @@ build.gnulinux.corba/Makefile: configure
 	dh_testdir
 # Add here commands to configure the package.
 	mkdir -p  build.gnulinux.corba
-	cd build.gnulinux.corba ;  CFLAGS="$(CFLAGS)" LDFLAGS="-Wl,-z,defs" cmake -DCMAKE_INSTALL_PREFIX=/usr -DOROCOS_INSTALL=/usr -C $(CURDIR)/debian/CMakeCanComedi.txt -DOROCOS_TARGET:STRING=gnulinux  ..
+	cd build.gnulinux.corba ;  CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="-Wl,-z,defs" cmake -DCMAKE_INSTALL_PREFIX=/usr -DOROCOS_INSTALL=/usr -C $(CURDIR)/debian/CMakeCanComedi.txt -DOROCOS_TARGET:STRING=gnulinux  ..
 
 build.lxrt.corba/Makefile: configure
 	dh_testdir
