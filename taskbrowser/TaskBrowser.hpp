@@ -1,12 +1,40 @@
+#ifndef NO_GPL
 /***************************************************************************
-  tag: Peter Soetens  Tue Dec 21 22:43:08 CET 2004  TaskBrowser.hpp 
+  tag: Peter Soetens  Thu Jul 3 15:31:33 CEST 2008  TaskBrowser.hpp
+
+                        TaskBrowser.hpp -  description
+                           -------------------
+    begin                : Thu July 03 2008
+    copyright            : (C) 2008 Peter Soetens
+    email                : peter.soetens@fmtc.be
+
+ ***************************************************************************
+ *                                                                         *
+ *   This program is free software; you can redistribute it and/or modify  *
+ *   it under the terms of the GNU General Public License as published by  *
+ *   the Free Software Foundation; either version 2 of the License, or     *
+ *   (at your option) any later version.                                   *
+ *                                                                         *
+ *   This program is distributed in the hope that it will be useful,       *
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU     *
+ *   General Public License for more details.                              *
+ *                                                                         *
+ *   You should have received a copy of the GNU General Public             *
+ *   License along with this program; if not, write to the Free Software   *
+ *   Foundation, Inc., 59 Temple Place,                                    *
+ *   Suite 330, Boston, MA  02111-1307  USA                                *
+ ***************************************************************************/
+#else
+/***************************************************************************
+  tag: Peter Soetens  Tue Dec 21 22:43:08 CET 2004  TaskBrowser.hpp
 
                         TaskBrowser.hpp -  description
                            -------------------
     begin                : Tue December 21 2004
     copyright            : (C) 2004 Peter Soetens
     email                : peter.soetens@mech.kuleuven.ac.be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -24,11 +52,11 @@
  *   Suite 330, Boston, MA  02111-1307  USA                                *
  *                                                                         *
  ***************************************************************************/
- 
- 
+#endif
+
 #ifndef ORO_TASKBROWSER_HPP
 #define ORO_TASKBROWSER_HPP
- 
+
 
 #include <rtt/RTT.hpp>
 #include <rtt/TaskContext.hpp>
@@ -38,7 +66,6 @@
 #include <string>
 #include <sstream>
 #include <vector>
-
 
 #include <ocl/OCL.hpp>
 
@@ -50,7 +77,7 @@ namespace OCL
      * If your console does not support colors or you want a different
      * prompt, the member variables which control these 'escape sequences'
      * are public and may be changed. The TaskBrowser is most commonly used
-     * with its loop() method, but prior to/after calling loop(), you can 
+     * with its loop() method, but prior to/after calling loop(), you can
      * invoke some other commands, to control what is displayed or to
      * execute a fixed set of commands prior to showng the prompt.
      */
@@ -85,6 +112,7 @@ namespace OCL
         PTrace ptraces;
         PTrace straces;
 
+#ifndef NO_GPL
         /* Read a string, and return a pointer to it.
            Returns NULL on EOF. */
         char *rl_gets ();
@@ -96,25 +124,22 @@ namespace OCL
         static std::vector<std::string>::iterator complete_iter;
 
         static std::string component;
-        static std::string object;
         static std::string peerpath;
-        static std::string method;
-        static std::string datasource;
         static std::string text;
 
         // helper function
         static char* dupstr( const char *s );
 
-        static RTT::TaskContext* findPeer( std::string comm );
-
         static void find_completes();
-        
+
         static void find_ops();
         static void find_peers(std::string::size_type startpos);
 
         static char ** orocos_hmi_completion ( const char *text, int start, int end );
 
         static char *command_generator( const char *_text, int state );
+#endif
+        static RTT::TaskContext* findPeer( std::string comm );
 
     protected:
 
@@ -168,7 +193,7 @@ namespace OCL
 
         /**
          * Execute a specific browser action, such as
-         * "loadProgram pname", "loadStateMachine smname", "unloadProgram pname", 
+         * "loadProgram pname", "loadStateMachine smname", "unloadProgram pname",
          * "unloadStateMachine smname"
          */
         void browserAction(std::string& act );
@@ -182,22 +207,22 @@ namespace OCL
          * Print the help page.
          */
         void printHelp();
-        
+
         /**
          * Print info this peer or another peer at "peerpath".
          */
         void printInfo(const std::string& peerpath);
-        
+
         /**
          * Print the synopsis of a command.
          */
         void printCommand( const std::string c, OperationInterface* ops );
-                
+
         /**
          * Print the synopsis of a DataSource.
          */
         void printSource( const std::string m );
-                
+
         /**
          * Print the synopsis of a Method.
          */
@@ -227,7 +252,7 @@ namespace OCL
         ~TaskBrowser();
 
         /**
-         * @brief Call this method from ORO_main() to 
+         * @brief Call this method from ORO_main() to
          * process keyboard input and thus startup the
          * TaskBrowser.
          */
@@ -278,7 +303,7 @@ namespace OCL
          */
         static std::string blue;
 
-        /** 
+        /**
          * Evaluate command
          */
         void evalCommand(std::string& comm );

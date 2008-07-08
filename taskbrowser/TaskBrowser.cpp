@@ -1,12 +1,40 @@
+#ifndef NO_GPL
 /***************************************************************************
-  tag: Peter Soetens  Tue Dec 21 22:43:07 CET 2004  TaskBrowser.cxx 
+  tag: Peter Soetens  Thu Jul 3 15:31:34 CEST 2008  TaskBrowser.cpp
+
+                        TaskBrowser.cpp -  description
+                           -------------------
+    begin                : Thu July 03 2008
+    copyright            : (C) 2008 Peter Soetens
+    email                : peter.soetens@fmtc.be
+
+ ***************************************************************************
+ *                                                                         *
+ *   This program is free software; you can redistribute it and/or modify  *
+ *   it under the terms of the GNU General Public License as published by  *
+ *   the Free Software Foundation; either version 2 of the License, or     *
+ *   (at your option) any later version.                                   *
+ *                                                                         *
+ *   This program is distributed in the hope that it will be useful,       *
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU     *
+ *   General Public License for more details.                              *
+ *                                                                         *
+ *   You should have received a copy of the GNU General Public             *
+ *   License along with this program; if not, write to the Free Software   *
+ *   Foundation, Inc., 59 Temple Place,                                    *
+ *   Suite 330, Boston, MA  02111-1307  USA                                *
+ ***************************************************************************/
+#else
+/***************************************************************************
+  tag: Peter Soetens  Tue Dec 21 22:43:07 CET 2004  TaskBrowser.cxx
 
                         TaskBrowser.cxx -  description
                            -------------------
     begin                : Tue December 21 2004
     copyright            : (C) 2004 Peter Soetens
     email                : peter.soetens@mech.kuleuven.ac.be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -24,8 +52,8 @@
  *   Suite 330, Boston, MA  02111-1307  USA                                *
  *                                                                         *
  ***************************************************************************/
- 
- 
+#endif
+
 
 #include <rtt/Logger.hpp>
 #include <rtt/MultiVector.hpp>
@@ -45,8 +73,10 @@
 #include <iomanip>
 #include <deque>
 #include <stdio.h>
+#ifndef NO_GPL
 #include <readline/readline.h>
 #include <readline/history.h>
+#endif
 #include <boost/bind.hpp>
 #include <boost/lambda/lambda.hpp>
 
@@ -56,15 +86,14 @@ namespace OCL
 {
     using namespace RTT;
     using namespace RTT::detail;
+#ifndef NO_GPL
     std::vector<std::string> TaskBrowser::candidates;
     std::vector<std::string> TaskBrowser::completes;
     std::vector<std::string>::iterator TaskBrowser::complete_iter;
     std::string TaskBrowser::component;
-    std::string TaskBrowser::object;
     std::string TaskBrowser::peerpath;
-    std::string TaskBrowser::method;
-    std::string TaskBrowser::datasource;
     std::string TaskBrowser::text;
+#endif
     TaskContext* TaskBrowser::taskcontext = 0;
     OperationInterface* TaskBrowser::taskobject = 0;
     TaskContext* TaskBrowser::peer = 0;
@@ -90,14 +119,17 @@ namespace OCL
     void ctrl_c_catcher(int sig)
     {
         ::signal(sig, SIG_IGN);
+#ifndef NO_GPL
 //        cerr <<nl<<"TaskBrowser intercepted Ctrl-C. Type 'quit' to exit."<<endl;
 //         rl_delete_text(0, rl_end);
 //         //cerr << "deleted " <<deleted <<endl;
         rl_free_line_state();
 //         rl_cleanup_after_signal();
+#endif
         ::signal(SIGINT, ctrl_c_catcher);
     }
 
+#ifndef NO_GPL
     char *TaskBrowser::rl_gets ()
     {
         /* If the buffer has already been allocated,
@@ -115,6 +147,7 @@ namespace OCL
         } else {
             p = "> ";
         }
+
         if (rl_set_signals() != 0)
             cerr << "Error setting signals !" <<endl;
         line_read = readline ( p.c_str() );
@@ -124,10 +157,9 @@ namespace OCL
         if (line_read && *line_read) {
             // do not store "quit"
             string s = line_read;
-            if (s != "quit") 
+            if (s != "quit")
                 add_history (line_read);
         }
-
         return (line_read);
     }
 
@@ -154,7 +186,7 @@ namespace OCL
             }
         else
             ++complete_iter;
-            
+
         // return zero if nothing more is found
         if ( complete_iter == completes.end() )
             return 0;
@@ -164,7 +196,7 @@ namespace OCL
 
     /**
      * This is the entry function to look up all possible completions at once.
-     * 
+     *
      */
     void TaskBrowser::find_completes() {
         std::string::size_type pos;
@@ -172,7 +204,7 @@ namespace OCL
         std::string line( rl_line_buffer );
 
         // complete on 'cd' or 'ls' :
-        if ( line.find(std::string("cd ")) == 0 || line.find(std::string("ls ")) == 0) { 
+        if ( line.find(std::string("cd ")) == 0 || line.find(std::string("ls ")) == 0) {
             //cerr <<endl<< "switch to :" << text<<endl;
 //             pos = text.rfind(".");
             pos = line.find(" ");      // pos+1 is first peername
@@ -216,20 +248,20 @@ namespace OCL
         }
 
         // TaskBrowser commands :
-        if ( line.find(std::string(".")) == 0 ) { 
+        if ( line.find(std::string(".")) == 0 ) {
             // first make a list of all sensible completions.
             std::vector<std::string> tbcoms;
-            tbcoms.push_back(".loadProgram "); 
-            tbcoms.push_back(".unloadProgram "); 
-            tbcoms.push_back(".loadStateMachine "); 
-            tbcoms.push_back(".unloadStateMachine "); 
-            tbcoms.push_back(".light"); 
-            tbcoms.push_back(".dark"); 
-            tbcoms.push_back(".nocolors"); 
-            tbcoms.push_back(".connect"); 
-            tbcoms.push_back(".record"); 
-            tbcoms.push_back(".end"); 
-            tbcoms.push_back(".cancel"); 
+            tbcoms.push_back(".loadProgram ");
+            tbcoms.push_back(".unloadProgram ");
+            tbcoms.push_back(".loadStateMachine ");
+            tbcoms.push_back(".unloadStateMachine ");
+            tbcoms.push_back(".light");
+            tbcoms.push_back(".dark");
+            tbcoms.push_back(".nocolors");
+            tbcoms.push_back(".connect");
+            tbcoms.push_back(".record");
+            tbcoms.push_back(".end");
+            tbcoms.push_back(".cancel");
 
             // then see which one matches the already typed line :
             for( std::vector<std::string>::iterator it = tbcoms.begin();
@@ -242,7 +274,7 @@ namespace OCL
 
         if ( line.find(std::string("list ")) == 0
              || line.find(std::string("trace ")) == 0
-             || line.find(std::string("untrace ")) == 0) { 
+             || line.find(std::string("untrace ")) == 0) {
             stringstream ss( line.c_str() ); // copy line into ss.
             string lcommand;
             ss >> lcommand;
@@ -277,8 +309,8 @@ namespace OCL
 
         // complete on peers and objects, and find the peer the user wants completion for
         find_peers(startpos);
-        // now proceed with 'this->peer' as TC, 
-        // this->taskobject as TO and 
+        // now proceed with 'this->peer' as TC,
+        // this->taskobject as TO and
         // this->component as object and
         // this->peerpath as the text leading up to 'this->component'.
 
@@ -294,9 +326,9 @@ namespace OCL
         // TODO: concat two cases below as text.find("cd")...
         // check if the user is tabbing on an empty command, then add the console commands :
         if (  line.empty() ) {
-            completes.push_back("cd "); 
+            completes.push_back("cd ");
             completes.push_back("cd ..");
-            completes.push_back("ls"); 
+            completes.push_back("ls");
             completes.push_back("help");
             completes.push_back("quit");
             completes.push_back("list");
@@ -312,9 +344,9 @@ namespace OCL
         // only try this if text is not empty.
         if ( !text.empty() ) {
             if ( std::string( "cd " ).find(text) == 0 )
-                completes.push_back("cd "); 
+                completes.push_back("cd ");
             if ( std::string( "ls" ).find(text) == 0 )
-                completes.push_back("ls"); 
+                completes.push_back("ls");
             if ( std::string( "cd .." ).find(text) == 0 )
                 completes.push_back("cd ..");
             if ( std::string( "help" ).find(text) == 0 )
@@ -335,7 +367,7 @@ namespace OCL
                 completes.push_back("enter");
         }
     }
-        
+
     void TaskBrowser::find_ops()
     {
         // the last (incomplete) text is stored in 'component'.
@@ -407,7 +439,7 @@ namespace OCL
                         peer = peer->getPeer( item );
                         taskobject = peer;
                         itemfound = true;
-                    } 
+                    }
                 if ( itemfound ) { // if "." found and correct path
                     peerpath += to_parse.substr(startpos, endpos) + ".";
                     if ( endpos != std::string::npos )
@@ -437,7 +469,7 @@ namespace OCL
             // add peer's completes:
             v = peer->getPeerList();
             for (TaskContext::PeerList::iterator i = v.begin(); i != v.end(); ++i) {
-                if ( i->find( component ) == 0 ) { // only add if match 
+                if ( i->find( component ) == 0 ) { // only add if match
                     completes.push_back( peerpath + *i + "." );
                     //cerr << "added " << peerpath+*i+"."<<endl;
                 }
@@ -446,7 +478,7 @@ namespace OCL
         // add taskobject's completes:
         v = taskobject->getObjectList();
         for (TaskContext::PeerList::iterator i = v.begin(); i != v.end(); ++i) {
-            if ( i->find( component ) == 0 && *i != "this" ) { // only add if match 
+            if ( i->find( component ) == 0 && *i != "this" ) { // only add if match
                 completes.push_back( peerpath + *i + "." );
                 //cerr << "added " << peerpath+*i+"."<<endl;
             }
@@ -460,9 +492,10 @@ namespace OCL
         matches = ( char ** ) 0;
 
         matches = rl_completion_matches ( text, &TaskBrowser::command_generator );
-            
+
         return ( matches );
     }
+#endif // !NO_GPL
 
     TaskBrowser::TaskBrowser( TaskContext* _c )
         : TaskContext("TaskBrowser"),
@@ -475,18 +508,21 @@ namespace OCL
         tb = this;
         context = tb;
         this->switchTaskContext(_c);
+#ifndef NO_GPL
         rl_completion_append_character = '\0'; // avoid adding spaces
         rl_attempted_completion_function = &TaskBrowser::orocos_hmi_completion;
-        
-        this->setColorTheme( darkbg );
-        this->enterTask();
 
         if ( read_history(".tb_history") != 0 ) {
             read_history("~/.tb_history");
         }
+#endif
+
+        this->setColorTheme( darkbg );
+        this->enterTask();
     }
 
     TaskBrowser::~TaskBrowser() {
+#ifndef NO_GPL
         if (line_read)
             {
                 free (line_read);
@@ -494,6 +530,7 @@ namespace OCL
         if ( write_history(".tb_history") != 0 ) {
             write_history("~/.tb_history");
         }
+#endif
     }
 
     /**
@@ -530,7 +567,7 @@ namespace OCL
 
 
     /**
-     * @brief Call this method from ORO_main() to 
+     * @brief Call this method from ORO_main() to
      * process keyboard input.
      */
     void TaskBrowser::loop()
@@ -539,18 +576,23 @@ namespace OCL
 
         // Intercept Ctrl-C
         ::signal( SIGINT, ctrl_c_catcher );
+#ifndef NO_GPL
         // Let readline intercept relevant signals
         if(rl_catch_signals == 0)
             cerr << "Error: not catching signals !"<<endl;
         if (rl_set_signals() != 0)
             cerr << "Error setting signals !" <<endl;
-
+#endif
         cout << nl<<
             coloron <<
             "  This console reader allows you to browse and manipulate TaskContexts."<<nl<<
             "  You can type in a command, event, method, expression or change variables."<<nl;
         cout <<"  (type '"<<underline<<"help"<<coloroff<<coloron<<"' for instructions)"<<nl;
+#ifndef NO_GPL
         cout << "    TAB completion and HISTORY is available ('bash' like)" <<coloroff<<nl<<nl;
+#else
+        cout << "    TAB completion and history is NOT available (LGPL-version)" <<coloroff<<nl<<nl;
+#endif
         while (1)
             {
                 if (!macrorecording) {
@@ -560,7 +602,7 @@ namespace OCL
                         cout << red << " In " << coloroff;
 
                     char state = getTaskStatusChar(taskcontext);
-                    
+
                     cout << "Task "<<green<< taskcontext->getName() <<coloroff<< "["<< state <<"]. (Status of last Command : ";
                     if ( command == 0 )
                         cout << "none";
@@ -572,7 +614,7 @@ namespace OCL
                         cout << red+"fail";
                     else if ( command->accepted() )
                         cout << blue+"queued";
-                    cout << coloroff << " )"; 
+                    cout << coloroff << " )";
                     // This 'endl' is important because it flushes the whole output to screen of all
                     // processing that previously happened, which was using 'nl'.
                     cout << endl;
@@ -600,7 +642,13 @@ namespace OCL
                 checkPorts();
                 // Call readline wrapper :
                 ::signal( SIGINT, ctrl_c_catcher ); // catch ctrl_c only when editting a line.
+#ifndef NO_GPL
                 std::string command( rl_gets() ); // copy over to string
+#else
+                std::string command;
+                cout << prompt;
+                cin >> command;
+#endif
                 str_trim( command, ' ');
                 ::signal( SIGINT, SIG_DFL );        // do not catch ctrl_c
                 cout << coloroff;
@@ -810,12 +858,12 @@ namespace OCL
             cerr << "Already in "<< c <<nl;
             return;
         }
-            
+
         if ( peer == tb ) {
             cerr << "Can not switch to TaskBrowser." <<nl;
             return;
         }
-            
+
         // findPeer has set 'peer' :
         this->switchTaskContext( peer );
     }
@@ -866,10 +914,10 @@ namespace OCL
     TaskContext* TaskBrowser::findPeer(std::string c) {
         // returns the one but last peer, which is the one we want.
         std::string s( c );
-            
+
         our_pos_iter_t parsebegin( s.begin(), s.end(), "teststring" );
         our_pos_iter_t parseend;
-            
+
         PeerParser pp( peer, true );
         try {
             parse( parsebegin, parseend, pp.parser(), SKIP_PARSER );
@@ -956,7 +1004,7 @@ namespace OCL
                 if (pi)
                     straces[make_pair(context, arg)] = context->scripting()->getStateMachineLine(arg); // store current line number.
             }
-            
+
             cerr << "Tracing all programs and state machines in "<< context->getName() << endl;
             return;
         }
@@ -971,7 +1019,7 @@ namespace OCL
                 return;
             }
             // just 'untrace' :
-            std::vector<std::string> names; 
+            std::vector<std::string> names;
             names = context->scripting()->getPrograms();
             for (std::vector<std::string>::iterator it = names.begin(); it != names.end(); ++it) {
                 bool pi = context->scripting()->hasProgram(arg);
@@ -985,7 +1033,7 @@ namespace OCL
                 if (pi)
                     straces.erase(make_pair(context, arg));
             }
-           
+
             cerr << "Untracing all programs and state machines of "<< context->getName() << endl;
             return;
         }
@@ -1103,21 +1151,21 @@ namespace OCL
                 sresult.str("");
 
             }
-        // Minor hack : also check if it was an attribute of current TC, for example, 
+        // Minor hack : also check if it was an attribute of current TC, for example,
         // if both the object and attribute with that name exist. the if
         // statement after this one would return and not give the expr parser
-        // time to evaluate 'comm'. 
+        // time to evaluate 'comm'.
         if ( context->attributes()->getValue( comm ) ) {
                 this->printResult( context->attributes()->getValue( comm )->getDataSource().get(), true );
                 cout << sresult.str();
                 sresult.str("");
                 return;
         }
-            
+
         if ( ops ) {
             return;
         }
-                    
+
         Parser _parser;
 
         if (debug)
@@ -1152,7 +1200,7 @@ namespace OCL
                     cerr << "Ignoring ValueChange exception :"<<nl;
                     cerr << pe.what() <<nl;
                 }
-        } catch ( parse_exception& pe ) { 
+        } catch ( parse_exception& pe ) {
             // syntactic errors must be reported immediately
             if (debug)
                 cerr << "parse_exception :";
@@ -1191,7 +1239,7 @@ namespace OCL
                     cerr << "Ignoring Expression exception :"<<nl;
                     cerr << pe.what() <<nl;
                 }
-        } catch ( parse_exception& pe ) { 
+        } catch ( parse_exception& pe ) {
                 // ignore, try next parser
                 if (debug) {
                     cerr << "Ignoring Expression parse_exception :"<<nl;
@@ -1227,7 +1275,7 @@ namespace OCL
             cerr << "Illegal Input."<<nl;
             return;
         }
-                
+
         if ( command == 0 ) { // this should not be reached
             cerr << "Uncaught : Illegal command."<<nl;
             return;
@@ -1241,7 +1289,7 @@ namespace OCL
         }
     }
 
-    void TaskBrowser::printResult( DataSourceBase* ds, bool recurse) { 
+    void TaskBrowser::printResult( DataSourceBase* ds, bool recurse) {
         std::string prompt(" = ");
         // setup prompt :
         sresult <<prompt<< setw(20)<<left;
@@ -1546,7 +1594,7 @@ namespace OCL
         storedline = curln;
         // done !
     }
-        
+
     void TaskBrowser::printInfo(const std::string& peerp)
     {
         // this sets this->peer to the peer given
@@ -1555,13 +1603,13 @@ namespace OCL
             cerr << "No such peer or object: " << peerp << endl;
             return;
         }
-        
+
         if ( !peer || !peer->ready()) {
             cout << nl << " Connection to peer "+peerp+" lost (peer->ready() == false)." <<endlog();
             return;
         }
 
-        if ( peer == taskobject ) 
+        if ( peer == taskobject )
             sresult <<nl<<" Listing TaskContext "<< green << peer->getName()<<coloroff<< " :"<<nl;
         else
             sresult <<nl<<" Listing TaskObject "<< green << taskobject->getName()<<coloroff<< " :"<<nl;
@@ -1603,7 +1651,7 @@ namespace OCL
         } else {
             sresult << coloron << "(none)";
         }
-        
+
         sresult <<coloroff<<nl<< "  Methods      : "<<coloron;
         objlist = taskobject->methods()->getNames();
         if ( !objlist.empty() ) {
@@ -1644,7 +1692,7 @@ namespace OCL
                         sresult << "(C) " << setw(11)<<right<< port->getTypeInfo()->getTypeName();
                     sresult << " "
                          << coloron <<setw( 14 )<<left<< *it << coloroff;
-                    if ( port->ready() ) 
+                    if ( port->ready() )
                         sresult << " = " <<port->connection()->getDataSource();
                     else {
                         ConnectionInterface::shared_ptr c = port->createConnection();
@@ -1690,7 +1738,7 @@ namespace OCL
             }
 
             // if we are in the TB, display the peers of our connected task:
-            if ( context == tb ) 
+            if ( context == tb )
                 sresult <<nl<< " "<<peer->getName()<<" Peers : "<<coloron;
             else
                 sresult << nl <<" Peers        : "<<coloron;
@@ -1708,7 +1756,7 @@ namespace OCL
         cout << sresult.str();
         sresult.str("");
     }
-        
+
     void TaskBrowser::printCommand( const std::string m, OperationInterface* ops )
     {
         using boost::lambda::_1;
@@ -1728,7 +1776,7 @@ namespace OCL
         for (std::vector<ArgumentDescription>::iterator it = args.begin(); it != args.end(); ++it)
             sresult <<"   "<< it->name <<" : " << it->description << nl;
     }
-                
+
     void TaskBrowser::printMethod( const std::string m, OperationInterface* ops )
     {
         std::vector<ArgumentDescription> args;
