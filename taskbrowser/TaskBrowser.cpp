@@ -62,6 +62,7 @@
 
 #include "rtt/TryCommand.hpp"
 #include <rtt/TaskContext.hpp>
+#include <rtt/scripting/parser-debug.hpp>
 #include <rtt/scripting/Parser.hpp>
 #include <rtt/scripting/ProgramLoader.hpp>
 #include <rtt/scripting/parse_exception.hpp>
@@ -383,8 +384,9 @@ namespace OCL
             std::vector<std::string> props;
             peer->properties()->list(props);
             for (std::vector<std::string>::iterator i = props.begin(); i!= props.end(); ++i ) {
-                if ( i->find( component ) == 0 && !component.empty() )
+                if ( i->find( component ) == 0 && !component.empty() ) {
                     completes.push_back( peerpath + *i );
+                }
             }
         }
 
@@ -431,7 +433,7 @@ namespace OCL
                 }
                 std::string item = to_parse.substr(startpos, endpos);
 
-                if ( taskobject->getObject( item ) && item != "this" ) {
+                if ( taskobject->getObject( item ) ) {
                     taskobject = peer->getObject(item);
                     itemfound = true;
                 } else
@@ -470,6 +472,7 @@ namespace OCL
             v = peer->getPeerList();
             for (TaskContext::PeerList::iterator i = v.begin(); i != v.end(); ++i) {
                 if ( i->find( component ) == 0 ) { // only add if match
+                    completes.push_back( peerpath + *i );
                     completes.push_back( peerpath + *i + "." );
                     //cerr << "added " << peerpath+*i+"."<<endl;
                 }
@@ -478,8 +481,10 @@ namespace OCL
         // add taskobject's completes:
         v = taskobject->getObjectList();
         for (TaskContext::PeerList::iterator i = v.begin(); i != v.end(); ++i) {
-            if ( i->find( component ) == 0 && *i != "this" ) { // only add if match
-                completes.push_back( peerpath + *i + "." );
+            if ( i->find( component ) == 0 ) { // only add if match
+                completes.push_back( peerpath + *i );
+                if ( *i != "this" ) // "this." confuses our parsing lateron
+                    completes.push_back( peerpath + *i + "." );
                 //cerr << "added " << peerpath+*i+"."<<endl;
             }
         }
