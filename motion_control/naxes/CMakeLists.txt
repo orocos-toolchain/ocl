@@ -11,5 +11,6 @@ IF ( BUILD_NAXES )
 
     GLOBAL_ADD_COMPONENT( orocos-naxes ${SRCS} )
     GLOBAL_ADD_INCLUDE( ocl ${HPPS})
+    COMPONENT_ADD_LIBS(orocos-naxes ${KDL_LIBS})
 
 ENDIF ( BUILD_NAXES )
