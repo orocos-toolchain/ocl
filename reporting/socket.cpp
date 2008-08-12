@@ -5,7 +5,7 @@
     begin                : Fri Aug 4 2006
     copyright            : (C) 2006 Bas Kemper
     email                : kst@ <my name> .be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -28,6 +28,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <rtt/Logger.hpp>
+#include <string.h>
 #include "socket.hpp"
 
 using RTT::Logger;
@@ -155,18 +156,18 @@ namespace TCP {
             rawClose();
         }
         return false;
-        
-          
+
+
         /* this if clause allows calling lineAvailable() multiple times
         without reading the actual lines with readLine(). */
         /*
         if( ptrpos < end && buffer[ptrpos] == '\0' ){
             return true;
         }
-        
+
         while( ptrpos < end ){
             if( buffer[ptrpos] == '\n' ) {
-                //   overwrite the \n or \r\n with \0 
+                //   overwrite the \n or \r\n with \0
                 if( begin < ptrpos && buffer[ptrpos-1] == '\r' ){
                     buffer[ptrpos-1] = '\0';
                 }
@@ -199,21 +200,21 @@ namespace TCP {
         if(dataAvailable()){
             if(0>recv(socket,buffer,sizeof(char[ptrpos+1]),MSG_WAITALL))
                 return "";
-                        
+
             return std::string(buffer,ptrpos);
         }
         return "";
         /* ugly C style code to read a line from the socket */
 
-        
+
         /*
             while(isValid()){
-                // process remaining full lines in the buffer 
+                // process remaining full lines in the buffer
             if( lineAvailable() ){
                 std::string ret(&buffer[begin]);
-                
+
                 if( begin == end - 1 ){
-                    // reset to start of buffer when everything is read 
+                    // reset to start of buffer when everything is read
                     begin = 0;
                     end = 0;
                     ptrpos = 0;
@@ -223,12 +224,12 @@ namespace TCP {
                 }
                 return ret;
             }
-            
-            // move data back to the beginning of the buffer (should not occur very often) 
+
+            // move data back to the beginning of the buffer (should not occur very often)
             checkBufferOverflow();
-            
-            
-            // wait for additional input 
+
+
+            // wait for additional input
             int received = recv(socket, &buffer[end], MSGLENGTH, 0 );
             if( received == 0 || received == -1 ){
                 rawClose();
