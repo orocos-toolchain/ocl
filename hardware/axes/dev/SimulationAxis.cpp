@@ -19,6 +19,7 @@
 #include "SimulationAxis.hpp"
 
 using namespace RTT;
+using namespace OCL;
 
 SimulationEncoder::SimulationEncoder(double initial, double min, double max):
     _position(initial),
@@ -26,8 +27,8 @@ SimulationEncoder::SimulationEncoder(double initial, double min, double max):
     _max(max),
     _first_drive(true)
 {}
-  
-double 
+
+double
 SimulationEncoder::readSensor() const
 {
   if (_first_drive)
@@ -48,8 +49,8 @@ SimulationEncoder::readSensor(double& data) const
 }
 
 
-void 
-SimulationEncoder::setDrive(double velocity) 
+void
+SimulationEncoder::setDrive(double velocity)
 {
   // adjust position, using previous velocity
   if (_first_drive)
@@ -59,7 +60,7 @@ SimulationEncoder::setDrive(double velocity)
     _delta_time = TimeService::Instance()->secondsSince(_previous_time);
     _position += _velocity*(double)_delta_time;
   }
-  
+
   // set new velocity and start time
   _previous_time = TimeService::Instance()->getTicks();
   _velocity = velocity;
@@ -97,7 +98,7 @@ SimulationAxis::~SimulationAxis()
 
 
 
-bool 
+bool
 SimulationAxis::drive( double vel )
 {
     // detect enable switch
@@ -141,7 +142,7 @@ SimulationAxis::stop()
   else
     return false;
 }
-  
+
 bool
 SimulationAxis::lock()
 {
@@ -157,7 +158,7 @@ SimulationAxis::lock()
   else
     return false;
 }
-      
+
 bool
 SimulationAxis::unlock()
 {
@@ -193,29 +194,29 @@ SimulationAxis::isDriven() const
 }
 
 DigitalOutput* SimulationAxis::getBrake()
-{ 
-    return &_brake; 
+{
+    return &_brake;
 }
 
 DigitalOutput* SimulationAxis::getEnable()
-{ 
-    return &_enable; 
+{
+    return &_enable;
 }
 
 
-SensorInterface<double>* 
+SensorInterface<double>*
 SimulationAxis::getSensor(const std::string& name) const
 {
   if (name == "Position")
       return _encoder;
   if (name == "Velocity")
       return _velSensor;
-  
+
   return NULL;
 }
 
 
-std::vector<std::string> 
+std::vector<std::string>
 SimulationAxis::sensorList() const
 {
   std::vector<std::string> result;

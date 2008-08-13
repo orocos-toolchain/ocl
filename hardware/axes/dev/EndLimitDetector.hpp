@@ -33,7 +33,7 @@
 
 #include <limits>
 
-namespace RTT
+namespace OCL
 {
     using std::numeric_limits;
 

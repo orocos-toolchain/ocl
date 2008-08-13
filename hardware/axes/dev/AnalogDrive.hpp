@@ -1,12 +1,12 @@
 /***************************************************************************
-  tag: Peter Soetens  Thu Oct 10 16:22:43 CEST 2002  AnalogDrive.hpp 
+  tag: Peter Soetens  Thu Oct 10 16:22:43 CEST 2002  AnalogDrive.hpp
 
                         AnalogDrive.hpp -  description
                            -------------------
     begin                : Thu October 10 2002
     copyright            : (C) 2002 Peter Soetens
     email                : peter.soetens@mech.kuleuven.ac.be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -23,14 +23,15 @@
  *   Foundation, Inc., 59 Temple Place,                                    *
  *   Suite 330, Boston, MA  02111-1307  USA                                *
  *                                                                         *
- ***************************************************************************/ 
+ ***************************************************************************/
 /* Klaas Gadeyne, Mon August 11 2003
    - Adapted to new AnalogOutInterface API
-*/ 
+*/
 
 #ifndef DEVICE_DRIVERS_ANALOGDRIVE_HPP
 #define DEVICE_DRIVERS_ANALOGDRIVE_HPP
 
+#include <ocl/OCL.hpp>
 #include "rtt/dev/AnalogOutInterface.hpp"
 #include "rtt/dev/DigitalOutInterface.hpp"
 #include "rtt/dev/DriveInterface.hpp"
@@ -39,7 +40,7 @@
 #include <rtt/Event.hpp>
 
 
-namespace RTT
+namespace OCL
 {
     /**
      * @brief A AnalogDrive Object converts a physical unit (position, torque,...)
@@ -136,7 +137,7 @@ namespace RTT
         {
             return offset;
         }
-	
+
 
         /**
          * Limit the velocity of the drive.

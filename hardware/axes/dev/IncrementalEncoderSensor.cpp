@@ -21,5 +21,5 @@
 #endif
 #include "IncrementalEncoderSensor.hpp"
 
-namespace RTTs {
+namespace OCL {
 }

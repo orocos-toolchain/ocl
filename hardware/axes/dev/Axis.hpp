@@ -1,5 +1,5 @@
 /***************************************************************************
- tag: Peter Soetens  Mon Jun 10 14:22:14 CEST 2002  Axis.hpp 
+ tag: Peter Soetens  Mon Jun 10 14:22:14 CEST 2002  Axis.hpp
 
                        Axis.hpp -  description
                           -------------------
@@ -28,20 +28,18 @@
 #ifndef DEVICEDRIVERS_AXIS_HPP
 #define DEVICEDRIVERS_AXIS_HPP
 
-#include "rtt/dev/AxisInterface.hpp"
+#include <ocl/OCL.hpp>
+#include <rtt/dev/AxisInterface.hpp>
+#include <rtt/dev/DigitalInput.hpp>
+#include <rtt/dev/DigitalOutput.hpp>
+#include <rtt/dev/DriveInterface.hpp>
 #include <rtt/Event.hpp>
 #include <string>
 #include <map>
 #include <vector>
 
-namespace RTT
+namespace OCL
 {
-    class DriveInterface;
-    class DigitalInput;
-    class DigitalOutput;
-
-    
-
     /**
      * @brief Axis is an example of how you can easily implement
      * a generic axis using the Device Interfaces.
@@ -58,9 +56,9 @@ namespace RTT
     {
     public:
 
-        /** 
+        /**
          * @brief Create an Axis with an DriveInterface.
-         * 
+         *
          * @param adrive The drive of this axis.
          */
         Axis( DriveInterface* adrive );
@@ -112,10 +110,10 @@ namespace RTT
 
         virtual SensorInterface<double>* getSensor(const std::string& name) const;
 
-        /** 
+        /**
          * @brief Add a sensor to the Axis (position, velocity, torque,...). The sensor
          * is aggregated.
-         * 
+         *
          * @param name The name of the sensor.
          * @param _sens The sensor
          */
@@ -124,13 +122,13 @@ namespace RTT
       virtual std::vector<std::string> sensorList() const;
 
       virtual DigitalInput* getSwitch(const std::string& name) const;
-      
+
       virtual std::vector<std::string> switchList() const;
-  
-        /** 
+
+        /**
          * @brief Add a digital input to the Axis (home switch, end of run,...). The \a _digin object
          * is aggregated.
-         * 
+         *
          * @param name The name of the input.
          * @param _digin The DigitalInput.
          */
@@ -139,11 +137,11 @@ namespace RTT
       virtual SensorInterface<int>* getCounter(const std::string& name) const;
 
       virtual std::vector<std::string> counterList() const;
-  
-        /** 
+
+        /**
          * @brief Add a counter to the Axis (position, turns,...).
          * The SensorInterface object is aggregated.
-         * 
+         *
          * @param name The name of the counter.
          * @param _sens The counter.
          */

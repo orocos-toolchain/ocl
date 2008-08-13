@@ -21,5 +21,5 @@
 #endif
 #include "AbsoluteEncoderSensor.hpp"
 
-namespace RTTs {
+namespace OCL {
 }

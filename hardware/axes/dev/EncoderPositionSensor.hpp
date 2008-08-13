@@ -34,7 +34,7 @@
 
 #include <limits>
 
-namespace RTT
+namespace OCL
 {
     
     

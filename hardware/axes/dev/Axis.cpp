@@ -31,7 +31,7 @@
 #include "rtt/dev/DriveInterface.hpp"
 
 
-namespace RTT
+namespace OCL
 {
     
 

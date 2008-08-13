@@ -33,7 +33,7 @@
 #include "rtt/dev/SensorInterface.hpp"
 #include <limits>
 
-namespace RTT
+namespace OCL
 {
 
     /**

@@ -5,7 +5,7 @@
     begin                : Tue Oct 26 2004
     copyright            : (C) 2004 Johan Rutgeerts
     email                : peter.soetens@mech.kuleuven.ac.be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -22,18 +22,19 @@
  *   Foundation, Inc., 59 Temple Place,                                    *
  *   Suite 330, Boston, MA  02111-1307  USA                                *
  *                                                                         *
- ***************************************************************************/ 
- 
+ ***************************************************************************/
+
 #ifndef ABSOLUTE_ENCODER_SENSOR_HPP
 #define ABSOLUTE_ENCODER_SENSOR_HPP
 
-#include "rtt/dev/EncoderInterface.hpp"
-#include "rtt/dev/SensorInterface.hpp"
-#include "rtt/dev/CalibrationInterface.hpp"
+#include <ocl/OCL.hpp>
+#include <rtt/dev/EncoderInterface.hpp>
+#include <rtt/dev/SensorInterface.hpp>
+#include <rtt/dev/CalibrationInterface.hpp>
 
 #include <limits>
 
-namespace RTT
+namespace OCL
 {
     /**
      * @brief A sensor reading a single Absolute Encoder and converting
@@ -50,15 +51,15 @@ namespace RTT
         bool calibrated;
 
     public:
-        /** 
+        /**
          * @brief Create a new EncoderInterface to SensorInterface Object.
-         * 
+         *
          * @param _enc   The Encoder to use
          * @param _unit_to_inc Conversion of physical units to increments (e.g. increments / rad )
-         * @param _posOffset Offset (in encoder ticks) on absolute position reading 
+         * @param _posOffset Offset (in encoder ticks) on absolute position reading
          * @param _minpos The minimal, physical position, after calibration
          * @param _maxpos The maximal, physical position, after calibration
-         * 
+         *
          */
         AbsoluteEncoderSensor(EncoderInterface* _enc, double _unit_to_inc, int _posOffset, double _minpos, double _maxpos)
             : enc(_enc), unit_to_inc(_unit_to_inc), min(_minpos), max(_maxpos), posOffset(_posOffset / _unit_to_inc), calibrated(true)
@@ -73,13 +74,13 @@ namespace RTT
         /**
          * Set the minimal and maximal position.
          */
-        void limit(double _min, double _max) 
+        void limit(double _min, double _max)
         {
             min = _min;
             max = _max;
         }
 
-        virtual void calibrate() 
+        virtual void calibrate()
         {
             this->calibrated = true;
         }

@@ -31,7 +31,7 @@
 #include "rtt/dev/AnalogInput.hpp"
 #include "rtt/dev/SensorInterface.hpp"
 
-namespace RTT
+namespace OCL
 {
 
     

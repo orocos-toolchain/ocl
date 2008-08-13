@@ -19,7 +19,7 @@
 #include "TorqueSimulationAxis.hpp"
 #include <rtt/Logger.hpp>
 
-using namespace RTT;
+using namespace OCL;
 
 TorqueSimulationEncoder::TorqueSimulationEncoder(double initial, double min, double max):
     _position(initial),
@@ -27,13 +27,13 @@ TorqueSimulationEncoder::TorqueSimulationEncoder(double initial, double min, dou
     _max(max),
     _first_drive(true)
 {}
-  
-double 
+
+double
 TorqueSimulationEncoder::readSensor() const
 {
   if (_first_drive){
     return _position;
-  } 
+  }
 
   else{
     // get new position, using time and velocity
@@ -42,7 +42,7 @@ TorqueSimulationEncoder::readSensor() const
   }
 }
 
-int 
+int
 TorqueSimulationEncoder::readSensor(double& data) const
 {
   data = readSensor();
@@ -50,8 +50,8 @@ TorqueSimulationEncoder::readSensor(double& data) const
 }
 
 
-void 
-TorqueSimulationEncoder::update(double position, double velocity, TimeService::ticks previous_time) 
+void
+TorqueSimulationEncoder::update(double position, double velocity, TimeService::ticks previous_time)
 {
   if (_first_drive)
     _first_drive = false;
@@ -61,8 +61,8 @@ TorqueSimulationEncoder::update(double position, double velocity, TimeService::t
   _previous_time = previous_time;
 }
 
-void 
-TorqueSimulationEncoder::stop() 
+void
+TorqueSimulationEncoder::stop()
 {
   _velocity = 0.0;
 }
@@ -81,8 +81,8 @@ TorqueSimulationVelocitySensor::TorqueSimulationVelocitySensor( double maxvel):
     _maxvel(maxvel),
     _first_drive(true)
 {}
-  
-double 
+
+double
 TorqueSimulationVelocitySensor::readSensor() const
 {
   if (_first_drive){
@@ -104,8 +104,8 @@ TorqueSimulationVelocitySensor::readSensor(double& data) const
 }
 
 
-void 
-TorqueSimulationVelocitySensor::update(double velocity, double acceleration, TimeService::ticks previous_time) 
+void
+TorqueSimulationVelocitySensor::update(double velocity, double acceleration, TimeService::ticks previous_time)
 {
   if (_first_drive)
     _first_drive = false;
@@ -115,23 +115,12 @@ TorqueSimulationVelocitySensor::update(double velocity, double acceleration, Tim
   _previous_time = previous_time;
 }
 
-void 
-TorqueSimulationVelocitySensor::stop() 
+void
+TorqueSimulationVelocitySensor::stop()
 {
   _velocity = 0.0;
   _acceleration = 0.0;
 }
-
-
-
-
-
-
-
-
-
-
-
 
 TorqueSimulationAxis::TorqueSimulationAxis(double initial, double min, double max, double velLim):
   _drive_value(0),
@@ -154,9 +143,9 @@ TorqueSimulationAxis::~TorqueSimulationAxis()
   delete _curSensor;
 }
 
-bool 
+bool
 TorqueSimulationAxis::drive( double current )
-{ 
+{
     // detect enable switch
     if ( !_enable.isOn() )
         return false;
@@ -198,7 +187,7 @@ TorqueSimulationAxis::stop()
   else
     return false;
 }
-  
+
 bool
 TorqueSimulationAxis::lock()
 {
@@ -214,7 +203,7 @@ TorqueSimulationAxis::lock()
   else
     return false;
 }
-      
+
 bool
 TorqueSimulationAxis::unlock()
 {
@@ -250,18 +239,18 @@ TorqueSimulationAxis::isDriven() const
 }
 
 DigitalOutput* TorqueSimulationAxis::getBrake()
-{ 
-    return &_brake; 
+{
+    return &_brake;
 }
 
 DigitalOutput* TorqueSimulationAxis::getEnable()
-{ 
-    return &_enable; 
+{
+    return &_enable;
 }
 
 
 
-SensorInterface<double>* 
+SensorInterface<double>*
 TorqueSimulationAxis::getSensor(const std::string& name) const
 {
   if (name == "Position")
@@ -275,7 +264,7 @@ TorqueSimulationAxis::getSensor(const std::string& name) const
 }
 
 
-std::vector<std::string> 
+std::vector<std::string>
 TorqueSimulationAxis::sensorList() const
 {
   std::vector<std::string> result;

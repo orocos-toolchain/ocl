@@ -19,14 +19,15 @@
 #ifndef _TORQUE_SIM_AXIS_HPP
 #define _TORQUE_SIM_AXIS_HPP
 
+#include <ocl/OCL.hpp>
 #include <rtt/dev/AxisInterface.hpp>
 #include <rtt/dev/DigitalOutput.hpp>
 #include <rtt/TimeService.hpp>
 
-namespace RTT
+namespace OCL
 {
     /** @brief Helper class that implements a Position Sensor for a
-	TorqueSimulationAxis 
+	TorqueSimulationAxis
 	@see TorqueSimulationAxis
     */
     class TorqueSimulationEncoder: public SensorInterface<double>
@@ -34,7 +35,7 @@ namespace RTT
     public:
 	TorqueSimulationEncoder(double initial=0, double min=-10, double max=10);
 	virtual ~TorqueSimulationEncoder() {};
-  
+
 	virtual double readSensor() const;
 	virtual int readSensor(double& data) const;
 	virtual double maxMeasurement() const {return _max; };
@@ -43,7 +44,7 @@ namespace RTT
 
 	void update(double position, double velocity, TimeService::ticks previous_time);
 	void stop();
-  
+
     private:
 	double _position, _velocity, _min, _max;
 	TimeService::ticks _previous_time;
@@ -53,7 +54,7 @@ namespace RTT
     }; // class
 
      /** @brief Helper class that implements a Velocity Sensor for a
-	TorqueSimulationAxis 
+	TorqueSimulationAxis
     */
     class TorqueSimulationVelocitySensor : public SensorInterface<double>
     {
@@ -67,7 +68,7 @@ namespace RTT
 	virtual double maxMeasurement() const { return _maxvel; }
 	virtual double minMeasurement() const { return - _maxvel; }
 	virtual double zeroMeasurement() const { return 0; }
-    
+
 	void update(double velocity, double acceleration, TimeService::ticks previous_time);
 	void stop();
 
@@ -78,7 +79,7 @@ namespace RTT
 	bool _first_drive;
 
     }; // class
-  
+
 
     // Forward declare; see below
 	class TorqueSimulationCurrentSensor;
@@ -121,13 +122,13 @@ namespace RTT
 	TorqueSimulationVelocitySensor*  _velSensor;
 	TorqueSimulationCurrentSensor*  _curSensor;
 	bool _is_locked, _is_stopped, _is_driven;
-  
-  
+
+
     }; // class
 
 
     /** @brief Helper class that implements a Current Sensor for a
-	TorqueSimulationAxis 
+	TorqueSimulationAxis
     */
     class TorqueSimulationCurrentSensor : public SensorInterface<double>
     {
@@ -146,7 +147,7 @@ namespace RTT
 	virtual double minMeasurement() const { return - _maxcur; }
 
 	virtual double zeroMeasurement() const { return 0; }
-    
+
     private:
 	TorqueSimulationAxis* _axis;
 	double _maxcur;
@@ -156,5 +157,5 @@ namespace RTT
 
 #endif //_TORQUE_SIM_AXIS_HPP
 
-  
-    
+
+

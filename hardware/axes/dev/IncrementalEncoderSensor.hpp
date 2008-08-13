@@ -5,7 +5,7 @@
     begin                : Tue Oct 26 2004
     copyright            : (C) 2004 Johan Rutgeerts
     email                : peter.soetens@mech.kuleuven.ac.be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -22,18 +22,19 @@
  *   Foundation, Inc., 59 Temple Place,                                    *
  *   Suite 330, Boston, MA  02111-1307  USA                                *
  *                                                                         *
- ***************************************************************************/ 
- 
+ ***************************************************************************/
+
 #ifndef INCREMENTAL_ENCODER_SENSOR_HPP
 #define INCREMENTAL_ENCODER_SENSOR_HPP
 
+#include <ocl/OCL.hpp>
 #include "rtt/dev/EncoderInterface.hpp"
 #include "rtt/dev/SensorInterface.hpp"
 #include "rtt/dev/CalibrationInterface.hpp"
 
 #include <limits>
 
-namespace RTT
+namespace OCL
 {
     /**
      * @brief A sensor reading a single Incremental Encoder and converting
@@ -50,18 +51,18 @@ namespace RTT
         bool calibrated;
         double calPos;
         int resolution;
-      
+
 
     public:
-        /** 
+        /**
          * @brief Create a new EncoderInterface to SensorInterface Object.
-         * 
+         *
          * @param _enc   The Encoder to use
          * @param _unit_to_inc Conversion of physical units to increments (e.g. increments / rad )
-         * @param _calPos Position (in physical units, e.g. [rad]) where calibrate() will be called 
+         * @param _calPos Position (in physical units, e.g. [rad]) where calibrate() will be called
          * @param _minpos The minimal, physical position, after calibration
          * @param _maxpos The maximal, physical position, after calibration
-         * 
+         *
          */
         IncrementalEncoderSensor(EncoderInterface* _enc, double _unit_to_inc, double _calPos, double _minpos, double _maxpos, int _resolution)
 	  : enc(_enc), unit_to_inc(_unit_to_inc), min(_minpos), max(_maxpos), posOffset(0), calibrated(false), calPos(_calPos), resolution(_resolution)
@@ -76,13 +77,13 @@ namespace RTT
         /**
          * Set the minimal and maximal position.
          */
-        void limit(double _min, double _max) 
+        void limit(double _min, double _max)
         {
             min = _min;
             max = _max;
         }
 
-        virtual void calibrate() 
+        virtual void calibrate()
         {
             if( enc->upcounting() )
             {
@@ -113,12 +114,12 @@ namespace RTT
             else
 	      return ( enc->turnGet() * resolution + ( resolution - enc->positionGet() ) ) / unit_to_inc - posOffset;
 	}
-        
+
         virtual void writeSensor(double q) const
         {
 	  enc->positionSet((int)(unit_to_inc * q));
 	}
-      
+
         virtual double maxMeasurement() const
         {
             return calibrated ? max : std::numeric_limits<double>::max();

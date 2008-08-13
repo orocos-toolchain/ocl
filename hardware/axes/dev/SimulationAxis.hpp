@@ -19,14 +19,15 @@
 #ifndef _SIM_AXIS_HPP
 #define _SIM_AXIS_HPP
 
+#include <ocl/OCL.hpp>
 #include <rtt/dev/AxisInterface.hpp>
 #include <rtt/dev/DigitalOutput.hpp>
 #include <rtt/TimeService.hpp>
 
-namespace RTT
+namespace OCL
 {
     /** @brief Helper class that implements a Position Sensor for a
-	SimulationAxis 
+	SimulationAxis
 	@see SimulationAxis
     */
     class SimulationEncoder: public SensorInterface<double>
@@ -34,7 +35,7 @@ namespace RTT
     public:
 	SimulationEncoder(double initial=0, double min=-10, double max=10);
 	virtual ~SimulationEncoder() {};
-  
+
 	virtual double readSensor() const;
 	virtual int readSensor(double& data) const;
 	virtual double maxMeasurement() const {return _max; };
@@ -42,7 +43,7 @@ namespace RTT
 	virtual double zeroMeasurement() const {return 0.0;};
 
 	void setDrive(double velocity);
-  
+
     private:
 	double _position, _velocity, _min, _max;
 	TimeService::ticks _previous_time;
@@ -54,7 +55,7 @@ namespace RTT
 
     }; // class
 
-   
+
 
     // Forward declare; see below
     class SimulationVelocitySensor;
@@ -97,12 +98,12 @@ namespace RTT
 	SimulationEncoder*         _encoder;
 	SimulationVelocitySensor*  _velSensor;
 	bool _is_locked, _is_stopped, _is_driven;
-  
-  
+
+
     }; // class
 
     /** @brief Helper class that implements a Velocity Sensor for a
-	SimulationAxis 
+	SimulationAxis
     */
     class SimulationVelocitySensor : public SensorInterface<double>
     {
@@ -121,16 +122,16 @@ namespace RTT
 	virtual double minMeasurement() const { return - _maxvel; }
 
 	virtual double zeroMeasurement() const { return 0; }
-    
+
     private:
 	SimulationAxis* _axis;
 	double _maxvel;
     };
 
- 
+
 } // namespace
 
 #endif //_SIM_AXIS_HPP
 
-  
-    
+
+

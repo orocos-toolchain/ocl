@@ -32,7 +32,7 @@
 #include "rtt/dev/SensorInterface.hpp"
 #include "rtt/dev/EncoderInterface.hpp"
 
-namespace RTT
+namespace OCL
 {
 
     /**
