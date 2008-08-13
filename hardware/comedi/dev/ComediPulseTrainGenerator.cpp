@@ -19,30 +19,23 @@
 #include <rtt/Logger.hpp>
 
 #include "comedi_internal.h"
-
-#ifndef INSN_CONFIG_GPCT_ARM
-#define INSN_CONFIG_GPCT_ARM 1004
-#endif
-#ifndef INSN_CONFIG_GPCT_DISARM
-#define INSN_CONFIG_GPCT_DISARM 1005
-#endif
+#include "comedi_common.h"
 
 namespace OCL
 {
     typedef unsigned int Data;
 
     ComediPulseTrainGenerator::ComediPulseTrainGenerator(ComediDevice * cd, unsigned int subd, 
-                                                         unsigned int encNr, const std::string& name)
+                                                         const std::string& name)
         : PulseTrainGeneratorInterface(name),
-          _myCard(cd), _subDevice(subd), _channel(encNr),
+          _myCard(cd), _subDevice(subd),
           _pulse_width(1000000), _pulse_period(1000000), _running(false)
     {
         init();
     }
 
-    ComediPulseTrainGenerator::ComediPulseTrainGenerator(ComediDevice * cd, unsigned int subd, 
-                                                         unsigned int encNr)
-      :  _myCard(cd), _subDevice(subd), _channel(encNr),
+    ComediPulseTrainGenerator::ComediPulseTrainGenerator(ComediDevice * cd, unsigned int subd)
+      :  _myCard(cd), _subDevice(subd),
 	 _pulse_width(1000000), _pulse_period(1000000), _running(false)
     {
         init();
@@ -50,22 +43,9 @@ namespace OCL
 
     unsigned int ComediPulseTrainGenerator::psecs_to_timebase(psecs picos)
     {
-        // Disable Logger statements since these they can be
-        // called from a RT thread
-        // Logger::In in("ComediPulseTrainGenerator");
         if (picos < _smallest_step){
-            /*
-            log(Warning) << "ComediPTG: Period or Pulsewidth too small for current timebase, picos = " << picos 
-		       << ".  Returning ZERO" << endlog();
-            */
             return 0;
         }
-        /*
-        if (picos % _smallest_step != 0){
-            log(Warning) << "ComediPTG: " << picos << " is not a multiple of " << _smallest_step 
-                         << " -> There will be a rounding error" << endlog();
-        }
-        */
         // rounding:
         return (unsigned int)round( double(picos) / _smallest_step );
     }
@@ -83,48 +63,76 @@ namespace OCL
             return;
         }
         // Check how many counters this subdevice actually has
-        unsigned int nchan = comedi_get_n_channels(_myCard->getDevice()->it,_subDevice);
+        unsigned int nchan = 0;
         /* Set timebase to maximum, ie. 20 MHz for the 6601 and 80 MHz
            for the 6602 board
            FIXME:  Make this more flexible if comedi driver supports
            this.
         */
+#if OROCOS_TARGET_GNULINUX
+        const char* bn = comedi_get_board_name(_myCard->getDevice()->it);
+        if ( strncmp(bn, "PCI-6602",8) == 0 )
+            nchan = 8;
+        if ( strncmp(bn, "PCI-6601",8) == 0 )
+            nchan = 4;
+#else
+        // not get_board_name not supported in LXRT.
+        int sdevs = comedi_get_n_subdevices(_myCard->getDevice()->it);
+        if ( sdevs == 10 )
+            nchan = 8;
+        if ( sdevs == 6 )
+            nchan = 4;
+#endif
+        
+        unsigned tbase = 0;
         switch(nchan){
-        case 4:
-	  // Max Timebase of 6601 is 20 Mhz
-	  _smallest_step = PSECS_IN_SECS / 20000000;
-	  break;
         case 8:
-	  // Max Timebase of 6602 is 80 Mhz
-	  _smallest_step = PSECS_IN_SECS / 80000000;
-	  break;
+            // Max Timebase of 6602 is 80 Mhz
+            _smallest_step = PSECS_IN_SECS / 80000000;
+            _clock_period = 12500;  /* 80MHz clock */
+            tbase = NI_GPCT_TIMEBASE_3_CLOCK_SRC_BITS;
+            log(Info) << "Detected NI-6602."<<endlog();
+            break;
+        default:
+            log(Warning) << "Unknown Comedi Counter card? Could not determine timebase. Using a default."<<endlog();
+        case 4:
+            // Max Timebase of 6601 is 20 Mhz
+            _smallest_step = PSECS_IN_SECS / 20000000;
+            _clock_period = 50000;  /* 20MHz clock */
+            tbase = NI_GPCT_TIMEBASE_1_CLOCK_SRC_BITS;
+            log(Info) << "Detected NI-6601."<<endlog();
+            break;
         }
-        if ( nchan <= _channel ){
-            log(Error) << "Comedi Counter : Only " << nchan << " channels on this counter subdevice" << endlog();
-        }
+
         /* Configure the counter subdevice
            Configure the GPCT for use as an PTG 
         */
-#define PTG_CONFIG_DATA 3
+        unsigned counter_mode = NI_GPCT_COUNTING_MODE_NORMAL_BITS;
+        // toggle output on terminal count
+        counter_mode |= NI_GPCT_OUTPUT_TC_TOGGLE_BITS;
+        // load on terminal count
+        counter_mode |= NI_GPCT_LOADING_ON_TC_BIT;
+        // alternate the reload source between the load a and load b registers
+        counter_mode |= NI_GPCT_RELOAD_SOURCE_SWITCHING_BITS;
+        // count down
+        counter_mode |= NI_GPCT_COUNTING_DIRECTION_DOWN_BITS;
+        // initialize load source as load b register
+        counter_mode |= NI_GPCT_LOAD_B_SELECT_BIT;
+        // don't stop on terminal count
+        counter_mode |= NI_GPCT_STOP_ON_GATE_BITS;
+        // don't disarm on terminal count or gate signal
+        counter_mode |= NI_GPCT_NO_HARDWARE_DISARM_BITS;
+        int retval = set_counter_mode(_myCard->getDevice()->it, _subDevice, counter_mode);
+        if(retval < 0) return;
 
-        comedi_insn insn;
-        Data config_data[PTG_CONFIG_DATA]; // Configuration data
+        /* clock period may be rounded, tbase matters. */
+        retval = set_clock_source(_myCard->getDevice()->it, _subDevice, tbase, _clock_period/1000);
+        if(retval < 0) return;
 
-        insn.insn=INSN_CONFIG;
-        insn.n=1; /* Should be irrelevant for config, but is not for gnulinux! */
-        config_data[0] = INSN_CONFIG_GPCT_PULSE_TRAIN_GENERATOR;
-        config_data[1] = 0; // pulse_width
-        config_data[2] = 0; // pulse_period
-
-        insn.data=config_data;
-        insn.subdev=_subDevice;
-        insn.chanspec=CR_PACK(_channel,0,0);
-
-        int ret=comedi_do_insn(_myCard->getDevice()->it,&insn);
-        if (ret<0)
-            log(Error) << "Comedi Counter : Instruction to configure counter -> Pulse Train Generator failed, ret = " << ret << endlog();
+        if (retval<0)
+            log(Error) << "Comedi Counter : Instruction to configure counter -> Pulse Train Generator failed, ret = " << retval << endlog();
         else
-            log(Info) << "Comedi Counter now configured as Pulse Train Generator" << endlog();
+	  log(Info) << "Comedi Counter "<< _subDevice << " now configured as Pulse Train Generator" << endlog();
     }
   
     ComediPulseTrainGenerator::~ComediPulseTrainGenerator()
@@ -132,17 +140,8 @@ namespace OCL
         Logger::In in("ComediPulseTrainGenerator");
         if (!_myCard)
             return;
-        comedi_insn insn;
-	insn.insn=INSN_INTTRIG;
-        Data inttrig_data[1];
-        int ret;
-        
-        insn.n=1; // MUST BE ONE (see comedi_fops.c), don't know why
-        inttrig_data[0] = _channel;
-        insn.data=inttrig_data;
-        insn.subdev=_subDevice;
-        insn.chanspec=CR_PACK(_channel,0,0);
-        ret=comedi_do_insn(_myCard->getDevice()->it,&insn);
+
+        int ret = reset_counter(_myCard->getDevice()->it, _subDevice);
         if(ret<0){
             log(Error) << "Triggering reset on ComediPTG () failed, ret = " << ret << endlog();
         }
@@ -155,50 +154,31 @@ namespace OCL
         if (!_myCard)
             return false;
 
-	if (picos != _pulse_width){
-	  if (_running == true){ // If counter is ARMED, use INSN_WRITE
-            comedi_insn insn;
-            Data write_data[2]; // pulse width and period
-            insn.insn=INSN_WRITE;
-            insn.n=1;
-            write_data[0] = this->psecs_to_timebase(picos); // pulse_width
-            write_data[1] = this->psecs_to_timebase(_pulse_period); // pulse_period
-            insn.data=write_data;
-            insn.subdev=_subDevice;
-            insn.chanspec=CR_PACK(_channel,0,0);
-            int ret=comedi_do_insn(_myCard->getDevice()->it,&insn);
-            if (ret<0){
-                log(Error) << "Comedi Counter : Changing the PTG period failed, ret = " << ret << endlog();
-                return false;
-            }
-            else {
-                _pulse_width = picos;
-                return true;
-            }
-	  }
-	  else { // use INSN_CONFIG if ctr is unarmed
-	    comedi_insn insn;
-	    Data config_data[PTG_CONFIG_DATA]; // Configuration data
-	    insn.insn=INSN_CONFIG;
-	    insn.n=1; /* Should be irrelevant for config, but is not for gnulinux! */
-	    config_data[0] = INSN_CONFIG_GPCT_PULSE_TRAIN_GENERATOR;
-	    config_data[1] = psecs_to_timebase(picos); // pulse_width
-	    config_data[2] = psecs_to_timebase(_pulse_period); // pulse_period
-	    insn.data=config_data;
-	    insn.subdev=_subDevice;
-	    insn.chanspec=CR_PACK(_channel,0,0);
-	    int ret=comedi_do_insn(_myCard->getDevice()->it,&insn);
-	    if (ret<0){
-	      log(Error) << "Comedi Counter : Instruction to configure counter -> Pulse Train Generator failed, ret = " << ret << endlog();
-	      return false;
-	    }
-	    else {
-	      _pulse_width = picos;
-	      return true;
-	    }
-	  }
-	}
-	return true;
+        if (picos != _pulse_width){
+
+            unsigned up_ticks = ( picos + _clock_period / 2) / _clock_period;
+            unsigned down_ticks = ( _pulse_period + _clock_period / 2) / _clock_period - up_ticks;
+            /* set initial counter value by writing to channel 0 */
+            int retval = comedi_data_write(_myCard->getDevice()->it, _subDevice, 0, 0, 0, down_ticks);
+            if(retval < 0) return false;
+            /* set "load a" register to the number of clock ticks the counter output should remain low
+               by writing to channel 1. */
+            retval = comedi_data_write(_myCard->getDevice()->it, _subDevice, 1, 0, 0, down_ticks);
+            if(retval < 0) return false;
+            /* set "load b" register to the number of clock ticks the counter output should remain high
+               by writing to channel 2 */
+            retval = comedi_data_write(_myCard->getDevice()->it, _subDevice, 2, 0, 0, up_ticks);
+            if(retval < 0) return false;
+
+            _pulse_width = picos;
+#if 0
+            printf("Generating pulse train on sub device %d.\n", _subDevice);
+            printf("Period = %lld ps.\n", _pulse_period);
+            printf("Up Time = %lld ps.\n", _pulse_width);
+            printf("Down Time = %lld ps.\n", _pulse_period - _pulse_width);
+#endif
+        }
+        return true;
     }
 
     bool ComediPulseTrainGenerator::pulsePeriodSet(psecs picos)
@@ -208,51 +188,30 @@ namespace OCL
             return false;
 
         if (picos != _pulse_period){ // Only handle if necessary
-	  if (_running == true){ // If counter is ARMED, use INSN_WRITE
-	    comedi_insn insn;
-            Data write_data[2]; // pulse width and period
-            insn.insn=INSN_WRITE;
-            insn.n=1;
-            write_data[0] = psecs_to_timebase(_pulse_width); // pulse_width
-            write_data[1] = psecs_to_timebase(picos); // pulse_period
-            // log(Info) << "PTG 0 = " << write_data[0] << " 1 = " << write_data[1] << endlog();
-            insn.data=write_data;
-            insn.subdev=_subDevice;
-            insn.chanspec=CR_PACK(_channel,0,0);
 
-            int ret=comedi_do_insn(_myCard->getDevice()->it,&insn);
-            if (ret<0){
-	      log(Error) << "Comedi Counter : Changing the PTG period failed, ret = " << ret << endlog();
-	      return false;
-            }
-            else {
-	      _pulse_period = picos;
-	      return true;
-            }
-	  }
-	  else { // Counter unarmed, use insn_config
-	    comedi_insn insn;
-	    Data config_data[PTG_CONFIG_DATA]; // Configuration data
-	    insn.insn=INSN_CONFIG;
-	    insn.n=1; /* Should be irrelevant for config, but is not for gnulinux! */
-	    config_data[0] = INSN_CONFIG_GPCT_PULSE_TRAIN_GENERATOR;
-	    config_data[1] = psecs_to_timebase(_pulse_width); // pulse_width
-	    config_data[2] = psecs_to_timebase(picos); // pulse_period
-	    insn.data=config_data;
-	    insn.subdev=_subDevice;
-	    insn.chanspec=CR_PACK(_channel,0,0);
-	    int ret=comedi_do_insn(_myCard->getDevice()->it,&insn);
-	    if (ret<0){
-	      log(Error) << "Comedi Counter : Instruction to configure counter -> Pulse Train Generator failed, ret = " << ret << endlog();
-	      return false;
-	    }
-	    else {
-	      _pulse_period = picos;
-	      return true;
-	    }
-	  }
-	}
-	return true; // period already ok
+            unsigned up_ticks = (_pulse_width + _clock_period / 2) / _clock_period;
+            unsigned down_ticks = (picos + _clock_period / 2) / _clock_period - up_ticks;
+            /* set initial counter value by writing to channel 0 */
+            int retval = comedi_data_write(_myCard->getDevice()->it, _subDevice, 0, 0, 0, down_ticks);
+            if(retval < 0) return false;
+            /* set "load a" register to the number of clock ticks the counter output should remain low
+               by writing to channel 1. */
+            retval = comedi_data_write(_myCard->getDevice()->it, _subDevice, 1, 0, 0, down_ticks);
+            if(retval < 0) return false;
+            /* set "load b" register to the number of clock ticks the counter output should remain high
+               by writing to channel 2 */
+            retval = comedi_data_write(_myCard->getDevice()->it, _subDevice, 2, 0, 0, up_ticks);
+            if(retval < 0) return false;
+
+            _pulse_period = picos;
+#if 0
+            printf("Generating pulse train on sub device %d.\n", _subDevice);
+            printf("Period = %lld ps.\n", _pulse_period);
+            printf("Up Time = %lld ps.\n", _pulse_width);
+            printf("Down Time = %lld ps.\n", _pulse_period - _pulse_width);
+#endif
+        }
+        return true; // period already ok
     }
   
     bool ComediPulseTrainGenerator::start()
@@ -261,20 +220,11 @@ namespace OCL
         if (!_myCard)
             return false;
         if (_running == false){
-            comedi_insn insn;
-            Data config_data[1];
-            int ret;
-        
-            insn.insn=INSN_CONFIG;
-            insn.n=1; // Should be one!!!
 
-            config_data[0] = INSN_CONFIG_GPCT_ARM;
-            insn.data=config_data;
-            insn.subdev=_subDevice;
-            insn.chanspec=CR_PACK(_channel,0,0);
-            ret = comedi_do_insn(_myCard->getDevice()->it,&insn);
+            int ret = arm(_myCard->getDevice()->it, _subDevice, NI_GPCT_ARM_IMMEDIATE);
             if(ret<0){
-                log(Error) << "ComediPTG::start() failed, ret = " << ret << endlog();
+                log(Error) << "ComediPTG "<<_subDevice<<": start() failed, ret = " << ret << endlog();
+                log(Error) << "pulse width: " << _pulse_width << ", pulse period: " << _pulse_period <<endlog();
                 return false;
             }
             _running = true;
@@ -288,18 +238,7 @@ namespace OCL
         if (!_myCard)
             return false;
         if (_running == true){
-            comedi_insn insn;
-            Data config_data[1];
-            int ret;
-        
-            insn.insn=INSN_CONFIG;
-            insn.n=0;
-
-            config_data[0] = INSN_CONFIG_GPCT_DISARM;
-            insn.data=config_data;
-            insn.subdev=_subDevice;
-            insn.chanspec=CR_PACK(_channel,0,0);
-            ret = comedi_do_insn(_myCard->getDevice()->it,&insn);
+            int ret = reset_counter(_myCard->getDevice()->it, _subDevice);
             if(ret<0){
                 log(Error) << "ComediPTG::stop() failed, ret = " << ret << endlog();
                 return false;

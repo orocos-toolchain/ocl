@@ -7,7 +7,7 @@ DEPENDENT_OPTION( BUILD_COMEDI "Build Comedi Component" OFF "BUILD_HARDWARE;COME
 IF ( BUILD_COMEDI )
 
     # This gathers all the .cpp files into the variable 'SRCS'
-    FILE( GLOB DEVSRCS dev/[^.]*.cpp )
+    FILE( GLOB DEVSRCS dev/[^.]*.cpp dev/[^.]*.c )
     FILE( GLOB DEVHPPS dev/[^.]*.hpp )
 
     GLOBAL_ADD_COMPONENT( orocos-comedi ${DEVSRCS} )

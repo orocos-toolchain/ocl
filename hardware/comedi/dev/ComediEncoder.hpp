@@ -30,18 +30,12 @@ namespace OCL
 {
   /**
    * A class for reading an encoder using the comedi hardware
-   * abstraction layer.  Based on the comedi API of the home
-   * written driver for the NI660X card.
+   * abstraction layer.  Tested with the NI660X card.
    * @todo Currently this wrapper does not support all functionality.
    * It always uses X4 encoding (maximum resolution), you cannot choose
    * when to take into account the indexpulse or reset the counter
-   * when the index pulse arrives.  Also see the comments of the
-   * encodertest.c program 
-   * See <http://people.mech.kuleuven.be/~kgadeyne/linux/> for more
-   * information about all this stuff
+   * when the index pulse arrives.  Also see the Comedi gpct_encoder.c demo program 
    * @todo subdevice locking
-   * @todo Throw exception when constructor fails instead of just
-   * printing an error
    * @bug upcounting is always true
    * @note The current implementation does not consider the _turn
    * parameter, since an overflow of the 32 bit register is unlikely
@@ -56,22 +50,16 @@ namespace OCL
      *
      * @param cd The comedi device your are using
      * @param subd The comedi subdevice where the COUNTER is situated.
-     * @param encNr The number of the encoder on the comedi subdevice
-     * (aka channel)
-     * @param name  The name of the encoder.
      */
-    ComediEncoder(ComediDevice * cd, unsigned int subd, 
-		  unsigned int encNr, const std::string& name);
+    ComediEncoder(ComediDevice * cd, unsigned int subd, const std::string& name);
 
     /**
      * Create an encoder.
      *
      * @param cd The comedi device your are using
      * @param subd The comedi subdevice where the COUNTER is situated.
-     * @param encNr The number of the encoder on the comedi subdevice
-     * (aka channel)
      */
-    ComediEncoder(ComediDevice * cd, unsigned int subd, unsigned int encNr);
+    ComediEncoder(ComediDevice * cd, unsigned int subd);
 
     virtual ~ComediEncoder();
 
@@ -89,7 +77,6 @@ namespace OCL
     // Is this enough?
     ComediDevice * _myCard;
     unsigned int _subDevice;
-    unsigned int _channel;
     
     int _turn;
     int _resolution;

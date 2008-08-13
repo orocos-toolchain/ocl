@@ -22,21 +22,21 @@
 #include <rtt/Logger.hpp>
 
 #include "comedi_internal.h"
+#include "comedi_common.h"
+#include "comedi.h"
 
 namespace OCL
 {
-    ComediEncoder::ComediEncoder(ComediDevice * cd, unsigned int subd, 
-                                 unsigned int encNr, const std::string& name)
+    ComediEncoder::ComediEncoder(ComediDevice * cd, unsigned int subd, const std::string& name)
         : EncoderInterface(name),
-          _myCard(cd), _subDevice(subd), _channel(encNr),
+          _myCard(cd), _subDevice(subd),
           _turn(0), _upcounting(true)
     {
         init();
     }
 
-    ComediEncoder::ComediEncoder(ComediDevice * cd, unsigned int subd, 
-                                 unsigned int encNr)
-        :  _myCard(cd), _subDevice(subd), _channel(encNr),
+    ComediEncoder::ComediEncoder(ComediDevice * cd, unsigned int subd)
+        :  _myCard(cd), _subDevice(subd),
            _turn(0), _upcounting(true)
     {
         init();
@@ -58,45 +58,28 @@ namespace OCL
                 _myCard = 0;
                 return;
             }
-        // Check how many counters this subdevice actually has
-        unsigned int nchan = comedi_get_n_channels(_myCard->getDevice()->it,_subDevice);
-        if ( nchan <= _channel )
-            {
-                log(Error) << "Comedi Counter : Only " << nchan 
-                           << " channels on this counter subdevice" << endlog();
-                _myCard = 0;
-                return;
-            }
+
         /* Configure the counter subdevice
            Configure the GPCT for use as an encoder 
+           Uses the functions from comedi_common.c
         */
-#define ENCODER_CONFIG_DATA 4
-        typedef unsigned int Data;
-    
-        comedi_insn insn;
-        Data config_data[ENCODER_CONFIG_DATA]; // Configuration data
+        int retval = reset_counter(_myCard->getDevice()->it, _subDevice);
+        /* set initial counter value by writing to channel 0 */
+        unsigned int initial_value = 0;
+        retval = comedi_data_write(_myCard->getDevice()->it, _subDevice, 0, 0, 0, initial_value);
 
-        insn.insn=INSN_CONFIG;
-        insn.n=1; /* Should be irrelevant for config, but is not for gnulinux! */
-        config_data[0] = INSN_CONFIG_GPCT_QUADRATURE_ENCODER;
-        // Should become an option
-        config_data[1] = GPCT_X4;
-        config_data[2] = GPCT_IndexPhaseHighHigh;
-#define GPCT_CONTINU_COUNTING_WHEN_INDEX_ARRIVES 0;
-        config_data[3] = GPCT_CONTINU_COUNTING_WHEN_INDEX_ARRIVES;
+        int counter_mode = (NI_GPCT_COUNTING_MODE_QUADRATURE_X4_BITS |
+                        NI_GPCT_COUNTING_DIRECTION_HW_UP_DOWN_BITS);
 
-        insn.data=config_data;
-        insn.subdev=_subDevice;
-        insn.chanspec=CR_PACK(_channel,0,0);
-        int ret=comedi_do_insn(_myCard->getDevice()->it,&insn);
-        if(ret<0) {
-            log(Error) << "Comedi Counter : Instruction to configure counter -> encoder failed" << endlog();
+        int retval1 = set_counter_mode(_myCard->getDevice()->it, _subDevice, counter_mode);
+        int retval2 = arm(_myCard->getDevice()->it, _subDevice, NI_GPCT_ARM_IMMEDIATE);
+        if(retval1 < 0 || retval2 < 0) {
+            log(Error) << "Comedi Counter : Instruction to configure counter -> encoder failed (ret:"<<retval1<<","<<retval2<<")" << endlog();
             _myCard = 0;
         } else
             log(Info) << "Comedi Counter : configured as encoder now" << endlog();
 
-        _resolution = comedi_get_maxdata(_myCard->getDevice()->it,_subDevice, 
-                                               _channel);
+        _resolution = comedi_get_maxdata(_myCard->getDevice()->it,_subDevice, 0);
         if ( _resolution == 0) {
             log(Error) << "Comedi Counter : Could not retrieve encoder resolution !"<<endlog();
         } 
@@ -109,9 +92,14 @@ namespace OCL
         if (!_myCard)
             return;
         //int can be negative, by casting the int to lsampl_t(unsigned int)
-        // we write the right value to the encoderdevice     
-        comedi_data_write(_myCard->getDevice()->it, _subDevice,
-                          _channel, 0, 0, (lsampl_t) p);
+        // we write the right value to the encoderdevice
+        int retval;
+        /* set initial counter value by writing to channel 0 */
+        retval = comedi_data_write(_myCard->getDevice()->it, _subDevice, 0, 0, 0, (lsampl_t)p);
+        /* set "load a" register to initial_value by writing to channel 1 */
+        retval = comedi_data_write(_myCard->getDevice()->it, _subDevice, 1, 0, 0, (lsampl_t)p);
+        /* set "load b" register to initial_value by writing to channel 2 */
+        retval = comedi_data_write(_myCard->getDevice()->it, _subDevice, 2, 0, 0, (lsampl_t)p);
     }
 
     void ComediEncoder::turnSet(int t){ _turn = t;}
@@ -122,31 +110,13 @@ namespace OCL
         if (!_myCard)
             return 0;
 
-        typedef unsigned int Data;
-        //int pos;
-        lsampl_t pos[20];
-        int ret=comedi_data_read(_myCard->getDevice()->it,_subDevice,_channel,0,0,pos);
-        //int ret=comedi_data_read(_myCard->getDevice(),_subDevice,_channel,0,0,(unsigned int *)&pos);
+        lsampl_t pos;
+        int ret=comedi_data_read(_myCard->getDevice()->it,_subDevice,0,0,0,&pos);
+
         if(ret<0){
             log(Error) << "Comedi Counter : reading encoder failed, ret = " << ret << endlog();
         }
-        // Other possibility for reading the data (with instruction)
-        /*    
-              comedi_insn insn;
-              Data readdata; // local data
-              insn.insn=INSN_READ;
-              insn.n=1; // Irrelevant for config
-              insn.data=&readdata;
-              insn.subdev=_subDevice;
-              insn.chanspec=CR_PACK(_channel,0,0);
-              int ret=comedi_do_insn(_myCard->getDevice(),&insn);
-              if(ret<0)
-              {
-                 log(Error) << "Comedi Counter : reading encoder failed, ret = " << ret << endlog();
-              }
-              pos = readdata;
-        */
-        return pos[0];
+        return pos;
     } 
 
     int ComediEncoder::resolution() const {return _resolution;}

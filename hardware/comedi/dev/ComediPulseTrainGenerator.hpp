@@ -28,17 +28,11 @@
 namespace OCL
 {
   /**
-   * A class for generation of pulse trains using comedi the hardware
-   * abstraction layer.  Based on the comedi API of the home
-   * written driver for the NI660X card. 
-   * @warning It is very unlikely that this class will work for your
-   * hardware as it requires a patched comedi device driver !
-   * See <http://people.mech.kuleuven.ac.be/~kgadeyne/linux/> for more
-   * information about all this stuff
+   * A class for generation of pulse trains using the comedi hardware
+   * abstraction layer. Tested with the NI6602 card. It will try to detect the
+   * NI6601 or NI6602. It needs to know the card to set the correct time base.
+   * Any other card is currently untested.
    * @todo subdevice locking
-   * @todo be more flexible in chosing the timebase, but this is
-   * currently not necessary as the comedi driver does not support
-   * this yet
    */
   class ComediPulseTrainGenerator :
      public RTT::PulseTrainGeneratorInterface
@@ -49,20 +43,18 @@ namespace OCL
      *
      * @param cd The comedi device your are using
      * @param subd The comedi subdevice where the COUNTER is situated.
-     * @param channel The number of the pulse train generator on the comedi subdevice
      * @param name  The name of the pulse train generator.
      */
     ComediPulseTrainGenerator(ComediDevice * cd, unsigned int subd, 
-			      unsigned int channel, const std::string& name);
+                              const std::string& name);
 
     /**
      * Create an pulse train generator.
      *
      * @param cd The comedi device your are using
      * @param subd The comedi subdevice where the COUNTER is situated.
-     * @param channel The number of the pulse train generator on the comedi subdevice
      */
-    ComediPulseTrainGenerator(ComediDevice * cd, unsigned int subd, unsigned int channel);
+    ComediPulseTrainGenerator(ComediDevice * cd, unsigned int subd);
 
     virtual ~ComediPulseTrainGenerator();
 
@@ -80,10 +72,10 @@ namespace OCL
     
     ComediDevice * _myCard;
     unsigned int _subDevice;
-    unsigned int _channel;
     
     RTT::psecs _pulse_width;
     RTT::psecs _pulse_period;
+    RTT::psecs _clock_period;
     /// Smallest step (related to the chosen timebase on the board)
     /// This value is not certain to be an integer, even in pico seconds.
     double _smallest_step;
