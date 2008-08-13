@@ -61,7 +61,7 @@ namespace OCL
         this->methods()->addMethod( method( "switchOn", &IOComponent::switchOn, this),
                                     "Switch A Digital Output on",
                                     "Name","The Name of the DigitalOutput."
-                                    ); 
+                                    );
         this->methods()->addMethod( method( "isOn", &IOComponent::isOn, this),
                                     "Inspect the status of a Digital Input or Output.",
                                     "Name", "The Name of the Digital Input or Output."
@@ -69,7 +69,7 @@ namespace OCL
         this->methods()->addMethod( method( "switchOff", &IOComponent::switchOff, this),
                                     "Switch A Digital Output off",
                                     "Name","The Name of the DigitalOutput."
-                                    ); 
+                                    );
         this->methods()->addMethod( method( "value", &IOComponent::value, this),
                                     "Inspect the value of an Analog Input or Output.",
                                     "Name", "The Name of the Analog Input or Output."

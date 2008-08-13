@@ -17,7 +17,7 @@
  *   License along with this library; if not, write to the Free Software   *
  *   Foundation, Inc., 59 Temple Place,                                    *
  *   Suite 330, Boston, MA  02111-1307  USA                                *
- ***************************************************************************/ 
+ ***************************************************************************/
 
 #include "deployer-funcs.hpp"
 #include <rtt/Logger.hpp>
@@ -34,11 +34,11 @@ namespace po = boost::program_options;
 
 using namespace RTT;
 
-namespace OCL 
+namespace OCL
 {
 
 // map lowercase strings to levels
-std::map<std::string, Logger::LogLevel>	logMap = 
+std::map<std::string, Logger::LogLevel>	logMap =
 	boost::assign::map_list_of
 	("never",       Logger::Debug)
 	("fatal",       Logger::Fatal)
@@ -49,9 +49,9 @@ std::map<std::string, Logger::LogLevel>	logMap =
 	("debug",       Logger::Debug)
 	("realtime",    Logger::RealTime);
 
-int deployerParseCmdLine(int                        argc, 
+int deployerParseCmdLine(int                        argc,
                          char**                     argv,
-                         std::string&               script, 
+                         std::string&               script,
                          std::string&               name,
                          po::variables_map&         vm,
                          po::options_description*   otherOptions)
@@ -62,17 +62,17 @@ int deployerParseCmdLine(int                        argc,
 	po::options_description             allowed("Allowed options");
 	po::positional_options_description  pos;
 	allowed.add_options()
-		("help,h", 
+		("help,h",
 		 "Show program usage")
-		("start,s", 
+		("start,s",
 		 po::value<std::string>(&script),
 		 "Deployment configuration file (eg 'config-file.xml')")
-		("log-level,l", 
+		("log-level,l",
 		 po::value<std::string>(&logLevel),
 		 "Level at which to log (case-insensitive) Never,Fatal,Critical,Error,Warning,Info,Debug,Realtime")
-		("no-consolelog", 
+		("no-consolelog",
 		 "Turn off logging to the console (will still log to 'orocos.log')")
-		("DeployerName", 
+		("DeployerName",
 		 po::value<std::string>(&name),
 		 "Name of deployer component (the --DeployerName flag is optional)")
 		;
@@ -84,23 +84,23 @@ int deployerParseCmdLine(int                        argc,
 	{
 		options.add(*otherOptions);
 	}
-	
-	try 
+
+	try
 	{
 		po::store(po::command_line_parser(argc, argv).
-                  options(options).positional(pos).run(), 
+                  options(options).positional(pos).run(),
                   vm);
-		po::notify(vm);    
+		po::notify(vm);
 
         // deal with options
-		if (vm.count("help")) 
+		if (vm.count("help"))
 		{
 			std::cout << options << std::endl;
 			return 1;
 		}
 
         // turn off all console logging
-		if (vm.count("no-consolelog")) 
+		if (vm.count("no-consolelog"))
 		{
             Logger::Instance()->mayLogStdOut(false);
             log(Warning) << "Console logging disabled" << endlog();
@@ -113,22 +113,22 @@ int deployerParseCmdLine(int                        argc,
 			if (0 != logMap.count(logLevel))
 			{
 				Logger::Instance()->setLogLevel(logMap[logLevel]);
-			}		
+			}
 			else
 			{
-				std::cout << "Did not understand log level: " 
-						  << logLevel << std::endl 
+				std::cout << "Did not understand log level: "
+						  << logLevel << std::endl
 						  << options << std::endl;
 				return -1;
 			}
-		}	
+		}
 	}
-	catch (std::logic_error e) 
+	catch (std::logic_error e)
     {
 		std::cerr << "Exception:" << e.what() << std::endl << options << std::endl;
         return -1;
     }
-    
+
     return 0;
 }
 

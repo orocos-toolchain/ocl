@@ -1,12 +1,12 @@
 /***************************************************************************
-  tag: Peter Soetens  Thu Apr 22 20:40:58 CEST 2004  FakeEncoder.hpp 
+  tag: Peter Soetens  Thu Apr 22 20:40:58 CEST 2004  FakeEncoder.hpp
 
                         FakeEncoder.hpp -  description
                            -------------------
     begin                : Thu April 22 2004
     copyright            : (C) 2004 Peter Soetens
     email                : peter.soetens@mech.kuleuven.ac.be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -23,8 +23,8 @@
  *   Foundation, Inc., 59 Temple Place,                                    *
  *   Suite 330, Boston, MA  02111-1307  USA                                *
  *                                                                         *
- ***************************************************************************/ 
- 
+ ***************************************************************************/
+
 #ifndef FAKEENCODER_HPP
 #define FAKEENCODER_HPP
 
@@ -57,7 +57,7 @@ namespace RTT
          * Get the current turn.
          */
         virtual int turnGet() const { return turn; }
-           
+
         /**
          * Set the position within the current turn.
          */

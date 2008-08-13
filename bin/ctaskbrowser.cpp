@@ -1,12 +1,12 @@
 /***************************************************************************
-  tag: Peter Soetens  Thu Jul 3 15:30:32 CEST 2008  ctaskbrowser.cpp 
+  tag: Peter Soetens  Thu Jul 3 15:30:32 CEST 2008  ctaskbrowser.cpp
 
                         ctaskbrowser.cpp -  description
                            -------------------
     begin                : Thu July 03 2008
     copyright            : (C) 2008 Peter Soetens
     email                : peter.soetens@fmtc.be
- 
+
  ***************************************************************************
  *   This program is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *

@@ -20,7 +20,7 @@ int ORO_main( int argc, char** argv)
     // such that we can see output :
     if ( Logger::log().getLogLevel() < Logger::Info ) {
         Logger::log().setLogLevel( Logger::Info );
-        log(Info) << argv[0] 
+        log(Info) << argv[0]
 		      << " manually raises LogLevel to 'Info' (5). See also file 'orocos.log'."<<endlog();
     }
 
@@ -49,9 +49,9 @@ int ORO_main( int argc, char** argv)
     cout << "  leave, Axes.start(), Axes.enableAxis(\"XAxis\"),"<<endl;
     cout << "  Axes.testData[0] = 3.0, InputValues.Set(Axes.testData), OutputValues.Get(),"<<endl;
     cout << "  XAxis_Velocity.Get(), Axes.disableAxis(\"XAxis\"), XAxes_Velocity.Get(),..."<<endl;
-    
+
     cout << "  Other methods (type 'this') are available as well."<<endl;
-        
+
     tb.loop();
 
     act.stop();

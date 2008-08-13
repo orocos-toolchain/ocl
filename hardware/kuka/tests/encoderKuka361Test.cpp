@@ -5,7 +5,7 @@
 #include <rtt/os/threads.hpp>
 #include <iostream>
 
-#if defined (OROPKG_OS_LXRT) 
+#if defined (OROPKG_OS_LXRT)
 
 #include <rtt/PeriodicActivity.hpp>
 #include "dev/EncoderSSIapci1710.hpp"
@@ -28,7 +28,7 @@
 
   // Conversion from encoder ticks to radiants
 #define KUKA361_TICKS2RAD { 2*M_PI / (KUKA361_CONV1 * KUKA361_ENC_RES), 2*M_PI / (KUKA361_CONV2 * KUKA361_ENC_RES), 2*M_PI / (KUKA361_CONV3 * KUKA361_ENC_RES), 2*M_PI / (KUKA361_CONV4 * KUKA361_ENC_RES), 2*M_PI / (KUKA361_CONV5 * KUKA361_ENC_RES), 2*M_PI / (KUKA361_CONV6 * KUKA361_ENC_RES)}
-  
+
 
 using namespace Orocos;
 using namespace RTT;
@@ -50,7 +50,7 @@ public:
         rad = radiants;
         double temp_offsets[]   = KUKA361_ENCODEROFFSETS;
         double temp_ticks2rad[] = KUKA361_TICKS2RAD;
-        
+
         for(unsigned int i = 0; i < 6; i++)
         {
             offsets[i]   = temp_offsets[i];
@@ -83,7 +83,7 @@ public:
                 results[resultcounter*6 + 3] = ( enc4.positionGet() - offsets[3] ) * ticks2rad[3];
                 results[resultcounter*6 + 4] = ( enc5.positionGet() - offsets[4] ) * ticks2rad[4];
                 results[resultcounter*6 + 5] = ( enc6.positionGet() - offsets[5] ) * ticks2rad[5];
-                
+
                 resultcounter++;
             }
         }
@@ -97,7 +97,7 @@ public:
                 results[resultcounter*6 + 3] = enc4.positionGet();
                 results[resultcounter*6 + 4] = enc5.positionGet();
                 results[resultcounter*6 + 5] = enc6.positionGet();
-                
+
                 resultcounter++;
             }
         }
@@ -108,7 +108,7 @@ private:
     double  ticks2rad[6];
     double  offsets[6];
     bool    rad;
-    
+
     double* results;
     unsigned int resultcounter;
     std::ofstream output;/*}}}1*/
@@ -127,7 +127,7 @@ public:
         rad = radiants;
         double temp_offsets[]   = KUKA361_ENCODEROFFSETS;
         double temp_ticks2rad[] = KUKA361_TICKS2RAD;
-        
+
         for(unsigned int i = 0; i < 6; i++)
         {
             offsets[i]   = temp_offsets[i];
@@ -171,24 +171,24 @@ private:
 
 int ORO_main(int argc, char** argv)
 {
-    
+
     EncoderSSI_apci1710_board  encSSIboard(0, 1, 2);
-    
+
     std::cout << "Read in encoder ticks?  (y/n) " << std::endl;
     char c, d;
     std::cin >> c;
 
     std::cout << "Write to file?  (y/n) " << std::endl;
     std::cin >> d;
-    
-    
+
+
     EncReader* encReader = NULL;
     EncWriter* encWriter = NULL;
 
     if ( (c == 'y')||(c == 'Y') )  encReader = new EncReader(encSSIboard, false);
     else                           encReader = new EncReader(encSSIboard, true );
-    
-    
+
+
     if ( (d == 'y')||(d == 'Y') )
     {
         if ( (c == 'y')||(c == 'Y') )  encWriter = new EncWriter(encSSIboard, false);

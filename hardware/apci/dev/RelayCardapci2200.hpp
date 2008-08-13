@@ -1,12 +1,12 @@
 /***************************************************************************
-  tag: Peter Soetens  Thu Oct 10 16:22:43 CEST 2002  Relaycardapci2200.hpp 
+  tag: Peter Soetens  Thu Oct 10 16:22:43 CEST 2002  Relaycardapci2200.hpp
 
                         Relaycardapci2200.hpp -  description
                            -------------------
     begin                : Thu October 10 2002
     copyright            : (C) 2002 Peter Soetens
     email                : peter.soetens@mech.kuleuven.ac.be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -23,8 +23,8 @@
  *   Foundation, Inc., 59 Temple Place,                                    *
  *   Suite 330, Boston, MA  02111-1307  USA                                *
  *                                                                         *
- ***************************************************************************/ 
- 
+ ***************************************************************************/
+
 /* koen.muylkens@esat.kuleuven.ac.be */
 
 #ifndef RELAYCARDAPCI12200_HPP
@@ -59,13 +59,13 @@ namespace RTT
             virtual void switchOff( unsigned int n );
 
             virtual void setBit( unsigned int bit, bool value );
-                
+
             virtual void setSequence(unsigned int start_bit, unsigned int stop_bit, unsigned int value);
 
             virtual bool checkBit(unsigned int n) const;
 
             virtual unsigned int checkSequence( unsigned int start_bit, unsigned int stop_bit ) const;
-            
+
             virtual unsigned int nbOfOutputs() const;
 
         private:

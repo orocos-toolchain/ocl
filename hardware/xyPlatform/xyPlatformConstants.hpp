@@ -7,13 +7,13 @@
 #define XY_NUM_AXIS 2
 
 // Since there are no endlimits switches, we make some in software in m
-#define X_AXIS_MIN_POS 0.0 
+#define X_AXIS_MIN_POS 0.0
 #define X_AXIS_MAX_POS 0.2
-#define Y_AXIS_MIN_POS 0.0 
+#define Y_AXIS_MIN_POS 0.0
 #define Y_AXIS_MAX_POS 0.2
 
 /* Drive Offset:  In the general case, you're motors will still drift
-   although you send 0V to the drives. 
+   although you send 0V to the drives.
    As you can see, we didn't tune them yet
 */
 #define XY_OFFSETSinVOLTS { 0.0 , 0.0 }

@@ -39,34 +39,34 @@ namespace OCL
     using namespace RTT;
     using namespace KDL;
     using namespace std;
-    
+
 #define STAUBLIRX130_NUM_AXES 6
-  
+
 #define STAUBLIRX130_ENCODEROFFSETS { 0, 0, 0, 0, 0, 0 }
-  
+
 #define STAUBLIRX130_CONV1  -128.6107
 #define STAUBLIRX130_CONV2  -129.3939
 #define STAUBLIRX130_CONV3  101.0909
 #define STAUBLIRX130_CONV4  88
 #define STAUBLIRX130_CONV5  75
 #define STAUBLIRX130_CONV6  32
-  
+
 #define STAUBLIRX130_ENC_RES  4096
 
     // Conversion from encoder ticks to radiants
 #define STAUBLIRX130_TICKS2RAD { 2*M_PI / (STAUBLIRX130_CONV1 * STAUBLIRX130_ENC_RES), 2*M_PI / (STAUBLIRX130_CONV2 * STAUBLIRX130_ENC_RES), 2*M_PI / (STAUBLIRX130_CONV3 * STAUBLIRX130_ENC_RES), 2*M_PI / (STAUBLIRX130_CONV4 * STAUBLIRX130_ENC_RES), 2*M_PI / (STAUBLIRX130_CONV5 * STAUBLIRX130_ENC_RES), 2*M_PI / (STAUBLIRX130_CONV6 * STAUBLIRX130_ENC_RES)}
-    
+
   // Conversion from angular speed to voltage
 #define STAUBLIRX130_RADproSEC2VOLT { -2.9452, -2.9452, 1.25, -1.28, 1.15, 0.475 }
 #define DRIVEVALUE_5_TO_6 (1.15/0.475)
-  
+
 #define KINEMATICS_EPS 0.0001
 #define SQRT3d2 0.8660254037844386
 #define M_PI_T2 2 * M_PI
 #define SQRT3t2 3.46410161513775 // 2 sqrt(3)
-  
+
     typedef StaubliRX130nAxesVelocityController MyType;
-    
+
     StaubliRX130nAxesVelocityController::StaubliRX130nAxesVelocityController(string name)
         : TaskContext(name,PreOperational),
           startAllAxes_mtd( "startAllAxes", &MyType::startAllAxes, this),
@@ -129,28 +129,28 @@ namespace OCL
             positionConvertFactor[i] = ticks2rad[i];
             driveConvertFactor[i] = vel2volt[i];
         }
-        
+
 #if (defined OROPKG_OS_LXRT)
         double encoderOffsets[STAUBLIRX130_NUM_AXES] = STAUBLIRX130_ENCODEROFFSETS;
-        
+
         log(Info)<<"Creating Comedi Devices."<<endlog();
         AOut = new ComediDevice(0);
         DInOut = new ComediDevice(1);
         Encoder = new ComediDevice(2);
-        
+
         SubAOut = new ComediSubDeviceAOut(AOut,"AnalogOut",1);
         SubDIn = new ComediSubDeviceDIn(DInOut,"DigitalIn",0);
         SubDOut = new ComediSubDeviceDOut(DInOut,"DigitalOut",1);
-        
+
         brakeOff = new DigitalOutput(SubDOut,17);
         brakeOff->switchOff();
-        
+
         highPowerEnable = new DigitalOutput(SubDOut,16);
-        
+
         eStop = new DigitalInput(SubDIn,14);
-        
+
         armPowerOn = new DigitalInput(SubDIn,15);
-        
+
 
         for (unsigned int i = 0; i < STAUBLIRX130_NUM_AXES; i++){
             log(Info)<<"Creating Hardware axis "<<i<<endlog();
@@ -160,7 +160,7 @@ namespace OCL
             encoder[i] = new IncrementalEncoderSensor( encoderInterface[i], 1.0 / ticks2rad[i],
                                                        encoderOffsets[i],
                                                        -10, 10,STAUBLIRX130_ENC_RES );
-            
+
             log(Info)<<"Setting up drive ..."<<endlog();
             log(Debug)<<"Creating AnalogOutput"<<endlog();
             vref[i]   = new AnalogOutput(SubAOut, i );
@@ -170,7 +170,7 @@ namespace OCL
             enable[i]->switchOff();
             log(Debug)<<"Creating AnalogDrive"<<endlog();
             drive[i]  = new AnalogDrive( vref[i], enable[i], 1.0 / vel2volt[i], 0.0);
-            
+
             log(Debug)<<"Creating Digital Input DriveFailure"<<endlog();
             driveFailure[i] = new DigitalInput(SubDIn,8+i);
             log(Debug)<<"Creating Axis"<<endlog();
@@ -178,19 +178,19 @@ namespace OCL
             log(Debug)<<"Adding Position Sensor to Axis"<<endlog();
             axes_hardware[i]->setSensor( "Position", encoder[i] );
         }
-        
-        
+
+
 #endif
-        //Definition of kinematics for the StaubliRX130 
+        //Definition of kinematics for the StaubliRX130
         kinematics.addSegment(Segment(Joint(Joint::RotZ),Frame(Rotation::RotZ(M_PI_2),Vector(0.0,0.0,0.2075+0.550))));
         kinematics.addSegment(Segment(Joint(Joint::RotX),Frame(Vector(0.0,0.0,0.625))));
         kinematics.addSegment(Segment(Joint(Joint::RotX),Frame(Vector(0.0,0.0,0.625))));
         kinematics.addSegment(Segment(Joint(Joint::RotZ)));
         kinematics.addSegment(Segment(Joint(Joint::RotX),Frame(Vector(0.0,0.0,0.110))));
         kinematics.addSegment(Segment(Joint(Joint::RotZ),Frame(Rotation::RotZ(-M_PI_2))));
-        
+
         chain_attr.set(kinematics);
-        
+
         /*
          *  Execution Interface
          */
@@ -204,7 +204,7 @@ namespace OCL
         events()->addEvent( &driveOutOfRange_evt, "Drive value of an Axis is out of range","message","Information about event" );
         events()->addEvent( &positionOutOfRange_evt, "Position of an Axis is out of range","message","Information about event");
         events()->addEvent( &velocityOutOfRange_evt, "Velocity of an Axis is out of range","message","Information about event");
-        
+
         /**
          * Dataflow Interface
          */
@@ -213,7 +213,7 @@ namespace OCL
         ports()->addPort(&positionValues_port);
         ports()->addPort(&velocityValues_port);
         ports()->addPort(&deltaTime_port);
-        
+
         /**
          * Configuration Interface
          */
@@ -230,21 +230,21 @@ namespace OCL
         properties()->addProperty( &EmergencyEvents_prop);
         attributes()->addConstant( &num_axes_attr);
         attributes()->addAttribute(&chain_attr);
-        
+
     }
-    
+
     StaubliRX130nAxesVelocityController::~StaubliRX130nAxesVelocityController()
     {
         // make sure robot is shut down
         prepareForShutdown_cmd();
         // make sure last position is stored
         this->cleanupHook();
-        
+
         // brake, drive, sensors and switches are deleted by each axis
         if(simulation_prop.value())
             for (unsigned int i = 0; i < STAUBLIRX130_NUM_AXES; i++)
                 delete axes[i];
-    
+
 #if (defined OROPKG_OS_LXRT)
         for (unsigned int i = 0; i < STAUBLIRX130_NUM_AXES; i++){
             delete axes_hardware[i];
@@ -254,23 +254,23 @@ namespace OCL
         delete eStop;
         delete highPowerEnable;
         delete brakeOff;
-        
+
         delete SubAOut;
         delete SubDIn;
         delete SubDOut;
-        
+
         delete AOut;
         delete DInOut;
         delete Encoder;
 #endif
     }
-    
+
     bool StaubliRX130nAxesVelocityController::configureHook()
     {
         Logger::In in(this->getName().data());
-        
+
         simulation=simulation_prop.value();
-        
+
         if(!(driveLimits_prop.value().size()==STAUBLIRX130_NUM_AXES&&
              lowerPositionLimits_prop.value().size()==STAUBLIRX130_NUM_AXES&&
              upperPositionLimits_prop.value().size()==STAUBLIRX130_NUM_AXES&&
@@ -278,17 +278,17 @@ namespace OCL
              initialPosition_prop.value().size()==STAUBLIRX130_NUM_AXES&&
              driveOffset_prop.value().size()==STAUBLIRX130_NUM_AXES))
             return false;
-        
+
 #if (defined OROPKG_OS_LXRT)
         if(!simulation){
-            
+
             for (unsigned int i = 0; i <STAUBLIRX130_NUM_AXES; i++){
                 axes_hardware[i]->limitDrive(-driveLimits_prop.value()[i], driveLimits_prop.value()[i], driveOutOfRange_evt);
                 axes[i] = axes_hardware[i];
                 ((Axis*)(axes[i]))->getDrive()->addOffset(driveOffset_prop.value()[i]);
                 log(Info) << "Hardware version of StaubliRX130nAxesVelocityController has started" << endlog();
             }
-            
+
             std::vector<double> initPos(STAUBLIRX130_NUM_AXES,0.0);
             if(!this->readAbsolutePosition(initPos))
                 return false;
@@ -315,12 +315,12 @@ namespace OCL
         servoGain = servoGain_prop.value();
         servoIntegrationFactor = servoIntegrationFactor_prop.value();
         servoFFScale = servoFFScale_prop.value();
-	
+
         /**
          * Creating event handlers
          */
         log(Info)<<"Creating EmergencyEvent Handlers"<<endlog();
-        
+
         for(vector<string>::const_iterator it=EmergencyEvents_prop.rvalue().begin();it!=EmergencyEvents_prop.rvalue().end();it++){
             string::size_type idx = (*it).find('.');
             if(idx==string::npos)
@@ -337,7 +337,7 @@ namespace OCL
                 log(Warning)<<"Could not connect EmergencyStop to "<<(*it)<<", "<<peername<<" is not a peer of "<<this->getName()<<endlog();
                 continue;
             }
-            
+
             if(peer->events()->hasEvent(eventname)){
                 Handle handle = peer->events()->setupConnection(eventname).callback(this,&StaubliRX130nAxesVelocityController::EmergencyStop).handle();
                 if(handle.connect()){
@@ -348,10 +348,10 @@ namespace OCL
             }else
                 log(Warning)<<"Could not connect EmergencyStop to "<<(*it)<<", "<<eventname <<" not found in "<<peername<<"s event-list"<<endlog();
         }
-        
+
         return true;
     }
-      
+
     bool StaubliRX130nAxesVelocityController::startHook()
     {
         for (int axis=0;axis<STAUBLIRX130_NUM_AXES;axis++) {
@@ -371,7 +371,7 @@ namespace OCL
         positionValues_port.Set(positionValues);
         return true;
     }
-  
+
     void StaubliRX130nAxesVelocityController::updateHook()
     {
         for (int axis=0;axis<STAUBLIRX130_NUM_AXES;axis++) {
@@ -396,7 +396,7 @@ namespace OCL
         }
         positionValues_port.Set(positionValues);
         velocityValues_port.Set(velocityValues);
-        
+
 #if defined OROPKG_OS_LXRT
         double dt;
         // Determine sampling time :
@@ -404,8 +404,8 @@ namespace OCL
             dt              = TimeService::Instance()->secondsSince(previousTime);
             previousTime    = TimeService::Instance()->getTicks();
         } else {
-            dt = 0.0; 
-            for (unsigned int i=0;i<STAUBLIRX130_NUM_AXES;i++) {      
+            dt = 0.0;
+            for (unsigned int i=0;i<STAUBLIRX130_NUM_AXES;i++) {
                 servoIntError[i] = 0.0;
             }
             previousTime = TimeService::Instance()->getTicks();
@@ -419,15 +419,15 @@ namespace OCL
         if(!simulation)
             driveValues[5] = driveValues[5] + driveValues[4]/(DRIVEVALUE_5_TO_6);
 #endif
-        
-        for (unsigned int i=0;i<STAUBLIRX130_NUM_AXES;i++) {      
+
+        for (unsigned int i=0;i<STAUBLIRX130_NUM_AXES;i++) {
 #if defined OROPKG_OS_LXRT
             if (driveFailure[i]->isOn()){
                 log(Error)<<"Failure drive "<<i<<", stopping all axes"<<endlog();
                 this->fatal();
             }
 #endif
-            
+
             // emit event when velocity is out of range
             if( (velocityValues[i] < -velocityLimits_prop.value()[i]) ||
                 (velocityValues[i] > velocityLimits_prop.value()[i]) ){
@@ -435,7 +435,7 @@ namespace OCL
                 sprintf(msg,"Velocity of StaubliRX130 Axis %d is out of range: %f",i+1,velocityValues[i]);
                 velocityOutOfRange_evt(msg);
             }
-            
+
             // emit event when position is out of range
             if( (positionValues[i] < lowerPositionLimits_prop.value()[i]) ||
                 (positionValues[i] > upperPositionLimits_prop.value()[i]) ){
@@ -443,10 +443,10 @@ namespace OCL
                 sprintf(msg,"Position of StaubliRX130 Axis %d is out of range: %f",i+1,positionValues[i]);
                 positionOutOfRange_evt(msg);
             }
-            
+
             // send the drive value to hw and performs checks
             if (axes[i]->isDriven()){
-#if defined OROPKG_OS_LXRT      
+#if defined OROPKG_OS_LXRT
                 // perform control action ( dt is zero the first time !) :
                 double error        = driveValues[i] - velocityValues[i];
                 servoIntError[i]    += dt*error;
@@ -460,21 +460,21 @@ namespace OCL
                 sprintf(msg,"Velocity of StaubliRX130 Axis %d is out of range: %f",i+1,velocityValues[i]);
                 velocityOutOfRange_evt(msg);
             }
-            
+
             driveValues[i] = outputvel[i];
             axes[i]->drive(driveValues[i]);
         }
-               
+
 #else
                 axes[i]->drive(driveValues[i]);
             }
-        } 
+        }
 
 #endif
         servoValues_port.Set(driveValues);
     }
-    
-    
+
+
     void StaubliRX130nAxesVelocityController::stopHook()
     {
         //Make sure machine is shut down
@@ -486,7 +486,7 @@ namespace OCL
         //Write properties back to file
         marshalling()->writeProperties(this->getName()+".cpf");
     }
-        
+
     bool StaubliRX130nAxesVelocityController::prepareForUse()
     {
 #if (defined OROPKG_OS_LXRT)
@@ -498,7 +498,7 @@ namespace OCL
         activated = true;
         return true;
     }
-    
+
     bool StaubliRX130nAxesVelocityController::prepareForUseCompleted()const
     {
 #if (defined OROPKG_OS_LXRT)
@@ -508,7 +508,7 @@ namespace OCL
 #endif
             return true;
     }
-    
+
     bool StaubliRX130nAxesVelocityController::prepareForShutdown()
     {
         //make sure all axes are stopped and locked
@@ -521,35 +521,35 @@ namespace OCL
         activated = false;
         return true;
     }
-    
+
     bool StaubliRX130nAxesVelocityController::prepareForShutdownCompleted()const
     {
         return true;
     }
-    
+
     bool StaubliRX130nAxesVelocityController::stopAllAxes()
     {
         bool succes = true;
         for(unsigned int i = 0;i<STAUBLIRX130_NUM_AXES;i++)
             succes &= axes[i]->stop();
-        
+
         return succes;
     }
-    
+
     bool StaubliRX130nAxesVelocityController::startAllAxes()
     {
         bool succes = true;
         for(unsigned int i = 0;i<STAUBLIRX130_NUM_AXES;i++)
             succes &= axes[i]->drive(0.0);
-        
+
         return succes;
     }
-  
+
     bool StaubliRX130nAxesVelocityController::unlockAllAxes()
     {
         if(!activated)
             return false;
-        
+
         bool succes = true;
         for(unsigned int i = 0;i<STAUBLIRX130_NUM_AXES;i++)
             succes &= axes[i]->unlock();
@@ -559,7 +559,7 @@ namespace OCL
 #endif
         return succes;
     }
-  
+
     bool StaubliRX130nAxesVelocityController::lockAllAxes()
     {
         bool succes = true;
@@ -571,12 +571,12 @@ namespace OCL
         }
         return succes;
     }
-    
+
 bool StaubliRX130nAxesVelocityController::addDriveOffset(const vector<double>& offset)
     {
         if(offset.size()!=STAUBLIRX130_NUM_AXES)
             return false;
-        
+
         for(unsigned int i=0;i<STAUBLIRX130_NUM_AXES;i++){
             driveOffset_prop.value()[i] += offset[i];
 #if (defined OROPKG_OS_LXRT)
@@ -597,7 +597,7 @@ bool StaubliRX130nAxesVelocityController::addDriveOffset(const vector<double>& o
         if(fd==-1)
             log(Critical)<<"Could not open serial communication with Adept Controller"<<endlog();
         fcntl(fd,F_SETFL,0);
-	  
+
         if(tcgetattr(fd,&tio)<0){
             log(Error)<<"Serial IO-error!!!"<<endlog();
             return false;
@@ -617,14 +617,14 @@ bool StaubliRX130nAxesVelocityController::addDriveOffset(const vector<double>& o
         tio.c_lflag &=~(ICANON|ECHO|ECHOE|ISIG);
         tio.c_cc[VMIN] = 0;
         tio.c_cc[VTIME]=10;
-        
+
         tcflush(fd,TCIFLUSH);
         tcsetattr(fd,TCSANOW,&tio);
-        
+
         char buffer[300];/* Input buffer */
         char *bufptr;/* Current char in buffer */
         int  nbytes;/* Number of bytes read */
-        
+
         //Send CR to see if Adept Controller is ready:
         write(fd,"\r",1);
         bufptr=buffer;
@@ -644,7 +644,7 @@ bool StaubliRX130nAxesVelocityController::addDriveOffset(const vector<double>& o
             log(Error)<<"Serial communication with Adept Controller not ready!"<<endlog();
             return false;
         }
-        
+
         //Get Absolute Position Values
         write(fd,"where\r",7);
         bufptr=buffer;
@@ -672,8 +672,8 @@ bool StaubliRX130nAxesVelocityController::addDriveOffset(const vector<double>& o
 #endif
         return true;
     }
-    
-    
-    
-    
+
+
+
+
 }//namespace orocos

@@ -36,11 +36,11 @@ class TestTaskContext
         // write initial value.
             dwport.Set( init );
         }
-    
+
         virtual bool startup () {
             return true;
         }
-    
+
         virtual void update () {
             if( pos > 9 )
             {
@@ -59,7 +59,7 @@ class TestTaskContext
             if( pos == 0 ) { pos = 10; }
             dwport.Set( init );
         }
-    
+
         virtual void shutdown () {
 
         }
@@ -100,9 +100,9 @@ int ORO_main( int argc, char** argv)
     TestTaskContext gtc("MyPeer");
     TestTaskContext2 gtc2("MyPeer2");
     TestTaskContext2 gtc3("MySoloPeer");
-    
+
     PeriodicActivity act1(10, 2.0);
-    
+
     rc.addPeer( &gtc );
     rc.addPeer( &gtc2 );
     rc.addPeer( &gtc3 );

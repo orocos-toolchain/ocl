@@ -1,19 +1,19 @@
 // Copyright (C) 2006 Ruben Smits <ruben dot smits at mech dot kuleuven dot be>
-//  
+//
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
 // (at your option) any later version.
-//  
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-//  
+//
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-//  
+//
 
 #include "LaserDistance.hpp"
 #include <iostream>
@@ -27,10 +27,10 @@ namespace OCL
 {
   using namespace RTT;
   using namespace std;
-  
+
   LaserDistance::LaserDistance(string name,unsigned int nr_chan ,string propertyfile):
     TaskContext(name),
-#if defined (OROPKG_DEVICE_DRIVERS_COMEDI)    
+#if defined (OROPKG_DEVICE_DRIVERS_COMEDI)
     _LaserInput(nr_chan),
 #endif
     _nr_chan(nr_chan),
@@ -57,7 +57,7 @@ namespace OCL
 
     log(Debug) <<this->getName()<<": adding Events"<<endlog();
     events()->addEvent(&_distanceOutOfRange, "Distance out of Range", "C", "Channel", "V", "Value");
-    
+
 #if defined (OROPKG_DEVICE_DRIVERS_COMEDI)
     if(_nr_chan>NR_CHAN){
       log(Warning) <<"Only 2 hardware sensors currently available, resetting nr of channels to 2"<<endlog();
@@ -74,15 +74,15 @@ namespace OCL
       _LaserInput[i] = new AnalogInput(_comediSubdevAIn, i+OFFSET); //channel number starting from 0
     }
 #endif
-    
+
     if(!marshalling()->readProperties(_propertyfile))
       log(Error)<<"Reading properties failed."<<endlog();
-    
+
     log(Debug) <<this->getName()<<": constructed."<<endlog();
 
 
   }
-  
+
   LaserDistance::~LaserDistance()
   {
 #if defined (OROPKG_DEVICE_DRIVERS_COMEDI)
@@ -92,8 +92,8 @@ namespace OCL
       delete _LaserInput[i];
 #endif
   }
-  
-  bool LaserDistance::startup()    
+
+  bool LaserDistance::startup()
   {
     if(_simulation_values.value().size()!=_nr_chan||
        _volt2m.value().size()!=_nr_chan||
@@ -106,7 +106,7 @@ namespace OCL
 	}
     return true;
   }
-    
+
     void LaserDistance::update()
     {
 #if defined (OROPKG_DEVICE_DRIVERS_COMEDI)
@@ -122,7 +122,7 @@ namespace OCL
 #endif
         _distances.Set(_distances_local);
     }
-    
+
     void LaserDistance::shutdown()
     {
         marshalling()->writeProperties(_propertyfile);

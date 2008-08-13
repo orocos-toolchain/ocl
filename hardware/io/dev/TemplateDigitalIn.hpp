@@ -1,12 +1,12 @@
 /***************************************************************************
-  tag: Peter Soetens  Sat May 21 20:15:51 CEST 2005  TemplateDigitalIn.hpp 
+  tag: Peter Soetens  Sat May 21 20:15:51 CEST 2005  TemplateDigitalIn.hpp
 
                         TemplateDigitalIn.hpp -  description
                            -------------------
     begin                : Sat May 21 2005
     copyright            : (C) 2005 Peter Soetens
     email                : peter.soetens@mech.kuleuven.ac.be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -24,8 +24,8 @@
  *   Suite 330, Boston, MA  02111-1307  USA                                *
  *                                                                         *
  ***************************************************************************/
- 
- 
+
+
 #ifndef TEMPLATEDIGITALIN_HPP
 #define TEMPLATEDIGITALIN_HPP
 
@@ -51,7 +51,7 @@ namespace RTT
             : bit_status(0)
         {
         }
-            
+
         bool isOn( unsigned int bit ) const
         { return bit_status >> bit & 0x1; }
 
@@ -62,7 +62,7 @@ namespace RTT
         { return isOn(bit); }
 
         unsigned int readSequence(unsigned int start_bit, unsigned int stop_bit) const
-        { 
+        {
             unsigned int result = bit_status >> start_bit;
             return result & ( 1 << (stop_bit-start_bit+1) ) - 1;
         }
@@ -74,7 +74,7 @@ namespace RTT
          */
         unsigned int bit_status;
 	};
-			
+
 }
 
 

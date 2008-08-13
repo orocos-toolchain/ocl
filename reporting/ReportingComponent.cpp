@@ -1,12 +1,12 @@
 /***************************************************************************
-  tag: Peter Soetens  Mon May 10 19:10:38 CEST 2004  ReportingComponent.cxx 
+  tag: Peter Soetens  Mon May 10 19:10:38 CEST 2004  ReportingComponent.cxx
 
                         ReportingComponent.cxx -  description
                            -------------------
     begin                : Mon May 10 2004
     copyright            : (C) 2004 Peter Soetens
     email                : peter.soetens@mech.kuleuven.ac.be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -46,7 +46,7 @@ namespace OCL
   using namespace std;
   using namespace RTT;
 
-  ReportingComponent::ReportingComponent( std::string name /*= "Reporting" */ ) 
+  ReportingComponent::ReportingComponent( std::string name /*= "Reporting" */ )
         : TaskContext( name ),
           report("Report"),
           autotrigger("AutoTrigger","When set to 1, the data is taken upon each update(), "
@@ -55,14 +55,14 @@ namespace OCL
           config("Configuration","The name of the property file which lists what is to be reported.",
                  "cpf/reporter.cpf"),
           writeHeader("WriteHeader","Set to true to start each report with a header.", true),
-          starttime(0), 
+          starttime(0),
           timestamp("TimeStamp","The time at which the data was read.",0.0)
     {
         this->properties()->addProperty( &autotrigger );
         this->properties()->addProperty( &config );
         this->properties()->addProperty( &writeHeader );
 
-        // Add the methods, methods make sure that they are 
+        // Add the methods, methods make sure that they are
         // executed in the context of the (non realtime) caller.
 
         this->methods()->addMethod( method( "snapshot", &ReportingComponent::snapshot , this),
@@ -165,7 +165,7 @@ namespace OCL
             log(Error) << "Reading file "<< config.get() << " failed."<<endlog();
             return false;
         }
-        
+
         bool ok = true;
         PropertyBag::const_iterator it = bag.getProperties().begin();
         while ( it != bag.getProperties().end() )
@@ -231,7 +231,7 @@ namespace OCL
         if ( !ports.empty() ) {
             output << "Ports :" << endl;
             for (vector<string>::iterator it= ports.begin(); it != ports.end(); ++it) {
-                output << "  " << *it << " : "; 
+                output << "  " << *it << " : ";
                 if (c->ports()->getPort(*it)->connected() )
                     output << c->ports()->getPort(*it)->connection()->getDataSource() << endl;
                 else
@@ -241,7 +241,7 @@ namespace OCL
         return true;
     }
 
-    bool ReportingComponent::reportComponent( const std::string& component ) { 
+    bool ReportingComponent::reportComponent( const std::string& component ) {
         Logger::In in("ReportingComponent");
         // Users may add own data sources, so avoid duplicates
         //std::vector<std::string> sources                = comp->data()->getNames();
@@ -258,7 +258,7 @@ namespace OCL
         return true;
     }
 
-            
+
     bool ReportingComponent::unreportComponent( const std::string& component ) {
         TaskContext* comp = this->getPeer(component);
         if ( !comp ) {
@@ -292,7 +292,7 @@ namespace OCL
             this->reportDataSource( component + "." + port, "Port", porti->connection()->getDataSource() );
             log(Info) << "Reporting port " << port <<" : ok."<<endlog();
         } else {
-            // create new port temporarily 
+            // create new port temporarily
             // this port is only created with the purpose of
             // creating a connection object.
             PortInterface* ourport = porti->antiClone();
@@ -302,7 +302,7 @@ namespace OCL
                 delete ourport;
                 return false;
             }
-            
+
             delete ourport;
             this->reportDataSource( component + "." + porti->getName(), "Port", porti->connection()->getDataSource() );
             log(Info) << "Created connection for port " << porti->getName()<<" : ok."<<endlog();
@@ -315,8 +315,8 @@ namespace OCL
     }
 
     // report a specific datasource, property,...
-    bool ReportingComponent::reportData(const std::string& component,const std::string& dataname) 
-    { 
+    bool ReportingComponent::reportData(const std::string& component,const std::string& dataname)
+    {
         Logger::In in("ReportingComponent");
         TaskContext* comp = this->getPeer(component);
         if ( !comp ) {
@@ -331,16 +331,16 @@ namespace OCL
         if ( comp->properties() && comp->properties()->find( dataname ) )
             return this->reportDataSource( component + "." + dataname, "Data",
                                            comp->properties()->find( dataname )->getDataSource() );
-        return false; 
+        return false;
     }
 
-    bool ReportingComponent::unreportData(const std::string& component,const std::string& datasource) { 
-        return this->unreportDataSource( component +"." + datasource); 
+    bool ReportingComponent::unreportData(const std::string& component,const std::string& datasource) {
+        return this->unreportDataSource( component +"." + datasource);
     }
 
     void ReportingComponent::snapshot() {
         timestamp = TimeService::Instance()->secondsSince( starttime );
-            
+
         // execute the copy commands (fast).
         for(Reports::iterator it = root.begin(); it != root.end(); ++it )
             (it->get<2>())->execute();

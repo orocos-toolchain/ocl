@@ -1,19 +1,19 @@
 // Copyright (C) 2007 Ruben Smits <ruben dot smits at mech dot kuleuven dot be>
-//  
+//
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
 // (at your option) any later version.
-//  
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-//  
+//
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-//  
+//
 
 #include "nAxesVelocityController.hpp"
 #include <ocl/ComponentLoader.hpp>
@@ -23,7 +23,7 @@ namespace OCL
 {
     using namespace RTT;
     using namespace std;
-    
+
     nAxesVelocityController::nAxesVelocityController(string name)
         : TaskContext(name,PreOperational),
           M_startAllAxes("startAllAxes",&nAxesVelocityController::startAllAxes,this),
@@ -39,15 +39,15 @@ namespace OCL
         methods()->addMethod(&M_stopAllAxes,"stop the simulation axes");
         methods()->addMethod(&M_lockAllAxes,"lock the simulation axes");
         methods()->addMethod(&M_unlockAllAxes,"unlock the simulation axes");
-        
+
         ports()->addPort(&D_driveValues);
         ports()->addPort(&D_positionValues);
-        
+
         properties()->addProperty(&P_initialPositions);
         properties()->addProperty(&P_naxes);
-        
+
     }
-    
+
     bool nAxesVelocityController::configureHook()
     {
         naxes=P_naxes.value();
@@ -58,17 +58,17 @@ namespace OCL
                       <<endlog();
             return false;
         }
-        
+
         driveValues.resize(naxes);
         positionValues=P_initialPositions.value();
         simulation_axes.resize(naxes);
-        
+
         for (unsigned int i = 0; i<naxes; i++){
             simulation_axes[i] = new SimulationAxis(positionValues[i]);
         }
 
         D_positionValues.Set(positionValues);
-        
+
         return true;
     }
 
@@ -85,10 +85,10 @@ namespace OCL
             log(Error)<<"Size of "<<D_driveValues.getName()<<": "<<D_driveValues.Get().size()<<" != " << naxes<<endlog();
             return false;
         }
-        
+
         return true;
     }
-    
+
     void nAxesVelocityController::updateHook()
     {
         D_driveValues.Get(driveValues);
@@ -99,16 +99,16 @@ namespace OCL
         }
         D_positionValues.Set(positionValues);
     }
-    
+
     void nAxesVelocityController::cleanupHook()
     {
         simulation_axes.clear();
     }
-    
+
     void nAxesVelocityController::stopHook()
     {
     }
-    
+
     bool nAxesVelocityController::startAllAxes()
     {
         bool retval=true;
@@ -134,7 +134,7 @@ namespace OCL
             axis!=simulation_axes.end();axis++)
             retval&=(*axis)->lock();
         return retval;
-        
+
     }
 
     bool nAxesVelocityController::unlockAllAxes()
@@ -147,5 +147,5 @@ namespace OCL
     }
 }
 ORO_CREATE_COMPONENT(OCL::nAxesVelocityController)
-        
-          
+
+

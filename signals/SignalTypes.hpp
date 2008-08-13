@@ -1,12 +1,12 @@
 /***************************************************************************
-  tag: Peter Soetens  Thu Oct 10 16:21:19 CEST 2002  SignalTypes.hpp 
+  tag: Peter Soetens  Thu Oct 10 16:21:19 CEST 2002  SignalTypes.hpp
 
                         SignalTypes.hpp -  description
                            -------------------
     begin                : Thu October 10 2002
     copyright            : (C) 2002 Peter Soetens
     email                : peter.soetens@mech.kuleuven.ac.be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -23,8 +23,8 @@
  *   Foundation, Inc., 59 Temple Place,                                    *
  *   Suite 330, Boston, MA  02111-1307  USA                                *
  *                                                                         *
- ***************************************************************************/ 
- 
+ ***************************************************************************/
+
 // ============================================================================
 //
 // = KERNEL_MODULE
@@ -110,9 +110,9 @@ namespace MotionControl
     /**
      * An virtually unlimmited set of types.
      */
-    enum SignalTypes { 
-        ReferenceSgn = 0, MeasurementSgn, ErrorSgn, ControlSgn, FeedForwardSgn, 
-        SetPoints, Commands, Inputs, Models, Outputs 
+    enum SignalTypes {
+        ReferenceSgn = 0, MeasurementSgn, ErrorSgn, ControlSgn, FeedForwardSgn,
+        SetPoints, Commands, Inputs, Models, Outputs
     };
 
     /**
@@ -123,12 +123,12 @@ namespace MotionControl
      * It must support the following common operators:
      * {proper default constructor, operator+=, operator+, operator-, operator=, operator-= }
      *
-     * The rules are as follows : 
-     * 
+     * The rules are as follows :
+     *
      * <li>The result of any operation on SignalTp<T,U>  with an U returns an U (so the type is lost)</li>
      * <li>The result of any operation on SignalTp<T,U> with a SignalTp<R,U> returns an U (so the type is lost)</li>
      * <li>Any assignment of a SignalTp<T,U> with an U returns a SignalTp<T,U> (so the type is preserved)</li>
-     * 
+     *
      * Examples : <br>
      * <li>U = SignalTp<T,U> * U </li>
      * <li>U = SignalTp<T,U> + SignalTp<R,U> </li>
@@ -193,9 +193,9 @@ namespace MotionControl
         U operator - (const SignalTp<T,U>& a) { return value - a.value; }
 
         U operator + (const SignalTp<T,U>& a) { return value + a.value; }
-        
+
         U operator + (const U& a) { return value + a;  }
-        
+
         /**
          * Automatic casting, returns a copy of the value.
          */

@@ -1,19 +1,19 @@
 // Copyright (C) 2006 Wim Meeussen <wim dot meeussen at mech dot kuleuven dot be>
-//  
+//
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
 // (at your option) any later version.
-//  
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-//  
+//
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-//  
+//
 
 #include "Demotool.hpp"
 #include <bfl/wrappers/matrix/matrix_wrapper.h>
@@ -28,8 +28,8 @@ namespace OCL
   using namespace std;
   using namespace KDL;
   using namespace MatrixWrapper;
-  
-  
+
+
   Demotool::Demotool(string name, string propertyfile):
     TaskContext(name),
     _pos_leds_demotool("pos_leds_demotool","XYZ positions of all LED markers, relative to demtool frame"),
@@ -69,15 +69,15 @@ namespace OCL
     ports()->addPort(&_Twist_world_manip_port);
     ports()->addPort(&_Frame_world_manip_port);
     ports()->addPort(&_num_visible_leds_port);
-    
+
     log(Debug) <<this->getName()<<": adding Methods"<<endlog();
     methods()->addMethod(_calibrate_world_to_manip, "set world frame to current manip frame");
     methods()->addMethod(_calibrate_wrench_sensor, "set wrench sensor offset to measure zero force");
 
     if (!marshalling()->readProperties(_propertyfile)) {
       log(Error) << "Failed to read the property file, continueing with default values." << endlog();
-    }  
-    
+    }
+
     // foce component of gravity
     _Wrench_gravity_world_world.force  = _gravity_dir_world.value() * (_mass_demotool.value() * GRAVITY_CONSTANT);
 
@@ -97,18 +97,18 @@ namespace OCL
 
     log(Debug) <<this->getName()<<": constructed."<<endlog();
   }
-  
+
   Demotool::~Demotool()
   {
   }
-  
 
-  bool Demotool::startup()    
+
+  bool Demotool::startup()
   {
     // get command from wrench component, to add offset
     TaskContext* wrench_sensor = getPeer("WrenchSensor");
     if (!wrench_sensor) log(Error) <<this->getName()<<": peer WrenchSensor not found."<<endlog();
- 
+
     _add_offset = wrench_sensor->commands()->getCommand<bool(Wrench)>("addOffset");
     if (!_add_offset.ready()) log(Error) <<this->getName()<<": command addOffset not found."<<endlog();
 
@@ -121,7 +121,7 @@ namespace OCL
     return true;
   }
 
-    
+
   void Demotool::update()
   {
     // get krypton LED positions
@@ -178,11 +178,11 @@ namespace OCL
 	  vec_temp(j) = residu(j+1, i+1);
 	error += vec_temp.Norm() /_num_visible_leds;
       //if (error > 0.001){
-	//log(Warning) << "SensorDemotool: Error while solving LED position equation = " 
+	//log(Warning) << "SensorDemotool: Error while solving LED position equation = "
 	//	      << error << " > 0.001" << endlog();
       //}
     }
-    
+
 
     // twist of manip expressed in world, refpoint manip
     // ---------------------------------------------
@@ -195,7 +195,7 @@ namespace OCL
     _time_begin = TimeService::Instance()->getTicks();
     _Frame_world_manip_old = _Frame_world_manip;
 
-    
+
     // get force sensor measurement
     // ----------------------------
     _Wrench_fs_fs = _Wrench_fs_fs_port.Get();
@@ -215,7 +215,7 @@ namespace OCL
     _Twist_world_manip_port.Set(_Twist_world_manip);
     _num_visible_leds_port.Set(_num_visible_leds);
   }
-  
+
   void Demotool::shutdown()
   {
     marshalling()->writeProperties(_propertyfile);
@@ -230,7 +230,7 @@ namespace OCL
 
   void Demotool::calibrateWrenchSensor()
   {
-    log(Debug) <<this->getName()<<": calibrate with " << _Frame_world_fs.Inverse() * _Wrench_world_world 
+    log(Debug) <<this->getName()<<": calibrate with " << _Frame_world_fs.Inverse() * _Wrench_world_world
 		 <<endlog();
 
     _add_offset( _Frame_world_fs.Inverse() * _Wrench_world_world );

@@ -25,7 +25,7 @@ public:
 private:
     long               _virtualEncoder[6];
     unsigned short     _prevEncoderValue[6];
-    RTT::DataObjectLockFree<long>  _virtual_encoder_1, _virtual_encoder_2, _virtual_encoder_3, 
+    RTT::DataObjectLockFree<long>  _virtual_encoder_1, _virtual_encoder_2, _virtual_encoder_3,
                                            _virtual_encoder_4, _virtual_encoder_5, _virtual_encoder_6;
 };
 

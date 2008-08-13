@@ -9,7 +9,7 @@
 #define LiAS_ENCODEROFFSETS { 0, 0, 0, 0, 0, 0 }
 
 // These conversion factors are based on the reduction values taken from the manuel
-#define LiAS_CONV1 200 
+#define LiAS_CONV1 200
 #define LiAS_CONV2 200
 #define LiAS_CONV3 200
 #define LiAS_CONV4 101

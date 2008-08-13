@@ -5,7 +5,7 @@
     begin                : Fri Aug 4 2006
     copyright            : (C) 2006 Bas Kemper
     email                : kst@ <my name> .be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -42,13 +42,13 @@ namespace OCL
         class TcpReportingInterpreter;
         class Socket;
     }
-  
+
 
     /**
        \brief A component which writes data reports to a tcp/ip
        socket. It can serve different clients. It uses a ASCI-based
-       protocol. 
-     
+       protocol.
+
        \section usage Usage
        \subsection authent Authentication of the client:
        The server accepts different kinds of commands. Before these
@@ -59,7 +59,7 @@ namespace OCL
        - \b Receive:
          - if succesfull: \verbatim "101 OK\n" \endverbatim
          - if failed:     \verbatim "106 not supported\n" \endverbatim
-      
+
        \subsection help Getting Help:
        The client can get the available commands
        - \b Send:
@@ -81,7 +81,7 @@ namespace OCL
          "Name: CommandName\n
           Usage: CommandName CommandSyntax\n"
          \endverbatim
-      
+
        \subsection headers Getting a list of available data:
        The client can get the names of all the available data.
        - \b Send:
@@ -94,7 +94,7 @@ namespace OCL
           305 DataNameN\n
           306 End of list\n"
          \endverbatim
-         
+
        \subsection subscribe Subscribe to Data:
        The client has to send the server the names of the available
        data he wants to get. Only the subscribed data will be send to
@@ -104,7 +104,7 @@ namespace OCL
        - \b Receive:
          - if succesfull: \verbatim "302 DataNameX\n" \endverbatim
          - if failed:     \verbatim "301 DataNameX\n" \endverbatim
-       
+
        \subsection unsubscribe Unsubscribe to Data:
        The client can cancel a subscription.
        - \b Send:
@@ -112,7 +112,7 @@ namespace OCL
        - \b Receive:
          - if succesfull: \verbatim "303 DataNameX\n" \endverbatim
          - if failed:     \verbatim "304 DataNameX\n" \endverbatim
-       
+
        \subsection subs Getting a list of the subscriptions:
        The client can ask for the subscriptions he has made.
        - \b Send:
@@ -125,7 +125,7 @@ namespace OCL
           305 DataNameXN\n
           306 End of list\n"
          \endverbatim
-         
+
        \subsection silence Start/stop streaming the data:
        The client can start and stop the streaming of the subscribed
        data.
@@ -143,19 +143,19 @@ namespace OCL
          \verbatim "EXIT\n" \endverbatim
        - \b Receive:
          \verbatim "104 Bye Bye\n" \endverbatim
-       
+
        \subsection error When an error occures:
        When an error occurs because of wrong syntax the server will
        answer with an error message.
        - \b Send: wrong command syntax
        - \b Receive:
          \verbatim "102 Syntax: CommandNameX CommandSyntaxX\n" \endverbatim
-       
+
        \subsection streaming The streaming data:
        When the streaming is started the server will send the
        following message at each timeframe.
        - \b Receive:
-         \verbatim 
+         \verbatim
          "201 framenr --- begin of frame\n
           202 DataNameX1\n
           205 DataValueX1\n
@@ -199,7 +199,7 @@ namespace OCL
         bool startHook();
 
         void stopHook();
-        
+
         /**
          * Return a property bag.
          */

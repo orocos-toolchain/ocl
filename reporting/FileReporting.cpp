@@ -27,10 +27,10 @@ namespace OCL
         if (mfile) {
             if ( this->writeHeader)
                 fheader = new RTT::NiceHeaderMarshaller<std::ostream>( mfile );
-            else 
+            else
                 fheader = 0;
             fbody = new RTT::TableMarshaller<std::ostream>( mfile );
-                
+
             this->addMarshaller( fheader, fbody );
         } else {
             log(Error) << "Could not open file "+repfile.get()+" for reporting."<<endlog();

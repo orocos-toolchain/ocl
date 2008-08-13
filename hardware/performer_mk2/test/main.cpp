@@ -21,25 +21,25 @@ using namespace std;
 
 int ORO_main(int argc, char* argv[])
 {
-    
+
   PerformerMK2nAxesVelocityController my_robot("Performer");
   log(Info)<<"Robot Created"<<endlog();
-  
+
   EmergencyStop _emergency(&my_robot);
-    
+
   /// Creating Event Handlers
   _emergency.addEvent(&my_robot,"driveOutOfRange");
-  
+
   /// Link my_robot to Taskbrowser
   TaskBrowser browser(&my_robot );
-  
+
   /// Creating Tasks
-  PeriodicActivity robotTask(0,0.002, my_robot.engine() );  
-    
+  PeriodicActivity robotTask(0,0.002, my_robot.engine() );
+
   /// Start the console reader.
   robotTask.start();
-  
+
   browser.loop();
-  
+
   return 0;
 }

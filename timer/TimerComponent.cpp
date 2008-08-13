@@ -13,16 +13,16 @@ namespace OCL
     using namespace std;
     using namespace RTT;
 
-    TimerComponent::TimerComponent( std::string name /*= "Timer" */ ) 
+    TimerComponent::TimerComponent( std::string name /*= "Timer" */ )
         : TaskContext( name, PreOperational ), Timer( 32 ),
           mtimeoutEvent("timeout"),
           waitForCommand( "waitFor", &TimerComponent::waitFor, &TimerComponent::isTimerExpired, this),
           waitCommand( "wait", &TimerComponent::wait, &TimerComponent::isTimerExpired, this)
     {
 
-        // Add the methods, methods make sure that they are 
+        // Add the methods, methods make sure that they are
         // executed in the context of the (non realtime) caller.
-        
+
         this->methods()->addMethod( method( "arm", &Timer::arm , this),
                                     "Arm a single shot timer.",
                                     "timerId", "A numeric id of the timer to arm.",
@@ -71,7 +71,7 @@ namespace OCL
             log(Error) << "Can not run TimerComponent with a periodic activity. Use a non periodic activity." <<endlog();
             return false;
         }
-        
+
         log(Info) <<"TimerComponent correctly configured."<<endlog();
         Timer::setActivity( this->engine()->getActivity() );
         assert( this->getActivity() );
@@ -81,7 +81,7 @@ namespace OCL
     void TimerComponent::cleanupHook()
     {
         Timer::setActivity( 0 );
-    }        
+    }
 
     bool TimerComponent::startHook()
     {

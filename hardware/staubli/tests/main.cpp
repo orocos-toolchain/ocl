@@ -21,34 +21,34 @@ using namespace std;
 
 int ORO_main(int argc, char* argv[])
 {
-    
+
     if ( Logger::log().getLogLevel() < Logger::Warning ) {
         Logger::log().setLogLevel( Logger::Warning );
         log(Info) << argv[0] << " manually raises LogLevel to 'Debug'."
                   << " See also file 'orocos.log'." << endlog();
     }
-    
+
 
     StaubliRX130nAxesVelocityController my_robot("Robot");
-    
+
     EmergencyStop _emergency(&my_robot);
-    
+
     /// Creating Event Handlers
     _emergency.addEvent(&my_robot,"driveOutOfRange");
     _emergency.addEvent(&my_robot,"positionOutOfRange");
-    
+
     /// Link my_robot to Taskbrowser
     TaskBrowser browser(&my_robot );
     browser.setColorTheme( TaskBrowser::whitebg );
-    
+
     /// Creating Tasks
-    PeriodicActivity robotTask(0,0.002, my_robot.engine() );  
-    
+    PeriodicActivity robotTask(0,0.002, my_robot.engine() );
+
     /// Start the console reader.
     my_robot.marshalling()->readProperties("StaubliRX130nAxesVelocityController.cpf");
     my_robot.configure();
-    
+
     browser.loop();
-    
+
     return 0;
 }

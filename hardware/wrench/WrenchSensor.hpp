@@ -31,7 +31,7 @@
 #include <kdl/bindings/rtt/toolkit.hpp>
 #include <kdl/frames.hpp>
 
-#include <rtt/RTT.hpp> 
+#include <rtt/RTT.hpp>
 #if defined (OROPKG_OS_LXRT)
 
 #include "drivers/jr3_lxrt_common.h"
@@ -61,21 +61,21 @@ namespace OCL
     public:
         WrenchSensor(std::string name);
         virtual ~WrenchSensor(){};
-        
+
     protected:
         virtual bool configureHook();
         virtual bool startHook();
         virtual void updateHook();
         virtual void stopHook();
         virtual void cleanupHook(){};
-        
+
         /// DataPort which contains Wrench information
         RTT::DataPort<KDL::Wrench> outdatPort;
-        
+
         /// Event that is fired if the measured force exceeds the
         /// allowed maximum value.
         RTT::Event<void(std::string)> maximumLoadEvent;
-        
+
         /// Method to get the maximum measurement value
         RTT::Method<KDL::Wrench(void)> maxMeasurement_mtd;
         /// Method to get the minimum measurement value
@@ -89,28 +89,28 @@ namespace OCL
         /// Method to add an offset to the zero measurement
         RTT::Command<bool(KDL::Wrench)> addOffset_cmd;
 
-        RTT::Property<KDL::Wrench>   offset;  
+        RTT::Property<KDL::Wrench>   offset;
         RTT::Property<unsigned int>  dsp_prop;
         RTT::Property<double>        filter_period_prop;
-        
+
     private:
         virtual KDL::Wrench maxMeasurement() const;
         virtual KDL::Wrench minMeasurement() const;
         virtual KDL::Wrench zeroMeasurement() const;
-        
-        virtual bool chooseFilter(double period); 
+
+        virtual bool chooseFilter(double period);
         virtual bool chooseFilterDone() const;
-        
-        virtual bool setOffset(KDL::Wrench in); 
-        virtual bool addOffset(KDL::Wrench in); 
+
+        virtual bool setOffset(KDL::Wrench in);
+        virtual bool addOffset(KDL::Wrench in);
         virtual bool setOffsetDone() const;
-        
+
         unsigned int  filterToReadFrom;
         unsigned int  dsp;
 
         KDL::Wrench  writeBuffer;
         s16Forces    write_struct,full_scale;
-        
+
     };
 }//namespace
 

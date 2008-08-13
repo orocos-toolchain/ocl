@@ -96,7 +96,7 @@ namespace TCP
         //Check if a property is available with that name?
         if(reporter->getReport()->find(name)!=NULL){
             //check if subscription already exists
-            std::vector<std::string>::const_iterator pos = 
+            std::vector<std::string>::const_iterator pos =
                 find(subscriptions.begin(),subscriptions.end(),name);
             if(pos!=subscriptions.end()){
                 Logger::In("DataSender");
@@ -127,7 +127,7 @@ namespace TCP
     {
         lock.lock();
         //check if subscription exists
-        std::vector<std::string>::iterator pos = 
+        std::vector<std::string>::iterator pos =
             find(subscriptions.begin(),subscriptions.end(),name);
         if(pos!=subscriptions.end()){
             Logger::In("DataSender");
@@ -151,8 +151,8 @@ namespace TCP
         *os << "306 End of list" << std::endl;
     }
 
-    void Datasender::writeOut(PropertyBase* v) 
-    { 
+    void Datasender::writeOut(PropertyBase* v)
+    {
         *os<<"202 "<<v->getName()<<"\n";
         Property<PropertyBag>* bag = dynamic_cast< Property<PropertyBag>* >( v );
         if ( bag )
@@ -160,7 +160,7 @@ namespace TCP
         else {
             *os<<"205 " <<v->getDataSource()<<"\n";
         }
-        
+
     }
 
     void Datasender::writeOut(const PropertyBag &v)
@@ -174,7 +174,7 @@ namespace TCP
             }
 
     }
-    
+
 
     void Datasender::checkbag(const PropertyBag &v)
     {
@@ -209,7 +209,7 @@ namespace TCP
         if( silenced ) {
             return;
         }
-        
+
         lock.lock();
         if( !subscriptions.empty() && ( limit == 0 || curframe <= limit ) ){
             *os << "201 " <<curframe << " -- begin of frame\n";
@@ -223,6 +223,6 @@ namespace TCP
         }
         lock.unlock();
     }
-    
+
 }
 }

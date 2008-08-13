@@ -1,12 +1,12 @@
 /***************************************************************************
-  tag: Peter Soetens  Mon Jan 19 14:11:26 CET 2004  ButterworthLP.hpp 
+  tag: Peter Soetens  Mon Jan 19 14:11:26 CET 2004  ButterworthLP.hpp
 
                         ButterworthLP.hpp -  description
                            -------------------
     begin                : Mon January 19 2004
     copyright            : (C) 2004 Peter Soetens
     email                : peter.soetens@mech.kuleuven.ac.be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -23,8 +23,8 @@
  *   Foundation, Inc., 59 Temple Place,                                    *
  *   Suite 330, Boston, MA  02111-1307  USA                                *
  *                                                                         *
- ***************************************************************************/ 
- 
+ ***************************************************************************/
+
 
 #ifndef BUTTERWORTHLP_HPP
 #define BUTTERWORTHLP_HPP
@@ -50,7 +50,7 @@ public:
      *        The cutoff frequency of the filter
      */
     ButterworthLP( double f_sample, double f_cutoff)
-        :N(2), fs(f_sample), fc(f_cutoff), fr(fs/fc), 
+        :N(2), fs(f_sample), fc(f_cutoff), fr(fs/fc),
          x_1(0), x_2(0), xb_1(0), xb_2(0), sampleCount(0)
     {
         double k=0;
@@ -69,7 +69,7 @@ public:
 
     /**
      * Filter the parameter value
-     * 
+     *
      * @param x_0
      *        The value to be filtered
      * @return The filtered result
@@ -90,7 +90,7 @@ public:
         return res;
     }
 
-    
+
 protected:
     double N;
     double fs;

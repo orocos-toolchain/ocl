@@ -24,7 +24,7 @@ namespace OCL
 {
 
     /**
-     * This Component uses the Orocos Device Interface for making IO 
+     * This Component uses the Orocos Device Interface for making IO
      * available to other components through data ports and methods.
      * - The 'InputValues' is what this component reads in from the hardware.
      * - The 'OutputValues' is what this component writes to the hardware.
@@ -51,7 +51,7 @@ namespace OCL
         /**
          * @brief Create an IOComponent.
          */
-        IOComponent(const std::string& name="IOComponent") 
+        IOComponent(const std::string& name="IOComponent")
             :  TaskContext( name ),
                max_inchannels("MaximumInChannels","The maximum number of virtual analog input channels", 32),
                max_outchannels("MaximumOutChannels","The maximum number of virtual analog output channels", 32),
@@ -92,7 +92,7 @@ namespace OCL
         /**
          * First read the inputs, then write the outputs.
          */
-        virtual void updateHook()      
+        virtual void updateHook()
         {
             /*
              * Acces Analog device drivers
@@ -389,14 +389,14 @@ namespace OCL
             return true;
         }
 
-        /** 
+        /**
          * @brief Add an AnalogOutput which reads from an Output DataObject.
-         * 
+         *
          * @param portname    The portname of the DataObject to read.
          * @param devicename  The Analog Device to write to.
          * @param channel The channel of the Device to write to.
-         * 
-         * @return true on success, false otherwise 
+         *
+         * @return true on success, false otherwise
          */
         bool addAnalogOutput( const std::string& portname, const std::string& devicename, int channel )
         {
@@ -417,11 +417,11 @@ namespace OCL
             return true;
         }
 
-        /** 
+        /**
          * @brief Remove a previously added AnalogOutput
-         * 
+         *
          * @param name The name of the DataObject to which it was connected
-         * 
+         *
          * @return true on success, false otherwise
          */
         bool removeAnalogOutput( const std::string& name )
@@ -439,16 +439,16 @@ namespace OCL
             return true;
         }
 
-        /** 
+        /**
          * @brief Add a virtual channel to OutputValues for writing an analog value.
-         * 
+         *
          * A std::vector<double> DataPort ( "OutputValues") is used
          * to which the value of the output can be written.
          *
          * @param virt_channel The position in OutputValues
          * @param devicename   The Device to write the data to.
          * @param channel      The channel of the Device to use.
-         * 
+         *
          * @return true on success, false otherwise.
          */
         bool addOutputChannel( int virt_channel, const std::string& devicename, int channel )
@@ -468,28 +468,28 @@ namespace OCL
             return true;
         }
 
-        /** 
+        /**
          * @brief Remove the use of a virtual channel
-         * 
+         *
          * @param virt_channel The number of the channel to remove
-         * 
+         *
          */
         bool removeOutputChannel( int virt_channel )
         {
             if ( outchannels[virt_channel] == 0 || this->isRunning() )
                 return false;
-            
+
             delete outchannels[virt_channel];
             --usingOutChannels;
             return true;
         }
 
-        /** 
+        /**
          * @brief Add a complete DigitalOutInterface.
-         * 
+         *
          * @param name    The base name of the DigitalOutputs. Their name will be appended with a number.
          * @param devicename  The Device to write to.
-         * 
+         *
          */
         bool addDigitalOutInterface( const std::string& name, const std::string& devicename)
         {
@@ -515,11 +515,11 @@ namespace OCL
             return true;
         }
 
-        /** 
+        /**
          * @brief Remove a complete DigitalOutInterface.
-         * 
+         *
          * @param name    The base name of the DigitalOutputs to remove.
-         * 
+         *
          */
         bool removeDigitalOutInterface( const std::string& name)
         {
@@ -539,14 +539,14 @@ namespace OCL
             return true;
         }
 
-        /** 
+        /**
          * @brief Add a single DigitalOutput.
-         * 
+         *
          * @param name    The name of the DigitalOutput.
          * @param devicename  The Device to write to.
          * @param channel The channel/bit of the device to use
          * @param invert  Invert the output or not.
-         * 
+         *
          */
         bool addDigitalOutput( const std::string& name, const std::string& devicename, int channel, bool invert=false)
         {
@@ -564,11 +564,11 @@ namespace OCL
             return true;
         }
 
-        /** 
+        /**
          * @brief Remove a previously added DigitalOutput
-         * 
+         *
          * @param name The name of the DigitalOutput
-         * 
+         *
          */
         bool removeDigitalOutput( const std::string& name )
         {
@@ -594,11 +594,11 @@ namespace OCL
             it->second->switchOn();
         }
 
-        /** 
+        /**
          * @brief Is a DigitalOutput or DigitalInput on ?
-         * 
+         *
          * @param name The DigitalOutput or DigitalInput to inspect.
-         * 
+         *
          * @return true if on, false otherwise.
          */
         bool isOn( const std::string& name ) const
@@ -612,9 +612,9 @@ namespace OCL
             return false;
         }
 
-        /** 
+        /**
          * @brief Switch off a DigitalOutput.
-         * 
+         *
          * @param name The name of the output to switch off.
          */
         void switchOff( const std::string& name )
@@ -625,11 +625,11 @@ namespace OCL
             it->second->switchOff();
         }
 
-        /** 
+        /**
          * @brief Return the value of an AnalogInput or AnalogOutput
-         * 
+         *
          * @param name The name of the AnalogInput or AnalogOutput
-         * 
+         *
          * @return The physical value.
          */
         double value(const std::string& name) const
@@ -643,11 +643,11 @@ namespace OCL
             return 0;
         }
 
-        /** 
+        /**
          * @brief Return the raw sensor value of an AnalogInput or AnalogOutput
-         * 
+         *
          * @param name The name of the AnalogInput or AnalogOutput
-         * 
+         *
          * @return The raw value.
          */
         int rawValue(const std::string& name) const
@@ -662,18 +662,18 @@ namespace OCL
             return 0;
         }
 
-        /** 
+        /**
          * Return the number of Channels this component reads from.
-         * 
+         *
          */
         int getInputChannels() const
         {
             return chan_meas.size();
         }
 
-        /** 
+        /**
          * Return the number of Channels this component writes to.
-         * 
+         *
          */
         int getOutputChannels() const
         {
@@ -711,7 +711,7 @@ namespace OCL
         /**
          * Each analog input/output becomes a port and a raw_port in the component interface.
          */
-        typedef 
+        typedef
         std::map<std::string,
                  boost::tuple< AnalogInput*,
                         WriteDataPort<unsigned int>*,
@@ -720,7 +720,7 @@ namespace OCL
         typedef std::map<std::string, std::pair<AnalogOutput*, ReadDataPort<double>* > > AOutMap;
         AOutMap a_out;
 
-        typedef 
+        typedef
         std::map<std::string,
                  boost::tuple< AnalogInInterface*,
                                WriteDataPort<std::vector<double> >* > > AInInterfaceMap;

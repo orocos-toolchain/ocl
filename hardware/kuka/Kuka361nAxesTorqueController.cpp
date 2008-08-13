@@ -177,7 +177,7 @@ namespace OCL
         }
 
 	_TorqueMode = !_velresolved;
-	
+
 
 #if (defined (OROPKG_OS_LXRT))
         int encoderOffsets[KUKA361_NUM_AXES] = KUKA361_ENCODEROFFSETS;
@@ -199,7 +199,7 @@ namespace OCL
 	  torqueModeSwitch->switchOn();
 	else
 	  torqueModeSwitch->switchOff();
-	
+
         for (unsigned int i = 0; i < KUKA361_NUM_AXES; i++){
             //Setting up encoders
             _encoderInterface[i] = new EncoderSSI_apci1710( i + 1, _apci1710 );
@@ -229,7 +229,7 @@ namespace OCL
 
             //Put mode back to velocitycontrol
             // Remove 10/08/07 - Card no longer present
-	    
+
 
             if ( _TorqueMode ){
 	      //log(Warning)<<"Relais "<<i<<" On."<<endlog();
@@ -245,7 +245,7 @@ namespace OCL
 	    }else{
 	      _drive[i]  = new AnalogDrive( _ref[i], _enable[i], 1.0 / vel2volt[i], _velDriveOffset.value()[i]);
             }
-	    
+
             _axes_hardware[i] = new RTT::Axis( _drive[i] );
             _axes_hardware[i]->setBrake( _brake[i] );
             _axes_hardware[i]->setSensor( "Position", _encoder[i] );
@@ -467,8 +467,8 @@ namespace OCL
 
 	    //log(Debug) <<"pos (rad): "<<_positionValue[3]->Get()<<" | vel (rad/s): "<<_velocityValue[3]->Get()<<" | drive (A): "<<_driveValue[3]->Get()<<" | cur (A): "<<_torqueValue[3]->Get()<<endlog();
     }
-  
-	    
+
+
 
     void Kuka361nAxesTorqueController::shutdown()
       {
@@ -512,7 +512,7 @@ namespace OCL
         // Remove 10/08/07 - Card no longer present
         //for(unsigned int i=0;i<KUKA361_NUM_AXES;i++)
 	torqueModeSwitch->switchOff();
-        
+
         if(!_simulation.value()){
             _apci2200->switchOff( 12 );
             _apci2200->switchOff( 14 );

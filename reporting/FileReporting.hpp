@@ -35,7 +35,7 @@ namespace OCL
         void stopHook();
 
         /**
-         * Writes the interface status of \a comp to 
+         * Writes the interface status of \a comp to
          * a file 'comp.screen'.
          */
         bool screenComponent( const std::string& comp);

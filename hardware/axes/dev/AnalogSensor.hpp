@@ -1,12 +1,12 @@
 /***************************************************************************
-  tag: Peter Soetens  Thu Apr 22 20:40:58 CEST 2004  AnalogSensor.hpp 
+  tag: Peter Soetens  Thu Apr 22 20:40:58 CEST 2004  AnalogSensor.hpp
 
                         AnalogSensor.hpp -  description
                            -------------------
     begin                : Thu April 22 2004
     copyright            : (C) 2004 Peter Soetens
     email                : peter.soetens@mech.kuleuven.ac.be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -23,8 +23,8 @@
  *   Foundation, Inc., 59 Temple Place,                                    *
  *   Suite 330, Boston, MA  02111-1307  USA                                *
  *                                                                         *
- ***************************************************************************/ 
- 
+ ***************************************************************************/
+
 #ifndef ANALOGSENSOR_HPP
 #define ANALOGSENSOR_HPP
 
@@ -34,7 +34,7 @@
 namespace OCL
 {
 
-    
+
 
     /**
      * A SensorInterface which reads its data from an analog channel.
@@ -58,7 +58,7 @@ namespace OCL
               min_meas(_min_meas), max_meas(_max_meas),
               scale(_scale), offset( _offset )
         {}
-            
+
 
         virtual int readSensor( double& p ) const
         {

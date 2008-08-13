@@ -34,7 +34,7 @@ namespace OCL
    * @todo Currently this wrapper does not support all functionality.
    * It always uses X4 encoding (maximum resolution), you cannot choose
    * when to take into account the indexpulse or reset the counter
-   * when the index pulse arrives.  Also see the Comedi gpct_encoder.c demo program 
+   * when the index pulse arrives.  Also see the Comedi gpct_encoder.c demo program
    * @todo subdevice locking
    * @bug upcounting is always true
    * @note The current implementation does not consider the _turn
@@ -63,7 +63,7 @@ namespace OCL
 
     virtual ~ComediEncoder();
 
-    // Redefinition of Pure virtuals    
+    // Redefinition of Pure virtuals
     virtual int positionGet() const;
     virtual int turnGet() const;
     virtual void positionSet( int p);
@@ -77,7 +77,7 @@ namespace OCL
     // Is this enough?
     ComediDevice * _myCard;
     unsigned int _subDevice;
-    
+
     int _turn;
     int _resolution;
     bool _upcounting;

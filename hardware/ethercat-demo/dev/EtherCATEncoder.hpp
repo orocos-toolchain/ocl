@@ -29,13 +29,13 @@ namespace RTT
 		unsigned char prevoverfl;		// The previous state of the overflow bit
 		unsigned char prevunderfl;		// The previous state of the underflow bit
 		public:
-			
-			
-			
+
+
+
 			EtherCATEncoder(unsigned char* startaddressinput, unsigned char* startaddressoutput, unsigned int resolution = 65536, bool upcounting = true)
 			: mPosLF( "Pos" ),
 			mSetPosInfoLF( "PosInfo" ),
-			mresolution(resolution), 
+			mresolution(resolution),
 			mstartaddressin(startaddressinput),
 			mstartaddressout(startaddressoutput),
 			prevoverfl(0),
@@ -45,7 +45,7 @@ namespace RTT
 				SetPosInfo setposinit;
 				setposinit.setpos = 0; setposinit.setposreq = false;
 				mSetPosInfoLF.Set(setposinit);
-				
+
 				// Initialise position info
 				PosInfo	posinit;
 				posinit.pos = 0; posinit.upcounting = upcounting; posinit.turn = 0;
@@ -59,10 +59,10 @@ namespace RTT
 				SetPosInfo setpostmp;
 				mPosLF.Get( postmp );
 				mSetPosInfoLF.Get( setpostmp );
-				
+
 				int prevpos = postmp.pos;
 				int prevturn = postmp.turn;
-				
+
 				// Update the current turn
 				unsigned char status = mstartaddressin[0];	//Read the status byte
 				if( (prevoverfl == 0) && ((status>>4 & 1) == 1) )	// Increment turn, when an overflow occurse, overflow bit is the 4th bit
@@ -71,12 +71,12 @@ namespace RTT
 					postmp.turn--;
 				prevoverfl = status>>4 & 1;
 				prevunderfl = status>>3 & 1;
-				
+
 				if(!setpostmp.setposreq) {
 					mstartaddressout[0] = mstartaddressout[0] & 0xfb;	// Clear the CNT_SET bit in Control byte
-					
+
 					// Update the position
-					postmp.pos = mstartaddressin[2];	// copy counter value 
+					postmp.pos = mstartaddressin[2];	// copy counter value
 					postmp.pos = postmp.pos<<8;
 					postmp.pos = postmp.pos | mstartaddressin[1];
 				}
@@ -86,7 +86,7 @@ namespace RTT
 					mstartaddressout[0] = mstartaddressout[0] | 0x04;	// Set the CNT_SET bit in Control byte
 					setpostmp.setposreq = false;
 				}
-				
+
 				// Check the counting direction
 				if(prevturn > postmp.turn)
 					postmp.upcounting = false;
@@ -96,15 +96,15 @@ namespace RTT
 					postmp.upcounting = false;
 				else if(prevpos < postmp.pos)
 					postmp.upcounting = true;
-				
+
 				mPosLF.Set( postmp );
 				mSetPosInfoLF.Set( setpostmp );
 			}
-			
+
         /**
 			 * Get the position within the current turn.
 			*/
-			virtual int positionGet() const { 
+			virtual int positionGet() const {
 				return mPosLF.Get().pos;
 			}
 
@@ -114,11 +114,11 @@ namespace RTT
 			virtual int turnGet() const {
 				return mPosLF.Get().turn;
 			}
-           
+
         /**
 			 * Set the position within the current turn.
 			*/
-			virtual void positionSet( int pos) { 
+			virtual void positionSet( int pos) {
 				SetPosInfo settmp;
 				settmp.setpos = pos;
 				settmp.setposreq = true;
@@ -128,7 +128,7 @@ namespace RTT
         /**
 			 * Set the current turn.
 			*/
-			virtual void turnSet( int t ) { 
+			virtual void turnSet( int t ) {
 				PosInfo tmp;
 				mPosLF.Get(tmp);
 				tmp.turn = t;
@@ -148,8 +148,8 @@ namespace RTT
 			 * Meaning from 0 to |resolution()| or from
 			 * resolution() to zero if resolution() < 0
 			*/
-			virtual bool upcounting() const { 
-				return mPosLF.Get().upcounting; 
+			virtual bool upcounting() const {
+				return mPosLF.Get().upcounting;
 			}
 	};
 }

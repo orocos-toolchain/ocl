@@ -1,11 +1,11 @@
 /***************************************************************************
 
-						naxespositionviewer.cpp	
+						naxespositionviewer.cpp
                        ---------------------------
-    begin                : june 2006 
+    begin                : june 2006
     copyright            : (C) 2006
     email                : Erwin.Aertbelien@mech.kuleuven.ac.be
- 
+
 
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
@@ -23,7 +23,7 @@
  *   Foundation, Inc., 59 Temple Place,                                    *
  *   Suite 330, Boston, MA  02111-1307  USA                                *
  *                                                                         *
- ***************************************************************************/ 
+ ***************************************************************************/
 
 #include "naxespositionviewer.hpp"
 
@@ -94,7 +94,7 @@ public:
 		for (ClientHandlers::iterator it=clients.begin();it!=clients.end();it++) {
 			(*it)->peer().send_n(&data,sizeof(data));
 		}
-	} 
+	}
 
 	static void delete_all() {
 		for (ClientHandlers::iterator it=clients.begin();it!=clients.end();it++) {
@@ -102,7 +102,7 @@ public:
 			*it = 0;
   			log(Info) << "(Viewer) Connection closed" << endlog();
 		}
-	} 
+	}
 
 
 	virtual int open(void*) {
@@ -132,7 +132,7 @@ typedef ACE_Acceptor<ClientHandler,ACE_SOCK_ACCEPTOR> ClientAcceptor;
 std::list<ClientHandler*> ClientHandler::clients;
 ACE_Reactor* ClientHandler::reactor_instance = 0;
 
-	
+
 NAxesPositionViewer::NAxesPositionViewer(const std::string& name,const std::string& propertyfilename)
   : TaskContext(name),
     _propertyfile(propertyfilename),
@@ -157,7 +157,7 @@ NAxesPositionViewer::NAxesPositionViewer(const std::string& name,const std::stri
   properties()->addProperty( &num_axes );
   properties()->addProperty( &seperate_ports);
   properties()->addProperty( &port_name);
- 
+
   if (!marshalling()->readProperties(_propertyfile)) {
     log(Error) << "Failed to read the property file, continue with default values." << endlog();
   }
@@ -177,7 +177,7 @@ NAxesPositionViewer::NAxesPositionViewer(const std::string& name,const std::stri
         ports()->addPort(seperateValues[i]);
     }
   } else {
-    vectorValue = new RTT::ReadDataPort<std::vector<double> >(port_name.value()); 
+    vectorValue = new RTT::ReadDataPort<std::vector<double> >(port_name.value());
     jointvec.resize(_num_axes);
     ports()->addPort(vectorValue);
   }
@@ -199,7 +199,7 @@ bool NAxesPositionViewer::startup() {
 	state=1;
     return true;
 }
-                   
+
 /**
  * This function is periodically called.
  */
@@ -219,18 +219,18 @@ void NAxesPositionViewer::update() {
 		    }
         } else {
             unsigned int minsize = jointvec.size();
-            if (vectorValue->Get().size() < minsize) 
+            if (vectorValue->Get().size() < minsize)
                 minsize=vectorValue->Get().size();
     	    for (unsigned int i=0;i<minsize;i++) {
 			    jointvec[i] = vectorValue->Get()[i];
 		    }
         }
-		ACE_Time_Value dt; 
+		ACE_Time_Value dt;
 		dt.set(0.01);
 		ClientHandler::reactor_instance->handle_events(dt);
 		ClientHandler::send_data(jointvec,false);
 	}
-} 
+}
 
 /**
  * This function is called when the task is stopped.

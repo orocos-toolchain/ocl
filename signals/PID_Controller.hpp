@@ -1,12 +1,12 @@
 /***************************************************************************
-  tag: Peter Soetens  Thu Jul 15 11:21:23 CEST 2004  PID_Controller.hpp 
+  tag: Peter Soetens  Thu Jul 15 11:21:23 CEST 2004  PID_Controller.hpp
 
                         PID_Controller.hpp -  description
                            -------------------
     begin                : Thu July 15 2004
     copyright            : (C) 2004 Peter Soetens
     email                : peter.soetens at mech.kuleuven.ac.be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -56,7 +56,7 @@ namespace ORO_ControlKernel
      * The output of the PID_Controller.
      */
     struct PID_Controller_Output
-        : ServedTypes< std::vector<double> > 
+        : ServedTypes< std::vector<double> >
     {
         PID_Controller_Output() {
             this->insert(std::make_pair(0, "ChannelValues"));
@@ -64,12 +64,12 @@ namespace ORO_ControlKernel
     };
 
     struct PID_Input
-        : ServedTypes< std::vector<double> > 
+        : ServedTypes< std::vector<double> >
     {
     };
 
     struct PID_SetPoint
-        : ServedTypes< std::vector<double> > 
+        : ServedTypes< std::vector<double> >
     {
     };
 
@@ -93,7 +93,7 @@ namespace ORO_ControlKernel
      * It does a control action on the 'ChannelValues' of the setpoints and
      * inputs dataobjects and adds the 'FeedForward' signal from the setpoints
      * if present.
-     *  @ingroup kcomps kcomp_controller 
+     *  @ingroup kcomps kcomp_controller
      */
     class PID_Controller
         : public Controller<Expects<PID_Input>,
@@ -118,9 +118,9 @@ namespace ORO_ControlKernel
 #endif
                                       , ReportingExtension
                                       >::Result > Base;
-      
+
     public:
-        PID_Controller(int _num_chans = 1, const std::string& name = "PID_Controller" ) 
+        PID_Controller(int _num_chans = 1, const std::string& name = "PID_Controller" )
             : Base ( name ),
               num_chans( _num_chans ),
               err("Error", "Tracking error", std::vector<double>( num_chans, 0) )
@@ -142,7 +142,7 @@ namespace ORO_ControlKernel
             uP = new double [num_chans];
             uFF = new double [num_chans];
 
-            for (int i=0; i < num_chans; ++i) 
+            for (int i=0; i < num_chans; ++i)
                 uI[i] = uD[i] = uP[i] = uFF[i] = 0;
 
             _result.resize(num_chans, 0.0);
@@ -179,7 +179,7 @@ namespace ORO_ControlKernel
         {
             if (channel <0 || channel >= num_chans)
                 return;
-        
+
             _minu.set()[channel] = newMinU;
         }
 
@@ -187,7 +187,7 @@ namespace ORO_ControlKernel
         {
             if (channel <0 || channel >= num_chans)
                 return;
-        
+
             _maxu.set()[channel] = newMaxU;
         }
 
@@ -203,7 +203,7 @@ namespace ORO_ControlKernel
         {
             if (channel <0 || channel >= num_chans)
                 return;
-        
+
             _Ti.set()[channel] = newTi;
             recalculate( channel, _K.get()[channel] );
         }
@@ -215,7 +215,7 @@ namespace ORO_ControlKernel
         {
             if (channel <0 || channel >= num_chans)
                 return;
-        
+
             _Td.set()[channel] = newTd;
             recalculate( channel, _K.get()[channel] );
         }
@@ -227,7 +227,7 @@ namespace ORO_ControlKernel
         {
             if (channel <0 || channel >= num_chans)
                 return;
-        
+
             recalculate( channel, newK );
         }
 
@@ -281,7 +281,7 @@ namespace ORO_ControlKernel
             return true;
 	    };
 
-        virtual void pull()      
+        virtual void pull()
         {
             // Remember the current value
             inp_dObj->Get(y);
@@ -289,7 +289,7 @@ namespace ORO_ControlKernel
             if ( setp_ff_dObj )
                 setp_ff_dObj->Get(_ff);
 	    }
-            
+
         // Here, the calculation of the new actuator command will be done
 	    virtual void calculate()
         {
@@ -325,9 +325,9 @@ namespace ORO_ControlKernel
                     _result[i] = u;
                 }
         }
-            
+
         // Write the actuator command to the actuator
-	    virtual void push()      
+	    virtual void push()
         {
             outp_dObj->Set( _result );
 	    }
@@ -340,10 +340,10 @@ namespace ORO_ControlKernel
             //std::cerr << "Properties imported! : " << _K << _Ti << _Td << _N << _Tt << _minu << _maxu << std::endl;
             composeProperty(bag, _K);
             composeProperty(bag, _Kff);
-            composeProperty(bag, _Ti); 
-            composeProperty(bag, _Td); 
-            composeProperty(bag, _N); 
-            composeProperty(bag, _Tt); 
+            composeProperty(bag, _Ti);
+            composeProperty(bag, _Td);
+            composeProperty(bag, _N);
+            composeProperty(bag, _Tt);
             composeProperty(bag, _minu);
             composeProperty(bag, _maxu);
 
@@ -362,7 +362,7 @@ namespace ORO_ControlKernel
             bag.add(&_minu);
             bag.add(&_maxu);
         }
-      
+
         virtual void exportReports( PropertyBag& bag )
         {
             bag.add(&err);
@@ -418,28 +418,28 @@ namespace ORO_ControlKernel
                                "Change the Gain of the PID Controller",
                                "Channel","The Channel number (starting from 0).",
                                "Gain","The new Gain (K)."
-                               ) ); 
+                               ) );
             ret->add( "changeTd",
                       method( &PID_Controller::changeTd,
                                "Change the Derivative Td constant.",
                                "Channel","The Channel number (starting from 0).",
                                "Td","The new Derivative time constant (Td)."
-                               ) ); 
+                               ) );
             ret->add( "changeTi",
                       method( &PID_Controller::changeTd,
                                "Change the Integration Ti constant.",
                                "Channel","The Channel number (starting from 0).",
                                "Ti","The new Integration time constant (Ti)."
-                               ) ); 
+                               ) );
             ret->add( "resetController",
                       method( &PID_Controller::resetController,
                                "Reset the whole controller (ie all integration uI and derivative uD = 0)."
-                               ) ); 
+                               ) );
             ret->add( "resetChannel",
                       method( &PID_Controller::resetChannel,
                                "Reset the uI (integration) and uD (derivative) of a channel to zero.",
                                "Channel","The Channel number (starting from 0)."
-                               ) ); 
+                               ) );
             return ret;
         }
 
@@ -465,7 +465,7 @@ namespace ORO_ControlKernel
         double *uD;        // derivative part of PID
         double *uP;        // Proportianal part of PID
         double *uFF;       // FeedForward part of PID
-            
+
         double v, u;      // Variables used for calculating the output
 
         // Variables defining the PID in continuos time
@@ -481,5 +481,5 @@ namespace ORO_ControlKernel
 
 }
 
-#endif 
+#endif
 

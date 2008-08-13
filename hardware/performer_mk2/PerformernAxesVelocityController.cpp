@@ -147,25 +147,25 @@ driveConvertFactor[i] = vel2volt[i];
 
 #if (defined OROPKG_OS_LXRT)
 	double encoderOffsets[PERFORMERMK2_NUM_AXES] = PERFORMERMK2_ENCODEROFFSETS;
-	
+
 	log(Info)<<"Creating Comedi Devices."<<endlog();
 	NI6713 = new ComediDevice(0);
 	NI6602 = new ComediDevice(2);
-	
+
 	SubAOut_NI6713 = new ComediSubDeviceAOut(NI6713,"DriveValues",1);
 	SubDIn_NI6713 = new ComediSubDeviceDIn(NI6713,"DigitalIn",2);
 	SubDOut_NI6602 = new ComediSubDeviceDOut(NI6602,"DigitalOut",1);
-	
+
 	brakeAxis2 = new DigitalOutput(SubDOut_NI6602,0,true);
 	brakeAxis2->switchOn();
 	brakeAxis3 = new DigitalOutput(SubDOut_NI6602,1,true);
 	brakeAxis3->switchOn();
-		
+
 	armPowerOn = new DigitalInput(SubDIn_NI6713,6);
 	armPowerEnable = new DigitalOutput(SubDOut_NI6602,7);
 	armPowerEnable->switchOff();
-		
-	
+
+
 	for (unsigned int i = 0; i < PERFORMERMK2_NUM_AXES; i++){
 	log(Info)<<"Creating Hardware axis "<<i<<endlog();
 	//Setting up encoders
@@ -174,7 +174,7 @@ driveConvertFactor[i] = vel2volt[i];
 	encoder[i] = new IncrementalEncoderSensor( encoderInterface[i], 1.0 / ticks2rad[i],
 						encoderOffsets[i],
 						-10, 10,0 );
-	//Setting up drive            
+	//Setting up drive
 	log(Info)<<"Setting up drive ..."<<endlog();
 	//	    if(i==2)
 	//	      vref[i]   = new AnalogOutput(SubAOut_NI6713, 5 );
@@ -183,30 +183,30 @@ driveConvertFactor[i] = vel2volt[i];
 	enable[i] = new DigitalOutput( SubDOut_NI6602, 2+i );
 	enable[i]->switchOff();
 	drive[i]  = new AnalogDrive( vref[i], enable[i], 1.0 / vel2volt[i], 0.0);
-	
+
 	axes_hardware[i] = new Axis( drive[i] );
 	axes_hardware[i]->setSensor( "Position", encoder[i] );
 	if(i==1)
 	axes_hardware[i]->setBrake(brakeAxis2);
 	if(i==2)
 	axes_hardware[i]->setBrake(brakeAxis3);
-	
+
 	//Setting up homeswitches
 	homingSwitch[i] = new DigitalInput(SubDIn_NI6713,i);
 	axes_hardware[i]->setSwitch("HomingSwitch",homingSwitch[i]);
-	
+
 	}
-	
+
 #endif
-	//Definition of kinematics for the PerformerMK2 
+	//Definition of kinematics for the PerformerMK2
 	kinematics.addSegment(Segment(Joint(Joint::RotZ),Frame(Vector(0.100,0.0,0.360))));
 	kinematics.addSegment(Segment(Joint(Joint::RotY),Frame(Vector(0.0,0.0,0.270))));
 	kinematics.addSegment(Segment(Joint(Joint::RotY),Frame(Vector(0.0,0.0,0.230))));
 	kinematics.addSegment(Segment(Joint(Joint::RotY),Frame(Vector(0.0,0.0,0.100))));
 	kinematics.addSegment(Segment(Joint(Joint::RotZ)));
-	
+
 	chain_attr.set(kinematics);
-	
+
 	/*
 	*  Execution Interface
 	*/
@@ -234,7 +234,7 @@ driveConvertFactor[i] = vel2volt[i];
 	ports()->addPort(&jValues_port);
 	ports()->addPort(&homingSwitchValues_port);
 	ports()->addPort(&deltaTime_port);
-	
+
 	/**
 	* Configuration Interface
 	*/
@@ -272,11 +272,11 @@ PerformerMK2nAxesVelocityController::~PerformerMK2nAxesVelocityController()
 	}
 	delete armPowerOn;
 	delete armPowerEnable;
-	
+
 	delete SubAOut_NI6713;
 	delete SubDIn_NI6713;
 	delete SubDOut_NI6602;
-	
+
 	delete NI6602;
 	delete NI6713;
 #endif
@@ -286,11 +286,11 @@ PerformerMK2nAxesVelocityController::~PerformerMK2nAxesVelocityController()
 bool PerformerMK2nAxesVelocityController::configureHook()
 {
 Logger::In in(this->getName().data());
-	
+
 if (!marshalling()->readProperties(propertyfile)) {
 	log(Error) << "Failed to read the property file, continueing with default values." << endlog();
 	return false;
-	}  
+	}
 	simulation=simulation_prop.value();
 
 	if(!(driveLimits_prop.value().size()==PERFORMERMK2_NUM_AXES&&
@@ -302,7 +302,7 @@ if (!marshalling()->readProperties(propertyfile)) {
 	log(Error) << "Properties of invalid size" << endlog();
 	return false;
 	}
-	
+
 #if (defined OROPKG_OS_LXRT)
 	if(!simulation){
 
@@ -338,7 +338,7 @@ if (!marshalling()->readProperties(propertyfile)) {
 	PIDkp = PIDkp_prop.value();
 	PIDTi = PIDTi_prop.value();
 	PIDTd = PIDTd_prop.value();
-	
+
 	return true;
 }
 
@@ -353,7 +353,7 @@ bool PerformerMK2nAxesVelocityController::startHook()
       homingSwitchValues[axis] = axes[axis]->getSwitch("HomingSwitch")->isOn();
     else
       homingSwitchValues[axis] = true;
-    
+
   }
 
 	for (int i=0;i<m;i++) {
@@ -379,7 +379,7 @@ previous_time = TimeService::Instance()->getTicks();
 deltaTime_port.Set(delta_time);
 
 for (int axis=0;axis<PERFORMERMK2_NUM_AXES;axis++) {
-	// Euler approximation velocity estimator	
+	// Euler approximation velocity estimator
 	// velocityValues[axis] = (axes[axis]->getSensor("Position")->readSensor() - positionValues[axis])/delta_time;
 	positionValues[axis] = axes[axis]->getSensor("Position")->readSensor();
 	if(!simulation)
@@ -400,7 +400,7 @@ for (int axis=0;axis<PERFORMERMK2_NUM_AXES;axis++) {
 	positionDeque_axis5.pop_back();
 	timeDeque.push_front(total_time);
 	timeDeque.pop_back();
-	
+
 	for (int j=1;j<m;j++) {
 		velocityValues[0] = (positionDeque_axis1[0]-positionDeque_axis1[m-1])/(timeDeque[0]-timeDeque[m-1]);
 		if(abs(positionDeque_axis1[0]-positionDeque_axis1[j])>sj*R1){
@@ -446,7 +446,7 @@ for (int axis=0;axis<PERFORMERMK2_NUM_AXES;axis++) {
 		}
 	}
 
- 
+
 	positionValues_port.Set(positionValues);
 	velocityValues_port.Set(velocityValues);
 	jValues_port.Set(jValues);
@@ -459,8 +459,8 @@ for (int axis=0;axis<PERFORMERMK2_NUM_AXES;axis++) {
 	//  dt              = TimeService::Instance()->secondsSince(previousTime);
 	//  previousTime    = TimeService::Instance()->getTicks();
 	//} else {
-	//  dt = 0.0; 
-	//  for (unsigned int i=0;i<PERFORMERMK2_NUM_AXES;i++) {      
+	//  dt = 0.0;
+	//  for (unsigned int i=0;i<PERFORMERMK2_NUM_AXES;i++) {
 	//    servoIntError[i] = 0.0;
 	//  }
 	//  previousTime = TimeService::Instance()->getTicks();
@@ -468,8 +468,8 @@ for (int axis=0;axis<PERFORMERMK2_NUM_AXES;axis++) {
 	//}
 #endif
 	driveValues_port.Get(driveValues);
-	
-	for (unsigned int i=0;i<PERFORMERMK2_NUM_AXES;i++) {      
+
+	for (unsigned int i=0;i<PERFORMERMK2_NUM_AXES;i++) {
 	// emit event when velocity is out of range
 	if( (velocityValues[i] < -velocityLimits_prop.value()[i]) ||
 	(velocityValues[i] > velocityLimits_prop.value()[i]) )
@@ -487,15 +487,15 @@ for (int axis=0;axis<PERFORMERMK2_NUM_AXES;axis++) {
 	log(Warning)<<msg.str()<<endlog();
 	positionOutOfRange_evt(msg.str()+"\n");
 	}
-	
+
 	// send the drive value to hw and performs checks
 	if (axes[i]->isDriven()){
-#if defined OROPKG_OS_LXRT      
+#if defined OROPKG_OS_LXRT
 	  // perform control action ( dt is zero the first time !) :
 	  //   double error        = driveValues[i] - velocityValues[i];
 	  // servoIntError[i]    += dt*error;
 	  //outputvel[i] = servoGain[i]*(error + servoIntegrationFactor[i]*servoIntError[i]) + servoFFScale[i]*driveValues[i];
-	  if ((i==0 || i==3 || i==4)&&!simulation ){ 
+	  if ((i==0 || i==3 || i==4)&&!simulation ){
 	    velocity_error_kmin2[i] = velocity_error_kmin1[i];
 	    velocity_error_kmin1[i] = velocity_error_k[i];
 	    velocity_error_k[i] = driveValues[i]-velocityValues[i];
@@ -503,20 +503,20 @@ for (int axis=0;axis<PERFORMERMK2_NUM_AXES;axis++) {
 	    position_error_k[i] = position_desired_k[i]-positionValues[i];
 	    outputvel_kmin2[i] =  outputvel_kmin1[i];
 	    outputvel_kmin1[i] =  outputvel[i];
-	    
+
 	    // outputvel by discretizing PID controller (design by emulation)
 	    //outputvel[i] = PIDkp[i]*(velocity_error_k[i]-velocity_error_kmin2[i])+(1/2)*delta_time*velocity_error_k[i]*PIDkp[i]/PIDTi[i]+delta_time*velocity_error_kmin1[i]*PIDkp[i]/PIDTi[i]+(1/2)*delta_time*velocity_error_kmin2[i]*PIDkp[i]/(PIDTi[i])+2*velocity_error_k[i]*PIDkp[i]*PIDTd[i]/delta_time-4*velocity_error_kmin1[i]*PIDkp[i]*PIDTd[i]/delta_time+2*velocity_error_kmin2[i]*PIDkp[i]*PIDTd[i]/delta_time+outputvel_kmin2[i];
-	    
+
 	    // outputvel for PI controller:
 	    outputvel[i] = PIDkp[i]*(velocity_error_k[i]+1.0/PIDTi[i]*position_error_k[i]);
-	    
+
 	  }
 	  else{
 	    outputvel[i] = 0.0;
 	  }
-	  
+
 	  driveValues[i] = outputvel[i]+servoFFScale[i]*driveValues[i];
-	} 
+	}
 	else {
 	  outputvel[i] = 0.0;
 	  driveValues[i] = outputvel[i];
@@ -525,7 +525,7 @@ for (int axis=0;axis<PERFORMERMK2_NUM_AXES;axis++) {
 #else
 	axes[i]->drive(driveValues[i]);
 	}
-	
+
 #endif
 }
 servoValues_port.Set(driveValues);
@@ -587,7 +587,7 @@ bool PerformerMK2nAxesVelocityController::resetController(const int& axis_id)
 
     	return succes;
 }
-	
+
 bool PerformerMK2nAxesVelocityController::prepareForUse()
 {
 #if (defined OROPKG_OS_LXRT)
@@ -608,10 +608,10 @@ bool PerformerMK2nAxesVelocityController::prepareForUseCompleted()const
 	else
 #endif
 	{
-	
+
 	return true;
 	}
-	
+
 }
 
 bool PerformerMK2nAxesVelocityController::prepareForShutdown()
@@ -636,7 +636,7 @@ bool PerformerMK2nAxesVelocityController::stopAllAxes()
 	bool succes = true;
 	for(unsigned int i = 0;i<PERFORMERMK2_NUM_AXES;i++)
 	succes &= axes[i]->stop();
-	
+
 	return succes;
 }
 
@@ -649,7 +649,7 @@ bool PerformerMK2nAxesVelocityController::startAllAxes()
 	succes &= axes[i]->drive(0.0);
 	if(!succes)
 	stopAllAxes();
-	
+
 	return succes;
 }
 
@@ -657,13 +657,13 @@ bool PerformerMK2nAxesVelocityController::unlockAllAxes()
 {
 	if(!activated)
 	return false;
-	
+
 	bool succes = true;
 	for(unsigned int i = 0;i<PERFORMERMK2_NUM_AXES;i++)
 	succes &= axes[i]->unlock();
 	if(!succes)
 	lockAllAxes();
-	
+
 	return succes;
 }
 
@@ -680,7 +680,7 @@ bool PerformerMK2nAxesVelocityController::addDriveOffset(const vector<double>& o
 {
 	if(offset.size()!=PERFORMERMK2_NUM_AXES)
 	return false;
-	
+
 	for(unsigned int i=0;i<PERFORMERMK2_NUM_AXES;i++){
 	driveOffset_prop.value()[i] += offset[i];
 #if (defined OROPKG_OS_LXRT)
@@ -698,7 +698,7 @@ bool PerformerMK2nAxesVelocityController::addDriveOffset(const vector<double>& o
 #endif
         return true;
     }
-    
+
     bool PerformerMK2nAxesVelocityController::initPositionCompleted(int axis)const
     {
         return true;

@@ -1,12 +1,12 @@
 /***************************************************************************
-  tag: Peter Soetens  Mon Jan 19 14:11:20 CET 2004  ComediSubDeviceDIn.hpp 
+  tag: Peter Soetens  Mon Jan 19 14:11:20 CET 2004  ComediSubDeviceDIn.hpp
 
                         ComediSubDeviceDIn.hpp -  description
                            -------------------
     begin                : Mon January 19 2004
     copyright            : (C) 2004 Peter Soetens
     email                : peter.soetens@mech.kuleuven.ac.be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -23,8 +23,8 @@
  *   Foundation, Inc., 59 Temple Place,                                    *
  *   Suite 330, Boston, MA  02111-1307  USA                                *
  *                                                                         *
- ***************************************************************************/ 
- 
+ ***************************************************************************/
+
 // $Id: ComediSubDeviceDIn.hpp,v 1.6 2003/08/14 09:17:13 kgadeyne Exp $
 #ifndef COMEDISUBDEVICEDIN_HPP
 #define COMEDISUBDEVICEDIN_HPP
@@ -77,7 +77,7 @@ namespace OCL
     virtual unsigned int nbOfInputs() const;
 
     virtual unsigned int readSequence(unsigned int start_bit, unsigned int stop_bit) const;
-    
+
   protected:
 
       void init(bool all_bits);

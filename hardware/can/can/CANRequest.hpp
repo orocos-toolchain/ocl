@@ -1,12 +1,12 @@
 /***************************************************************************
-  tag: Peter Soetens  Mon Jan 19 14:11:20 CET 2004  CANRequest.hpp 
+  tag: Peter Soetens  Mon Jan 19 14:11:20 CET 2004  CANRequest.hpp
 
                         CANRequest.hpp -  description
                            -------------------
     begin                : Mon January 19 2004
     copyright            : (C) 2004 Peter Soetens
     email                : peter.soetens@mech.kuleuven.ac.be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -23,8 +23,8 @@
  *   Foundation, Inc., 59 Temple Place,                                    *
  *   Suite 330, Boston, MA  02111-1307  USA                                *
  *                                                                         *
- ***************************************************************************/ 
- 
+ ***************************************************************************/
+
 #ifndef CANREQUEST_HPP
 #define CANREQUEST_HPP
 
@@ -39,7 +39,7 @@ namespace RTT
 {namespace CAN
 {
 
-    
+
 
     /**
      * @brief A CAN Request contains a send CAN message and an
@@ -77,7 +77,7 @@ namespace RTT
             timestamp = TimeService::Instance()->getTicks();
             return true;
         }
- 
+
         void process(const CANMessage* msg)
         {
             if (result != 0)
@@ -110,8 +110,8 @@ namespace RTT
                     bus->removeDevice(this);
                     bus = 0;
                 }
-        }        
-    
+        }
+
         /**
          * @brief Returns true if a message with the expected CobId was received.
          */
@@ -130,7 +130,7 @@ namespace RTT
             else
                 return TimeService::Instance()->secondsSince(timestamp) > timeout;
         }
-    
+
         /**
          * @brief Returns true if a message was received with an exact match
          * of the expected CANMessage.

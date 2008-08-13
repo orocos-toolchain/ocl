@@ -19,7 +19,7 @@
 #define TRUE 1
 #define MAXRETRY 100
 #define MAXNDATA 802
-#define STX 0x02   /*every PC->LMS packet is started by STX*/ 
+#define STX 0x02   /*every PC->LMS packet is started by STX*/
 #define ACKSTX 0x06 /*every PC->LMS packet is started by ACKSTX*/
 typedef unsigned char uchar;
 
@@ -113,7 +113,7 @@ bool SickLMS200::chkAck(int fd, int ackmsglen, const uchar *ackmsg)
 
   /*the following is to deal with a possibly timing issue*/
   /*the communication occasionally breaks without this*/
-  usleep(100000); 
+  usleep(100000);
   for(i=0;i<MAXRETRY;i++) {
     if(rdLMSbyte(fd)==0x06)
     {
@@ -131,12 +131,12 @@ bool SickLMS200::initLMS(const char *serialdev, struct termios *oldtio, int& fd)
 {
   struct termios newtio_struct, *newtio=&newtio_struct;
 
-  fd = open(serialdev, O_RDWR | O_NOCTTY ); 
+  fd = open(serialdev, O_RDWR | O_NOCTTY );
   if (fd <0) {
     log(Error)<< " SickLMS200 IOException."<<endlog();
     return false;
   }
-        
+
   tcgetattr(fd,oldtio); /* save current port settings */
 
   /*after power up, the laser scanner will reset to 9600bps*/
@@ -144,7 +144,7 @@ bool SickLMS200::initLMS(const char *serialdev, struct termios *oldtio, int& fd)
   newtio->c_cflag = B9600 | CS8 | CLOCAL | CREAD;
   newtio->c_iflag = IGNPAR;
   newtio->c_oflag = 0;
-        
+
   /* set input mode (non-canonical, no echo,...) */
   newtio->c_lflag = 0;
   newtio->c_cc[VTIME]    = 10;   /* inter-character timer unused */
@@ -159,7 +159,7 @@ bool SickLMS200::initLMS(const char *serialdev, struct termios *oldtio, int& fd)
     log(Error)<< " SickLMS200 BaudRateChangeException."<<endlog();
     throw BaudRateChangeException();
   }
-  
+
   /* set the PC side as well*/
   close(fd);
   fd = open(serialdev, O_RDWR | O_NOCTTY );
@@ -184,7 +184,7 @@ bool SickLMS200::setmode(int fd, int mode)
   /*change the resolution*/
   res=mode & 0x3e;
   switch(res){
-  case (RES_1_DEG | RANGE_100): 
+  case (RES_1_DEG | RANGE_100):
     msg=PCLMS_RES1;
     ackmsg=LMSPC_RES1_ACK;
     break;
@@ -198,7 +198,7 @@ bool SickLMS200::setmode(int fd, int mode)
     break;
   case (RES_1_DEG | RANGE_180):
     msg=PCLMS_RES4;
-    ackmsg=LMSPC_RES4_ACK;      
+    ackmsg=LMSPC_RES4_ACK;
     break;
   case (RES_0_5_DEG | RANGE_180):
     msg=PCLMS_RES5;
@@ -222,7 +222,7 @@ bool SickLMS200::setmode(int fd, int mode)
   }
 
   /*change the measurement unit*/
-  unit=mode & 0x1;  
+  unit=mode & 0x1;
   /*may need to increase the timeout to 7sec here*/
   if(unit==MMMODE){
     msg=PCLMS_MM;
@@ -276,9 +276,9 @@ bool SickLMS200::checkErrorMeasurement() {
   switch(meas_state & 0x07){
     case 0: return false;
     case 1: return false;
-    case 2: return false; 
+    case 2: return false;
     case 3: return true;
-    case 4: {    
+    case 4: {
       log(Error)<< " SickLMS200 FatalMeasurementException."<<endlog();
       return false;
     }
@@ -337,7 +337,7 @@ SickLMS200::~SickLMS200() {
 int SickLMS200::readMeasurement(uchar* buf,int& datalen) {
     if(rdLMSbyte(fd)!=STX) return -1;
     rdLMSbyte(fd); /*should be the ADR byte, ADR=0X80 here*/
-    /*LEN refers to the packet length in bytes, datalen 
+    /*LEN refers to the packet length in bytes, datalen
       refers to the number of measurements, each of them are 16bits long*/
     rdLMSbyte(fd); /*should be the LEN low byte*/
     rdLMSbyte(fd); /*should be the LEN high byte*/
@@ -346,7 +346,7 @@ int SickLMS200::readMeasurement(uchar* buf,int& datalen) {
     datalen |= (rdLMSbyte(fd) & 0x1f) << 8; /*only lower 12 bits are significant*/
     datalen *= 2; /*each reading is 2 bytes*/
     rdLMSmsg(fd,datalen,buf);
-    meas_state = rdLMSbyte(fd); 
+    meas_state = rdLMSbyte(fd);
     rdLMSbyte(fd); /*should be CRC low byte*/
     rdLMSbyte(fd); /*should be CRC high byte*/
     return 0;
@@ -361,8 +361,8 @@ static void SickLMS200_trap(int sig) {
 };
 
 bool registerSickLMS200SignalHandler() {
-  return !(signal(SIGTERM, SickLMS200_trap) ==SIG_ERR || signal(SIGHUP, SickLMS200_trap) ==SIG_ERR || 
-	   signal(SIGINT, SickLMS200_trap) ==SIG_ERR || signal(SIGQUIT, SickLMS200_trap) ==SIG_ERR || 
+  return !(signal(SIGTERM, SickLMS200_trap) ==SIG_ERR || signal(SIGHUP, SickLMS200_trap) ==SIG_ERR ||
+	   signal(SIGINT, SickLMS200_trap) ==SIG_ERR || signal(SIGQUIT, SickLMS200_trap) ==SIG_ERR ||
 	   signal(SIGABRT, SickLMS200_trap) ==SIG_ERR);
 };
 

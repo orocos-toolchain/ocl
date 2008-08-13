@@ -1,12 +1,12 @@
 /***************************************************************************
-  tag: Peter Soetens  Tue May 4 16:49:13 CEST 2004  EncoderPositionSensor.hpp 
+  tag: Peter Soetens  Tue May 4 16:49:13 CEST 2004  EncoderPositionSensor.hpp
 
                         EncoderPositionSensor.hpp -  description
                            -------------------
     begin                : Tue May 04 2004
     copyright            : (C) 2004 Peter Soetens
     email                : peter.soetens@mech.kuleuven.ac.be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -23,8 +23,8 @@
  *   Foundation, Inc., 59 Temple Place,                                    *
  *   Suite 330, Boston, MA  02111-1307  USA                                *
  *                                                                         *
- ***************************************************************************/ 
- 
+ ***************************************************************************/
+
 #ifndef ENCODER_POSITION_SENSOR_HPP
 #define ENCODER_POSITION_SENSOR_HPP
 
@@ -36,8 +36,8 @@
 
 namespace OCL
 {
-    
-    
+
+
     /**
      * @brief A sensor reading a single Encoder and converting
      * the counter to a physical unit, with support for calibration.
@@ -53,14 +53,14 @@ namespace OCL
         double cal_pos;
         double cal_dir;
     public:
-        /** 
+        /**
          * @brief Create a new EncoderInterface to SensorInterface Object.
-         * 
+         *
          * @param _enc   The Encoder to use
          * @param _unit_to_inc Conversion of physical units to increments (eg increments / mm )
          * @param _minpos The minimal, physical position, after calibration
          * @param _maxpos The maximal, physical position, after calibration
-         * 
+         *
          */
         EncoderPositionSensor(EncoderInterface* _enc, double _unit_to_inc, double _minpos, double _maxpos)
             : enc(_enc), unit_to_inc(_unit_to_inc), min(_minpos), max(_maxpos), posOffset(0),
@@ -76,14 +76,14 @@ namespace OCL
         /**
          * Set the minimal and maximal position.
          */
-        void limit(double _min, double _max) 
+        void limit(double _min, double _max)
         {
             min = _min;
             max = _max;
         }
-        /** 
+        /**
          * @brief Set the calibration position of this encoder
-         * 
+         *
          * @see \a calibrate()
          * @param pos The value the encoder will read out on a
          * calibrated position.
@@ -92,7 +92,7 @@ namespace OCL
         {
             cal_pos = pos;
         }
-        /** 
+        /**
          * @brief Set the direction in which the calibration
          * will be done.
          *
@@ -104,7 +104,7 @@ namespace OCL
             cal_dir = dir;
         }
 
-        virtual void calibrate() 
+        virtual void calibrate()
         {
             this->calibrate( cal_pos, cal_dir );
         }
@@ -155,7 +155,7 @@ namespace OCL
          *    ^turn==N-1 ^ turn==N  ^ turn==N+1
          *               ^ calpos = x mm
          *     |-------------------|  : valid range physical position when calling this method.
-         *        
+         *
          *            ---->           : passed calpos during positive movement, sign = +1
          *            <----           : passed calpos during negative movement, sign = -1
          * @endverbatim

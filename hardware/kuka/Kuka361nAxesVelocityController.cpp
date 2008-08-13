@@ -1,11 +1,11 @@
 /***************************************************************************
- tag: Wim Meeussen and Johan Rutgeerts  Mon Jan 19 14:11:20 CET 2004   
+ tag: Wim Meeussen and Johan Rutgeerts  Mon Jan 19 14:11:20 CET 2004
        Ruben Smits Fri 12 08:31 CET 2006
                            -------------------
     begin                : Mon January 19 2004
     copyright            : (C) 2004 Peter Soetens
     email                : first.last@mech.kuleuven.ac.be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -22,7 +22,7 @@
  *   Foundation, Inc., 59 Temple Place,                                    *
  *   Suite 330, Boston, MA  02111-1307  USA                                *
  *                                                                         *
- ***************************************************************************/ 
+ ***************************************************************************/
 
 #include "Kuka361nAxesVelocityController.hpp"
 #include <ocl/ComponentLoader.hpp>
@@ -35,7 +35,7 @@ namespace OCL
     using namespace RTT;
     using namespace KDL;
     using namespace std;
-  
+
 #define KUKA361_NUM_AXES 6
 
 //#define KUKA361_ENCODEROFFSETS { 1000004, 1000000, 1000002, 449784,
@@ -54,7 +54,7 @@ namespace OCL
 
   // Conversion from encoder ticks to radiants
 #define KUKA361_TICKS2RAD { 2*M_PI / (KUKA361_CONV1 * KUKA361_ENC_RES), 2*M_PI / (KUKA361_CONV2 * KUKA361_ENC_RES), 2*M_PI / (KUKA361_CONV3 * KUKA361_ENC_RES), 2*M_PI / (KUKA361_CONV4 * KUKA361_ENC_RES), 2*M_PI / (KUKA361_CONV5 * KUKA361_ENC_RES), 2*M_PI / (KUKA361_CONV6 * KUKA361_ENC_RES)}
-  
+
   // Conversion from angular speed to voltage
 //#define KUKA361_RADproSEC2VOLT { 2.5545, 2.67804024532652, 1.37350318088664, 2.34300679603342, 2.0058, 3.3786 } //18 april 2006
 #define KUKA361_RADproSEC2VOLT { 2.5545, 2.67804024532652, 1.37350318088664, 2.34300679603342, 2.0058, 1.7573 } //24 april 2007
@@ -63,9 +63,9 @@ namespace OCL
 #define SQRT3d2 0.8660254037844386
 #define M_PI_T2 2 * M_PI
 #define SQRT3t2 3.46410161513775 // 2 sqrt(3)
-    
+
     typedef Kuka361nAxesVelocityController MyType;
-    
+
     Kuka361nAxesVelocityController::Kuka361nAxesVelocityController(string name)
         : TaskContext(name,PreOperational),
           startAllAxes_mtd( "startAllAxes", &MyType::startAllAxes, this),
@@ -118,7 +118,7 @@ namespace OCL
 
 #if (defined OROPKG_OS_LXRT)
         int encoderOffsets[KUKA361_NUM_AXES] = KUKA361_ENCODEROFFSETS;
-        
+
         log(Info)<<"Creating Comedi Devices."<<endlog();
         comediDev        = new ComediDevice( 1 );
         comediSubdevAOut = new ComediSubDeviceAOut( comediDev, "Kuka361" );
@@ -126,8 +126,8 @@ namespace OCL
         apci1710         = new EncoderSSI_apci1710_board( 0, 1 , 2);
         apci2200         = new RelayCardapci2200( "Kuka361" );
         apci1032         = new SwitchDigitalInapci1032( "Kuka361" );
-        
-        
+
+
         //Setting up encoderinterfaces:
         encoderInterface[0] = new EncoderSSI_apci1710( 1, apci1710 );
         encoderInterface[1] = new EncoderSSI_apci1710( 2, apci1710 );
@@ -135,40 +135,40 @@ namespace OCL
         encoderInterface[3] = new EncoderSSI_apci1710( 8, apci1710 );
         encoderInterface[4] = new EncoderSSI_apci1710( 5, apci1710 );
         encoderInterface[5] = new EncoderSSI_apci1710( 6, apci1710 );
-	
-	
+
+
         for (unsigned int i = 0; i < KUKA361_NUM_AXES; i++){
             log(Info)<<"Creating Hardware axis "<<i<<endlog();
             //Setting up encoders
             log(Info)<<"Setting up encoder ..."<<endlog();
             encoder[i]          = new AbsoluteEncoderSensor( encoderInterface[i], 1.0 / ticks2rad[i], encoderOffsets[i], -10, 10 );
-            
+
             log(Info)<<"Setting up brake ..."<<endlog();
             brake[i] = new DigitalOutput( apci2200, i + KUKA361_NUM_AXES );
             log(Info)<<"Setting brake to on"<<endlog();
             brake[i]->switchOn();
-            
+
             log(Info)<<"Setting up drive ..."<<endlog();
             vref[i]   = new AnalogOutput( comediSubdevAOut, i );
             enable[i] = new DigitalOutput( apci2200, i );
             drive[i]  = new AnalogDrive( vref[i], enable[i], 1.0 / vel2volt[i], 0.0);
-            
+
             axes_hardware[i] = new Axis( drive[i] );
             axes_hardware[i]->setBrake( brake[i] );
             axes_hardware[i]->setSensor( "Position", encoder[i] );
         }
-        
+
 #endif
-        //Definition of kinematics for the Kuka361 
+        //Definition of kinematics for the Kuka361
         kinematics.addSegment(Segment(Joint(Joint::RotZ),Frame(Vector(0.0,0.0,1.020))));
         kinematics.addSegment(Segment(Joint(Joint::RotX),Frame(Vector(0.0,0.0,0.480))));
         kinematics.addSegment(Segment(Joint(Joint::RotX),Frame(Vector(0.0,0.0,0.645))));
         kinematics.addSegment(Segment(Joint(Joint::RotZ)));
         kinematics.addSegment(Segment(Joint(Joint::RotX)));
         kinematics.addSegment(Segment(Joint(Joint::RotZ),Frame(Vector(0.0,0.0,0.120))));
-        
+
         chain_attr.set(kinematics);
-        
+
         /*
          *  Execution Interface
          */
@@ -181,13 +181,13 @@ namespace OCL
         methods()->addMethod( &addDriveOffset_mtd,"adds an offset to the drive value of axis","offset","offset values in rad/s" );
         events()->addEvent( &driveOutOfRange_evt, "Velocity of an Axis is out of range","message","Information about event" );
         events()->addEvent( &positionOutOfRange_evt, "Position of an Axis is out of range","message","Information about event");
-        
+
         /**
          * Dataflow Interface
          */
         ports()->addPort(&driveValues_port);
         ports()->addPort(&positionValues_port);
-        
+
         /**
          * Configuration Interface
          */
@@ -203,17 +203,17 @@ namespace OCL
         attributes()->addAttribute(&chain_attr);
 
     }
-    
+
     Kuka361nAxesVelocityController::~Kuka361nAxesVelocityController()
     {
         // make sure robot is shut down
         prepareForShutdown_cmd();
-    
+
         // brake, drive, sensors and switches are deleted by each axis
         if(simulation)
             for (unsigned int i = 0; i < KUKA361_NUM_AXES; i++)
                 delete axes[i];
-    
+
 #if (defined OROPKG_OS_LXRT)
         for (unsigned int i = 0; i < KUKA361_NUM_AXES; i++)
             delete axes_hardware[i];
@@ -224,11 +224,11 @@ namespace OCL
         delete apci1032;
 #endif
     }
-  
+
     bool Kuka361nAxesVelocityController::configureHook()
     {
         Logger::In in(this->getName().data());
-        
+
         simulation=simulation_prop.value();
 
         if(!(driveLimits_prop.value().size()==KUKA361_NUM_AXES&&
@@ -237,7 +237,7 @@ namespace OCL
              initialPosition_prop.value().size()==KUKA361_NUM_AXES&&
              driveOffset_prop.value().size()==KUKA361_NUM_AXES))
             return false;
-        
+
 #if (defined OROPKG_OS_LXRT)
         if(!simulation){
             for (unsigned int i = 0; i <KUKA361_NUM_AXES; i++){
@@ -274,7 +274,7 @@ namespace OCL
                 log(Warning)<<"Could not connect EmergencyStop to "<<name<<", "<<peername<<" is not a peer of "<<this->getName()<<endlog();
                 continue;
             }
-            
+
             if(peer->events()->hasEvent(eventname)){
                 Handle handle = peer->events()->setupConnection(eventname).callback(this,&Kuka361nAxesVelocityController::EmergencyStop).handle();
                 if(handle.connect()){
@@ -287,40 +287,40 @@ namespace OCL
         }
         return true;
     }
-      
+
     bool Kuka361nAxesVelocityController::startHook()
     {
         return true;
     }
-  
+
     void Kuka361nAxesVelocityController::updateHook()
     {
-        for (unsigned int axis=0;axis<KUKA361_NUM_AXES;axis++) {      
+        for (unsigned int axis=0;axis<KUKA361_NUM_AXES;axis++) {
             // Set the position and perform checks in joint space.
             positionValues[axis] = axes[axis]->getSensor("Position")->readSensor();
         }
-        
+
         driveValues_port.Get(driveValues);
 
         if(geometric_prop.value())
             convertGeometric();
-        
+
         positionValues_port.Set(positionValues);
-        
+
         for (unsigned int axis=0;axis<KUKA361_NUM_AXES;axis++){
             if (axes[axis]->isDriven())
                 axes[axis]->drive(driveValues[axis]);
-	    
+
             // emit event when position is out of range
             if( (positionValues[axis] < lowerPositionLimits_prop.value()[axis]) ||
                 (positionValues[axis] > upperPositionLimits_prop.value()[axis]) )
                 positionOutOfRange_evt("Position  of a Kuka361 Axis is out of range");
-            
+
             // send the drive value to hw and performs checks
         }
     }
-    
-    
+
+
     void Kuka361nAxesVelocityController::stopHook()
     {
         //Make sure machine is shut down
@@ -330,7 +330,7 @@ namespace OCL
     void Kuka361nAxesVelocityController::cleanupHook()
     {
     }
-        
+
     bool Kuka361nAxesVelocityController::prepareForUse()
     {
 #if (defined OROPKG_OS_LXRT)
@@ -343,7 +343,7 @@ namespace OCL
         activated = true;
         return true;
     }
-    
+
     bool Kuka361nAxesVelocityController::prepareForUseCompleted()const
     {
 #if (defined OROPKG_OS_LXRT)
@@ -353,7 +353,7 @@ namespace OCL
 #endif
             return true;
     }
-    
+
     bool Kuka361nAxesVelocityController::prepareForShutdown()
     {
         //make sure all axes are stopped and locked
@@ -364,47 +364,47 @@ namespace OCL
             apci2200->switchOff( 12 );
             apci2200->switchOff( 14 );
         }
-        
+
 #endif
         activated = false;
         return true;
     }
-    
+
     bool Kuka361nAxesVelocityController::prepareForShutdownCompleted()const
     {
         return true;
     }
-    
+
     bool Kuka361nAxesVelocityController::stopAllAxes()
     {
         bool succes = true;
         for(unsigned int i = 0;i<KUKA361_NUM_AXES;i++)
             succes &= axes[i]->stop();
-        
+
         return succes;
     }
-  
+
     bool Kuka361nAxesVelocityController::startAllAxes()
     {
         bool succes = true;
         for(unsigned int i = 0;i<KUKA361_NUM_AXES;i++)
             succes &= axes[i]->drive(0.0);
-        
+
         return succes;
     }
-  
+
     bool Kuka361nAxesVelocityController::unlockAllAxes()
     {
         if(!activated)
             return false;
-        
+
         bool succes = true;
         for(unsigned int i = 0;i<KUKA361_NUM_AXES;i++)
             succes &= axes[i]->unlock();
 
         return succes;
     }
-  
+
     bool Kuka361nAxesVelocityController::lockAllAxes()
     {
         bool succes = true;
@@ -413,12 +413,12 @@ namespace OCL
         }
         return succes;
     }
-    
+
     bool Kuka361nAxesVelocityController::addDriveOffset(const vector<double>& offset)
     {
         if(offset.size()!=KUKA361_NUM_AXES)
             return false;
-        
+
         for(unsigned int i=0;i<KUKA361_NUM_AXES;i++){
         if(geometric_prop.value() && (i==0 || i==3 || i==5) )
         {
@@ -435,7 +435,7 @@ namespace OCL
 	              ((Axis*)(axes[i]))->getDrive()->addOffset(-offset[i]);
                 else
 	              ((Axis*)(axes[i]))->getDrive()->addOffset(offset[i]);
-            } 
+            }
 #endif
         }
         return true;
@@ -453,13 +453,13 @@ namespace OCL
             positionValues_kin[i] = positionValues[i];
             driveValues_rob[i] = driveValues[i];
         }
-        
+
         // convert last 3 axis from DWH into ZXZ
         double c5 = cos(positionValues[4]);
         double s5 = sin(positionValues[4]);
         double c5_eq = (c5+3.)/4;   /* eq.(3-1) inverse */
         double alpha;
-        
+
         if (positionValues[4]<-KINEMATICS_EPS){
             alpha = atan2(-s5,SQRT3d2*(c5-1.));  /* eq.(3-3)/(3-4) */
             positionValues_kin[4]=-2.*acos(c5_eq);
@@ -475,21 +475,21 @@ namespace OCL
                 driveValues_rob[4] = sqrt((1.-c5)*(7.+c5))*driveValues[4]/2./s5;
             }
         }
-        
+
         positionValues_kin[ 3 ] = positionValues[ 3 ] + alpha;
         positionValues_kin[ 5 ] = positionValues[ 5 ] - alpha;
-        
+
         double alphadot = -SQRT3t2/(7.+c5)*driveValues[4];
-            
+
         driveValues_rob[3] = driveValues[3]-alphadot;
         driveValues_rob[5] = driveValues[5]+alphadot;
-        
+
         driveValues.swap(driveValues_rob);
         positionValues.swap(positionValues_kin);
-        
+
     }
-    
-      
+
+
 }//namespace orocos
 ORO_CREATE_COMPONENT_TYPE()
 ORO_LIST_COMPONENT_TYPE( OCL::Kuka361nAxesVelocityController )

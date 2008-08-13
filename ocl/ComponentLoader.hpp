@@ -1,12 +1,12 @@
 /***************************************************************************
-  tag: Peter Soetens  Thu Jul 3 15:35:28 CEST 2008  ComponentLoader.hpp 
+  tag: Peter Soetens  Thu Jul 3 15:35:28 CEST 2008  ComponentLoader.hpp
 
                         ComponentLoader.hpp -  description
                            -------------------
     begin                : Thu July 03 2008
     copyright            : (C) 2008 Peter Soetens
     email                : peter.soetens@fmtc.be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -24,8 +24,8 @@
  *   Suite 330, Boston, MA  02111-1307  USA                                *
  *                                                                         *
  ***************************************************************************/
- 
- 
+
+
 #ifndef OCL_COMPONENT_LOADER_HPP
 #define OCL_COMPONENT_LOADER_HPP
 
@@ -85,10 +85,10 @@ namespace OCL
 }
 
 // Helper macros.
-#define ORO_CONCAT_LINE2(x,y) x##y 
-#define ORO_CONCAT_LINE1(x,y) ORO_CONCAT_LINE2(x,y) 
-#define ORO_CONCAT_LINE(x) ORO_CONCAT_LINE1(x,__LINE__) 
- 
+#define ORO_CONCAT_LINE2(x,y) x##y
+#define ORO_CONCAT_LINE1(x,y) ORO_CONCAT_LINE2(x,y)
+#define ORO_CONCAT_LINE(x) ORO_CONCAT_LINE1(x,__LINE__)
+
 #define ORO_LIST_COMPONENT_TYPE_str(s) ORO_LIST_COMPONENT_TYPE__str(s)
 #define ORO_LIST_COMPONENT_TYPE__str(s) #s
 
@@ -171,7 +171,7 @@ extern "C" { \
  * of a static library, the component factory will be registered in the static library's global
  * FactoryMap. In both cases, the DeploymentComponent can access these factories and
  * create the registered component types.
- * 
+ *
  * @param CLASS_NAME the class name of the component you are adding to the library.
  */
 

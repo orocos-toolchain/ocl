@@ -75,7 +75,7 @@ int ORO_main( int argc, char** argv)
     log(Info) << "  Use 'enter' and/or 'leave' to go 'inside' or 'outside' a component. " <<endlog();
     log(Info) << "  The inside interface shows the methods and ports of the visited component," <<endlog();
     log(Info) << "  the outside interface show the methods and ports of the TaskBrowser."<<endlog();
-        
+
     PeriodicActivity act(10, 1.0, gtc.engine());
 
     tb.loop();

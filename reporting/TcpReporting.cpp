@@ -6,7 +6,7 @@
     copyright            : (C) 2006 Bas Kemper
                            2007-2008 Ruben Smits
     email                : kst@ <my name> .be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -228,7 +228,7 @@ namespace OCL
         makeReport();
         return &report;
     }
-    
+
     bool TcpReporting::configureHook(){
         port=port_prop.value();
         return true;

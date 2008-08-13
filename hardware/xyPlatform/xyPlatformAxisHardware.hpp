@@ -1,12 +1,12 @@
 /***************************************************************************
-  tag: Ruben Smits  Mon Jan 19 14:11:20 CET 2005  JR3WrenchSensor.hpp 
+  tag: Ruben Smits  Mon Jan 19 14:11:20 CET 2005  JR3WrenchSensor.hpp
 
                         JR3WrenchSensor.hpp -  description
                            -------------------
     begin                : Mon January 19 2004
     copyright            : (C) 2004 Peter Soetens
     email                : first.last@mech.kuleuven.ac.be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -23,7 +23,7 @@
  *   Foundation, Inc., 59 Temple Place,                                    *
  *   Suite 330, Boston, MA  02111-1307  USA                                *
  *                                                                         *
- ***************************************************************************/ 
+ ***************************************************************************/
 
 
 #ifndef XYPLATFORM_AXIS_HARDWARE_HPP
@@ -46,7 +46,7 @@
 
 namespace OCL
 {
-  
+
 class xyPlatformAxisHardware
 {
 public:
@@ -70,17 +70,17 @@ public:
 private:
   std::vector<Axis*> _axes;
   std::vector<RTT::AxisInterface*> _axesInterface;
-  
+
   RTT::EncoderInterface*             _encoderInterface[XY_NUM_AXIS];
   AnalogOutput*      _vref[XY_NUM_AXIS];
   IncrementalEncoderSensor*        _encoder[XY_NUM_AXIS];
   DigitalOutput*                   _enable[XY_NUM_AXIS];
   AnalogDrive*                     _drive[XY_NUM_AXIS];
   DigitalOutput*                   _brake[XY_NUM_AXIS];
-  //  DigitalInput*                    _reference[KUKA160_NUM_AXIS];  
+  //  DigitalInput*                    _reference[KUKA160_NUM_AXIS];
 
   RTT::TaskContext _my_task_context;
-  
+
   std::string _configfile;
   bool _initialized;
 

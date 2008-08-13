@@ -1,12 +1,12 @@
 /***************************************************************************
-  tag: Peter Soetens  Thu Jul 15 11:21:06 CEST 2004  AxesComponent.cxx 
+  tag: Peter Soetens  Thu Jul 15 11:21:06 CEST 2004  AxesComponent.cxx
 
                         AxesComponent.cxx -  description
                            -------------------
     begin                : Thu July 15 2004
     copyright            : (C) 2004 Peter Soetens
     email                : peter.soetens at mech.kuleuven.ac.be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -29,10 +29,10 @@
 #include <rtt/Method.hpp>
 #include <rtt/Command.hpp>
 
-namespace OCL 
+namespace OCL
 {
 
-    AxesComponent::AxesComponent( int max_chan , const std::string& name ) 
+    AxesComponent::AxesComponent( int max_chan , const std::string& name )
         :  TaskContext(name),
            max_channels("MaximumChannels","The maximum number of virtual sensor/drive channels", max_chan),
            chan_sensor("OutputValues",ChannelType(max_chan, 0.0) ),
@@ -48,31 +48,31 @@ namespace OCL
         this->methods()->addMethod( method( "switchOn", &AxesComponent::switchOn, this),
                            "Switch A Digital Output on",
                            "Name","The Name of the DigitalOutput."
-                            ); 
+                            );
         this->methods()->addMethod( method( "switchOff", &AxesComponent::switchOff, this),
                            "Switch A Digital Output off",
                            "Name","The Name of the DigitalOutput."
-                            ); 
+                            );
         this->methods()->addMethod( method( "enableAxis", &AxesComponent::enableAxis, this),
                            "Enable an Axis ( equivalent to unlockAxis( )",
                            "Name","The Name of the Axis."
-                           ); 
+                           );
         this->methods()->addMethod( method( "unlockAxis", &AxesComponent::enableAxis, this),
                            "Unlock an Axis. Enters 'stopped' state.",
                            "Name","The Name of the Axis."
-                            ); 
+                            );
         this->methods()->addMethod( method( "stopAxis", &AxesComponent::stopAxis, this),
                            "Stop an Axis from driven. Enters 'stopped' state.",
                            "Name","The Name of the Axis."
-                            ); 
+                            );
         this->methods()->addMethod( method( "lockAxis", &AxesComponent::disableAxis, this),
                            "Disable (lock an Axis. Enters 'locked' state/",
                            "Name","The Name of the Axis."
-                           ); 
+                           );
         this->methods()->addMethod( method( "disableAxis", &AxesComponent::disableAxis, this),
                            "Disable (lock an Axis (equivalent to lockAxis() )",
                            "Name","The Name of the Axis."
-                           ); 
+                           );
 
         this->methods()->addMethod( method( "isOn", &AxesComponent::isOn, this),
                         "Inspect the status of a Digital Input or Output.",
@@ -195,7 +195,7 @@ namespace OCL
     {
         AxisInfo* axinfo = mhasAxis(axis_name);
 
-        if ( axinfo == 0 || 
+        if ( axinfo == 0 ||
              virtual_channel >= max_channels ||
              axinfo->channel != -1 ||
              axinfo->axis->getSensor( sensor_name ) == 0 ||
@@ -305,7 +305,7 @@ namespace OCL
         d_out[name]->switchOn();
         return true;
     }
-                    
+
     bool AxesComponent::switchOff( const std::string& name )
     {
         if (d_out.count(name) != 1)
@@ -334,7 +334,7 @@ namespace OCL
     {
         AxisMap::const_iterator it = axes.find(name);
         if ( it != axes.end() )
-            return it->second.axis->isStopped(); 
+            return it->second.axis->isStopped();
         return false;
     }
 

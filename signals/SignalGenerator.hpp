@@ -1,12 +1,12 @@
 /***************************************************************************
-  tag: Peter Soetens  Thu Apr 22 20:40:59 CEST 2004  SignalGenerator.hpp 
+  tag: Peter Soetens  Thu Apr 22 20:40:59 CEST 2004  SignalGenerator.hpp
 
                         SignalGenerator.hpp -  description
                            -------------------
     begin                : Thu April 22 2004
     copyright            : (C) 2004 Peter Soetens
     email                : peter.soetens@mech.kuleuven.ac.be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -23,8 +23,8 @@
  *   Foundation, Inc., 59 Temple Place,                                    *
  *   Suite 330, Boston, MA  02111-1307  USA                                *
  *                                                                         *
- ***************************************************************************/ 
- 
+ ***************************************************************************/
+
 #ifndef ORO_SIGNALGENERATOR_HPP
 #define ORO_SIGNALGENERATOR_HPP
 
@@ -76,14 +76,14 @@ namespace ORO_ControlKernel
      * @ingroup kcomps kcomp_generator
      */
     class SignalGenerator
-        : public Generator< Expects<NoCommand>, Expects<NoInput>, Expects<NoModel>, Writes<SignalSetPoint>, 
+        : public Generator< Expects<NoCommand>, Expects<NoInput>, Expects<NoModel>, Writes<SignalSetPoint>,
                             MakeFacet<KernelBaseFunction
 #ifdef OROPKG_CONTROL_KERNEL_EXTENSIONS_EXECUTION
                                        , ExecutionExtension
 #endif
                                        >::Result >
     {
-        typedef Generator< Expects<NoCommand>, Expects<NoInput>, Expects<NoModel>, Writes<SignalSetPoint>, 
+        typedef Generator< Expects<NoCommand>, Expects<NoInput>, Expects<NoModel>, Writes<SignalSetPoint>,
                            MakeFacet<KernelBaseFunction
 #ifdef OROPKG_CONTROL_KERNEL_EXTENSIONS_EXECUTION
                                       , ExecutionExtension
@@ -93,7 +93,7 @@ namespace ORO_ControlKernel
         /**
          * @brief Create a signalgenerator with a fixed number of channels.
          */
-        SignalGenerator(int num_channels =  1, const std::string& name = "SignalGenerator") 
+        SignalGenerator(int num_channels =  1, const std::string& name = "SignalGenerator")
             : Base( name ),
               max_chans("Channels", "The number of channels", num_channels)
         {
@@ -102,17 +102,17 @@ namespace ORO_ControlKernel
 
         }
 
-        virtual bool componentLoaded() 
+        virtual bool componentLoaded()
         {
             SetPoint->dObj()->Get("ChannelValues", setp_DObj);
             setp_DObj->Set(set_point);
             return true;
-        }            
-                
+        }
+
         /**
          * @see KernelInterfaces.hpp class ModuleControlInterface
          */
-        virtual void calculate() 
+        virtual void calculate()
         {
             int i=0;
             for( chaniter it= channel.begin(); it != channel.end(); ++it, ++i)
@@ -122,11 +122,11 @@ namespace ORO_ControlKernel
                 else
                     set_point[i] = 0;
         }
-            
+
         /**
          * @see KernelInterfaces.hpp class ModuleControlInterface
          */
-        virtual void push()      
+        virtual void push()
         {
             setp_DObj->Set( set_point );
         }
@@ -148,7 +148,7 @@ namespace ORO_ControlKernel
             if (chan_num >= max_chans )
                 return false;
             delete channel[chan_num].gen;
-            channel[chan_num].gen = new Sine( 1.0, frequence, phase * 360/(2* M_PI) ); 
+            channel[chan_num].gen = new Sine( 1.0, frequence, phase * 360/(2* M_PI) );
             return true;
         }
 
@@ -277,7 +277,7 @@ namespace ORO_ControlKernel
         {
             TemplateDataSourceFactory< SignalGenerator >* ret =
                 newDataSourceFactory( this );
-            ret->add( "channelValue", 
+            ret->add( "channelValue",
                       data( &SignalGenerator::channelValue, "The current value "
                             "of the channel.",
                             "Channel", "The number of the channel") );
@@ -290,38 +290,38 @@ namespace ORO_ControlKernel
         {
             TemplateCommandFactory< SignalGenerator >* ret =
                 newCommandFactory( this );
-            ret->add( "enableChannel", 
+            ret->add( "enableChannel",
                       command( &SignalGenerator::enableChannel,
                                &SignalGenerator::true_gen,
                                "Turn on a channel.",
                                "Channel", "The channel to turn on."
                                ) );
-            ret->add( "disableChannel", 
+            ret->add( "disableChannel",
                       command( &SignalGenerator::disableChannel,
                                &SignalGenerator::true_gen,
                                "Turn off a channel.",
                                "Channel", "The channel to turn off."
                                ) );
-            ret->add( "freezeChannel", 
+            ret->add( "freezeChannel",
                       command( &SignalGenerator::freezeChannel,
                                &SignalGenerator::isFrozen,
                                "Freeze a channel.",
                                "Channel", "The channel to freeze."
                                ) );
-            ret->add( "resumeChannel", 
+            ret->add( "resumeChannel",
                       command( &SignalGenerator::unfreezeChannel,
                                &SignalGenerator::isFrozen,
                                "Resume a channel.",
                                "Channel", "The channel to resume, after a freeze.", true
                                ) );
-            ret->add( "scaleValue", 
+            ret->add( "scaleValue",
                       command( &SignalGenerator::scaleValue,
                                &SignalGenerator::true_gen,
                                "Scale the output of a channel.",
                                "Channel", "The channel number.",
                                "Factor", "The scale factor."
                                ) );
-            ret->add( "sine", 
+            ret->add( "sine",
                       command( &SignalGenerator::sine,
                                &SignalGenerator::true_gen,
                                "Generate a sine on a channel.",

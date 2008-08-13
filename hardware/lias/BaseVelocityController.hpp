@@ -2,7 +2,7 @@
 #define BASE_VELOCITY_CONTROLLER_HPP
 
 /***************************************************************************
-                        BaseVelocityController.cpp 
+                        BaseVelocityController.cpp
                        ----------------------------
     begin                : July 2006
     copyright            : (C) 2006 Erwin Aertbelien
@@ -10,7 +10,7 @@
 
  History (only major changes)( AUTHOR-Description ) :
         Adaptation of the file initially created by Dan Lihtetski, july 2006.
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -38,7 +38,7 @@
 #include <rtt/Ports.hpp>
 #include "liasclient.hpp"
 
-class BaseVelocityController 
+class BaseVelocityController
     : public RTT::TaskContext
 {
     /**
@@ -46,7 +46,7 @@ class BaseVelocityController
      */
     public:
     BaseVelocityController(const std::string& name="BaseVelocityController",const std::string& propfile="cpf/base.cpf");
-    
+
     protected:
     RTT::ReadDataPort<double> velocity;
     RTT::ReadDataPort<double> rotvel;
@@ -58,7 +58,7 @@ class BaseVelocityController
     /**
      * Task's Properties.
      */
-    
+
     RTT::Property<std::string> hostname;
     RTT::Property<int> port;
     RTT::Property<bool> logging;
@@ -77,13 +77,13 @@ class BaseVelocityController
 
     virtual bool stopnow() ;
     virtual bool stopnowDone() const;
-        
+
     virtual bool startLaserScanner() ;
     virtual bool startLaserScannerDone() const;
-    
+
     virtual bool stopLaserScanner() ;
     virtual bool stopLaserScannerDone() const;
-        
+
     virtual bool startup();
     virtual void update();
     virtual void shutdown();

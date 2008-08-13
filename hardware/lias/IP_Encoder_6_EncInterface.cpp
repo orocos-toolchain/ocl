@@ -36,11 +36,11 @@ bool IP_Encoder_6_Task::initialize()
     {
         // Get the current value of the encoder
         _prevEncoderValue[i] = IP_Encoder_6_get_counter_channel( i+1 );
-        
+
         // and just to check that IF it is 0xffff, it is supposed to be:
         if (_prevEncoderValue[i] == 0xffff) _prevEncoderValue[i] = IP_Encoder_6_get_counter_channel( i+1 );
     }
-    
+
     return true;
 }
 
@@ -73,13 +73,13 @@ void IP_Encoder_6_Task::step()
         // (For reasons not to use the registers for this, see IP-Encoder6.h)
         if (delta >  32768) delta -= 65536;
         if (delta < -32768) delta += 65536;
-    
+
         // remember the current position for next time
         _prevEncoderValue[i] = curPos;
         // update
         _virtualEncoder[i] += delta;
     }
-    
+
     _virtual_encoder_1.Set(_virtualEncoder[0]);
     _virtual_encoder_2.Set(_virtualEncoder[1]);
     _virtual_encoder_3.Set(_virtualEncoder[2]);

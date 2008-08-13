@@ -1,19 +1,19 @@
 // Copyright (C) 2006 Wim Meeussen <wim dot meeussen at mech dot kuleuven dot be>
-//  
+//
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
 // (at your option) any later version.
-//  
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-//  
+//
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-//  
+//
 
 #ifndef __DEMOTOOL_HARDWARE__
 #define __DEMOTOOL_HARDWARE__
@@ -32,7 +32,7 @@
 
 namespace OCL
 {
-    
+
   /**
    * This class implements a TaskContext to use with the demonstration
    * tool in the RoboticLab, PMA, dept. Mechanical Engineering,
@@ -42,9 +42,9 @@ namespace OCL
   class Demotool : public RTT::TaskContext
   {
   public:
-    /** 
+    /**
      * The contructor of the class.
-     * 
+     *
      * @param name Name of the TaskContext
      * @param propertyfilename name of the propertyfile to
      * configure the component with, default: cpf/Demotool.cpf
@@ -81,10 +81,10 @@ namespace OCL
   private:
     void calibrateWorldToManip();
     void calibrateWrenchSensor();
-    
+
     std::string _propertyfile;
     std::vector<KDL::Vector> _Vector_led_demotool, _Vector_led_camera;
-    
+
     KDL::Twist   _Twist_world_manip;
     KDL::Wrench  _Wrench_fs_fs, _Wrench_world_world, _Wrench_gravity_world_world;
     KDL::Frame   _Frame_world_demotool, _Frame_camera_demotool, _Frame_world_manip, _Frame_world_manip_old, _Frame_world_fs;
@@ -93,7 +93,7 @@ namespace OCL
     bool _is_initialized;
     double _period;
     RTT::TimeService::ticks _time_begin;
-    
+
 
    }; // class
 } // namespace

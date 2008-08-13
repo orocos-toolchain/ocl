@@ -1,12 +1,12 @@
 /***************************************************************************
-  tag: Peter Soetens  Mon Jan 19 14:11:20 CET 2004  CANPieController.hpp 
+  tag: Peter Soetens  Mon Jan 19 14:11:20 CET 2004  CANPieController.hpp
 
                         CANPieController.hpp -  description
                            -------------------
     begin                : Mon January 19 2004
     copyright            : (C) 2004 Peter Soetens
     email                : peter.soetens@mech.kuleuven.ac.be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -23,8 +23,8 @@
  *   Foundation, Inc., 59 Temple Place,                                    *
  *   Suite 330, Boston, MA  02111-1307  USA                                *
  *                                                                         *
- ***************************************************************************/ 
- 
+ ***************************************************************************/
+
 #ifndef CANPIECONTROLLER_HPP
 #define CANPIECONTROLLER_HPP
 
@@ -61,7 +61,7 @@ namespace RTT
     bool initialize();
 
     void step();
-        
+
     void finalize();
 
     virtual void addBus( unsigned int chan, CANBusInterface* _bus);
@@ -81,7 +81,7 @@ namespace RTT
      * interrupt.
      */
     int receive(CpStruct_CAN* msg);
-            
+
     static CANPieController* controller[CP_CHANNEL_MAX];
 
     int CANPieStatus;
@@ -100,7 +100,7 @@ namespace RTT
     unsigned int failed_trns;
     unsigned int generic_trns;
   };
-			
+
 }}
 
 

@@ -60,7 +60,7 @@ int ORO_main( int argc, char** argv)
     // such that we can see output :
     if ( Logger::log().getLogLevel() < Logger::Info ) {
         Logger::log().setLogLevel( Logger::Info );
-        log(Info) << argv[0] 
+        log(Info) << argv[0]
 		      << " manually raises LogLevel to 'Info' (5). See also file 'orocos.log'."<<endlog();
     }
 
@@ -85,7 +85,7 @@ int ORO_main( int argc, char** argv)
     cout << "  Use 'reportComponent(\"MyPeer\")' and/or 'reportComponent(\"MyPeer2\")'" <<endl;
     cout << "  Then invoke 'start()' and 'stop()'" <<endl;
     cout << "  Other methods (type 'this') are available as well."<<endl;
-        
+
     tb.loop();
 
     act.stop();

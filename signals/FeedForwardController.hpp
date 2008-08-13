@@ -1,12 +1,12 @@
 /***************************************************************************
-  tag: Peter Soetens  Thu Apr 22 20:40:59 CEST 2004  FeedForwardController.hpp 
+  tag: Peter Soetens  Thu Apr 22 20:40:59 CEST 2004  FeedForwardController.hpp
 
                         FeedForwardController.hpp -  description
                            -------------------
     begin                : Thu April 22 2004
     copyright            : (C) 2004 Peter Soetens
     email                : peter.soetens@mech.kuleuven.ac.be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -23,8 +23,8 @@
  *   Foundation, Inc., 59 Temple Place,                                    *
  *   Suite 330, Boston, MA  02111-1307  USA                                *
  *                                                                         *
- ***************************************************************************/ 
- 
+ ***************************************************************************/
+
 #ifndef ORO_FEEDFORWARDCONTROLLER_HPP
 #define ORO_FEEDFORWARDCONTROLLER_HPP
 
@@ -68,7 +68,7 @@ namespace ORO_ControlKernel
         /**
          * Forward a fixed number of channels from Setpoints to Outputs.
          */
-        FeedForwardController(int num_channels =  1, const std::string& name = "FeedForwardController") 
+        FeedForwardController(int num_channels =  1, const std::string& name = "FeedForwardController")
             : Base( name ),
               max_chans("Channels", "The number of channels", num_channels)
         {
@@ -88,14 +88,14 @@ namespace ORO_ControlKernel
             if (!SetPoint->dObj()->Get("ChannelValues", setp_DObj))
                 return false;
             return true;
-        }            
+        }
 
         virtual void pull()
         {
             setp_DObj->Get( set_point );
         }
 
-        virtual void push()      
+        virtual void push()
         {
             // just propagate the setpoints.
             outp_DObj->Set( set_point );

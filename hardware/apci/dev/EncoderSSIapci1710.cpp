@@ -1,12 +1,12 @@
 /***************************************************************************
-  tag: Peter Soetens  Mon May 10 19:10:32 CEST 2004  EncoderSSIapci1710.cxx 
+  tag: Peter Soetens  Mon May 10 19:10:32 CEST 2004  EncoderSSIapci1710.cxx
 
                         EncoderSSIapci1710.cxx -  description
                            -------------------
     begin                : Mon May 10 2004
     copyright            : (C) 2004 Peter Soetens
     email                : peter.soetens@mech.kuleuven.ac.be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -25,21 +25,21 @@
  *                                                                         *
  ***************************************************************************/
 // Copyright (C) 2003 Johan Rutgeerts <johan.rutgeerts@mech.kuleuven.ac.be>
-// 
+//
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
 // (at your option) any later version.
-//  
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-//  
+//
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-//  
+//
 
 
 #include <rtt/RTT.hpp>
@@ -75,7 +75,7 @@ EncoderSSI_apci1710_board::EncoderSSI_apci1710_board( unsigned int mNr1 )
     buffer2 = new unsigned int[3];
     readbuffer  = buffer1;
     writebuffer = buffer2;
-    
+
     log() << "(EncoderSSI_apci1710) Creating EncoderSSI with module:" << moduleNr1<<", ssi-profile: "<< ORONUM_DEVICE_DRIVERS_APCI1710_SSI_PROFILE
       	  <<", positionbits: "<< ORONUM_DEVICE_DRIVERS_APCI1710_SSI_POSITION_BITS<<", turnbits: "<< ORONUM_DEVICE_DRIVERS_APCI1710_SSI_TURN_BITS
 	  <<", countingmode: ,"<< COUNTINGMODE_BINARY<<" frequency: "<<ORONUM_DEVICE_DRIVERS_APCI1710_SSI_FREQ << endlog(Info);
@@ -87,9 +87,9 @@ EncoderSSI_apci1710_board::EncoderSSI_apci1710_board( unsigned int mNr1 )
                                         ORONUM_DEVICE_DRIVERS_APCI1710_SSI_TURN_BITS,
                                         COUNTINGMODE_BINARY,
                                         ORONUM_DEVICE_DRIVERS_APCI1710_SSI_FREQ ) ) )      //in Hz (25kHz is ok)
-      
+
     log() << "\n(EncoderSSI_apci1710) Error "<< res << " : Module " << moduleNr1 << " is not ready for SSI\n" << endlog(Error);
-    
+
 #ifdef OROPKG_CORELIB_TIMING
     // init one buffer, display some statistics
     TimeService::ticks t=TimeService::Instance()->getTicks();
@@ -118,7 +118,7 @@ EncoderSSI_apci1710_board::EncoderSSI_apci1710_board( unsigned int mNr1, unsigne
     buffer2 = new unsigned int[6];
     readbuffer  = buffer1;
     writebuffer = buffer2;
-    
+
     log() << "(EncoderSSI_apci1710) Creating EncoderSSI..." << endlog(Info);
     dev = apci1710_get_device();
     int res = 0;
@@ -167,7 +167,7 @@ EncoderSSI_apci1710_board::EncoderSSI_apci1710_board( unsigned int mNr1, unsigne
     buffer2 = new unsigned int[9];
     readbuffer  = buffer1;
     writebuffer = buffer2;
-    
+
     log() << "(EncoderSSI_apci1710) Creating EncoderSSI..." << endlog(Info);
     dev = apci1710_get_device();
     int res = 0;
@@ -224,7 +224,7 @@ EncoderSSI_apci1710_board::EncoderSSI_apci1710_board( unsigned int mNr1, unsigne
     buffer2 = new unsigned int[12];
     readbuffer  = buffer1;
     writebuffer = buffer2;
-    
+
     log() << "(EncoderSSI_apci1710) Creating EncoderSSI..." << endlog(Info);
     dev = apci1710_get_device();
     int res = 0;
@@ -291,8 +291,8 @@ unsigned int EncoderSSI_apci1710_board::read( unsigned int encNr )
 {
 #ifdef DEBUG
     if ( encNr < 1 || encNr > nr_of_modules * 3 ) log() << "(EncoderSSI_apci1710) ERROR: encNr < 1 or encNr > " << nr_of_modules * 3 << "!" << endlog(Error);
-#endif    
-    
+#endif
+
     OS::MutexLock Locker( readLock );
     return readbuffer[ encNr - 1 ];
 }
@@ -304,10 +304,10 @@ void EncoderSSI_apci1710_board::readCard( unsigned int* buffer )
 {
     switch(nr_of_modules)
     {
-        case 1: 
+        case 1:
                 apci1710_ssi_refresh(dev, moduleNr1);                         // refresh module1
                 apci1710_ssi_read_latest_all( dev, moduleNr1, buffer );       // read out module1
-   
+
                 // Somehow, there are 'dirty' bits above the 21 bits, so we clean them
                 for ( unsigned int i = 0; i < 3; i++) buffer[i] = buffer[i] & 0x001fffff; // only use 21 bits;
                 break;
@@ -317,7 +317,7 @@ void EncoderSSI_apci1710_board::readCard( unsigned int* buffer )
                 apci1710_ssi_refresh(dev, moduleNr2);                         // refresh module2
                 apci1710_ssi_read_latest_all( dev, moduleNr1, buffer );       // read out module1
                 apci1710_ssi_read_latest_all( dev, moduleNr2, buffer + 3 );   // read out module2
-   
+
                 // Somehow, there are 'dirty' bits above the 21 bits, so we clean them
                 for ( unsigned int i = 0; i < 6; i++) buffer[i] = buffer[i] & 0x001fffff; // only use 21 bits;
                 break;
@@ -329,13 +329,13 @@ void EncoderSSI_apci1710_board::readCard( unsigned int* buffer )
                 apci1710_ssi_read_latest_all( dev, moduleNr1, buffer );       // read out module1
                 apci1710_ssi_read_latest_all( dev, moduleNr2, buffer + 3 );   // read out module2
                 apci1710_ssi_read_latest_all( dev, moduleNr3, buffer + 6 );   // read out module3
-   
+
                 // Somehow, there are 'dirty' bits above the 21 bits, so we clean them
                 for ( unsigned int i = 0; i < 9; i++) buffer[i] = buffer[i] & 0x001fffff; // only use 21 bits;
                 break;
-                
+
         case 4:
-                apci1710_ssi_refresh(dev, moduleNr1);                         // refresh module1  
+                apci1710_ssi_refresh(dev, moduleNr1);                         // refresh module1
                 apci1710_ssi_refresh(dev, moduleNr2);                         // refresh module2
                 apci1710_ssi_refresh(dev, moduleNr3);                         // refresh module3
                 apci1710_ssi_refresh(dev, moduleNr4);                         // refresh module4
@@ -343,7 +343,7 @@ void EncoderSSI_apci1710_board::readCard( unsigned int* buffer )
                 apci1710_ssi_read_latest_all( dev, moduleNr2, buffer + 3 );   // read out module2
                 apci1710_ssi_read_latest_all( dev, moduleNr3, buffer + 6 );   // read out module3
                 apci1710_ssi_read_latest_all( dev, moduleNr4, buffer + 9 );   // read out module4
-   
+
                 // Somehow, there are 'dirty' bits above the 21 bits, so we clean them
                 for ( unsigned int i = 0; i < 12; i++) buffer[i] = buffer[i] & 0x001fffff; // only use 21 bits;
                 break;
@@ -366,7 +366,7 @@ void EncoderSSI_apci1710_board::switchBuffers()
 {
     // this is called *after* each refresh, so we know that it is safe
     // use spinlocks or implement an 'atomic' swing(b1,b2,p1,p2) function !!!
-    
+
     OS::MutexLock locker( readLock );
     if ( readbuffer == buffer1 )
         {

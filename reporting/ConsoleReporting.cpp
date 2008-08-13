@@ -26,10 +26,10 @@ namespace OCL
                 RTT::Marshaller* fbody;
                 if ( this->writeHeader)
                     fheader = new RTT::NiceHeaderMarshaller<std::ostream>( mconsole );
-                else 
+                else
                     fheader = 0;
                 fbody = new RTT::TableMarshaller<std::ostream>( mconsole );
-                
+
                 this->addMarshaller( fheader, fbody );
             } else {
                 log(Error) << "Could not write to console for reporting."<<RTT::endlog();

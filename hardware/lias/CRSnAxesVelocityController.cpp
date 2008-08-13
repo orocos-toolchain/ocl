@@ -4,7 +4,7 @@
     begin                : Mon January 19 2004
     copyright            : (C) 2004 Peter Soetens
     email                : Erwin.Aertbelien@mech.kuleuven.ac.be
- 
+
  based on the work of Johan Rutgeerts in LiASHardware.cpp
 
  ***************************************************************************
@@ -23,7 +23,7 @@
  *   Foundation, Inc., 59 Temple Place,                                    *
  *   Suite 330, Boston, MA  02111-1307  USA                                *
  *                                                                         *
- ***************************************************************************/ 
+ ***************************************************************************/
 
 #include <hardware/lias/CRSnAxesVelocityController.hpp>
 
@@ -74,7 +74,7 @@ namespace OCL {
 #define TRACE(x) \
     log(Info) << "TRACE " << #x << endlog(); \
     x;
-    
+
 
 using namespace Orocos;
 
@@ -124,63 +124,63 @@ CRSnAxesVelocityController::CRSnAxesVelocityController(const std::string& name,c
   properties()->addProperty( &servoFFScale  );
   properties()->addProperty( &servoDerivTime  );
   attributes()->addConstant( &_num_axes);
- 
+
   if (!marshalling()->readProperties(propertyfilename)) {
     log(Error) << "Failed to read the property file, continueing with default values." << endlog();
     throw 0;
   }
 #if defined (OROPKG_OS_LXRT)
     log(Info) << "LXRT version of CRSnAxesVelocityController has started" << endlog();
-    
+
     _IP_Digital_24_DOut = new IP_Digital_24_DOutInterface("IP_Digital_24_DOut");
     // \TODO : Set this automatically to the correct value :
     _IP_Encoder_6_task  = new IP_Encoder_6_Task(LiAS_ENCODER_REFRESH_PERIOD);
     _IP_FastDac_AOut    = new IP_FastDAC_AOutInterface("IP_FastDac_AOut");
     _IP_OptoInput_DIn   = new IP_OptoInput_DInInterface("IP_OptoInput_DIn");
-   
+
     _IP_Encoder_6_task->start();
 
-    //Set all constants        
+    //Set all constants
     double driveOffsets[6] = LiAS_OFFSETSinVOLTS;
     double radpsec2volt[6] = LiAS_RADproSEC2VOLT;
     int    encoderOffsets[6] = LiAS_ENCODEROFFSETS;
     double ticks2rad[6] = LiAS_TICKS2RAD;
     double jointspeedlimits[6] = LiAS_JOINTSPEEDLIMITS;
 
-    
+
     _enable = new DigitalOutput( _IP_Digital_24_DOut, LiAS_ENABLE_CHANNEL, true);
     _enable->switchOff();
-    
+
     _combined_enable_DOutInterface = new CombinedDigitalOutInterface( "enableDOutInterface", _enable, 6, OR );
-   
-    
+
+
     _brake = new DigitalOutput( _IP_Digital_24_DOut, LiAS_BRAKE_CHANNEL, false);
     _brake->switchOn();
-    
+
     _combined_brake_DOutInterface = new CombinedDigitalOutInterface( "brakeDOutInterface", _brake, 2, OR);
-   
-    
+
+
     for (unsigned int i = 0; i < LiAS_NUM_AXIS; i++)
     {
 		_homed[i] = false;
         //Setting up encoders
         _encoderInterface[i] = new IP_Encoder_6_EncInterface( *_IP_Encoder_6_task, i ); // Encoder 0, 1, 2, 3, 4 and 5.
         _encoder[i] = new IncrementalEncoderSensor( _encoderInterface[i], 1.0 / ticks2rad[i], encoderOffsets[i], -180, 180, LiAS_ENC_RES );
-        
-        _vref[i]   = new AnalogOutput( _IP_FastDac_AOut, i + 1 ); 
+
+        _vref[i]   = new AnalogOutput( _IP_FastDac_AOut, i + 1 );
         _combined_enable[i] = new DigitalOutput( _combined_enable_DOutInterface, i );
         _drive[i] = new AnalogDrive( _vref[i], _combined_enable[i], 1.0 / radpsec2volt[i], driveOffsets[i] / radpsec2volt[i]);
-        
-        _reference[i] = new DigitalInput( _IP_OptoInput_DIn, i + 1 ); // Bit 1, 2, 3, 4, 5, and 6. 
-        
-        
+
+        _reference[i] = new DigitalInput( _IP_OptoInput_DIn, i + 1 ); // Bit 1, 2, 3, 4, 5, and 6.
+
+
         _axes[i] = new RTT::Axis( _drive[i] );
         log(Error) << "_axes[i]->limitDrive( jointspeedlimits[i] ) has been disabled." << endlog();
         //_axes[i]->limitDrive( jointspeedlimits[i] );
         //_axes[i]->setLimitDriveEvent( maximumDrive );  \\TODO I prefere to handle this myself.
         _axes[i]->setSensor( "Position", _encoder[i] );
         // not used any more :_axes[i]->setSensor( "Velocity", new VelocityReaderLiAS( _axes[i], jointspeedlimits[i] ) );
-      
+
         // Axis 2 and 3 get a combined brake
         if ((i == 1)||(i == 2))
         {
@@ -200,7 +200,7 @@ CRSnAxesVelocityController::CRSnAxesVelocityController(const std::string& name,c
     _enable                        = 0;
     _combined_brake_DOutInterface  = 0;
     _brake                         = 0;*/
-  
+
     for (unsigned int i = 0; i <NUM_AXES; i++) {
 	  _homed[i] = true;
       _axes[i] = new RTT::SimulationAxis(
@@ -210,7 +210,7 @@ CRSnAxesVelocityController::CRSnAxesVelocityController(const std::string& name,c
       _axes[i]->setMaxDriveValue( driveLimits.value()[i] );
       _axesInterface[i] = _axes[i];
     }
-  #endif    
+  #endif
 
   _deactivate_axis3 = false;
   _deactivate_axis2 = false;
@@ -222,16 +222,16 @@ CRSnAxesVelocityController::CRSnAxesVelocityController(const std::string& name,c
    */
   typedef CRSnAxesVelocityController MyType;
 
-  this->commands()->addCommand( 
-    command( "startAxis", &MyType::startAxis,         &MyType::startAxisCompleted, this), 
+  this->commands()->addCommand(
+    command( "startAxis", &MyType::startAxis,         &MyType::startAxisCompleted, this),
     "start axis, initializes drive value to zero and starts updating the drive-value \
      with the drive-port (only possible if axis is unlocked","axis","axis to start" );
-  this->commands()->addCommand( command( "stopAxis", &MyType::stopAxis,          &MyType::stopAxisCompleted, this), 
+  this->commands()->addCommand( command( "stopAxis", &MyType::stopAxis,          &MyType::stopAxisCompleted, this),
     "stop axis, sets drive value to zero and disables the update of the drive-port, \
     (only possible if axis is started","axis","axis to stop" );
-  this->commands()->addCommand( command( "lockAxis", &MyType::lockAxis,          &MyType::lockAxisCompleted, this), 
+  this->commands()->addCommand( command( "lockAxis", &MyType::lockAxis,          &MyType::lockAxisCompleted, this),
     "lock axis, enables the brakes (only possible if axis is stopped","axis","axis to lock" );
-  this->commands()->addCommand( command( "unlockAxis", &MyType::unlockAxis,        &MyType::unlockAxisCompleted, this), 
+  this->commands()->addCommand( command( "unlockAxis", &MyType::unlockAxis,        &MyType::unlockAxisCompleted, this),
     "unlock axis, disables the brakes and enables the drive (only possible if \
      axis is locked","axis","axis to unlock" );
   this->commands()->addCommand( command( "startAllAxes", &MyType::startAllAxes,      &MyType::startAllAxesCompleted, this), "start all axes"  );
@@ -307,7 +307,7 @@ CRSnAxesVelocityController::~CRSnAxesVelocityController()
     delete _combined_brake_DOutInterface;
     delete _brake;
     if (_IP_Encoder_6_task!=0) _IP_Encoder_6_task->stop();
- 
+
     delete _IP_Digital_24_DOut;
     delete _IP_Encoder_6_task;
     delete _IP_FastDac_AOut;
@@ -339,7 +339,7 @@ CRSnAxesVelocityController::startAxis(int axis)
   }
 }
 
-bool 
+bool
 CRSnAxesVelocityController::startAxisCompleted(int axis) const {
     DBG;
     return _axes[axis]->isDriven();
@@ -380,7 +380,7 @@ CRSnAxesVelocityController::stopAxis(int axis)
   }
 }
 
-bool 
+bool
 CRSnAxesVelocityController::stopAxisCompleted(int axis) const {
     DBG;
     return _axes[axis]->isStopped();
@@ -398,7 +398,7 @@ CRSnAxesVelocityController::stopAllAxes()
   return result;
 }
 
-bool 
+bool
 CRSnAxesVelocityController::stopAllAxesCompleted() const
 {
   return true;
@@ -421,7 +421,7 @@ CRSnAxesVelocityController::unlockAxis(int axis)
   }
 }
 
-bool 
+bool
 CRSnAxesVelocityController::unlockAxisCompleted(int axis) const {
     DBG;
     return true;
@@ -442,7 +442,7 @@ CRSnAxesVelocityController::lockAxis(int axis)
   }
 }
 
-bool 
+bool
 CRSnAxesVelocityController::lockAxisCompleted(int axis) const {
     DBG;
     return true;
@@ -456,10 +456,10 @@ CRSnAxesVelocityController::lockAllAxes() {
     for (int axis=0;axis<NUM_AXES;axis++) {
        _axes[axis]->lock();
     }
-    return result; 
+    return result;
 }
 
-bool 
+bool
 CRSnAxesVelocityController::lockAllAxesCompleted() const {
     DBG;
     return true;
@@ -472,11 +472,11 @@ CRSnAxesVelocityController::unlockAllAxes() {
     for (int axis=0;axis<NUM_AXES;axis++) {
          _axes[axis]->unlock();
     }
-    return true; 
+    return true;
 }
 
 
-bool 
+bool
 CRSnAxesVelocityController::unlockAllAxesCompleted() const {
     DBG;
     return true;
@@ -484,7 +484,7 @@ CRSnAxesVelocityController::unlockAllAxesCompleted() const {
 
 bool
 CRSnAxesVelocityController::addDriveOffset(int axis, double offset)
-{ 
+{
   DBG;
   if (!(axis<0 || axis>NUM_AXES-1)) {
        #if defined (OROPKG_OS_LXRT)
@@ -497,7 +497,7 @@ CRSnAxesVelocityController::addDriveOffset(int axis, double offset)
   }
 }
 
-bool 
+bool
 CRSnAxesVelocityController::addDriveOffsetCompleted(int axis, double ) const {
     DBG;
     return true;
@@ -523,7 +523,7 @@ CRSnAxesVelocityController::initPosition(int axis)
   }
 }
 
-bool 
+bool
 CRSnAxesVelocityController::initPositionCompleted(int) const {
     DBG;
     return true;
@@ -534,7 +534,7 @@ bool CRSnAxesVelocityController::changeServo() {
     for (int axis=0;axis<NUM_AXES;++axis) {
         servoIntVel[axis] *= _servoGain[axis] / servoGain.value()[axis];
         servoIntVel[axis] *= _servoIntegrationFactor[axis] / servoIntegrationFactor.value()[axis];
-        _servoGain[axis]  = servoGain.value()[axis]; 
+        _servoGain[axis]  = servoGain.value()[axis];
         _servoIntegrationFactor[axis] = servoIntegrationFactor.value()[axis];
     }
     return true;
@@ -544,7 +544,7 @@ bool CRSnAxesVelocityController::changeServoCompleted() const {
     DBG;
     return true;
 }
- 
+
 
 /**
  *  This function contains the application's startup code.
@@ -559,7 +559,7 @@ bool CRSnAxesVelocityController::startup() {
   }
   return true;
 }
-                   
+
 /**
  * This function is periodically called.
  */
@@ -567,8 +567,8 @@ void CRSnAxesVelocityController::update() {
 #if !defined (OROPKG_OS_LXRT)
 	for (int axis=0;axis<NUM_AXES;axis++) {
 		double measpos = signAxes.value()[axis]*_axes[axis]->getSensor("Position")->readSensor();
-/*        if(( 
-            (measpos < lowerPositionLimits.value()[axis]) 
+/*        if((
+            (measpos < lowerPositionLimits.value()[axis])
           ||(measpos > upperPositionLimits.value()[axis])
           ) && _homed[axis]) {
             // emit event.
@@ -589,21 +589,21 @@ void CRSnAxesVelocityController::update() {
         dt              = TimeService::Instance()->secondsSince(previousTime);
         previousTime    = TimeService::Instance()->getTicks();
     } else {
-        dt = 0.0; 
+        dt = 0.0;
     }
     previousTime        = TimeService::Instance()->getTicks();
     servoInitialized    = true;
 
     double outputvel[NUM_AXES];
 
-    for (int axis=0;axis<NUM_AXES;axis++) {      
+    for (int axis=0;axis<NUM_AXES;axis++) {
         double measpos;
         double setpoint;
         // Ask the position and perform checks in joint space.
         measpos = signAxes.value()[axis]*_encoder[axis]->readSensor();
         positionValue[axis] ->Set(  measpos );
-        if(( 
-            (measpos < lowerPositionLimits.value()[axis]) 
+        if((
+            (measpos < lowerPositionLimits.value()[axis])
           ||(measpos > upperPositionLimits.value()[axis])
           ) && _homed[axis]) {
             // emit event.
@@ -621,8 +621,8 @@ void CRSnAxesVelocityController::update() {
             } else {
                 deriv = servoDerivTime.value()[axis]*(previousPos[axis]-measpos)/dt;
             }
-        	outputvel[axis]         = _servoGain[axis]* 
-                (error + _servoIntegrationFactor[axis]*servoIntError[axis] + deriv) 
+        	outputvel[axis]         = _servoGain[axis]*
+                (error + _servoIntegrationFactor[axis]*servoIntError[axis] + deriv)
                 + _servoFFScale[axis]*setpoint;
             // check direction of motion or desired motion :
             double offsetsign;
@@ -655,12 +655,12 @@ void CRSnAxesVelocityController::update() {
         }
         output[axis]->Set(outputvel[axis]);
         _axes[axis]->drive(signAxes.value()[axis]*outputvel[axis]);
-        // ask the reference value from the hw 
+        // ask the reference value from the hw
         reference[axis]->Set( _reference[axis]->isOn());
     }
 	#endif
 }
- 
+
 bool CRSnAxesVelocityController::prepareForUse() {
     DBG;
     return true;

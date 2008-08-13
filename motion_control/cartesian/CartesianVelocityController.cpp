@@ -46,10 +46,10 @@ namespace OCL
         this->ports()->addPort(&cartvel_port);
         this->ports()->addPort(&naxespos_port);
         this->ports()->addPort(&naxesvel_port);
-        
+
         this->properties()->addProperty(&chain_location);
         this->properties()->addProperty(&toolframe);
-        
+
     }
 
     CartesianVelocityController::~CartesianVelocityController()
@@ -73,16 +73,16 @@ namespace OCL
                         <<peername<<" is not a peer of "<<this->getName()<<endlog();
             return false;
         }
-        
+
         if(peer->attributes()->hasAttribute(chainname))
             chain = peer->attributes()->getAttribute<Chain>(chainname)->get();
         else{
             log(Warning)<<"Could not find "<<chainname<<" in "<<peername<<endlog();
             return false;
         }
-        
+
         chain.addSegment(Segment(Joint(Joint::None),toolframe.value()));
-        
+
         nj = chain.getNrOfJoints();
         jointpositions=new JntArray(nj);
         jointvelocities=new JntArray(nj);
@@ -92,9 +92,9 @@ namespace OCL
         fksolver=new ChainFkSolverPos_recursive(chain);
         iksolver=new ChainIkSolverVel_pinv(chain);
         return true;
-        
+
     }
-    
+
     void CartesianVelocityController::cleanupHook()
     {
         delete jointpositions;
@@ -102,7 +102,7 @@ namespace OCL
         delete fksolver;
         delete iksolver;
     }
-    
+
     bool CartesianVelocityController::startHook()
     {
         //Initialize: calculate everything once
@@ -110,16 +110,16 @@ namespace OCL
         //Check if there were any problems calculating the kinematics
         return kinematics_status>=0;
     }
-    
+
     void CartesianVelocityController::updateHook()
     {
         //Read out the ports
         naxespos_port.Get(naxesposition);
         cartvel_port.Get(cartvel);
-        
+
         //Check if the jointpositions-port value as a correct size
         if(nj==naxesposition.size()){
-            
+
             //copy into KDL-type
             for(unsigned int i=0;i<nj;i++)
                 (*jointpositions)(i)=naxesposition[i];
@@ -131,17 +131,17 @@ namespace OCL
                 cartpos_port.Set(cartpos);
             else
                 log(Error)<<"Could not calculate forward kinematics"<<endlog();
-            
+
             //Calculate inverse velocity kinematics
             kinematics_status = iksolver->CartToJnt(*jointpositions,cartvel,*jointvelocities);
             if(kinematics_status<0){
                 SetToZero(*jointvelocities);
                 log(Error)<<"Could not calculate inverse kinematics"<<endlog();
             }
-            
+
             for(unsigned int i=0;i<nj;i++)
                 naxesvelocities[i]=(*jointvelocities)(i);
-            
+
             naxesvel_port.Set(naxesvelocities);
         }
         else
@@ -154,10 +154,10 @@ namespace OCL
             naxesvelocities[i]=0.0;
         naxesvel_port.Set(naxesvelocities);
     }
-    
+
 }
 
 
-                                 
-                                 
+
+
 

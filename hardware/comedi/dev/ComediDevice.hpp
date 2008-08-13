@@ -18,7 +18,7 @@
  *                                                                         *
  ***************************************************************************/
 
-/* Klaas Gadeyne, August 14, 2003  
+/* Klaas Gadeyne, August 14, 2003
    Major rewrite of original file by Peter Soetens
 */
 
@@ -49,12 +49,12 @@ namespace OCL
     /**
        Returns the maximum valid data value for channel chan of
        subdevice subdevice belonging to this device. This function
-       returns 0 on error.  
+       returns 0 on error.
        @return Maximum data value on that subdevice (always unsigned int
        in comedi)
-       @param subdevice : the number of the subdevice to interrogate 
+       @param subdevice : the number of the subdevice to interrogate
      */
-    Data getMaxData(unsigned int subd); 
+    Data getMaxData(unsigned int subd);
 
     /**
        Read a single sample on the channel specified by the subdevice
@@ -65,7 +65,7 @@ namespace OCL
        device are silently ignored.  The function reads one data value
        from the specified channel and places the data value in the
        location pointed to by data.
-       
+
        Data values returned by this function are unsigned integers
        less than or equal to the maximum sample value of the channel,
        which can be determined using the function getMaxData().
@@ -78,7 +78,7 @@ namespace OCL
        @param aref : possible options (see comedi doc) AREF_GROUND,
        AREF_COMMON, AREF_DIFF, AREF_OTHER
     */
-    int read( unsigned int subd, unsigned int chanNr, 
+    int read( unsigned int subd, unsigned int chanNr,
 	      unsigned int range, unsigned int aref, Data& value );
 
     /*
@@ -90,7 +90,7 @@ namespace OCL
       writes the data value specified by the parameter data to the
       specified channel.
 
-      @return 0 on succes (not with all drivers, unfortunately, -1 on error         
+      @return 0 on succes (not with all drivers, unfortunately, -1 on error
       @param subd : the subdevice to write on
       @param chanNr : the channel of subdevice subdevice to write on
       @param value : the data sample to write
@@ -98,15 +98,15 @@ namespace OCL
       @param aref : possible options (see comedi doc) AREF_GROUND,
       AREF_COMMON, AREF_DIFF, AREF_OTHER
     */
-    int write( unsigned int subd, unsigned int chanNr, 
+    int write( unsigned int subd, unsigned int chanNr,
 	       unsigned int range, unsigned int aref,
 	       const ComediDevice::Data& value);
 
     /**
        Returns an integer describing the type of subdevice that belongs to this comedi device
        and has the index subdevice.
-       
-       
+
+
        @return an integer describing the type of subdevice, -1 if there is an error.
        @param subd : the number of the subdevice of which the type has to be retrieved
     */
@@ -117,7 +117,7 @@ namespace OCL
        This may be null if the device could not be found.
     */
     DeviceInfo* getDevice();
-        
+
   };
 
 

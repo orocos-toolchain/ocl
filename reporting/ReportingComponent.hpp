@@ -1,12 +1,12 @@
 /***************************************************************************
-  tag: Peter Soetens  Mon Jan 19 14:11:26 CET 2004  ReportingComponent.hpp 
+  tag: Peter Soetens  Mon Jan 19 14:11:26 CET 2004  ReportingComponent.hpp
 
                         ReportingComponent.hpp -  description
                            -------------------
     begin                : Mon January 19 2004
     copyright            : (C) 2004 Peter Soetens
     email                : peter.soetens@mech.kuleuven.ac.be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -23,8 +23,8 @@
  *   Foundation, Inc., 59 Temple Place,                                    *
  *   Suite 330, Boston, MA  02111-1307  USA                                *
  *                                                                         *
- ***************************************************************************/ 
- 
+ ***************************************************************************/
+
 #ifndef ORO_REPORTING_COMPONENT_HPP
 #define ORO_REPORTING_COMPONENT_HPP
 
@@ -153,7 +153,7 @@ namespace OCL
          * Report all the data ports of a component.
          */
         bool reportComponent( const std::string& component );
-            
+
         /**
          * Unreport the data ports of a component.
          */
@@ -219,11 +219,11 @@ namespace OCL
         typedef std::vector< std::pair<boost::shared_ptr<RTT::Marshaller>, boost::shared_ptr<RTT::Marshaller> > > Marshallers;
         Marshallers marshallers;
         RTT::PropertyBag report;
-        
+
         RTT::Property<bool>          autotrigger;
         RTT::Property<std::string>   config;
         RTT::Property<bool>          writeHeader;
-                
+
         RTT::TimeService::ticks starttime;
         RTT::Property<RTT::TimeService::Seconds> timestamp;
 

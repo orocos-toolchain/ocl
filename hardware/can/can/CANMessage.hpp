@@ -1,12 +1,12 @@
 /***************************************************************************
-  tag: Peter Soetens  Mon Jan 19 14:11:20 CET 2004  CANMessage.hpp 
+  tag: Peter Soetens  Mon Jan 19 14:11:20 CET 2004  CANMessage.hpp
 
                         CANMessage.hpp -  description
                            -------------------
     begin                : Mon January 19 2004
     copyright            : (C) 2004 Peter Soetens
     email                : peter.soetens@mech.kuleuven.ac.be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -23,8 +23,8 @@
  *   Foundation, Inc., 59 Temple Place,                                    *
  *   Suite 330, Boston, MA  02111-1307  USA                                *
  *                                                                         *
- ***************************************************************************/ 
- 
+ ***************************************************************************/
+
 #ifndef CANMESSAGE_HPP
 #define CANMESSAGE_HPP
 
@@ -56,16 +56,16 @@ namespace RTT
     {
         return *(unsigned int*)(data);
     }
-        
+
     inline unsigned int higher_u32(const unsigned char* data)
     {
         return *(unsigned int*)(data + 4);
     }
-        
+
 	/**
 	 * @brief A CAN message containing message sender and message data.
 	 */
-	struct CANMessage 
+	struct CANMessage
 		: public CANBase
 	{
 		/**
@@ -91,7 +91,7 @@ namespace RTT
          * Create an empty CANMessage with a CANOpen device as origin.
          */
         CANMessage(CANDeviceInterface* _origin) : origin(_origin) { clear(); }
-        
+
 		/**
 		 * Create a Standard CANMessage with default flags.
 		 *
@@ -118,9 +118,9 @@ namespace RTT
 		 * @param _data   A pointer to the data to be used (will be copied).
 		 * @param _length The length of the data, the number of items in the data array (max 8)
          */
-        static CANMessage* createExtended(CANDeviceInterface* _origin, ID _msgid, Data* _data, unsigned int _length) 
-        { 
-            CANMessage* cm = new CANMessage(_origin, _msgid, _data, _length); 
+        static CANMessage* createExtended(CANDeviceInterface* _origin, ID _msgid, Data* _data, unsigned int _length)
+        {
+            CANMessage* cm = new CANMessage(_origin, _msgid, _data, _length);
             cm->setExtId(_msgid);
             return cm;
         }
@@ -132,9 +132,9 @@ namespace RTT
 		 * @param _data   A pointer to the data to be used (will be copied).
 		 * @param _length The length of the data, the number of items in the data array (max 8)
          */
-        static CANMessage* createStandard(CANDeviceInterface* _origin, ID _msgid, Data* _data, unsigned int _length) 
+        static CANMessage* createStandard(CANDeviceInterface* _origin, ID _msgid, Data* _data, unsigned int _length)
         {
-            return new CANMessage(_origin, _msgid, _data, _length); 
+            return new CANMessage(_origin, _msgid, _data, _length);
         }
 
         /**
@@ -144,9 +144,9 @@ namespace RTT
 		 * @param _data   A pointer to the data to be used (will be copied).
 		 * @param _length The length of the data, the number of items in the data array (max 8)
          */
-        static CANMessage* createStdRemote(CANDeviceInterface* _origin, ID _msgid, Data* _data, unsigned int _length) 
+        static CANMessage* createStdRemote(CANDeviceInterface* _origin, ID _msgid, Data* _data, unsigned int _length)
         {
-            CANMessage* cm= new CANMessage(_origin, _msgid, _data, _length); 
+            CANMessage* cm= new CANMessage(_origin, _msgid, _data, _length);
             cm->setRemote();
             return cm;
         }
@@ -158,9 +158,9 @@ namespace RTT
 		 * @param _data   A pointer to the data to be used (will be copied).
 		 * @param _length The length of the data, the number of items in the data array (max 8)
          */
-        static CANMessage* createExtRemote(CANDeviceInterface* _origin, ID _msgid, Data* _data, unsigned int _length) 
+        static CANMessage* createExtRemote(CANDeviceInterface* _origin, ID _msgid, Data* _data, unsigned int _length)
         {
-            CANMessage* cm= new CANMessage(_origin, _msgid, _data, _length); 
+            CANMessage* cm= new CANMessage(_origin, _msgid, _data, _length);
             cm->setExtId(_msgid);
             cm->setRemote();
             return cm;
@@ -171,12 +171,12 @@ namespace RTT
          * Clear the ID and flags of this CANMessage, except the origin.
          */
         void clear() { CpMacMsgClear(this); }
-        
+
         /**
          * Check the remote flag.
          */
         bool isRemote() const { return CpMacIsRemote(this); }
-        
+
         /**
          * Set the remote flag.
          */
@@ -190,18 +190,18 @@ namespace RTT
         /**
          * Set the data element at position \a pos with value \a d, starting from 0.
          */
-        void setData(unsigned int pos, Data d) { CpMacSetData(this,pos,d); } 
+        void setData(unsigned int pos, Data d) { CpMacSetData(this,pos,d); }
 
         /**
          * Set the Data and Data Length Code of this CANMessage.
          */
-        void setDataDLC(Data* _data, unsigned int _length) 
-        { 
-            CpMacSetDlc(this, _length); 
+        void setDataDLC(Data* _data, unsigned int _length)
+        {
+            CpMacSetDlc(this, _length);
             for (unsigned int i=0; _data !=0 && i<_length; ++i)
                 setData(i,_data[i]);
         }
-        
+
         /**
          * Get the Data Length Code of this CANMessage.
          */
@@ -219,9 +219,9 @@ namespace RTT
         unsigned int getStdId() const { return CpMacGetStdId(this); }
 
         unsigned int getExtId() const { return CpMacGetExtId(this); }
-		
+
         void setStdId(unsigned int id) { CpMacSetStdId(this,id); }
-        
+
         void setExtId(unsigned int id) { CpMacSetExtId(this,id); }
 
         /**
@@ -237,7 +237,7 @@ namespace RTT
                             return false;
                     return true;
                 }
-                            
+
             if ( isExtended() == other.isExtended() && ( getExtId() == other.getExtId() ) && ( getDLC() == other.getDLC() ) )
                 {
                     for (unsigned int i=0; i < getDLC(); ++i)
@@ -259,8 +259,8 @@ namespace RTT
             memcpy((void*)(v_MsgData), (void*)(msg.v_MsgData),8);
             return *this;
         }
-                        
-        
+
+
         /**
 		 * The sender of this message.
 		 */
@@ -271,7 +271,7 @@ namespace RTT
          */
         static CANDummyDevice candevice_dummy;
 	};
-			
+
 }}
 
 

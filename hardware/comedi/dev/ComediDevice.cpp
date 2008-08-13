@@ -1,5 +1,5 @@
 /***************************************************************************
-  tag: Peter Soetens  Mon May 10 19:10:32 CEST 2004  ComediDevice.cxx 
+  tag: Peter Soetens  Mon May 10 19:10:32 CEST 2004  ComediDevice.cxx
 
                         ComediDevice.cxx -  description
                            -------------------
@@ -7,7 +7,7 @@
     copyright            : (C) 2002,2004 Peter Soetens
     copyright            : (C) 2003 Klaas Gadeyne
     email                : peter.soetens@mech.kuleuven.ac.be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -27,7 +27,7 @@
  ***************************************************************************/
 
 
-/* Klaas Gadeyne, August 14, 2003  
+/* Klaas Gadeyne, August 14, 2003
    Major rewrite of original file by Peter Soetens
 */
 
@@ -79,7 +79,7 @@ namespace OCL
     if ( !d->it )
       return -1;
 
-    comedi_data_read( d->it, subd, chanNr, range, aref, 
+    comedi_data_read( d->it, subd, chanNr, range, aref,
 		      ( lsampl_t* ) & value );
 
     return 0;
@@ -92,16 +92,16 @@ namespace OCL
     if ( !d->it )
       return -1;
 
-    Data output = value; 
+    Data output = value;
 
     comedi_data_write( d->it, subd, chanNr, range, aref, output );
 
     return 0;
   }
 
-    ComediDevice::DeviceInfo* ComediDevice::getDevice() 
-    { 
-        return d.get(); 
+    ComediDevice::DeviceInfo* ComediDevice::getDevice()
+    {
+        return d.get();
     }
 
 }

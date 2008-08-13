@@ -1,19 +1,19 @@
 // Copyright (C) 2006 FMTC
-//  
+//
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
 // (at your option) any later version.
-//  
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-//  
+//
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-//  
+//
 
 #include "ComediPulseTrainGenerator.hpp"
 #include <rtt/Logger.hpp>
@@ -25,7 +25,7 @@ namespace OCL
 {
     typedef unsigned int Data;
 
-    ComediPulseTrainGenerator::ComediPulseTrainGenerator(ComediDevice * cd, unsigned int subd, 
+    ComediPulseTrainGenerator::ComediPulseTrainGenerator(ComediDevice * cd, unsigned int subd,
                                                          const std::string& name)
         : PulseTrainGeneratorInterface(name),
           _myCard(cd), _subDevice(subd),
@@ -49,14 +49,14 @@ namespace OCL
         // rounding:
         return (unsigned int)round( double(picos) / _smallest_step );
     }
-    
+
     void ComediPulseTrainGenerator::init()
     {
         Logger::In in("ComediPulseTrainGenerator");
         log(Info) << "Creating ComediPulseTrainGenerator" << endlog();
         // Check if subd is counter...
         if ( _myCard->getSubDeviceType( _subDevice ) != COMEDI_SUBD_COUNTER ){
-            log(Error) << "Comedi Counter : subdev is not a counter, Type = " 
+            log(Error) << "Comedi Counter : subdev is not a counter, Type = "
                        << _myCard->getSubDeviceType(_subDevice) << endlog();
             // Toggle error condition:
             _myCard = 0;
@@ -83,7 +83,7 @@ namespace OCL
         if ( sdevs == 6 )
             nchan = 4;
 #endif
-        
+
         unsigned tbase = 0;
         switch(nchan){
         case 8:
@@ -105,7 +105,7 @@ namespace OCL
         }
 
         /* Configure the counter subdevice
-           Configure the GPCT for use as an PTG 
+           Configure the GPCT for use as an PTG
         */
         unsigned counter_mode = NI_GPCT_COUNTING_MODE_NORMAL_BITS;
         // toggle output on terminal count
@@ -134,7 +134,7 @@ namespace OCL
         else
 	  log(Info) << "Comedi Counter "<< _subDevice << " now configured as Pulse Train Generator" << endlog();
     }
-  
+
     ComediPulseTrainGenerator::~ComediPulseTrainGenerator()
     {
         Logger::In in("ComediPulseTrainGenerator");
@@ -213,7 +213,7 @@ namespace OCL
         }
         return true; // period already ok
     }
-  
+
     bool ComediPulseTrainGenerator::start()
     {
         Logger::In in("ComediPulseTrainGenerator");
@@ -231,7 +231,7 @@ namespace OCL
         }
         return true;
     }
-    
+
     bool ComediPulseTrainGenerator::stop()
     {
         Logger::In in("ComediPulseTrainGenerator");

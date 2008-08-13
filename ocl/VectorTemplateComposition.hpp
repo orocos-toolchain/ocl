@@ -1,8 +1,8 @@
 /***************************************************************************
-  tag: Tinne De Laet Soetens  2007  VectorTemplateComposition.hpp 
-       2007 Ruben Smits 
+  tag: Tinne De Laet Soetens  2007  VectorTemplateComposition.hpp
+       2007 Ruben Smits
                         VectorTemplateComposition.hpp -  description
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU General Public                   *
@@ -29,8 +29,8 @@
  *   Foundation, Inc., 59 Temple Place,                                    *
  *   Suite 330, Boston, MA  02111-1307  USA                                *
  *                                                                         *
- ***************************************************************************/ 
- 
+ ***************************************************************************/
+
 #ifndef VECTOR_TEMPLATE_COMPOSITION_HPP
 #define VECTOR_TEMPLATE_COMPOSITION_HPP
 
@@ -53,13 +53,13 @@ namespace RTT
      * The dimension of the vector must be less than 100 if you want the
      * Property<T>'s to have a different name.
      */
-    template<class T> 
+    template<class T>
     void decomposeProperty(const std::vector<T>& vec, PropertyBag& targetbag)
     {
         targetbag.setType("list");
         int dimension = vec.size();
         std::string str;
-        
+
         assert( targetbag.empty() );
 
         for ( int i=0; i < dimension ; i++){
@@ -73,25 +73,25 @@ namespace RTT
      * A composeProperty method for composing a property of a vector<T>
      * The dimension of the vector must be less than 100.
      */
-    template<class T> 
+    template<class T>
     bool composeProperty(const PropertyBag& bag, std::vector<T>& result)
     {
         if ( bag.getType() == "list" ) {
             int dimension = bag.size();
             Logger::log() << Logger::Info << "bag size " << dimension <<Logger::endl;
             result.resize( dimension );
-            
+
             // Get values
             for (int i = 0; i < dimension ; i++) {
                 PropertyBase* element = bag.getItem( i );
-                //Property<PropertyBag>* t_bag= dynamic_cast< Property<PropertyBag>* >( element ); 
+                //Property<PropertyBag>* t_bag= dynamic_cast< Property<PropertyBag>* >( element );
                 log(Debug)<<element->getName()<<", "<< element->getDescription()<<endlog();
                 //Property<T> my_property_t (t_abag->getName(),t_bag->getDescription());
                 Property<T> my_property_t (element->getName(),element->getDescription());
                 if(my_property_t.getType()!=element->getType())
                     log(Error)<< "Type of "<< element->getName() << " does not match type of list"<<endlog();
                 else{
-                    my_property_t.getTypeInfo()->composeType(element->getDataSource(),my_property_t.getDataSource()); 
+                    my_property_t.getTypeInfo()->composeType(element->getDataSource(),my_property_t.getDataSource());
                     result[ i ] = my_property_t.get();
                 }
             }
@@ -112,20 +112,20 @@ namespace RTT
             : TemplateContainerTypeInfo<std::vector<T>, int, T, ArrayIndexChecker<std::vector<T> >, SizeAssignChecker<std::vector<T> >, false >(name)
         {
         };
-        
+
         bool decomposeTypeImpl(const std::vector<T>& vec, PropertyBag& targetbag) const
         {
             decomposeProperty<T>( vec, targetbag );
             return true;
         };
-        
+
         bool composeTypeImpl(const PropertyBag& bag, std::vector<T>& result) const
         {
             return composeProperty<T>( bag, result );
         }
-        
+
     };
-      
+
 };
 #endif
 

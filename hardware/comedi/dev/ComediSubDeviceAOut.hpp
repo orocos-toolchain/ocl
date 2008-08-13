@@ -1,5 +1,5 @@
 /***************************************************************************
-  tag: Peter Soetens  Thu Oct 10 16:22:44 CEST 2002  ComediSubDeviceAOut.hpp 
+  tag: Peter Soetens  Thu Oct 10 16:22:44 CEST 2002  ComediSubDeviceAOut.hpp
 
                         ComediSubDeviceAOut.hpp -  description
                            -------------------
@@ -52,7 +52,7 @@ namespace OCL
      * @param cao The ComediDevice to use for output
      * @param name The name of this instance
      */
-    ComediSubDeviceAOut( ComediDevice* cao, const std::string& name, 
+    ComediSubDeviceAOut( ComediDevice* cao, const std::string& name,
 			 unsigned int subdevice=1 );
 
     ComediSubDeviceAOut( ComediDevice* cao, unsigned int subdevice=1 );

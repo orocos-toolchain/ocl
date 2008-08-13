@@ -204,7 +204,7 @@ namespace OCL
             this->ports()->addPort(&bufferport);
 
             this->methods()->addMethod(&method, "'the_method' Description");
-        
+
             this->commands()->addCommand(&command, "'the_command' Description",
                                          "the_arg", "Use 'World' as argument to make the command succeed.");
 

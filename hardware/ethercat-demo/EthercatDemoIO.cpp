@@ -157,7 +157,7 @@ static void init_slave_db() {
 	pd_config_EL5101_2[0] = syncman0_EL5101_2;
 	pd_config_EL5101_2[1] = syncman1_EL5101_2;
 	slave_db->set_conf(&EC_EK1100,0);
-	slave_db->set_conf(&EC_EL4102,1);	
+	slave_db->set_conf(&EC_EL4102,1);
 	slave_db->set_conf(&EC_EL3162,2);
 	slave_db->set_conf(&EC_EL2004_1,3);
 	slave_db->set_conf(&EC_EL2004_2,4);
@@ -173,21 +173,21 @@ namespace OCL
 {
     using namespace RTT;
     using namespace std;
- 
+
 		EthercatDemoIO::EthercatDemoIO(string name):
-			TaskContext(name), 
-			rteth("rteth","for example: rteth0","rteth0"), 
-			gen_sin("gen_sin",&EthercatDemoIO::mgen_sin, this), 
+			TaskContext(name),
+			rteth("rteth","for example: rteth0","rteth0"),
+			gen_sin("gen_sin",&EthercatDemoIO::mgen_sin, this),
 			stop_master("stop_master", &EthercatDemoIO::mstop_master, this)
 		{
 			this->properties()->addProperty(&rteth);
 			this->methods()->addMethod(&gen_sin);
 			this->methods()->addMethod(&stop_master);
-			
+
 			ni = init_ec( rteth.get().c_str() );
 			init_slave_db();
 			if(ni != 0) {
-		
+
 				EtherCAT_DataLinkLayer::instance()->attach(ni);
 				printf("Master initializing \n\n");
 				EtherCAT_Master * EM = EtherCAT_Master::instance();
@@ -205,7 +205,7 @@ namespace OCL
 					printf("Socket timeout set to %d\n", (int)timeout);
 			}
 		}
-		
+
 		EthercatDemoIO::~EthercatDemoIO() {
 			if(ni != 0)
 				close_socket(ni);
@@ -219,7 +219,7 @@ namespace OCL
 		}
 
 		void EthercatDemoIO::mstop_master(void) {
-		
+
 		}
 
 		bool EthercatDemoIO::startup() {
@@ -243,17 +243,17 @@ namespace OCL
 			msg[0] = voltage_i;	msg[1] = voltage_i>>8;
 			//msg[4] = cnt_dig & 0x01;
 			//printf("mdg[4] = %d\n",msg[4]);
-			//printf("samples = %d cnt = %d   time = %f    voltage = %f  msg[0] =0x%x     msg[1] = 0cx%x \n", samples,cnt,time, voltage_f,msg[0], msg[1]);							// Digital Output Channel 1 			
+			//printf("samples = %d cnt = %d   time = %f    voltage = %f  msg[0] =0x%x     msg[1] = 0cx%x \n", samples,cnt,time, voltage_f,msg[0], msg[1]);							// Digital Output Channel 1
 			cnt++;	cnt_dig++;
 			EM->txandrx_PD(sizeof(msg),msg);
 			int volt = msg[6];
 			volt = volt<<8;
 			volt = volt | msg[5];
-			
+
 			//printf("voltage at channel0: 0x%x	0x%x	%d\n",msg[5],msg[6], volt);
 		}
-		
+
 		void EthercatDemoIO::shutdown() {
-			
+
 		}
 }//namespace orocos

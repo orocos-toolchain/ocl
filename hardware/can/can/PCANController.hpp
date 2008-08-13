@@ -1,5 +1,5 @@
 /***************************************************************************
-  tag: Klaas Gadeyne  Mon Jul 24 14:11:20 CET 2006  PCANController.hpp 
+  tag: Klaas Gadeyne  Mon Jul 24 14:11:20 CET 2006  PCANController.hpp
 
                         PCANController.hpp -  description
                            -------------------
@@ -8,7 +8,7 @@
     begin                : Mon Oct 17  2006
     copyright            : (C) 2006 FMTC
     email                : firstname lastname at fmtc be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -25,8 +25,8 @@
  *   Foundation, Inc., 59 Temple Place,                                    *
  *   Suite 330, Boston, MA  02111-1307  USA                                *
  *                                                                         *
- ***************************************************************************/ 
- 
+ ***************************************************************************/
+
 #ifndef PCAN_CONTROLLER_HPP
 #define PCAN_CONTROLLER_HPP
 
@@ -75,11 +75,11 @@ namespace RTT
        * LINUX_CAN_Open returns NULL
        * @bug The node id of the controller is always 0 currently
        */
-      PCANController(int priority, 
-		     unsigned int minor=0, 
-		     WORD bitrate=CAN_BAUD_500K, 
+      PCANController(int priority,
+		     unsigned int minor=0,
+		     WORD bitrate=CAN_BAUD_500K,
 		     int CANMsgType=CAN_INIT_TYPE_EX);
-    
+
       virtual ~PCANController();
 
       // Redefine PeriodicActivity methods
@@ -98,20 +98,20 @@ namespace RTT
       // Ask status
       DWORD status() const;
 
-      // Return pcan device handle  
+      // Return pcan device handle
       HANDLE handle() const;
-      
+
     protected:
       // Maximum number of CAN channels
       // KG set this to one, as I didn't know by heart and only needed one...
-#define PCAN_CHANNEL_MAX 1             
+#define PCAN_CHANNEL_MAX 1
       static PCANController* controller[PCAN_CHANNEL_MAX];
 
       HANDLE _handle; // Handle to device
       DWORD _status; // Status of the CAN Controller
       WORD _bitrate;
       int _CANMsgType;
-    
+
       int _channel;
 
       CANBusInterface * _bus;
@@ -129,4 +129,4 @@ namespace RTT
 
 #endif
 
-  
+

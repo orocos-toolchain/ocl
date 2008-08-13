@@ -1,12 +1,12 @@
 /***************************************************************************
-  tag: Peter Soetens  Sat May 21 20:15:51 CEST 2005  ParallelPort.cxx 
+  tag: Peter Soetens  Sat May 21 20:15:51 CEST 2005  ParallelPort.cxx
 
                         ParallelPort.cxx -  description
                            -------------------
     begin                : Sat May 21 2005
     copyright            : (C) 2005 Peter Soetens
     email                : peter.soetens@mech.kuleuven.ac.be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -24,8 +24,8 @@
  *   Suite 330, Boston, MA  02111-1307  USA                                *
  *                                                                         *
  ***************************************************************************/
- 
- 
+
+
 #include "ParallelPort.hpp"
 #include <stdlib.h>
 #include <sys/io.h>
@@ -41,7 +41,7 @@ namespace RTT
     ParallelPort::ParallelPort( const std::string& name, unsigned short int address)
         : DigitalOutInterface( name ), address_( address )
     {
-        if ( ioperm(address_, 3, 1)) {   
+        if ( ioperm(address_, 3, 1)) {
             // ask for permissions to access the parallel port
             // YOU MUST BE ROOT TO ASK FOR THIS SORT OF PERMISSION
             // usage of ioperm: address_ ... base address we want to use
@@ -50,7 +50,7 @@ namespace RTT
             perror("ParallelPort : ioperm open");
 #ifndef ORO_EMBEDDED
             throw detail::IOPerm_not_allowed();
-#else 
+#else
             return;
 #endif
         }
@@ -63,7 +63,7 @@ namespace RTT
     ParallelPort::ParallelPort( unsigned short int address )
         : address_( address )
     {
-        if ( ioperm(address_, 3, 1)) {   
+        if ( ioperm(address_, 3, 1)) {
             // ask for permissions to access the parallel port
             // YOU MUST BE ROOT TO ASK FOR THIS SORT OF PERMISSION
             // usage of ioperm: address_ ... base address we want to use
@@ -72,7 +72,7 @@ namespace RTT
             perror("ParallelPort : ioperm open");
 #ifndef ORO_EMBEDDED
             throw detail::IOPerm_not_allowed();
-#else 
+#else
             return;
 #endif
         }
@@ -84,11 +84,11 @@ namespace RTT
 
     ParallelPort::~ParallelPort()
     {
-        if (ioperm(address_, 3, 0)) { 
+        if (ioperm(address_, 3, 0)) {
             // tell the system we do not use the port anymore
             // usage of ioperm: address_ ... base address we want to use
             //                                      3 ... the next 3 bytes
-            //                                      0 ... free the permission       
+            //                                      0 ... free the permission
             perror("ParallelPort : ioperm close");
         }
     }

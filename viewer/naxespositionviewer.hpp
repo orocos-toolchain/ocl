@@ -23,17 +23,17 @@ namespace OCL {
 class NAxesPositionViewer : public RTT::TaskContext
 {
 public:
-    /** 
+    /**
      * Constructer of this class
-     * 
+     *
      * @param name name of the TaskContext
      * @param propertyfilename location of the propertyfile. Default: cpf/viewer.cpf
-     * 
+     *
      */
   NAxesPositionViewer(const std::string& name,const std::string& propertyfilename="cpf/viewer.cpf");
   virtual ~NAxesPositionViewer();
 
-private:  
+private:
   /**
    * A local copy of the name of the propertyfile so we can store changed
    * properties.
@@ -45,13 +45,13 @@ public:
     *  This function contains the application's startup code.
     *  Return false to abort startup.
     **/
-   virtual bool startup(); 
-                   
+   virtual bool startup();
+
    /**
     * This function is periodically called.
     */
    virtual void update();
- 
+
    /**
     * This function is called when the task is stopped.
     */
@@ -86,4 +86,4 @@ private:
 
 } // namespace Orocos
 
-#endif // NAXESVELOCITYVIEWER 
+#endif // NAXESVELOCITYVIEWER

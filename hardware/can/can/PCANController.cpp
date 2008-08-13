@@ -1,12 +1,12 @@
 /***************************************************************************
-  tag: Klaas Gadeyne  Mon Jan 10 15:59:17 CET 2005  PCANController.cpp 
+  tag: Klaas Gadeyne  Mon Jan 10 15:59:17 CET 2005  PCANController.cpp
 
                         PCANController.cpp -  description
                            -------------------
     begin                : 16 October 2006
     copyright            : (C) 2006 FMTC
     email                : firstname lastname at fmtc be
- 
+
     ***************************************************************************
     *   This library is free software; you can redistribute it and/or         *
     *   modify it under the terms of the GNU Lesser General Public            *
@@ -24,7 +24,7 @@
     *   Suite 330, Boston, MA  02111-1307  USA                                *
     *                                                                         *
     ***************************************************************************/
- 
+
 #include "PCANController.hpp"
 #include <fcntl.h>    // O_RDWR
 #include <rtt/Logger.hpp>
@@ -34,7 +34,7 @@ namespace RTT
     namespace CAN
     {
         PCANController::PCANController(int priority, unsigned int minor,
-                                       WORD bitrate, int CANMsgType) 
+                                       WORD bitrate, int CANMsgType)
             : NonPeriodicActivity(ORO_SCHED_OTHER, priority), _handle(NULL),
               _status(CAN_ERR_OK), _bitrate(bitrate),
               _CANMsgType(CANMsgType),_channel(0),
@@ -42,12 +42,12 @@ namespace RTT
               exit(false)
         {
             Logger::In in("PCANController");
-      
+
             char DeviceName[ 12 ]; // don't specify /dev/pcan100 or more.
             snprintf(DeviceName,12, "/dev/pcan%d", minor );
             log(Info) << "Trying to open " << DeviceName << endlog();
             _handle = LINUX_CAN_Open(DeviceName, O_RDWR);
-            if (_handle != NULL){ 
+            if (_handle != NULL){
                 // Reset status
                 CAN_Status(_handle);
                 // Get version info
@@ -55,14 +55,14 @@ namespace RTT
                 DWORD err = CAN_VersionInfo(_handle, version_string);
                 if (!err)
                     log(Info) <<  DeviceName << ": ok. Driver Version = " << version_string << endlog();
-                else 
+                else
                     log(Warning) << DeviceName <<": warning. Error getting driver version info" << endlog();
             }
             else {
                 log(Error) << DeviceName << ": failed. Could not open device." << endlog();
             }
         }
-            
+
         PCANController::~PCANController()
         {
             Logger::In in("PCANController");
@@ -91,7 +91,7 @@ namespace RTT
             return (_status == CAN_ERR_OK);
         }
 
-        void PCANController::loop() 
+        void PCANController::loop()
         {
             while ( !exit ){
                 this->readFromBuffer(_CANMsg);
@@ -136,12 +136,12 @@ namespace RTT
             // value range for the data length code is from 0 to 8
             // (bytes).
             pcan_msg.LEN=msg->getDLC();
-        
+
             // EXTENDED OR STANDARD Msg?
             if (msg->isExtended()){
                 pcan_msg.MSGTYPE = MSGTYPE_EXTENDED;
                 pcan_msg.ID=(DWORD) msg->getExtId();
-                // FIXME: Check this (see doxygen class info) 
+                // FIXME: Check this (see doxygen class info)
                 // if (_CANMsgType == CAN_INIT_TYPE_ST)
                 // log(Warning) << "Trying to process Extended message, but _CANMsgType set to Standard!" << endlog();
             }
@@ -217,7 +217,7 @@ namespace RTT
                 else
                     log(Debug) << msg.getExtId();
                 log(Debug) << ", DLC=" << msg.getDLC() << ", DATA = ";
-                for (unsigned int i=0; i < 8; i++){ 
+                for (unsigned int i=0; i < 8; i++){
                     log(Debug) << (unsigned int) msg.getData(i) << " ";
                 }
                 log(Debug) << endlog();
@@ -240,5 +240,5 @@ namespace RTT
 
         PCANController* PCANController::controller[PCAN_CHANNEL_MAX];
     }
-  
+
 }

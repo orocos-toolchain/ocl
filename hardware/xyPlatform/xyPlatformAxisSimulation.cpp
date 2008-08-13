@@ -1,12 +1,12 @@
 /***************************************************************************
-  tag: Ruben Smits  Mon Jan 19 14:11:20 CET 2004  JR3WrenchSensor.hpp 
+  tag: Ruben Smits  Mon Jan 19 14:11:20 CET 2004  JR3WrenchSensor.hpp
 
                         JR3WrenchSensor.hpp -  description
                            -------------------
     begin                : Mon January 19 2004
     copyright            : (C) 2004 Peter Soetens
     email                : first.last@mech.kuleuven.ac.be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -23,7 +23,7 @@
  *   Foundation, Inc., 59 Temple Place,                                    *
  *   Suite 330, Boston, MA  02111-1307  USA                                *
  *                                                                         *
- ***************************************************************************/ 
+ ***************************************************************************/
 
 #include "xyPlatformAxisSimulation.hpp"
 
@@ -43,14 +43,14 @@ xyPlatformAxisSimulation::xyPlatformAxisSimulation()
     double qinit[XY_NUM_AXIS] = XY_JOINT_START_ANGLE;
     //    double offsets[XY_NUM_AXIS] = XY_OFFSETSinVOLTS;
     //    double scales[XY_NUM_AXIS] = XY_SCALES;
-  
+
     for (unsigned int i = 0; i <XY_NUM_AXIS; i++){
       _axes[i] = new ORO_DeviceDriver::SimulationAxis(qinit[i]);
       _axes[i]->setMaxDriveValue( jointspeedlimits[i] );
       _axesInterface[i] = _axes[i];
       _reference[i]=true;
     }
-    
+
 
   // make task context
   _my_factory = newMethodFactory( this );
@@ -72,7 +72,7 @@ xyPlatformAxisSimulation::~xyPlatformAxisSimulation()
     delete _axes[i];
 }
 
-std::vector<ORO_DeviceInterface::AxisInterface*> 
+std::vector<ORO_DeviceInterface::AxisInterface*>
 xyPlatformAxisSimulation::getAxes()
 {
   return _axesInterface;

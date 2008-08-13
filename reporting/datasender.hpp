@@ -7,7 +7,7 @@
                            (C) 2007 Ruben Smits //Changed subscription structure
     email                : kst@baskemper.be
                            first dot last at mech dot kuleuven dot be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -71,22 +71,22 @@ namespace OCL{
             bool silenced;
             RTT::SocketMarshaller* marshaller;
             std::vector<std::string> subscriptions;
-                        
+
         public:
             Datasender(RTT::SocketMarshaller* marshaller, Socket* os);
             virtual ~Datasender();
-            
+
             /**
              * Returns true if the connection of the datasender is valid,
              * false otherwise.
              */
             bool isValid() const;
-            
+
             /**
              * Only frames up to frame <newlimit> will be processed.
              */
             void setLimit(unsigned long long newlimit);
-            
+
             /**
              * Send data to the client.
              */
@@ -104,12 +104,12 @@ namespace OCL{
              * Write a list of the current subscriptions to the socket.
              */
             void listSubscriptions();
-            
+
             /**
              * Get socket associated with this datasender.
              */
             Socket& getSocket() const;
-            
+
             /**
              * Data connection main loop
              */

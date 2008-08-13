@@ -1,12 +1,12 @@
 /***************************************************************************
-  tag: Peter Soetens  Mon Jan 19 14:11:21 CET 2004  CANOpenBus.hpp 
+  tag: Peter Soetens  Mon Jan 19 14:11:21 CET 2004  CANOpenBus.hpp
 
                         CANOpenBus.hpp -  description
                            -------------------
     begin                : Mon January 19 2004
     copyright            : (C) 2004 Peter Soetens
     email                : peter.soetens@mech.kuleuven.ac.be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -23,8 +23,8 @@
  *   Foundation, Inc., 59 Temple Place,                                    *
  *   Suite 330, Boston, MA  02111-1307  USA                                *
  *                                                                         *
- ***************************************************************************/ 
- 
+ ***************************************************************************/
+
 #ifndef CANOPENBUS_HPP
 #define CANOPENBUS_HPP
 
@@ -41,7 +41,7 @@ namespace RTT
 {
     using std::list;
     using std::find;
-    
+
 	/**
 	 * A CAN Open Bus in its simplest (but effective) form, making use of
      * nodeId() and other CANOpen functionalities to optimise and interpret
@@ -55,7 +55,7 @@ namespace RTT
         public:
         /**
          * Create a CANBus instance with no devices attached to it.
-         * A controller device needs to be added to put on and receive 
+         * A controller device needs to be added to put on and receive
          * messages from the bus.
          *
          * @param _controller The Controller of the bus.
@@ -79,7 +79,7 @@ namespace RTT
         {
             controller = contr;
         }
-        
+
         virtual bool addDevice(CANDeviceInterface* dev)
         {
             if ( devices.size() < MAX_DEVICES)
@@ -154,7 +154,7 @@ namespace RTT
 
         CANControllerInterface* controller;
 	};
-			
+
 }}
 
 

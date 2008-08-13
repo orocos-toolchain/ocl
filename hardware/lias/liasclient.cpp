@@ -1,6 +1,6 @@
 // ============================================================================
 //
-//    
+//
 // = FILENAME
 //    LiasClient.cpp
 //
@@ -51,14 +51,14 @@ LiasClientN::Client::open(void*)
 
 
 
-int 
+int
 LiasClientN::Client::connect(std::string host, unsigned int port)
 {
 	ACE_INET_Addr addr(port,host.c_str());
         _myconnector = new Connector();
-	
+
 	Client *pointer_to_self = this;
-	
+
     int result = _myconnector->connect(pointer_to_self, addr);
 	if (result == -1)
                 ACE_DEBUG((LM_DEBUG,"Connection FAILED \n"));
@@ -69,7 +69,7 @@ int
 LiasClientN::Client::sendCommand(std::string command)
 {
 	//manage the call time
-	
+
 	const char* charstr = command.c_str();
 	//pfclog << _clientlog << "Sending command to the host: " << command << endm;
     //std::cout << "Sending command to the host: " << command << "\n";
@@ -85,14 +85,14 @@ LiasClientN::Client::sendCommand(std::string command)
 	Once the client blocks until all data is received. The method returns
 	when the client receives a null character.
   */
-std::string 
+std::string
 LiasClientN::Client::receiveData(){
 	// Receive one char at a time and push into a string
 	int count;
 	count=0;
-	while(peer().recv_n ((&_buff), 1)!=0) {      
+	while(peer().recv_n ((&_buff), 1)!=0) {
 		if (_buff == '\n')                        // Is it enter?
-		{                                         
+		{
 		 // _clientIn.writeUChar(0);               // Finish the string correctly
 		 _serverData[count++]=_buff;
 		  //_dataString = (char*) (&(_serverData));
@@ -108,16 +108,16 @@ LiasClientN::Client::receiveData(){
 		  //_clientIn.writeUChar(_buff);           // One more received
 		  //_dataString += (char *)_buff;
 		  _serverData[count++]=_buff;
-	}  
+	}
 	return "\0";
-  
+
 };
 
 
 void
 LiasClientN::Client::close(void* param=0){
 
-   if(_myconnector) 
+   if(_myconnector)
    {
        _myconnector->close();
        delete _myconnector;

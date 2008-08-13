@@ -1,5 +1,5 @@
 /***************************************************************************
- tag: Peter Soetens  Mon Jun 10 14:22:43 CEST 2002  Axis.cpp 
+ tag: Peter Soetens  Mon Jun 10 14:22:43 CEST 2002  Axis.cpp
 
                        Axis.cpp -  description
                           -------------------
@@ -33,9 +33,9 @@
 
 namespace OCL
 {
-    
 
-    Axis::Axis( DriveInterface* a ) 
+
+    Axis::Axis( DriveInterface* a )
       : _drive_value(0), act( a ), brakeswitch(0),
          _is_locked(false), _is_stopped(false), _is_driven(true)
     {
@@ -60,11 +60,11 @@ namespace OCL
         // detect enable switch
         if ( !act->isEnabled() )
             return false;
-        
+
         // detect if brake is on.
         if ( brakeswitch && brakeswitch->isOn() )
             return false;
-        
+
       if (_is_stopped || _is_driven)
       {
           act->driveSet( vel );
@@ -75,7 +75,7 @@ namespace OCL
       }
       else
           return false;
-      
+
     }
 
 
@@ -93,7 +93,7 @@ namespace OCL
       else
         return false;
     }
-  
+
 
     bool Axis::lock()
     {
@@ -110,8 +110,8 @@ namespace OCL
       else
         return false;
     }
-  
-      
+
+
     bool Axis::unlock()
     {
       if (_is_locked){
@@ -131,7 +131,7 @@ namespace OCL
     }
 
 
-  
+
     bool Axis::isLocked() const
     {
         return _is_locked;
@@ -149,13 +149,13 @@ namespace OCL
         return _is_driven;
     }
 
-    
+
     void Axis::limitDrive( double lower, double higher, const Event<void(std::string)>& ev)
     {
         act->limit(lower, higher, ev);
     }
-  
-    
+
+
     void Axis::setSensor(const std::string& name,  SensorInterface<double>* _sens)
     {
         if (sens.count(name) != 0)

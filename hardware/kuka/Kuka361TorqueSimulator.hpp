@@ -16,8 +16,8 @@ namespace OCL
     /**
      * This class simulates a torque controlled kuka361
      * using its dynamic model and updates the position
-     * and velocity sensor in the axis objects. 
-     * 
+     * and velocity sensor in the axis objects.
+     *
      */
 
     class Kuka361TorqueSimulator
@@ -62,7 +62,7 @@ namespace OCL
 // 	        log(Warning) <<"_tau_sim[0]: "<<_tau_sim[0]<<endlog();
 		//Logger::log()<<Logger::Debug<<"pos (rad): "<<_pos_sim[3]<<" | vel (rad/s): "<<_vel_sim[3]<<" | acc (rad/s2): "<<_acc_sim[3]<<" | tau (Nm): "<<_tau_sim[3]<<Logger::endl;
          };
-        
+
     private:
         vector<RTT::AxisInterface*> _axes;
         vector<double> _pos_sim;

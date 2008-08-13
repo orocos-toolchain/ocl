@@ -9,10 +9,10 @@
 #include <rtt/Properties.hpp>
 
 
-#include <rtt/RTT.hpp> 
+#include <rtt/RTT.hpp>
 
 #include "IP_Encoder_6_EncInterface.hpp"
-#include "dev/SimulationAxis.hpp" 
+#include "dev/SimulationAxis.hpp"
 
 
 #if defined (OROPKG_OS_LXRT)
@@ -41,7 +41,7 @@ public:
    CRSnAxesVelocityController(const std::string& name,const std::string& propertyfilename="cpf/crs.cpf");
   virtual ~CRSnAxesVelocityController();
 
-protected:  
+protected:
  //
  // Members implementing the component interface
  //
@@ -100,7 +100,7 @@ protected:
    */
   virtual bool unlockAllAxes();
   virtual bool unlockAllAxesCompleted() const;
-  
+
   virtual bool addDriveOffset(int axis,double offset);
   virtual bool addDriveOffsetCompleted(int axis,double offset) const;
 
@@ -123,7 +123,7 @@ private:
   std::vector<RTT::WriteDataPort<double>*>  positionValue;
   std::vector<RTT::WriteDataPort<double>*>  output;
 
-private:  
+private:
   /**
    * A local copy of the name of the propertyfile so we can store changed
    * properties.
@@ -131,7 +131,7 @@ private:
  const std::string _propertyfile;
 
  /**
-  * The absolute value of the velocity will be limited to this property.  
+  * The absolute value of the velocity will be limited to this property.
   * Used to fire an event if necessary and to saturate the velocities.
   * It is a good idea to set this property to a low value when using experimental code.
   */
@@ -176,20 +176,20 @@ private:
     *  Each axis that is out of range throws a seperate event.
     *  The component will continue.  The hardware limit switches can be reached when this
     *  event is not handled.
-    */ 
+    */
   RTT::Event< void(int,double) > positionOutOfRange;
 
    /**
     *  This function contains the application's startup code.
     *  Return false to abort startup.
     **/
-   virtual bool startup(); 
-                   
+   virtual bool startup();
+
    /**
     * This function is periodically called.
     */
    virtual void update();
- 
+
    /**
     * This function is called when the task is stopped.
     */
@@ -200,7 +200,7 @@ private:
   // Private properties of this component.
   //
   //
-  
+
   /**
    * conversion factor between drive value and the analog output.
    * volt = (setpoint + offset)/scale
@@ -209,7 +209,7 @@ private:
    */
 
   /**
-   * Offset to the drive value 
+   * Offset to the drive value
    * volt = (setpoint + offset)/scale
    *
    * RTT::Property<std::vector <double> >     driveOffset;
@@ -222,11 +222,11 @@ private:
 
 private:
   // to keep track of which axes are homed :
-  std::vector<bool>  _homed;	
+  std::vector<bool>  _homed;
   //
   //   Servo-loop gain :
   //   property to indicate initial value and variable to store actual value
-  
+
   RTT::Property<std::vector <double> >     servoGain;
   std::vector<double>                              _servoGain;
   //
@@ -245,7 +245,7 @@ private:
   /**
    * Derivative action for each axis.
    */
-  RTT::Property<std::vector<double> >     servoDerivTime; 
+  RTT::Property<std::vector<double> >     servoDerivTime;
 
   //
   // Continuous state for the servo-loop
@@ -261,9 +261,9 @@ private:
   //
   virtual bool changeServo();
   virtual bool changeServoCompleted() const;
- 
+
 private:
-  // 
+  //
   // Members implementing the interface to the hardware
   //
   #if !defined (OROPKG_OS_LXRT)
@@ -273,12 +273,12 @@ private:
     std::vector<RTT::Axis*>                _axes;
 
     std::vector<RTT::AxisInterface*>    _axesInterface;
-  
+
     RTT::DigitalOutInterface*               _IP_Digital_24_DOut;
     IP_Encoder_6_Task*                                      _IP_Encoder_6_task;
     RTT::AnalogOutInterface*  _IP_FastDac_AOut;
     RTT::DigitalInInterface*                _IP_OptoInput_DIn;
-  
+
     RTT::DigitalOutput*                    _enable;
     RTT::DigitalOutput*                    _combined_enable[LiAS_NUM_AXIS];
     RTT::CombinedDigitalOutInterface*   _combined_enable_DOutInterface;
@@ -290,9 +290,9 @@ private:
     RTT::IncrementalEncoderSensor*         _encoder[LiAS_NUM_AXIS];
     RTT::AnalogOutput*       _vref[LiAS_NUM_AXIS];
     RTT::AnalogDrive*                      _drive[LiAS_NUM_AXIS];
-    RTT::DigitalInput*                     _reference[LiAS_NUM_AXIS];  
+    RTT::DigitalInput*                     _reference[LiAS_NUM_AXIS];
   #endif
-  
+
   bool _activate_axis2, _activate_axis3, _deactivate_axis2, _deactivate_axis3;
 
 };

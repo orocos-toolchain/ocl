@@ -1,12 +1,12 @@
 /***************************************************************************
-  tag: Peter Soetens  Mon Jan 19 14:11:20 CET 2004  NodeGuard.hpp 
+  tag: Peter Soetens  Mon Jan 19 14:11:20 CET 2004  NodeGuard.hpp
 
                         NodeGuard.hpp -  description
                            -------------------
     begin                : Mon January 19 2004
     copyright            : (C) 2004 Peter Soetens
     email                : peter.soetens@mech.kuleuven.ac.be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -23,8 +23,8 @@
  *   Foundation, Inc., 59 Temple Place,                                    *
  *   Suite 330, Boston, MA  02111-1307  USA                                *
  *                                                                         *
- ***************************************************************************/ 
- 
+ ***************************************************************************/
+
 #ifndef ORO_NODEGUARD_HPP
 #define ORO_NODEGUARD_HPP
 
@@ -127,26 +127,26 @@ namespace RTT
             return cres;
         }
 
-        bool initialize() 
-        { 
+        bool initialize()
+        {
             if (cres) {
                 rtr = CANMessage::createStdRemote( 0, 0x700+nodeId, 0, 0 );
                 bus->addListener(this);
             }
 
-            return cres; 
+            return cres;
         }
 
-        void step() 
-        { 
+        void step()
+        {
             bus->write(rtr);
         }
-                                
+
         void finalize() {
             bus->removeListener(this);
             delete rtr;
         }
-        
+
         void process(const CANMessage* msg)
         {
             if ( msg->getStdId() == 0x700 + nodeId && ! msg->isRemote() )
@@ -155,7 +155,7 @@ namespace RTT
                     status = msg->getData(0) & 0x7F;
                     switch (toggle) {
                     case 0:
-                        if ( msg->getData(0) >> 7 == 1) 
+                        if ( msg->getData(0) >> 7 == 1)
                             toggle_ok = true;
                         break;
                     case 1:

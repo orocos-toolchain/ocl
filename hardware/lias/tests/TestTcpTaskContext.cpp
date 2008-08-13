@@ -8,8 +8,8 @@ using namespace RTT;
 using namespace KDL;
 using namespace std;
 
-TestTcpTaskContext::TestTcpTaskContext(std::string name) 
-        : 
+TestTcpTaskContext::TestTcpTaskContext(std::string name)
+        :
       RTT::TaskContext(name),
       velocity("basevelocity"),
       rotvel  ("baserotvel"),
@@ -29,7 +29,7 @@ TestTcpTaskContext::TestTcpTaskContext(std::string name)
         this->attributes()->addProperty( &dv  );
         this->attributes()->addProperty( &dw  );
     }
-   
+
 
    /**
      * This function contains the application's startup code.
@@ -44,12 +44,12 @@ bool TestTcpTaskContext::startup() {
         /**
          * This function is periodically called.
          */
-void TestTcpTaskContext::update() 
+void TestTcpTaskContext::update()
         {
-        // Read the inbound ports            
+        // Read the inbound ports
         stringstream sstr;
         std::string str;
-	    
+
         Frame F_fs_wb(Rotation::Identity(), Vector(0.24,0.70, 0));
         Wrench w_wb = F_fs_wb.Inverse(inWrenchPort.Get());
 
@@ -62,17 +62,17 @@ void TestTcpTaskContext::update()
 
         double v=kv*force;
         double w=kw*torque;
-       
+
         velocity.Set(v);
-        rotvel.Set(w); 
-        inpPort.data()->Get(); //the position is in cm/s, have to transform in m/s                     
+        rotvel.Set(w);
+        inpPort.data()->Get(); //the position is in cm/s, have to transform in m/s
     }
 
     /**
      * This function is called when the task is stopped.
      */
 void TestTcpTaskContext::shutdown() {
-        
+
     }
 
 TestTcpTaskContext::~TestTcpTaskContext()

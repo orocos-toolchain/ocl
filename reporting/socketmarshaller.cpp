@@ -5,7 +5,7 @@
     begin                : Mon August 7 2006
     copyright            : (C) 2006 Bas Kemper
     email                : kst@baskemper.be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -22,7 +22,7 @@
  *   Foundation, Inc., 59 Temple Place,                                    *
  *   Suite 330, Boston, MA  02111-1307  USA                                *
  *                                                                         *
- ***************************************************************************/ 
+ ***************************************************************************/
 
 #include <rtt/Logger.hpp>
 #include <rtt/Property.hpp>

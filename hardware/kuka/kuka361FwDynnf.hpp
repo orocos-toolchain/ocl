@@ -13,20 +13,20 @@
 	*This class can calculate the forward dynamics of the kuka 361
 	*/
 	class kuka361FwDynnf {
-	
-	
+
+
 	public:
 		kuka361FwDynnf();
 		~kuka361FwDynnf(){};
-	
-		/** 
+
+		/**
 		* Calculate forward dynamics of kuka 361
 		*
-		* 
+		*
 		* @param tau motor torques
 		* @param q joint positions
 		* @param dq joint velocities
-		* 
+		*
 		* @return joint acceleration
 		*/
 		vector<double> fwdyn361(vector<double> &tau, vector<double> &q, vector<double> &dq);
@@ -39,8 +39,8 @@
 		double dqm, D13, g1, r3, l, r;
 		double _y_ls[26];
 		double _y_ls2[12];
-	
-		//doubles necessary to calculate the matrix multiplication in an efficient way in fwdyn361() 
+
+		//doubles necessary to calculate the matrix multiplication in an efficient way in fwdyn361()
 		double t1, t2, t3, t5, t6, t8, t9, t11;
 		double t12, t15, t16, t19, t20, t21, t22, t23, t24, t25, t26, t27, t28, t29, t30, t31, t33, t34, t36, t37, t38, t39, t40, t42, t43, t46, t48, t49;
 		double t50, t51, t52, t53, t54, t55, t59, t60, t61, t62, t63, t64, t65, t68, t69, t70, t71, t74, t75, t77, t80, t81, t82, t83, t86, t89, t90;

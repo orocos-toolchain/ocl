@@ -21,7 +21,7 @@ public:
     virtual void arefSet(unsigned int chan, unsigned int aref) {};
 
     virtual void write( unsigned int chan, unsigned int value )
-    { 
+    {
         //std::cout << "IP_FastDAC_AOutInterface: write " << value << std::endl;
         IP_FastDAC_write_to_channel (value, chan);
     }
@@ -44,5 +44,5 @@ public:
     virtual unsigned int nbOfChannels() const {return 8; }
 };
 
-  
+
 #endif

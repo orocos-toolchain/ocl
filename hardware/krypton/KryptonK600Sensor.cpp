@@ -1,21 +1,21 @@
 // Copyright (C) 2006 Klaas Gadeyne <klaas dot gadeyne at mech dot kuleuven dot be>
 //                    Ruben Smits <ruben dot smits at mech dot kuleuven dot be>
 //                    Wim Meeussen <wim dot meeussen at mech dot kuleuven dot be>
-//  
+//
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
 // (at your option) any later version.
-//  
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-//  
+//
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-//  
+//
 
 #include "KryptonK600Sensor.hpp"
 #include <rtt/Logger.hpp>
@@ -26,7 +26,7 @@ namespace OCL
     using namespace RTT;
     using namespace KDL;
     using namespace std;
-  
+
 
   // constructor
     KryptonK600Sensor::KryptonK600Sensor(string name, unsigned int num_leds, unsigned int priority)
@@ -43,22 +43,22 @@ namespace OCL
 
 	// set ledpositions to zero
 	for (unsigned int i=0; i<_num_leds; i++)
-	  _ledPositions_local[i] = Vector(1.0,1.0,1.0);  
+	  _ledPositions_local[i] = Vector(1.0,1.0,1.0);
 	_ledPositions.Set(_ledPositions_local);
 
 #if defined (OROPKG_OS_LXRT)
         // If kernel Module is not loaded yet, Print error message
-        if (! ((udp_message_arrived = (SEM *) rt_get_adr(nam2num("KEDSEM"))) && 
+        if (! ((udp_message_arrived = (SEM *) rt_get_adr(nam2num("KEDSEM"))) &&
                (udp_message = (MBX *) rt_get_adr(nam2num("KEDMBX")))	      ))
 	  log(Info) << "KryptonK600Sensor: Can't find sem/mbx" << endlog();
 
         for (unsigned int i =0; i<_num_leds;i++)
 	  _ledPositions_local[i] = Vector(-99999, -99999, -99999);
-        
+
 	this->NonPeriodicActivity::start();
 #endif
     }
-    
+
 
 
   // destructor
@@ -77,8 +77,8 @@ namespace OCL
     }
 
 
-  
-    
+
+
 #if defined (OROPKG_OS_LXRT)
     void KryptonK600Sensor::loop()
     {
@@ -87,10 +87,10 @@ namespace OCL
       while (_keep_running){
 	// Wait until kernel Module posts semaphore
 	rt_sem_wait(udp_message_arrived);
-        
+
 	int ret = rt_mbx_receive_if(udp_message,(void *) &msg, MAX_MESSAGE_LENGTH);
 	if (ret != 0 && ret !=MAX_MESSAGE_LENGTH)
-	  log(Info) << "KryptonK600Sensor: Error receiving message from mbx: error " 
+	  log(Info) << "KryptonK600Sensor: Error receiving message from mbx: error "
 			<< ret << " EINVAL is " << EINVAL << endlog();
 	else{
 	  // Interprete Message
@@ -102,9 +102,9 @@ namespace OCL
 	}
 	_ledPositions.Set(_ledPositions_local);
       }
-    }    
-  
-  
+    }
+
+
     bool KryptonK600Sensor::interprete_K600_Msg(char* msg)
       {
         unsigned int index = 15;
@@ -132,7 +132,7 @@ namespace OCL
 	  return true;
         }
 	else {
-	  log(Error) << "K600PositionInterface: The Krypton system has " << _nr_markers 
+	  log(Error) << "K600PositionInterface: The Krypton system has " << _nr_markers
 			<< " leds registered, but you said there are " << _num_leds << " leds" << endlog();
 	  log(Error) << "K600PositionInterface: Prepare for Segfault :-)" << endlog();
 	  return false;

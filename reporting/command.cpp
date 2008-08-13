@@ -5,7 +5,7 @@
     begin        : Wed Aug 9 2006
     copyright    : (C) 2006 Bas Kemper
     email        : kst@ <my name> .be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -575,18 +575,18 @@ namespace TCP
     void TcpReportingInterpreter::process()
     {
         std::string ipt = getConnection()->getSocket().readLine();
-        
+
         if( ipt.empty() )
         {
             return;
         }
-                
+
         /* parseParameters returns data by reference */
         std::string cmd;
         std::string* params;
-                
+
         unsigned int argc = parseParameters( ipt, cmd, &params );
-                        
+
         std::transform( cmd.begin(), cmd.end(), cmd.begin(), to_upper );
 
         /* search the command to be executed */

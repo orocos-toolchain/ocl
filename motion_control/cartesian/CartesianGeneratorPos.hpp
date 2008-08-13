@@ -2,21 +2,21 @@
 // Copyright (C) 2003 Klaas Gadeyne <klaas.gadeyne@mech.kuleuven.ac.be>
 //                    Wim Meeussen  <wim.meeussen@mech.kuleuven.ac.be>
 // Copyright (C) 2006 Ruben Smits <ruben.smits@mech.kuleuven.be>
-//  
+//
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
 // (at your option) any later version.
-//  
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-//  
+//
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-//  
+//
 
 #ifndef __CARTESIAN_GENERATOR_POS_H__
 #define __CARTESIAN_GENERATOR_POS_H__
@@ -47,54 +47,54 @@ namespace OCL
      * maximum acceleration. It generates frame and twist setpoints
      * which can be used by OCL::CartesianControllerPos,
      * OCL::CartesianControllerPosVel or OCL::CartesianControllerVel.
-     * 
+     *
      */
     class CartesianGeneratorPos : public RTT::TaskContext
     {
     public:
-        /** 
+        /**
          * Constructor of the class.
-         * 
+         *
          * @param name name of the TaskContext
          */
         CartesianGeneratorPos(std::string name);
         virtual ~CartesianGeneratorPos();
-        
+
         virtual bool configureHook();
         virtual bool startHook();
         virtual void updateHook();
         virtual void stopHook();
         virtual void cleanupHook();
-        
+
     private:
         bool moveTo(KDL::Frame frame, double time=0);
         bool moveFinished() const;
         void resetPosition();
-  
+
         KDL::Frame                        _traject_end, _traject_begin;
         KDL::Frame                        _position_desi_local;
         KDL::Twist                        _velocity_desi_local, _velocity_begin_end, _velocity_delta;
         std::vector<double>               _maximum_velocity_local, _maximum_acceleration_local;
-        
+
         std::vector<KDL::VelocityProfile_Trap>      _motion_profile;
         RTT::TimeService::ticks                     _time_begin;
         RTT::TimeService::Seconds                   _time_passed;
         double                                      _max_duration;
-        
+
         bool                                        _is_moving;
 
     protected:
-        /** 
+        /**
          * Command to generate the motion. Command stops when the
          * movement is finished.
-         * 
+         *
          * @param frame the desired frame
          * @param time the minimum time duration of the movement.
-         * 
+         *
          * @return false if a previous motion is still going on, true otherwise
          */
         RTT::Command<bool(KDL::Frame,double)> _moveTo;
-        
+
         /**
          * Method that resets the generators desired frame tho the
          *current measured frame and the desired twist to zero.
@@ -105,11 +105,11 @@ namespace OCL
         RTT::ReadDataPort< KDL::Frame >   _position_meas;
         /// Dataport containing the current desired end-effector
         /// frame, shared with OCL::CartesianControllerPos,
-        /// OCL::CartesianControllerPosVel 
+        /// OCL::CartesianControllerPosVel
         RTT::WriteDataPort< KDL::Frame >  _position_desi;
         /// Dataport containing the current desired end-effector
         /// twist, shared with OCL::CartesianControllerPosVel,
-        /// OCL::CartesianControllerVel 
+        /// OCL::CartesianControllerVel
         RTT::WriteDataPort< KDL::Twist >  _velocity_desi;
         /// Property containing a vector with the maximum velocity of
         /// each dof

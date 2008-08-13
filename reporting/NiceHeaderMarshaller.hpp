@@ -1,12 +1,12 @@
 /***************************************************************************
-  tag: Peter Soetens  Mon Jan 19 14:11:20 CET 2004  NiceHeaderMarshaller.hpp 
+  tag: Peter Soetens  Mon Jan 19 14:11:20 CET 2004  NiceHeaderMarshaller.hpp
 
                         NiceHeaderMarshaller.hpp -  description
                            -------------------
     begin                : Mon January 19 2004
     copyright            : (C) 2004 Peter Soetens
     email                : peter.soetens@mech.kuleuven.ac.be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU General Public                   *
@@ -33,8 +33,8 @@
  *   Foundation, Inc., 59 Temple Place,                                    *
  *   Suite 330, Boston, MA  02111-1307  USA                                *
  *                                                                         *
- ***************************************************************************/ 
- 
+ ***************************************************************************/
+
 #ifndef PI_PROPERTIES_NICEHEADER_SERIALIZER
 #define PI_PROPERTIES_NICEHEADER_SERIALIZER
 
@@ -51,7 +51,7 @@ namespace RTT
      * @endverbatim
      */
     template<typename o_stream>
-    class NiceHeaderMarshaller 
+    class NiceHeaderMarshaller
     : public Marshaller, public StreamProcessor<o_stream>
     {
         bool did_comment;
@@ -60,17 +60,17 @@ namespace RTT
         public:
             typedef o_stream output_stream;
             typedef o_stream OutputStream;
-            
+
             NiceHeaderMarshaller(output_stream &os) :
-                StreamProcessor<o_stream>(os), 
+                StreamProcessor<o_stream>(os),
                 did_comment(false), nameless_counter(0)
             {
             }
 
             virtual ~NiceHeaderMarshaller() {}
-            
-			virtual void serialize(PropertyBase* v) 
-			{ 
+
+			virtual void serialize(PropertyBase* v)
+			{
                 Property<PropertyBag>* bag = dynamic_cast< Property<PropertyBag>* >( v );
                 if ( bag )
                     this->serialize( *bag );
@@ -79,7 +79,7 @@ namespace RTT
 			}
 
 
-            virtual void serialize(const PropertyBag &v) 
+            virtual void serialize(const PropertyBag &v)
 			{
                 // start with a comment sign.
                 if (did_comment == false )
@@ -91,7 +91,7 @@ namespace RTT
                     i != v.getProperties().end();
                     i++ )
                 {
-                    
+
                     this->serialize(*i);
                 }
 			}
@@ -103,7 +103,7 @@ namespace RTT
             {
                 if ( name.empty() )
                     ++nameless_counter;
-                else 
+                else
                     nameless_counter = 0;
 
                 if ( !prefix.empty() )
@@ -116,7 +116,7 @@ namespace RTT
                     *this->s << name;
             }
 
-            virtual void serialize(const Property<PropertyBag> &v) 
+            virtual void serialize(const Property<PropertyBag> &v)
 			{
                 std::string oldpref = prefix;
                 prefix += "." + v.getName();
@@ -127,13 +127,13 @@ namespace RTT
                 nameless_counter = 0;
             }
 
-            virtual void flush() 
+            virtual void flush()
             {
                 did_comment = false;
                 nameless_counter = 0;
                 *this->s << std::endl;
                 this->s->flush();
-                
+
             }
 	};
 }

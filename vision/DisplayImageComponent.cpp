@@ -3,11 +3,11 @@
                         ImageDisplayComponent.cxx -  description
                         -------------------------
 
-    begin                : Jan 2008                                                                                                                                  
+    begin                : Jan 2008
     copyright            : (C) 2008 Francois Cauwe
     based on             : ReporterComponent.cpp made by Peter Soetens
     email                : francois@cauwe.org
-                                                                                                                                                                           
+
     ***************************************************************************
     *   This library is free software; you can redistribute it and/or         *
     *   modify it under the terms of the GNU Lesser General Public            *
@@ -22,7 +22,7 @@
     *   You should have received a copy of the GNU Lesser General Public      *
     *   License along with this library; if not, write to the Free Software   *
     *   Foundation, Inc., 59 Temple Place,                                    *
-    *   Suite 330, Boston, MA  02111-1307  USA                                *                                                                                          
+    *   Suite 330, Boston, MA  02111-1307  USA                                *
     *                                                                         *
     ***************************************************************************/
 
@@ -30,10 +30,10 @@
 #include <rtt/marsh/PropertyDemarshaller.hpp>
 
 namespace OCL{
-    
+
     using namespace RTT;
     using namespace std;
-    
+
 
     ImageDisplayComponent::ImageDisplayComponent(std::string name):
         TaskContext(name),
@@ -42,13 +42,13 @@ namespace OCL{
     {
         // add properties
         properties()->addProperty(&config);
-        
+
         // Tell Orocos to load the Vision toolkit
         RTT::TypeInfoRepository::Instance()->addType( new IplImageTypeInfo() );
-        
+
     }
-    
-    bool ImageDisplayComponent::configureHook(){        
+
+    bool ImageDisplayComponent::configureHook(){
         Logger::In in("ImageDisplayComponent");
 
         // Load config file
@@ -62,7 +62,7 @@ namespace OCL{
             log(Error) << "Reading file "<< config.get() << " failed."<<endlog();
             return false;
         }
-        
+
         bool ok = true;
         PropertyBag::const_iterator it = bag.getProperties().begin();
         while ( it != bag.getProperties().end() ){
@@ -83,7 +83,7 @@ namespace OCL{
             ++it;
         }
         deleteProperties( bag );
-        
+
         // Create window for every dataport
         for(Reports::iterator it = root.begin(); it != root.end(); ++it ) {
             // Update the dataport
@@ -97,21 +97,21 @@ namespace OCL{
             cvNamedWindow(dataportName.data(),CV_WINDOW_AUTOSIZE);
             cvShowImage(dataportName.data(),&localImage);
         }
-        
+
         // Enter main loop of the window, and update the window if needed
         int key;
-        key = cvWaitKey(3); 
+        key = cvWaitKey(3);
         // Magic number 3
-        
-        
+
+
         return ok;
     }
-    
+
 
     // Exactly the same as th reportPort from the Reporter component
     bool ImageDisplayComponent::addDisplayPort(std::string& component, std::string& port)
     {
-        
+
         Logger::In in("ImageDisplayComponent");
         TaskContext* comp = this->getPeer(component);
         if ( !comp ) {
@@ -128,36 +128,36 @@ namespace OCL{
             this->addDisplaySource( component + "." + port, "Port", porti->connection()->getDataSource() );
             log(Info) << "Reporting port " << port <<" : ok."<<endlog();
         } else {
-            // create new port temporarily 
+            // create new port temporarily
             // this port is only created with the purpose of
             // creating a connection object.
             PortInterface* ourport = porti->antiClone();
             assert(ourport);
 
             ConnectionInterface::shared_ptr ci = porti->createConnection( ourport );
-            if ( !ci ) 
+            if ( !ci )
                 ci = ourport->createConnection( porti );
             if ( !ci )
                 return false;
             ci->connect();
-            
+
             delete ourport;
             this->addDisplaySource( component + "." + porti->getName(), "Port", ci->getDataSource() );
             log(Info) << "Created connection for port " << porti->getName()<<" : ok."<<endlog();
         }
         return true;
-        
+
     }
-    
+
     bool ImageDisplayComponent::addDisplaySource(std::string tag, std::string type, DataSourceBase::shared_ptr orig)
     {
 
         // creates a copy of the data and an update command to
-        // update the copy from the original. 
+        // update the copy from the original.
         //
         // Added IplImage type
         Logger::In in("ImageDisplayComponent");
-        
+
         // Check if the type is IplImage, if this fail
         if(orig->getTypeName()!="IplImage"){
             log(Error) << "Could not display '"<< tag <<"': This is not a IplImage type, it the Vision tookkit loaded?" << endlog();
@@ -178,14 +178,14 @@ namespace OCL{
         }
         return true;
     }
-    
+
 
     bool ImageDisplayComponent::startHook()
     {
         // Do nothing
         return true;
     }
-    
+
     void ImageDisplayComponent::updateHook()
     {
         // For every dataport
@@ -200,19 +200,19 @@ namespace OCL{
             string dataportName = it->get<0>();
             cvShowImage(dataportName.data(),&localImage);
         }
-        
+
         // Enter main loop of the window, and update the window if needed
         int key;
-        key = cvWaitKey(3); 
+        key = cvWaitKey(3);
         // Magic number 3
     }
-    
+
     void ImageDisplayComponent::stopHook()
     {
         // Do nothing
     }
-    
-    
+
+
     void ImageDisplayComponent::cleanupHook()
     {
         // Rmove all windows
@@ -222,15 +222,15 @@ namespace OCL{
             int key;
             key = cvWaitKey(3);
         }
-        
+
         // delete all datasource port objects
         root.clear();
     }
 
-    ImageDisplayComponent::~ImageDisplayComponent()  
+    ImageDisplayComponent::~ImageDisplayComponent()
     {
         // Do nothing
     }
-        
+
 } //end namespace OCL
 

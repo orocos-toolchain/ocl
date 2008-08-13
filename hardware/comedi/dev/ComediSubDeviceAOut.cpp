@@ -1,5 +1,5 @@
 /***************************************************************************
-  tag: Peter Soetens  Thu Oct 10 16:22:44 CEST 2002  ComediSubDeviceAOut.hpp 
+  tag: Peter Soetens  Thu Oct 10 16:22:44 CEST 2002  ComediSubDeviceAOut.hpp
 
                         ComediSubDeviceAOut.hpp -  description
                            -------------------
@@ -36,7 +36,7 @@
 namespace OCL
 {
 
-    ComediSubDeviceAOut::ComediSubDeviceAOut( ComediDevice* cao, const std::string& name, 
+    ComediSubDeviceAOut::ComediSubDeviceAOut( ComediDevice* cao, const std::string& name,
                                               unsigned int subdevice /*=1*/ )
         : AnalogOutInterface( name ),
           myCard( cao ), _subDevice( subdevice ),
@@ -120,7 +120,7 @@ namespace OCL
         if (value < 0) value = 0;
         if (value > int(rrange)) value = rrange;
         if ( myCard )
-            return myCard->write( _subDevice, chan, _sd_range[chan], 
+            return myCard->write( _subDevice, chan, _sd_range[chan],
                                   _aref[chan], (unsigned int)(value) );
         return -1;
     }
@@ -129,7 +129,7 @@ namespace OCL
     {
         if ( myCard ) {
             unsigned int uval;
-            int ret = myCard->read( _subDevice, chan, _sd_range[chan], 
+            int ret = myCard->read( _subDevice, chan, _sd_range[chan],
                           _aref[chan], uval );
             value = uval;
             return ret;
@@ -144,7 +144,7 @@ namespace OCL
         if(dvalue>max[chan]) dvalue=max[chan];
         unsigned int value = (unsigned int)((dvalue - min[chan]) * resolution(chan));
         if ( myCard )
-            return myCard->write( _subDevice, chan, _sd_range[chan], 
+            return myCard->write( _subDevice, chan, _sd_range[chan],
                                   _aref[chan], value );
         return -1;
     }
@@ -177,20 +177,20 @@ namespace OCL
 #ifdef __KERNEL__
         // See file:/usr/src/comedilib/doc/html/x3563.html#REF-TYPE-COMEDI-KRANGE
         comedi_krange range;
-        comedi_get_krange(myCard->getDevice()->it, _subDevice, chan, 
+        comedi_get_krange(myCard->getDevice()->it, _subDevice, chan,
                           _sd_range[chan], &range);
         return (min[chan] = (double) range.min / 1000000.);
 #else
 #ifdef OROPKG_OS_LXRT
         //#define __KERNEL__
         comedi_krange range;
-        comedi_get_krange(myCard->getDevice()->it, _subDevice, chan, 
+        comedi_get_krange(myCard->getDevice()->it, _subDevice, chan,
                           _sd_range[chan], &range);
         return (min[chan] = (double) range.min / 1000000.);
 #else // Userspace
         comedi_range * range_p;
-        if ((range_p = comedi_get_range(myCard->getDevice()->it, 
-                                        _subDevice, chan, 
+        if ((range_p = comedi_get_range(myCard->getDevice()->it,
+                                        _subDevice, chan,
                                         _sd_range[chan])) != 0)
             {
                 return (min[chan] = range_p->min);
@@ -215,21 +215,21 @@ namespace OCL
 #ifdef __KERNEL__
         // See file:/usr/src/comedilib/doc/html/x3563.html#REF-TYPE-COMEDI-KRANGE
         comedi_krange range;
-        comedi_get_krange(myCard->getDevice()->it, _subDevice, chan, 
+        comedi_get_krange(myCard->getDevice()->it, _subDevice, chan,
                           _sd_range[chan], &range);
         return (max[chan] = (double) range.max / 1000000.);
 #else
 #ifdef OROPKG_OS_LXRT
         //#define __KERNEL__
         comedi_krange range;
-        comedi_get_krange(myCard->getDevice()->it, _subDevice, chan, 
+        comedi_get_krange(myCard->getDevice()->it, _subDevice, chan,
                           _sd_range[chan], &range);
         return (max[chan] = (double) range.max / 1000000.);
-      
+
 #else // Userspace
         comedi_range * range_p;
-        if ((range_p = comedi_get_range(myCard->getDevice()->it, 
-                                        _subDevice, chan, 
+        if ((range_p = comedi_get_range(myCard->getDevice()->it,
+                                        _subDevice, chan,
                                         _sd_range[chan])) != 0)
             {
                 return (max[chan] = range_p->max);

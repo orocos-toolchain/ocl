@@ -1,12 +1,12 @@
 /***************************************************************************
-  tag: Peter Soetens  Thu Jul 3 15:34:40 CEST 2008  DeploymentComponent.cpp 
+  tag: Peter Soetens  Thu Jul 3 15:34:40 CEST 2008  DeploymentComponent.cpp
 
                         DeploymentComponent.cpp -  description
                            -------------------
     begin                : Thu July 03 2008
     copyright            : (C) 2008 Peter Soetens
     email                : peter.soetens@fmtc.be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -24,9 +24,9 @@
  *   Suite 330, Boston, MA  02111-1307  USA                                *
  *                                                                         *
  ***************************************************************************/
- 
- 
-        
+
+
+
 #include <rtt/RTT.hpp>
 #include "DeploymentComponent.hpp"
 #include <rtt/Activities.hpp>
@@ -182,7 +182,7 @@ namespace OCL
                                     "CompName", "The name of the Component.",
                                     "Period", "The period of the activity."
                                     );
-        
+
 
         this->configure();
 
@@ -395,7 +395,7 @@ namespace OCL
         PropertyBag from_file;
         log(Info) << "Loading '" <<configurationfile<<"'."<< endlog();
         // demarshalling failures:
-        bool failure = false;  
+        bool failure = false;
         // semantic failures:
         bool valid = validConfig.get();
         PropertyDemarshaller demarshaller(configurationfile);
@@ -590,7 +590,7 @@ namespace OCL
                                 }
                             }
                         }
-                        
+
                         // Read the activity profile if present.
                         if ( comp.value().find("Activity") != 0) {
                             Property<PropertyBag> nm = comp.value().find("Activity");
@@ -675,7 +675,7 @@ namespace OCL
                             valid = false;
                         }
                     }
-                        
+
                     deletePropertyBag( from_file );
                 }
             else
@@ -705,7 +705,7 @@ namespace OCL
 
         // Connect peers
         for (PropertyBag::iterator it= root.begin(); it!=root.end();it++) {
-            
+
             Property<PropertyBag> comp = *it;
 
             TaskContext* peer = comps[ comp.getName() ].instance;
@@ -732,7 +732,7 @@ namespace OCL
                     }
                 }
         }
-            
+
         // Create data port connections:
         for(ConMap::iterator it = conmap.begin(); it != conmap.end(); ++it) {
             if ( it->second.ports.size() < 2 ){
@@ -774,7 +774,7 @@ namespace OCL
             if ( reader == 0 ) {
                 log(Warning) << "Connecting only write-ports in connection " << it->first << endlog();
             }
-                
+
             log(Info) << "Creating Connection "<<it->first<<":"<<endlog();
             // connect all ports to connection
             p = it->second.ports.begin();
@@ -817,7 +817,7 @@ namespace OCL
 
         // Main configuration
         for (PropertyBag::iterator it= root.begin(); it!=root.end();it++) {
-            
+
             Property<PropertyBag> comp = *it;
             Property<string> dummy;
             TaskContext* peer = comps[ comp.getName() ].instance;
@@ -870,7 +870,7 @@ namespace OCL
 
             // AutoConf
             if (comps[comp.getName()].autoconf )
-                if ( peer->configure() == false) 
+                if ( peer->configure() == false)
                     valid = false;
         }
 
@@ -898,11 +898,11 @@ namespace OCL
         }
         bool valid = true;
         for (PropertyBag::iterator it= root.begin(); it!=root.end();it++) {
-            
+
             TaskContext* peer = comps[ (*it)->getName() ].instance;
             // AutoStart
             if (comps[(*it)->getName()].autostart )
-                if ( !peer || peer->start() == false) 
+                if ( !peer || peer->start() == false)
                     valid = false;
         }
         // Finally, report success/failure:
@@ -930,7 +930,7 @@ namespace OCL
         for ( CompList::iterator cit = comps.begin(); cit != comps.end(); ++cit) {
             ComponentData* it = &(cit->second);
             if ( it->instance && !it->proxy )
-                if ( it->instance->engine()->getActivity() == 0 || 
+                if ( it->instance->engine()->getActivity() == 0 ||
                      it->instance->engine()->getActivity()->isActive() == false ||
                      it->instance->stop() ) {
                     log(Info) << "Stopped "<< it->instance->getName() <<endlog();
@@ -967,7 +967,7 @@ namespace OCL
         bool valid = true;
         for ( CompList::iterator cit = comps.begin(); cit != comps.end(); ++cit) {
             ComponentData* it = &(cit->second);
-          
+
             if ( it->loaded && it->instance ) {
                 if ( it->instance->engine()->getActivity() == 0 ||
                      it->instance->engine()->getActivity()->isActive() == false ) {
@@ -992,7 +992,7 @@ namespace OCL
         }
         if ( !comps.empty() ) {
             // cleanup from ComponentData map:
-            CompList::iterator cit = comps.begin(); 
+            CompList::iterator cit = comps.begin();
             do {
                 ComponentData* it = &(cit->second);
                 // if deleted and loaded by us:
@@ -1005,7 +1005,7 @@ namespace OCL
                     ++cit;
                 }
             } while ( cit != comps.end() );
-        }   
+        }
         return valid;
     }
 
@@ -1022,7 +1022,7 @@ namespace OCL
         // return FALSE if string ends in .so:
         if ( so_name.find("/.") != std::string::npos ||
              so_name.rfind("~") == so_name.length() -1 ) {
-            log(Debug) << "Skipping " << so_name <<endlog(); 
+            log(Debug) << "Skipping " << so_name <<endlog();
             return 0;
         }
         return 1;
@@ -1054,10 +1054,10 @@ namespace OCL
                         log(Debug) << "Scanning " << path +"/" +name <<endlog();
                         if ( name.rfind(".so") == std::string::npos ||
                              name.substr(name.rfind(".so")) != ".so" ) {
-                            log(Debug) << "Dropping " << name <<endlog(); 
+                            log(Debug) << "Dropping " << name <<endlog();
                         }
                         else {
-                            log(Debug) << "Accepting " << name <<endlog(); 
+                            log(Debug) << "Accepting " << name <<endlog();
                             loadLibrary( path + "/" + name );
                         }
                     }
@@ -1096,7 +1096,7 @@ namespace OCL
 
         // Extract the libname such that we avoid double loading (crashes in case of two # versions).
         libname = name;
-        if ( name_is_path ) 
+        if ( name_is_path )
             libname = libname.substr( so_name.rfind("/")+1 );
         if ( libname.find("lib") == 0 ) {
             libname = libname.substr(3);
@@ -1189,7 +1189,7 @@ namespace OCL
         LoadedLibs.push_back(make_pair(libname,handle));
         log(Debug) <<"Storing "<< libname <<endlog();
         dlerror();    /* Clear any existing error */
-        
+
         // Lookup Component factories:
         FactoryMap* (*getfactory)(void) = 0;
         FactoryMap* fmap = 0;
@@ -1303,7 +1303,7 @@ namespace OCL
                 return false;
             }
         }
-                
+
         if ( factory ) {
             log(Debug) <<"Found factory for Component type "<<type<<endlog();
         } else {
@@ -1326,7 +1326,7 @@ namespace OCL
             }
             log(Info) << "Found Orocos plugin '"<< type <<"'"<<endlog();
         }
-        
+
         try {
             comps[name].instance = (*factory)(name);
         } catch(...) {
@@ -1371,7 +1371,7 @@ namespace OCL
             // regname and name are equal.
             peer = comps[name].instance;
         }
-            
+
         assert(peer);
         if ( peer->isRunning() ) {
             log(Error) << "Can't unload component "<<name<<" since it is still running."<<endlog();
@@ -1399,7 +1399,7 @@ namespace OCL
             cout << "   (none)"<<endl;
     }
 
-    bool DeploymentComponent::setPeriodicActivity(const std::string& comp_name, 
+    bool DeploymentComponent::setPeriodicActivity(const std::string& comp_name,
                                                   double period, int priority,
                                                   int scheduler)
     {
@@ -1411,8 +1411,8 @@ namespace OCL
         }
         return false;
     }
-    
-    bool DeploymentComponent::setNonPeriodicActivity(const std::string& comp_name, 
+
+    bool DeploymentComponent::setNonPeriodicActivity(const std::string& comp_name,
                                                      int priority,
                                                      int scheduler)
     {
@@ -1424,8 +1424,8 @@ namespace OCL
         }
         return false;
     }
-    
-    bool DeploymentComponent::setSlaveActivity(const std::string& comp_name, 
+
+    bool DeploymentComponent::setSlaveActivity(const std::string& comp_name,
                                                double period)
     {
         if ( this->setActivity(comp_name, "SlaveActivity", period, 0, ORO_SCHED_OTHER ) ) {
@@ -1436,10 +1436,10 @@ namespace OCL
         }
         return false;
     }
-    
 
-    bool DeploymentComponent::setActivity(const std::string& comp_name, 
-                                          const std::string& act_type, 
+
+    bool DeploymentComponent::setActivity(const std::string& comp_name,
+                                          const std::string& act_type,
                                           double period, int priority,
                                           int scheduler)
     {
@@ -1447,7 +1447,7 @@ namespace OCL
         if ( comp_name == this->getName() )
             peer = this;
         else
-            if ( comps.count(comp_name) ) 
+            if ( comps.count(comp_name) )
                 peer = comps[comp_name].instance;
             else
                 peer = this->getPeer(comp_name); // last resort.
@@ -1471,7 +1471,7 @@ namespace OCL
             else
                 if ( act_type == "SlaveActivity" )
                     newact = new SlaveActivity(period);
-                
+
         if (newact == 0) {
             log(Error) << "Can't create activity for component "<<comp_name<<": incorrect arguments."<<endlog();
             return false;
@@ -1481,7 +1481,7 @@ namespace OCL
         assert( peer->isRunning() == false );
         delete comps[comp_name].act;
         comps[comp_name].act = newact;
-                
+
         return true;
     }
 
@@ -1502,9 +1502,9 @@ namespace OCL
             log(Error)<<"No such peer to configure: "<<name<<endlog();
             return false;
         }
-            
+
         PropertyLoader pl;
-        return pl.configure( filename, c, true ); // strict:true 
+        return pl.configure( filename, c, true ); // strict:true
     }
 
     FactoryMap& DeploymentComponent::getFactories()

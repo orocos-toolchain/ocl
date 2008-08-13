@@ -1,12 +1,12 @@
 /***************************************************************************
-  tag: Peter Soetens  Wed Jan 18 14:11:40 CET 2006  ComediSubDeviceDIn.cxx 
+  tag: Peter Soetens  Wed Jan 18 14:11:40 CET 2006  ComediSubDeviceDIn.cxx
 
                         ComediSubDeviceDIn.cxx -  description
                            -------------------
     begin                : Wed January 18 2006
     copyright            : (C) 2006 Peter Soetens
     email                : peter.soetens@mech.kuleuven.be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -24,8 +24,8 @@
  *   Suite 330, Boston, MA  02111-1307  USA                                *
  *                                                                         *
  ***************************************************************************/
- 
- 
+
+
 
 #include "ComediSubDeviceDIn.hpp"
 #include <rtt/os/fosi.h>
@@ -34,8 +34,8 @@
 namespace OCL
 {
 
-  
-  
+
+
 
     ComediSubDeviceDIn::ComediSubDeviceDIn( ComediDevice* cd, const std::string& name, unsigned int subdevice, bool all_bits)
       : DigitalInInterface( name ),
@@ -70,12 +70,12 @@ namespace OCL
         unsigned int channels = this->nbOfInputs();
         if ( ( myCard->getSubDeviceType( _subDevice ) == COMEDI_SUBD_DIO) && all_bits ) {
             log(Info) << "Configuring first "<<channels<<" dio channels on subdevice "<<_subDevice<<" as input type." << endlog();
-        
+
             for (unsigned int i=0; i<channels; ++i)
                 comedi_dio_config(myCard->getDevice()->it, _subDevice, i, COMEDI_INPUT);
         } else {
             log(Info) << "Subdevice "<<_subDevice<<" is digital input with "<<channels << " channels." << endlog();
-        }            
+        }
     }
 
     bool ComediSubDeviceDIn::useBit( unsigned int bit )
@@ -123,7 +123,7 @@ namespace OCL
 	  // Filter data from these channels
 	  unsigned int write_mask = 0;
 	  // Can somebody check this cumbersome line please?
-	  for (unsigned int i = start_bit; i <= stop_bit ; i++) 
+	  for (unsigned int i = start_bit; i <= stop_bit ; i++)
 	    {
 	      write_mask = write_mask | (0x1 << i);
 	    }
@@ -134,9 +134,9 @@ namespace OCL
 	  // Everything is in read mode, so we don't have to call
 	  // dio_config here (as in ComediSubDeviceOut.hpp)
 	}
-      
+
       return value;
-      
+
     }
 
 }

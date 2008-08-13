@@ -1,12 +1,12 @@
 /***************************************************************************
-  tag: Peter Soetens  Mon Jan 19 14:11:20 CET 2004  CANDeviceInterface.hpp 
+  tag: Peter Soetens  Mon Jan 19 14:11:20 CET 2004  CANDeviceInterface.hpp
 
                         CANDeviceInterface.hpp -  description
                            -------------------
     begin                : Mon January 19 2004
     copyright            : (C) 2004 Peter Soetens
     email                : peter.soetens@mech.kuleuven.ac.be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -23,8 +23,8 @@
  *   Foundation, Inc., 59 Temple Place,                                    *
  *   Suite 330, Boston, MA  02111-1307  USA                                *
  *                                                                         *
- ***************************************************************************/ 
- 
+ ***************************************************************************/
+
 #ifndef CANDEVICEINTERFACE_HPP
 #define CANDEVICEINTERFACE_HPP
 
@@ -50,7 +50,7 @@ namespace RTT
 		 */
         virtual void process(const CANMessage* msg) = 0;
     };
-    
+
 	/**
 	 * An interface describing a generic CANOpenDevice.
      * This can be the controller or a normal slave.
@@ -59,11 +59,11 @@ namespace RTT
      * @see CANOpenBus for message delivery between your CANOpen devices.
      * @see CANMessage for (de-)composing messages.
 	 */
-	struct CANDeviceInterface 
+	struct CANDeviceInterface
         : public CANListenerInterface
     {
         /**
-         * A CANDevice is in the PowerOff status 
+         * A CANDevice is in the PowerOff status
          * after construction.
          */
         CANDeviceInterface()
@@ -85,7 +85,7 @@ namespace RTT
          */
         NodeStatus status;
 	};
-			
+
 }}
 
 

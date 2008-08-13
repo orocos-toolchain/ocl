@@ -1,5 +1,5 @@
 // Copyright (C) 2003,2007 Klaas Gadeyne
-//  
+//
 /***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -53,14 +53,14 @@ namespace OCL
         // Check if subd is counter...
         if ( _myCard->getSubDeviceType( _subDevice ) != COMEDI_SUBD_COUNTER )
             {
-                log(Error) << "Comedi Counter : subdev is not a counter, type = "  
+                log(Error) << "Comedi Counter : subdev is not a counter, type = "
                            << _myCard->getSubDeviceType(_subDevice) << endlog();
                 _myCard = 0;
                 return;
             }
 
         /* Configure the counter subdevice
-           Configure the GPCT for use as an encoder 
+           Configure the GPCT for use as an encoder
            Uses the functions from comedi_common.c
         */
         int retval = reset_counter(_myCard->getDevice()->it, _subDevice);
@@ -82,9 +82,9 @@ namespace OCL
         _resolution = comedi_get_maxdata(_myCard->getDevice()->it,_subDevice, 0);
         if ( _resolution == 0) {
             log(Error) << "Comedi Counter : Could not retrieve encoder resolution !"<<endlog();
-        } 
+        }
     }
-  
+
     ComediEncoder::~ComediEncoder(){}
 
     void ComediEncoder::positionSet(int p)
@@ -117,10 +117,10 @@ namespace OCL
             log(Error) << "Comedi Counter : reading encoder failed, ret = " << ret << endlog();
         }
         return pos;
-    } 
+    }
 
     int ComediEncoder::resolution() const {return _resolution;}
-  
+
     bool ComediEncoder::upcounting() const {return _upcounting;}
 
 }

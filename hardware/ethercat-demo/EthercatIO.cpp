@@ -30,9 +30,9 @@ namespace OCL
 {
     using namespace RTT;
     using namespace std;
- 
+
 		EthercatIO::EthercatIO(string name):
-			TaskContext(name), 
+			TaskContext(name),
 			rteth("rteth","for example: rteth0","rteth0"),
 			get_pos("get_pos",&EthercatIO::mget_pos, this),
 			set_pos("set_pos",&EthercatIO::mset_pos, this),
@@ -47,7 +47,7 @@ namespace OCL
 			anainputs(fmmu_buffer + 4,2,32676,0,10),
 			enc(fmmu_buffer + 0x13,fmmu_buffer + 0x10, 65536, true)
 		{
-		
+
 			this->properties()->addProperty(&rteth);
 			this->methods()->addMethod(&get_pos,"get the position");
 			this->methods()->addMethod(&set_pos,"set the position","position","the value of the desired position");
@@ -60,7 +60,7 @@ namespace OCL
 			ni = init_ec( rteth.get().c_str() );
 			init_slave_db();
 			if(ni != 0) {
-		
+
 				EtherCAT_DataLinkLayer::instance()->attach(ni);
 				printf("Master initializing \n\n");
 				EtherCAT_Master * EM = EtherCAT_Master::instance();
@@ -78,28 +78,28 @@ namespace OCL
 				}
 			}
 		}
-		
+
 		EthercatIO::~EthercatIO() {
 			if(ni != 0)
 				close_socket(ni);
 		}
-		
+
 		int EthercatIO::mget_pos(void) {
 			return enc.positionGet();
 		}
-		
+
 		void EthercatIO::mset_pos(int pos) {
 			enc.positionSet(pos);
 		}
-		
+
 		int EthercatIO::mget_turn(void) {
 			return enc.turnGet();
 		}
-		
+
 		void EthercatIO::mset_turn(int turn){
 			enc.turnSet(turn);
 		}
-		
+
 		bool EthercatIO::mupcounting(void) {
 			return enc.upcounting();
 		}
@@ -135,11 +135,11 @@ namespace OCL
 			*/
 			enc.update();
 			EM->txandrx_PD(40,fmmu_buffer);
-			
+
 		}
-		
+
 		void EthercatIO::shutdown() {
-			
+
 		}
 }//namespace orocos
 
@@ -171,7 +171,7 @@ static void init_slave_db() {
 	pd_config_EL5101_2[0] = syncman0_EL5101_2;
 	pd_config_EL5101_2[1] = syncman1_EL5101_2;
 	slave_db->set_conf(&EC_EK1100,0);
-	slave_db->set_conf(&EC_EL4102,1);	
+	slave_db->set_conf(&EC_EL4102,1);
 	slave_db->set_conf(&EC_EL3162,2);
 	slave_db->set_conf(&EC_EL2004_1,3);
 	slave_db->set_conf(&EC_EL2004_2,4);

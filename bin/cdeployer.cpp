@@ -1,12 +1,12 @@
 /***************************************************************************
-  tag: Peter Soetens  Thu Jul 3 15:30:32 CEST 2008  cdeployer.cpp 
+  tag: Peter Soetens  Thu Jul 3 15:30:32 CEST 2008  cdeployer.cpp
 
                         cdeployer.cpp -  description
                            -------------------
     begin                : Thu July 03 2008
     copyright            : (C) 2008 Peter Soetens
     email                : peter.soetens@fmtc.be
- 
+
  ***************************************************************************
  *   This program is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -24,8 +24,8 @@
  *   Suite 330, Boston, MA  02111-1307  USA                                *
  *                                                                         *
  ***************************************************************************/
- 
- 
+
+
 #include <rtt/os/main.h>
 #include <rtt/RTT.hpp>
 #include <deployment/CorbaDeploymentComponent.hpp>

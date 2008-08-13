@@ -43,7 +43,7 @@ int ORO_main( int argc, char** argv)
     // such that we can see output :
     if ( Logger::log().getLogLevel() < Logger::Info ) {
         Logger::log().setLogLevel( Logger::Info );
-        log(Info) << argv[0] 
+        log(Info) << argv[0]
 		      << " manually raises LogLevel to 'Info' (5). See also file 'orocos.log'."<<endlog();
     }
 
@@ -67,7 +67,7 @@ int ORO_main( int argc, char** argv)
     cout << "  Use 'Timer.arm(0, 1.5)' to arm timer '0' to end over 1.5 seconds. " <<endl;
     cout << "  32 timers are initially available (0..31)." <<endl;
     cout << "  Other methods (type 'this') are available as well."<<endl;
-        
+
     tb.loop();
 
     tcomp.stop();

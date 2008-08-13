@@ -35,13 +35,13 @@ namespace OCL
      * @file   CartesianVelocityController.hpp
      * @author Ruben Smits
      * @date   Mon Aug 20 11:24:08 2007
-     * 
+     *
      * @brief  This component is the bridge between a hardware
      * nAxesVelocityController and the Cartesian space control
      * components. It calculates the forward position kinematics and
      * the inverse velocity kinematics for a KDL::Chain, the kinematic
      * algorithms are given by the user.
-     * 
+     *
      */
 
     class CartesianVelocityController : public RTT::TaskContext
@@ -49,39 +49,39 @@ namespace OCL
     public:
         CartesianVelocityController(std::string name);
         ~CartesianVelocityController();
-        
+
         virtual bool configureHook();
         virtual bool startHook();
         virtual void updateHook();
         virtual void stopHook();
         virtual void cleanupHook();
-        
+
     private:
         KDL::Chain chain;
         KDL::ChainFkSolverPos* fksolver;
         KDL::ChainIkSolverVel* iksolver;
-        
+
         unsigned int nj;
-        
+
         KDL::JntArray *jointpositions,*jointvelocities;
         std::vector<double> naxesposition,naxesvelocities;
-        
+
         KDL::Twist    cartvel;
         KDL::Frame    cartpos;
-        
+
         RTT::DataPort<KDL::Frame> cartpos_port;
         RTT::DataPort<KDL::Twist> cartvel_port;
         RTT::DataPort<std::vector<double> > naxespos_port;
         RTT::DataPort<std::vector<double> > naxesvel_port;
-        
+
         RTT::Property<std::string> chain_location;
         RTT::Property<KDL::Frame> toolframe;
-        
+
         bool kinematics_status;
-        
+
     };
 }
 #endif
-    
-        
-        
+
+
+

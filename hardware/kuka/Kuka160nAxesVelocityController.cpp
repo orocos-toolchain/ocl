@@ -1,11 +1,11 @@
 /***************************************************************************
- tag: Wim Meeussen and Johan Rutgeerts  Mon Jan 19 14:11:20 CET 2004   
+ tag: Wim Meeussen and Johan Rutgeerts  Mon Jan 19 14:11:20 CET 2004
        Ruben Smits Fri 12 08:31 CET 2006
                            -------------------
     begin                : Mon January 19 2004
     copyright            : (C) 2004 Peter Soetens
     email                : first.last@mech.kuleuven.ac.be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -22,7 +22,7 @@
  *   Foundation, Inc., 59 Temple Place,                                    *
  *   Suite 330, Boston, MA  02111-1307  USA                                *
  *                                                                         *
- ***************************************************************************/ 
+ ***************************************************************************/
 
 #include "Kuka160nAxesVelocityController.hpp"
 #include <ocl/ComponentLoader.hpp>
@@ -33,7 +33,7 @@ namespace OCL{
     using namespace RTT;
     using namespace std;
     using namespace KDL;
-    
+
 #define KUKA160_NUM_AXES 6
 #define KUKA160_CONV1  -120*114*106*100/( 30*40*48*14)
 #define KUKA160_CONV2  -168*139*111/(28*37*15)
@@ -41,18 +41,18 @@ namespace OCL{
 #define KUKA160_CONV4  -150.857
 #define KUKA160_CONV5  -155.17
 #define KUKA160_CONV6  -100
-  
+
   // Resolution of the encoders
 #define KUKA160_ENC_RES  4096
-  
+
   // Conversion from encoder ticks to radiants
 #define KUKA160_TICKS2RAD { 2*M_PI / (KUKA160_CONV1 * KUKA160_ENC_RES), 2*M_PI / (KUKA160_CONV2 * KUKA160_ENC_RES), 2*M_PI / (KUKA160_CONV3 * KUKA160_ENC_RES), 2*M_PI / (KUKA160_CONV4 * KUKA160_ENC_RES), 2*M_PI / (KUKA160_CONV5 * KUKA160_ENC_RES), 2*M_PI / (KUKA160_CONV6 * KUKA160_ENC_RES)}
-  
+
   // Conversion from angular speed to voltage
 #define KUKA160_RADproSEC2VOLT { -3.97143, -4.40112, -3.65062, -3.38542, -4.30991, -2.75810 }
-  
+
     typedef Kuka160nAxesVelocityController MyType;
-    
+
     Kuka160nAxesVelocityController::Kuka160nAxesVelocityController(string name)
         : TaskContext(name,PreOperational),
           driveValues_port("nAxesOutputVelocity"),
@@ -90,20 +90,20 @@ namespace OCL{
           axes_simulation(KUKA160_NUM_AXES)
     {
         Logger::In in(this->getName().data());
-        
+
         double ticks2rad[KUKA160_NUM_AXES] = KUKA160_TICKS2RAD;
         double vel2volt[KUKA160_NUM_AXES] = KUKA160_RADproSEC2VOLT;
         for(unsigned int i = 0;i<KUKA160_NUM_AXES;i++){
             positionConvertFactor[i] = ticks2rad[i];
             driveConvertFactor[i] = vel2volt[i];
         }
-        
+
 #if (defined OROPKG_OS_LXRT)
         comediDevAOut       = new ComediDevice( 0 );
         comediDevDInOut     = new ComediDevice( 3 );
         comediDevEncoder    = new ComediDevice( 2 );
         log(Info)<< "ComediDevices Created"<<endlog();
-        
+
         int subd;
         subd = 1; // subdevice 1 is analog out
         comediSubdevAOut    = new ComediSubDeviceAOut( comediDevAOut, "Kuka160", subd );
@@ -112,10 +112,10 @@ namespace OCL{
         subd = 1; // subdevice 1 is digital out
         comediSubdevDOut    = new ComediSubDeviceDOut( comediDevDInOut, "Kuka160", subd );
         log(Info)<<"ComediSubDevices Created"<<endlog();
-        
+
         // first switch all channels off
         for(int i = 0; i < 24 ; i++)  comediSubdevDOut->switchOff( i );
-        
+
         for (unsigned int i = 0; i < KUKA160_NUM_AXES; i++){
             log(Info)<<"Kuka160 Creating Hardware Axis "<<i<<endlog();
             //Setting up encoders
@@ -123,19 +123,19 @@ namespace OCL{
             subd = 0; // subdevice 0 is counter
             encoderInterface[i] = new ComediEncoder(comediDevEncoder , subd , i);
             log(Info)<<"Creation ComediEncoder succeeded."<<endlog();
-            
+
             log(Info)<<"encoder settings: "<<positionConvertFactor[i]<<endlog();
             log(Info)<<", "<<initialPosition_prop.value()[i]<<endlog();
             log(Info)<<", "<<lowerPositionLimits_prop.value()[i]<<endlog();
             log(Info)<<", "<<upperPositionLimits_prop.value()[i]<<endlog();
-            
-            encoder[i] = new IncrementalEncoderSensor( encoderInterface[i], 1.0 / positionConvertFactor[i], 
-                                                       initialPosition_prop.value()[i]*positionConvertFactor[i], 
+
+            encoder[i] = new IncrementalEncoderSensor( encoderInterface[i], 1.0 / positionConvertFactor[i],
+                                                       initialPosition_prop.value()[i]*positionConvertFactor[i],
                                                        lowerPositionLimits_prop.value()[i], upperPositionLimits_prop.value()[i],KUKA160_ENC_RES);
             log(Info)<<"Setting up brake ..."<<endlog();
             brake[i] = new DigitalOutput( comediSubdevDOut, 23 - i,true);
             brake[i]->switchOn();
-            
+
             vref[i]   = new AnalogOutput( comediSubdevAOut, i );
             enable[i] = new DigitalOutput( comediSubdevDOut, 13 - i );
             reference[i] = new DigitalInput( comediSubdevDIn, 23 - i);
@@ -147,23 +147,23 @@ namespace OCL{
             axes_hardware[i]->setSwitch( "Reference", reference[i]);
 
         }
-        
+
 #endif
-        //Definition of kinematics for the Kuka160 
+        //Definition of kinematics for the Kuka160
         kinematics.addSegment(Segment(Joint(Joint::RotZ),Frame(Vector(0.0,0.0,0.9))));
         kinematics.addSegment(Segment(Joint(Joint::RotX),Frame(Vector(0.0,0.0,0.97))));
         kinematics.addSegment(Segment(Joint(Joint::RotX),Frame(Vector(0.0,0.0,1.080))));
         kinematics.addSegment(Segment(Joint(Joint::RotZ)));
         kinematics.addSegment(Segment(Joint(Joint::RotX)));
         kinematics.addSegment(Segment(Joint(Joint::RotZ),Frame(Vector(0.0,0.0,0.18))));
-        
+
         chain_attr.set(kinematics);
 
-        
+
         /*
          *  Command Interface
          */
-        
+
         this->methods()->addMethod( RTT::method("startAllAxes",&MyType::startAllAxes,this),
                                     "start all axes"  );
         this->methods()->addMethod( RTT::method("stopAllAxes",&MyType::stopAllAxes,this),
@@ -178,7 +178,7 @@ namespace OCL{
         this->methods()->addMethod( RTT::method("initPosition",&MyType::initPosition,this),
                                     "changes position value of axis to the initial position",
                                     "switchposition","recorded switchpositions");
-        
+
         this->commands()->addCommand(RTT::command("prepareForUse",&MyType::prepareForUse,&MyType::prepareForUseCompleted,this),
                                      "prepares the robot for use"  );
         this->commands()->addCommand(RTT::command("prepareForShutdown",&MyType::prepareForShutdown,&MyType::prepareForShutdownCompleted,this),
@@ -190,14 +190,14 @@ namespace OCL{
         ports()->addPort(&driveValues_port);
         ports()->addPort(&positionValues_port);
         ports()->addPort(&referenceValues_port);
-        
+
         /**
          * Adding the events :
          */
         events()->addEvent( &driveOutOfRange_evt, "Velocity of Axis is out of range","message","Information about event" );
         events()->addEvent( &positionOutOfRange_evt, "Position of an Axis is out of range","message","Information about event");
 
-                
+
         properties()->addProperty( &driveLimits_prop );
         properties()->addProperty( &lowerPositionLimits_prop );
         properties()->addProperty( &upperPositionLimits_prop  );
@@ -210,9 +210,9 @@ namespace OCL{
 
 
 
-    
+
     }
-    
+
     Kuka160nAxesVelocityController::~Kuka160nAxesVelocityController()
     {
         this->cleanup();
@@ -221,7 +221,7 @@ namespace OCL{
         if(simulation)
             for (unsigned int i = 0; i < KUKA160_NUM_AXES; i++)
                 delete axes[i];
-        
+
 #if (defined OROPKG_OS_LXRT)
         for (unsigned int i = 0; i < KUKA160_NUM_AXES; i++)
             delete axes_hardware[i];
@@ -236,16 +236,16 @@ namespace OCL{
     bool Kuka160nAxesVelocityController::configureHook()
     {
         Logger::In in(this->getName().data());
-        
+
         simulation=simulation_prop.value();
-        
+
         if(!(driveLimits_prop.value().size()==KUKA160_NUM_AXES&&
              lowerPositionLimits_prop.value().size()==KUKA160_NUM_AXES&&
              upperPositionLimits_prop.value().size()==KUKA160_NUM_AXES&&
              initialPosition_prop.value().size()==KUKA160_NUM_AXES&&
              driveOffset_prop.value().size()==KUKA160_NUM_AXES))
             return false;
-        
+
 #if (defined OROPKG_OS_LXRT)
         if(!simulation){
             for (unsigned int i = 0; i <KUKA160_NUM_AXES; i++){
@@ -282,7 +282,7 @@ namespace OCL{
                 log(Warning)<<"Could not connect EmergencyStop to "<<name<<", "<<peername<<" is not a peer of "<<this->getName()<<endlog();
                 continue;
             }
-            
+
             if(peer->events()->hasEvent(eventname)){
                 Handle handle = peer->events()->setupConnection(eventname).callback(this,&Kuka160nAxesVelocityController::EmergencyStop).handle();
                 if(handle.connect()){
@@ -295,21 +295,21 @@ namespace OCL{
         }
         return true;
     }
-    
+
     bool Kuka160nAxesVelocityController::startHook()
     {
         return true;
     }
-  
+
     void Kuka160nAxesVelocityController::updateHook()
     {
 
         driveValues_port.Get(driveValues);
-        
-        for (int axis=0;axis<KUKA160_NUM_AXES;axis++) {      
+
+        for (int axis=0;axis<KUKA160_NUM_AXES;axis++) {
             // Set the position and perform checks in joint space.
             positionValues[axis]=axes[axis]->getSensor("Position")->readSensor();
-            
+
             // emit event when position is out of range
             if( (positionValues[axis] < lowerPositionLimits_prop.value()[axis]) ||
                 (positionValues[axis] > upperPositionLimits_prop.value()[axis]) ){
@@ -317,12 +317,12 @@ namespace OCL{
                 sprintf(msg,"Position of Kuka160 Axis %d is out of range: value: %f",axis,positionValues[axis]);
                 positionOutOfRange_evt(msg);
             }
-            
+
             // send the drive value to hw and performs checks
-            if (axes[axis]->isDriven()) 
+            if (axes[axis]->isDriven())
                 axes[axis]->drive(driveValues[axis]);
-            
-            // ask the reference value from the hw 
+
+            // ask the reference value from the hw
 #if (defined OROPKG_OS_LXRT)
             if(!simulation)
                 references[axis]=axes[axis]->getSwitch("Reference")->isOn();
@@ -332,19 +332,19 @@ namespace OCL{
         }
         positionValues_port.Set(positionValues);
         referenceValues_port.Set(references);
-    
+
     }
-  
+
     void Kuka160nAxesVelocityController::stopHook()
     {
         //Make sure machine is shut down
         prepareForShutdown();
     }
-  
+
     void Kuka160nAxesVelocityController::cleanupHook()
     {
     }
-  
+
     bool Kuka160nAxesVelocityController::prepareForUse()
     {
 #if (defined OROPKG_OS_LXRT)
@@ -365,7 +365,7 @@ namespace OCL{
 #endif
         return true;
     }
-  
+
     bool Kuka160nAxesVelocityController::prepareForShutdown()
     {
         //make sure all axes are stopped and locked
@@ -378,42 +378,42 @@ namespace OCL{
         activated = false;
         return true;
     }
-  
+
     bool Kuka160nAxesVelocityController::prepareForShutdownCompleted()const
     {
         return true;
     }
-  
+
     bool Kuka160nAxesVelocityController::stopAllAxes()
     {
         bool succes = true;
         for(unsigned int i = 0;i<KUKA160_NUM_AXES;i++)
             succes &= axes[i]->stop();
-        
+
         return succes;
     }
-  
+
     bool Kuka160nAxesVelocityController::startAllAxes()
     {
         bool succes = true;
         for(unsigned int i = 0;i<KUKA160_NUM_AXES;i++)
             succes &= axes[i]->drive(0.0);
-        
+
         return succes;
     }
-  
+
     bool Kuka160nAxesVelocityController::unlockAllAxes()
     {
         if(!activated)
             return false;
-        
+
         bool succes = true;
         for(unsigned int i = 0;i<KUKA160_NUM_AXES;i++)
             succes &= axes[i]->unlock();
 
         return succes;
     }
-  
+
     bool Kuka160nAxesVelocityController::lockAllAxes()
     {
         bool succes = true;
@@ -422,24 +422,24 @@ namespace OCL{
         }
         return succes;
     }
-    
-    
+
+
     bool Kuka160nAxesVelocityController::addDriveOffset(const vector<double>& offset)
     {
         if(offset.size()!=KUKA160_NUM_AXES)
             return false;
         for(unsigned int i=0;i<KUKA160_NUM_AXES;i++){
             driveOffset_prop.value()[i] += offset[i];
-            
+
 #if (defined OROPKG_OS_LXRT)
             if (!simulation)
                 ((Axis*)(axes[i]))->getDrive()->addOffset(offset[i]);
 #endif
         }
-        
+
         return true;
     }
-  
+
 bool Kuka160nAxesVelocityController::initPosition(const vector<double>& switchposition)
     {
 #if (defined OROPKG_OS_LXRT)

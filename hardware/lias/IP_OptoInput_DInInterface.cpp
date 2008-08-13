@@ -38,7 +38,7 @@ unsigned int IP_OptoInput_DInInterface::readSequence(unsigned int start_bit, uns
     }
 
     mask &= IP_OptoInput_Read_IDR();
-    
+
     return mask;
 }
 

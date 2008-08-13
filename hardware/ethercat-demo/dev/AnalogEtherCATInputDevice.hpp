@@ -28,10 +28,10 @@ namespace RTT
 
 				 ~AnalogEtherCATInputDevice() {}
 
-				 virtual void rangeSet(unsigned int /*chan*/, 
+				 virtual void rangeSet(unsigned int /*chan*/,
 											  unsigned int /*range*/) {}
 
-				 virtual void arefSet(unsigned int /*chan*/, 
+				 virtual void arefSet(unsigned int /*chan*/,
 											 unsigned int /*aref*/) {}
 
 				 virtual unsigned int nbOfChannels() const {
@@ -48,7 +48,7 @@ namespace RTT
 					 }
                      return -1;
 				 }
-		  
+
 				 virtual int read( unsigned int chan, double& value ) {
 					 if (chan < nbofchans) {
 						 unsigned int tmp;
@@ -64,7 +64,7 @@ namespace RTT
 					 return mbin_range;
 				 }
 
-				 virtual unsigned int binaryLowest() const 
+				 virtual unsigned int binaryLowest() const
 				 {
 					 return 0;
 				 }
@@ -89,7 +89,7 @@ namespace RTT
 					 return mbin_range/(mhighest-mlowest);
 				 }
 
-			 };    
+			 };
 
 }
 

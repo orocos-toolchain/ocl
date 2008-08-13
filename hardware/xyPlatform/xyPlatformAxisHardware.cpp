@@ -1,12 +1,12 @@
 /***************************************************************************
-  tag: Ruben Smits  Mon Jan 19 14:11:20 CET 2004  JR3WrenchSensor.hpp 
+  tag: Ruben Smits  Mon Jan 19 14:11:20 CET 2004  JR3WrenchSensor.hpp
 
                         JR3WrenchSensor.hpp -  description
                            -------------------
     begin                : Mon January 19 2004
     copyright            : (C) 2004 Peter Soetens
     email                : first.last@mech.kuleuven.ac.be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -23,7 +23,7 @@
  *   Foundation, Inc., 59 Temple Place,                                    *
  *   Suite 330, Boston, MA  02111-1307  USA                                *
  *                                                                         *
- ***************************************************************************/ 
+ ***************************************************************************/
 
 #include "xyPlatformConstants.hpp"
 #include "xyPlatformAxisHardware.hpp"
@@ -38,30 +38,30 @@ using namespace std;
 
 namespace OCL
 {
-  
+
   class VelocityReaderXY : public SensorInterface<double>
   {
   public:
     VelocityReaderXY(Axis* axis, double maxvel) : _axis(axis), _maxvel(maxvel)
     {};
-    
+
     virtual ~VelocityReaderXY() {};
-    
+
     virtual int readSensor( double& vel ) const { vel = _axis->getDriveValue(); return 0; }
-    
+
     virtual double readSensor() const { return _axis->getDriveValue(); }
-    
+
     virtual double maxMeasurement() const { return _maxvel; }
-    
+
     virtual double minMeasurement() const { return -_maxvel; }
-    
+
     virtual double zeroMeasurement() const { return 0; }
-    
+
   private:
     Axis* _axis;
     double _maxvel;
   };
-  
+
 } // namespace
 
 xyPlatformAxisHardware::xyPlatformAxisHardware(Event<void(void)>& maximumDrive, std::string configfile )
@@ -83,18 +83,18 @@ xyPlatformAxisHardware::xyPlatformAxisHardware(Event<void(void)>& maximumDrive, 
     if ( ! (offsetfile >> driveOffsets[i]) )  success = false;
   }
   if (!success)  cout << "(xyPlatformAxisHardware) Offset file not read. Setting offsets to zero" << endl;
-    
+
   _comediDevAOut = new ComediDevice( 1 );
   _comediDevEncoder = new ComediDevice( 2 );
   _comediDevDInOut = new ComediDevice(3);
-  
+
   int subd;
   subd = 1; // subdevice 1 is analog out
   _comediSubdevAOut = new ComediSubDeviceAOut( _comediDevAOut, "xyPlatform", subd);
 
   subd = 1; // subdevice 1 is digital out
   _comediSubdevDOut = new ComediSubDeviceDOut ( _comediDevDInOut, "xyPlatform", subd);
-  
+
   subd = 0; // subdevice 0 is counter
   //Setting up encoders
   _encoderInterface[0] = new ComediEncoder(_comediDevEncoder , subd , 6);
@@ -103,25 +103,25 @@ xyPlatformAxisHardware::xyPlatformAxisHardware(Event<void(void)>& maximumDrive, 
   _encoder[1] = new IncrementalEncoderSensor( _encoderInterface[1], -1000 * ticks2mm[1], encoderOffsets[1], Y_AXIS_MIN_POS, Y_AXIS_MAX_POS, 4096);
   //  _encoder[0] = new IncrementalEncoderSensor( _encoderInterface[0], 400000, 0, 0, 0.5, 4096);
   //  _encoder[1] = new IncrementalEncoderSensor( _encoderInterface[1], 400000, 0, 0, 0.5, 4096);
-  
 
-  
+
+
   for (unsigned int i = 0; i < XY_NUM_AXIS; i++){
     _brake[i] = new DigitalOutput( ); // Virtual (software) signal
     // _brake[i]->switchOn();
-    
+
     _vref[i]   = new AnalogOutput( _comediSubdevAOut, i + 6 );
     _enable[i] = new DigitalOutput( );// Virtual (software) signal
     //_reference[i] = new DigitalInput( _comediSubdevDIn, 23 - i);
     _drive[i] = new AnalogDrive( _vref[i], _enable[i], 1.0 / mmpsec2volt[i], driveOffsets[i] / mmpsec2volt[i]);
-    
+
     _axes[i] = new Axis( _drive[i] );
     _axes[i]->limitDrive( jointspeedlimits[i] );
     _axes[i]->setLimitDriveEvent( maximumDrive );
     _axes[i]->setBrake( _brake[i] );
     _axes[i]->setSensor( "Position", _encoder[i] );
     _axes[i]->setSensor( "Velocity", new VelocityReaderXY(_axes[i], jointspeedlimits[i] ) );
-    
+
     _axesInterface[i] = _axes[i];
   }
 
@@ -157,7 +157,7 @@ xyPlatformAxisHardware::~xyPlatformAxisHardware()
   delete _comediSubdevAOut;
   delete _comediDevDInOut;
   delete _comediSubdevDOut;
-  
+
 }
 
 
@@ -175,7 +175,7 @@ bool xyPlatformAxisHardware::prepareForUse()
   // robot was switched on
   if (_initialized)
     return true;
-  else 
+  else
     return false;
 }
 
@@ -190,7 +190,7 @@ bool xyPlatformAxisHardware::prepareForShutdown()
 }
 
 
-std::vector<AxisInterface*> 
+std::vector<AxisInterface*>
 xyPlatformAxisHardware::getAxes()
 {
   return _axesInterface;

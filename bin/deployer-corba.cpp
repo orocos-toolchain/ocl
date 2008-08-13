@@ -1,12 +1,12 @@
 /***************************************************************************
-  tag: Peter Soetens  Thu Jul 3 15:30:24 CEST 2008  deployer-corba.cpp 
+  tag: Peter Soetens  Thu Jul 3 15:30:24 CEST 2008  deployer-corba.cpp
 
                         deployer-corba.cpp -  description
                            -------------------
     begin                : Thu July 03 2008
     copyright            : (C) 2008 Peter Soetens
     email                : peter.soetens@fmtc.be
- 
+
  ***************************************************************************
  *   This program is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -22,9 +22,9 @@
  *   License along with this program; if not, write to the Free Software   *
  *   Foundation, Inc., 59 Temple Place,                                    *
  *   Suite 330, Boston, MA  02111-1307  USA                                *
- ***************************************************************************/ 
- 
- 
+ ***************************************************************************/
+
+
 #include <rtt/os/main.h>
 #include <rtt/RTT.hpp>
 #include <taskbrowser/TaskBrowser.hpp>

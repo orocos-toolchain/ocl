@@ -1,12 +1,12 @@
 /***************************************************************************
-  tag: Peter Soetens  Thu Apr 22 20:40:59 CEST 2004  SignalTracker.hpp 
+  tag: Peter Soetens  Thu Apr 22 20:40:59 CEST 2004  SignalTracker.hpp
 
                         SignalTracker.hpp -  description
                            -------------------
     begin                : Thu April 22 2004
     copyright            : (C) 2004 Peter Soetens
     email                : peter.soetens@mech.kuleuven.ac.be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -23,8 +23,8 @@
  *   Foundation, Inc., 59 Temple Place,                                    *
  *   Suite 330, Boston, MA  02111-1307  USA                                *
  *                                                                         *
- ***************************************************************************/ 
- 
+ ***************************************************************************/
+
 #ifndef ORO_SIGNALTRACKER_HPP
 #define ORO_SIGNALTRACKER_HPP
 
@@ -100,7 +100,7 @@ namespace ORO_ControlKernel
      * DataObjects, the last one will always be used for all channels !
      *
      * The current implementation can only track one dataobject
-     * at a time (so all tracked channels come from one dataobject). 
+     * at a time (so all tracked channels come from one dataobject).
      * Interested parties can extend this implementation with
      * multi-dataobject tracking.
      * @ingroup kcomps kcomp_generator
@@ -129,7 +129,7 @@ namespace ORO_ControlKernel
         /**
          * Constructor.
          */
-        SignalTracker(int num_channels =  1, const std::string& name = "SignalTracker") 
+        SignalTracker(int num_channels =  1, const std::string& name = "SignalTracker")
             : Base( name ),
               max_chans("Channels", "The number of channels", num_channels)
         {
@@ -143,7 +143,7 @@ namespace ORO_ControlKernel
                 return false;
 
             return true;
-        }            
+        }
 
         virtual void pull()
         {
@@ -156,7 +156,7 @@ namespace ORO_ControlKernel
         /**
          * @see KernelInterfaces.hpp class ModuleControlInterface
          */
-        virtual void calculate() 
+        virtual void calculate()
         {
             if ( track_DObj )
                 {
@@ -167,11 +167,11 @@ namespace ORO_ControlKernel
                             set_point[ it->sink_chan ] = 0;
                 }
         }
-            
+
         /**
          * @see KernelInterfaces.hpp class ModuleControlInterface
          */
-        virtual void push()      
+        virtual void push()
         {
             setp_DObj->Set( set_point );
         }
@@ -284,7 +284,7 @@ namespace ORO_ControlKernel
         {
             TemplateDataSourceFactory< SignalTracker >* ret =
                 newDataSourceFactory( this );
-            ret->add( "channelValue", 
+            ret->add( "channelValue",
                       data( &SignalTracker::channelValue, "The current value "
                             "of the channel.",
                             "Channel", "The number of the channel") );
@@ -297,40 +297,40 @@ namespace ORO_ControlKernel
         {
             TemplateCommandFactory< SignalTracker >* ret =
                 newCommandFactory( this );
-            ret->add( "enableChannel", 
+            ret->add( "enableChannel",
                       command( &SignalTracker::enableChannel,
                                &SignalTracker::true_gen,
                                "Turn on a channel.",
                                "Channel", "The channel to turn on."
                                ) );
-            ret->add( "disableChannel", 
+            ret->add( "disableChannel",
                       command( &SignalTracker::disableChannel,
                                &SignalTracker::true_gen,
                                "Turn off a channel.",
                                "Channel", "The channel to turn off."
                                ) );
-            ret->add( "scaleValue", 
+            ret->add( "scaleValue",
                       command( &SignalTracker::scaleValue,
                                &SignalTracker::true_gen,
                                "Scale the output of a channel.",
                                "Channel", "The channel number.",
                                "Factor", "The scale factor."
                                ) );
-            ret->add( "trackInput", 
+            ret->add( "trackInput",
                       command( &SignalTracker::trackInput,
                                &SignalTracker::true_gen,
                                "Track an Input channel.",
                                "SetPoint Channel", "The SetPoint channel number.",
                                "Input Channel", "The Input channel number"
                                ) );
-            ret->add( "trackModel", 
+            ret->add( "trackModel",
                       command( &SignalTracker::trackModel,
                                &SignalTracker::true_gen,
                                "Track an Model channel.",
                                "SetPoint Channel", "The SetPoint channel number.",
                                "Model Channel", "The Model channel number"
                                ) );
-            ret->add( "trackCommand", 
+            ret->add( "trackCommand",
                       command( &SignalTracker::trackCommand,
                                &SignalTracker::true_gen,
                                "Track an Command channel.",
@@ -362,7 +362,7 @@ namespace ORO_ControlKernel
                     channel[sp_chan].tracker     = track_DObj;
                     return true;
                 }
-        } 
+        }
 
         Property<int> max_chans;
 

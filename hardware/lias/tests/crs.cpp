@@ -30,7 +30,7 @@ public:
 	{
 
   		this->methods()->addMethod( method( "message", &Supervisor::message, this),  "give a message to the user","msg","msg to display"  );
-  		this->methods()->addMethod( method( "setDriveValue", &Supervisor::setDriveValue, this),  
+  		this->methods()->addMethod( method( "setDriveValue", &Supervisor::setDriveValue, this),
 					"sets the value of a driveValue port",
 					"axis","the driveValue port for this axis",
 					"value","the drive value in rad/s"  );
@@ -72,18 +72,18 @@ public:
    virtual bool startup() {
 	   return true;
    }
-                   
+
    virtual void update() {
    }
- 
+
    virtual void shutdown() {
 		for (int i=0;i<nrofaxes;++i) {
 			driveValue[i]->Set( 0.0 );
 		}
    }
 
-	std::vector<RTT::WriteDataPort<double>*> driveValue;	
-	std::vector<RTT::ReadDataPort<bool>*>  reference;	
+	std::vector<RTT::WriteDataPort<double>*> driveValue;
+	std::vector<RTT::ReadDataPort<bool>*>  reference;
 };
 
 
@@ -129,7 +129,7 @@ int ORO_main(int argc, char* argv[])
     Logger::log().setLogLevel( Logger::Info );
               log(Info) << argv[0] << " manually raises LogLevel to 'Info' (5). See also file 'orocos.log'."<<endlog();
   }
-  
+
   TaskContext* my_robot = new CRSnAxesVelocityController("lias");
   EmergencyStop _emergency(my_robot);
   Supervisor supervisor;
@@ -150,25 +150,25 @@ int ORO_main(int argc, char* argv[])
   // Connecting to peers
   my_robot->connectPeers(&reporter);
   my_robot->connectPeers(&supervisor);
-   
+
   /// Link my_robot to Taskbrowser
   TaskBrowser browser( my_robot );
   browser.setColorTheme( TaskBrowser::whitebg );
-  
+
 
   /// Creating Task
-  PeriodicActivity _robotTask(RTT::OS::HighestPriority, 0.002, my_robot->engine() ); 
-  PeriodicActivity _supervisorTask(RTT::OS::HighestPriority, 0.002, supervisor.engine() ); 
+  PeriodicActivity _robotTask(RTT::OS::HighestPriority, 0.002, my_robot->engine() );
+  PeriodicActivity _supervisorTask(RTT::OS::HighestPriority, 0.002, supervisor.engine() );
 
   PeriodicActivity reportingTask(RTT::OS::LowestPriority,0.01,reporter.engine());
   reportingTask.thread()->setScheduler( ORO_SCHED_OTHER );
 
   // Load some default programs :
-  my_robot->scripting()->loadPrograms("cpf/crs.ops"); 
+  my_robot->scripting()->loadPrograms("cpf/crs.ops");
   /// Start the console reader.
   browser.loop();
   log(Info) << "Browser ended " << endlog();
-  
+
   _robotTask.stop();
   log(Info) << "Task stopped" << endlog();
   delete my_robot;

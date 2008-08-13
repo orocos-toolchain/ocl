@@ -58,17 +58,17 @@ namespace OCL
             }
 
         channels = comedi_get_n_channels(myCard->getDevice()->it, subDevice);
-        
+
         // Only for DIO
         if ( ( myCard->getSubDeviceType( subDevice ) == COMEDI_SUBD_DIO) && all_bits) {
             log(Info) << "Configuring first "<<channels<<" dio channels on subdevice "<<subDevice<<" as output type." << endlog();
-        
+
             for (unsigned int i=0; i<channels; ++i)
                 comedi_dio_config(myCard->getDevice()->it, subDevice, i, COMEDI_OUTPUT);
         } else {
             log(Info) << "Subdevice "<<subDevice<<" is digital output with "<<channels << " channels." << endlog();
-        }            
-        
+        }
+
 
     }
 
@@ -113,7 +113,7 @@ namespace OCL
             {
                 unsigned int write_mask = 0;
                 // FIXME: Can somebody check this cumbersome line please?
-                for (unsigned int i = start_bit; i <= stop_bit ; i++) 
+                for (unsigned int i = start_bit; i <= stop_bit ; i++)
                     {
                         write_mask = write_mask | (0x1 << i);
                     }

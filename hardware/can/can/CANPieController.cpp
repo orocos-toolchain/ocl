@@ -1,12 +1,12 @@
 /***************************************************************************
-  tag: Peter Soetens  Mon Jan 10 15:59:17 CET 2005  CANPieController.cxx 
+  tag: Peter Soetens  Mon Jan 10 15:59:17 CET 2005  CANPieController.cxx
 
                         CANPieController.cxx -  description
                            -------------------
     begin                : Mon January 10 2005
     copyright            : (C) 2005 Peter Soetens
     email                : peter.soetens@mech.kuleuven.ac.be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -24,8 +24,8 @@
  *   Suite 330, Boston, MA  02111-1307  USA                                *
  *                                                                         *
  ***************************************************************************/
- 
- 
+
+
 
 #include "CANPieController.hpp"
 #include <rtt/Logger.hpp>
@@ -35,24 +35,24 @@ namespace RTT
 {namespace CAN
 {
   CANPieController::CANPieController( double period,  bool interrupt ) :
-    PeriodicActivity( RTT::OS::HighestPriority, period ), 
+    PeriodicActivity( RTT::OS::HighestPriority, period ),
     CANPieStatus( CpErr_INIT_MISSING ),
-    CANPieChannel(0), process_in_int(interrupt), 
+    CANPieChannel(0), process_in_int(interrupt),
     total_recv(0), total_trns(0), failed_recv(0), failed_trns(0), generic_trns(0)
   {
   }
-            
+
         CANPieController::~CANPieController()
         {
             CpUserAppDeInit(0);
         }
 
-        bool CANPieController::initialize() 
+        bool CANPieController::initialize()
         {
             return (CANPieStatus == CpErr_OK);
         }
 
-        void CANPieController::step() 
+        void CANPieController::step()
         {
             while ( readFromBuffer(CANmsg) )
                 {
@@ -60,7 +60,7 @@ namespace RTT
                     bus->write(&CANmsg); // we own CANmsg;
                 }
         }
-        
+
         void CANPieController::finalize() {
             Logger::In in("CANPieController");
             log(Info) << "CANPie Controller stopped. Last run statistics :"<<endlog();
@@ -119,7 +119,7 @@ namespace RTT
                 ++total_trns;
             else if (status == CpErr_FIFO_FULL)
                 ++failed_trns;
-            else 
+            else
                 ++generic_trns;
             return (status == CpErr_OK);
         }
@@ -139,7 +139,7 @@ namespace RTT
             //rt_sem_signal(&new_message);  // inform kernel thread that message is there.
             return CP_CALLBACK_PUSH_FIFO;
         }
-            
+
         CANPieController* CANPieController::controller[CP_CHANNEL_MAX];
 }}
 

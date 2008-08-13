@@ -1,12 +1,12 @@
 /***************************************************************************
-  tag: Peter Soetens  Sat May 21 20:15:51 CEST 2005  TemplateRegister.hpp 
+  tag: Peter Soetens  Sat May 21 20:15:51 CEST 2005  TemplateRegister.hpp
 
                         TemplateRegister.hpp -  description
                            -------------------
     begin                : Sat May 21 2005
     copyright            : (C) 2005 Peter Soetens
     email                : peter.soetens@mech.kuleuven.ac.be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -24,8 +24,8 @@
  *   Suite 330, Boston, MA  02111-1307  USA                                *
  *                                                                         *
  ***************************************************************************/
- 
- 
+
+
 #ifndef ORO_TEMPLATEREGISTER_HPP
 #define ORO_TEMPLATEREGISTER_HPP
 
@@ -43,12 +43,12 @@ namespace RTT
          RX_OVERFLOW     = ORO_REG_BIT_DEFN(6,6),
      };@endverbatim
      * Then use the enum value as the last argument for bitRead and
-     * bitWrite functions. 
+     * bitWrite functions.
      * @param start The start-bit of a field.
      * @param end   The end-bit of a field.
      */
 #define ORO_REG_BIT_DEFN(start, end) (( start << 16)|(end-start+1))
-    
+
     /**
      * A Template to construct register-accessor functions for memory-mapped devices.
      * Use it as a typedef, as in the example below. This specialisation requires an
@@ -94,7 +94,7 @@ namespace RTT
          * An unsigned int containing the compile-time base address of this register.
          */
         //unsigned int BaseAddress;
-        
+
         /**
          * Resolve the full address of a register.
          */
@@ -109,7 +109,7 @@ namespace RTT
         inline Size regRead(RegType reg)
         {
             return *regAddress(reg);
-        } 
+        }
 
         /**
          * Write a single register of a device.
@@ -117,7 +117,7 @@ namespace RTT
         inline void regWrite(RegType reg, Size value)
         {
             *regAddress(reg) = value;
-        } 
+        }
 
         /**
          * Read one or more (consecutive) bits from a device.
@@ -216,7 +216,7 @@ namespace RTT
         inline Size regRead(RegType reg)
         {
             return *regAddress(reg);
-        } 
+        }
 
         /**
          * Write a single register of a device.
@@ -224,7 +224,7 @@ namespace RTT
         inline void regWrite(RegType reg, Size value)
         {
             *regAddress(reg) = value;
-        } 
+        }
 
         /**
          * Read one or more (consecutive) bits from a device.

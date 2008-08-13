@@ -33,16 +33,16 @@ int ORO_main(int arc, char* argv[])
     Toolkit::Import( KDLToolkit );
 
     WrenchSensor a_task(0.01,"ATask",0);
-    
+
     PeriodicActivity periodicActivityA(0,0.1, a_task.engine() );
     FileReporting reporter("Reporting");
     reporter.connectPeers(&a_task);
- 
+
     TaskBrowser browser( &a_task );
 
     browser.loop();
 
     periodicActivityA.stop();
-    
+
     return 0;
 }

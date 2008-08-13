@@ -1,12 +1,12 @@
 /***************************************************************************
-  tag: Peter Soetens  Thu Oct 10 16:22:43 CEST 2002  SwitchDigitalInapci1032.hpp 
+  tag: Peter Soetens  Thu Oct 10 16:22:43 CEST 2002  SwitchDigitalInapci1032.hpp
 
                         SwitchDigitalInapci1032.hpp -  description
                            -------------------
     begin                : Thu October 10 2002
     copyright            : (C) 2002 Peter Soetens
     email                : peter.soetens@mech.kuleuven.ac.be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -23,8 +23,8 @@
  *   Foundation, Inc., 59 Temple Place,                                    *
  *   Suite 330, Boston, MA  02111-1307  USA                                *
  *                                                                         *
- ***************************************************************************/ 
- 
+ ***************************************************************************/
+
 /* koen.muylkens@esat.kuleuven.ac.be */
 
 #ifndef SWITCHDIGITALINAPCI1032_HPP
@@ -49,11 +49,11 @@ namespace RTT
             virtual bool isOn( unsigned int bit = 0) const;
 
             virtual bool isOff( unsigned int bit = 0) const;
-            
+
             virtual bool readBit( unsigned int bit = 0) const;
 
             virtual unsigned int readSequence(unsigned int start_bit, unsigned int stop_bit) const;
-            
+
             virtual unsigned int nbOfInputs() const { return 32; }
 
         private:

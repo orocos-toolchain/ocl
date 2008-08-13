@@ -1,12 +1,12 @@
 /***************************************************************************
-  tag: Peter Soetens  Thu Apr 22 20:40:59 CEST 2004  AxisSensor.hpp 
+  tag: Peter Soetens  Thu Apr 22 20:40:59 CEST 2004  AxisSensor.hpp
 
                         AxisSensor.hpp -  description
                            -------------------
     begin                : Thu April 22 2004
     copyright            : (C) 2004 Peter Soetens
     email                : peter.soetens@mech.kuleuven.ac.be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -23,8 +23,8 @@
  *   Foundation, Inc., 59 Temple Place,                                    *
  *   Suite 330, Boston, MA  02111-1307  USA                                *
  *                                                                         *
- ***************************************************************************/ 
- 
+ ***************************************************************************/
+
 #ifndef AXES_COMPONENT_HPP
 #define AXES_COMPONENT_HPP
 
@@ -64,7 +64,7 @@ namespace OCL
         typedef std::vector<double> ChannelType;
 
         /**
-         * @brief Create a Component with maximum \a max_axes virtual channels in the "InputValues" 
+         * @brief Create a Component with maximum \a max_axes virtual channels in the "InputValues"
          * DataPort and \a max_axes virtual channels in the "OutputValues" DataPort.
          *
          */
@@ -88,28 +88,28 @@ namespace OCL
 
         /**
          * @brief Add an AxisInterface object with a name.
-         * You need to add an axis first before it can be put on a virtual channel. 
+         * You need to add an axis first before it can be put on a virtual channel.
          */
         bool addAxis( const std::string& name, AxisInterface* axis_i );
 
-        /** 
+        /**
          * @brief Add an Axis object on a Channel.
          * The drive value for the axis is fetched from the 'OutputValues' data port,
          * the sensed valued for the axis is written to the 'InputValues' data port.
-         * 
+         *
          * @param axis_name        The name of the previously added Axis
          * @param sensor_name      The name of a Sensor of the Axis
          * @param virtual_channel  The channel number where the Sensor must be added.
-         * 
+         *
          * @return true if successful, false otherwise.
          */
         bool addAxisOnChannel(const std::string& axis_name, const std::string& sensor_name, int virtual_channel );
 
-        /** 
+        /**
          * @brief Remove an axis from a virtual channel.
-         * 
+         *
          * @param axis_name The name of the axis to be removed
-         * 
+         *
          */
         void removeAxisFromChannel(const std::string& axis_name);
 
@@ -143,12 +143,12 @@ namespace OCL
          * @brief Switch on a Digital Output.
          */
         bool switchOn( const std::string& name );
-                    
+
         /**
          * @brief Switch off a Digital Output.
          */
         bool switchOff( const std::string& name );
-           
+
         /**
          * @brief Inspect if an axis is enabled (equivalent to !isLocked()).
          */
@@ -198,17 +198,17 @@ namespace OCL
          * Runtime commands for the AxesComponent.
          * @{
          */
-        
+
         /**
          * Calibrate a Sensor of the Axis.
          */
         bool calibrateSensor( const std::string& axis, const std::string& name );
-        
+
         /**
          * Reset (uncalibrate) a Sensor of the Axis.
          */
         bool resetSensor( const std::string& axis, const std::string& name );
-        
+
         /**
          * Checks if a Sensor is calibrated ( Completion Condition ).
          */

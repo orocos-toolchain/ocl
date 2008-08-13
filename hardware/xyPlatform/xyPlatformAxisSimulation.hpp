@@ -1,12 +1,12 @@
 /***************************************************************************
-  tag: Ruben Smits Mon Jan 19 14:11:20 CET 2004  JR3WrenchSensor.hpp 
+  tag: Ruben Smits Mon Jan 19 14:11:20 CET 2004  JR3WrenchSensor.hpp
 
                         JR3WrenchSensor.hpp -  description
                            -------------------
     begin                : Mon January 19 2004
     copyright            : (C) 2004 Peter Soetens
     email                : first.last@mech.kuleuven.ac.be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -23,7 +23,7 @@
  *   Foundation, Inc., 59 Temple Place,                                    *
  *   Suite 330, Boston, MA  02111-1307  USA                                *
  *                                                                         *
- ***************************************************************************/ 
+ ***************************************************************************/
 
 #ifndef __XYPLATFORM_AXIS_SIMULATION__
 #define __XYPLATFORM_AXIS_SIMULATION__
@@ -36,13 +36,13 @@
 
 namespace ORO_DeviceDriver
 {
-  
+
 class xyPlatformAxisSimulation
 {
 public:
   xyPlatformAxisSimulation();
   ~xyPlatformAxisSimulation();
-  
+
   std::vector<ORO_DeviceInterface::AxisInterface*> getAxes();
   void unlock(int axis);
   void lock(int axis);
@@ -63,7 +63,7 @@ private:
   ORO_Execution::TaskContext _my_task_context;
   ORO_Execution::TemplateMethodFactory<xyPlatformAxisSimulation>* _my_factory;
 };
- 
+
 } // namespace
 
 #endif    // XYPLATFORM_AXIS_SIMULATION_HPP

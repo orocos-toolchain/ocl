@@ -1,13 +1,13 @@
 #if 0
 /***************************************************************************
-  tag: Peter Soetens  Tue May 4 16:49:13 CEST 2004  EndPositionDetector.hpp 
+  tag: Peter Soetens  Tue May 4 16:49:13 CEST 2004  EndPositionDetector.hpp
 
                         EndPositionDetector.hpp -  description
                            -------------------
     begin                : Tue May 04 2004
     copyright            : (C) 2004 Peter Soetens
     email                : peter.soetens@mech.kuleuven.ac.be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -24,8 +24,8 @@
  *   Foundation, Inc., 59 Temple Place,                                    *
  *   Suite 330, Boston, MA  02111-1307  USA                                *
  *                                                                         *
- ***************************************************************************/ 
- 
+ ***************************************************************************/
+
 #ifndef END_LIMIT_DETECTOR_HPP
 #define END_LIMIT_DETECTOR_HPP
 

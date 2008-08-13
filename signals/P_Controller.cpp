@@ -1,12 +1,12 @@
 /***************************************************************************
-  tag: Peter Soetens  Thu Jul 15 11:21:05 CEST 2004  P_Controller.cxx 
+  tag: Peter Soetens  Thu Jul 15 11:21:05 CEST 2004  P_Controller.cxx
 
                         P_Controller.cxx -  description
                            -------------------
     begin                : Thu July 15 2004
     copyright            : (C) 2004 Peter Soetens
     email                : peter.soetens at mech.kuleuven.ac.be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -35,7 +35,7 @@ namespace ORO_ControlKernel {
 /*****************************************
  * Implementation of controller class P_Controller
  *****************************************/
-P_Controller::P_Controller(unsigned int num_axes , const std::string& name) 
+P_Controller::P_Controller(unsigned int num_axes , const std::string& name)
   : Base( name ),
     _num_axes(num_axes),
     _xyerr("Track_Err", "Tracking error", std::vector<double>( num_axes, 0) ),
@@ -66,7 +66,7 @@ bool P_Controller::componentStartup()
 
 
 
-void P_Controller::pull()      
+void P_Controller::pull()
 {
   _refPos    = setp_dObj->Get();
   // No estimator in this kernel: Read directly from SensorInputs
@@ -74,7 +74,7 @@ void P_Controller::pull()
 }
 
 
-void P_Controller::calculate() 
+void P_Controller::calculate()
 {
   for (unsigned int i=0; i< _num_axes; i++)
     {
@@ -99,7 +99,7 @@ void P_Controller::exportReports(PropertyBag& bag)
 }
 
 
-void P_Controller::push()      
+void P_Controller::push()
 {
   outp_dObj->Set(_result);
 }

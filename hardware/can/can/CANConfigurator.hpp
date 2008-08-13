@@ -1,12 +1,12 @@
 /***************************************************************************
-  tag: Peter Soetens  Tue Dec 21 22:43:07 CET 2004  CANConfigurator.hpp 
+  tag: Peter Soetens  Tue Dec 21 22:43:07 CET 2004  CANConfigurator.hpp
 
                         CANConfigurator.hpp -  description
                            -------------------
     begin                : Tue December 21 2004
     copyright            : (C) 2004 Peter Soetens
     email                : peter.soetens@mech.kuleuven.ac.be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -24,8 +24,8 @@
  *   Suite 330, Boston, MA  02111-1307  USA                                *
  *                                                                         *
  ***************************************************************************/
- 
- 
+
+
 #ifndef CANCONFIGURATOR_HPP
 #define CANCONFIGURATOR_HPP
 
@@ -43,7 +43,7 @@
 namespace RTT
 {namespace CAN
 {
-    
+
     using namespace std;
 
 	/**
@@ -55,7 +55,7 @@ namespace RTT
         : public ConfigurationInterface
     {
         std::vector< std::pair<CANRequest*, bool> > requests;
-        
+
         public:
         /**
          * Create a CAN Device Configurator
@@ -69,7 +69,7 @@ namespace RTT
          * Add a CANRequest for configuration.
          * @param req It is owned by the CANConfigurator.
          * @param weakcheck Set to true for non strict checking of
-         * received message. Only the COBId is checked 
+         * received message. Only the COBId is checked
          * to match the expected value in that case.
          */
         void addRequest( CANRequest* req, bool weakcheck = false){
@@ -82,7 +82,7 @@ namespace RTT
             if ( it != requests.end() )
                 it->first->sendTo(bus);
         }
-            
+
         /**
          * A stepwise configuration of the device.
          * returns false if it fatally failed.
@@ -103,7 +103,7 @@ namespace RTT
                     rt_std::cout << "Request " << ( it - requests.begin() ) <<" expired!"<<rt_std::endl;
                     return false;
                 }
-            
+
             return true;
         }
 
@@ -129,7 +129,7 @@ namespace RTT
         bool status;
 
 	};
-			
+
 }}
 
 

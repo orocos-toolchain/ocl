@@ -1,12 +1,12 @@
 /***************************************************************************
-  tag: Peter Soetens  Thu Oct 10 16:22:44 CEST 2002  ComediSubDeviceAIn.hpp 
+  tag: Peter Soetens  Thu Oct 10 16:22:44 CEST 2002  ComediSubDeviceAIn.hpp
 
                         ComediSubDeviceAIn.hpp -  description
                            -------------------
     begin                : Thu October 10 2002
     copyright            : (C) 2002 Peter Soetens
     email                : peter.soetens@mech.kuleuven.ac.be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -23,13 +23,13 @@
  *   Foundation, Inc., 59 Temple Place,                                    *
  *   Suite 330, Boston, MA  02111-1307  USA                                *
  *                                                                         *
- ***************************************************************************/ 
+ ***************************************************************************/
 /* Klaas Gadeyne August 2003: implemented some non/badly implemented
    stuff.  Added comedilib.h include header
-   Added range information.  
+   Added range information.
    Klaas Gadeyne November 2003: Not foolproof yet!  Should work with
    new build system for gnulinux and lxrt
-*/ 
+*/
 
 #ifndef COMEDISUBDEVICEAIN_HPP
 #define COMEDISUBDEVICEAIN_HPP
@@ -73,7 +73,7 @@ namespace OCL
     virtual int read( unsigned int chan, double& value );
 
     virtual unsigned int rawRange() const;
-        
+
     virtual double lowest(unsigned int chan) const;
 
     virtual double highest(unsigned int chan) const;

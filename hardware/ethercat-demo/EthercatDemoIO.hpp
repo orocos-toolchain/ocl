@@ -20,7 +20,7 @@ struct netif;
 namespace OCL
 {
     /**
-     * 
+     *
      */
     class EthercatDemoIO : public RTT::TaskContext
     {
@@ -34,9 +34,9 @@ namespace OCL
 	int cnt, cnt_dig;
 	int voltage_i;
 	float voltage_f, time, sinus_freq;
-	
-	
-    
+
+
+
     public:
    		EthercatDemoIO(std::string name);
 			~EthercatDemoIO();
@@ -45,18 +45,18 @@ namespace OCL
          *  This function contains the application's startup code.
          *  Return false to abort startup.
          **/
-        virtual bool startup(); 
-        
+        virtual bool startup();
+
         /**
          * This function is periodically called.
          */
         virtual void update();
-        
+
         /**
          * This function is called when the task is stopped.
          */
         virtual void shutdown();
-    
+
     };//class EthercatDemoIO
 }//namespace Orocos
 #endif // EthercatDemoIO

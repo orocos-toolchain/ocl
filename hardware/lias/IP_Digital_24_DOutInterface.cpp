@@ -28,7 +28,7 @@ void IP_Digital_24_DOutInterface::setBit( unsigned int bit, bool value )
 void IP_Digital_24_DOutInterface::setSequence(unsigned int start_bit, unsigned int stop_bit, unsigned int value)
 {
     unsigned int temp;
-    
+
     for(unsigned int i = start_bit; i < stop_bit; i++)
     {
         temp = (1 << i);

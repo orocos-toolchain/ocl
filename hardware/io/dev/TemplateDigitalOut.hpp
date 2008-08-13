@@ -1,12 +1,12 @@
 /***************************************************************************
-  tag: Peter Soetens  Sat May 21 20:15:51 CEST 2005  TemplateDigitalOut.hpp 
+  tag: Peter Soetens  Sat May 21 20:15:51 CEST 2005  TemplateDigitalOut.hpp
 
                         TemplateDigitalOut.hpp -  description
                            -------------------
     begin                : Sat May 21 2005
     copyright            : (C) 2005 Peter Soetens
     email                : peter.soetens@mech.kuleuven.ac.be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -24,9 +24,9 @@
  *   Suite 330, Boston, MA  02111-1307  USA                                *
  *                                                                         *
  ***************************************************************************/
- 
- 
- 
+
+
+
 #ifndef TEMPLATEDIGITALOUT_HPP
 #define TEMPLATEDIGITALOUT_HPP
 
@@ -89,7 +89,7 @@ namespace RTT
             } while (!OS::CAS(&bit_status, orig, bcopy));
         }
 
-        void setBit( unsigned int bit, bool value ) 
+        void setBit( unsigned int bit, bool value )
         {
             unsigned int orig;
             unsigned int bcopy;
@@ -128,7 +128,7 @@ namespace RTT
             return (bit_status >> start_bit) & ( (0x1 << (stop_bit - start_bit + 1)) - 1);
         }
 	};
-			
+
 }
 
 

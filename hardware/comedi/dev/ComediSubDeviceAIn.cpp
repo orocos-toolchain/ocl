@@ -1,12 +1,12 @@
 /***************************************************************************
-  tag: Peter Soetens  Wed Jan 18 14:11:39 CET 2006  ComediSubDeviceAIn.cxx 
+  tag: Peter Soetens  Wed Jan 18 14:11:39 CET 2006  ComediSubDeviceAIn.cxx
 
                         ComediSubDeviceAIn.cxx -  description
                            -------------------
     begin                : Wed January 18 2006
     copyright            : (C) 2006 Peter Soetens
     email                : peter.soetens@mech.kuleuven.be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -24,8 +24,8 @@
  *   Suite 330, Boston, MA  02111-1307  USA                                *
  *                                                                         *
  ***************************************************************************/
- 
- 
+
+
 
 #include "ComediSubDeviceAIn.hpp"
 #include "comedi_internal.h"
@@ -33,8 +33,8 @@
 
 namespace OCL
 {
-  
-  
+
+
 
     ComediSubDeviceAIn::ComediSubDeviceAIn( ComediDevice* cd, const std::string& name, unsigned int subdevice /*=0*/)
         : RTT::AnalogInInterface( name ),
@@ -141,7 +141,7 @@ namespace OCL
     {
         return myCard ? (rrange = myCard->getMaxData(_subDevice)) : (rrange = 0);
     }
-        
+
     double ComediSubDeviceAIn::lowest(unsigned int chan) const
     {
         if (!myCard)
@@ -153,20 +153,20 @@ namespace OCL
 #ifdef __KERNEL__
         // See file:/usr/src/comedilib/doc/html/x3563.html#REF-TYPE-COMEDI-KRANGE
         comedi_krange range;
-        comedi_get_krange(myCard->getDevice()->it, _subDevice, chan, 
+        comedi_get_krange(myCard->getDevice()->it, _subDevice, chan,
                           _sd_range[chan], &range);
         return (min[chan] = (double) range.min / 1000000.);
 #else
 #ifdef OROPKG_OS_LXRT
         //#define __KERNEL__
         comedi_krange range;
-        comedi_get_krange(myCard->getDevice()->it, _subDevice, chan, 
+        comedi_get_krange(myCard->getDevice()->it, _subDevice, chan,
                           _sd_range[chan], &range);
         return (min[chan] = (double) range.min / 1000000.);
 #else // Userspace
         comedi_range * range_p;
-        if ((range_p = comedi_get_range(myCard->getDevice()->it, 
-                                        _subDevice, chan, 
+        if ((range_p = comedi_get_range(myCard->getDevice()->it,
+                                        _subDevice, chan,
                                         _sd_range[chan])) != 0)
             {
                 return (min[chan] = range_p->min);
@@ -191,20 +191,20 @@ namespace OCL
 #ifdef __KERNEL__
         // See file:/usr/src/comedilib/doc/html/x3563.html#REF-TYPE-COMEDI-KRANGE
         comedi_krange range;
-        comedi_get_krange(myCard->getDevice()->it, _subDevice, chan, 
+        comedi_get_krange(myCard->getDevice()->it, _subDevice, chan,
                           _sd_range[chan], &range);
         return (max[chan] = (double) range.max / 1000000.);
 #else
 #ifdef OROPKG_OS_LXRT
         //#define __KERNEL__
         comedi_krange range;
-        comedi_get_krange(myCard->getDevice()->it, _subDevice, chan, 
+        comedi_get_krange(myCard->getDevice()->it, _subDevice, chan,
                           _sd_range[chan], &range);
         return (max[chan] = (double) range.max / 1000000.);
 #else // Userspace
         comedi_range * range_p;
-        if ((range_p = comedi_get_range(myCard->getDevice()->it, 
-                                        _subDevice, chan, 
+        if ((range_p = comedi_get_range(myCard->getDevice()->it,
+                                        _subDevice, chan,
                                         _sd_range[chan])) != 0)
             {
                 return (max[chan] = range_p->max);

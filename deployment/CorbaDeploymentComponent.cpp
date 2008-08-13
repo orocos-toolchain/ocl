@@ -1,12 +1,12 @@
 /***************************************************************************
-  tag: Peter Soetens  Thu Jul 3 15:34:48 CEST 2008  CorbaDeploymentComponent.cpp 
+  tag: Peter Soetens  Thu Jul 3 15:34:48 CEST 2008  CorbaDeploymentComponent.cpp
 
                         CorbaDeploymentComponent.cpp -  description
                            -------------------
     begin                : Thu July 03 2008
     copyright            : (C) 2008 Peter Soetens
     email                : peter.soetens@fmtc.be
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -24,8 +24,8 @@
  *   Suite 330, Boston, MA  02111-1307  USA                                *
  *                                                                         *
  ***************************************************************************/
- 
- 
+
+
 #include "CorbaDeploymentComponent.hpp"
 #include <rtt/corba/ControlTaskProxy.hpp>
 #include <rtt/corba/ControlTaskServer.hpp>
@@ -45,7 +45,7 @@ namespace OCL
         log(Debug) << "createControlTaskProxy" <<endlog();
         return ::RTT::Corba::ControlTaskProxy::Create(name, false);
     }
-    
+
     /**
      * This helper function looks up a server using an IOR file
      * and creates a proxy for that object.
@@ -74,14 +74,14 @@ namespace OCL
         log(Debug) << "createControlTaskProxyIOR" <<endlog();
         return ::RTT::Corba::ControlTaskProxy::Create( ior, true);
     }
-    
+
 
     CorbaDeploymentComponent::CorbaDeploymentComponent(const std::string& name)
         : DeploymentComponent(name)
     {
         log(Info) << "Registering ControlTaskProxy factory." <<endlog();
-        getFactories()["ControlTaskProxy"] = &createControlTaskProxy; 
-        getFactories()["CORBA"] = &createControlTaskProxy; 
+        getFactories()["ControlTaskProxy"] = &createControlTaskProxy;
+        getFactories()["CORBA"] = &createControlTaskProxy;
         getFactories()["IORFile"] = &createControlTaskProxyIORFile;
         getFactories()["IOR"] = &createControlTaskProxyIOR;
 

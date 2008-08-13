@@ -2,21 +2,21 @@
 // Copyright (C) 2003 Klaas Gadeyne <klaas.gadeyne@mech.kuleuven.ac.be>
 //                    Wim Meeussen  <wim.meeussen@mech.kuleuven.ac.be>
 // Copyright (C) 2006 Ruben Smits <ruben.smits@mech.kuleuven.ac.be>
-//  
+//
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
 // (at your option) any later version.
-//  
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-//  
+//
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-//  
+//
 
 #include "nAxesGeneratorPos.hpp"
 #include <ocl/ComponentLoader.hpp>
@@ -41,27 +41,27 @@ namespace OCL
           num_axes_prop("num_axes","Number of Axes")
     {
         //Creating TaskContext
-        
+
         //Adding properties
         this->properties()->addProperty(&num_axes_prop);
         this->properties()->addProperty(&v_max_prop);
         this->properties()->addProperty(&a_max_prop);
-        
+
         //Adding ports
         this->ports()->addPort(&p_m_port);
         this->ports()->addPort(&p_d_port);
         this->ports()->addPort(&v_d_port);
-    
+
         //Adding Commands
         this->commands()->addCommand( &moveTo_cmd,"Set the position setpoint",
                                       "setpoint", "joint setpoint for all axes",
                                       "time", "minimum time to complete trajectory" );
 
         //Adding Methods
-        this->methods()->addMethod( &reset_position_mtd, "Reset generator position" );  
+        this->methods()->addMethod( &reset_position_mtd, "Reset generator position" );
 
     }
-    
+
     nAxesGeneratorPos::~nAxesGeneratorPos()
     {}
 
@@ -83,20 +83,20 @@ namespace OCL
                       <<endlog();
             return false;
         }
-        
+
         v_max=v_max_prop.rvalue();
         a_max=a_max_prop.rvalue();
-        
+
         //Resizing all containers to correct size
         p_m.resize(num_axes);
         p_d.resize(num_axes);
         v_d.resize(num_axes);
         motion_profile.resize(num_axes);
-        
+
         //Initialise motion profiles
         for(unsigned int i=0;i<num_axes;i++)
             motion_profile[i].SetMax(v_max[i],a_max[i]);
-                    
+
         //Initialise output ports:
         p_d.assign(num_axes,0);
         p_d_port.Set(p_d);
@@ -122,10 +122,10 @@ namespace OCL
 	p_d = p_m_port.Get();
 	p_d_port.Set(p_d);
         is_moving = false;
-    
+
         return true;
     }
-  
+
     void nAxesGeneratorPos::updateHook()
     {
         if (is_moving){
@@ -147,12 +147,12 @@ namespace OCL
             v_d_port.Set(v_d);
         }
     }
-  
-  
+
+
     void nAxesGeneratorPos::stopHook()
     {
     }
-  
+
     bool nAxesGeneratorPos::moveTo(const vector<double>& position, double time)
     {
         if(position.size()!=num_axes){
@@ -160,7 +160,7 @@ namespace OCL
             log(Error)<<"Size of position != "<<num_axes<<endlog();
             return false;
         }
-        
+
         // if previous movement is finished
         if (!is_moving){
             max_duration = 0;
@@ -175,10 +175,10 @@ namespace OCL
             // Rescale trajectories to maximal duration
             for(unsigned int i = 0; i < num_axes; i++)
                 motion_profile[i].SetProfileDuration( p_m[i], position[i], max_duration );
-          
+
             time_begin = TimeService::Instance()->getTicks();
             time_passed = 0;
-          
+
             is_moving = true;
             return true;
         }
@@ -188,14 +188,14 @@ namespace OCL
             log(Error)<<"Still moving, not executing new command."<<endlog();
             return false;
         }
-        
+
     }
-  
+
     bool nAxesGeneratorPos::moveFinished() const
     {
         return (!is_moving);
     }
-  
+
     void nAxesGeneratorPos::resetPosition()
     {
         p_d = p_m_port.Get();

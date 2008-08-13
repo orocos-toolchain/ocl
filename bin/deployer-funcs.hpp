@@ -17,15 +17,15 @@
  *   License along with this library; if not, write to the Free Software   *
  *   Foundation, Inc., 59 Temple Place,                                    *
  *   Suite 330, Boston, MA  02111-1307  USA                                *
- ***************************************************************************/ 
- 
+ ***************************************************************************/
+
 #ifndef ORO_DEPLOYER_FUNCS_HPP
 #define ORO_DEPLOYER_FUNCS_HPP
 
 #include <string>
 #include <boost/program_options.hpp>
 
-namespace OCL 
+namespace OCL
 {
 
 /** Parse the command line arguments for a deployer program
@@ -33,7 +33,7 @@ namespace OCL
 	this function.
 	If the user requests a log level for RTT::Logger, then the logging level
 	is set internally by this function.
-	If the user requests help, then the function displays the help and 
+	If the user requests help, then the function displays the help and
 	returns a non-0 value.
 	Any error causes the program usage to be displayed, and a non-0 return value.
 
@@ -47,7 +47,7 @@ namespace OCL
 	\return 0 if successful, otherwise an error code
 */
 extern int deployerParseCmdLine(
-	int                                             argc, 
+	int                                             argc,
 	char**                                          argv,
 	std::string&                                    script,
 	std::string&                                    name,

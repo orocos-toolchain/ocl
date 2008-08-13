@@ -26,7 +26,7 @@ struct netif;
 namespace OCL
 {
     /**
-     * 
+     *
      */
     class EthercatIO : public RTT::TaskContext
     {
@@ -53,12 +53,12 @@ namespace OCL
 	EtherCATEncoder enc;
 	double prevvoltage;
 	//bool ones;
-	
-    
+
+
     public:
    		EthercatIO(std::string name);
 			~EthercatIO();
-			
+
 			DigitalInInterface* getDigitalIn() { return &diginputs;}
 			DigitalOutInterface* getDigitalOut() { return &digoutputs;}
 			AnalogInInterface* getAnalogIn() { return &anainputs;}
@@ -68,18 +68,18 @@ namespace OCL
          *  This function contains the application's startup code.
          *  Return false to abort startup.
          **/
-        virtual bool startup(); 
-        
+        virtual bool startup();
+
         /**
          * This function is periodically called.
          */
         virtual void update();
-        
+
         /**
          * This function is called when the task is stopped.
          */
         virtual void shutdown();
-    
+
     };//class EthercatDemoIO
 }//namespace Orocos
 #endif // EthercatDemoIO

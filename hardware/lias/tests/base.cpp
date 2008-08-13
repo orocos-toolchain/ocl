@@ -26,7 +26,7 @@ int ORO_main(int arc, char* argv[])
     BaseVelocityController a_task("ATask");
     TestTcpTaskContext b_task("BTask");
     WrenchSensor c_task(0.1,"CTask",0);
-    
+
     a_task.connectPeers( &b_task);
     b_task.connectPeers( &c_task);
 
@@ -34,15 +34,15 @@ int ORO_main(int arc, char* argv[])
     PeriodicActivity periodicActivityA(RTT::OS::HighestPriority, 0.1, a_task.engine() );
     PeriodicActivity periodicActivityB(RTT::OS::HighestPriority, 0.1, b_task.engine() );
     PeriodicActivity periodicActivityC(RTT::OS::HighestPriority, 0.1, c_task.engine() );
- 
-    
+
+
     TaskBrowser browser( &b_task );
     b_task.scripting()->loadPrograms("cpf/base.ops");
-    
+
     browser.loop();
 
     periodicActivityA.stop();
     periodicActivityB.stop();
-    
+
     return 0;
 }

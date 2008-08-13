@@ -7,7 +7,7 @@
 
  History (only major changes)( AUTHOR-Description ) :
     created from the initial version of Dan Lihtetski in july 2006.
- 
+
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
  *   modify it under the terms of the GNU Lesser General Public            *
@@ -36,7 +36,7 @@ using namespace RTT;
 using namespace std;
 
 
-BaseVelocityController::BaseVelocityController(const std::string& name,const std::string& propfile) 
+BaseVelocityController::BaseVelocityController(const std::string& name,const std::string& propfile)
         : RTT::TaskContext(name),
           velocity("basevelocity"),
           rotvel  ("baserotvel"),
@@ -58,7 +58,7 @@ BaseVelocityController::BaseVelocityController(const std::string& name,const std
         this->properties()->addProperty( &hostname );
         this->properties()->addProperty( &port );
         this->properties()->addProperty( &logging );
-        
+
         if (!marshalling()->readProperties(propfile)) {
                      log(Error) << "Failed to read the property file." << endlog();
                      assert(0);
@@ -88,105 +88,105 @@ BaseVelocityController::BaseVelocityController(const std::string& name,const std
                              &BaseVelocityController::stopLaserScannerDone, this),
                              "Command to stop the laser scanner."  );
 
-        cl=0;        
+        cl=0;
         connected = false;
     }
-  
-    bool BaseVelocityController::initialise(double v1,double v2,double v3) 
-    { 
-   
+
+    bool BaseVelocityController::initialise(double v1,double v2,double v3)
+    {
+
      stringstream sstr;
      if(!connected) return false;
 
      initialiseC=false;
-     sstr << "Initialise "<<v1<<" "<<v2<<" "<<v3<<" \n" ; 
-        
+     sstr << "Initialise "<<v1<<" "<<v2<<" "<<v3<<" \n" ;
+
      cl->sendCommand(sstr.str());
-     if(cl->receiveData()!="") initialiseC=true; 				      
-     return true; 
-     
+     if(cl->receiveData()!="") initialiseC=true;
+     return true;
+
     }
-    
+
     bool BaseVelocityController::initialiseDone(double v1,double v2,double v3) const
-    { 
+    {
       return true;
     }
 
-    bool BaseVelocityController::setVelocity(double v1,double v2) 
-    { 
+    bool BaseVelocityController::setVelocity(double v1,double v2)
+    {
       stringstream sstr;
       if(!connected) return false;
-  
+
       setVelocityC=false;
-      sstr << "SetVelocity "<<v1<<" "<<v2<<" \n" ; 
-        
+      sstr << "SetVelocity "<<v1<<" "<<v2<<" \n" ;
+
       cl->sendCommand(sstr.str());
-      if(cl->receiveData()!="") 
-            return false;    
+      if(cl->receiveData()!="")
+            return false;
       else
-            return true; 
+            return true;
     }
-    
+
     bool BaseVelocityController::setVelocityDone() const
-    {  				 
+    {
         return true;
     }
 
-    bool BaseVelocityController::stopnow() 
-    { 
+    bool BaseVelocityController::stopnow()
+    {
        stringstream sstr;
        if(!connected) return false;
 
        stopnowC=false;
-       sstr << "Stop \n" ; 
-        
+       sstr << "Stop \n" ;
+
        cl->sendCommand(sstr.str());
        if(cl->receiveData()!="")
             return false;
-       else 
-            return true; 
+       else
+            return true;
     }
-    
+
     bool BaseVelocityController::stopnowDone() const
     {
         return true;
     }
-        
-    bool BaseVelocityController::startLaserScanner() 
-    { 
+
+    bool BaseVelocityController::startLaserScanner()
+    {
        stringstream sstr;
        if(!connected) return false;
 
-       startLaserScannerC=false;   
-       sstr << "StartScanner \n" ; 
-        
+       startLaserScannerC=false;
+       sstr << "StartScanner \n" ;
+
        cl->sendCommand(sstr.str());
-       if(cl->receiveData()!="") 
+       if(cl->receiveData()!="")
             return false;
-       else 
+       else
             return true;
     }
-    
+
     bool BaseVelocityController::startLaserScannerDone() const
     {
         return true;
     }
-                  
-    bool BaseVelocityController::stopLaserScanner() 
-    { 
+
+    bool BaseVelocityController::stopLaserScanner()
+    {
        stringstream sstr;
-    
+
        if(!connected) return false;
-       stopLaserScannerC=false;   
-       sstr << "StartScanner \n" ; 
-       
+       stopLaserScannerC=false;
+       sstr << "StartScanner \n" ;
+
        cl->sendCommand(sstr.str());
-       if(cl->receiveData()!="") 
+       if(cl->receiveData()!="")
             return false;
-       else 
-            return true; 
+       else
+            return true;
     }
-    
+
     bool BaseVelocityController::stopLaserScannerDone() const
     {
         return true;
@@ -207,38 +207,38 @@ BaseVelocityController::BaseVelocityController(const std::string& name,const std
        }*/
        cl=new LiasClientN::Client;
 
-       if (cl->connect(hostname,port)!=-1) { 
-           connected=true; 
+       if (cl->connect(hostname,port)!=-1) {
+           connected=true;
            Logger::log() << "Connection to "<<hostname<<":"<<port<<" established."<<endlog();
-       } else { 
+       } else {
            connected=false;
            Logger::log() << "Could not connect to "<<hostname<<":"<<port<<endlog();
        }
 
-   	   return connected; 
-         
+   	   return connected;
+
     }
 
     /**
      * This function is periodically called.
      */
     void BaseVelocityController::update() {
-         
+
         if (!connected) return;
-         
+
         double v = velocity.Get()*100;  // v is expressed in [cm]
         double w = rotvel.Get()*180.0/3.14159265358979;        // w is expressed in [rad]
-        
+
         stringstream sstr;
-        sstr << "SetVelocityGetPosition "<< v << " " << w << " \n" ; 
+        sstr << "SetVelocityGetPosition "<< v << " " << w << " \n" ;
         if (logging.value()) {
            Logger::log() << "(BaseVelocityController) Sending "<< sstr.str() <<endlog();
-        } 
+        }
         cl->sendCommand(sstr.str());
-        string str = cl->receiveData(); 
+        string str = cl->receiveData();
         if (logging.value()) {
            Logger::log() << "(BaseVelocityController) Receiving "<< str <<endlog();
-        } 
+        }
         stringstream sstr2(str);
         double x,y,theta;
         sstr2 >> x;
@@ -264,5 +264,5 @@ BaseVelocityController::BaseVelocityController(const std::string& name,const std
             connected=false;
         }
    }
-    
+
 

@@ -16,21 +16,21 @@ using namespace std;
 
 int ORO_main(int argc, char* argv[])
 {
-  
+
   CaptureCamera camera("Camera");
   //ShowImages show("Images");
-    
+
   //show.connectPeers(&camera);
-  
+
   /// Link my_robot to Taskbrowser
   TaskBrowser browser(&camera);
   browser.setColorTheme( TaskBrowser::whitebg );
 
   /// Creating Tasks
-  PeriodicActivity cameraTask(0,0.01, camera.engine() );  
-  
+  PeriodicActivity cameraTask(0,0.01, camera.engine() );
+
   /// Start the console reader.
   browser.loop();
-  
+
     return 0;
 }
