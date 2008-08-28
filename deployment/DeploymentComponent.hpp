@@ -102,7 +102,9 @@ namespace OCL
          */
         struct ConnectionData {
             typedef std::vector<RTT::PortInterface*> Ports;
+            typedef std::vector<RTT::TaskContext*>   Owners;
             Ports ports;
+            Owners owners;
         };
 
         /**

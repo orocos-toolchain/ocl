@@ -568,6 +568,7 @@ namespace OCL
                                     log(Debug)<<"storing Port: "<<c->getName()<<"."<<p->getName();
                                     log(Debug)<<" in " << ports->get().getProperty<std::string>(*pit)->get() <<endlog();
                                     conmap[ports->get().getProperty<std::string>(*pit)->get()].ports.push_back( p );
+                                    conmap[ports->get().getProperty<std::string>(*pit)->get()].owners.push_back( c );
                                 }
                             }
                         }
@@ -735,8 +736,8 @@ namespace OCL
 
         // Create data port connections:
         for(ConMap::iterator it = conmap.begin(); it != conmap.end(); ++it) {
-            if ( it->second.ports.size() < 2 ){
-                log(Warning) << "Can not form connection "<<it->first<<" with only one Port."<< endlog();
+            if ( it->second.ports.size() == 1 ){
+                log(Warning) << "Can not form connection "<<it->first<<" with only one Port from "<< it->second.owners[0]<< endlog();
                 continue;
             }
             // first find a write and a read port.
@@ -774,22 +775,26 @@ namespace OCL
             if ( reader == 0 ) {
                 log(Warning) << "Connecting only write-ports in connection " << it->first << endlog();
             }
-
-            log(Info) << "Creating Connection "<<it->first<<":"<<endlog();
+            // Inform user which component initiates the connection:
+            p = it->second.ports.begin();
+            while ( *p != writer ) ++p;
+            std::string owner = it->second.owners[p - it->second.ports.begin()]->getName();
+            log(Info) << "Creating Connection "<<it->first<<" starting from TaskContext "<< owner <<":" <<endlog();
             // connect all ports to connection
             p = it->second.ports.begin();
             while (p != it->second.ports.end() ) {
                 // connect all readers to the first found writer.
                 if ( *p != writer ) {
+                    owner = it->second.owners[p - it->second.ports.begin()]->getName();
                     if ( (*p)->connectTo( writer ) == false) {
-                        log(Error) << "Could not connect Port "<< (*p)->getName() << " to connection " <<it->first<<endlog();
+                        log(Error) << "Could not connect Port "<< owner<<"."<< (*p)->getName() << " to connection " <<it->first<<endlog();
                         if ((*p)->connected())
-                            log(Error) << "Port "<< (*p)->getName() << " already connected !"<<endlog();
+                            log(Error) << "Port "<< owner<<"."<< (*p)->getName() << " already connected !"<<endlog();
                         else
-                            log(Error) << "Port "<< (*p)->getName() << " has wrong type !"<<endlog();
+                            log(Error) << "Port "<< owner<<"."<< (*p)->getName() << " has wrong type !"<<endlog();
                         valid = false;
                     } else
-                        log(Info) << "Connected Port "<< (*p)->getName() <<" to connection " << it->first <<endlog();
+                        log(Info) << "Connected Port "<< owner<<"."<< (*p)->getName() <<" to connection " << it->first <<endlog();
                 }
                 ++p;
             }
