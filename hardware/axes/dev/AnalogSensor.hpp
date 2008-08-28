@@ -42,7 +42,7 @@ namespace OCL
     class AnalogSensor
         : public SensorInterface<double>
     {
-        AnalogInput* ain;
+        RTT::AnalogInput* ain;
         double min_meas;
         double max_meas;
         double scale;
@@ -53,7 +53,7 @@ namespace OCL
          * measurement value. A scale and offset are used to convert the analog signal
          * to the measurement.
          */
-        AnalogSensor(AnalogInput* _ain, double _min_meas, double _max_meas, double _scale=1.0, double _offset=0.0)
+        AnalogSensor(RTT::AnalogInput* _ain, double _min_meas, double _max_meas, double _scale=1.0, double _offset=0.0)
             : ain( _ain ),
               min_meas(_min_meas), max_meas(_max_meas),
               scale(_scale), offset( _offset )
