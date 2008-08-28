@@ -155,12 +155,9 @@ namespace OCL
             return false;
 
         if (picos != _pulse_width){
-
+            int retval = 0;
             unsigned up_ticks = ( picos + _clock_period / 2) / _clock_period;
             unsigned down_ticks = ( _pulse_period + _clock_period / 2) / _clock_period - up_ticks;
-            /* set initial counter value by writing to channel 0 */
-            int retval = comedi_data_write(_myCard->getDevice()->it, _subDevice, 0, 0, 0, down_ticks);
-            if(retval < 0) return false;
             /* set "load a" register to the number of clock ticks the counter output should remain low
                by writing to channel 1. */
             retval = comedi_data_write(_myCard->getDevice()->it, _subDevice, 1, 0, 0, down_ticks);
@@ -188,12 +185,12 @@ namespace OCL
             return false;
 
         if (picos != _pulse_period){ // Only handle if necessary
-
+            int retval=0;
             unsigned up_ticks = (_pulse_width + _clock_period / 2) / _clock_period;
             unsigned down_ticks = (picos + _clock_period / 2) / _clock_period - up_ticks;
             /* set initial counter value by writing to channel 0 */
-            int retval = comedi_data_write(_myCard->getDevice()->it, _subDevice, 0, 0, 0, down_ticks);
-            if(retval < 0) return false;
+            //retval = comedi_data_write(_myCard->getDevice()->it, _subDevice, 0, 0, 0, down_ticks);
+            //if(retval < 0) return false;
             /* set "load a" register to the number of clock ticks the counter output should remain low
                by writing to channel 1. */
             retval = comedi_data_write(_myCard->getDevice()->it, _subDevice, 1, 0, 0, down_ticks);
@@ -220,6 +217,20 @@ namespace OCL
         if (!_myCard)
             return false;
         if (_running == false){
+            int retval;
+            /* set initial counter value by writing to channel 0 */
+            unsigned up_ticks = (_pulse_width + _clock_period / 2) / _clock_period;
+            unsigned down_ticks = (_pulse_period + _clock_period / 2) / _clock_period - up_ticks;
+            retval = comedi_data_write(_myCard->getDevice()->it, _subDevice, 0, 0, 0, down_ticks);
+            if(retval < 0) return false;
+            /* set "load a" register to the number of clock ticks the counter output should remain low
+               by writing to channel 1. */
+            retval = comedi_data_write(_myCard->getDevice()->it, _subDevice, 1, 0, 0, down_ticks);
+            if(retval < 0) return false;
+            /* set "load b" register to the number of clock ticks the counter output should remain high
+               by writing to channel 2 */
+            retval = comedi_data_write(_myCard->getDevice()->it, _subDevice, 2, 0, 0, up_ticks);
+            if(retval < 0) return false;
 
             int ret = arm(_myCard->getDevice()->it, _subDevice, NI_GPCT_ARM_IMMEDIATE);
             if(ret<0){
@@ -238,11 +249,11 @@ namespace OCL
         if (!_myCard)
             return false;
         if (_running == true){
-            int ret = reset_counter(_myCard->getDevice()->it, _subDevice);
-            if(ret<0){
-                log(Error) << "ComediPTG::stop() failed, ret = " << ret << endlog();
-                return false;
-            }
+            /* set initial counter value by writing to channel 0 */
+            comedi_data_write(_myCard->getDevice()->it, _subDevice, 0, 0, 0, 0);
+            /* set "load b" register to the number of clock ticks the counter output should remain high
+               by writing to channel 2 */
+            comedi_data_write(_myCard->getDevice()->it, _subDevice, 2, 0, 0, 0); // set uptime to zero ticks
             _running = false;
         }
         return true;
