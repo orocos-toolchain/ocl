@@ -7,10 +7,19 @@ components of the OCL library are also available as Debian 4.0
 'Etch' packages from 
  deb http://svn.fmtc.be/debian etch main
 
-A new stand-alone application has been added as well:
- deployer-corba: can connect local components to remote components
- by looking up the name, IOR file or plain IOR. It is a CORBA server itself
- as well.
+Major improvements are:
+ * Upgraded to the recent comedilib 0.8.1 release
+ * Improved error reporting of automatic component deployment
+ * Improved setting up distributed applications from XML files.
+ * Most components are dynamically loadable
+ * Support for logging to the NetCDF file format
+
+A new stand-alone application has been added as well: 
+
+deployer-corba:
+ A task-browser application which can connect local components to
+ remote components by looking up the name, IOR file or plain IOR. It
+ is a CORBA server itself as well.
 
 An overview of the documented components is available here:
   <http://www.orocos.org/stable/documentation/ocl/v1.6.x/doc-xml/ocl-overview.html>
