@@ -479,8 +479,8 @@
 	</para>
 	<note>
 	  <para>Currently, include directives always look into the
-	  current working directory, also if an include file itself
-	  includes another file.</para>
+	  current working directory, also when an included file
+	  includes a file from another directory.</para>
 	</note>
       </section>
       <section>
