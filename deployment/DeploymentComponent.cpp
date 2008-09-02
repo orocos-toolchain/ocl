@@ -528,8 +528,12 @@ namespace OCL
                             }
                         }
 
-                        // Check if we know this component.
-                        TaskContext* c = this->getPeer( (*it)->getName() );
+                        // Check if we know or are this component.
+                        TaskContext* c = 0;
+                        if ( (*it)->getName() == this->getName() )
+                            c = this;
+                        else
+                            c = this->getPeer( (*it)->getName() );
                         if ( !c ) {
                             // try to load it.
                             if (this->loadComponent( (*it)->getName(), comp.rvalue().getType() ) == false) {
