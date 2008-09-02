@@ -55,12 +55,14 @@ namespace OCL
           config("Configuration","The name of the property file which lists what is to be reported.",
                  "cpf/reporter.cpf"),
           writeHeader("WriteHeader","Set to true to start each report with a header.", true),
+          decompose("Decompose","Set to false in order to create multidimensional array in netcdf", true),
           starttime(0),
           timestamp("TimeStamp","The time at which the data was read.",0.0)
     {
         this->properties()->addProperty( &autotrigger );
         this->properties()->addProperty( &config );
         this->properties()->addProperty( &writeHeader );
+        this->properties()->addProperty( &decompose );
 
         // Add the methods, methods make sure that they are
         // executed in the context of the (non realtime) caller.
@@ -406,7 +408,7 @@ namespace OCL
         for(Reports::iterator it = root.begin(); it != root.end(); ++it ) {
             DataSourceBase::shared_ptr clone = it->get<3>();
             Property<PropertyBag> subbag( it->get<0>(), "");
-            if ( clone->getTypeInfo()->decomposeType( clone, subbag.value() ) )
+            if ( decompose.get() && clone->getTypeInfo()->decomposeType( clone, subbag.value() ) )
                 report.add( subbag.clone() );
             else
                 report.add( clone->getTypeInfo()->buildProperty(it->get<0>(), "", clone) );

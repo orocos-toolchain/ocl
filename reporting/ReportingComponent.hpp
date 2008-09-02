@@ -223,6 +223,7 @@ namespace OCL
         RTT::Property<bool>          autotrigger;
         RTT::Property<std::string>   config;
         RTT::Property<bool>          writeHeader;
+        RTT::Property<bool>          decompose;
 
         RTT::TimeService::ticks starttime;
         RTT::Property<RTT::TimeService::Seconds> timestamp;

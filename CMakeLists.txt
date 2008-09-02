@@ -48,6 +48,10 @@ ELSE(NOT COMEDI_INSTALL)
   SET( COMEDI_INSTALL "${COMEDI_INSTALL}" CACHE PATH "The COMEDI installation directory.")
 ENDIF(NOT COMEDI_INSTALL)
 
+IF(NOT NETCDF_INSTALL)
+  SET( NETCDF_INSTALL ${CMAKE_INSTALL_PREFIX} CACHE PATH "The NETCDF installation directory.")
+ENDIF(NOT NETCDF_INSTALL)
+
 # The name of the resulting library.
 #SET( COMPONENTS_LIBRARY orocos-components CACHE STRING "Name of the resulting library")
 #INSTALL_TARGETS( /lib ${COMPONENTS_LIBRARY} )
@@ -134,6 +138,9 @@ INCLUDE (${PROJ_SOURCE_DIR}/config/FindBFL.cmake)
 ## Find Comedi
 
 INCLUDE (${PROJ_SOURCE_DIR}/config/FindComedi.cmake)
+
+## Find Netcdf
+INCLUDE (${PROJ_SOURCE_DIR}/config/FindNetcdf.cmake)
 
 ## Uninstall target
 CONFIGURE_FILE(
