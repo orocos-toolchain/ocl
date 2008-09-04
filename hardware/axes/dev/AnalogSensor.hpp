@@ -40,7 +40,7 @@ namespace OCL
      * A SensorInterface which reads its data from an analog channel.
      */
     class AnalogSensor
-        : public SensorInterface<double>
+        : public RTT::SensorInterface<double>
     {
         RTT::AnalogInput* ain;
         double min_meas;
