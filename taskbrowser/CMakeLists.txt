@@ -16,7 +16,7 @@ IF ( BUILD_TASKBROWSER )
        GLOBAL_ADD_COMPONENT( orocos-taskbrowser ${SRCS} )
        GLOBAL_ADD_INCLUDE( ocl ${HPPS})
      
-       COMPONENT_ADD_LIBS( orocos-taskbrowser ncurses readline )
+       COMPONENT_ADD_LIBS( orocos-taskbrowser ncurses ${READLINE_LIBRARY} )
        COMPONENT_ADD_DEPS( orocos-taskbrowser orocos-ocl-common )
 
        ADD_SUBDIRECTORY( tests )

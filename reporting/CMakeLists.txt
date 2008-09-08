@@ -6,6 +6,8 @@ IF ( BUILD_REPORTING )
     SET( SRCS command.cpp ConsoleReporting.cpp datasender.cpp FileReporting.cpp ReportingComponent.cpp socket.cpp socketmarshaller.cpp TcpReporting.cpp)
     SET( HPPS command.hpp ConsoleReporting.hpp datasender.hpp FileReporting.hpp NiceHeaderMarshaller.hpp ReportingComponent.hpp socket.hpp socketmarshaller.hpp TcpReporting.hpp)
 
+    INCLUDE_DIRECTORIES ( ${BOOST} ${BOOST_OPTIONS} )
+
     GLOBAL_ADD_COMPONENT( orocos-reporting ${SRCS})
     GLOBAL_ADD_INCLUDE( ocl ${HPPS})
 

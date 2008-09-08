@@ -38,6 +38,8 @@
 #include "ocl/ComponentLoader.hpp"
 #include <rtt/PropertyLoader.hpp>
 
+#undef _POSIX_C_SOURCE
+#include <sys/types.h>
 #include <dirent.h>
 #include <iostream>
 #include <fstream>
@@ -1025,7 +1027,11 @@ namespace OCL
         deletePropertyBag( root );
     }
 
+#ifdef __APPLE__
+    int filter_so(struct dirent * d)
+#else // Only tested on gnulinux so far
     int filter_so(const struct dirent * d)
+#endif
     {
         std::string so_name(d->d_name);
         // return FALSE if string ends in .so:

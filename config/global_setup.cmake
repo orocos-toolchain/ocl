@@ -1,9 +1,3 @@
-#
-# Include cmake modules required to look for dependencies
-#
-INCLUDE( ${CMAKE_ROOT}/Modules/CheckIncludeFileCXX.cmake )
-INCLUDE( ${CMAKE_ROOT}/Modules/CheckIncludeFile.cmake )
-
 INCLUDE( ${PROJ_SOURCE_DIR}/config/DependentOption.cmake )
 
 #

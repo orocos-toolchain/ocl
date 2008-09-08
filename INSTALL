@@ -16,6 +16,18 @@ can type:
   make
   make install
 
+If you have some of the ocl dependencies installed in non-standard
+locations, you have to specify this using environment variables.  
+Specify header locations using the CMAKE_INCLUDE_PATH variable.
+
+E.g. using bash and fink in Mac OS X, the boost library headers are
+installed in /sw/include, so you would specify 
+
+export CMAKE_INCLUDE_PATH=/sw/include
+
+before running cmake.  For libraries in non-default locations, use the
+CMAKE_LIBRARY_PATH variable.
+
 For selecting additional (hardware related) components, setting
 include paths, or setting the installation prefix, do
 

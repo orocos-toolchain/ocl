@@ -38,6 +38,12 @@ using RTT::Logger;
     #error "MSGLENGTH too long" /* memcpy is used */
 #endif
 
+#if __APPLE__
+#define SEND_OPTIONS        0
+#else
+#define SEND_OPTIONS        MSG_NOSIGNAL
+#endif
+
 namespace {
     const unsigned int bufsize = 2048;
     class sockbuf : public std::streambuf
@@ -52,6 +58,23 @@ namespace {
                 char* ptr = new char[bufsize];
                 setp(ptr, ptr + bufsize);   // output buffer
                 setg(0, 0, 0);              // input stream: not enabled
+#if __APPLE__
+                /* Linux uses MSG_NOSIGNAL on the ::send() calls, but Mac OS X
+                   supports this as a socket option with SIG_NOSIGPIPE. Just
+                   set the socket now with that option and not worry about the
+                   MSG_NOSIGNAL's later in each of the send() calls. For 
+                   further details, see
+http://lists.apple.com/archives/macnetworkprog/2002/Dec/msg00091.html
+http://trac.wxwidgets.org/ticket/7150
+http://gobby.0x539.de/trac/browser/net6/trunk/src/socket.cpp?rev=224
+                */
+                int value = 1;
+                if (-1 == setsockopt(
+                        mainClass->socket, SOL_SOCKET, SO_NOSIGPIPE, &value, sizeof(value)))
+                {
+                    Logger::log() << Logger::Error << "Error setting socket option. Continuing." << Logger::endl;
+                }
+ #endif
             }
 
             ~sockbuf()
@@ -101,7 +124,7 @@ namespace {
                     buffer[length] = '\0';
 
                     // empty strings are not sent
-                    if( length && ::send ( mainClass->socket, buffer, length, MSG_NOSIGNAL ) == -1 )
+                    if( length && ::send ( mainClass->socket, buffer, length, SEND_OPTIONS ) == -1 )
                     {
                         mainClass->rawClose();
                     }
@@ -265,7 +288,7 @@ namespace TCP {
                 flags = 0;
             }
             fcntl( _socket, F_SETFL, flags | O_NONBLOCK );
-            ::send ( _socket, "104 Bye bye", 11, MSG_NOSIGNAL );
+            ::send ( _socket, "104 Bye bye", 11, SEND_OPTIONS );
             ::close( _socket );
         }
     }
