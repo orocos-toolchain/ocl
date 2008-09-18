@@ -63,6 +63,10 @@ namespace OCL
 
     ComediSubDeviceDOut( ComediDevice* cd, unsigned int subdevice, bool configure_all_bits = true );
 
+    /**
+     * If \a configure_all_bits was false, use this method (for each bit) to specify
+     * which bits must be configured as input.
+     */
     bool useBit( unsigned int bit );
 
     virtual void switchOn( unsigned int bit);
