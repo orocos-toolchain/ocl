@@ -30,8 +30,8 @@ CXXFLAGS = $(CFLAGS)
 #version=2.0.5
 #major=2
 # option 2, assuming the library is created as src/.libs/libfoo.so.2.0.5 or so
-version=`find . -name *.*.so.* | awk '{if (match($$0,/[0-9]+\.[0-9]+\.[0-9]+$$/)) print substr($$0,RSTART)}'`
-major=`find . -name *.*.so.* | awk '{if (match($$0,/\.so\.[0-9]+$$/)) print substr($$0,RSTART+4)}'`
+version=`find . -name liborocos-ocl*.so.* | awk '{if (match($$0,/[0-9]+\.[0-9]+\.[0-9]+$$/)) print substr($$0,RSTART)}' | head -1`
+major=`find . -name liborocos-ocl*.so.* | awk '{if (match($$0,/\.so\.[0-9]+\.[0-9]+$$/)) print substr($$0,RSTART+4)}' | head -1`
 
 build.gnulinux.corba/Makefile: configure
 	dh_testdir
