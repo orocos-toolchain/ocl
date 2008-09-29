@@ -207,7 +207,7 @@ namespace OCL
     Kuka361nAxesVelocityController::~Kuka361nAxesVelocityController()
     {
         // make sure robot is shut down
-        prepareForShutdown_cmd();
+        this->cleanup();
 
         // brake, drive, sensors and switches are deleted by each axis
         if(simulation)
@@ -329,6 +329,7 @@ namespace OCL
 
     void Kuka361nAxesVelocityController::cleanupHook()
     {
+
     }
 
     bool Kuka361nAxesVelocityController::prepareForUse()

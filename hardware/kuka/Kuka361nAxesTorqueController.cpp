@@ -272,9 +272,9 @@ namespace OCL
 #endif
         for (unsigned int i = 0; i <KUKA361_NUM_AXES; i++){
              if ( _TorqueMode ) {
-                   _axes_simulation[i] = new RTT::TorqueSimulationAxis(_initialPosition.value()[i], _lowerPositionLimits.value()[i], _upperPositionLimits.value()[i],_velocityLimits.value()[i]);
-            } else {
-                   _axes_simulation[i] = new RTT::SimulationAxis(_initialPosition.value()[i], _lowerPositionLimits.value()[i], _upperPositionLimits.value()[i]);
+                 _axes_simulation[i] = new OCL::TorqueSimulationAxis(_initialPosition.value()[i], _lowerPositionLimits.value()[i], _upperPositionLimits.value()[i],_velocityLimits.value()[i]);
+             } else {
+                 _axes_simulation[i] = new OCL::SimulationAxis(_initialPosition.value()[i], _lowerPositionLimits.value()[i], _upperPositionLimits.value()[i]);
              }
         }
 

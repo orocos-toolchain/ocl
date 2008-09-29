@@ -229,8 +229,8 @@ namespace OCL
         std::vector<RTT::DigitalInput*>       reference;
         std::vector<RTT::Axis*>               axes_hardware;
 #endif
-        std::vector<RTT::AxisInterface*>      axes;
-        std::vector<RTT::SimulationAxis*>     axes_simulation;
+        std::vector<OCL::AxisInterface*>      axes;
+        std::vector<OCL::SimulationAxis*>     axes_simulation;
 
 
     };//class Kuka160nAxesVelocityController
