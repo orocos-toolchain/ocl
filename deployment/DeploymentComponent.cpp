@@ -66,7 +66,7 @@ namespace OCL
         : RTT::TaskContext(name, Stopped),
           compPath("ComponentPath",
                    "Location to look for components in addition to the local directory and system paths.",
-                   "/usr/local/orocos/lib"),
+                   "/usr/lib"),
           autoUnload("AutoUnload",
                      "Stop, cleanup and unload all components loaded by the DeploymentComponent when it is destroyed.",
                      true),

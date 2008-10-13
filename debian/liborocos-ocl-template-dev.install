@@ -3,3 +3,4 @@ usr/lib/liborocos-deployment-@TARGET@.so
 usr/lib/liborocos-taskbrowser-@TARGET@.so
 usr/lib/liborocos-reporting-@TARGET@.so
 usr/lib/liborocos-timer-@TARGET@.so
+usr/lib/liborocos-helloworld-@TARGET@.so
