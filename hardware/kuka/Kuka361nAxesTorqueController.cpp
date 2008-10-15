@@ -25,8 +25,10 @@
  ***************************************************************************/
 
 #include "Kuka361nAxesTorqueController.hpp"
-
+#include <ocl/ComponentLoader.hpp>
 #include <rtt/Logger.hpp>
+
+ORO_LIST_COMPONENT_TYPE( OCL::Kuka361nAxesTorqueController )
 
 namespace OCL
 {
@@ -79,68 +81,60 @@ namespace OCL
 
     typedef Kuka361nAxesTorqueController MyType;
 
-    Kuka361nAxesTorqueController::Kuka361nAxesTorqueController(string name,bool velresolved,string propertyfile)
-        : TaskContext(name),
-          _startAxis( "startAxis", &MyType::startAxis, this),
-          _startAllAxes( "startAllAxes", &MyType::startAllAxes, this),
-          _stopAxis( "stopAxis", &MyType::stopAxis, this),
-          _stopAllAxes( "stopAllAxes", &MyType::stopAllAxes, this),
-          _unlockAxis( "unlockAxis", &MyType::unlockAxis, this),
-          _unlockAllAxes( "unlockAllAxes", &MyType::unlockAllAxes, this),
-          _lockAxis( "lockAxis", &MyType::lockAxis, this),
-          _lockAllAxes( "lockAllAxes", &MyType::lockAllAxes, this),
-          _prepareForUse( "prepareForUse", &MyType::prepareForUse,&MyType::prepareForUseCompleted, this),
-          _prepareForShutdown( "prepareForShutdown", &MyType::prepareForShutdown,&MyType::prepareForShutdownCompleted, this),
-          _addDriveOffset( "addDriveOffset", &MyType::addDriveOffset, this),
-          _driveValue(KUKA361_NUM_AXES),
-          _positionValue(KUKA361_NUM_AXES),
-          _velocityValue(KUKA361_NUM_AXES),
-          _torqueValue(KUKA361_NUM_AXES),
-          _delta_time_Port("_delta_time_Port"),
-          _velocityLimits("velocityLimits","velocity limits of the axes, (rad/s)",vector<double>(KUKA361_NUM_AXES,0)),
-          _currentLimits("currentLimits","current limits of the axes, (A)",vector<double>(KUKA361_NUM_AXES,0)),
-          _lowerPositionLimits("LowerPositionLimits","Lower position limits (rad)",vector<double>(KUKA361_NUM_AXES,0)),
-          _upperPositionLimits("UpperPositionLimits","Upper position limits (rad)",vector<double>(KUKA361_NUM_AXES,0)),
-          _initialPosition("initialPosition","Initial position (rad) for simulation or hardware",vector<double>(KUKA361_NUM_AXES,0)),
-          _velDriveOffset("velDriveOffset","offset (in rad/s) to the drive value.",vector<double>(KUKA361_NUM_AXES,0)),
-          _simulation("simulation","true if simulationAxes should be used",true),
-          _num_axes("NUM_AXES",KUKA361_NUM_AXES),
-          _velocityOutOfRange("velocityOutOfRange"),
-          _currentOutOfRange("currentOutOfRange"),
-          _positionOutOfRange("positionOutOfRange"),
-          _propertyfile(propertyfile),
-          _velresolved(velresolved),
-          _TorqueMode(false),
-          _activated(false),
-          _positionConvertFactor(KUKA361_NUM_AXES),
-          _driveConvertFactor(KUKA361_NUM_AXES),
-          _tachoConvertScale(KUKA361_NUM_AXES),
-          _tachoConvertOffset(KUKA361_NUM_AXES),
-          _curReg_a(KUKA361_NUM_AXES),
-          _curReg_b(KUKA361_NUM_AXES),
-          _shunt_R(KUKA361_NUM_AXES),
-          _shunt_c(KUKA361_NUM_AXES),
-          _Km(KUKA361_NUM_AXES),
+    Kuka361nAxesTorqueController::Kuka361nAxesTorqueController(string name)
+        : TaskContext(name,PreOperational),
+          driveValues("nAxesOutputValue",vector<double>(KUKA361_NUM_AXES)),
+          driveValues_local(KUKA361_NUM_AXES),
+          positionValues("nAxesSensorPosition",vector<double>(KUKA361_NUM_AXES)),
+          positionValues_local(KUKA361_NUM_AXES),
+          velocityValues("nAxesSensorVelocity",vector<double>(KUKA361_NUM_AXES)),
+          velocityValues_local(KUKA361_NUM_AXES),
+          torqueValues("nAxesSensorTorque",vector<double>(KUKA361_NUM_AXES)),
+          torqueValues_local(KUKA361_NUM_AXES),
+          delta_time_Port("_delta_time_Port"),
+          velocityLimits("velocityLimits","velocity limits of the axes, (rad/s)",vector<double>(KUKA361_NUM_AXES,0)),
+          currentLimits("currentLimits","current limits of the axes, (A)",vector<double>(KUKA361_NUM_AXES,0)),
+          lowerPositionLimits("LowerPositionLimits","Lower position limits (rad)",vector<double>(KUKA361_NUM_AXES,0)),
+          upperPositionLimits("UpperPositionLimits","Upper position limits (rad)",vector<double>(KUKA361_NUM_AXES,0)),
+          initialPosition("initialPosition","Initial position (rad) for simulation or hardware",vector<double>(KUKA361_NUM_AXES,0)),
+          velDriveOffset("velDriveOffset","offset (in rad/s) to the drive value.",vector<double>(KUKA361_NUM_AXES,0)),
+          simulation("simulation","true if simulationAxes should be used",true),
+          num_axes("NUM_AXES",KUKA361_NUM_AXES),
+          velocityOutOfRange("velocityOutOfRange"),
+          currentOutOfRange("currentOutOfRange"),
+          positionOutOfRange("positionOutOfRange"),
+          velresolved("velresolved","true if robot should be velocityresolved",false),
+          TorqueMode(false),
+          activated(false),
+          positionConvertFactor(KUKA361_NUM_AXES),
+          driveConvertFactor(KUKA361_NUM_AXES),
+          tachoConvertScale(KUKA361_NUM_AXES),
+          tachoConvertOffset(KUKA361_NUM_AXES),
+          curReg_a(KUKA361_NUM_AXES),
+          curReg_b(KUKA361_NUM_AXES),
+          shunt_R(KUKA361_NUM_AXES),
+          shunt_c(KUKA361_NUM_AXES),
+          Km(KUKA361_NUM_AXES),
+          EmergencyEvents_prop("EmergencyEvents","List of events that will result in an emergencystop of the robot"),
 #if (defined (OROPKG_OS_LXRT))
-          _axes_hardware(KUKA361_NUM_AXES),
-          _encoderInterface(KUKA361_NUM_AXES),
-          _encoder(KUKA361_NUM_AXES),
-          _ref(KUKA361_NUM_AXES),
-          _enable(KUKA361_NUM_AXES),
-          _drive(KUKA361_NUM_AXES),
-          _brake(KUKA361_NUM_AXES),
-          _tachoInput(KUKA361_NUM_AXES),
-          _tachometer(KUKA361_NUM_AXES),
-          _currentInput(KUKA361_NUM_AXES),
-          _currentSensor(KUKA361_NUM_AXES),
-          //_TorqueModeSwitch(KUKA361_NUM_AXES),
-          _TorqueModeCheck(KUKA361_NUM_AXES),
+          axes_hardware(KUKA361_NUM_AXES),
+          encoderInterface(KUKA361_NUM_AXES),
+          encoder(KUKA361_NUM_AXES),
+          ref(KUKA361_NUM_AXES),
+          enable(KUKA361_NUM_AXES),
+          drive(KUKA361_NUM_AXES),
+          brake(KUKA361_NUM_AXES),
+          tachoInput(KUKA361_NUM_AXES),
+          tachometer(KUKA361_NUM_AXES),
+          currentInput(KUKA361_NUM_AXES),
+          currentSensor(KUKA361_NUM_AXES),
+          TorqueModeCheck(KUKA361_NUM_AXES),
 #endif
-          _axes(KUKA361_NUM_AXES),
-          _axes_simulation(KUKA361_NUM_AXES),
-          _tau_sim(KUKA361_NUM_AXES,0.0),
-	  _pos_sim(KUKA361_NUM_AXES),
-          _previous_time(KUKA361_NUM_AXES)
+          axes(KUKA361_NUM_AXES),
+          axes_simulation(KUKA361_NUM_AXES),
+          tau_sim(KUKA361_NUM_AXES,0.0),
+          pos_sim(KUKA361_NUM_AXES),
+          previous_time(KUKA361_NUM_AXES)
     {
         double ticks2rad[KUKA361_NUM_AXES] = KUKA361_TICKS2RAD;
         double vel2volt[KUKA361_NUM_AXES] = KUKA361_RADproSEC2VOLT;
@@ -152,374 +146,368 @@ namespace OCL
         double shunt_c[KUKA361_NUM_AXES] = KUKA361_C;
         double KM[KUKA361_NUM_AXES] = KUKA361_KM;
         for(unsigned int i = 0;i<KUKA361_NUM_AXES;i++){
-            _positionConvertFactor[i] = ticks2rad[i];
-            _driveConvertFactor[i] = vel2volt[i];
-            _tachoConvertScale[i] = tachoscale[i];
-            _tachoConvertOffset[i] = tachooffset[i];
-            _curReg_a[i] = curReg_a[i];
-            _curReg_b[i] = curReg_b[i];
-            _shunt_R[i] = shunt_R[i];
-            _shunt_c[i] = shunt_c[i];
-            _Km[i] = KM[i];
+            positionConvertFactor[i] = ticks2rad[i];
+            driveConvertFactor[i] = vel2volt[i];
+            tachoConvertScale[i] = tachoscale[i];
+            tachoConvertOffset[i] = tachooffset[i];
+            curReg_a[i] = curReg_a[i];
+            curReg_b[i] = curReg_b[i];
+            shunt_R[i] = shunt_R[i];
+            shunt_c[i] = shunt_c[i];
+            Km[i] = KM[i];
         }
 
-        properties()->addProperty( &_velocityLimits );
-        properties()->addProperty( &_currentLimits );
-        properties()->addProperty( &_lowerPositionLimits );
-        properties()->addProperty( &_upperPositionLimits  );
-        properties()->addProperty( &_initialPosition  );
-        properties()->addProperty( &_velDriveOffset  );
-        properties()->addProperty( &_simulation  );
-        attributes()->addConstant( &_num_axes);
+        // make task context
+        properties()->addProperty( &velocityLimits );
+        properties()->addProperty( &currentLimits );
+        properties()->addProperty( &lowerPositionLimits );
+        properties()->addProperty( &upperPositionLimits  );
+        properties()->addProperty( &initialPosition  );
+        properties()->addProperty( &velDriveOffset  );
+        properties()->addProperty( &simulation  );
+        properties()->addProperty( &velresolved);
+        properties()->addProperty( &EmergencyEvents_prop);
+        attributes()->addConstant( &num_axes);
 
-        if (!marshalling()->readProperties(_propertyfile)) {
-            log(Error) << "Failed to read the property file, continueing with default values." << endlog();
-        }
+        
+        this->methods()->addMethod( method("startAxes", &MyType::startAllAxes, this),
+                                    "start all axes, starts updating the drive-value (only possible after unlockAxes)");
+        this->methods()->addMethod( method("stopAxes", &MyType::stopAllAxes, this),
+                                    "stop all axes, sets drive value to zero and disables the update of the drive-port, (only possible if axis is started)");
+        this->methods()->addMethod( method("lockAxes", &MyType::lockAllAxes, this),"lock all axes, enables the brakes (only possible if axis is stopped");
+        this->methods()->addMethod( method( "unlockAxes", &MyType::unlockAllAxes, this),
+                                    "unlock all axis, disables the brakes and enables the drives (only possible if axis is locked");
+        this->commands()->addCommand(command("prepareForUse", &MyType::prepareForUse,&MyType::prepareForUseCompleted, this),
+                                     "prepares the robot for use"  );
+        this->commands()->addCommand(command( "prepareForShutdown", &MyType::prepareForShutdown,&MyType::prepareForShutdownCompleted, this),
+                                     "prepares the robot for shutdown"  );
+        this->methods()->addMethod( method("addDriveOffset", &MyType::addDriveOffset, this),
+                                    "adds offsets to the drive value of the axes","offsets","offset values in rad/s" );
+        
+        /**
+         * Creating and adding the data-ports
+         */
+        this->ports()->addPort(&driveValues);
+        this->ports()->addPort(&positionValues);
+        this->ports()->addPort(&velocityValues);
+        this->ports()->addPort(&torqueValues);
+        this->ports()->addPort(&delta_time_Port);
+        
+        /**
+         * Adding the events :
+         */
+        events()->addEvent( &velocityOutOfRange, "Velocity of an Axis is out of range","message","Information about event" );
+        events()->addEvent( &positionOutOfRange, "Position of an Axis is out of range","message","Information about event");
+        events()->addEvent( &currentOutOfRange, "Current of an Axis is out of range","message","Information about event");
 
-	_TorqueMode = !_velresolved;
-
+        
+    }
+    
+    bool Kuka361nAxesTorqueController::configureHook()
+    {
+            
+        TorqueMode = !velresolved.rvalue();
+	
 
 #if (defined (OROPKG_OS_LXRT))
         int encoderOffsets[KUKA361_NUM_AXES] = KUKA361_ENCODEROFFSETS;
-
-        _comediDev        = new ComediDevice( 1 );
-        _comediSubdevAOut = new ComediSubDeviceAOut( _comediDev, "Kuka361" );
-        _apci1710         = new EncoderSSI_apci1710_board( 0, 1 );
-        _apci2200         = new RelayCardapci2200( "Kuka361" );
-        _apci1032         = new SwitchDigitalInapci1032( "Kuka361" );
-        _comediDev_NI6024  = new ComediDevice( 0 );
-        _comediSubdevAIn_NI6024  = new ComediSubDeviceAIn( _comediDev_NI6024, "Kuka361", 0 );
-        _comediSubdevDIn_NI6024  = new ComediSubDeviceDIn( _comediDev_NI6024, "Kuka361", 2 );
-        // Remove 10/08/07 - Card no longer present
-        //_comediDev_NI6527  = new ComediDevice( 3 );
-        _comediSubdevDOut_NI6713  = new ComediSubDeviceDOut( _comediDev, "Kuka361", 2 );
-
-	torqueModeSwitch = new DigitalOutput(_comediSubdevDOut_NI6713,0);
-	if(_TorqueMode)
-	  torqueModeSwitch->switchOn();
-	else
-	  torqueModeSwitch->switchOff();
-
+        
+        comediDev        = new ComediDevice( 1 );
+        comediSubdevAOut = new ComediSubDeviceAOut( comediDev, "NI6713_AO" );
+        apci1710         = new EncoderSSI_apci1710_board( 0, 1, 2 );
+        apci2200         = new RelayCardapci2200( "APCI2200" );
+        apci1032         = new SwitchDigitalInapci1032( "APCI1032" );
+        comediDev_NI6024  = new ComediDevice( 4 );
+        comediSubdevAIn_NI6024  = new ComediSubDeviceAIn( comediDev_NI6024, "NI6024_AI", 0 );
+        comediSubdevDIn_NI6024  = new ComediSubDeviceDIn( comediDev_NI6024, "NI6024_DI", 2 );
+        comediSubdevDOut_NI6713  = new ComediSubDeviceDOut( _comediDev, "NI6713_AO", 2 );
+        
+        torqueModeSwitch = new DigitalOutput(comediSubdevDOut_NI6713,0);
+        if(TorqueMode)
+            torqueModeSwitch->switchOn();
+        else
+            torqueModeSwitch->switchOff();
+        
+        //    _encoderInterface[i] = new EncoderSSI_apci1710( i + 1, _apci1710 );
+        //Setting up encoderinterfaces:
+        encoderInterface[0] = new EncoderSSI_apci1710( 1, apci1710 );
+        encoderInterface[1] = new EncoderSSI_apci1710( 2, apci1710 );
+        encoderInterface[2] = new EncoderSSI_apci1710( 7, apci1710 );
+        encoderInterface[3] = new EncoderSSI_apci1710( 8, apci1710 );
+        encoderInterface[4] = new EncoderSSI_apci1710( 5, apci1710 );
+        encoderInterface[5] = new EncoderSSI_apci1710( 6, apci1710 );
+        
         for (unsigned int i = 0; i < KUKA361_NUM_AXES; i++){
             //Setting up encoders
-            _encoderInterface[i] = new EncoderSSI_apci1710( i + 1, _apci1710 );
-            _encoder[i]          = new AbsoluteEncoderSensor( _encoderInterface[i], 1.0 / ticks2rad[i], encoderOffsets[i], -10, 10 );
-
-            _brake[i] = new DigitalOutput( _apci2200, i + KUKA361_NUM_AXES );
+            encoder[i] = new AbsoluteEncoderSensor( encoderInterface[i], 1.0 / ticks2rad[i], encoderOffsets[i], -10, 10 );
+            
+            brake[i] = new DigitalOutput( apci2200, i + KUKA361_NUM_AXES );
             log(Info)<<"Setting brake "<<i<<" On."<<endlog();
-            _brake[i]->switchOn();
-
-           _tachoInput[i] = new AnalogInput(_comediSubdevAIn_NI6024, i+TACHO_OFFSET);
-           unsigned int range = 0; // The input range is -10 to 10 V, so range 0
-           _comediSubdevAIn_NI6024->rangeSet(i+TACHO_OFFSET, range);
-           _comediSubdevAIn_NI6024->arefSet(i+TACHO_OFFSET, AnalogInInterface::Common);
-           _tachometer[i] = new AnalogSensor( _tachoInput[i], _comediSubdevAIn_NI6024->lowest(i+TACHO_OFFSET), _comediSubdevAIn_NI6024->highest(i+TACHO_OFFSET), _tachoConvertScale[i], _tachoConvertOffset[i]);
-
-            _currentInput[i] = new AnalogInput(_comediSubdevAIn_NI6024, i+CURRENT_OFFSET);
+            brake[i]->switchOn();
+            
+            tachoInput[i] = new AnalogInput(comediSubdevAIn_NI6024, i+TACHO_OFFSET);
+            unsigned int range = 0; // The input range is -10 to 10 V, so range 0
+            comediSubdevAIn_NI6024->rangeSet(i+TACHO_OFFSET, range);
+            comediSubdevAIn_NI6024->arefSet(i+TACHO_OFFSET, AnalogInInterface::Common);
+            tachometer[i] = new AnalogSensor( tachoInput[i], comediSubdevAIn_NI6024->lowest(i+TACHO_OFFSET), comediSubdevAIn_NI6024->highest(i+TACHO_OFFSET), tachoConvertScale[i], tachoConvertOffset[i]);
+            
+            currentInput[i] = new AnalogInput(comediSubdevAIn_NI6024, i+CURRENT_OFFSET);
             range = 1; // for a input range -5 to 5 V, range is 1
-            _comediSubdevAIn_NI6024->rangeSet(i+CURRENT_OFFSET, range);
-            _comediSubdevAIn_NI6024->arefSet(i+CURRENT_OFFSET, AnalogInInterface::Common);
-            _currentSensor[i] = new AnalogSensor( _currentInput[i], _comediSubdevAIn_NI6024->lowest(i+CURRENT_OFFSET), _comediSubdevAIn_NI6024->highest(i+CURRENT_OFFSET), 1.0 , 0); // 1.0 / _shunt_R[i]
+            comediSubdevAIn_NI6024->rangeSet(i+CURRENT_OFFSET, range);
+            comediSubdevAIn_NI6024->arefSet(i+CURRENT_OFFSET, AnalogInInterface::Common);
+            currentSensor[i] = new AnalogSensor( currentInput[i], comediSubdevAIn_NI6024->lowest(i+CURRENT_OFFSET), comediSubdevAIn_NI6024->highest(i+CURRENT_OFFSET), 1.0 , 0); // 1.0 / _shunt_R[i]
+            
+            TorqueModeCheck[i] = new DigitalInput( comediSubdevDIn_NI6024, i );
+            
+            ref[i]   = new AnalogOutput( comediSubdevAOut, i );
+            enable[i] = new DigitalOutput( apci2200, i );
 
-            // Remove 10/08/07 - Card no longer present
-            _TorqueModeCheck[i] = new DigitalInput( _comediSubdevDIn_NI6024, i );
-
-            _ref[i]   = new AnalogOutput( _comediSubdevAOut, i );
-            _enable[i] = new DigitalOutput( _apci2200, i );
-
-            //Put mode back to velocitycontrol
-            // Remove 10/08/07 - Card no longer present
-
-
-            if ( _TorqueMode ){
-	      //log(Warning)<<"Relais "<<i<<" On."<<endlog();
-
-
-	      // Remove 10/08/07 - Card no longer present
-	      if ( !_TorqueModeCheck[i]->isOn() ) {
-		log(Error) << "Failed to switch relay of channel " << i << " to torque control mode" << endlog();
-	      }
-	      _drive[i]  = new AnalogDrive( _ref[i], _enable[i], _curReg_a[i] / _shunt_R[i], - _shunt_c[i] - (_curReg_b[i] / _shunt_R[i]));
-	      //_drive[i]  = new AnalogDrive( _ref[i], _enable[i], 1.0, 0.0);
-
-	    }else{
-	      _drive[i]  = new AnalogDrive( _ref[i], _enable[i], 1.0 / vel2volt[i], _velDriveOffset.value()[i]);
-            }
-
-            _axes_hardware[i] = new RTT::Axis( _drive[i] );
-            _axes_hardware[i]->setBrake( _brake[i] );
-            _axes_hardware[i]->setSensor( "Position", _encoder[i] );
-            _axes_hardware[i]->setSensor( "Velocity", _tachometer[i] );
-            _axes_hardware[i]->setSensor( "Current", _currentSensor[i] );
-	    _axes_hardware[i]->setSwitch( "Mode", _TorqueModeCheck[i] );
-
-            if ( _TorqueMode ){
-	      _axes_hardware[i]->limitDrive(-_currentLimits.value()[i], _currentLimits.value()[i], _currentOutOfRange);
+            
+            if ( TorqueMode ){
+                if ( !TorqueModeCheck[i]->isOn() ) {
+                    log(Error) << "Failed to switch relay of channel " << i << " to torque control mode" << endlog();
+                    return false;
+                }
+                drive[i]  = new AnalogDrive( ref[i], enable[i], curReg_a[i] / shunt_R[i], - shunt_c[i] - (curReg_b[i] / shunt_R[i]));
+                
             }else{
-	      _axes_hardware[i]->limitDrive(-_velocityLimits.value()[i], _velocityLimits.value()[i], _velocityOutOfRange);
+                drive[i]  = new AnalogDrive( ref[i], enable[i], 1.0 / vel2volt[i], velDriveOffset.value()[i]);
+            }
+            
+            axes_hardware[i] = new RTT::Axis( drive[i] );
+            axes_hardware[i]->setBrake( brake[i] );
+            axes_hardware[i]->setSensor( "Position", encoder[i] );
+            axes_hardware[i]->setSensor( "Velocity", tachometer[i] );
+            axes_hardware[i]->setSensor( "Current", currentSensor[i] );
+            axes_hardware[i]->setSwitch( "Mode", TorqueModeCheck[i] );
+            
+            if ( TorqueMode ){
+                axes_hardware[i]->limitDrive(-currentLimits.value()[i], currentLimits.value()[i], currentOutOfRange);
+            }else{
+                axes_hardware[i]->limitDrive(-velocityLimits.value()[i], velocityLimits.value()[i], velocityOutOfRange);
             }
         }
-
-
-// 	//Temp for motor current measurements with stroomtang
-//         _motorCurrentInput = new AnalogInput(_comediSubdevAIn_NI6024, 0);
-//         unsigned int range2 = 1; // for a input range -5 to 5 V, range is 1
-//         _comediSubdevAIn_NI6024->rangeSet(0, range2);
-//         _comediSubdevAIn_NI6024->arefSet(0, AnalogInInterface::Common);
-//         _motorCurrentSensor = new AnalogSensor( _motorCurrentInput, _comediSubdevAIn_NI6024->lowest(1), _comediSubdevAIn_NI6024->highest(1), 1.0 , 0);
-
-
+        
+        
 #endif
         for (unsigned int i = 0; i <KUKA361_NUM_AXES; i++){
-             if ( _TorqueMode ) {
-                 _axes_simulation[i] = new OCL::TorqueSimulationAxis(_initialPosition.value()[i], _lowerPositionLimits.value()[i], _upperPositionLimits.value()[i],_velocityLimits.value()[i]);
-             } else {
-                 _axes_simulation[i] = new OCL::SimulationAxis(_initialPosition.value()[i], _lowerPositionLimits.value()[i], _upperPositionLimits.value()[i]);
-             }
+            if ( TorqueMode ) {
+                axes_simulation[i] = new OCL::TorqueSimulationAxis(initialPosition.value()[i], lowerPositionLimits.value()[i], upperPositionLimits.value()[i],velocityLimits.value()[i]);
+            } else {
+                axes_simulation[i] = new OCL::SimulationAxis(initialPosition.value()[i], lowerPositionLimits.value()[i], upperPositionLimits.value()[i]);
+            }
         }
-
+        
         for(unsigned int i = 0;i<KUKA361_NUM_AXES;i++){
-	    _pos_sim[i] = _initialPosition.value()[i];
+            pos_sim[i] = initialPosition.value()[i];
         }
-	_torqueSimulator = new Kuka361TorqueSimulator(_axes_simulation, _pos_sim);
-
+        torqueSimulator = new Kuka361TorqueSimulator(axes_simulation, pos_sim);
+        
 #if (defined (OROPKG_OS_LXRT))
-        if(!_simulation.value()){
+        if(!simulation.rvalue()){
             for (unsigned int i = 0; i <KUKA361_NUM_AXES; i++)
-                _axes[i] = _axes_hardware[i];
-            log(Info) << "LXRT version of LiASnAxesVelocityController has started" << endlog();
+                axes[i] = axes_hardware[i];
+            log(Info) << "LXRT version of Kuka361nAxesTorqueController has started" << endlog();
         }
         else{
             for (unsigned int i = 0; i <KUKA361_NUM_AXES; i++)
-                _axes[i] = _axes_simulation[i];
+                axes[i] = axes_simulation[i];
             log(Info) << "LXRT simulation version of Kuka361nAxesTorqueController has started" << endlog();
         }
 #else
         for (unsigned int i = 0; i <KUKA361_NUM_AXES; i++)
-            _axes[i] = _axes_simulation[i];
+            axes[i] = axes_simulation[i];
         log(Info) << "GNULINUX simulation version of Kuka361nAxesTorqueController has started" << endlog();
 #endif
-
-        // make task context
-        /*
-         *  Command Interface
-         */
-        this->methods()->addMethod( &_startAxis, "start axis, starts updating the drive-value (only possible after unlockAxis)","axis","axis to start" );
-        this->methods()->addMethod( &_stopAxis,"stop axis, sets drive value to zero and disables the update of the drive-port, (only possible if axis is started","axis","axis to stop");
-        this->methods()->addMethod( &_lockAxis,"lock axis, enables the brakes (only possible if axis is stopped","axis","axis to lock" );
-        this->methods()->addMethod( &_unlockAxis,"unlock axis, disables the brakes and enables the drive (only possible if axis is locked","axis","axis to unlock" );
-        this->methods()->addMethod( &_startAllAxes, "start all axes"  );
-        this->methods()->addMethod( &_stopAllAxes, "stops all axes"  );
-        this->methods()->addMethod( &_lockAllAxes, "locks all axes"  );
-        this->methods()->addMethod( &_unlockAllAxes, "unlock all axes"  );
-        this->commands()->addCommand( &_prepareForUse, "prepares the robot for use"  );
-        this->commands()->addCommand( &_prepareForShutdown,"prepares the robot for shutdown"  );
-        this->methods()->addMethod( &_addDriveOffset,"adds an offset to the drive value of axis","axis","axis to add offset to","offset","offset value in rad/s" );
-
-
-        /**
-         * Creating and adding the data-ports
-         */
-        for (int i=0;i<KUKA361_NUM_AXES;++i) {
-            char buf[80];
-            sprintf(buf,"driveValue%d",i);
-            _driveValue[i] = new DataPort<double>(buf);
-            ports()->addPort(_driveValue[i]);
-            sprintf(buf,"positionValue%d",i);
-            _positionValue[i]  = new DataPort<double>(buf);
-            ports()->addPort(_positionValue[i]);
-            sprintf(buf,"velocityValue%d",i);
-            _velocityValue[i]  = new DataPort<double>(buf);
-            ports()->addPort(_velocityValue[i]);
-            sprintf(buf,"torqueValue%d",i);
-            _torqueValue[i]  = new DataPort<double>(buf);
-            ports()->addPort(_torqueValue[i]);
+        if(EmergencyEvents_prop.ready())
+            for(unsigned int i=0;i<EmergencyEvents_prop.value().size();i++){
+                string name = EmergencyEvents_prop.value()[i];
+                string::size_type idx = name.find('.');
+                if(idx==string::npos)
+                    log(Warning)<<"Could not connect EmergencyStop to "<<name<<"\n Syntax of "
+                                <<name<<" is not correct. I want a ComponentName.EventName "<<endlog();
+                string peername = name.substr(0,idx);
+                string eventname = name.substr(idx+1);
+                TaskContext* peer;
+                if(peername==this->getName())
+                    peer = this;
+                else if(this->hasPeer(peername)){
+                    peer = this->getPeer(peername);
+                }else{
+                    log(Warning)<<"Could not connect EmergencyStop to "<<name<<", "<<peername<<" is not a peer of "<<this->getName()<<endlog();
+                    continue;
+                }
+                
+                if(peer->events()->hasEvent(eventname)){
+                    Handle handle = peer->events()->setupConnection(eventname).callback(this,&Kuka361nAxesTorqueController::EmergencyStop).handle();
+                    if(handle.connect()){
+                        EmergencyEventHandlers.push_back(handle);
+                        log(Info)<<"EmergencyStop connected to "<< name<<" event."<<endlog();
+                    }else
+                        log(Warning)<<"Could not connect EmergencyStop to "<<name<<", "<<eventname<<" has to have a message parameter."<<endlog();
+                }else
+                    log(Warning)<<"Could not connect EmergencyStop to "<<name<<", "<<eventname <<" not found in "<<peername<<"s event-list"<<endlog();
+            }else{
+            log(Warning)<<"No EmergencyStops available"<<endlog();
         }
-        this->ports()->addPort(&_delta_time_Port);
-// 	   //Temp for motor current measurements with stroomtang
-//         _motorCurrentValue  = new DataPort<double>("motorCurrentValue");
-//         ports()->addPort(_motorCurrentValue);
-
-    /**
-     * Adding the events :
-     */
-    events()->addEvent( &_velocityOutOfRange, "Velocity of an Axis is out of range","message","Information about event" );
-    events()->addEvent( &_positionOutOfRange, "Position of an Axis is out of range","message","Information about event");
-    events()->addEvent( &_currentOutOfRange, "Current of an Axis is out of range","message","Information about event");
-
-  }
-
+        
+        return true;
+    }
+    
+    
     Kuka361nAxesTorqueController::~Kuka361nAxesTorqueController()
+    {
+    }
+    
+    void Kuka361nAxesTorqueController::cleanupHook()
     {
         // make sure robot is shut down
         prepareForShutdown();
 
         // brake, drive, sensors and switches are deleted by each axis
         for (unsigned int i = 0; i < KUKA361_NUM_AXES; i++)
-            delete _axes_simulation[i];
-
-	delete _torqueSimulator;
+            delete axes_simulation[i];
+        
+        delete torqueSimulator;
 
 #if (defined (OROPKG_OS_LXRT))
         for (unsigned int i = 0; i < KUKA361_NUM_AXES; i++)
-        delete _axes_hardware[i];
-        delete _comediDev;
-        delete _comediSubdevAOut;
-        delete _apci1710;
-        delete _apci2200;
-        delete _apci1032;
-        delete _comediDev_NI6024;
-        delete _comediSubdevAIn_NI6024;
-        delete _comediSubdevDIn_NI6024;
+            delete axes_hardware[i];
+        delete comediDev;
+        delete comediSubdevAOut;
+        delete apci1710;
+        delete apci2200;
+        delete apci1032;
+        delete comediDev_NI6024;
+        delete comediSubdevAIn_NI6024;
+        delete comediSubdevDIn_NI6024;
 
-        // Remove 10/08/07 - Card no longer present
-        // delete _comediDev_NI6527;
-        // delete _comediSubdevDOut_NI6527;
 #endif
     }
+    
 
-
-    bool Kuka361nAxesTorqueController::startup()
+    bool Kuka361nAxesTorqueController::startHook()
     {
-	for (int axis=0;axis<KUKA361_NUM_AXES;axis++) {
-		_previous_time[axis] = TimeService::Instance()->getTicks();
-		_positionValue[axis]->Set(_axes[axis]->getSensor("Position")->readSensor());
-	}
+        for (int axis=0;axis<KUKA361_NUM_AXES;axis++) {
+            previous_time[axis] = TimeService::Instance()->getTicks();
+            positionValues_local[axis] = axes[axis]->getSensor("Position")->readSensor();
+        }
+        positionValues.Set(positionValues_local);
+        
         return true;
     }
-
-    void Kuka361nAxesTorqueController::update()
+    
+    void Kuka361nAxesTorqueController::updateHook()
     {
+        driveValues_local = driveValues.Get();
+        positionValues_local = positionValues.Get();
 #if (defined (OROPKG_OS_LXRT))
-        if(_simulation.rvalue()) {
+        if(simulation.rvalue()) {
             //simulate kuka 361 in torque mode
-            for (int axis=0;axis<KUKA361_NUM_AXES;axis++) {
-                _tau_sim[axis] = _driveValue[axis]->Get();
-            }
-            _torqueSimulator->update(_tau_sim);
+            
+            torqueSimulator->update(driveValues_local);
         }
 #else
-            //simulate kuka 361
-            for (int axis=0;axis<KUKA361_NUM_AXES;axis++) {
-                _tau_sim[axis] = _driveValue[axis]->Get();
-            }
- 	    //log(Warning)<<"_tau_sim: "<<_tau_sim[0]<<endlog();
-            _torqueSimulator->update(_tau_sim);
+        //simulate kuka 361
+        torqueSimulator->update(driveValues_local);
 #endif
 
-            for (int axis=0;axis<KUKA361_NUM_AXES;axis++) {
-                // Set the velocity and the position and perform checks in joint space.
-                //_velocityValue[axis]->Set(_axes[axis]->getSensor("Velocity")->readSensor());
-                //vel=(pos-prevpos)/dt
-                _delta_time = TimeService::Instance()->secondsSince(_previous_time[axis]);
-               _velocityValue[axis]->Set((_axes[axis]->getSensor("Position")->readSensor() - _positionValue[axis]->Get())/_delta_time);
-//  		log(Info)<<"prevpos: "<<_positionValue[axis]->Get()<<" pos: "<<_axes[axis]->getSensor("Position")->readSensor()<<" dtime: "<<_delta_time<<endlog();
-                _previous_time[axis] = TimeService::Instance()->getTicks();
-                _positionValue[axis]->Set(_axes[axis]->getSensor("Position")->readSensor());
-		_delta_time_Port.Set(_delta_time);
-// 		log(Warning)<<"pos: "<<_axes[axis]->getSensor("Position")->readSensor()<<endlog();
-// #if (defined (OROPKG_OS_LXRT))
-//         if(_simulation.rvalue()) {
-//                 _velocityValue[axis]->Set(_axes[axis]->getSensor("Velocity")->readSensor());
-//         }
-// #else
-//                 _velocityValue[axis]->Set(_axes[axis]->getSensor("Velocity")->readSensor());
-// #endif
+        for (int axis=0;axis<KUKA361_NUM_AXES;axis++) {
+            // Set the velocity and the position and perform checks in joint space.
+            delta_time = TimeService::Instance()->secondsSince(previous_time[axis]);
+            velocityValues_local[axis] = (axes[axis]->getSensor("Position")->readSensor() - positionValues_local[axis])/delta_time;
+            previous_time[axis] = TimeService::Instance()->getTicks();
+            positionValues_local[axis] = axes[axis]->getSensor("Position")->readSensor();
+            delta_time_Port.Set(delta_time);
 
-                // emit event when velocity is out of range
-                if( (_velocityValue[axis]->Get() < -_velocityLimits.value()[axis]) ||
-                    (_velocityValue[axis]->Get() > _velocityLimits.value()[axis]) ){
-                	char msg[80];
-                	sprintf(msg,"Velocity of Kuka361 Axis %d is out of range: %f",axis+1,_velocityValue[axis]->Get());
-                	_velocityOutOfRange(msg);
-		}
+            // emit event when velocity is out of range
+            if( (velocityValues_local[axis] < -velocityLimits.value()[axis]) ||
+                (velocityValues_local[axis] > velocityLimits.value()[axis]) ){
+                char msg[80];
+                sprintf(msg,"Velocity of Kuka361 Axis %d is out of range: %f",axis+1,velocityValues_local[axis]);
+                velocityOutOfRange(msg);
+            }
+            
+            // emit event when position is out of  range
+            if( (positionValues_local[axis] < lowerPositionLimits.value()[axis]) ||
+                (positionValues_local[axis] > upperPositionLimits.value()[axis]) ){
+                char msg[80];
+                sprintf(msg,"Position of Kuka361 Axis %d is out of range: %f",axis+1,positionValues_local[axis]);
+                positionOutOfRange(msg);
+            }
 
-                // emit event when position is out of  range
-                if( (_positionValue[axis]->Get() < _lowerPositionLimits.value()[axis]) ||
-                    (_positionValue[axis]->Get() > _upperPositionLimits.value()[axis]) ){
-                	char msg[80];
-                	sprintf(msg,"Position of Kuka361 Axis %d is out of range: %f",axis+1,_positionValue[axis]->Get());
-                	_positionOutOfRange(msg);
-		}
-
-                // send the drive value to hw and performs checks, convert torque to current if torque controlled
-                if (_axes[axis]->isDriven()) {
-                    if( _TorqueMode ){
-                        _axes[axis]->drive(_driveValue[axis]->Get() / _Km[axis]); // accepts a current
-                        //_axes[axis]->drive(_driveValue[axis]->Get());
-                    }
-                    else
-                        _axes[axis]->drive(_driveValue[axis]->Get());
+            // send the drive value to hw and performs checks, convert torque to current if torque controlled
+            if (axes[axis]->isDriven()) {
+                if( TorqueMode ){
+                    axes[axis]->drive(driveValues_local[axis] / Km[axis]); // accepts a current
                 }
-
-#if (defined (OROPKG_OS_LXRT))
-	if(!_simulation.rvalue()) {
-                // Set the measured current
-	  if( _TorqueMode){
-	    _torqueValue[axis]->Set((_axes[axis]->getSensor("Current")->readSensor() / _shunt_R[axis] + _shunt_c[axis]) * _Km[axis]);
-	    //_torqueValue[axis]->Set(_axes[axis]->getSensor("Current")->readSensor());
-	  }
-	}
-#endif
+                else
+                    axes[axis]->drive(driveValues_local[axis]);
             }
-// 		//Temp for motor current measurements with stroomtang
-// 		_motorCurrentValue->Set(_motorCurrentSensor->readSensor());
-
-	    //log(Debug) <<"pos (rad): "<<_positionValue[3]->Get()<<" | vel (rad/s): "<<_velocityValue[3]->Get()<<" | drive (A): "<<_driveValue[3]->Get()<<" | cur (A): "<<_torqueValue[3]->Get()<<endlog();
+            
+#if (defined (OROPKG_OS_LXRT))
+            if(!simulation=rvalue()) {
+                // Set the measured current
+                if( TorqueMode){
+                    torqueValues_local[axis] = (axes[axis]->getSensor("Current")->readSensor() / shunt_R[axis] + shunt_c[axis]) * Km[axis];
+                }
+            }
+#endif
+        }
+        torqueValues.Set(torqueValues_local);
+        velocityValues.Set(velocityValues_local);
+        positionValues.Set(positionValues_local);
     }
+  
+	    
 
-
-
-    void Kuka361nAxesTorqueController::shutdown()
-      {
+    void Kuka361nAxesTorqueController::stopHook()
+    {
         //Make sure machine is shut down
         prepareForShutdown();
         //Write properties back to file
-        marshalling()->writeProperties(_propertyfile);
+        //marshalling()->writeProperties(_propertyfile);
     }
 
 
     bool Kuka361nAxesTorqueController::prepareForUse()
     {
 #if (defined (OROPKG_OS_LXRT))
-        if(!_simulation.value()){
-            _apci2200->switchOn( 12 );
-            _apci2200->switchOn( 14 );
+        if(!simulation.rvalue()){
+            apci2200->switchOn( 12 );
+            apci2200->switchOn( 14 );
             log(Warning) <<"Release Emergency stop and push button to start ..."<<endlog();
         }
 #endif
-        _activated = true;
+        activated = true;
         return true;
     }
 
     bool Kuka361nAxesTorqueController::prepareForUseCompleted()const
     {
 #if (defined (OROPKG_OS_LXRT))
-        if(!_simulation.rvalue())
-            return (_apci1032->isOn(12) && _apci1032->isOn(14));
+        if(!simulation.rvalue())
+            return (apci1032->isOn(12) && apci1032->isOn(14));
         else
 #endif
             return true;
     }
-
+    
     bool Kuka361nAxesTorqueController::prepareForShutdown()
     {
         //make sure all axes are stopped and locked
         stopAllAxes();
         lockAllAxes();
 #if (defined (OROPKG_OS_LXRT))
-        //Put mode back to velocitycontrol
-        // Remove 10/08/07 - Card no longer present
-        //for(unsigned int i=0;i<KUKA361_NUM_AXES;i++)
-	torqueModeSwitch->switchOff();
-
-        if(!_simulation.value()){
-            _apci2200->switchOff( 12 );
-            _apci2200->switchOff( 14 );
+        torqueModeSwitch->switchOff();
+        
+        if(!simulation.rvalue()){
+            apci2200->switchOff( 12 );
+            apci2200->switchOff( 14 );
         }
 
 #endif
-        _activated = false;
+        activated = false;
         return true;
     }
 
@@ -528,76 +516,11 @@ namespace OCL
         return true;
     }
 
-    bool Kuka361nAxesTorqueController::stopAxisCompleted(int axis)const
-    {
-        return _axes[axis]->isStopped();
-    }
-
-    bool Kuka361nAxesTorqueController::lockAxisCompleted(int axis)const
-    {
-        return _axes[axis]->isLocked();
-    }
-
-    bool Kuka361nAxesTorqueController::startAxisCompleted(int axis)const
-    {
-        return _axes[axis]->isDriven();
-    }
-
-    bool Kuka361nAxesTorqueController::unlockAxisCompleted(int axis)const
-    {
-        return !_axes[axis]->isLocked();
-    }
-
-    bool Kuka361nAxesTorqueController::stopAxis(int axis)
-    {
-        if (!(axis<0 || axis>KUKA361_NUM_AXES-1)){
-            return _axes[axis]->stop();
-	}
-        else{
-          log(Error) <<"Axis "<< axis <<"doesn't exist!!"<<endlog();
-          return false;
-        }
-    }
-
-    bool Kuka361nAxesTorqueController::startAxis(int axis)
-    {
-        if (!(axis<0 || axis>KUKA361_NUM_AXES-1))
-            return _axes[axis]->drive(0.0);
-        else{
-            log(Error) <<"Axis "<< axis <<"doesn't exist!!"<<endlog();
-            return false;
-        }
-    }
-
-    bool Kuka361nAxesTorqueController::unlockAxis(int axis)
-    {
-        if(_activated){
-            if (!(axis<0 || axis>KUKA361_NUM_AXES-1))
-                return _axes[axis]->unlock();
-            else{
-                log(Error) <<"Axis "<< axis <<"doesn't exist!!"<<endlog();
-                return false;
-            }
-        }
-        else
-            return false;
-    }
-
-    bool Kuka361nAxesTorqueController::lockAxis(int axis)
-    {
-        if (!(axis<0 || axis>KUKA361_NUM_AXES-1))
-            return _axes[axis]->lock();
-        else{
-            log(Error) <<"Axis "<< axis <<"doesn't exist!!"<<endlog();
-            return false;
-        }
-    }
-
     bool Kuka361nAxesTorqueController::stopAllAxes()
     {
         bool _return = true;
         for(unsigned int i = 0;i<KUKA361_NUM_AXES;i++){
-            _return &= stopAxis(i);
+            _return &= axes[i]->stop();
         }
         return _return;
     }
@@ -606,7 +529,7 @@ namespace OCL
     {
         bool _return = true;
         for(unsigned int i = 0;i<KUKA361_NUM_AXES;i++){
-            _return &= startAxis(i);
+            _return &= axes[i]->drive(0.0);
         }
         return _return;
     }
@@ -615,7 +538,7 @@ namespace OCL
     {
         bool _return = true;
         for(unsigned int i = 0;i<KUKA361_NUM_AXES;i++){
-            _return &= unlockAxis(i);
+            _return &= axes[i]->unlock();
         }
         return _return;
     }
@@ -624,57 +547,24 @@ namespace OCL
     {
         bool _return = true;
         for(unsigned int i = 0;i<KUKA361_NUM_AXES;i++){
-            _return &= lockAxis(i);
+            _return &= axes[i]->lock();
         }
         return _return;
     }
 
-    bool Kuka361nAxesTorqueController::stopAllAxesCompleted()const
-    {
-        bool _return = true;
-        for(unsigned int i = 0;i<KUKA361_NUM_AXES;i++)
-            _return &= stopAxisCompleted(i);
-        return _return;
-    }
 
-    bool Kuka361nAxesTorqueController::startAllAxesCompleted()const
+    bool Kuka361nAxesTorqueController::addDriveOffset(const vector<double>& offset)
     {
-        bool _return = true;
-        for(unsigned int i = 0;i<KUKA361_NUM_AXES;i++)
-            _return &= startAxisCompleted(i);
-        return _return;
-    }
-
-    bool Kuka361nAxesTorqueController::lockAllAxesCompleted()const
-    {
-        bool _return = true;
-        for(unsigned int i = 0;i<KUKA361_NUM_AXES;i++)
-            _return &= lockAxisCompleted(i);
-        return _return;
-    }
-
-    bool Kuka361nAxesTorqueController::unlockAllAxesCompleted()const
-    {
-        bool _return = true;
-        for(unsigned int i = 0;i<KUKA361_NUM_AXES;i++)
-            _return &= unlockAxisCompleted(i);
-        return _return;
-    }
-
-    bool Kuka361nAxesTorqueController::addDriveOffset(int axis, double offset)
-    {
-        _velDriveOffset.value()[axis] += offset;
-
+        for(unsigned int i=0;i<KUKA361_NUM_AXES;i++){
+            velDriveOffset.value()[i] += offset[i];
+            
 #if (defined (OROPKG_OS_LXRT))
-        if (!_simulation.value())
-            ((Axis*)(_axes[axis]))->getDrive()->addOffset(offset);
+            if (!simulation.rvalue())
+                ((Axis*)(axes[i]))->getDrive()->addOffset(offset[i]);
 #endif
-        return true;
-    }
-
-    bool Kuka361nAxesTorqueController::addDriveOffsetCompleted(int axis)const
-    {
+        }
         return true;
     }
 
 }//namespace orocos
+
