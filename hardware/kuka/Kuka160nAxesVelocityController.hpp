@@ -222,12 +222,12 @@ namespace OCL
         std::vector<RTT::EncoderInterface*>   encoderInterface;
 
         std::vector<RTT::AnalogOutput*> vref;
-        std::vector<RTT::IncrementalEncoderSensor*>   encoder;
+        std::vector<OCL::IncrementalEncoderSensor*>   encoder;
         std::vector<RTT::DigitalOutput*>      enable;
-        std::vector<RTT::AnalogDrive*>        drive;
+        std::vector<OCL::AnalogDrive*>        drive;
         std::vector<RTT::DigitalOutput*>      brake;
         std::vector<RTT::DigitalInput*>       reference;
-        std::vector<RTT::Axis*>               axes_hardware;
+        std::vector<OCL::Axis*>               axes_hardware;
 #endif
         std::vector<OCL::AxisInterface*>      axes;
         std::vector<OCL::SimulationAxis*>     axes_simulation;

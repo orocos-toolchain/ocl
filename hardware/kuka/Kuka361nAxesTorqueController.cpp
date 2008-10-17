@@ -128,7 +128,7 @@ namespace OCL
           tachometer(KUKA361_NUM_AXES),
           currentInput(KUKA361_NUM_AXES),
           currentSensor(KUKA361_NUM_AXES),
-          TorqueModeCheck(KUKA361_NUM_AXES),
+          torqueModeCheck(KUKA361_NUM_AXES),
 #endif
           axes(KUKA361_NUM_AXES),
           axes_simulation(KUKA361_NUM_AXES),
@@ -140,20 +140,20 @@ namespace OCL
         double vel2volt[KUKA361_NUM_AXES] = KUKA361_RADproSEC2VOLT;
         double tachoscale[KUKA361_NUM_AXES] = KUKA361_TACHOSCALE;
         double tachooffset[KUKA361_NUM_AXES] = KUKA361_TACHOOFFSET;
-        double curReg_a[KUKA361_NUM_AXES] = KUKA361_A;
-        double curReg_b[KUKA361_NUM_AXES] = KUKA361_B;
-        double shunt_R[KUKA361_NUM_AXES] = KUKA361_R;
-        double shunt_c[KUKA361_NUM_AXES] = KUKA361_C;
+        double CurReg_a[KUKA361_NUM_AXES] = KUKA361_A;
+        double CurReg_b[KUKA361_NUM_AXES] = KUKA361_B;
+        double Shunt_R[KUKA361_NUM_AXES] = KUKA361_R;
+        double Shunt_c[KUKA361_NUM_AXES] = KUKA361_C;
         double KM[KUKA361_NUM_AXES] = KUKA361_KM;
         for(unsigned int i = 0;i<KUKA361_NUM_AXES;i++){
             positionConvertFactor[i] = ticks2rad[i];
             driveConvertFactor[i] = vel2volt[i];
             tachoConvertScale[i] = tachoscale[i];
             tachoConvertOffset[i] = tachooffset[i];
-            curReg_a[i] = curReg_a[i];
-            curReg_b[i] = curReg_b[i];
-            shunt_R[i] = shunt_R[i];
-            shunt_c[i] = shunt_c[i];
+            curReg_a[i] = CurReg_a[i];
+            curReg_b[i] = CurReg_b[i];
+            shunt_R[i] = Shunt_R[i];
+            shunt_c[i] = Shunt_c[i];
             Km[i] = KM[i];
         }
 
@@ -220,7 +220,7 @@ namespace OCL
         comediDev_NI6024  = new ComediDevice( 4 );
         comediSubdevAIn_NI6024  = new ComediSubDeviceAIn( comediDev_NI6024, "NI6024_AI", 0 );
         comediSubdevDIn_NI6024  = new ComediSubDeviceDIn( comediDev_NI6024, "NI6024_DI", 2 );
-        comediSubdevDOut_NI6713  = new ComediSubDeviceDOut( _comediDev, "NI6713_AO", 2 );
+        comediSubdevDOut_NI6713  = new ComediSubDeviceDOut( comediDev, "NI6713_AO", 2 );
         
         torqueModeSwitch = new DigitalOutput(comediSubdevDOut_NI6713,0);
         if(TorqueMode)
@@ -239,7 +239,7 @@ namespace OCL
         
         for (unsigned int i = 0; i < KUKA361_NUM_AXES; i++){
             //Setting up encoders
-            encoder[i] = new AbsoluteEncoderSensor( encoderInterface[i], 1.0 / ticks2rad[i], encoderOffsets[i], -10, 10 );
+            encoder[i] = new AbsoluteEncoderSensor( encoderInterface[i], 1.0 / positionConvertFactor[i], encoderOffsets[i], -10, 10 );
             
             brake[i] = new DigitalOutput( apci2200, i + KUKA361_NUM_AXES );
             log(Info)<<"Setting brake "<<i<<" On."<<endlog();
@@ -257,29 +257,29 @@ namespace OCL
             comediSubdevAIn_NI6024->arefSet(i+CURRENT_OFFSET, AnalogInInterface::Common);
             currentSensor[i] = new AnalogSensor( currentInput[i], comediSubdevAIn_NI6024->lowest(i+CURRENT_OFFSET), comediSubdevAIn_NI6024->highest(i+CURRENT_OFFSET), 1.0 , 0); // 1.0 / _shunt_R[i]
             
-            TorqueModeCheck[i] = new DigitalInput( comediSubdevDIn_NI6024, i );
+            torqueModeCheck[i] = new DigitalInput( comediSubdevDIn_NI6024, i );
             
             ref[i]   = new AnalogOutput( comediSubdevAOut, i );
             enable[i] = new DigitalOutput( apci2200, i );
 
             
             if ( TorqueMode ){
-                if ( !TorqueModeCheck[i]->isOn() ) {
+                if ( !torqueModeCheck[i]->isOn() ) {
                     log(Error) << "Failed to switch relay of channel " << i << " to torque control mode" << endlog();
                     return false;
                 }
                 drive[i]  = new AnalogDrive( ref[i], enable[i], curReg_a[i] / shunt_R[i], - shunt_c[i] - (curReg_b[i] / shunt_R[i]));
                 
             }else{
-                drive[i]  = new AnalogDrive( ref[i], enable[i], 1.0 / vel2volt[i], velDriveOffset.value()[i]);
+                drive[i]  = new AnalogDrive( ref[i], enable[i], 1.0 / driveConvertFactor[i], velDriveOffset.value()[i]);
             }
             
-            axes_hardware[i] = new RTT::Axis( drive[i] );
+            axes_hardware[i] = new Axis( drive[i] );
             axes_hardware[i]->setBrake( brake[i] );
             axes_hardware[i]->setSensor( "Position", encoder[i] );
             axes_hardware[i]->setSensor( "Velocity", tachometer[i] );
             axes_hardware[i]->setSensor( "Current", currentSensor[i] );
-            axes_hardware[i]->setSwitch( "Mode", TorqueModeCheck[i] );
+            axes_hardware[i]->setSwitch( "Mode", torqueModeCheck[i] );
             
             if ( TorqueMode ){
                 axes_hardware[i]->limitDrive(-currentLimits.value()[i], currentLimits.value()[i], currentOutOfRange);
@@ -446,7 +446,7 @@ namespace OCL
             }
             
 #if (defined (OROPKG_OS_LXRT))
-            if(!simulation=rvalue()) {
+            if(!simulation.rvalue()) {
                 // Set the measured current
                 if( TorqueMode){
                     torqueValues_local[axis] = (axes[axis]->getSensor("Current")->readSensor() / shunt_R[axis] + shunt_c[axis]) * Km[axis];

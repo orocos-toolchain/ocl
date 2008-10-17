@@ -35,8 +35,8 @@
 
 #endif
 
-#include <ocl/dev/SimulationAxis.hpp>
-#include <ocl/dev/TorqueSimulationAxis.hpp>
+#include "dev/SimulationAxis.hpp"
+#include "dev/TorqueSimulationAxis.hpp"
 #include <rtt/dev/AxisInterface.hpp>
 #include "Kuka361TorqueSimulator.hpp"
 
@@ -293,7 +293,7 @@ namespace OCL
         // Members implementing the interface to the hardware
         //
 #if (defined (OROPKG_OS_LXRT))
-        std::vector<RTT::Axis*>          axes_hardware;
+        std::vector<OCL::Axis*>          axes_hardware;
         
         ComediDevice*                    comediDev;
         ComediSubDeviceAOut*             comediSubdevAOut;
@@ -306,15 +306,15 @@ namespace OCL
         ComediSubDeviceDOut*             comediSubdevDOut_NI6713;
         
         std::vector<RTT::EncoderInterface*>           encoderInterface;
-        std::vector<RTT::AbsoluteEncoderSensor*>      encoder;
+        std::vector<OCL::AbsoluteEncoderSensor*>      encoder;
         std::vector<RTT::AnalogOutput*>               ref;
         std::vector<RTT::DigitalOutput*>              enable;
-        std::vector<RTT::AnalogDrive*>                drive;
+        std::vector<OCL::AnalogDrive*>                drive;
         std::vector<RTT::DigitalOutput*>              brake;
         std::vector<RTT::AnalogInput*>                tachoInput; 
-        std::vector<RTT::AnalogSensor*>               tachometer; 
+        std::vector<OCL::AnalogSensor*>               tachometer; 
         std::vector<RTT::AnalogInput*>                currentInput; 
-        std::vector<RTT::AnalogSensor*>               currentSensor; 
+        std::vector<OCL::AnalogSensor*>               currentSensor; 
         RTT::DigitalOutput*                           torqueModeSwitch;
         std::vector<RTT::DigitalInput*>               torqueModeCheck; 
         

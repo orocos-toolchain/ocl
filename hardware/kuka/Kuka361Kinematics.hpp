@@ -30,8 +30,8 @@ namespace OCL{
     
     class Kuka361Kinematics : public ChainFkSolverPos, 
                               public ChainFkSolverVel, 
-                              public ChainIkSolverVel, 
-                              public ChainIkSolverPos 
+                              public ChainIkSolverVel//, 
+                              //public ChainIkSolverPos 
     {
     public:
         Kuka361Kinematics():l1(KUKA361_L1),l2(KUKA361_L2),l3(KUKA361_L3),l6(KUKA361_L6)
