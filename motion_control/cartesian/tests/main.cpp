@@ -13,7 +13,7 @@
 #include <motion_control/cartesian/CartesianComponents.hpp>
 
 //Kinematics component
-#include <kdl/bindings/rtt/toolkit.hpp>
+//#include <kdl/bindings/rtt/toolkit.hpp>
 #include <kdl/chain.hpp>
 
 #include <rtt/TaskContext.hpp>
@@ -29,7 +29,7 @@ using namespace std;
 
 int ORO_main(int argc, char* argv[])
 {
-    Toolkit::Import( KDLToolkit );
+//    Toolkit::Import( KDLToolkit );
 
     Kuka361nAxesVelocityController my_robot("Robot");
 
