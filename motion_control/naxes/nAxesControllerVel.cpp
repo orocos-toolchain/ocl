@@ -135,8 +135,8 @@ namespace OCL{
         // position feedback on integrated velocity
         for(unsigned int i=0; i<num_axes; i++){
             double time_difference = TimeService::Instance()->secondsSince(time_begin[i]);
-            p_d[i] += v_d[i] * time_difference;
-            v_out[i] = (gain[i] * (p_d[i] - p_m[i])); //+ _velocity_desi_local[i];
+            p_d[i] += v_out[i] * time_difference;
+            v_out[i] = (gain[i] * (p_d[i] - p_m[i])) + v_d[i];
             time_begin[i] = TimeService::Instance()->getTicks();
         }
         v_out_port.Set(v_out);
