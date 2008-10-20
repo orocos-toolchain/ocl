@@ -50,30 +50,30 @@ int ORO_main(int argc, char* argv[])
     {
       string s = argv[1];
       if(s == "Kuka361"){
-	log(Warning) <<"Choosing Kuka361"<<endlog();
-	my_robot = new Kuka361nAxesVelocityController("Robot");
-	number_of_axes = 6;
+          log(Warning) <<"Choosing Kuka361"<<endlog();
+          my_robot = new Kuka361nAxesVelocityController("Robot");
+          number_of_axes = 6;
       }
       else if(s == "Kuka160"){
-	log(Warning) <<"Choosing Kuka160"<<endlog();
-	my_robot = new Kuka160nAxesVelocityController("Robot");
-	number_of_axes = 6;
+          log(Warning) <<"Choosing Kuka160"<<endlog();
+          my_robot = new Kuka160nAxesVelocityController("Robot");
+          number_of_axes = 6;
       }
       else if(s == "Performer"){
-	log(Warning) <<"Choosing Performer"<<endlog();
-	my_robot = new PerformerMK2nAxesVelocityController("Robot");
-	number_of_axes = 5;
+          log(Warning) <<"Choosing Performer"<<endlog();
+          my_robot = new PerformerMK2nAxesVelocityController("Robot");
+          number_of_axes = 5;
       }
     }
   else{
-    log(Warning) <<"Using Default Kuka361"<<endlog();
-    my_robot = new Kuka361nAxesVelocityController("Robot");
+      log(Warning) <<"Using Default Kuka361"<<endlog();
+      my_robot = new Kuka361nAxesVelocityController("Robot");
   }
 
   if ( Logger::log().getLogLevel() < Logger::Info ) {
-    Logger::log().setLogLevel( Logger::Info );
-    log(Info) << argv[0] << " manually raises LogLevel to 'Info' (5)."
-	      << " See also file 'orocos.log'."<<endlog();
+      Logger::log().setLogLevel( Logger::Info );
+      log(Info) << argv[0] << " manually raises LogLevel to 'Info' (5)."
+                << " See also file 'orocos.log'."<<endlog();
   }
 
   EmergencyStop _emergency(my_robot);
@@ -81,13 +81,18 @@ int ORO_main(int argc, char* argv[])
   /// Creating Event Handlers
   _emergency.addEvent(my_robot,"driveOutOfRange");
   _emergency.addEvent(my_robot,"positionOutOfRange");
-
+  
   //nAxesComponents
-  nAxesGeneratorPos generatorPos("nAxesGeneratorPos",number_of_axes);
-  nAxesGeneratorVel generatorVel("nAxesGeneratorVel",number_of_axes);
-  nAxesControllerPos controllerPos("nAxesControllerPos",number_of_axes);
-  nAxesControllerPosVel controllerPosVel("nAxesControllerPosVel",number_of_axes);
-  nAxesControllerVel controllerVel("nAxesControllerVel",number_of_axes);
+//  nAxesGeneratorPos generatorPos("nAxesGeneratorPos",number_of_axes);
+  nAxesGeneratorPos generatorPos("nAxesGeneratorPos");
+//  nAxesGeneratorVel generatorVel("nAxesGeneratorVel",number_of_axes);
+  nAxesGeneratorVel generatorVel("nAxesGeneratorVel");
+//  nAxesControllerPos controllerPos("nAxesControllerPos",number_of_axes);
+  nAxesControllerPos controllerPos("nAxesControllerPos");
+//  nAxesControllerPosVel controllerPosVel("nAxesControllerPosVel",number_of_axes);
+  nAxesControllerPosVel controllerPosVel("nAxesControllerPosVel");
+//  nAxesControllerVel controllerVel("nAxesControllerVel",number_of_axes);
+  nAxesControllerVel controllerVel("nAxesControllerVel");
 
   //connection naxes components to each other and the robot
   connectPorts(my_robot,&generatorPos);
