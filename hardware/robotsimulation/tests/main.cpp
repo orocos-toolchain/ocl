@@ -26,15 +26,16 @@
 
 using namespace Orocos;
 using namespace RTT;
+using namespace OCL;
 using namespace std;
 
 int ORO_main(int argc, char* argv[])
 {
-    int axes = 6;
-    if (argc>1)
-        axes=atoi(argv[1]);
+//    int axes = 6;
+//    if (argc>1)
+//        axes=atoi(argv[1]);
 
-    nAxesVelocityController myMachine("MyNAxesMachine",axes);
+    nAxesVelocityController myMachine("MyNAxesMachine");
 
     Attribute<vector<double> > velocities("velocities",vector<double>(6,0));
     myMachine.attributes()->addAttribute(&velocities);

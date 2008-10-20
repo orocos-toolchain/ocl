@@ -62,7 +62,7 @@ namespace OCL
         std::vector<double> driveValues;
         std::vector<double> positionValues;
 
-        std::vector<RTT::SimulationAxis*> simulation_axes;
+        std::vector<OCL::SimulationAxis*> simulation_axes;
 
     protected:
         Method<bool(void)> M_startAllAxes;
