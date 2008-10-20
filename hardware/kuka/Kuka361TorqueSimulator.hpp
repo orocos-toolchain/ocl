@@ -6,6 +6,9 @@
 #include <typeinfo>
 #include "kuka361FwDynnf.hpp"
 #include <rtt/Logger.hpp>
+#include <rtt/TimeService.hpp>
+#include "dev/SimulationAxis.hpp"
+#include "dev/TorqueSimulationAxis.hpp"
 
 #include <ocl/OCL.hpp>
 

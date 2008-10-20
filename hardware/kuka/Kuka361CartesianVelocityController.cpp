@@ -65,7 +65,7 @@ namespace OCL
         //Initialize: calculate everything once
         this->updateHook();
         //Check if there were any problems calculating the kinematics
-        return kinematics_status;
+        return !(kinematics_status<0);
     }
 
     void Kuka361CartesianVelocityController::updateHook()
@@ -84,11 +84,11 @@ namespace OCL
             //Calculate forward position kinematics
             kinematics_status = kinematics.JntToCart(jointpositions,cartpos);
             //Only set result to port if it was calcuted correctly
-            if(kinematics_status>0)
-                cartpos_port.Set(cartpos);
-            else
+            if(kinematics_status<0)
                 log(Error)<<"Could not calculate forward kinematics"<<endlog();
-
+            else
+                cartpos_port.Set(cartpos);
+            
             //Calculate inverse velocity kinematics
             kinematics_status = kinematics.CartToJnt(jointpositions,cartvel,jointvelocities);
             if(kinematics_status<0){
@@ -102,7 +102,7 @@ namespace OCL
             naxesvel_port.Set(naxesvelocities);
         }
         else
-            kinematics_status=false;
+            kinematics_status=-1;
     }
     
     void Kuka361CartesianVelocityController::stopHook()
