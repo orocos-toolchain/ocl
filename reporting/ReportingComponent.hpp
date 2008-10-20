@@ -224,7 +224,8 @@ namespace OCL
         RTT::Property<std::string>   config;
         RTT::Property<bool>          writeHeader;
         RTT::Property<bool>          decompose;
-
+        RTT::Property<bool>          synchronize_with_logging;
+        
         RTT::TimeService::ticks starttime;
         RTT::Property<RTT::TimeService::Seconds> timestamp;
 

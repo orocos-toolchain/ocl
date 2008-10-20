@@ -56,6 +56,7 @@ namespace OCL
                  "cpf/reporter.cpf"),
           writeHeader("WriteHeader","Set to true to start each report with a header.", true),
           decompose("Decompose","Set to false in order to create multidimensional array in netcdf", true),
+          synchronize_with_logging("Synchronize","Set to true if the timestamp should be synchronized with the logging",false),
           starttime(0),
           timestamp("TimeStamp","The time at which the data was read.",0.0)
     {
@@ -63,7 +64,8 @@ namespace OCL
         this->properties()->addProperty( &config );
         this->properties()->addProperty( &writeHeader );
         this->properties()->addProperty( &decompose );
-
+        this->properties()->addProperty( &synchronize_with_logging);
+        
         // Add the methods, methods make sure that they are
         // executed in the context of the (non realtime) caller.
 
@@ -398,7 +400,10 @@ namespace OCL
             }
             this->cleanReport();
         }
-        starttime = TimeService::Instance()->getTicks();
+        if(synchronize_with_logging.get())
+            starttime = Logger::Instance()->getReferenceTime();
+        else
+            starttime = TimeService::Instance()->getTicks();
         return true;
     }
 
