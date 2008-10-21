@@ -1,24 +1,24 @@
 Package: orocos-ocl-@TARGET@@LIBVER@-bin
 Section: libdevel
 Architecture: any
-Depends: liborocos-ocl-@TARGET@@LIBVER@ (= ${Source-Version}), liborocos-rtt-corba-@TARGET@@LIBVER@, tao-naming
+Depends: liborocos-ocl-@TARGET@@LIBVER@ (= ${Source-Version}), liborocos-ocl-corba-@TARGET@@LIBVER@, tao-naming
 Conflicts: orocos-ocl-@TARGET@-bin
 Replaces: orocos-ocl-@TARGET@-bin 
 Provides: orocos-ocl-@TARGET@-bin
-Description: Orocos Component Library  - Binaries
+Description: Orocos Component Library  - Binaries for @TARGET@
  This package contains the ctaskbrowser-@TARGET@, 
  cdeployer-@TARGET@ and deployer-@TARGET@ applications.
 
 Package: orocos-ocl-@TARGET@@LIBVER@-dev
 Section: libdevel
 Architecture: any
-Depends: liborocos-ocl-@TARGET@@LIBVER@-dev,
+Depends: liborocos-ocl-@TARGET@@LIBVER@-dev, liborocos-ocl-corba-@TARGET@@LIBVER@-dev,
       liborocos-ocl-io-@TARGET@@LIBVER@-dev, liborocos-ocl-can-@TARGET@@LIBVER@-dev, liborocos-ocl-comedi-@TARGET@@LIBVER@-dev,
       liborocos-ocl-axes-@TARGET@@LIBVER@-dev
 Conflicts: orocos-ocl-@TARGET@-dev
 Replaces: orocos-ocl-@TARGET@-dev
 Provides: orocos-ocl-@TARGET@-dev
-Description: Orocos Component Library  - All packages
+Description: Orocos Component Library  - All library development packages for @TARGET@
  A super package for Orocos Component Library 
  .
  Development files.
@@ -29,7 +29,7 @@ Architecture: any
 Depends: liborocos-ocl-@TARGET@@LIBVER@ (= ${Source-Version}),
       liborocos-ocl-io-@TARGET@@LIBVER@, liborocos-ocl-can-@TARGET@@LIBVER@, liborocos-ocl-comedi-@TARGET@@LIBVER@,
       liborocos-ocl-axes-@TARGET@@LIBVER@, liborocos-ocl-cartesian-@TARGET@@LIBVER@, liborocos-ocl-cartesian-@TARGET@@LIBVER@
-Description: Orocos Component Library  - All packages
+Description: Orocos Component Library  - All library packages for @TARGET@
  A super package for Orocos Component Library 
  .
  Libraries.
@@ -43,7 +43,7 @@ Depends: liborocos-ocl-@TARGET@@LIBVER@ (= ${Source-Version}), liborocos-rtt-@TA
 Conflicts: liborocos-ocl-@TARGET@-dev
 Replaces: liborocos-ocl-@TARGET@-dev
 Provides: liborocos-ocl-@TARGET@-dev
-Description: Orocos Component Library 
+Description: Orocos Component Library development for @TARGET@
  Orocos Component Library 
  .
  Development files.
@@ -52,7 +52,30 @@ Package: liborocos-ocl-@TARGET@@LIBVER@
 Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: Orocos Component Library 
+Description: Orocos Component Library for @TARGET@
+ This package contains the Reporting, TaskBrowser and Deployment
+ components. The included deployer application can be used to
+ load components into an application.
+ .
+ Library and tools.
+
+Package: liborocos-ocl-corba-@TARGET@@LIBVER@-dev
+Section: libdevel
+Architecture: any
+Depends: liborocos-ocl-@TARGET@@LIBVER@-dev (= ${Source-Version}), liborocos-rtt-corba-@TARGET@@LIBVER@-dev ( >= @LIBVER@ )
+Conflicts: liborocos-ocl-corba-@TARGET@-dev
+Replaces: liborocos-ocl-corba-@TARGET@-dev
+Provides: liborocos-ocl-corba-@TARGET@-dev
+Description: Orocos Component Library - CORBA extensions for @TARGET@
+ Orocos Component Library 
+ .
+ Development files.
+
+Package: liborocos-ocl-corba-@TARGET@@LIBVER@
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Orocos Component Library - CORBA extensions for @TARGET@
  This package contains the Reporting, TaskBrowser and Deployment
  components. The included deployer application can be used to
  load components into an application.
@@ -67,14 +90,14 @@ Depends: liborocos-ocl-io-@TARGET@@LIBVER@ (= ${Source-Version}), liborocos-ocl-
 Conflicts: liborocos-ocl-io-@TARGET@-dev
 Replaces: liborocos-ocl-io-@TARGET@-dev
 Provides: liborocos-ocl-io-@TARGET@-dev
-Description: Orocos hardware IO Component 
+Description: Orocos hardware IO Component for @TARGET@
  Development files.
 
 Package: liborocos-ocl-io-@TARGET@@LIBVER@
 Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: Orocos hardware IO Component 
+Description: Orocos hardware IO Component for @TARGET@
  Manages digital and analog IO.
  .
  Library and tools.
@@ -88,14 +111,14 @@ Depends: liborocos-ocl-comedi-@TARGET@@LIBVER@ (= ${Source-Version}), liborocos-
 Conflicts: liborocos-ocl-comedi-@TARGET@-dev 
 Replaces: liborocos-ocl-comedi-@TARGET@-dev 
 Provides: liborocos-ocl-comedi-@TARGET@-dev 
-Description: Orocos Comedi drivers 
+Description: Orocos Comedi drivers for @TARGET@
  Development files.
 
 Package: liborocos-ocl-comedi-@TARGET@@LIBVER@
 Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: Orocos Comedi drivers 
+Description: Orocos Comedi drivers for @TARGET@
  Maps the comedi devices to Orocos C++ interfaces.
  .
  Library and tools.
@@ -108,14 +131,14 @@ Depends: liborocos-ocl-can-@TARGET@@LIBVER@ (= ${Source-Version}), liborocos-ocl
 Conflicts: liborocos-ocl-can-@TARGET@-dev
 Replaces: liborocos-ocl-can-@TARGET@-dev
 Provides: liborocos-ocl-can-@TARGET@-dev
-Description: Orocos CAN interfaces 
+Description: Orocos CAN interfaces for @TARGET@
  Development files.
 
 Package: liborocos-ocl-can-@TARGET@@LIBVER@
 Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: Orocos CAN interfaces 
+Description: Orocos CAN interfaces for @TARGET@
  Offers C++ CAN interfaces to the Peak CAN Linux drivers.
  .
  Library and tools.
@@ -127,14 +150,14 @@ Depends: liborocos-ocl-axes-@TARGET@@LIBVER@ (= ${Source-Version}), liborocos-oc
 Conflicts: liborocos-ocl-axes-@TARGET@-dev
 Replaces: liborocos-ocl-axes-@TARGET@-dev
 Provides: liborocos-ocl-axes-@TARGET@-dev
-Description: Orocos component for axis control 
+Description: Orocos component for axis control for @TARGET@
  Development files.
 
 Package: liborocos-ocl-axes-@TARGET@@LIBVER@
 Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: Orocos component for axis control 
+Description: Orocos component for axis control for @TARGET@
  An alternative to the naxes components for controlling N axes independently.
  .
  Library and tools.

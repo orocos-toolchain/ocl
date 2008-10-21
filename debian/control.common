@@ -20,7 +20,16 @@ Package: liborocos-ocl@LIBVER@-dev
 Section: libdevel
 Architecture: any
 Depends: liborocos-ocl-gnulinux@LIBVER@-dev | liborocos-ocl-lxrt@LIBVER@-dev | liborocos-ocl-xenomai@LIBVER@-dev
-Description: Orocos Component Library 
+Description: Orocos Component Library Headers
+ Orocos Component Library 
+ .
+ Header files.
+
+Package: liborocos-ocl-corba@LIBVER@-dev
+Section: libdevel
+Architecture: any
+Depends: liborocos-ocl@LIBVER@-dev
+Description: Orocos Component Library Headers - CORBA extensions
  Orocos Component Library 
  .
  Header files.
@@ -29,7 +38,7 @@ Package: liborocos-ocl-io@LIBVER@-dev
 Section: libdevel
 Architecture: any
 Depends: liborocos-ocl-io-gnulinux@LIBVER@-dev | liborocos-ocl-io-lxrt@LIBVER@-dev | liborocos-ocl-io-xenomai@LIBVER@-dev
-Description: Orocos IO Component
+Description: Orocos IO Component Headers
  Orocos Component Library 
  .
  Header files.
@@ -38,7 +47,7 @@ Package: liborocos-ocl-axes@LIBVER@-dev
 Section: libdevel
 Architecture: any
 Depends: liborocos-ocl-axes-gnulinux@LIBVER@-dev | liborocos-ocl-axes-lxrt@LIBVER@-dev | liborocos-ocl-axes-xenomai@LIBVER@-dev
-Description: Orocos Axes Component 
+Description: Orocos Axes Component Headers
  Orocos Component Library 
  .
  Header files.
@@ -57,7 +66,7 @@ Section: libdevel
 Architecture: any
 Depends: liborocos-ocl-can-gnulinux@LIBVER@-dev | liborocos-ocl-can-lxrt@LIBVER@-dev | liborocos-ocl-can-xenomai@LIBVER@-dev
 Description: Orocos Component Library : CAN devices
- Orocos Component Library 
+ Orocos Component Library Headers
  .
  Header files.
 
