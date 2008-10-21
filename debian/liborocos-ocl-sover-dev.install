@@ -1,4 +1,5 @@
 usr/include/ocl/OCL.hpp
+usr/include/ocl/VectorTemplateComposition.hpp
 usr/include/ocl/ComponentLoader.hpp
 usr/include/ocl/DeploymentComponent.hpp
 usr/include/ocl/TaskBrowser.hpp
