@@ -1,7 +1,7 @@
 // Copyright  (C)  2008  Ruben Smits <ruben dot smits at mech dot kuleuven dot be>
 
 // Author: Ruben Smits <ruben dot smits at mech dot kuleuven dot be>
-// URL: http://www.orocos.org/ocl
+// Maintainer: Ruben Smits <ruben dot smits at mech dot kuleuven dot be>
 
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -17,50 +17,28 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-#ifndef _KUKA361CARTESIAN_VELOCITY_CONTROLLER_HPP_
-#define _KUKA361CARTESIAN_VELOCITY_CONTROLLER_HPP_
-
-#include "Kuka361Kinematics.hpp"
-
+#include "Kuka361DWH.hpp"
 #include <rtt/TaskContext.hpp>
 #include <rtt/Ports.hpp>
-
 #include <ocl/OCL.hpp>
 
-namespace OCL
-{
+namespace OCL{
 
-    class Kuka361CartesianVelocityController : public RTT::TaskContext
+    class Kuka361DWHConvertor : public RTT::TaskContext
     {
     public:
-        Kuka361CartesianVelocityController(std::string name);
-        ~Kuka361CartesianVelocityController();
-
-        virtual bool configureHook();
+        Kuka361DWHConvertor(const std::string& name);
+        ~Kuka361DWHConvertor(){};
+        
         virtual bool startHook();
         virtual void updateHook();
-        virtual void stopHook();
-        virtual void cleanupHook();
-
+        virtual void stopHook(){};
+        
     private:
-        Kuka361Kinematics kinematics;
-
-        KDL::JntArray jointpositions,jointvelocities;
-        std::vector<double> naxesposition,naxesvelocities;
-
-        KDL::Twist cartvel;
-        KDL::Frame cartpos;
-
-        RTT::DataPort<KDL::Frame> cartpos_port;
-        RTT::DataPort<KDL::Twist> cartvel_port;
-        RTT::DataPort<std::vector<double> > naxespos_port;
-        RTT::DataPort<std::vector<double> > naxesvel_port;
-
-        int kinematics_status;
-
+        std::vector<double> naxes_positions_local, geometric_positions_local,
+            naxes_velocities_local, geometric_velocities_local;
+        
+        RTT::DataPort<std::vector<double> > naxes_positions, geometric_positions,
+            naxes_velocities, geometric_velocities;
     };
 }
-#endif
-
-
-

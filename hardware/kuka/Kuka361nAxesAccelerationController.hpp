@@ -104,7 +104,7 @@ namespace OCL
         std::vector<double> time_data;
         std::vector< std::vector<double> > q_data, qdot_data, qddot_data, tau_meas_data, tau_model_data;
         RTT::Command<bool(double,double,double)>	_Calibrate;
-    
+        
   }; // class
 }//namespace
 #endif // __N_AXES_EFFECTOR_H__
