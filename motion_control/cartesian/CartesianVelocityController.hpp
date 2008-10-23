@@ -74,7 +74,7 @@ namespace OCL
         RTT::DataPort<std::vector<double> > naxespos_port;
         RTT::DataPort<std::vector<double> > naxesvel_port;
 
-        RTT::Property<std::string> chain_location;
+        RTT::Property<KDL::Chain> chain_prop;
         RTT::Property<KDL::Frame> toolframe;
 
         bool kinematics_status;

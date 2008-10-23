@@ -19,6 +19,7 @@
 
 #include "CartesianVelocityController.hpp"
 #include <kdl/kinfam_io.hpp>
+#include <kdl/chainiksolvervel_pinv_boost_givens.hpp>
 #include <kdl/chainiksolvervel_pinv.hpp>
 #include <kdl/chainfksolverpos_recursive.hpp>
 
@@ -37,7 +38,7 @@ namespace OCL
         cartvel_port("CartesianOutputVelocity",KDL::Twist::Zero()),
         naxespos_port("nAxesSensorPosition"),
         naxesvel_port("nAxesOutputVelocity"),
-        chain_location("ChainLocation","Location of the chain to use"),
+        chain_prop("Chain","Kinematic Description of the robot chain"),
         toolframe("ToolLocation","Offset between the robot's end effector and the tool location"),
         kinematics_status(true)
     {
@@ -47,7 +48,7 @@ namespace OCL
         this->ports()->addPort(&naxespos_port);
         this->ports()->addPort(&naxesvel_port);
 
-        this->properties()->addProperty(&chain_location);
+        this->properties()->addProperty(&chain_prop);
         this->properties()->addProperty(&toolframe);
 
     }
@@ -58,29 +59,7 @@ namespace OCL
 
     bool CartesianVelocityController::configureHook()
     {
-        Logger::In in(this->getName().data());
-        string name = chain_location.value();
-        string::size_type idx = name.find('.');
-        if(idx==string::npos)
-            log(Warning)<<"Could not find "<<chain_location.value()<<".\n Syntax Error."<<endlog();
-        string peername = name.substr(0,idx);
-        string chainname = name.substr(idx+1);
-        TaskContext* peer;
-        if(this->hasPeer(peername))
-            peer = this->getPeer(peername);
-        else{
-            log(Warning)<<"Could not find "<<name<<"\n "
-                        <<peername<<" is not a peer of "<<this->getName()<<endlog();
-            return false;
-        }
-
-        if(peer->attributes()->hasAttribute(chainname))
-            chain = peer->attributes()->getAttribute<Chain>(chainname)->get();
-        else{
-            log(Warning)<<"Could not find "<<chainname<<" in "<<peername<<endlog();
-            return false;
-        }
-
+        chain = chain_prop;
         chain.addSegment(Segment(Joint(Joint::None),toolframe.value()));
 
         nj = chain.getNrOfJoints();
