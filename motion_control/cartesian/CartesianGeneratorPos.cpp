@@ -92,13 +92,8 @@ namespace OCL
     bool CartesianGeneratorPos::startHook()
     {
         _is_moving = false;
-
-        //initialize
-        _position_desi_local = _position_meas.Get();
-        SetToZero(_velocity_desi_local);
-        _position_desi.Set(_position_desi_local);
-        _velocity_desi.Set(_velocity_desi_local);
-
+        once = true;
+        
         return true;
     }
 
@@ -123,6 +118,15 @@ namespace OCL
             }
             _position_desi.Set(_position_desi_local);
             _velocity_desi.Set(_velocity_desi_local);
+        }else{
+            //initialize
+            if(once){
+                once=false;
+                _position_desi_local = _position_meas.Get();
+                SetToZero(_velocity_desi_local);
+                _position_desi.Set(_position_desi_local);
+                _velocity_desi.Set(_velocity_desi_local);
+            }
         }
     }
 

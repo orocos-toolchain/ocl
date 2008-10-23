@@ -81,7 +81,7 @@ namespace OCL
         RTT::TimeService::Seconds                   _time_passed;
         double                                      _max_duration;
 
-        bool                                        _is_moving;
+        bool                                        _is_moving,once;
 
     protected:
         /**
