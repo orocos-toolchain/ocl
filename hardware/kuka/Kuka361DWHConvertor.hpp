@@ -30,9 +30,10 @@ namespace OCL{
         Kuka361DWHConvertor(const std::string& name);
         ~Kuka361DWHConvertor(){};
         
-        virtual bool startHook();
+        virtual bool startHook(){return true;};
         virtual void updateHook();
         virtual void stopHook(){};
+        virtual void errorHook();
         
     private:
         std::vector<double> naxes_positions_local, geometric_positions_local,

@@ -18,6 +18,9 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "Kuka361DWHConvertor.hpp"
+#include <ocl/ComponentLoader.hpp>
+
+ORO_LIST_COMPONENT_TYPE( OCL::Kuka361DWHConvertor )
 
 namespace OCL{
     using namespace std;
@@ -40,17 +43,31 @@ namespace OCL{
         ports()->addPort(&geometric_velocities);
     }
     
-    bool Kuka361DWHConvertor::startHook(){
-        return (naxes_positions.Get().size()==6)&&
-            (geometric_velocities.Get().size()==6);
+    void Kuka361DWHConvertor::updateHook()
+    {
+        if((naxes_positions.Get().size()==6)&&
+           (geometric_velocities.Get().size()==6)){
+            Kuka361DWH::convertGeometric(naxes_positions.Get(),geometric_velocities.Get(),
+                                         geometric_positions_local,naxes_velocities_local);
+            naxes_velocities.Set(naxes_velocities_local);
+            geometric_positions.Set(geometric_positions_local);
+        }else{
+            naxes_velocities.Set(vector<double>(6,0.0));
+            geometric_positions.Set(vector<double>(6,0.0));
+            this->error();
+        }
     }
     
-    void Kuka361DWHConvertor::updateHook(){
-        
-        Kuka361DWH::convertGeometric(naxes_positions.Get(),geometric_velocities.Get(),
-                                     geometric_positions_local,naxes_velocities_local);
-        naxes_velocities.Set(naxes_velocities_local);
-        geometric_positions.Set(geometric_positions_local);
+    
+    void Kuka361DWHConvertor::errorHook()
+    {
+        if((naxes_positions.Get().size()==6)&&
+           (geometric_velocities.Get().size()==6)){
+            this->recovered();
+        }
     }
+    
 }
-        
+
+
+    
