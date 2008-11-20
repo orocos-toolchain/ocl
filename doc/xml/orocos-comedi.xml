@@ -144,7 +144,7 @@
       the subdevice is not a Digital input.
     </para>
     <para>
-      As you can see, the <classname>RTT::ComediSubDeviceDIn</classname> is
+      As you can see, the <classname>OCL::ComediSubDeviceDIn</classname> is
       an implementation of the <classname>RTT::DigitalInInterface</classname>
       class of the Real-Time Toolkit. These interfaces can be name served
       such that other parts of the application can pick the device up
@@ -200,37 +200,37 @@
 	    <tbody>
 	      <row>
 		<entry><classname>RTT::AnalogInInterface</classname></entry>
-		<entry><classname>RTT::ComediSubDeviceAIn</classname></entry>
+		<entry><classname>OCL::ComediSubDeviceAIn</classname></entry>
 		<entry>Reading analog input channels</entry>
 	      </row>
 	      <row>
 		<!-- one of (entrytbl entry) -->
 		<entry><classname>RTT::AnalogOutInterface</classname></entry>
-		<entry><classname>RTT::ComediSubDeviceAOut</classname></entry>
+		<entry><classname>OCL::ComediSubDeviceAOut</classname></entry>
 		<entry>Writing analog output channels</entry>
 	      </row>
 	      <row>
 		<!-- one of (entrytbl entry) -->
 		<entry><classname>RTT::DigitalInInterface</classname></entry>
-		<entry><classname>RTT::ComediSubDeviceDIn</classname></entry>
+		<entry><classname>OCL::ComediSubDeviceDIn</classname></entry>
 		<entry>Reading digital bits</entry>
 	      </row>
 	      <row>
 		<!-- one of (entrytbl entry) -->
 		<entry><classname>RTT::DigitalOutInterface</classname></entry>
-		<entry><classname>RTT::ComediSubDeviceDOut</classname></entry>
+		<entry><classname>OCL::ComediSubDeviceDOut</classname></entry>
 		<entry>Writing digital bits</entry>
 	      </row>
 	      <row>
 		<!-- one of (entrytbl entry) -->
 		<entry>RTT::PulseTrainGeneratorInterface</entry>
-		<entry><classname>RTT::ComediPulseTrainGenerator</classname></entry>
+		<entry><classname>OCL::ComediPulseTrainGenerator</classname></entry>
 		<entry>Sends out block waves</entry>
 	      </row>
 	      <row>
 		<!-- one of (entrytbl entry) -->
 		<entry><classname>RTT::EncoderInterface</classname></entry>
-		<entry><classname>RTT::ComediEncoder</classname></entry>
+		<entry><classname>OCL::ComediEncoder</classname></entry>
 		<entry>A position/turn incremental encoder</entry>
 	      </row>
 	    </tbody>
