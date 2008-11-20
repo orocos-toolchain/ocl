@@ -18,6 +18,7 @@
 
 #include "TorqueSimulationAxis.hpp"
 #include <rtt/Logger.hpp>
+#include <limits>
 
 using namespace OCL;
 

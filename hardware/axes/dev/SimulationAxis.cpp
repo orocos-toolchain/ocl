@@ -17,6 +17,7 @@
  ***************************************************************************/
 
 #include "SimulationAxis.hpp"
+#include <limits>
 
 using namespace RTT;
 using namespace OCL;
