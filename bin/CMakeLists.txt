@@ -4,7 +4,7 @@ IF ( BUILD_TASKBROWSER AND BUILD_DEPLOYMENT)
 
     ADD_EXECUTABLE( deployer-${OROCOS_TARGET} deployer.cpp deployer-funcs.cpp )
     PROGRAM_ADD_DEPS( deployer-${OROCOS_TARGET} orocos-taskbrowser orocos-deployment )
-    TARGET_LINK_LIBRARIES( deployer-${OROCOS_TARGET} ${OROCOS_RTT_LIBS} boost_program_options)
+    TARGET_LINK_LIBRARIES( deployer-${OROCOS_TARGET} ${OROCOS_RTT_LIBS} ${BOOST_OPTIONS_LIBRARY})
     INSTALL_TARGETS( /bin deployer-${OROCOS_TARGET} )
 
 ENDIF ( BUILD_TASKBROWSER AND BUILD_DEPLOYMENT)

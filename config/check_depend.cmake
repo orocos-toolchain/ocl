@@ -96,7 +96,7 @@ IF ( BOOST_OPTIONS )
     MESSAGE("-- Looking for boost::program_options - found")
 
 	# now find the location of the associated library
-    FIND_LIBRARY(BOOST_OPTIONS_LIBRARY boost_program_options )
+    FIND_LIBRARY(BOOST_OPTIONS_LIBRARY boost_program_options NAMES boost_program_options boost_program_options-mt)
 	IF ( BOOST_OPTIONS_LIBRARY )
       MESSAGE("-- Looking for boost::program_options library - found")
 	  GET_FILENAME_COMPONENT(BOOST_OPTIONS_LIBRARY_DIR ${BOOST_OPTIONS_LIBRARY} PATH)
