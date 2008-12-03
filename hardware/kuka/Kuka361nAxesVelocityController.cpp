@@ -77,11 +77,11 @@ namespace OCL
           addDriveOffset_mtd( "addDriveOffset", &MyType::addDriveOffset, this),
           driveValues_port("nAxesOutputVelocity"),
           positionValues_port("nAxesSensorPosition"),
-          driveLimits_prop("driveLimits","velocity limits of the axes, (rad/s)",vector<double>(KUKA361_NUM_AXES,0)),
-          lowerPositionLimits_prop("LowerPositionLimits","Lower position limits (rad)",vector<double>(KUKA361_NUM_AXES,0)),
-          upperPositionLimits_prop("UpperPositionLimits","Upper position limits (rad)",vector<double>(KUKA361_NUM_AXES,0)),
-          initialPosition_prop("initialPosition","Initial position (rad) for simulation or hardware",vector<double>(KUKA361_NUM_AXES,0)),
-          driveOffset_prop("driveOffset","offset (in rad/s) to the drive value.",vector<double>(KUKA361_NUM_AXES,0)),
+          driveLimits_prop("driveLimits","velocity limits of the axes, (rad/s)",std::vector<double>(KUKA361_NUM_AXES,0)),
+          lowerPositionLimits_prop("LowerPositionLimits","Lower position limits (rad)",std::vector<double>(KUKA361_NUM_AXES,0)),
+          upperPositionLimits_prop("UpperPositionLimits","Upper position limits (rad)",std::vector<double>(KUKA361_NUM_AXES,0)),
+          initialPosition_prop("initialPosition","Initial position (rad) for simulation or hardware",std::vector<double>(KUKA361_NUM_AXES,0)),
+          driveOffset_prop("driveOffset","offset (in rad/s) to the drive value.",std::vector<double>(KUKA361_NUM_AXES,0)),
           simulation_prop("simulation","true if simulationAxes should be used",true),
           simulation(true),
           geometric_prop("geometric","true if drive and positions should be converted for kinematic use",true),
@@ -415,7 +415,7 @@ namespace OCL
         return succes;
     }
 
-    bool Kuka361nAxesVelocityController::addDriveOffset(const vector<double>& offset)
+    bool Kuka361nAxesVelocityController::addDriveOffset(const std::vector<double>& offset)
     {
         if(offset.size()!=KUKA361_NUM_AXES)
             return false;

@@ -81,12 +81,12 @@ namespace OCL
           positionValues_port("nAxesSensorPosition"),
           velocityValues_port("nAxesSensorVelocity"),
           deltaTime_port("DeltaTime"),
-          driveLimits_prop("driveLimits","velocity limits of the axes, (rad/s)",vector<double>(STAUBLIRX130_NUM_AXES,0)),
-          lowerPositionLimits_prop("LowerPositionLimits","Lower position limits (rad)",vector<double>(STAUBLIRX130_NUM_AXES,0)),
-          upperPositionLimits_prop("UpperPositionLimits","Upper position limits (rad)",vector<double>(STAUBLIRX130_NUM_AXES,0)),
-          velocityLimits_prop("velocityLimits","velocity limits of the axes, (rad/s)",vector<double>(STAUBLIRX130_NUM_AXES,0)),
-          initialPosition_prop("initialPosition","Initial position (rad) for simulation or hardware",vector<double>(STAUBLIRX130_NUM_AXES,0)),
-          driveOffset_prop("driveOffset","offset (in rad/s) to the drive value.",vector<double>(STAUBLIRX130_NUM_AXES,0)),
+          driveLimits_prop("driveLimits","velocity limits of the axes, (rad/s)",std::vector<double>(STAUBLIRX130_NUM_AXES,0)),
+          lowerPositionLimits_prop("LowerPositionLimits","Lower position limits (rad)",std::vector<double>(STAUBLIRX130_NUM_AXES,0)),
+          upperPositionLimits_prop("UpperPositionLimits","Upper position limits (rad)",std::vector<double>(STAUBLIRX130_NUM_AXES,0)),
+          velocityLimits_prop("velocityLimits","velocity limits of the axes, (rad/s)",std::vector<double>(STAUBLIRX130_NUM_AXES,0)),
+          initialPosition_prop("initialPosition","Initial position (rad) for simulation or hardware",std::vector<double>(STAUBLIRX130_NUM_AXES,0)),
+          driveOffset_prop("driveOffset","offset (in rad/s) to the drive value.",std::vector<double>(STAUBLIRX130_NUM_AXES,0)),
           simulation_prop("simulation","true if simulationAxes should be used",true),
           simulation(true),
           num_axes_attr("NUM_AXES",STAUBLIRX130_NUM_AXES),
@@ -94,9 +94,9 @@ namespace OCL
           driveOutOfRange_evt("driveOutOfRange"),
           positionOutOfRange_evt("positionOutOfRange"),
           velocityOutOfRange_evt("velocityOutOfRange"),
-          servoIntegrationFactor_prop("ServoIntegrationFactor","Inverse of Integration time for servoloop",vector<double>(STAUBLIRX130_NUM_AXES,0)),
-          servoGain_prop("ServoGain","Feedback Gain for servoloop",vector<double>(STAUBLIRX130_NUM_AXES,0)),
-          servoFFScale_prop("ServoFFScale","Feedforward scale for servoloop",vector<double>(STAUBLIRX130_NUM_AXES,0)),
+          servoIntegrationFactor_prop("ServoIntegrationFactor","Inverse of Integration time for servoloop",std::vector<double>(STAUBLIRX130_NUM_AXES,0)),
+          servoGain_prop("ServoGain","Feedback Gain for servoloop",std::vector<double>(STAUBLIRX130_NUM_AXES,0)),
+          servoFFScale_prop("ServoFFScale","Feedforward scale for servoloop",std::vector<double>(STAUBLIRX130_NUM_AXES,0)),
           EmergencyEvents_prop("EmergencyEvents","List of events that will result in an emergencystop of the robot"),
           activated(false),
           positionConvertFactor(STAUBLIRX130_NUM_AXES,0),
@@ -321,7 +321,7 @@ namespace OCL
          */
         log(Info)<<"Creating EmergencyEvent Handlers"<<endlog();
 
-        for(vector<string>::const_iterator it=EmergencyEvents_prop.rvalue().begin();it!=EmergencyEvents_prop.rvalue().end();it++){
+        for(std::vector<string>::const_iterator it=EmergencyEvents_prop.rvalue().begin();it!=EmergencyEvents_prop.rvalue().end();it++){
             string::size_type idx = (*it).find('.');
             if(idx==string::npos)
                 log(Warning)<<"Could not connect EmergencyStop to "<<(*it)<<"\n Syntax of "
@@ -572,7 +572,7 @@ namespace OCL
         return succes;
     }
 
-bool StaubliRX130nAxesVelocityController::addDriveOffset(const vector<double>& offset)
+bool StaubliRX130nAxesVelocityController::addDriveOffset(const std::vector<double>& offset)
     {
         if(offset.size()!=STAUBLIRX130_NUM_AXES)
             return false;
