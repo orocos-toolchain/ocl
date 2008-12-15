@@ -354,6 +354,13 @@ namespace OCL
 
     bool ReportingComponent::reportDataSource(std::string tag, std::string type, DataSourceBase::shared_ptr orig)
     {
+        // check for duplicates:
+        for (Reports::iterator it = root.begin();
+             it != root.end(); ++it)
+            if ( it->get<0>() == tag ) {
+                return true;
+            }
+
         // creates a copy of the data and an update command to
         // update the copy from the original.
         DataSourceBase::shared_ptr clone = orig->getTypeInfo()->buildValue();
