@@ -96,7 +96,10 @@ namespace OCL
 
     bool TimerComponent::stop()
     {
-        return Timer::breakLoop() && TaskContext::stop();
+        if ( isActive() )
+            return Timer::breakLoop() && TaskContext::stop();
+        else
+            return false;
     }
 
     void TimerComponent::stopHook()
