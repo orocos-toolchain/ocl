@@ -387,7 +387,15 @@
 	  doesn't. The activities are created and attached to each
 	  component during the
 	  <function>configureComponents()</function> step of the
-	  DeploymentComponent.
+	  DeploymentComponent. Possible types of activities are
+	  <option>RTT::PeriodicActivity</option>, 
+	  <option>RTT::NonPeriodicActivity</option> and
+	  <option>RTT::SlaveActivity</option>. The latter allows a
+	  component to be executed by a master component. You can
+	  specify a master component using the <option>Master</option>
+	  simple element in the <option>Activity</option> struct. The
+	  DeploymentComponent makes slaves automatically a peer of
+	  their master.
 	</para>
 	<para>
 	  The next section of the Controller contains the <option>AutoConf</option> and <option>AutoStart</option>
