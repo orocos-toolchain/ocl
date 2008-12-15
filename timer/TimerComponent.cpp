@@ -74,7 +74,7 @@ namespace OCL
 
         log(Info) <<"TimerComponent correctly configured."<<endlog();
         Timer::setActivity( this->engine()->getActivity() );
-        assert( this->getActivity() );
+        assert( this->Timer::getActivity() );
         return true;
     }
 
