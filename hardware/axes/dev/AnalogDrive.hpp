@@ -39,6 +39,9 @@
 #include "rtt/dev/DigitalOutput.hpp"
 #include <rtt/Event.hpp>
 
+#include <math.h>
+
+extern "C" int isnan(double);
 
 namespace OCL
 {
