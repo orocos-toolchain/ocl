@@ -45,6 +45,13 @@
 #include <fstream>
 #include <set>
 
+// chose the file extension applicable to the O/S
+#ifdef  __APPLE__
+static const std::string SO_EXT(".dylib");
+#else
+static const std::string SO_EXT(".so");
+#endif
+
 using namespace Orocos;
 
 namespace OCL
@@ -1067,8 +1074,8 @@ namespace OCL
                     } else {
                         // Import only accepts libraries ending in .so
                         log(Debug) << "Scanning " << path +"/" +name <<endlog();
-                        if ( name.rfind(".so") == std::string::npos ||
-                             name.substr(name.rfind(".so")) != ".so" ) {
+                        if ( name.rfind(SO_EXT) == std::string::npos ||
+                             name.substr(name.rfind(SO_EXT)) != SO_EXT ) {
                             log(Debug) << "Dropping " << name <<endlog();
                         }
                         else {
@@ -1104,8 +1111,8 @@ namespace OCL
             name_is_path = true;
 
         std::string so_name(name);
-        if ( so_name.rfind(".so") == std::string::npos)
-            so_name += ".so";
+        if ( so_name.rfind(SO_EXT) == std::string::npos)
+            so_name += SO_EXT;
         else
             name_is_so = true;
 
@@ -1117,7 +1124,7 @@ namespace OCL
             libname = libname.substr(3);
         }
         // finally:
-        libname = libname.substr(0, libname.find(".so") );
+        libname = libname.substr(0, libname.find(SO_EXT) );
 
         for(vector<pair<string,void*> >::iterator it = LoadedLibs.begin(); it != LoadedLibs.end(); ++it){
             if ( it->first == libname ) {
@@ -1150,7 +1157,7 @@ namespace OCL
 
             if ( !name_is_so ) {
                 // no so given, try to append target:
-                so_name = name + "-" + target.get() + ".so";
+                so_name = name + "-" + target.get() + SO_EXT;
                 errors.push_back(string( dlerror() ));
                 //cout << so_name.substr(0,3) <<endl;
                 // try "orocos-helloworld"
@@ -1178,7 +1185,7 @@ namespace OCL
 
             if ( !name_is_so ) {
                 // no so given, try to append target:
-                so_name = name + "-" + target.get() + ".so";
+                so_name = name + "-" + target.get() + SO_EXT;
                 errors.push_back(string( dlerror() ));
                 //cout << so_name.substr(0,3) <<endl;
                 // try "/path/liborocos-helloworld"
