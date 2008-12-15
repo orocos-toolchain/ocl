@@ -252,7 +252,7 @@ namespace OCL
         void displayComponentTypes() const;
 
         /**
-         * (Re-)set the activity of a component which was loaded with loadComponent.
+         * (Re-)set the activity of a component with a periodic activity.
          *
          * @param comp_name The name of the component to change.
          * @param period    The period of the activity.
@@ -267,7 +267,7 @@ namespace OCL
                                  int scheduler);
 
         /**
-         * (Re-)set the activity of a component which was loaded with loadComponent.
+         * (Re-)set the activity of a component with a non periodic activity.
          *
          * @param comp_name The name of the component to change.
          * @param priority  The scheduler priority (OS dependent).
@@ -281,7 +281,7 @@ namespace OCL
                                     int scheduler);
 
         /**
-         * (Re-)set the activity of a component which was loaded with loadComponent.
+         * (Re-)set the activity of a component with a (stand alone) slave activity.
          *
          * @param comp_name The name of the component to change.
          * @param period    The period of the activity.
@@ -293,13 +293,25 @@ namespace OCL
                               double period);
 
         /**
-         * (Re-)set the activity of a component which was loaded with loadComponent.
+         * (Re-)set the activity of a component with a slave activity with master.
+         *
+         * @param comp_name The name of the component to change.
+         * @param master_name The name of the master component.
+         *
+         * @return false if one of the components is not found or \a comp_name is running.
+         */
+        bool setMasterSlaveActivity(const std::string& comp_name,
+                                    const std::string& master_name);
+
+        /**
+         * (Re-)set the activity of a component.
          *
          * @param comp_name The name of the component to change.
          * @param act_type  The Activity type: 'PeriodicActivity', 'NonPeriodicActivity' or 'SlaveActivity'.
          * @param priority  The scheduler priority (OS dependent).
          * @param period    The period of the activity.
          * @param scheduler The scheduler type \a ORO_SCHED_RT or \a ORO_SCHED_OTHER.
+         * @param master_name The name of the master component in case of a SlaveActivity with a master.
          *
          * @return false if one of the parameters does not match or if the
          * component is running.
@@ -307,7 +319,7 @@ namespace OCL
         bool setActivity(const std::string& comp_name,
                          const std::string& act_type,
                          double period, int priority,
-                         int scheduler);
+                         int scheduler, const std::string& master_name = "");
 
         /**
          * Load a (partial) application XML configuration from disk. The

@@ -187,9 +187,14 @@ namespace OCL
                                     "SchedType", "The scheduler type of the activity."
                                     );
         this->methods()->addMethod( RTT::method("setSlaveActivity", &DeploymentComponent::setSlaveActivity, this),
-                                    "Attach a slave activity to a Component.",
+                                    "Attach a 'stand alone' slave activity to a Component.",
                                     "CompName", "The name of the Component.",
-                                    "Period", "The period of the activity."
+                                    "Period", "The period of the activity (set to zero for non periodic)."
+                                    );
+        this->methods()->addMethod( RTT::method("setMasterSlaveActivity", &DeploymentComponent::setMasterSlaveActivity, this),
+                                    "Attach a slave activity with a master to a Component.",
+                                    "Master", "The name of the Component which is master of the Slave.",
+                                    "Slave", "The name of the Component which gets the SlaveActivity."
                                     );
 
 
@@ -208,6 +213,7 @@ namespace OCL
         valid_names.insert("Ports");
         valid_names.insert("Peers");
         valid_names.insert("Activity");
+        valid_names.insert("Master");
 
     }
 
@@ -663,10 +669,19 @@ namespace OCL
                                     } else
                                         if ( nm.rvalue().getType() == "SlaveActivity" ) {
                                             double period = 0.0;
-                                            if ( nm.rvalue().getProperty<double>("Period") )
-                                                period = nm.rvalue().getProperty<double>("Period")->get();
-                                            if (valid) {
-                                                this->setActivity(comp.getName(), nm.rvalue().getType(), period, 0, 0 );
+                                            string master;
+                                            if ( nm.rvalue().getProperty<string>("Master") ) {
+                                                master = nm.rvalue().getProperty<string>("Master")->get();
+                                                if (valid) {
+                                                    this->setActivity(comp.getName(), nm.rvalue().getType(), period, 0, 0, master );
+                                                }
+                                            } else {
+                                                // No master given.
+                                                if ( nm.rvalue().getProperty<double>("Period") )
+                                                    period = nm.rvalue().getProperty<double>("Period")->get();
+                                                if (valid) {
+                                                    this->setActivity(comp.getName(), nm.rvalue().getType(), period, 0, 0 );
+                                                }
                                             }
                                         } else {
                                             log(Error) << "Unknown activity type: " << nm.rvalue().getType()<<endlog();
@@ -1459,13 +1474,26 @@ namespace OCL
         return false;
     }
 
+    bool DeploymentComponent::setMasterSlaveActivity(const std::string& master,
+                                                   const std::string& slave)
+    {
+        if ( this->setActivity(slave, "SlaveActivity", 0, 0, ORO_SCHED_OTHER, master ) ) {
+            assert( comps[slave].instance );
+            assert( comps[slave].act );
+            comps[slave].act->run(comps[slave].instance->engine());
+            return true;
+        }
+        return false;
+    }
+
 
     bool DeploymentComponent::setActivity(const std::string& comp_name,
                                           const std::string& act_type,
                                           double period, int priority,
-                                          int scheduler)
+                                          int scheduler, const std::string& master_name)
     {
         TaskContext* peer = 0;
+        TaskContext* master = 0;
         if ( comp_name == this->getName() )
             peer = this;
         else
@@ -1476,6 +1504,23 @@ namespace OCL
         if (!peer) {
             log(Error) << "Can't create Activity: component "<<comp_name<<" not found."<<endlog();
             return false;
+        }
+        if ( !master_name.empty() ) {
+            if ( master_name == this->getName() )
+                master = this;
+            else
+                if ( comps.count(master_name) )
+                    master = comps[master_name].instance;
+                else
+                    master = this->getPeer(master_name); // last resort.
+            if (!master) {
+                log(Error) << "Can't create SlaveActivity: Master component "<<master_name<<" not found."<<endlog();
+                return false;
+            }
+            if (!master->engine()->getActivity()) {
+                log(Error) << "Can't create SlaveActivity: Master component "<<master_name<<" has no activity !"<<endlog();
+                return false;
+            }
         }
         // this is required for lateron attaching the engine()
         comps[comp_name].instance = peer;
@@ -1491,11 +1536,16 @@ namespace OCL
             if ( act_type == "NonPeriodicActivity" && period == 0.0)
                 newact = new NonPeriodicActivity(scheduler, priority);
             else
-                if ( act_type == "SlaveActivity" )
-                    newact = new SlaveActivity(period);
+                if ( act_type == "SlaveActivity" ) {
+                    if ( master == 0 )
+                        newact = new SlaveActivity(period);
+                    else {
+                        newact = new SlaveActivity(master->engine()->getActivity());
+                    }
+                }
 
         if (newact == 0) {
-            log(Error) << "Can't create activity for component "<<comp_name<<": incorrect arguments."<<endlog();
+            log(Error) << "Can't create "<< act_type << " for component "<<comp_name<<": incorrect arguments."<<endlog();
             return false;
         }
 
