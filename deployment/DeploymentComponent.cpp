@@ -192,7 +192,7 @@ namespace OCL
                                     "Period", "The period of the activity (set to zero for non periodic)."
                                     );
         this->methods()->addMethod( RTT::method("setMasterSlaveActivity", &DeploymentComponent::setMasterSlaveActivity, this),
-                                    "Attach a slave activity with a master to a Component.",
+                                    "Attach a slave activity with a master to a Component. The slave becomes a peer of the master as well.",
                                     "Master", "The name of the Component which is master of the Slave.",
                                     "Slave", "The name of the Component which gets the SlaveActivity."
                                     );
@@ -1541,6 +1541,7 @@ namespace OCL
                         newact = new SlaveActivity(period);
                     else {
                         newact = new SlaveActivity(master->engine()->getActivity());
+                        master->addPeer( slave );
                     }
                 }
 
