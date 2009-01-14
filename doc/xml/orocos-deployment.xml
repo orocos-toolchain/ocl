@@ -189,7 +189,7 @@
 	  <imagedata fileref="images/deployment-example.png" />
 	</imageobject>
 	<imageobject role="fo">
-	  <imagedata fileref="images/hires/deployment-example.png" />
+	  <imagedata fileref="images/hires/deployment-example.png" width="100%" scalefit="1" />
 	</imageobject>
 	<caption><para>A Reporter component monitors communication
 	between Plant and Controller. The Deployment component itself

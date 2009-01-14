@@ -60,7 +60,7 @@
 	  <imagedata fileref="images/reporting-example" />
 	</imageobject>
 	<imageobject role="fo">
-	  <imagedata fileref="images/hires/reporting-example" />
+	  <imagedata fileref="images/hires/reporting-example" width="100%" scalefit="1" />
 	</imageobject>
 	<caption><para>
 	</para></caption>
