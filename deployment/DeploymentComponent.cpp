@@ -765,7 +765,7 @@ namespace OCL
         // Create data port connections:
         for(ConMap::iterator it = conmap.begin(); it != conmap.end(); ++it) {
             if ( it->second.ports.size() == 1 ){
-                log(Warning) << "Can not form connection "<<it->first<<" with only one Port from "<< it->second.owners[0]<< endlog();
+                log(Warning) << "Can not form connection "<<it->first<<" with only one Port from "<< it->second.owners[0]->getName() << endlog();
                 continue;
             }
             // first find a write and a read port.
@@ -807,7 +807,7 @@ namespace OCL
             p = it->second.ports.begin();
             while ( *p != writer ) ++p;
             std::string owner = it->second.owners[p - it->second.ports.begin()]->getName();
-            log(Info) << "Creating Connection "<<it->first<<" starting from TaskContext "<< owner <<":" <<endlog();
+            log(Info) << "Creating Connection "<<it->first<<" starting from "<< owner <<"."<<writer->getName()<<" :" <<endlog();
             // connect all ports to connection
             p = it->second.ports.begin();
             while (p != it->second.ports.end() ) {
