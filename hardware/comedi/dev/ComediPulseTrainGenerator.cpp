@@ -249,11 +249,7 @@ namespace OCL
         if (!_myCard)
             return false;
         if (_running == true){
-            /* set initial counter value by writing to channel 0 */
-            comedi_data_write(_myCard->getDevice()->it, _subDevice, 0, 0, 0, 0);
-            /* set "load b" register to the number of clock ticks the counter output should remain high
-               by writing to channel 2 */
-            comedi_data_write(_myCard->getDevice()->it, _subDevice, 2, 0, 0, 0); // set uptime to zero ticks
+            disarm(_myCard->getDevice()->it, _subDevice);
             _running = false;
         }
         return true;

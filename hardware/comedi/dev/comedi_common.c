@@ -48,6 +48,30 @@ int arm(comedi_t *device, unsigned subdevice, lsampl_t source)
 	return 0;
 }
 
+int disarm(comedi_t *device, unsigned subdevice)
+{
+    comedi_insn insn;
+    lsampl_t data[1];
+    int retval;
+
+    memset(&insn, 0, sizeof(comedi_insn));
+    insn.insn = INSN_CONFIG;
+    insn.subdev = subdevice;
+    insn.chanspec = 0;
+    insn.data = data;
+    insn.n = sizeof(data) / sizeof(data[0]);
+    data[0] = INSN_CONFIG_DISARM;
+
+    retval = comedi_do_insn(device, &insn);
+    if(retval < 0)
+    {
+        fprintf(stderr, "%s: error:\n", __FUNCTION__);
+        comedi_perror("comedi_do_insn");
+        return retval;
+    }
+    return 0;
+}
+
 /* This resets the count to zero and disarms the counter.  The counter output
  is set low. */
 int reset_counter(comedi_t *device, unsigned subdevice)

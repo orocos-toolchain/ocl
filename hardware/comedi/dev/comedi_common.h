@@ -10,6 +10,7 @@ extern "C" {
 
 /* some helper functions used primarily for counter demos */
 extern int arm(comedi_t *device, unsigned subdevice, lsampl_t source);
+extern int disarm(comedi_t *device, unsigned subdevice);
 extern int reset_counter(comedi_t *device, unsigned subdevice);
 extern int set_counter_mode(comedi_t *device, unsigned subdevice, lsampl_t mode_bits);
 extern int set_clock_source(comedi_t *device, unsigned subdevice, lsampl_t clock, lsampl_t period_ns);
