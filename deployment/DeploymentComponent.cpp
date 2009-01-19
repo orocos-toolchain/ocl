@@ -804,19 +804,34 @@ namespace OCL
             PortInterface* writer = 0, *reader = 0;
             ConnectionData::Ports::iterator p = connection->ports.begin();
 		    
+            // If one of the ports is connected, use that one as writer to connect to.
+            while (p !=connection->ports.end() && (writer == 0 ) ) {
+                if ( (*p)->connected() )
+                    writer = *p;
+                ++p;
+            }
+
+            // now proceed filling in writer and reader pointers until one reader and one writer is found.
+            p = connection->ports.begin();
             while (p !=connection->ports.end() && (writer == 0 || reader == 0) ) {
                 if ( (*p)->getPortType() == PortInterface::WritePort ) 
                     {
-                        if (writer && writer->getPortType() == PortInterface::ReadWritePort )
+                        if (!reader && writer && writer->getPortType() == PortInterface::ReadWritePort && !writer->connected() ) {
                             reader = writer;
-                        writer = (*p);
+                            writer = 0;
+                        }
+                        if (!writer)
+                            writer = (*p);
                     }
                 else{ 
                     if ( (*p)->getPortType() == PortInterface::ReadPort ) 
                         {
-                            if (reader && reader->getPortType() == PortInterface::ReadWritePort )
+                            if (!writer && reader && reader->getPortType() == PortInterface::ReadWritePort ) {
                                 writer = reader;
-                            reader = (*p);
+                                reader = 0;
+                            }
+                            if (!reader)
+                                reader = (*p);
                         }
                     else{
                         if ( (*p)->getPortType() == PortInterface::ReadWritePort )
@@ -855,16 +870,22 @@ namespace OCL
                 if ( *p != writer ) 
                     {
                         owner = connection->owners[p - connection->ports.begin()]->getName();
-                        if ( (*p)->connectTo( writer ) == false) 
-                            {
-                                log(Error) << "Could not connect Port "<< owner<<"."<< (*p)->getName() << " to connection " << connection_name <<endlog();
-                                if ((*p)->connected())
-                                    log(Error) << "Port "<< owner<<"."<< (*p)->getName() << " already connected !"<<endlog();
-                                else
-                                    log(Error) << "Port "<< owner<<"."<< (*p)->getName() << " has wrong type !"<<endlog();
-                                valid = false;
-                            } else
+                        // only try to connect p if it is not in the same connection of writer.
+                        if ( ( writer->connected() && (*p)->connection() == writer->connection() ) ) {
+                            ++p;
+                            continue;
+                        }
+                        // OK. p is definately no part of writer's connection. Try to connect and flag errors if it fails.
+                        if ( (*p)->connectTo( writer ) == false) {
+                            log(Error) << "Could not connect Port "<< owner<<"."<< (*p)->getName() << " to connection " << connection_name <<endlog();
+                            if ((*p)->connected())
+                                log(Error) << "Port "<< owner<<"."<< (*p)->getName() << " already connected to other connection !"<<endlog();
+                            else
+                                log(Error) << "Port "<< owner<<"."<< (*p)->getName() << " has wrong type !"<<endlog();
+                            valid = false;
+                        } else {
                             log(Info) << "Connected Port "<< owner<<"."<< (*p)->getName() <<" to connection " << connection_name <<endlog();
+                        }
                     }
                 ++p;
             }
