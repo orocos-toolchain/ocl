@@ -141,15 +141,15 @@ namespace OCL
         this->methods()->addMethod( RTT::method("kickStart", &DeploymentComponent::kickStart, this),
                                     "Calls loadComponents, configureComponents and startComponents in a row.",
                                     "File", "The file which contains the XML configuration to use.");
-        this->methods()->addMethod( RTT::method("kickOut", &DeploymentComponent::kickOut, this),
+        this->methods()->addMethod( RTT::method("kickOutAll", &DeploymentComponent::kickOutAll, this),
                                     "Calls stopComponents, cleanupComponents and unloadComponents in a row.");
 
         this->methods()->addMethod( RTT::method("kickOutComponent", &DeploymentComponent::kickOutComponent, this),
                                     "Calls stopComponents, cleanupComponent and unloadComponent in a row.",
                                     "comp_name", "component name");
-        this->methods()->addMethod( RTT::method("kickOutFile", &DeploymentComponent::kickOutFile, this),
+        this->methods()->addMethod( RTT::method("kickOut", &DeploymentComponent::kickOut, this),
                                     "Calls stopComponents, cleanupComponents and unloadComponents in a row.",
-                                    "File", "The file which contains the name of the components to kickOut (the same used in loadComponents, if you want).");
+                                    "File", "The file which contains the name of the components to kickOut (for example, the same used in kickStart).");
 
         // Work around compiler ambiguity:
         typedef bool(DeploymentComponent::*DCFun)(const std::string&, const std::string&);
@@ -385,7 +385,7 @@ namespace OCL
         return false;
     }
 
-    bool DeploymentComponent::kickOut()
+    bool DeploymentComponent::kickOutAll()
     {
         bool sret = this->stopComponents();
         bool cret = this->cleanupComponents();
@@ -1678,9 +1678,9 @@ namespace OCL
         return ComponentFactories::Instance();
     }
     
-    void DeploymentComponent::kickOutFile(const std::string& config_file)
+    void DeploymentComponent::kickOut(const std::string& config_file)
     {
-        Logger::In in("DeploymentComponent::kickOutFile");
+        Logger::In in("DeploymentComponent::kickOut");
         PropertyBag from_file;
         Property<std::string>  import_file;
         std::vector<std::string> deleted_components_type;

@@ -77,7 +77,7 @@ namespace OCL
                 : instance(0), act(0), loaded(false),
                   autostart(false), autoconf(false),
                   autoconnect(false), proxy(false), server(false),
-		  use_naming(true),type("")
+                  use_naming(true),type("")
             {}
             /**
              * The component instance. This is always a valid pointer.
@@ -96,7 +96,7 @@ namespace OCL
             bool loaded;
             bool autostart, autoconf, autoconnect;
             bool proxy, server, use_naming;
-	    std::string type;
+            std::string type;
         };
 
         /**
@@ -424,9 +424,23 @@ namespace OCL
         bool kickStart(const std::string& file_name);
 
         /**
-         * Stop, cleanup and unload all components which were loaded by this component.
+         * Stop, cleanup and unload a single component which were loaded by this component.
+         * @param comp_name name of the component.
+         * @return true if successfully stopped, cleaned and unloaded
          */
-        bool kickOut();
+        bool kickOutComponent(const std::string& comp_name);
+	
+        /**
+         * Identical to \a kickOutAll, but it reads the name of the Components to kickOut from an XML file.
+         * @param config_file name of an XML file (probably the same used by loadComponents() or kickStart() ).
+         */
+        void kickOut(const std::string& config_file);
+
+        /**
+         * Stop, cleanup and unload all components loaded by the DeploymentComponent.
+         */
+        bool kickOutAll();
+
 
         using TaskCore::configure;
 
@@ -515,18 +529,6 @@ namespace OCL
             return this->cleanupComponent( this->getPeer(comp_name) );
         }
 	
-        /**
-         * Stop, cleanup and unload a single component which were loaded by this component.
-         * @param comp_name name of the component.
-         * @return true if successfully stopped, cleaned and unloaded
-         */
-        bool kickOutComponent(const std::string& comp_name);
-	
-        /**
-         * Identical to \a kickOut, but it read the name of the Components to kickOut from a XML file
-         * @param config_file name of an XML file (probably the same used by loadComponents() ).
-         */
-        void kickOutFile(const std::string& config_file);
     };
 
 
