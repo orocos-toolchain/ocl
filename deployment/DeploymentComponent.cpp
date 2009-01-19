@@ -144,14 +144,13 @@ namespace OCL
         this->methods()->addMethod( RTT::method("kickOut", &DeploymentComponent::kickOut, this),
                                     "Calls stopComponents, cleanupComponents and unloadComponents in a row.");
 
-	this->methods()->addMethod( RTT::method("kickOutComponent", &DeploymentComponent::kickOutComponent, this),
-				"Calls stopComponents, cleanupComponent and unloadComponent in a row.", 
-				"comp_name", "component name");
+        this->methods()->addMethod( RTT::method("kickOutComponent", &DeploymentComponent::kickOutComponent, this),
+                                    "Calls stopComponents, cleanupComponent and unloadComponent in a row.",
+                                    "comp_name", "component name");
+        this->methods()->addMethod( RTT::method("kickOutFile", &DeploymentComponent::kickOutFile, this),
+                                    "Calls stopComponents, cleanupComponents and unloadComponents in a row.",
+                                    "File", "The file which contains the name of the components to kickOut (the same used in loadComponents, if you want).");
 
-	this->methods()->addMethod( RTT::method("kickOutFile", &DeploymentComponent::kickOutFile, this),
-				"Calls stopComponents, cleanupComponents and unloadComponents in a row.", 
-				 "File", "The file which contains the name of the components to kickOut (the same used in loadComponents, if you want).");				
-				
         // Work around compiler ambiguity:
         typedef bool(DeploymentComponent::*DCFun)(const std::string&, const std::string&);
         DCFun cp = &DeploymentComponent::connectPeers;
@@ -593,26 +592,26 @@ namespace OCL
                                 }
                                 // store the port
                                 if (valid){
-				    string port_name = ports->get().getProperty<string>(*pit)->get();
-				    bool to_add = true;
-				    // go through the vector to avoid duplicate items.
-				    // NOTE the sizes conmap[port_name].ports.size() and conmap[port_name].owners.size() are supposed to be equal
-				    for(unsigned int a=0; a < conmap[port_name].ports.size(); a++)
-				    {
-					    if(  conmap[port_name].ports.at(a) == p && conmap[port_name].owners.at(a) == c) 
-					    {
-						to_add = false;
-						continue;
-					    }
-				    }
+                                    string port_name = ports->get().getProperty<string>(*pit)->get();
+                                    bool to_add = true;
+                                    // go through the vector to avoid duplicate items.
+                                    // NOTE the sizes conmap[port_name].ports.size() and conmap[port_name].owners.size() are supposed to be equal
+                                    for(unsigned int a=0; a < conmap[port_name].ports.size(); a++)
+                                        {
+                                            if(  conmap[port_name].ports.at(a) == p && conmap[port_name].owners.at(a) == c) 
+                                                {
+                                                    to_add = false;
+                                                    continue;
+                                                }
+                                        }
 
-				    if(to_add)
-				    {
-                                    log(Debug)<<"storing Port: "<<c->getName()<<"."<<p->getName();
-					log(Debug)<<" in " << port_name <<endlog();
-					conmap[port_name].ports.push_back( p );
-					conmap[port_name].owners.push_back( c );
-				    }
+                                    if(to_add)
+                                        {
+                                            log(Debug)<<"storing Port: "<<c->getName()<<"."<<p->getName();
+                                            log(Debug)<<" in " << port_name <<endlog();
+                                            conmap[port_name].ports.push_back( p );
+                                            conmap[port_name].owners.push_back( c );
+                                        }
                                 }
                             }
                         }
@@ -778,11 +777,11 @@ namespace OCL
                 for (PropertyBag::const_iterator it= peers.rvalue().begin(); it != peers.rvalue().end();it++) {
                     Property<string> nm = (*it);
                     if ( nm.ready() )
-		    {
-                        this->addPeer( comps[comp.getName()].instance->getName(), nm.value() );
-			log(Debug) << this->getName() << " connects to " << 
-			comps[comp.getName()].instance->getName()<< nm.value()  << endlog();
-		    }
+                        {
+                            this->addPeer( comps[comp.getName()].instance->getName(), nm.value() );
+                            log(Debug) << this->getName() << " connects to " <<
+                                comps[comp.getName()].instance->getName()<< nm.value()  << endlog();
+                        }
                     else {
                         log(Error) << "Wrong property type in Peers struct. Expected property of type 'string',"
                                    << " got type "<< (*it)->getType() <<endlog();
@@ -792,56 +791,46 @@ namespace OCL
         }
 
         // Create data port connections:
-        for(ConMap::iterator it = conmap.begin(); it != conmap.end(); ++it) 
-	{
-	    ConnectionData *connection =  &(it->second);
-	    std::string connection_name = it->first;
+        for(ConMap::iterator it = conmap.begin(); it != conmap.end(); ++it) {
+            ConnectionData *connection =  &(it->second);
+            std::string connection_name = it->first;
 	    
-	    if ( connection->ports.size() == 1 ){
-		log(Warning) << "Can not form connection "<<connection_name<<" with only one Port from "<< connection->owners[0]<< endlog();
+            if ( connection->ports.size() == 1 ){
+                log(Warning) << "Can not form connection "<<connection_name<<" with only one Port from "<< connection->owners[0]<< endlog();
                 continue;
             }
             // first find a write and a read port.
             // This is quite complex since a 'ReadWritePort' can act as both.
             PortInterface* writer = 0, *reader = 0;
-	    ConnectionData::Ports::iterator p = connection->ports.begin();
+            ConnectionData::Ports::iterator p = connection->ports.begin();
 		    
-	    while (p != connection->ports.end() )
-	    {
-		(*p)->getName();
-		++p;
-	    }
-		
-	    p = connection->ports.begin();
-		
-	    while (p !=connection->ports.end() && (writer == 0 || reader == 0) )
-	    {
+            while (p !=connection->ports.end() && (writer == 0 || reader == 0) ) {
                 if ( (*p)->getPortType() == PortInterface::WritePort ) 
-		{
-                    if (writer && writer->getPortType() == PortInterface::ReadWritePort )
-                        reader = writer;
-                    writer = (*p);
-                }
-		else{ 
-                    if ( (*p)->getPortType() == PortInterface::ReadPort ) 
-		    {
-                        if (reader && reader->getPortType() == PortInterface::ReadWritePort )
-                            writer = reader;
-                        reader = (*p);
+                    {
+                        if (writer && writer->getPortType() == PortInterface::ReadWritePort )
+                            reader = writer;
+                        writer = (*p);
                     }
+                else{ 
+                    if ( (*p)->getPortType() == PortInterface::ReadPort ) 
+                        {
+                            if (reader && reader->getPortType() == PortInterface::ReadWritePort )
+                                writer = reader;
+                            reader = (*p);
+                        }
                     else{
                         if ( (*p)->getPortType() == PortInterface::ReadWritePort )
-			{
-                            if (writer == 0) 
-			    {
-                                writer = (*p);
+                            {
+                                if (writer == 0) 
+                                    {
+                                        writer = (*p);
+                                    }
+                                else {
+                                    reader = (*p);
+                                }
                             }
-                            else {
-                                reader = (*p);
-                            }
-			}
-		    }
-		}
+                    }
+                }
                 ++p;
             }
             // Inform the user of non-optimal connections:
@@ -854,30 +843,29 @@ namespace OCL
                 log(Warning) << "Connecting only write-ports in connection " << it->first << endlog();
             }
             // Inform user which component initiates the connection:
-	    p = connection->ports.begin();
+            p = connection->ports.begin();
             while ( *p != writer ) ++p;
             std::string owner = it->second.owners[p - it->second.ports.begin()]->getName();
             log(Info) << "Creating Connection "<<it->first<<" starting from "<< owner <<"."<<writer->getName()<<" :" <<endlog();
             // connect all ports to connection
-	    p = connection->ports.begin();
+            p = connection->ports.begin();
 
-	    while (p != connection->ports.end() ) 
-	    {
+            while (p != connection->ports.end() ) {
                 // connect all readers to the first found writer.
                 if ( *p != writer ) 
-		{
-		    owner = connection->owners[p - connection->ports.begin()]->getName();
-                    if ( (*p)->connectTo( writer ) == false) 
-		    {
-			log(Error) << "Could not connect Port "<< owner<<"."<< (*p)->getName() << " to connection " << connection_name <<endlog();
-                        if ((*p)->connected())
-                            log(Error) << "Port "<< owner<<"."<< (*p)->getName() << " already connected !"<<endlog();
-                        else
-                            log(Error) << "Port "<< owner<<"."<< (*p)->getName() << " has wrong type !"<<endlog();
-                        valid = false;
-                    } else
-                        log(Info) << "Connected Port "<< owner<<"."<< (*p)->getName() <<" to connection " << connection_name <<endlog();
-                }
+                    {
+                        owner = connection->owners[p - connection->ports.begin()]->getName();
+                        if ( (*p)->connectTo( writer ) == false) 
+                            {
+                                log(Error) << "Could not connect Port "<< owner<<"."<< (*p)->getName() << " to connection " << connection_name <<endlog();
+                                if ((*p)->connected())
+                                    log(Error) << "Port "<< owner<<"."<< (*p)->getName() << " already connected !"<<endlog();
+                                else
+                                    log(Error) << "Port "<< owner<<"."<< (*p)->getName() << " has wrong type !"<<endlog();
+                                valid = false;
+                            } else
+                            log(Info) << "Connected Port "<< owner<<"."<< (*p)->getName() <<" to connection " << connection_name <<endlog();
+                    }
                 ++p;
             }
         }
@@ -957,15 +945,15 @@ namespace OCL
 
             // AutoConf
             if (comps[comp.getName()].autoconf )
-	    {
-		if( !peer->isConfigured() || !peer->isRunning() )
-		{
-                if ( peer->configure() == false)
-                    valid = false;
-        }
-		else 
-		    log(Warning) << "Apparently component "<< peer->getName()<< " don't need to be configured." <<endlog();
-	    }
+                {
+                    if( !peer->isActive() )
+                        {
+                            if ( peer->configure() == false)
+                                valid = false;
+                        }
+                    else 
+                        log(Warning) << "Apparently component "<< peer->getName()<< " don't need to be configured." <<endlog();
+                }
         }
 
         // Finally, report success/failure:
@@ -1023,8 +1011,7 @@ namespace OCL
         // 1. Stop all activities, give components chance to cleanup.
         for ( CompList::iterator cit = comps.begin(); cit != comps.end(); ++cit) {
             ComponentData* it = &(cit->second);
-            if ( it->instance && !it->proxy )
-	    {
+            if ( it->instance && !it->proxy ) {
                 if ( it->instance->engine()->getActivity() == 0 ||
                      it->instance->engine()->getActivity()->isActive() == false ||
                      it->instance->stop() ) {
@@ -1033,7 +1020,7 @@ namespace OCL
                     log(Error) << "Could not stop loaded Component "<< it->instance->getName() <<endlog();
                     valid = false;
                 }
-        }
+            }
         }
         return valid;
     }
@@ -1045,8 +1032,7 @@ namespace OCL
         // 1. Cleanup all activities, give components chance to cleanup.
         for ( CompList::iterator cit = comps.begin(); cit != comps.end(); ++cit) {
             ComponentData* it = &(cit->second);
-            if (it->instance && !it->proxy)
-	    {
+            if (it->instance && !it->proxy) {
                 if ( it->instance->getTaskState() <= TaskCore::Stopped ) {
                     it->instance->cleanup();
                     log(Info) << "Cleaned up "<< it->instance->getName() <<endlog();
@@ -1054,7 +1040,7 @@ namespace OCL
                     log(Error) << "Could not cleanup Component "<< it->instance->getName() << " (not Stopped)"<<endlog();
                     valid = false;
                 }
-        }
+            }
         }
         return valid;
     }
@@ -1063,11 +1049,11 @@ namespace OCL
     {
         // 2. Disconnect and destroy all components.
         bool valid = true;
-	while ( comps.size() > 0)
-	{   
-            CompList::iterator cit = comps.begin();
-	    valid &= this->unloadComponentImpl(cit);
-        }
+        while ( comps.size() > 0)
+            {   
+                CompList::iterator cit = comps.begin();
+                valid &= this->unloadComponentImpl(cit);
+            }
         return valid;
     }
 
@@ -1112,8 +1098,7 @@ namespace OCL
             int i = 0;
             while(i != n) {
                 std::string name = namelist[i]->d_name;
-                if (name != "." && name != ".." )
-		{
+                if (name != "." && name != ".." ) {
                     if (namelist[i]->d_type == DT_DIR) { //ignoring symlinks and subdirs here.
                         import( path +"/" +name );
                     } else {
@@ -1128,7 +1113,7 @@ namespace OCL
                             loadLibrary( path + "/" + name );
                         }
                     }
-		}
+                }
                 free(namelist[i]);
                 ++i;
             }
@@ -1172,44 +1157,38 @@ namespace OCL
         // finally:
         libname = libname.substr(0, libname.find(SO_EXT) );
 
-	// check if the library is already loaded
-	// NOTE if this library has been loaded, you can unload and reload it to apply changes (may be you have updated the dynamic library)
-	// anyway it is safe to do this only if thereisn't any istance whom type was loaded from this library
+        // check if the library is already loaded
+        // NOTE if this library has been loaded, you can unload and reload it to apply changes (may be you have updated the dynamic library)
+        // anyway it is safe to do this only if thereisn't any istance whom type was loaded from this library
 	
-	std::vector<LoadedLib>::iterator lib = loadedLibs.begin(); 
-	while (lib != loadedLibs.end())
-	{
-	    // there is already a library with the same name
-	    if ( lib->name == libname) 
-	    {
-		log(Warning) <<"Library "<< libname <<".so already loaded. " ;
+        std::vector<LoadedLib>::iterator lib = loadedLibs.begin(); 
+        while (lib != loadedLibs.end()) {
+            // there is already a library with the same name
+            if ( lib->name == libname) {
+                log(Warning) <<"Library "<< libname <<".so already loaded. " ;
 		
-		bool can_unload = true;
-		CompList::iterator cit;
-		for( std::vector<std::string>::iterator ctype = lib->components_type.begin();  ctype != lib->components_type.end() && can_unload; ++ctype)
-		{
-		    for ( cit = comps.begin(); cit != comps.end(); ++cit) 
-		    {
-			if( (*ctype) == cit->second.type )
-			{
-			    // the type of an allocated component was loaded from this library. it might be unsafe to reload the library
-			    log(Warning) << "Can NOT reload because of the instance " << cit->second.type  <<"::"<<cit->second.instance->getName()  <<endlog();
-			    can_unload = false;
-			}
-		    }
-		}
-		if( can_unload )
-		{   
-		    log(Warning) << "Try to RELOAD"<<endlog();
-		    dlclose(lib->handle);
-		    // remove the library info from the vector
-		    std::vector<LoadedLib>::iterator lib_un = lib;
-		    loadedLibs.erase(lib_un);
-		    lib = loadedLibs.end();
-	    }
-		else   return true;
+                bool can_unload = true;
+                CompList::iterator cit;
+                for( std::vector<std::string>::iterator ctype = lib->components_type.begin();  ctype != lib->components_type.end() && can_unload; ++ctype) {
+                    for ( cit = comps.begin(); cit != comps.end(); ++cit) {
+                        if( (*ctype) == cit->second.type ) {
+                            // the type of an allocated component was loaded from this library. it might be unsafe to reload the library
+                            log(Warning) << "Can NOT reload because of the instance " << cit->second.type  <<"::"<<cit->second.instance->getName()  <<endlog();
+                            can_unload = false;
+                        }
+                    }
+                }
+                if( can_unload ) {   
+                    log(Warning) << "Try to RELOAD"<<endlog();
+                    dlclose(lib->handle);
+                    // remove the library info from the vector
+                    std::vector<LoadedLib>::iterator lib_un = lib;
+                    loadedLibs.erase(lib_un);
+                    lib = loadedLibs.end();
+                }
+                else   return true;
             }
-	    else lib++;
+            else lib++;
         }
 
 
@@ -1287,8 +1266,8 @@ namespace OCL
             return false;
         }
 
-	//------------- if you get here, the library has been loaded -------------
-	LoadedLib loading_lib(libname,handle);
+        //------------- if you get here, the library has been loaded -------------
+        LoadedLib loading_lib(libname,handle);
         dlerror();    /* Clear any existing error */
 
         // Lookup Component factories:
@@ -1331,11 +1310,11 @@ namespace OCL
                 }
                 ComponentFactories::Instance()[ cname ] = factory;
                 log(Info) << "Loaded component type '"<< cname <<"'"<<endlog();
-		loading_lib.components_type.push_back( cname );
+                loading_lib.components_type.push_back( cname );
 		
             } else {
                 log(Info) << "Loaded single component library '"<< libname <<"'"<<endlog();
-		loading_lib.components_type.push_back( libname );
+                loading_lib.components_type.push_back( libname );
             }
             is_component = true;
         } else {
@@ -1376,9 +1355,9 @@ namespace OCL
             log(Debug) << error << endlog();
         }
 
-	loadedLibs.push_back( loading_lib );
-	log(Info) <<"Storing "<< loading_lib.name  <<endlog();
-	dlerror();    /* Clear any existing error */
+        loadedLibs.push_back( loading_lib );
+        log(Info) <<"Storing "<< loading_lib.name  <<endlog();
+        dlerror();    /* Clear any existing error */
 
 
         // plain library
@@ -1456,7 +1435,7 @@ namespace OCL
         this->addPeer( comps[name].instance );
         log(Info) << "Adding "<< comps[name].instance->getName() << " as new peer:  OK."<< endlog(Info);
         comps[name].loaded = true;
-	comps[name].type = type;
+        comps[name].type = type;
         return true;
     }
 
@@ -1701,100 +1680,92 @@ namespace OCL
     
     void DeploymentComponent::kickOutFile(const std::string& config_file)
     {
-	Logger::In in("DeploymentComponent::kickOutFile");
-	PropertyBag from_file;
-	Property<std::string>  import_file;
-	std::vector<std::string> deleted_components_type;
+        Logger::In in("DeploymentComponent::kickOutFile");
+        PropertyBag from_file;
+        Property<std::string>  import_file;
+        std::vector<std::string> deleted_components_type;
 	
-	// demarshalling failures:
-	bool failure = false;
+        // demarshalling failures:
+        bool failure = false;
 	
-	PropertyDemarshaller demarshaller(config_file);
-	try {
-	    if ( demarshaller.deserialize( from_file ) ){
-		for (PropertyBag::iterator it= from_file.begin(); it!=from_file.end();it++) 
-		{
-		    if ( (*it)->getName() == "Import" ) continue;
-		    if ( (*it)->getName() == "Include" ) continue;
-		    
-		    kickOutComponent(  (*it)->getName() );
-		}
-		deletePropertyBag( from_file );
-	    }
-	    else
-	    {
-		log(Error)<< "Some error occured while parsing "<< config_file <<endlog();
-		failure = true;
-	    }
-	} catch (...)
-	{
-	    log(Error)<< "Uncaught exception in loadcomponents() !"<< endlog();
-	    failure = true;
-	}
+        PropertyDemarshaller demarshaller(config_file);
+        try {
+            if ( demarshaller.deserialize( from_file ) ){
+                for (PropertyBag::iterator it= from_file.begin(); it!=from_file.end();it++) {
+                    if ( (*it)->getName() == "Import" ) continue;
+                    if ( (*it)->getName() == "Include" ) continue;
+                    
+                    kickOutComponent(  (*it)->getName() );
+                }
+                deletePropertyBag( from_file );
+            }
+            else {
+                log(Error)<< "Some error occured while parsing "<< config_file <<endlog();
+                failure = true;
+            }
+        } catch (...)
+            {
+                log(Error)<< "Uncaught exception in loadcomponents() !"<< endlog();
+                failure = true;
+            }
     }
     
     bool DeploymentComponent::cleanupComponent(RTT::TaskContext *instance)
     {
-	Logger::In in("DeploymentComponent::cleanupComponent");
-	bool valid = true;
-	// 1. Cleanup a single activities, give components chance to cleanup.
-	if (instance)
-	{
-	    if ( instance->getTaskState() <= TaskCore::Stopped ) 
-	    {
-		instance->cleanup();
-		log(Info) << "Cleaned up "<< instance->getName() <<endlog();
-	    } else {
-		log(Error) << "Could not cleanup Component "<< instance->getName() << " (not Stopped)"<<endlog();
-		valid = false;
-	    }
-	}
-	return valid;
+        Logger::In in("DeploymentComponent::cleanupComponent");
+        bool valid = true;
+        // 1. Cleanup a single activities, give components chance to cleanup.
+        if (instance) {
+            if ( instance->getTaskState() <= TaskCore::Stopped ) {
+                instance->cleanup();
+                log(Info) << "Cleaned up "<< instance->getName() <<endlog();
+            } else {
+                log(Error) << "Could not cleanup Component "<< instance->getName() << " (not Stopped)"<<endlog();
+                valid = false;
+            }
+        }
+        return valid;
     }
     
     bool DeploymentComponent::stopComponent(RTT::TaskContext *instance)
     {
-	Logger::In in("DeploymentComponent::stopComponent");
-	bool valid = true;
+        Logger::In in("DeploymentComponent::stopComponent");
+        bool valid = true;
 	
-	if ( instance )
-	{
-	    if ( instance->engine()->getActivity() == 0 ||
-		instance->engine()->getActivity()->isActive() == false || 
-		instance->stop() ) 
-	    {
-		log(Info) << "Stopped "<< instance->getName() <<endlog();
-	    } 
-	    else {
-		log(Error) << "Could not stop loaded Component "<< instance->getName() <<endlog();
-		valid = false;
-	    }
-	}
-	return valid;
+        if ( instance ) {
+            if ( instance->engine()->getActivity() == 0 ||
+                 instance->engine()->getActivity()->isActive() == false || 
+                 instance->stop() ) {
+                log(Info) << "Stopped "<< instance->getName() <<endlog();
+            } 
+            else {
+                log(Error) << "Could not stop loaded Component "<< instance->getName() <<endlog();
+                valid = false;
+            }
+        }
+        return valid;
     }
     
     bool DeploymentComponent::kickOutComponent(const std::string& comp_name)
     {
-	Logger::In in("DeploymentComponent::kickOutComponent");
-	PropertyBase *it = root.find( comp_name );
-	if(!it)
-	{
-	    log(Error) << "Peer "<< comp_name << " not found in PropertyBag root"<< endlog();
-	    return false; 
-	}
+        Logger::In in("DeploymentComponent::kickOutComponent");
+        PropertyBase *it = root.find( comp_name );
+        if(!it) {
+            log(Error) << "Peer "<< comp_name << " not found in PropertyBag root"<< endlog();
+            return false; 
+        }
 	
-	TaskContext* peer = comps[ comp_name ].instance;
+        TaskContext* peer = comps[ comp_name ].instance;
 	
-	if ( !peer ) 
-	{
-	    log(Error) << "Peer not found: "<< comp_name <<endlog();
-	    return false;
-	}
-	stopComponent( peer );
-	cleanupComponent (peer );
-	unloadComponent( comp_name);
-	root.removeProperty( root.find( comp_name ) );
+        if ( !peer ) {
+            log(Error) << "Peer not found: "<< comp_name <<endlog();
+            return false;
+        }
+        stopComponent( peer );
+        cleanupComponent (peer );
+        unloadComponent( comp_name);
+        root.removeProperty( root.find( comp_name ) );
 	
-	return true;
+        return true;
     }
 }

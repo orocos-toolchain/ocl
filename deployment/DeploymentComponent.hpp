@@ -125,21 +125,19 @@ namespace OCL
          * Keep a list of all loaded libraries such that double
          * loads are avoided during import/loadLibrary.
          */
-	class LoadedLib{
+        class LoadedLib{
 	    public:
-		LoadedLib(std::string n, void* h) 
-		{
-		    name = n;
-		    handle = h;
-		}
-		std::string name;
-		void* handle;
-		std::vector<std::string> components_type;
-	};
+            LoadedLib(std::string n, void* h)
+            {
+                name = n;
+                handle = h;
+            }
+            std::string name;
+            void* handle;
+            std::vector<std::string> components_type;
+        };
 
-	static std::vector< LoadedLib > loadedLibs;
-
-	
+        static std::vector< LoadedLib > loadedLibs;
 
         /**
          * Handle of last loaded library.
@@ -156,11 +154,11 @@ namespace OCL
         bool configureHook();
 
         /**
-	* This method removes all references to the component hold in \a cit, 
-	* on the condition that it is not running.
-	* When this method returns true, you need to remove \a cit yourself from
-	* the this->conmap.
-	*/
+         * This method removes all references to the component hold in \a cit,
+         * on the condition that it is not running.
+         * When this method returns true, you need to remove \a cit yourself from
+         * the this->conmap.
+         */
         bool unloadComponentImpl( CompList::iterator cit );
 	
 	
@@ -177,7 +175,7 @@ namespace OCL
 
         ~DeploymentComponent();
 
-	TaskContext* myGetPeer(std::string name) {return comps[ name ].instance; }
+        TaskContext* myGetPeer(std::string name) {return comps[ name ].instance; }
 
         /**
          * Establish a bidirectional connection between two tasks.
@@ -404,20 +402,20 @@ namespace OCL
          */
         void clearConfiguration();
 
-      /**
-       * Stop all loaded and running components.
-       */
-      bool stopComponents();
+        /**
+         * Stop all loaded and running components.
+         */
+        bool stopComponents();
 
-      /**
-       * Cleanup all loaded and not running components.
-       */
-      bool cleanupComponents();
+        /**
+         * Cleanup all loaded and not running components.
+         */
+        bool cleanupComponents();
 
-      /**
-       * Unload all loaded and not running components.
-       */
-      bool unloadComponents();
+        /**
+         * Unload all loaded and not running components.
+         */
+        bool unloadComponents();
 
         /**
          * This function runs loadComponents, configureComponents and startComponents
@@ -483,52 +481,52 @@ namespace OCL
          */
         FactoryMap& getFactories();
 	
-	/**
-	* Stop a single loaded and running component.
-	* @param instance instance pointer of the component.
-	* @return true if successfully stopped.
-	*/
-	bool stopComponent(RTT::TaskContext *instance);	
+        /**
+         * Stop a single loaded and running component.
+         * @param instance instance pointer of the component.
+         * @return true if successfully stopped.
+         */
+        bool stopComponent(RTT::TaskContext *instance);	
 	
-	/**
-	* Stop a single loaded and running components.
-	* @param comp_name name of the component.
-	* @return true if successfully stopped
-	*/
-	bool stopComponent(const std::string& comp_name)
-	{
-	    return this->stopComponent(  this->getPeer(comp_name) );
-	}
+        /**
+         * Stop a single loaded and running components.
+         * @param comp_name name of the component.
+         * @return true if successfully stopped
+         */
+        bool stopComponent(const std::string& comp_name)
+        {
+            return this->stopComponent(  this->getPeer(comp_name) );
+        }
 	
-	/**
-	* Cleanup a single loaded and not running component.
-	* @param instance instance pointer of the component.
-	* @return true if successfully cleaned up
-	*/
-	bool cleanupComponent(RTT::TaskContext *instance);
+        /**
+         * Cleanup a single loaded and not running component.
+         * @param instance instance pointer of the component.
+         * @return true if successfully cleaned up
+         */
+        bool cleanupComponent(RTT::TaskContext *instance);
 	
-	/**
-	* Cleanup a single loaded and not running component.
-	* @param comp_name name of the component.
-	* @return true if successfully cleaned up	
-	*/
-	bool cleanupComponent(const std::string& comp_name)
-	{
-	    return this->cleanupComponent( this->getPeer(comp_name) );
-	}
+        /**
+         * Cleanup a single loaded and not running component.
+         * @param comp_name name of the component.
+         * @return true if successfully cleaned up	
+         */
+        bool cleanupComponent(const std::string& comp_name)
+        {
+            return this->cleanupComponent( this->getPeer(comp_name) );
+        }
 	
-	/**
-	* Stop, cleanup and unload a single component which were loaded by this component.
-	* @param comp_name name of the component.
-	* @return true if successfully stopped, cleaned and unloaded
-	*/
-	bool kickOutComponent(const std::string& comp_name);
+        /**
+         * Stop, cleanup and unload a single component which were loaded by this component.
+         * @param comp_name name of the component.
+         * @return true if successfully stopped, cleaned and unloaded
+         */
+        bool kickOutComponent(const std::string& comp_name);
 	
-	/**
-	* Identical to \a kickOut, but it read the name of the Components to kickOut from a XML file
-	* @param config_file name of an XML file (probably the same used by loadComponents() ).
-	*/
-	void kickOutFile(const std::string& config_file);
+        /**
+         * Identical to \a kickOut, but it read the name of the Components to kickOut from a XML file
+         * @param config_file name of an XML file (probably the same used by loadComponents() ).
+         */
+        void kickOutFile(const std::string& config_file);
     };
 
 
