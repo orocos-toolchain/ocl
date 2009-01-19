@@ -69,7 +69,7 @@ namespace OCL
 #define ORO_str(s) ORO__str(s)
 #define ORO__str(s) #s
 
-    DeploymentComponent::DeploymentComponent(std::string name)
+    DeploymentComponent::DeploymentComponent(std::string name, std::string siteFile)
         : RTT::TaskContext(name, Stopped),
           compPath("ComponentPath",
                    "Location to look for components in addition to the local directory and system paths.",
@@ -89,6 +89,7 @@ namespace OCL
         this->properties()->addProperty( &compPath );
         this->properties()->addProperty( &autoUnload );
         this->properties()->addProperty( &target );
+        this->properties()->addProperty( &siteFile );
 
         this->attributes()->addAttribute( &validConfig );
         this->attributes()->addAttribute( &sched_RT );
@@ -204,9 +205,6 @@ namespace OCL
                                     "Slave", "The name of the Component which gets the SlaveActivity."
                                     );
 
-
-        this->configure();
-
         valid_names.insert("AutoUnload");
         valid_names.insert("UseNamingService");
         valid_names.insert("Server");
@@ -224,6 +222,19 @@ namespace OCL
         valid_names.insert("Activity");
         valid_names.insert("Master");
         valid_names.insert("Properties");
+
+        // Check for 'Deployer-site.cpf' XML file.
+        if (siteFile.empty())
+            siteFile = this->getName()  "-site.cpf";
+        std::ifstream hassite(siteFile);
+        if ( !hassite ) {
+            // if not, just configure
+            this->configure();
+            return;
+        }
+
+        // OK: kick-start it. Need to set AutoConf to configure self.
+        this->kickStart( siteFile );
 
     }
 
