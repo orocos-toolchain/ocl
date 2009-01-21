@@ -243,7 +243,7 @@ namespace OCL
     {
       // Should we unload all loaded components here ?
       if ( autoUnload.get() ) {
-          kickOut();
+          kickOutAll();
       }
     }
 
@@ -1655,7 +1655,7 @@ namespace OCL
                         newact = new SlaveActivity(period);
                     else {
                         newact = new SlaveActivity(master->engine()->getActivity());
-                        master->addPeer( slave );
+                        master->addPeer( peer );
                     }
                 }
 
