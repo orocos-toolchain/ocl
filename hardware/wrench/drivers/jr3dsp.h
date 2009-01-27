@@ -29,6 +29,7 @@
 #ifndef JR3DSP_H
 #define JR3DSP_H
 
+#include <rtai_lxrt.h>
 
 struct s16Forces
 {
@@ -36,21 +37,21 @@ struct s16Forces
 };
 
 
-unsigned int JR3DSP_check_sensor_and_DSP( unsigned int dsp );
+RTAI_SYSCALL_MODE unsigned int JR3DSP_check_sensor_and_DSP( unsigned int dsp );
 
-u16  JR3DSP_get_error_word(unsigned int dsp);
+RTAI_SYSCALL_MODE u16  JR3DSP_get_error_word(unsigned int dsp);
 
-u16  JR3DSP_get_command0(unsigned int dsp);
+RTAI_SYSCALL_MODE u16  JR3DSP_get_command0(unsigned int dsp);
 
-u16  JR3DSP_get_units( unsigned int dsp );
+RTAI_SYSCALL_MODE u16  JR3DSP_get_units( unsigned int dsp );
 
-void JR3DSP_set_units( unsigned int type, unsigned int dsp);
+RTAI_SYSCALL_MODE void JR3DSP_set_units( unsigned int type, unsigned int dsp);
 
-void JR3DSP_set_offsets(const struct s16Forces* offsets, unsigned int dsp);
+RTAI_SYSCALL_MODE void JR3DSP_set_offsets(const struct s16Forces* offsets, unsigned int dsp);
 
-void JR3DSP_get_data(struct s16Forces* data, unsigned int filter, unsigned int dsp);
+RTAI_SYSCALL_MODE void JR3DSP_get_data(struct s16Forces* data, unsigned int filter, unsigned int dsp);
 
-void JR3DSP_get_full_scale(struct s16Forces* data, unsigned int dsp);
+RTAI_SYSCALL_MODE void JR3DSP_get_full_scale(struct s16Forces* data, unsigned int dsp);
 
 
 

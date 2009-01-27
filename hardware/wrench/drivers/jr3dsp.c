@@ -106,7 +106,7 @@ void JR3DSP_write_word(unsigned int offset, unsigned short data, unsigned int ds
 //----------------------------------------------------------------------------- 
 // Accessible functions functions
 
-void JR3DSP_get_data(struct s16Forces* data, unsigned int filter, unsigned int dsp)
+RTAI_SYSCALL_MODE void JR3DSP_get_data(struct s16Forces* data, unsigned int filter, unsigned int dsp)
 // Function to get the data from a filter into the array.
 {
     unsigned int filteroffset = FILTER0;
@@ -131,7 +131,7 @@ void JR3DSP_get_data(struct s16Forces* data, unsigned int filter, unsigned int d
 
 
 
-void JR3DSP_set_offsets(const struct s16Forces* offsets, unsigned int dsp)
+RTAI_SYSCALL_MODE void JR3DSP_set_offsets(const struct s16Forces* offsets, unsigned int dsp)
 {
   JR3DSP_write_word(OFFSETS+0, offsets->Fx, dsp);
   JR3DSP_write_word(OFFSETS+1, offsets->Fy, dsp);
@@ -146,21 +146,21 @@ void JR3DSP_set_offsets(const struct s16Forces* offsets, unsigned int dsp)
 
 
 
-u16 JR3DSP_get_error_word(unsigned int dsp)
+RTAI_SYSCALL_MODE u16 JR3DSP_get_error_word(unsigned int dsp)
 {
   return JR3DSP_read_word(ERRORS, dsp);
 }
 
 
 
-u16 JR3DSP_get_command_word0(unsigned int dsp)
+RTAI_SYSCALL_MODE u16 JR3DSP_get_command_word0(unsigned int dsp)
 {
   return JR3DSP_read_word(COMMAND_WORD0, dsp);
 }
 
 
 
-u16 JR3DSP_get_units( unsigned int dsp )
+RTAI_SYSCALL_MODE u16 JR3DSP_get_units( unsigned int dsp )
 // Get units:
 // 0: lbs  inLbs  mils
 // 1: N    dNm    mmX10
@@ -172,7 +172,7 @@ u16 JR3DSP_get_units( unsigned int dsp )
 
 
 
-void JR3DSP_set_units(unsigned int _units, unsigned int dsp)
+RTAI_SYSCALL_MODE void JR3DSP_set_units(unsigned int _units, unsigned int dsp)
 // Set units:
 // 0: lbs  inLbs  mils
 // 1: N    dNm    mmX10
@@ -184,7 +184,7 @@ void JR3DSP_set_units(unsigned int _units, unsigned int dsp)
 
 
 
-void JR3DSP_get_full_scale(struct s16Forces* fullscale, unsigned int dsp)
+RTAI_SYSCALL_MODE void JR3DSP_get_full_scale(struct s16Forces* fullscale, unsigned int dsp)
 {
    fullscale->Fx = JR3DSP_read_word( FULL_SCALE+0, dsp );
    fullscale->Fy = JR3DSP_read_word( FULL_SCALE+1, dsp );
@@ -296,7 +296,7 @@ static int __devinit jr3pci_probe(struct pci_dev* dev, const struct pci_device_i
 }
 
 
-unsigned int JR3DSP_check_sensor_and_DSP( unsigned int dsp )
+RTAI_SYSCALL_MODE unsigned int JR3DSP_check_sensor_and_DSP( unsigned int dsp )
 // Checks for copyright, software date and year on the DSP and the eeprom, 
 // software version, serial and model number of the sensor (unique identifiers)
 // and calibration date of sensor

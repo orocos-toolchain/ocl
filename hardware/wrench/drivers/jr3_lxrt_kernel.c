@@ -33,14 +33,14 @@
 MODULE_LICENSE("GPL");
 
 
-extern unsigned int JR3DSP_check_sensor_and_DSP( unsigned int dsp );
-extern u16  JR3DSP_get_error_word(unsigned int dsp);
-extern u16  JR3DSP_get_command_word0(unsigned int dsp);
-extern u16  JR3DSP_get_units( unsigned int dsp );
-extern void JR3DSP_set_units( unsigned int type, unsigned int dsp);
-extern void JR3DSP_set_offsets(const struct s16Forces* offsets, unsigned int dsp);
-extern void JR3DSP_get_data(struct s16Forces* data, unsigned int filter, unsigned int dsp);
-extern void JR3DSP_get_full_scale(struct s16Forces* data, unsigned int dsp);
+RTAI_SYSCALL_MODE extern unsigned int JR3DSP_check_sensor_and_DSP( unsigned int dsp );
+RTAI_SYSCALL_MODE extern u16  JR3DSP_get_error_word(unsigned int dsp);
+RTAI_SYSCALL_MODE extern u16  JR3DSP_get_command_word0(unsigned int dsp);
+RTAI_SYSCALL_MODE extern u16  JR3DSP_get_units( unsigned int dsp );
+RTAI_SYSCALL_MODE extern void JR3DSP_set_units( unsigned int type, unsigned int dsp);
+RTAI_SYSCALL_MODE extern void JR3DSP_set_offsets(const struct s16Forces* offsets, unsigned int dsp);
+RTAI_SYSCALL_MODE extern void JR3DSP_get_data(struct s16Forces* data, unsigned int filter, unsigned int dsp);
+RTAI_SYSCALL_MODE extern void JR3DSP_get_full_scale(struct s16Forces* data, unsigned int dsp);
 
 
 static struct rt_fun_entry rt_jr3_fun[] = {

@@ -101,7 +101,7 @@ namespace OCL
         JR3DSP_get_full_scale(&full_scale, dsp);
 
         log(Info) << "WrenchSensor -  Full scale: ("
-                  << (double) full_scale.Fx << ", " << (double) full_scale.Fy << ", " << (double) full_scale.Fz
+                  << (double) full_scale.Fx << ", " << (double) full_scale.Fy << ", " << (double) full_scale.Fz << ", "
                   << (double) full_scale.Tx << ", " << (double) full_scale.Ty << ", " << (double) full_scale.Tz
                   << ")" << endlog();
 #else

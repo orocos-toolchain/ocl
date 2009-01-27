@@ -4,7 +4,7 @@
 
 #include <rtai_lxrt.h>
 #include "jr3_lxrt_common.h"
-
+#include <stdio.h>
 
 static inline unsigned int JR3DSP_check_sensor_and_DSP( unsigned int dsp )
 {
