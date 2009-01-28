@@ -34,6 +34,8 @@ ORO_CREATE_COMPONENT( OCL::StaubliRX130nAxesVelocityController );
 #include <fcntl.h>
 #include <bitset>
 
+#include "ComediDevices.hpp"
+
 namespace OCL
 {
     using namespace RTT;
@@ -45,8 +47,8 @@ namespace OCL
 #define STAUBLIRX130_ENCODEROFFSETS { 0, 0, 0, 0, 0, 0 }
 
 #define STAUBLIRX130_CONV1  -128.6107
-#define STAUBLIRX130_CONV2  -129.3939
-#define STAUBLIRX130_CONV3  101.0909
+#define STAUBLIRX130_CONV2  -129.3939/1.00044
+#define STAUBLIRX130_CONV3  1112.0/11.0
 #define STAUBLIRX130_CONV4  88
 #define STAUBLIRX130_CONV5  75
 #define STAUBLIRX130_CONV6  32
@@ -120,9 +122,10 @@ namespace OCL
           driveFailure(STAUBLIRX130_NUM_AXES),
 #endif
           axes(STAUBLIRX130_NUM_AXES),
-          _previous_time(STAUBLIRX130_NUM_AXES)
+          _previous_time(STAUBLIRX130_NUM_AXES),
+          init_pos(STAUBLIRX130_NUM_AXES,0.0)
     {
-        Logger::In in(this->getName().data());
+        Logger::In in(this->getName());
         double ticks2rad[STAUBLIRX130_NUM_AXES] = STAUBLIRX130_TICKS2RAD;
         double vel2volt[STAUBLIRX130_NUM_AXES] = STAUBLIRX130_RADproSEC2VOLT;
         for(unsigned int i = 0;i<STAUBLIRX130_NUM_AXES;i++){
@@ -134,13 +137,17 @@ namespace OCL
         double encoderOffsets[STAUBLIRX130_NUM_AXES] = STAUBLIRX130_ENCODEROFFSETS;
 
         log(Info)<<"Creating Comedi Devices."<<endlog();
-        AOut = new ComediDevice(0);
-        DInOut = new ComediDevice(1);
-        Encoder = new ComediDevice(2);
+        ComediLoader::Instance()->CreateComediDevices();
 
-        SubAOut = new ComediSubDeviceAOut(AOut,"AnalogOut",1);
-        SubDIn = new ComediSubDeviceDIn(DInOut,"DigitalIn",0);
-        SubDOut = new ComediSubDeviceDOut(DInOut,"DigitalOut",1);
+        SubAOut = AnalogOutInterface::nameserver.getObject("AnalogOut");
+        SubDIn = DigitalInInterface::nameserver.getObject("DigitalIn");
+        SubDOut = DigitalOutInterface::nameserver.getObject("DigitalOut");
+        encoderInterface[0] = EncoderInterface::nameserver.getObject("Counter0");
+        encoderInterface[1] = EncoderInterface::nameserver.getObject("Counter1");
+        encoderInterface[2] = EncoderInterface::nameserver.getObject("Counter2");
+        encoderInterface[3] = EncoderInterface::nameserver.getObject("Counter3");
+        encoderInterface[4] = EncoderInterface::nameserver.getObject("Counter4");
+        encoderInterface[5] = EncoderInterface::nameserver.getObject("Counter5");
 
         brakeOff = new DigitalOutput(SubDOut,17);
         brakeOff->switchOff();
@@ -156,7 +163,6 @@ namespace OCL
             log(Info)<<"Creating Hardware axis "<<i<<endlog();
             //Setting up encoders
             log(Info)<<"Setting up encoder ..."<<endlog();
-            encoderInterface[i] = new ComediEncoder(Encoder,0,i);
             encoder[i] = new IncrementalEncoderSensor( encoderInterface[i], 1.0 / ticks2rad[i],
                                                        encoderOffsets[i],
                                                        -10, 10,STAUBLIRX130_ENC_RES );
@@ -254,14 +260,8 @@ namespace OCL
         delete eStop;
         delete highPowerEnable;
         delete brakeOff;
-
-        delete SubAOut;
-        delete SubDIn;
-        delete SubDOut;
-
-        delete AOut;
-        delete DInOut;
-        delete Encoder;
+        
+        ComediLoader::Instance()->DestroyComediDevices();
 #endif
     }
 
@@ -289,16 +289,16 @@ namespace OCL
                 log(Info) << "Hardware version of StaubliRX130nAxesVelocityController has started" << endlog();
             }
 
-            std::vector<double> initPos(STAUBLIRX130_NUM_AXES,0.0);
-            if(!this->readAbsolutePosition(initPos))
+            if(!this->readAbsolutePosition(init_pos))
                 return false;
-            else
+            /*else
                 for(unsigned int i=0;i<STAUBLIRX130_NUM_AXES;i++)
                     if(i!=5)
                         ((IncrementalEncoderSensor*)(axes[i]->getSensor("Position")))->writeSensor(initPos[i]);
                     else
                         ((IncrementalEncoderSensor*)(axes[i]->getSensor("Position")))->writeSensor(initPos[i]+initPos[i-1]);
-        }
+                        //positionValues[i]=initPos[i];*/
+            }
         else{
 #endif
             for (unsigned int i = 0; i <STAUBLIRX130_NUM_AXES; i++)
@@ -309,6 +309,9 @@ namespace OCL
 #if (defined OROPKG_OS_LXRT)
         }
 #endif
+        //Initialise sensorport
+        positionValues_port.Set(positionValues);
+        
         /**
          * Initializing servoloop
          */
@@ -349,6 +352,7 @@ namespace OCL
                 log(Warning)<<"Could not connect EmergencyStop to "<<(*it)<<", "<<eventname <<" not found in "<<peername<<"s event-list"<<endlog();
         }
 
+
         return true;
     }
 
@@ -359,12 +363,12 @@ namespace OCL
             if (axis != STAUBLIRX130_NUM_AXES-1||simulation){
 #endif
       	         	_previous_time[axis] = TimeService::Instance()->getTicks();
-                    positionValues[axis] = axes[axis]->getSensor("Position")->readSensor();
+                    positionValues[axis] = axes[axis]->getSensor("Position")->readSensor()+init_pos[axis];
 #if defined OROPKG_OS_LXRT
             }else{
                 //Last Axes moves together with previous axes
                 _previous_time[axis] = TimeService::Instance()->getTicks();
-		        positionValues[axis] = axes[axis]->getSensor("Position")->readSensor() - axes[axis-1]->getSensor("Position")->readSensor();
+		        positionValues[axis] = axes[axis]->getSensor("Position")->readSensor()+init_pos[axis] - axes[axis-1]->getSensor("Position")->readSensor();
             }
 #endif
         }
@@ -379,17 +383,17 @@ namespace OCL
             if (axis != STAUBLIRX130_NUM_AXES-1||simulation){
 #endif
                 _delta_time = TimeService::Instance()->secondsSince(_previous_time[axis]);
-                velocityValues[axis] = (axes[axis]->getSensor("Position")->readSensor() - positionValues[axis])/_delta_time;
+                velocityValues[axis] = (axes[axis]->getSensor("Position")->readSensor()+init_pos[axis] - positionValues[axis])/_delta_time;
                 _previous_time[axis] = TimeService::Instance()->getTicks();
-                positionValues[axis] = axes[axis]->getSensor("Position")->readSensor();
+                positionValues[axis] = axes[axis]->getSensor("Position")->readSensor()+init_pos[axis];
                 deltaTime_port.Set(_delta_time);
 #if defined OROPKG_OS_LXRT
             }else{
                 //Last Axes moves together with previous axes
                 _delta_time = TimeService::Instance()->secondsSince(_previous_time[axis]);
-                velocityValues[axis] = (axes[axis]->getSensor("Position")->readSensor() - axes[axis-1]->getSensor("Position")->readSensor() - positionValues[axis])/_delta_time;
+                velocityValues[axis] = (axes[axis]->getSensor("Position")->readSensor()+init_pos[axis] - axes[axis-1]->getSensor("Position")->readSensor() - positionValues[axis])/_delta_time;
                 _previous_time[axis] = TimeService::Instance()->getTicks();
-                positionValues[axis] = axes[axis]->getSensor("Position")->readSensor() - axes[axis-1]->getSensor("Position")->readSensor();
+                positionValues[axis] = axes[axis]->getSensor("Position")->readSensor()+init_pos[axis] - axes[axis-1]->getSensor("Position")->readSensor();
                 deltaTime_port.Set(_delta_time);
             }
 #endif
@@ -512,12 +516,12 @@ namespace OCL
     bool StaubliRX130nAxesVelocityController::prepareForShutdown()
     {
         //make sure all axes are stopped and locked
-        stopAllAxes();
-        lockAllAxes();
 #if (defined OROPKG_OS_LXRT)
         if(!simulation)
             highPowerEnable->switchOff();
 #endif
+        stopAllAxes();
+        lockAllAxes();
         activated = false;
         return true;
     }
@@ -621,7 +625,7 @@ bool StaubliRX130nAxesVelocityController::addDriveOffset(const std::vector<doubl
         tcflush(fd,TCIFLUSH);
         tcsetattr(fd,TCSANOW,&tio);
 
-        char buffer[300];/* Input buffer */
+        char buffer[2048];/* Input buffer */
         char *bufptr;/* Current char in buffer */
         int  nbytes;/* Number of bytes read */
 

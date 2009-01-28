@@ -11,10 +11,11 @@ IF ( BUILD_STAUBLI )
   
   GLOBAL_ADD_COMPONENT( orocos-staubli ${SRCS} )
   INCLUDE_DIRECTORIES(${PROJ_SOURCE_DIR}/hardware/axes)
-  COMPONENT_ADD_DEPS( orocos-staubli orocos-axes orocos-ocl-common)
+  COMPONENT_ADD_DEPS( orocos-staubli orocos-axes)
   COMPONENT_ADD_LIBS( orocos-staubli orocos-kdl)
   
   IF ( BUILD_COMEDI )
+    INCLUDE (${PROJ_SOURCE_DIR}/config/UseComedi.cmake)
     INCLUDE_DIRECTORIES(${PROJ_SOURCE_DIR}/hardware/comedi)
     COMPONENT_ADD_DEPS( orocos-staubli orocos-comedi )
   ENDIF ( BUILD_COMEDI )

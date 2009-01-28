@@ -308,9 +308,9 @@ namespace OCL
         ComediDevice*                    DInOut;
         ComediDevice*                    Encoder;
 
-        ComediSubDeviceAOut*             SubAOut;
-        ComediSubDeviceDIn*              SubDIn;
-        ComediSubDeviceDOut*             SubDOut;
+        AnalogOutInterface*             SubAOut;
+        DigitalInInterface*              SubDIn;
+        DigitalOutInterface*             SubDOut;
 
         std::vector<EncoderInterface*>           encoderInterface;
         std::vector<IncrementalEncoderSensor*>   encoder;
@@ -331,7 +331,7 @@ namespace OCL
         std::vector<AxisInterface*>             axes;
         std::vector<TimeService::ticks>         _previous_time;
         TimeService::Seconds                    _delta_time;
-
+        std::vector<double>                     init_pos;
     };//class StaubliRX130nAxesVelocityController
 }//namespace Orocos
 #endif // STAUBLIRX130NAXESVELOCITYCONTROLLER
