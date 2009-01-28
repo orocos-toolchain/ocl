@@ -34,7 +34,9 @@ ORO_CREATE_COMPONENT( OCL::StaubliRX130nAxesVelocityController );
 #include <fcntl.h>
 #include <bitset>
 
+#if (defined OROPKG_OS_LXRT)
 #include "ComediDevices.hpp"
+#endif
 
 namespace OCL
 {
