@@ -23,9 +23,6 @@
 #include "WrenchSensor.hpp"
 #include <kdl/frames_io.hpp>
 #include <rtt/Logger.hpp>
-#include <ocl/ComponentLoader.hpp>
-
-ORO_CREATE_COMPONENT( OCL::WrenchSensor );
 
 #if defined (OROPKG_OS_LXRT)
 #include <hardware/wrench/drivers/jr3_lxrt_user.h>
