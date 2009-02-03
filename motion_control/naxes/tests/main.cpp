@@ -18,8 +18,6 @@
 //hardware interfaces
 #include <hardware/kuka/Kuka160nAxesVelocityController.hpp>
 #include <hardware/kuka/Kuka361nAxesVelocityController.hpp>
-#include <hardware/performer_mk2/PerformernAxesVelocityController.hpp>
-#include <hardware/kuka/EmergencyStop.hpp>
 
 //User interface
 #include <taskbrowser/TaskBrowser.hpp>
@@ -59,11 +57,6 @@ int ORO_main(int argc, char* argv[])
           my_robot = new Kuka160nAxesVelocityController("Robot");
           number_of_axes = 6;
       }
-      else if(s == "Performer"){
-          log(Warning) <<"Choosing Performer"<<endlog();
-          my_robot = new PerformerMK2nAxesVelocityController("Robot");
-          number_of_axes = 5;
-      }
     }
   else{
       log(Warning) <<"Using Default Kuka361"<<endlog();
@@ -76,13 +69,7 @@ int ORO_main(int argc, char* argv[])
                 << " See also file 'orocos.log'."<<endlog();
   }
 
-  EmergencyStop _emergency(my_robot);
-
-  /// Creating Event Handlers
-  _emergency.addEvent(my_robot,"driveOutOfRange");
-  _emergency.addEvent(my_robot,"positionOutOfRange");
-  
-  //nAxesComponents
+   //nAxesComponents
 //  nAxesGeneratorPos generatorPos("nAxesGeneratorPos",number_of_axes);
   nAxesGeneratorPos generatorPos("nAxesGeneratorPos");
 //  nAxesGeneratorVel generatorVel("nAxesGeneratorVel",number_of_axes);
@@ -162,8 +149,6 @@ int ORO_main(int argc, char* argv[])
 
   // Start the console reader.
   browser.loop();
-
-  my_robot->marshalling()->writeProperties("cpf/PerformerMK2nAxesVelocityController.cpf");
 
   return 0;
 }
