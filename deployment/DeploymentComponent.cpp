@@ -215,12 +215,14 @@ namespace OCL
         valid_names.insert("AutoConnect");
         valid_names.insert("PropertyFile");
         valid_names.insert("UpdateProperties");
+        valid_names.insert("LoadProperties");
         valid_names.insert("ProgramScript");
         valid_names.insert("StateMachineScript");
         valid_names.insert("Ports");
         valid_names.insert("Peers");
         valid_names.insert("Activity");
         valid_names.insert("Master");
+        valid_names.insert("Properties");
 
     }
 
@@ -529,6 +531,22 @@ namespace OCL
                                 PropertyBase* ps = comp.rvalue().getProperty<string>("UpdateProperties");
                                 if (!ps) {
                                     log(Error) << "UpdateProperties must be of type <string>" << endlog();
+                                    valid = false;
+                                }
+                                continue;
+                            }
+                            if ( (*optit)->getName() == "LoadProperties" ) {
+                                PropertyBase* ps = comp.rvalue().getProperty<string>("LoadProperties");
+                                if (!ps) {
+                                    log(Error) << "LoadProperties must be of type <string>" << endlog();
+                                    valid = false;
+                                }
+                                continue;
+                            }
+                            if ( (*optit)->getName() == "Properties" ) {
+                                PropertyBase* ps = comp.rvalue().getProperty<PropertyBag>("Properties");
+                                if (!ps) {
+                                    log(Error) << "Properties must be a <struct>" << endlog();
                                     valid = false;
                                 }
                                 continue;
@@ -918,20 +936,45 @@ namespace OCL
             Property<string> dummy;
             TaskContext* peer = comps[ comp.getName() ].instance;
 
-            // Iterate over all elements
+            // do not configure when not stopped.
+            if ( peer->getTaskState() > Stopped) {
+                log(Warning) << "Component "<< peer->getName()<< " doesn't need to be configured (already Running)." <<endlog();
+                continue;
+            }
+
+            // Check for default properties to set.
             for (PropertyBag::const_iterator pf = comp.rvalue().begin(); pf!= comp.rvalue().end(); ++pf) {
                 // set PropFile name if present
-                if ( (*pf)->getName() == "PropertyFile" || (*pf)->getName() == "UpdateProperties" ){
+                if ( (*pf)->getName() == "Properties"){
+                    Property<PropertyBag> props = *pf; // convert to type.
+                    bool ret = updateProperties( *peer->properties(), props);
+                    if (!ret) {
+                        log(Error) << "Failed to configure properties from main configuration file for component "<< comp.getName() <<endlog();
+                        valid = false;
+                    } else {
+                        log(Info) << "Configured Properties of "<< comp.getName() <<" from main configuration file." <<endlog();
+                    }
+                }
+            }
+            // Load/update from property files.
+            for (PropertyBag::const_iterator pf = comp.rvalue().begin(); pf!= comp.rvalue().end(); ++pf) {
+                // set PropFile name if present
+                if ( (*pf)->getName() == "PropertyFile" || (*pf)->getName() == "UpdateProperties" || (*pf)->getName() == "LoadProperties"){
                     dummy = *pf; // convert to type.
                     string filename = dummy.get();
                     PropertyLoader pl;
                     bool strict = (*pf)->getName() == "PropertyFile" ? true : false;
-                    bool ret = pl.configure( filename, peer, strict );
+                    bool load = (*pf)->getName() == "LoadProperties" ? true : false;
+                    bool ret;
+                    if (!load)
+                        ret = pl.configure( filename, peer, strict );
+                    else
+                        ret = pl.load(filename, peer);
                     if (!ret) {
                         log(Error) << "Failed to configure properties for component "<< comp.getName() <<endlog();
                         valid = false;
                     } else {
-                        log(Info) << "Configured Properties of "<< comp.getName() <<endlog();
+                        log(Info) << "Configured Properties of "<< comp.getName() << " from "<<filename<<endlog();
                     }
                 }
             }
