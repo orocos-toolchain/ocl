@@ -10,7 +10,7 @@
   <articleinfo>
     <title>The Reporting Component</title>
     <copyright>
-      <year>2006,2007</year>
+      <year>2006,2007,2008,2009</year>
       <holder>Peter Soetens, FMTC</holder>
     </copyright>
 
@@ -82,11 +82,8 @@
     <title>Setup Procedure</title>
     <para>
       The <classname>OCL::ReportingComponent</classname> is configured using
-      two XML files:
-      <itemizedlist>
-	<listitem><para>One for setting the component's properties</para></listitem>
-	<listitem><para>One for describing which components and ports to monitor</para></listitem>
-      </itemizedlist>
+      a single XML file which sets the component's properties and describes
+      which components and ports to monitor.
     </para>
     <para>
       In order to report data of other components, they must be added as a Peer
@@ -104,6 +101,33 @@
   reporter.addPeer( &amp;camera );
   controller.addPeer( &amp;plant );</programlisting>
     </para>
+    <para>
+      Alternatively, if you use the Deployer, you might add this listing
+      to your application XML file, instead of using the hard-coded C++ setup
+      above:
+    </para>
+    <programlisting><![CDATA[   <simple name="Import" type="string"><value>/usr/lib/liborocos-reporting</value></simple>
+
+  <struct name="Reporter" type="OCL::FileReporting">
+    <struct name="Activity" type="PeriodicActivity">
+      <simple name="Period" type="double"><value>0.01</value></simple>
+      <simple name="Priority" type="short"><value>0</value></simple>
+      <simple name="Scheduler" type="string"><value>ORO_SCHED_OTHER</value></simple>
+    </struct>
+    <simple name="AutoConf" type="boolean"><value>1</value></simple>
+    <simple name="AutoStart" type="boolean"><value>0</value></simple>
+    <simple name="AutoSave" type="boolean"><value>1</value></simple>
+    <simple name="LoadProperties" type="string"><value>reporting.cpf</value></simple>
+    <!-- List all peers (uni-directional) -->
+    <struct name="Peers" type="PropertyBag">
+      <simple type="string"><value>Controller</value></simple>
+      <simple type="string"><value>Camera</value></simple>
+    </struct>]]></programlisting>
+    <para>
+      Note that the AutoSave flag is turned on (this is optional) to
+      save the settings when the Reporter component is cleaned up by
+      the Deployer.
+    </para>
     <section>
       <title>Property Configuration File</title>
       <para>
@@ -112,13 +136,19 @@
       <programlisting><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE properties SYSTEM "cpf.dtd">
 <properties>
-
   <simple name="AutoTrigger" type="boolean"><description>When set to 1, the data is taken upon each update(), otherwise, the data is only taken when the user invokes 'snapshot()'.</description><value>1</value></simple>
-
-  <simple name="Configuration" type="string"><description>The name of the property file which lists what is to be reported.</description><value>configuration.cpf</value></simple>
-
   <simple name="WriteHeader" type="boolean"><description>Set to true to start each report with a header.</description><value>1</value></simple>
+  <simple name="Decompose" type="boolean"><description>Set to true to decompose data ports.</description><value>1</value></simple>
+  <simple name="ReportFile" type="string"><description>Location on disc to store the reports.</description><value>reports.dat</value></simple>
+  <simple name="Synchronize" type="boolean"><description>Set to true if the timestamp should be synchronized with the logging</description><value>0</value></simple>
 
+  <struct name="ReportData" type="PropertyBag">
+     <description>A PropertyBag which defines which ports or components to report.</description>
+     <simple name="Component" type="string"><value>Camera</value></simple>
+
+     <simple name="Port" type="string"><value>Controller.SensorValues</value></simple>
+     <simple name="Port" type="string"><value>Controller.SteeringSignals</value></simple>
+  </struct>
 </properties>]]></programlisting>
        <para>
 	 The <option>AutoTrigger</option> property toggles if the data is captured
@@ -128,54 +158,39 @@
 	 ReportingComponent.
        </para>
        <para>
-	 The <option>Configuration</option> property contains the location of the
-	 configuration XML file for reporting data ports.
-       </para>
-       <para>
 	 If <option>WriteHeader</option> is set to true, a header will be written
 	 describing the file format layout.
        </para>
+       <para>
+	 If <option>Decompose</option> is set to true, complex data on ports will
+	 be decomposed into separate table columns. Otherwise, each port appears as one
+	 column. 
+       </para>
     </section>
     <section>
-      <title>Reporting Configuration File</title>
+      <title>ReportData section</title>
       <para>
-	This is an example <filename>configuration.cpf</filename> file
-	for reporting data of peer components:
-      </para>
-      <programlisting><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE properties SYSTEM "cpf.dtd">
-<properties>
-  <simple name="Component" type="string"><value>Camera</value></simple>
-
-  <simple name="Port" type="string"><value>Controller.SensorValues</value></simple>
-  <simple name="Port" type="string"><value>Controller.SteeringSignals</value></simple>
-</properties>]]></programlisting>
-      <para>
+	The <option>ReportData</option> struct describes the ports to monitor.
 	As the example shows (see also <xref linkend="fig-reporting-example"/>),
 	a complete component can be monitored (Camera) or specific ports of
 	a peer component can be monitored. The reporting component can monitor
 	any data type as long as it is known in the Orocos type system. Extending
-	the type system is explained in the manuals of the Real-Time Toolkit.
+	the type system is explained in the Plugin Manual of the Real-Time Toolkit.
       </para>
     </section>
     <section>
-      <title>Reading the configuration files</title>
+      <title>Reading the configuration file</title>
       <para>
-	The property file of the reporting component can be read with the
-	script method:
-	<screen>  marshalling.readProperties("reporting.cpf")</screen>
-	This file tells the reporter where it can find the configuration file
-	and sets the options shown above.
+	The property file of the reporting component <emphasis>must</emphasis> be read
+	with the loadProperties script method:
+	<screen>  marshalling.loadProperties("reporting.cpf")</screen>
+	You can not use <function>readProperties()</function> because only 
+	<function>loadProperties</function> loads your <option>ReportData</option> struct into the
+	ReportingComponent.
       </para>
       <para>
-	The reporting configuration file can be read with the
-	script method:
-	<screen>  load()</screen>
-      </para>
-      <para>
-	The load method will look up the <option>Configuration</option> property
-	and load the contents of that file. There is also a <screen>  store()</screen>
-	method for writing the current configuration to that file.
+	With <screen>  marshalling.writeProperties("reporting.cpf")</screen>,
+	the current configuration can be written to disk again.
       </para>
     </section>
     <section>
@@ -185,9 +200,7 @@
 	using the <command>this</command> command on the TaskBrowser. Below is
 	a snippet of the output:
       </para>
-      <screen>  Method     : bool load( )
-   Read the Configuration file.
-  Method     : bool reportComponent( string const&amp; Component )
+      <screen>  Method     : bool reportComponent( string const&amp; Component )
    Add a Component for reporting. Only works if Component is connected.
    Component : Name of the Component
   Method     : bool reportData( string const&amp; Component, string const&amp; DataObject )
@@ -203,8 +216,6 @@
    Component : Name of the Component
   Method     : void snapshot( )
    Take a new shapshot of the data and set the timestamp.
-  Method     : bool store( )
-   Write the Configuration file.
   Method     : bool unreportComponent( string const&amp; Component )
    Remove a Component from reporting.
    Component : Name of the Component

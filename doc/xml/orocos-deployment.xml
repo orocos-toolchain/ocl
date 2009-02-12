@@ -10,7 +10,7 @@
   <articleinfo>
     <title>The Deployment Component</title>
     <copyright>
-      <year>2006,2007,2008</year>
+      <year>2006,2007,2008,2009</year>
       <holder>Peter Soetens, FMTC</holder>
     </copyright>
 
@@ -330,7 +330,10 @@
       <simple name="Scheduler" type="string"><value>ORO_SCHED_OTHER</value></simple>
     </struct>
 
-    <simple name="PropertyFile" type="string"><value>file-reporting.cpf</value></simple>
+    <simple name="AutoConf" type="boolean"><value>1</value></simple>
+    <simple name="AutoSave" type="boolean"><value>1</value></simple>
+
+    <simple name="LoadProperties" type="string"><value>file-reporting.cpf</value></simple>
 
     <struct name="Peers" type="PropertyBag">
       <simple type="string"><value>Controller</value></simple>
@@ -438,11 +441,15 @@
 	  of the component. In case you only want to update part of
 	  the properties, use the <option>UpdateProperties</option>
 	  element. Finally, it is also possible to load and create
-	  new properties from a file using <option>LoadProperties</option>.
+	  new properties from a file using <option>LoadProperties</option>
+	  (the Reporting component requires this for example).
 	  You can use any number or combination of these elements.
 	  The order is respected. The properties are read during the
 	  <function>configureComponents()</function> step of the
-	  DeploymentComponent.
+	  DeploymentComponent. When the <option>AutoSave</option>
+	  property is turned on, the listed property file will be
+	  saved again with the values of the Component, just before
+	  the Component is <function>cleanup()</function>.
 	</para>
 	<para>
 	  The last section of the Reporter component lists its
@@ -666,13 +673,16 @@
 	  DeploymentComponent will be able to find the linked in
 	  components and setup the application using the XML file.
 	</para>
+	<important>
 	<para>
-	  The macros need some help to figure out if you are 
-	  compiling a shared or static library. You need to define
-	  the OCL_DLL_EXPORT macro when compiling for a shared
-	  library. If this macro is not defined, it is assumed
-	  that you are compiling for a static library.
+	  The macros need some help to figure out if you are compiling
+	  a shared or static library. You need to define the
+	  <emphasis>OCL_DLL_EXPORT</emphasis> macro (see below) when
+	  compiling for a shared library. If this macro is not
+	  defined, it is assumed that you are compiling for a static
+	  library.
 	</para>
+	</important>
 	<para>
 	  The compilation flag of a component for a shared library
 	  might look like:
