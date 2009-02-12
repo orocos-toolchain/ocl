@@ -261,7 +261,7 @@ namespace RTT
           if (retval)
             log(Error) << "Could not get variable id of " << name << ", error " << retval <<endlog();
 
-          retval = nc_put_vara_double(ncid, varid, start, count, v->get().data());
+          retval = nc_put_vara_double(ncid, varid, start, count, &(v->get().front()));
           if(retval)
             log(Error) << "Could not write variable " << name << ", error " << retval <<endlog();
 
