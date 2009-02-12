@@ -558,7 +558,7 @@
 	  'MyComponent'. It was created in one corba enabled deployer
 	  application with the <option>Server</option> property set to 1.
 	  You can connect to it from another deployer application by using the XML
-	  syntax:
+	  syntax:<programlisting>
 <![CDATA[ <!-- Uses Naming Service to lookup 'Mycomponent' -->
  <struct name="MyComponent" type="CORBA">
  </struct>
@@ -570,7 +570,7 @@
  <!-- Uses literal IOR to lookup 'Mycomponent' -->
  <struct name="IOR:...." type="IOR">
  </struct>
-]]>
+]]></programlisting>
           Which will make this component available in your current
           application, using the same name as the original.  This also
           works for the scripting deployer command 'loadComponent'.
