@@ -33,9 +33,7 @@
 #include <iostream>
 #include "deployer-funcs.hpp"
 
-#include <tao/Exception.h>
-#include <ace/String_Base.h>
-
+#include <rtt/corba/corba.h>
 
 using namespace std;
 using namespace OCL;
@@ -100,7 +98,7 @@ int ORO_main(int argc, char** argv)
 
     } catch( CORBA::Exception &e ) {
         log(Error) << argv[0] <<" ORO_main : CORBA exception raised!" << Logger::nl;
-        log() << e._info().c_str() << endlog();
+        log() << CORBA_EXCEPTION_INFO(e) << endlog();
     }
 
     return 0;
