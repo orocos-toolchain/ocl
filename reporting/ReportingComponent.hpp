@@ -224,7 +224,7 @@ namespace OCL
         RTT::Property<bool>          writeHeader;
         RTT::Property<bool>          decompose;
         RTT::Property<bool>          synchronize_with_logging;
-        RTT::Property<PropertyBag>   reportData
+        RTT::Property<PropertyBag>   report_data;
 
         RTT::TimeService::ticks starttime;
         RTT::Property<RTT::TimeService::Seconds> timestamp;

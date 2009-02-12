@@ -52,29 +52,24 @@ namespace OCL
           autotrigger("AutoTrigger","When set to 1, the data is taken upon each update(), "
                       "otherwise, the data is only taken when the user invokes 'snapshot()'.",
                       true),
-          config("Configuration","[Deprecated] The name of the property file which lists what is to be reported.",
-                 "cpf/reporter.cpf"),
           writeHeader("WriteHeader","Set to true to start each report with a header.", true),
           decompose("Decompose","Set to false in order to create multidimensional array in netcdf", true),
           synchronize_with_logging("Synchronize","Set to true if the timestamp should be synchronized with the logging",false),
+          report_data("ReportData","A PropertyBag which defines which ports or components to report."),
           starttime(0),
           timestamp("TimeStamp","The time at which the data was read.",0.0)
     {
         this->properties()->addProperty( &autotrigger );
-        this->properties()->addProperty( &config );
         this->properties()->addProperty( &writeHeader );
         this->properties()->addProperty( &decompose );
         this->properties()->addProperty( &synchronize_with_logging);
-        
+        this->properties()->addProperty( &report_data);
+
         // Add the methods, methods make sure that they are
         // executed in the context of the (non realtime) caller.
 
         this->methods()->addMethod( method( "snapshot", &ReportingComponent::snapshot , this),
                     "Take a new shapshot of the data and set the timestamp." );
-        this->methods()->addMethod( method( "load", &ReportingComponent::load , this),
-                    "Read the Configuration file, equivalent to configure()." );
-        this->methods()->addMethod( method( "store", &ReportingComponent::store , this),
-                    "Write the Configuration file, equivalent to cleanup()." );
         this->methods()->addMethod( method( "screenComponent", &ReportingComponent::screenComponent , this),
                     "Display the variables and ports of a Component.",
                     "Component", "Name of the Component" );
@@ -128,34 +123,22 @@ namespace OCL
         return true;
     }
 
-
-    bool ReportingComponent::store()
-    {
-        Logger::In in("ReportingComponent");
-        log(Info) << "Writing Properties to file." <<endlog();
-        return this->properties()->writeProperties(this->getName() + ".cpf");
-    }
-
-    bool ReportingComponent::configureHook()
-    {
-        return load();
-    }
-
     void ReportingComponent::cleanupHook()
     {
-        store();
         root.clear(); // uses shared_ptr.
         deletePropertyBag( report );
     }
 
-    bool ReportingComponent::load()
+    bool ReportingComponent::configureHook()
     {
         Logger::In in("ReportingComponent");
-        log(Info) << "Loading Ports to report from file." <<endlog();
 
-        this->properties()->loadProperties( this->getName() + ".cpf");
+        PropertyBag bag = report_data.value();
 
-        PropertyBag bag = reportData.value();
+        if ( bag.empty() ) {
+            log(Error) <<"No port or component configuration loaded. Please load properties in ReportData." <<endlog();
+            return false;
+        }
 
         bool ok = true;
         PropertyBag::const_iterator it = bag.getProperties().begin();
@@ -240,8 +223,8 @@ namespace OCL
             log(Error) << "Could not report Component " << component <<" : no such peer."<<endlog();
             return false;
         }
-        if (reportData.find(
-        reportData.rvalue().addProperty( new Property<string>("Component","",component);
+        if ( !report_data.value().findValue<string>(component) )
+            report_data.value().ownProperty( new Property<string>("Component","",component) );
         Ports ports   = comp->ports()->getPorts();
         for (Ports::iterator it = ports.begin(); it != ports.end() ; ++it) {
             log(Debug) << "Checking port " << (*it)->getName()<<"."<<endlog();
@@ -260,6 +243,7 @@ namespace OCL
         Ports ports   = comp->ports()->getPorts();
         for (Ports::iterator it = ports.begin(); it != ports.end() ; ++it) {
             this->unreportDataSource( component + "." + (*it)->getName() );
+            report_data.value().removeProperty( report_data.value().findValue<string>(component));
             if ( this->ports()->getPort( (*it)->getName() ) ) {
                 // XXX Remove the port ?
             }
@@ -282,7 +266,11 @@ namespace OCL
             return false;
         }
         if ( porti->connected() ) {
-            this->reportDataSource( component + "." + port, "Port", porti->connection()->getDataSource() );
+            if ( this->reportDataSource( component + "." + port, "Port", porti->connection()->getDataSource() ) == false) {
+                log(Error) << "Failed reporting port " << port <<endlog();
+                return false;
+            }
+
             log(Info) << "Reporting port " << port <<" : ok."<<endlog();
         } else {
             // create new port temporarily
@@ -297,14 +285,20 @@ namespace OCL
             }
 
             delete ourport;
-            this->reportDataSource( component + "." + porti->getName(), "Port", porti->connection()->getDataSource() );
+            if (this->reportDataSource( component + "." + porti->getName(), "Port", porti->connection()->getDataSource() ) == false) {
+                log(Error) << "Failed reporting port " << port <<endlog();
+                return false;
+            }
             log(Info) << "Created connection for port " << porti->getName()<<" : ok."<<endlog();
         }
+        // Add port to ReportData properties if component nor port are listed yet.
+        if ( !report_data.value().findValue<string>(component) && !report_data.value().findValue<string>( component+"."+port) )
+            report_data.value().ownProperty(new Property<string>("Port","",component+"."+port));
         return true;
     }
 
     bool ReportingComponent::unreportPort(const std::string& component, const std::string& port ) {
-        return this->unreportDataSource( component + "." + port );
+        return this->unreportDataSource( component + "." + port ) && report_data.value().removeProperty( report_data.value().findValue<string>(component+"."+port));
     }
 
     // report a specific datasource, property,...
@@ -317,18 +311,31 @@ namespace OCL
             return false;
         }
         // Is it an attribute ?
-        if ( comp->attributes()->getValue( dataname ) )
-            return this->reportDataSource( component + "." + dataname, "Data",
-                                           comp->attributes()->getValue( dataname )->getDataSource() );
+        if ( comp->attributes()->getValue( dataname ) ) {
+            if (this->reportDataSource( component + "." + dataname, "Data",
+                    comp->attributes()->getValue( dataname )->getDataSource() ) == false) {
+                log(Error) << "Failed reporting data " << dataname <<endlog();
+                return false;
+            }
+        }
+
         // Is it a property ?
-        if ( comp->properties() && comp->properties()->find( dataname ) )
-            return this->reportDataSource( component + "." + dataname, "Data",
-                                           comp->properties()->find( dataname )->getDataSource() );
-        return false;
+        if ( comp->properties() && comp->properties()->find( dataname ) ) {
+            if (this->reportDataSource( component + "." + dataname, "Data",
+                                           comp->properties()->find( dataname )->getDataSource() ) == false) {
+                log(Error) << "Failed reporting data " << dataname <<endlog();
+                return false;
+            }
+        }
+        // Ok. we passed.
+        // Add port to ReportData properties if data not listed yet.
+        if ( !report_data.value().findValue<string>( component+"."+dataname) )
+            report_data.value().ownProperty(new Property<string>("Data","",component+"."+dataname));
+        return true;
     }
 
     bool ReportingComponent::unreportData(const std::string& component,const std::string& datasource) {
-        return this->unreportDataSource( component +"." + datasource);
+        return this->unreportDataSource( component +"." + datasource) && report_data.value().removeProperty( report_data.value().findValue<string>(component+"."+datasource));
     }
 
     void ReportingComponent::snapshot() {
