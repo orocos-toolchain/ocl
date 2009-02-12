@@ -349,6 +349,11 @@
     <simple name="AutoStart" type="boolean"><value>1</value></simple>
     <simple name="AutoConnect" type="boolean"><value>1</value></simple>
 
+    <!-- This section allows to define properties without using a file (see below)
+         These properties can be overriden in the property files below. -->
+    <struct name="Properties" type="PropertyBag">
+      <simple name="K" type="double"><value>1.0</value></simple>
+    </struct>
     <!-- Note: difference between 'PropertyFile' and 'UpdateProperties' (see below) -->
     <simple name="PropertyFile" type="string"><value>controller-main.cpf</value></simple>
     <simple name="UpdateProperties" type="string"><value>controller-opts.cpf</value></simple>
@@ -422,12 +427,20 @@
 	  default, <option>AutoConnect</option> is 0 (off).
 	</para>
 	<para>
-	  The <option>PropertyFile</option> section specifies from
-	  which XML file each component is configured and
+	  The <option>Properties</option> struct allows to configure
+	  a component's properties from the main XML file. These values
+	  can be overridden by the listed property files.
+	</para>
+	<para>
+	  The <option>PropertyFile</option> element specifies from
+	  which XML file each component is configured and this file
 	  <emphasis>must</emphasis> contain values for all properties
 	  of the component. In case you only want to update part of
 	  the properties, use the <option>UpdateProperties</option>
-	  element. The properties are read during the
+	  element. Finally, it is also possible to load and create
+	  new properties from a file using <option>LoadProperties</option>.
+	  You can use any number or combination of these elements.
+	  The order is respected. The properties are read during the
 	  <function>configureComponents()</function> step of the
 	  DeploymentComponent.
 	</para>
