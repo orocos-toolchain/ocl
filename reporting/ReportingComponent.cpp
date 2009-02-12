@@ -136,7 +136,8 @@ namespace OCL
         PropertyBag bag = report_data.value();
 
         if ( bag.empty() ) {
-            log(Error) <<"No port or component configuration loaded. Please load properties in ReportData." <<endlog();
+            log(Error) <<"No port or component configuration loaded."<<endlog();
+            log(Error) <<"Please use marshalling.loadProperties(), reportComponent() (scripting) or LoadProperties (XML) in order to fill in ReportData." <<endlog();
             return false;
         }
 
