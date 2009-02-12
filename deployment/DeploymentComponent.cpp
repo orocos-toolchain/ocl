@@ -496,7 +496,7 @@ namespace OCL
                             if ( (*optit)->getName() == "AutoSave" ) {
                                 Property<bool> ps = comp.rvalue().getProperty<bool>("AutoSave");
                                 if (!ps.ready()) {
-                                    log(Error) << "AutoStave must be of type <boolean>" << endlog();
+                                    log(Error) << "AutoSave must be of type <boolean>" << endlog();
                                     valid = false;
                                 } else
                                     comps[comp.getName()].autosave = ps.get();
@@ -530,27 +530,30 @@ namespace OCL
                                 continue;
                             }
                             if ( (*optit)->getName() == "PropertyFile" ) {
-                                PropertyBase* ps = comp.rvalue().getProperty<string>("PropertyFile");
-                                if (!ps) {
+                                Property<string> ps = comp.rvalue().getProperty<string>("PropertyFile");
+                                if (!ps.ready()) {
                                     log(Error) << "PropertyFile must be of type <string>" << endlog();
                                     valid = false;
-                                }
+                                } else
+                                    comps[comp.getName()].configfile = ps.get();
                                 continue;
                             }
                             if ( (*optit)->getName() == "UpdateProperties" ) {
-                                PropertyBase* ps = comp.rvalue().getProperty<string>("UpdateProperties");
-                                if (!ps) {
+                                Property<string> ps = comp.rvalue().getProperty<string>("UpdateProperties");
+                                if (!ps.ready()) {
                                     log(Error) << "UpdateProperties must be of type <string>" << endlog();
                                     valid = false;
-                                }
+                                } else
+                                    comps[comp.getName()].configfile = ps.get();
                                 continue;
                             }
                             if ( (*optit)->getName() == "LoadProperties" ) {
-                                PropertyBase* ps = comp.rvalue().getProperty<string>("LoadProperties");
-                                if (!ps) {
+                                Property<string> ps = comp.rvalue().getProperty<string>("LoadProperties");
+                                if (!ps.ready()) {
                                     log(Error) << "LoadProperties must be of type <string>" << endlog();
                                     valid = false;
-                                }
+                                } else
+                                    comps[comp.getName()].configfile = ps.get();
                                 continue;
                             }
                             if ( (*optit)->getName() == "Properties" ) {
@@ -1108,8 +1111,6 @@ namespace OCL
             ComponentData* it = &(cit->second);
             if (it->instance && !it->proxy) {
                 if ( it->instance->getTaskState() <= TaskCore::Stopped ) {
-                    it->instance->cleanup();
-                    log(Info) << "Cleaned up "<< it->instance->getName() <<endlog();
                     if ( it->autosave && !it->configfile.empty()) {
                         string file = it->configfile; // get file name
                         PropertyLoader pl;
@@ -1121,6 +1122,8 @@ namespace OCL
                             log(Info) << "Saved Properties of "<< it->instance->getName() << " to "<<file<<endlog();
                         }
                     }
+                    it->instance->cleanup();
+                    log(Info) << "Cleaned up "<< it->instance->getName() <<endlog();
                 } else {
                     log(Error) << "Could not cleanup Component "<< it->instance->getName() << " (not Stopped)"<<endlog();
                     valid = false;
