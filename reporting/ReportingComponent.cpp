@@ -52,7 +52,7 @@ namespace OCL
           autotrigger("AutoTrigger","When set to 1, the data is taken upon each update(), "
                       "otherwise, the data is only taken when the user invokes 'snapshot()'.",
                       true),
-          config("Configuration","The name of the property file which lists what is to be reported.",
+          config("Configuration","[Deprecated] The name of the property file which lists what is to be reported.",
                  "cpf/reporter.cpf"),
           writeHeader("WriteHeader","Set to true to start each report with a header.", true),
           decompose("Decompose","Set to false in order to create multidimensional array in netcdf", true),
@@ -132,19 +132,8 @@ namespace OCL
     bool ReportingComponent::store()
     {
         Logger::In in("ReportingComponent");
-        log(Info) << "Writing Ports to report to file." <<endlog();
-        PropertyMarshaller marsh( config.get() );
-        PropertyBag bag;
-        Reports::iterator it = root.begin();
-        while ( it != root.end() ) {
-            string tag = boost::get<0>(*it);
-            string type = boost::get<4>(*it);
-            bag.add( new Property<string>(type,"",tag ) );
-            ++it;
-        }
-        marsh.serialize( bag );
-        deleteProperties(bag);
-        return true;
+        log(Info) << "Writing Properties to file." <<endlog();
+        return this->properties()->writeProperties(this->getName() + ".cpf");
     }
 
     bool ReportingComponent::configureHook()
@@ -163,12 +152,10 @@ namespace OCL
     {
         Logger::In in("ReportingComponent");
         log(Info) << "Loading Ports to report from file." <<endlog();
-        PropertyDemarshaller dem( config.get() );
-        PropertyBag bag;
-        if (dem.deserialize( bag ) == false ) {
-            log(Error) << "Reading file "<< config.get() << " failed."<<endlog();
-            return false;
-        }
+
+        this->properties()->loadProperties( this->getName() + ".cpf");
+
+        PropertyBag bag = reportData.value();
 
         bool ok = true;
         PropertyBag::const_iterator it = bag.getProperties().begin();
@@ -198,7 +185,6 @@ namespace OCL
                 }
                 ++it;
             }
-        deleteProperties( bag );
         return ok;
     }
 
@@ -254,6 +240,8 @@ namespace OCL
             log(Error) << "Could not report Component " << component <<" : no such peer."<<endlog();
             return false;
         }
+        if (reportData.find(
+        reportData.rvalue().addProperty( new Property<string>("Component","",component);
         Ports ports   = comp->ports()->getPorts();
         for (Ports::iterator it = ports.begin(); it != ports.end() ; ++it) {
             log(Debug) << "Checking port " << (*it)->getName()<<"."<<endlog();
@@ -273,6 +261,7 @@ namespace OCL
         for (Ports::iterator it = ports.begin(); it != ports.end() ; ++it) {
             this->unreportDataSource( component + "." + (*it)->getName() );
             if ( this->ports()->getPort( (*it)->getName() ) ) {
+                // XXX Remove the port ?
             }
         }
         return true;

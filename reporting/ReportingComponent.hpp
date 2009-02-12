@@ -53,28 +53,27 @@ namespace OCL
      * properties will be used to create default marshallers.
      *
      * @par Configuration
-     * The ReportingComponent (and its decendants) take two configuration
-     * files. The first is the 'classical' XML '.cpf' file which contains
+     * The ReportingComponent one configuration
+     * file. It contains
      * the property values of the ReportingComponent. For example, to
-     * enable writing a header or not. The second XML file is in the
-     * same format, but describes which ports and peer components need to be
-     * monitored. It has the following format:
+     * enable writing a header or not. One section describes which
+     * ports and peer components need to be
+     * monitored. It whole file has the following format:
      * @code
      <?xml version="1.0" encoding="UTF-8"?>
      <!DOCTYPE properties SYSTEM "cpf.dtd">
      <properties>
-       <!-- Monitor all ports of a Component : -->
-       <simple name="Component" type="string"><description></description><value>ComponentX</value></simple>
+        <struct name="ReportData" type="PropertyBag">
+           <!-- Monitor all ports of a Component : -->
+           <simple name="Component" type="string"><description></description><value>ComponentX</value></simple>
 
-       <!-- Monitor a single Data or Buffer-Port of another Component : -->
-       <simple name="Port" type="string"><description></description><value>ComponentY.PortZ</value></simple>
-
-       <!-- add as many lines as desired... -->
-
+           <!-- Monitor a single Data or Buffer-Port of another Component : -->
+           <simple name="Port" type="string"><description></description><value>ComponentY.PortZ</value></simple>
+           <!-- add as many lines as desired... -->
+        </struct>
      </properties>
      @endcode
-     * The above file is read by the 'ReportingComponent::load()' method, the file to load
-     * is listed in the 'Configuration' property.
+     * The above file is read during the 'ReportingComponent::configure()' method.
      */
     class ReportingComponent
         : public RTT::TaskContext
@@ -225,7 +224,8 @@ namespace OCL
         RTT::Property<bool>          writeHeader;
         RTT::Property<bool>          decompose;
         RTT::Property<bool>          synchronize_with_logging;
-        
+        RTT::Property<PropertyBag>   reportData
+
         RTT::TimeService::ticks starttime;
         RTT::Property<RTT::TimeService::Seconds> timestamp;
 
