@@ -149,9 +149,16 @@ extern "C" { \
 
 #else
 
+#ifndef OCL_STATIC
+#warning "You're compiling with static library settings. The resulting component library \
+ will not be loadable at runtime with the deployer.\
+ Compile with -DOCL_DLL_EXPORT to enable dynamic loadable components, \
+ or use -DOCL_STATIC to suppress this warning."
+#endif
+
 // Static OCL library:
 // Identical to ORO_LIST_COMPONENT_TYPE:
-#define ORO_CREATE_COMPONENT(CLASS_NAME) namespace { namespace ORO_CONCAT_LINE(LOADER_) { { OCL::ComponentLoader<CLASS_NAME> m_cloader(ORO_LIST_COMPONENT_TYPE_str(CLASS_NAME)); } }
+#define ORO_CREATE_COMPONENT(CLASS_NAME) namespace { namespace ORO_CONCAT_LINE(LOADER_) { OCL::ComponentLoader<CLASS_NAME> m_cloader(ORO_LIST_COMPONENT_TYPE_str(CLASS_NAME)); } }
 #define ORO_CREATE_COMPONENT_TYPE() __attribute__((weak)) OCL::FactoryMap* OCL::ComponentFactories::Factories = 0;
 
 #endif

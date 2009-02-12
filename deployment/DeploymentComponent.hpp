@@ -35,10 +35,18 @@
 #include <rtt/Attribute.hpp>
 #include <rtt/Ports.hpp>
 #include <ocl/OCL.hpp>
-#include <ocl/ComponentLoader.hpp>
 #include <vector>
 #include <map>
 #include <rtt/marsh/PropertyDemarshaller.hpp>
+
+// Suppress warnings in ocl/ComponentLoader.hpp
+#ifndef OCL_STATIC
+#define OCL_STATIC
+#include <ocl/ComponentLoader.hpp>
+#undef OCL_STATIC
+#else
+#include <ocl/ComponentLoader.hpp>
+#endif
 
 namespace OCL
 {

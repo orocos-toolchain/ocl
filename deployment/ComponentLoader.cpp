@@ -25,7 +25,8 @@
  *                                                                         *
  ***************************************************************************/
 
-
+// suppress warning in ComponentLoader.hpp
+#define OCL_STATIC
 #include "ocl/ComponentLoader.hpp"
 
 using namespace std;
