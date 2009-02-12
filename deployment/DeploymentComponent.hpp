@@ -84,8 +84,10 @@ namespace OCL
             ComponentData()
                 : instance(0), act(0), loaded(false),
                   autostart(false), autoconf(false),
-                  autoconnect(false), proxy(false), server(false),
-                  use_naming(true),type("")
+                  autoconnect(false),  autosave(false),
+                  proxy(false), server(false),
+                  use_naming(true),type(""),
+                  configfile("")
             {}
             /**
              * The component instance. This is always a valid pointer.
@@ -102,9 +104,9 @@ namespace OCL
              * unloadComponent.
              */
             bool loaded;
-            bool autostart, autoconf, autoconnect;
+            bool autostart, autoconf, autoconnect, autosave;
             bool proxy, server, use_naming;
-            std::string type;
+            std::string type, configfile;
         };
 
         /**
@@ -168,8 +170,8 @@ namespace OCL
          * the this->conmap.
          */
         bool unloadComponentImpl( CompList::iterator cit );
-	
-	
+
+
         /**
          * Hook function for subclasses. Allows a subclass
          * to abort or extend the loading of a component.
@@ -437,7 +439,7 @@ namespace OCL
          * @return true if successfully stopped, cleaned and unloaded
          */
         bool kickOutComponent(const std::string& comp_name);
-	
+
         /**
          * Identical to \a kickOutAll, but it reads the name of the Components to kickOut from an XML file.
          * @param config_file name of an XML file (probably the same used by loadComponents() or kickStart() ).
@@ -502,14 +504,14 @@ namespace OCL
          * for the DeploymentComponent.
          */
         FactoryMap& getFactories();
-	
+
         /**
          * Stop a single loaded and running component.
          * @param instance instance pointer of the component.
          * @return true if successfully stopped.
          */
-        bool stopComponent(RTT::TaskContext *instance);	
-	
+        bool stopComponent(RTT::TaskContext *instance);
+
         /**
          * Stop a single loaded and running components.
          * @param comp_name name of the component.
@@ -519,24 +521,24 @@ namespace OCL
         {
             return this->stopComponent(  this->getPeer(comp_name) );
         }
-	
+
         /**
          * Cleanup a single loaded and not running component.
          * @param instance instance pointer of the component.
          * @return true if successfully cleaned up
          */
         bool cleanupComponent(RTT::TaskContext *instance);
-	
+
         /**
          * Cleanup a single loaded and not running component.
          * @param comp_name name of the component.
-         * @return true if successfully cleaned up	
+         * @return true if successfully cleaned up
          */
         bool cleanupComponent(const std::string& comp_name)
         {
             return this->cleanupComponent( this->getPeer(comp_name) );
         }
-	
+
     };
 
 

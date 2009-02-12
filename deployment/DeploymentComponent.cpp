@@ -213,6 +213,7 @@ namespace OCL
         valid_names.insert("AutoConf");
         valid_names.insert("AutoStart");
         valid_names.insert("AutoConnect");
+        valid_names.insert("AutoSave");
         valid_names.insert("PropertyFile");
         valid_names.insert("UpdateProperties");
         valid_names.insert("LoadProperties");
@@ -492,6 +493,15 @@ namespace OCL
                                     comps[comp.getName()].autostart = ps.get();
                                 continue;
                             }
+                            if ( (*optit)->getName() == "AutoSave" ) {
+                                Property<bool> ps = comp.rvalue().getProperty<bool>("AutoSave");
+                                if (!ps.ready()) {
+                                    log(Error) << "AutoStave must be of type <boolean>" << endlog();
+                                    valid = false;
+                                } else
+                                    comps[comp.getName()].autosave = ps.get();
+                                continue;
+                            }
                             if ( (*optit)->getName() == "AutoConf" ) {
                                 Property<bool> ps = comp.rvalue().getProperty<bool>("AutoConf");
                                 if (!ps.ready()) {
@@ -616,7 +626,7 @@ namespace OCL
                                     // NOTE the sizes conmap[port_name].ports.size() and conmap[port_name].owners.size() are supposed to be equal
                                     for(unsigned int a=0; a < conmap[port_name].ports.size(); a++)
                                         {
-                                            if(  conmap[port_name].ports.at(a) == p && conmap[port_name].owners.at(a) == c) 
+                                            if(  conmap[port_name].ports.at(a) == p && conmap[port_name].owners.at(a) == c)
                                                 {
                                                     to_add = false;
                                                     continue;
@@ -812,7 +822,7 @@ namespace OCL
         for(ConMap::iterator it = conmap.begin(); it != conmap.end(); ++it) {
             ConnectionData *connection =  &(it->second);
             std::string connection_name = it->first;
-	    
+
             if ( connection->ports.size() == 1 ){
                 log(Warning) << "Can not form connection "<<connection_name<<" with only one Port from "<< connection->owners[0]<< endlog();
                 continue;
@@ -821,7 +831,7 @@ namespace OCL
             // This is quite complex since a 'ReadWritePort' can act as both.
             PortInterface* writer = 0, *reader = 0;
             ConnectionData::Ports::iterator p = connection->ports.begin();
-		    
+
             // If one of the ports is connected, use that one as writer to connect to.
             while (p !=connection->ports.end() && (writer == 0 ) ) {
                 if ( (*p)->connected() )
@@ -832,7 +842,7 @@ namespace OCL
             // now proceed filling in writer and reader pointers until one reader and one writer is found.
             p = connection->ports.begin();
             while (p !=connection->ports.end() && (writer == 0 || reader == 0) ) {
-                if ( (*p)->getPortType() == PortInterface::WritePort ) 
+                if ( (*p)->getPortType() == PortInterface::WritePort )
                     {
                         if (!reader && writer && writer->getPortType() == PortInterface::ReadWritePort && !writer->connected() ) {
                             reader = writer;
@@ -841,8 +851,8 @@ namespace OCL
                         if (!writer)
                             writer = (*p);
                     }
-                else{ 
-                    if ( (*p)->getPortType() == PortInterface::ReadPort ) 
+                else{
+                    if ( (*p)->getPortType() == PortInterface::ReadPort )
                         {
                             if (!writer && reader && reader->getPortType() == PortInterface::ReadWritePort ) {
                                 writer = reader;
@@ -854,7 +864,7 @@ namespace OCL
                     else{
                         if ( (*p)->getPortType() == PortInterface::ReadWritePort )
                             {
-                                if (writer == 0) 
+                                if (writer == 0)
                                     {
                                         writer = (*p);
                                     }
@@ -885,7 +895,7 @@ namespace OCL
 
             while (p != connection->ports.end() ) {
                 // connect all readers to the first found writer.
-                if ( *p != writer ) 
+                if ( *p != writer )
                     {
                         owner = connection->owners[p - connection->ports.begin()]->getName();
                         // only try to connect p if it is not in the same connection of writer.
@@ -1015,7 +1025,7 @@ namespace OCL
                             if ( peer->configure() == false)
                                 valid = false;
                         }
-                    else 
+                    else
                         log(Warning) << "Apparently component "<< peer->getName()<< " don't need to be configured." <<endlog();
                 }
         }
@@ -1100,6 +1110,17 @@ namespace OCL
                 if ( it->instance->getTaskState() <= TaskCore::Stopped ) {
                     it->instance->cleanup();
                     log(Info) << "Cleaned up "<< it->instance->getName() <<endlog();
+                    if ( it->autosave && !it->configfile.empty()) {
+                        string file = it->configfile; // get file name
+                        PropertyLoader pl;
+                        bool ret = pl.save( file, it->instance, true ); // save all !
+                        if (!ret) {
+                            log(Error) << "Failed to save properties for component "<< it->instance->getName() <<endlog();
+                            valid = false;
+                        } else {
+                            log(Info) << "Saved Properties of "<< it->instance->getName() << " to "<<file<<endlog();
+                        }
+                    }
                 } else {
                     log(Error) << "Could not cleanup Component "<< it->instance->getName() << " (not Stopped)"<<endlog();
                     valid = false;
@@ -1114,7 +1135,7 @@ namespace OCL
         // 2. Disconnect and destroy all components.
         bool valid = true;
         while ( comps.size() > 0)
-            {   
+            {
                 CompList::iterator cit = comps.begin();
                 valid &= this->unloadComponentImpl(cit);
             }
@@ -1224,13 +1245,13 @@ namespace OCL
         // check if the library is already loaded
         // NOTE if this library has been loaded, you can unload and reload it to apply changes (may be you have updated the dynamic library)
         // anyway it is safe to do this only if thereisn't any istance whom type was loaded from this library
-	
-        std::vector<LoadedLib>::iterator lib = loadedLibs.begin(); 
+
+        std::vector<LoadedLib>::iterator lib = loadedLibs.begin();
         while (lib != loadedLibs.end()) {
             // there is already a library with the same name
             if ( lib->name == libname) {
                 log(Warning) <<"Library "<< libname <<".so already loaded. " ;
-		
+
                 bool can_unload = true;
                 CompList::iterator cit;
                 for( std::vector<std::string>::iterator ctype = lib->components_type.begin();  ctype != lib->components_type.end() && can_unload; ++ctype) {
@@ -1242,7 +1263,7 @@ namespace OCL
                         }
                     }
                 }
-                if( can_unload ) {   
+                if( can_unload ) {
                     log(Warning) << "Try to RELOAD"<<endlog();
                     dlclose(lib->handle);
                     // remove the library info from the vector
@@ -1375,7 +1396,7 @@ namespace OCL
                 ComponentFactories::Instance()[ cname ] = factory;
                 log(Info) << "Loaded component type '"<< cname <<"'"<<endlog();
                 loading_lib.components_type.push_back( cname );
-		
+
             } else {
                 log(Info) << "Loaded single component library '"<< libname <<"'"<<endlog();
                 loading_lib.components_type.push_back( libname );
@@ -1504,7 +1525,7 @@ namespace OCL
     }
 
     /**
-     * This method removes all references to the component hold in \a cit, 
+     * This method removes all references to the component hold in \a cit,
      * on the condition that it is not running.
      * When this method returns true, you need to remove \a cit yourself from
      * the this->conmap.
@@ -1535,7 +1556,7 @@ namespace OCL
                             n = 0;
                         } else
                             ++n;
-                    } 
+                    }
                 }
                 // Lookup in the property configuration and remove:
                 Property<PropertyBag>* pcomp = root.getProperty<PropertyBag>(name);
@@ -1544,16 +1565,16 @@ namespace OCL
                     deletePropertyBag( pcomp->value() );
                     delete pcomp;
                 }
-                
+
                 // Finally, delete the activity before the TC !
                 delete it->act;
                 it->act = 0;
                 delete it->instance;
                 it->instance = 0;
-		// NOTE there is no reason to keep the ComponentData in the vector. 
+		// NOTE there is no reason to keep the ComponentData in the vector.
 		// actually it may cause errors if we try to re-load the Component later.
 		comps.erase(cit);
-		
+
                 log(Info) << "Disconnected and destroyed "<< name <<endlog();
             } else {
                 log(Error) << "Could not unload Component "<< name <<": still running." <<endlog();
@@ -1741,24 +1762,24 @@ namespace OCL
     {
         return ComponentFactories::Instance();
     }
-    
+
     void DeploymentComponent::kickOut(const std::string& config_file)
     {
         Logger::In in("DeploymentComponent::kickOut");
         PropertyBag from_file;
         Property<std::string>  import_file;
         std::vector<std::string> deleted_components_type;
-	
+
         // demarshalling failures:
         bool failure = false;
-	
+
         PropertyDemarshaller demarshaller(config_file);
         try {
             if ( demarshaller.deserialize( from_file ) ){
                 for (PropertyBag::iterator it= from_file.begin(); it!=from_file.end();it++) {
                     if ( (*it)->getName() == "Import" ) continue;
                     if ( (*it)->getName() == "Include" ) continue;
-                    
+
                     kickOutComponent(  (*it)->getName() );
                 }
                 deletePropertyBag( from_file );
@@ -1773,7 +1794,7 @@ namespace OCL
                 failure = true;
             }
     }
-    
+
     bool DeploymentComponent::cleanupComponent(RTT::TaskContext *instance)
     {
         Logger::In in("DeploymentComponent::cleanupComponent");
@@ -1790,18 +1811,18 @@ namespace OCL
         }
         return valid;
     }
-    
+
     bool DeploymentComponent::stopComponent(RTT::TaskContext *instance)
     {
         Logger::In in("DeploymentComponent::stopComponent");
         bool valid = true;
-	
+
         if ( instance ) {
             if ( instance->engine()->getActivity() == 0 ||
-                 instance->engine()->getActivity()->isActive() == false || 
+                 instance->engine()->getActivity()->isActive() == false ||
                  instance->stop() ) {
                 log(Info) << "Stopped "<< instance->getName() <<endlog();
-            } 
+            }
             else {
                 log(Error) << "Could not stop loaded Component "<< instance->getName() <<endlog();
                 valid = false;
@@ -1809,18 +1830,18 @@ namespace OCL
         }
         return valid;
     }
-    
+
     bool DeploymentComponent::kickOutComponent(const std::string& comp_name)
     {
         Logger::In in("DeploymentComponent::kickOutComponent");
         PropertyBase *it = root.find( comp_name );
         if(!it) {
             log(Error) << "Peer "<< comp_name << " not found in PropertyBag root"<< endlog();
-            return false; 
+            return false;
         }
-	
+
         TaskContext* peer = comps[ comp_name ].instance;
-	
+
         if ( !peer ) {
             log(Error) << "Peer not found: "<< comp_name <<endlog();
             return false;
@@ -1829,7 +1850,7 @@ namespace OCL
         cleanupComponent (peer );
         unloadComponent( comp_name);
         root.removeProperty( root.find( comp_name ) );
-	
+
         return true;
     }
 }
