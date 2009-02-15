@@ -45,24 +45,27 @@ namespace OCL
 {
     /**
      * @brief A Component for periodically reporting Component
-     * DataObject contents to a human readable text format. The
-     * default is a table with a header.
+     * Port contents to a human readable text format. The
+     * default format is a table with a header.
      *
      * It can report to any data format, using the 'addMarshaller'
-     * function. If the user does \b not add any marshallers, the
-     * properties will be used to create default marshallers.
+     * function, which is typically done in sub classes of this
+     * component.
      *
-     * @par Configuration
-     * The ReportingComponent one configuration
-     * file. It contains
-     * the property values of the ReportingComponent. For example, to
-     * enable writing a header or not. One section describes which
-     * ports and peer components need to be
-     * monitored. It whole file has the following format:
+     * @par Configuration 
+     * The ReportingComponent is configured using
+     * its properties. For example, to enable writing a header or
+     * not. The ReportData struct describes which ports and peer components need
+     * to be monitored. You need to load properties into this struct
+     * (see TaskContext::marshalling()).
+     * This struct can be filled in as such:
+     *
      * @code
      <?xml version="1.0" encoding="UTF-8"?>
      <!DOCTYPE properties SYSTEM "cpf.dtd">
      <properties>
+        <!-- ... other component properties .. -->
+
         <struct name="ReportData" type="PropertyBag">
            <!-- Monitor all ports of a Component : -->
            <simple name="Component" type="string"><description></description><value>ComponentX</value></simple>
@@ -73,7 +76,7 @@ namespace OCL
         </struct>
      </properties>
      @endcode
-     * The above file is read during the 'ReportingComponent::configure()' method.
+     * 
      */
     class ReportingComponent
         : public RTT::TaskContext
@@ -129,18 +132,6 @@ namespace OCL
          * Calls store() and clears the reporting configuration.
          */
         virtual void cleanupHook();
-
-        /**
-         * Read the configuration file in order to decide
-         * on what to report.
-         */
-        bool load();
-
-        /**
-         * Write the configuration file describing what is
-         * being reported.
-         */
-        bool store();
 
         /**
          * Write state information of a component. This method must be
