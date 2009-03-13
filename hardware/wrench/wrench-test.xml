@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE properties SYSTEM "cpf.dtd">
 <properties>
-<simple name="Import" type="string"><value>/install/build-ruben/lib</value></simple>
+<simple name="Import" type="string"><value>/usr/local/lib</value></simple>
 
 <struct name="WrenchSensor" type="OCL::WrenchSensor">
   <struct name="Activity" type="PeriodicActivity">
@@ -24,11 +24,10 @@
   </struct>
   <simple name="AutoConf" type="boolean"><value>1</value></simple>
   <simple name="AutoStart" type="boolean"><value>1</value></simple>
-  <simple name="PropertyFile" type="string"><value>cpf/reporter.cpf</value></simple>
+  <simple name="LoadProperties" type="string"><value>cpf/reporting.cpf</value></simple>
   <struct name="Peers" type="PropertyBag">
      <simple name="Peer" type="string"><value>WrenchSensor</value></simple>
   </struct>
 </struct>
-
 
 </properties>
