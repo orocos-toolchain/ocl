@@ -28,7 +28,6 @@
 #include <rtt/Method.hpp>
 #include <rtt/Command.hpp>
 #include <rtt/Ports.hpp>
-#include <kdl/bindings/rtt/toolkit.hpp>
 #include <kdl/frames.hpp>
 
 #include <rtt/RTT.hpp>
