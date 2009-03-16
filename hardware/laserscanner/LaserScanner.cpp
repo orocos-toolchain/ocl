@@ -31,20 +31,15 @@ namespace OCL
 
     LaserScanner::LaserScanner(string name):
         TaskContext(name),
-        NonPeriodicActivity(ORO_SCHED_OTHER, OS::LowestPriority),
-        priority("priority","Priority of the LaserScanners activity",OS::LowestPriority),
         port("port","Serial port to which the Sick scanner is connected. (/dev/ttySx)","/dev/ttyS0"),
         range_mode("range_mode","Should be 100 or 180 degrees",180),
         res_mode("res_mode","Should be 0.25,0.5,1 degrees",0.5),
         unit_mode("unit_mode","Should be mm or cm","mm"),
         distances("LaserDistance"),
         angles("LaserAngle"),
-        distanceOutOfRange("distanceOutOfRange"),
-        loop_ended(false),
-        keep_running(true)
+        distanceOutOfRange("distanceOutOfRange")
     {
         log(Debug) <<this->TaskContext::getName()<<": adding Properties"<<endlog();
-        properties()->addProperty(&priority);
         properties()->addProperty(&port);
         properties()->addProperty(&range_mode);
         properties()->addProperty(&res_mode);
@@ -58,21 +53,20 @@ namespace OCL
         events()->addEvent(&distanceOutOfRange, "Distance out of Range", "C", "Channel", "V", "Value");
 
         log(Debug) <<this->TaskContext::getName()<<": constructed."<<endlog();
+        buf = new unsigned char[MAXNDATA];
     }
 
 
     LaserScanner::~LaserScanner()
     {
-        keep_running = false;
-
-        while (!loop_ended)
-            usleep(10);
+        sick_laserscanner->stop();
+        delete buf;
         delete sick_laserscanner;
     }
 
     bool LaserScanner::configureHook()
     {
-        Logger::In in(this->TaskContext::getName().c_str());
+        Logger::In in(this->TaskContext::getName());
 
         log(Debug) <<this->TaskContext::getName()<<": create Sick laserscanner"<<endlog();
         port_char = port.value().c_str();
@@ -116,72 +110,60 @@ namespace OCL
             angles_local[i] = ((double)i/((double)num_meas-1.0))*(double)(range_mode.value()*M_PI/180);
 
         sick_laserscanner = new SickLMS200(port_char, range_mode_char, res_mode_char, unit_mode_char);
-
-        if(!this->thread()->setPriority (priority.value())){
-            log(Error)<<"Could not change priority of activity."<<endlog();
-            return false;
-        }
-        return this->NonPeriodicActivity::start();
-
+        return true;
     }
 
 
     bool LaserScanner::startHook()
     {
-        log(Error)<<this->TaskContext::getName()<<": Who is calling Startup???."<<endlog();
+        Logger::In in(this->TaskContext::getName());
+        if (!sick_laserscanner->start()){
+            log(Error)<<"Starting laserscanner failed."<<endlog();
+            return false;
+        }
+
+        if (!registerSickLMS200SignalHandler()){
+            log(Error)<<"Register Sick signal handler failed."<<endlog();
+            return false;
+        }
+
+        angles.Set(angles_local);
+
         return true;
     }
 
 
     void LaserScanner::updateHook()
     {
-        log(Error)<<this->TaskContext::getName()<<": Who is calling Update???."<<endlog();
+        sick_laserscanner->readMeasurement(buf,datalen);
+        
+        if (sick_laserscanner->checkErrorMeasurement()){
+            log(Error)<<"Measurement error."<<endlog();
+            error();
+        }
+        
+        if (!sick_laserscanner->checkPlausible()){
+            log(Warning)<<"Measurement not reliable."<<endlog();
+            warning();
+        }
+        
+        if (num_meas*2 != (unsigned int)datalen){
+            log(Error)<<"Number of measurements inconsistent: expected "
+                      << num_meas << " and received " << datalen/2 <<endlog();
+            warning();
+        }
+
+        for (int i=0; i<datalen; i=i+2)
+            distances_local[(unsigned int)(i/2)] = ((double)( (buf[i+1] & 0x1f) <<8  |buf[i]))/1000.0;
+        distances.Set(distances_local);
+        
+        this->engine()->getActivity()->trigger();
     }
-
-
-
-    void LaserScanner::loop()
-    {
-        Logger::In in(this->TaskContext::getName().c_str());
-        if (!sick_laserscanner->start())
-            log(Error)<<"Starting laserscanner failed."<<endlog();
-
-        if (!registerSickLMS200SignalHandler())
-            log(Error)<<"Register Sick signal handler failed."<<endlog();
-
-        angles.Set(angles_local);
-
-        // loop
-        unsigned char buf[MAXNDATA];  int datalen;
-        while (keep_running){
-            sick_laserscanner->readMeasurement(buf,datalen);
-
-            if (sick_laserscanner->checkErrorMeasurement()){
-                log(Error)<<"Measurement error."<<endlog();
-                keep_running = false;
-            }
-
-            if (!sick_laserscanner->checkPlausible())
-                log(Warning)<<"Measurement not reliable."<<endlog();
-
-            if (num_meas*2 != (unsigned int)datalen)
-                log(Error)<<"Number of measurements inconsistent: expected "
-                          << num_meas << " and received " << datalen/2 <<endlog();
-
-            for (int i=0; i<datalen; i=i+2)
-                distances_local[(unsigned int)(i/2)] = ((double)( (buf[i+1] & 0x1f) <<8  |buf[i]))/1000.0;
-            distances.Set(distances_local);
-        }// loop
-
-        if (!sick_laserscanner->stop())
-            log(Error)<<"Error stopping laserscanner"<<endlog();
-        loop_ended = true;
-    }
-
 
     void LaserScanner::stopHook()
     {
-        log(Error)<<this->TaskContext::getName()<<": Who is calling Shutdown???."<<endlog();
+        if (!sick_laserscanner->stop())
+            log(Error)<<"Error stopping laserscanner"<<endlog();
     }
 }//namespace
 

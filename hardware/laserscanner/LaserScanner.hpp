@@ -42,8 +42,7 @@ namespace OCL {
      * digital IO PCI cards.
      */
     class LaserScanner
-        :public RTT::TaskContext,
-         public RTT::NonPeriodicActivity {
+        :public RTT::TaskContext{
     public:
         /**
          * Constructor of the class
@@ -59,10 +58,8 @@ namespace OCL {
         virtual bool startHook();
         virtual void updateHook();  // taskcontext
         virtual void stopHook();
-        virtual void loop();  // nonperiodicactivity
 
     protected:
-        RTT::Property<int>         priority;
         RTT::Property<std::string> port;
         RTT::Property<int>         range_mode;
         RTT::Property<double>      res_mode;
@@ -81,7 +78,9 @@ namespace OCL {
         const char* port_char;
         unsigned char range_mode_char, res_mode_char, unit_mode_char;
         unsigned int num_meas;
-        bool loop_ended, keep_running;
+
+        unsigned char* buf;
+        int datalen;
 
   }; // class
 } // namespace

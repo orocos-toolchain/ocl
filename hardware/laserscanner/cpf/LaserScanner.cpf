@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE properties SYSTEM "cpf.dtd">
 <properties>
-  <simple name="port" type="string"><description>/dev/ttySx</description><value>/dev/ttyS0</value></simple>
+  <simple name="port" type="string"><description>/dev/ttySx</description><value>/dev/ttyUSB0</value></simple>
   <simple name="range_mode" type="long"><description>100 or 180</description><value>180</value></simple>
   <simple name="res_mode" type="double"><description>0.25 or 0.5 or 1.0</description><value>0.5</value></simple>
   <simple name="unit_mode" type="string"><description>mm  or cm</description><value>mm</value></simple>
