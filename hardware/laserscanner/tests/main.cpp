@@ -42,7 +42,8 @@ int ORO_main(int arc, char* argv[])
     }
 
     LaserScanner laser("LaserScanner");
-    //FileReporting reporter("Reporting");
+    laser.marshalling()->readProperties( "cpf/LaserScanner.cpf");
+    FileReporting reporter("Reporting");
 
     //reporter.addPeer(&laser);
     //PeriodicActivity reportingTask(2,4, reporter.engine() );
