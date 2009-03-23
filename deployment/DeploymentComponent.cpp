@@ -1530,8 +1530,6 @@ namespace OCL
     /**
      * This method removes all references to the component hold in \a cit,
      * on the condition that it is not running.
-     * When this method returns true, you need to remove \a cit yourself from
-     * the this->conmap.
      */
     bool DeploymentComponent::unloadComponentImpl( CompList::iterator cit )
     {
@@ -1574,15 +1572,16 @@ namespace OCL
                 it->act = 0;
                 delete it->instance;
                 it->instance = 0;
-		// NOTE there is no reason to keep the ComponentData in the vector.
-		// actually it may cause errors if we try to re-load the Component later.
-		comps.erase(cit);
-
                 log(Info) << "Disconnected and destroyed "<< name <<endlog();
             } else {
                 log(Error) << "Could not unload Component "<< name <<": still running." <<endlog();
-                valid = false;
+                valid=false;
             }
+        }
+        if (valid) {
+            // NOTE there is no reason to keep the ComponentData in the vector.
+            // actually it may cause errors if we try to re-load the Component later.
+            comps.erase(cit);
         }
         return valid;
     }

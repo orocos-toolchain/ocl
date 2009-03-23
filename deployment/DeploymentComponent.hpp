@@ -166,8 +166,6 @@ namespace OCL
         /**
          * This method removes all references to the component hold in \a cit,
          * on the condition that it is not running.
-         * When this method returns true, you need to remove \a cit yourself from
-         * the this->conmap.
          */
         bool unloadComponentImpl( CompList::iterator cit );
 
