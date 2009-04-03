@@ -7,3 +7,4 @@
   <simple name="Server" type="boolean"><value>1</value></simple>
   <simple name="UseNamingService" type="boolean"><value>1</value></simple>
 </struct>
+</properties>
