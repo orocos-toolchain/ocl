@@ -13,3 +13,4 @@
   <simple name="AutoStart" type="boolean"><value>0</value></simple>
   <simple name="UpdateProperties" type="string"><value>cpf/LaserScanner.cpf</value></simple>
 </struct>
+</properties>
