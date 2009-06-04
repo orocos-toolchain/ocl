@@ -39,6 +39,7 @@
 #include <rtt/TemplateTypeInfo.hpp>
 #include <rtt/Types.hpp>
 #include <rtt/Logger.hpp>
+#include <rtt/DataSources.hpp>
 #include <ostream>
 #include <sstream>
 #include <vector>
@@ -56,7 +57,8 @@ namespace RTT
     template<class T>
     void decomposeProperty(const std::vector<T>& vec, PropertyBag& targetbag)
     {
-        targetbag.setType("list");
+        std::string tname = detail::DataSourceTypeInfo<T>::getType();
+        targetbag.setType(tname+"s");
         int dimension = vec.size();
         std::string str;
 
@@ -76,7 +78,9 @@ namespace RTT
     template<class T>
     bool composeProperty(const PropertyBag& bag, std::vector<T>& result)
     {
-        if ( bag.getType() == "list" ) {
+        std::string tname = detail::DataSourceTypeInfo<T>::getType();
+        
+        if ( bag.getType() == tname+"s" ) {
             int dimension = bag.size();
             Logger::log() << Logger::Info << "bag size " << dimension <<Logger::endl;
             result.resize( dimension );
@@ -89,7 +93,7 @@ namespace RTT
                 //Property<T> my_property_t (t_abag->getName(),t_bag->getDescription());
                 Property<T> my_property_t (element->getName(),element->getDescription());
                 if(my_property_t.getType()!=element->getType())
-                    log(Error)<< "Type of "<< element->getName() << " does not match type of list"<<endlog();
+                    log(Error)<< "Type of "<< element->getName() << " does not match type of "<<tname+"s"<<endlog();
                 else{
                     my_property_t.getTypeInfo()->composeType(element->getDataSource(),my_property_t.getDataSource());
                     result[ i ] = my_property_t.get();
@@ -99,17 +103,18 @@ namespace RTT
         else {
             Logger::log() << Logger::Error << "Composing Property< std::vector<T> > :"
                           << " type mismatch, got type '"<< bag.getType()
-                          << "', expected type 'list'."<<Logger::endl;
+                          << "', expected type "<<tname<<"s."<<Logger::endl;
             return false;
         }
         return true;
     };
-  template <typename T>
+
+    template <typename T, bool has_ostream>
     struct StdVectorTemplateTypeInfo
-        : public TemplateContainerTypeInfo<std::vector<T>, int, T, ArrayIndexChecker<std::vector<T> >, SizeAssignChecker<std::vector<T> >, false >
+        : public TemplateContainerTypeInfo<std::vector<T>, int, T, ArrayIndexChecker<std::vector<T> >, SizeAssignChecker<std::vector<T> >, has_ostream >
     {
-        StdVectorTemplateTypeInfo<T>( std::string name )
-            : TemplateContainerTypeInfo<std::vector<T>, int, T, ArrayIndexChecker<std::vector<T> >, SizeAssignChecker<std::vector<T> >, false >(name)
+        StdVectorTemplateTypeInfo<T,has_ostream>( std::string name )
+            : TemplateContainerTypeInfo<std::vector<T>, int, T, ArrayIndexChecker<std::vector<T> >, SizeAssignChecker<std::vector<T> >, has_ostream >(name)
         {
         };
 
@@ -124,6 +129,116 @@ namespace RTT
             return composeProperty<T>( bag, result );
         }
 
+    };
+    
+    template<typename T>
+    std::ostream& operator << (std::ostream& os, const std::vector<T>& vec)
+    {
+        os<<'[';
+        for(unsigned int i=0;i<vec.size();i++){
+            if(i>0)
+                os<<',';
+            os<<vec[i]<<' ';
+        }
+        
+        return os << ']';
+    };
+    
+    template<typename T>
+    std::istream& operator >> (std::istream& is,std::vector<T>& vec)
+    {
+        return is;
+    };
+
+    template<typename T>
+    struct stdvector_ctor
+        : public std::unary_function<int, const std::vector<T>&>
+    {
+        typedef const std::vector<T>& (Signature)( int );
+        mutable boost::shared_ptr< std::vector<T> > ptr;
+        stdvector_ctor()
+            : ptr( new std::vector<T>() ) {}
+        const std::vector<T>& operator()( int size ) const
+        {
+            ptr->resize( size );
+            return *(ptr);
+        }
+    };
+    
+    /**
+     * See NArityDataSource which requires a function object like
+     * this one.
+     */
+    template<typename T>
+    struct stdvector_varargs_ctor
+    {
+        typedef const std::vector<T>& result_type;
+        typedef T argument_type;
+        result_type operator()( const std::vector<T>& args ) const
+        {
+            return args;
+        }
+    };
+    
+    /**
+     * Constructs an array with \a n elements, which are given upon
+     * construction time.
+     */
+     template<typename T>
+     struct StdVectorBuilder
+         : public TypeBuilder
+     {
+         virtual DataSourceBase::shared_ptr build(const std::vector<DataSourceBase::shared_ptr>& args) const {
+             if (args.size() == 0 )
+                 return DataSourceBase::shared_ptr();
+             typename NArityDataSource<stdvector_varargs_ctor<T> >::shared_ptr vds = new NArityDataSource<stdvector_varargs_ctor<T> >();
+             for(unsigned int i=0; i != args.size(); ++i) {
+                 typename DataSource<T>::shared_ptr dsd = AdaptDataSource<T>()( args[i] );
+                 if (dsd)
+                     vds->add( dsd );
+                 else
+                     return DataSourceBase::shared_ptr();
+             }
+             return vds;
+         }
+     };
+
+    template<typename T>
+    struct stdvector_ctor2
+        : public std::binary_function<int, T, const std::vector<T>&>
+    {
+        typedef const std::vector<T>& (Signature)( int, T );
+        mutable boost::shared_ptr< std::vector<T> > ptr;
+        stdvector_ctor2()
+            : ptr( new std::vector<T>() ) {}
+        const std::vector<T>& operator()( int size, T value ) const
+        {
+            ptr->resize( size );
+            ptr->assign( size, value );
+            return *(ptr);
+        }
+    };
+
+    template<typename T>
+    struct stdvector_index
+        : public std::binary_function<const std::vector<T>&, int, T>
+    {
+        T operator()(const std::vector<T>& v, int index) const
+        {
+            if ( index >= (int)(v.size()) || index < 0)
+                return T();
+            return v[index];
+        }
+    };    
+
+    template<class T>
+    struct get_size
+        : public std::unary_function<T, int>
+    {
+        int operator()(T cont ) const
+        {
+            return cont.size();
+        }
     };
 
 };
