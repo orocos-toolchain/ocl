@@ -52,10 +52,13 @@ int ORO_main(int argc, char** argv)
     // were we given TAO options? ie find "--"
     int     taoIndex    = 0;
     bool    found       = false;
-    for (taoIndex=0; !found && taoIndex<argc; ++taoIndex)
+
+    while(!found && taoIndex<argc)
     {
         found = (0 == strcmp("--", argv[taoIndex]));
+        if(!found) taoIndex++;
     }
+
     if (found) {
         argv[taoIndex] = argv[0];
     }
