@@ -1673,32 +1673,34 @@ namespace OCL
                                           int scheduler, const std::string& master_name)
     {
         TaskContext* peer = 0;
-        TaskContext* master = 0;
+        ActivityInterface* master_act = 0;
         if ( comp_name == this->getName() )
             peer = this;
         else
             if ( comps.count(comp_name) )
-                peer = comps[comp_name].instance;
+	        peer = comps[comp_name].instance;
             else
-                peer = this->getPeer(comp_name); // last resort.
+	        peer = this->getPeer(comp_name); // last resort.
         if (!peer) {
             log(Error) << "Can't create Activity: component "<<comp_name<<" not found."<<endlog();
             return false;
         }
         if ( !master_name.empty() ) {
             if ( master_name == this->getName() )
-                master = this;
+	        master_act = this->engine()->getActivity();
             else
                 if ( comps.count(master_name) )
-                    master = comps[master_name].instance;
+		    master_act = comps[master_name].act;
                 else
-                    master = this->getPeer(master_name); // last resort.
-            if (!master) {
-                log(Error) << "Can't create SlaveActivity: Master component "<<master_name<<" not found."<<endlog();
+		    master_act = this->getPeer(master_name) ? getPeer(master_name)->engine()->getActivity() : 0; // last resort.
+
+	    if ( !this->getPeer(master_name) ) {
+                log(Error) << "Can't create SlaveActivity: Master component "<<master_name<<" not known as peer."<<endlog();
                 return false;
             }
-            if (!master->engine()->getActivity()) {
-                log(Error) << "Can't create SlaveActivity: Master component "<<master_name<<" has no activity !"<<endlog();
+
+            if (!master_act) {
+                log(Error) << "Can't create SlaveActivity: Master component "<<master_name<<" has no activity set."<<endlog();
                 return false;
             }
         }
@@ -1717,11 +1719,11 @@ namespace OCL
                 newact = new NonPeriodicActivity(scheduler, priority);
             else
                 if ( act_type == "SlaveActivity" ) {
-                    if ( master == 0 )
+                    if ( master_act == 0 )
                         newact = new SlaveActivity(period);
                     else {
-                        newact = new SlaveActivity(master->engine()->getActivity());
-                        master->addPeer( peer );
+		        newact = new SlaveActivity(master_act);
+                        this->getPeer(master_name)->addPeer( peer );
                     }
                 }
 
