@@ -2,6 +2,7 @@
 #define ORO_OCL_HPP
 
 #include <rtt/RTT.hpp>
+#include "ocl-config.h"
 
 /**
  * The Orocos Component Library.
@@ -28,25 +29,5 @@ namespace Orocos
 {
     using namespace OCL;
 }
-
-// This is only an advantage if the OCL is compiled with -fvisibility=hidden.
-// The OCL_DLL_EXPORT flag may only be set when OCL itself is compiled and *not*
-// after installation.
-#if defined(__GNUG__) && defined(__unix__) && defined(RTT_GCC_HASVISIBILITY)
-# if defined(OCL_DLL_EXPORT)
-#  define OCL_API    __attribute__((visibility("default")))
-#  define OCL_EXPORT __attribute__((visibility("default")))
-#  define OCL_HIDE   __attribute__((visibility("hidden")))
-# else
-#  define OCL_API
-#  define OCL_EXPORT __attribute__((visibility("default")))
-#  define OCL_HIDE   __attribute__((visibility("hidden")))
-# endif
-#else
-# define OCL_API
-# define OCL_EXPORT
-# define OCL_HIDE
-#endif
-
 
 #endif

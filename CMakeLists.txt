@@ -116,7 +116,7 @@ INCLUDE (${CMAKE_ROOT}/Modules/CMakeDetermineCXXCompiler.cmake)
 
 #
 # This is the first in the include path.
-INCLUDE_DIRECTORIES( ${PROJ_SOURCE_DIR} )
+INCLUDE_DIRECTORIES( ${PROJ_SOURCE_DIR} ${PROJ_BINARY_DIR}/ocl )
 
 # Put your 'flags' inhere if you want them to apear in the
 # orocos-components.pc file. Various .cmake scripts below do
@@ -196,7 +196,8 @@ SET(OROCOS_COMPONENTS_LINKFLAGS "$ENV{OROCOS_COMPONENTS_LINKFLAGS}")
 SET(OROCOS_COMPONENTS_CFLAGS "$ENV{OROCOS_COMPONENTS_CFLAGS}")
 SET(OROCOS_COMPONENTS_REQUIRES "$ENV{OROCOS_COMPONENTS_REQUIRES}")
 
-CONFIGURE_FILE( orocos-ocl.pc.in orocos-ocl-${OROCOS_TARGET}.pc @ONLY)
+CONFIGURE_FILE( ${PROJ_SOURCE_DIR}/ocl/ocl-config.h.in ${PROJ_BINARY_DIR}/ocl/ocl-config.h @ONLY)
+CONFIGURE_FILE( ${PROJ_SOURCE_DIR}/orocos-ocl.pc.in ${PROJ_BINARY_DIR}/orocos-ocl-${OROCOS_TARGET}.pc @ONLY)
 INSTALL_FILES( /lib/pkgconfig FILES orocos-ocl-${OROCOS_TARGET}.pc)
 
 #MESSAGE("Selected dirs: $ENV{SELECTED_DIRS}")
