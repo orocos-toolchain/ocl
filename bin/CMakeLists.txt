@@ -13,7 +13,7 @@ ENDIF ( BUILD_TASKBROWSER AND BUILD_DEPLOYMENT)
 IF ( BUILD_TASKBROWSER AND CORBA_ENABLED)
 
     ADD_EXECUTABLE( ctaskbrowser-${OROCOS_TARGET} ctaskbrowser.cpp )
-    PROGRAM_ADD_DEPS( ctaskbrowser-${OROCOS_TARGET} orocos-taskbrowser )
+    PROGRAM_ADD_DEPS( ctaskbrowser-${OROCOS_TARGET} orocos-taskbrowser orocos-deployment )
     TARGET_LINK_LIBRARIES( ctaskbrowser-${OROCOS_TARGET} ${OROCOS_RTT_LIBS} ${OROCOS_RTT_CORBA_LIBS} )
     INSTALL_TARGETS( /bin ctaskbrowser-${OROCOS_TARGET} )
 
