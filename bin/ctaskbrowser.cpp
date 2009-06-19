@@ -29,6 +29,7 @@
 #include <rtt/corba/ControlTaskProxy.hpp>
 #include <rtt/corba/ControlTaskServer.hpp>
 #include <taskbrowser/TaskBrowser.hpp>
+#include <deployment/DeploymentComponent.hpp>
 #include <iostream>
 #include <string>
 
@@ -59,6 +60,9 @@ int ORO_main(int argc, char** argv)
         std::cerr << "CORBA system error while looking up " << name << std::endl;
         return -1;
     }
+
+    // we're not exposing it, just using it to load plugins.
+    OCL::DeploymentComponent dc("Deployer");
     OCL::TaskBrowser tb( proxy );
     tb.loop();
 
