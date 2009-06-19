@@ -143,9 +143,50 @@
 	</itemizedlist>
       </para>
       <para>
-	For all three programs, use the <option>--help</option> command line
-	option to see all accepted program options.
+	The complete list of options for the deployer, cdeployer and 
+	deployer-corba programs are:
+	<itemizedlist>
+	  <listitem><para><command>--help</command>Show program usage</para>
+	  </listitem>
+	  <listitem><para><command>--start xml-file</command> (also -s) Deploy the
+	  <emphasis>xml-file</emphasis>.</para></listitem>
+	  <listitem><para><command>--log-level level</command> (also -l) Sets the 
+		  Orocos log level to <emphasis>level</emphasis>. The level parameter 
+		  should be one of: Never, Fatal, Critical, Error, Warning, Info, 
+		  Debug, or Realtime. The parameter is case-insensitive. Warning: this 
+		  <emphasis>overrides</emphasis> the ORO_LOGLEVEL environment 
+		  variable.</para></listitem>
+	  <listitem><para><command>--no-consolelog</command> Turn off logging to
+		  the console (will still log to 'orocos.log')</para></listitem>
+	  <listitem><para><command>--DeployerName deployer-name</command> Name of 
+		  deployer component (the --DeployerName flag is optional)</para></listitem>
+	</itemizedlist>
       </para>
+	  <para>Additionally, any CORBA options can be passed through these programs
+	  by adding a "--" command line option, followed by the CORBA-specific
+	  options.
+	  </para>
+	  <para>
+	  Some examples are
+	  <programlisting>
+  deployer-corba --log-level warning -s myfile.xml
+	  </programlisting>
+	  Sets the Orocos log level to <function>warning</function> and deploys
+	  file <function>myfile.xml</function>
+
+	  <programlisting>
+  deployer-corba -l fatal --no-consolelog -s leftfile.xml LeftDeployer
+	  </programlisting>
+	  Sets the Orocos log level to <function>fatal</function>, turns off all
+	  logging to console, names the deployer <function>LeftDeployer</function>
+	  and deploys file <function>leftfile.xml</function>
+
+	  <programlisting>
+  deployer-corba -l fatal --no-consolelog -s leftfile.xml LeftDeployer -- -ORBInitRef NameService=corbaloc:iiop:me.mine.home:2809/NameService -ORBFooBar 1
+	  </programlisting>
+	  As with the previous example, and also passes some options through to the
+	  CORBA layer.
+	  </para>
     </section>
   </section>
   <section>
