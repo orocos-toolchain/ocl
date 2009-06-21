@@ -827,7 +827,7 @@ namespace OCL
             std::string connection_name = it->first;
 
             if ( connection->ports.size() == 1 ){
-                log(Warning) << "Can not form connection "<<connection_name<<" with only one Port from "<< connection->owners[0]<< endlog();
+                log(Warning) << "Can not form connection "<<connection_name<<" with only one Port from "<< connection->owners[0]->getName()<< endlog();
                 continue;
             }
             // first find a write and a read port.
