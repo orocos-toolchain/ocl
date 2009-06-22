@@ -34,7 +34,7 @@ IF (DOC_BUILD_DOCS)
   ANY_TO_PNG( RESULT_PNGS ${HR_PNGS} ${PNGS} ${DIAS} ${SVGS} ${ICONS} )
 
   ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/xml/orocos-html.css
-	 COMMAND cp -a ${CMAKE_CURRENT_SOURCE_DIR}/orocos-html.css ${CMAKE_CURRENT_BINARY_DIR}/xml/orocos-html.css
+	 COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/orocos-html.css ${CMAKE_CURRENT_BINARY_DIR}/xml/orocos-html.css
 	 DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/orocos-html.css
 	 )
 
