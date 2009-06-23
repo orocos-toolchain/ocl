@@ -19,7 +19,7 @@
 
 #include "CartesianVelocityController.hpp"
 #include <kdl/kinfam_io.hpp>
-#include <kdl/chainiksolvervel_pinv_boost_givens.hpp>
+#include <kdl/chainiksolvervel_pinv_givens.hpp>
 #include <kdl/chainiksolvervel_pinv.hpp>
 #include <kdl/chainfksolverpos_recursive.hpp>
 
