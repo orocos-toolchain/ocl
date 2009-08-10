@@ -1,11 +1,11 @@
 /***************************************************************************
-  tag: Peter Soetens  Mon Jan 19 14:11:20 CET 2004  CANDeviceInterface.hpp
+ tag: Peter Soetens  Mon Jan 19 14:11:20 CET 2004  CANDeviceInterface.hpp
 
-                        CANDeviceInterface.hpp -  description
-                           -------------------
-    begin                : Mon January 19 2004
-    copyright            : (C) 2004 Peter Soetens
-    email                : peter.soetens@mech.kuleuven.ac.be
+ CANDeviceInterface.hpp -  description
+ -------------------
+ begin                : Mon January 19 2004
+ copyright            : (C) 2004 Peter Soetens
+ email                : peter.soetens@mech.kuleuven.ac.be
 
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
@@ -29,66 +29,46 @@
 #define CANDEVICEINTERFACE_HPP
 
 namespace RTT
-{namespace CAN
 {
-    class CANMessage;
-
-    /**
-     * A CANListenerInterface instance receives any message posted on the CAN bus.
-     * It is protocol independent.
-     */
-    struct CANListenerInterface
+    namespace CAN
     {
-        virtual ~CANListenerInterface() {}
-
-		/**
-		 * This method instructs the CANDeviceInterface instance to process a
-         * certain CANMessage. You are not the owner of \a msg.
-		 *
-		 * @param msg The message to be processed by this instance.
-         * @invariant Only this may be removed from the CANBusInterface during process.
-		 */
-        virtual void process(const CANMessage* msg) = 0;
-    };
-
-	/**
-	 * An interface describing a generic CANOpenDevice.
-     * This can be the controller or a normal slave.
-     * CANOpen devices on a CANOpenBus receive only CANMessage objects
-     * for their node id.
-     * @see CANOpenBus for message delivery between your CANOpen devices.
-     * @see CANMessage for (de-)composing messages.
-	 */
-	struct CANDeviceInterface
-        : public CANListenerInterface
-    {
-        /**
-         * A CANDevice is in the PowerOff status
-         * after construction.
-         */
-        CANDeviceInterface()
-            : status( PowerOff ) {}
-        virtual ~CANDeviceInterface() {}
+        class CANMessage;
 
         /**
-         * Returns the node ID of this device.
+         * A CANListenerInterface instance receives any message posted on the CAN bus.
+         * It is protocol independent.
          */
-        virtual unsigned int nodeId() const = 0;
+        struct CANListenerInterface
+        {
+            virtual ~CANListenerInterface()
+            {
+            }
+
+            /**
+             * This method instructs the CANDeviceInterface instance to process a
+             * certain CANMessage. You are not the owner of \a msg.
+             *
+             * @param msg The message to be processed by this instance.
+             * @invariant Only this may be removed from the CANBusInterface during process.
+             */
+            virtual void process(const CANMessage* msg) = 0;
+        };
 
         /**
-         * The CANOpen State Diagram of a Device.
+         * An interface describing a generic CANDevice.
+         * This can be the controller or a normal slave.
+         * CAN devices on a CANBus receive only CANMessage objects
+         * for their node id.
+         * @see CANBus for message delivery between your CAN devices.
+         * @see CANMessage for (de-)composing messages.
          */
-        enum NodeStatus { PowerOff, Initialisation, PreOperational, Stopped, Operational };
+        struct CANDeviceInterface: public CANListenerInterface
+        {
 
-        /**
-         * The state of this device.
-         */
-        NodeStatus status;
-	};
+        };
 
-}}
-
+    }
+}
 
 #endif
-
 

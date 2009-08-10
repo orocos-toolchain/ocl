@@ -1,11 +1,11 @@
 /***************************************************************************
-  tag: Peter Soetens  Mon Jan 19 14:11:20 CET 2004  SyncWriter.hpp
+ tag: Peter Soetens  Mon Jan 19 14:11:20 CET 2004  SyncWriter.hpp
 
-                        SyncWriter.hpp -  description
-                           -------------------
-    begin                : Mon January 19 2004
-    copyright            : (C) 2004 Peter Soetens
-    email                : peter.soetens@mech.kuleuven.ac.be
+ SyncWriter.hpp -  description
+ -------------------
+ begin                : Mon January 19 2004
+ copyright            : (C) 2004 Peter Soetens
+ email                : peter.soetens@mech.kuleuven.ac.be
 
  ***************************************************************************
  *   This library is free software; you can redistribute it and/or         *
@@ -30,25 +30,44 @@
 
 #include "CAN.hpp"
 #include <rtt/RunnableInterface.hpp>
-#include "CANOpenBus.hpp"
+#include "CANBus.hpp"
 
 namespace RTT
-{namespace CAN
 {
-    /**
-     * A class which writes a sync message to the bus when
-     * it is run.
-     */
-    class SyncWriter
-        : public RunnableInterface
+    namespace CAN
     {
-        CANOpenBus* bus;
-    public:
-        SyncWriter( CANOpenBus* _bus) : bus(_bus) {}
-        bool initialize() { return true; }
-        void step() { bus->sync(); }
-        void finalize() {}
-    };
-}}
+        /**
+         * A class which writes a sync message to the bus when
+         * it is run.
+         */
+        class SyncWriter: public RunnableInterface
+        {
+            CANMessage syncMsg;
+            CANBus* bus;
+        public:
+            SyncWriter(CANBus* _bus) :
+                bus(_bus)
+            {
+                syncMsg.setStdId(0x80);
+            }
+            bool initialize()
+            {
+                return true;
+            }
+            void step()
+            {
+                bus->sync();
+            }
+            void finalize()
+            {
+            }
+            void sync()
+            {
+                bus->write(&syncMsg);
+            }
+
+        };
+    }
+}
 
 #endif

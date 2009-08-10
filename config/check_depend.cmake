@@ -28,6 +28,15 @@ ELSE ( CANLIB )
     MESSAGE("-- Looking for canlib - not found")
 ENDIF ( CANLIB )
 
+# Look for can.h
+FIND_PATH( SOCKETLIB linux/can.h )
+IF ( SOCKETLIB )
+    MESSAGE("-- Looking for can.h - found")
+    INCLUDE_DIRECTORIES(${SOCKETLIB})
+ELSE ( SOCKETLIB )
+    MESSAGE("-- Looking for can.h - not found")
+ENDIF ( SOCKETLIB )
+
 # Check for Qt
 INCLUDE (${CMAKE_ROOT}/Modules/FindQt4.cmake)
 # we do NOT want 4.0.x

@@ -26,6 +26,19 @@
  ***************************************************************************/
 
 #include <rtt/RTT.hpp>
+#include "CANBus.hpp"
+#include "CANBusInterface.hpp"
+#include "CANConfigurator.hpp"
+#include "CANControllerInterface.hpp"
+#include "CANDeviceInterface.hpp"
+#include "CANDeviceRegistrator.hpp"
+#include "CANMessage.hpp"
+#include "CANBus.hpp"
+#include "CANPieController.hpp"
+#include "CANRequest.hpp"
+#include "NodeGuard.hpp"
+#include "PCANController.hpp"
+#include "SyncWriter.hpp"
 
 namespace RTT
 {
