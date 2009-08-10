@@ -25,14 +25,24 @@ LIST( GET OCL_VERSIONS 1 OCL_VERSION_MINOR)
 LIST( GET OCL_VERSIONS 2 OCL_VERSION_PATCH)
 MESSAGE( "Orocos Component Library version ${VERSION} (${OCL_VERSION_MAJOR}.${OCL_VERSION_MINOR}.${OCL_VERSION_PATCH})" )
 
+SET( PROJ_SOURCE_DIR ${orocos-ocl_SOURCE_DIR} )
+SET( PROJ_BINARY_DIR ${orocos-ocl_BINARY_DIR} )
+
+# Load the optional orocos-ocl.cmake file.
+INCLUDE(${PROJ_SOURCE_DIR}/orocos-ocl.cmake OPTIONAL)
+if (NOT EXISTS ${PROJ_SOURCE_DIR}/orocos-ocl.cmake)
+  # Setup the default settings
+  INCLUDE(${PROJ_SOURCE_DIR}/orocos-ocl.default.cmake)
+  MESSAGE(
+    "No orocos-ocl.cmake file loaded, using default settings."
+    "See orocos-ocl.default.cmake")
+endif ()
+
 # Do not rely on environment variables to find the path, because that's confusing
 IF(NOT CMAKE_INSTALL_PREFIX)
   SET( CMAKE_INSTALL_PREFIX /usr/local CACHE PATH "Installation directory" FORCE)
   MESSAGE( "Setting installation directory to ${CMAKE_INSTALL_PREFIX}" )
 ENDIF(NOT CMAKE_INSTALL_PREFIX)
-
-SET( PROJ_SOURCE_DIR ${orocos-ocl_SOURCE_DIR} )
-SET( PROJ_BINARY_DIR ${orocos-ocl_BINARY_DIR} )
 
 IF(NOT OROCOS_INSTALL)
   SET( OROCOS_INSTALL ${CMAKE_INSTALL_PREFIX} CACHE PATH "The RTT installation directory.")
