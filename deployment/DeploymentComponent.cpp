@@ -89,7 +89,6 @@ namespace OCL
         this->properties()->addProperty( &compPath );
         this->properties()->addProperty( &autoUnload );
         this->properties()->addProperty( &target );
-        this->properties()->addProperty( &siteFile );
 
         this->attributes()->addAttribute( &validConfig );
         this->attributes()->addAttribute( &sched_RT );
