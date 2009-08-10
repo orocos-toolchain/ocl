@@ -224,8 +224,8 @@ namespace OCL
 
         // Check for 'Deployer-site.cpf' XML file.
         if (siteFile.empty())
-            siteFile = this->getName()  "-site.cpf";
-        std::ifstream hassite(siteFile);
+            siteFile = this->getName() + "-site.cpf";
+        std::ifstream hassite(siteFile.c_str());
         if ( !hassite ) {
             // if not, just configure
             this->configure();
