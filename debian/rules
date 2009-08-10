@@ -26,41 +26,39 @@ endif
 
 CXXFLAGS = $(CFLAGS)
 
+# allow parallel build using recommended approach from 
+# http://www.de.debian.org/doc/debian-policy/ch-source.html@s-debianrules-options
+#
+# For Bash type:
+#
+# export DEB_BUILD_OPTIONS="parallel=2"
+# svn-buildpackage ...
+#
+ifneq (,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
+	NUMJOBS=$(patsubst parallel=%,%,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
+	MAKE_FLAGS += -j$(NUMJOBS)
+endif
+
 # shared library versions, option 1
 #version=2.0.5
 #major=2
+version=`grep orocos-ocl debian/changelog | head -1 | awk '{print substr($$2,2,length($$2)-2)}'`
+major=`grep orocos-ocl debian/changelog | head -1 | awk '{print substr($$2,2,3)}'`
 # option 2, assuming the library is created as src/.libs/libfoo.so.2.0.5 or so
-version=`find . -name liborocos-ocl*.so.* | awk '{if (match($$0,/[0-9]+\.[0-9]+\.[0-9]+$$/)) print substr($$0,RSTART)}' | head -1`
-major=`find . -name liborocos-ocl*.so.* | awk '{if (match($$0,/\.so\.[0-9]+\.[0-9]+$$/)) print substr($$0,RSTART+4)}' | head -1`
+#version=`find . -name liborocos-ocl*.so.* | awk '{if (match($$0,/[0-9]+\.[0-9]+\.[0-9]+$$/)) print substr($$0,RSTART)}' | head -1`
+#major=`find . -name liborocos-ocl*.so.* | awk '{if (match($$0,/\.so\.[0-9]+\.[0-9]+$$/)) print substr($$0,RSTART+4)}' | head -1`
 
-build.gnulinux.corba/Makefile: configure
+include debian/rules.targets
+
+configure: configure-stamp $(CONFIGURE_TARGETS)
+configure-stamp:
 	dh_testdir
-# Add here commands to configure the package.
-	mkdir -p  build.gnulinux.corba
-	cd build.gnulinux.corba ;  CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="-Wl,-z,defs" cmake -DCMAKE_INSTALL_PREFIX=/usr -DOROCOS_INSTALL=/usr -C $(CURDIR)/debian/CMakeCanComedi.txt -DOROCOS_TARGET:STRING=gnulinux  ..
+	touch configure-stamp
 
-build.lxrt.corba/Makefile: configure
+build: build-stamp $(BUILD_TARGETS)
+build-stamp:  configure
 	dh_testdir
-# Add here commands to configure the package.
-	mkdir -p  build.lxrt.corba
-	cd build.lxrt.corba ;  CFLAGS="$(CFLAGS)" LDFLAGS="-Wl,-z,defs" cmake -DCMAKE_INSTALL_PREFIX=/usr -DOROCOS_INSTALL=/usr -C $(CURDIR)/debian/CMakeCanComedi.txt -DOROCOS_TARGET:STRING=lxrt -DCOMEDI_INSTALL=/usr/realtime  ..
-
-build.xenomai.corba/Makefile: configure
-	dh_testdir
-# Add here commands to configure the package.
-	mkdir -p  build.xenomai.corba
-	cd build.xenomai.corba ;  CFLAGS="$(CFLAGS)" LDFLAGS="-Wl,-z,defs" cmake -DCMAKE_INSTALL_PREFIX=/usr -DOROCOS_INSTALL=/usr -C $(CURDIR)/debian/CMakeCanComedi.txt -DOROCOS_TARGET:STRING=xenomai -DCOMEDI_INSTALL=/usr  ..
-
-
-build: build-stamp
-build-stamp:  build.gnulinux.corba/Makefile build.lxrt.corba/Makefile build.xenomai.corba/Makefile
-	dh_testdir
-
-# Add here commands to compile the package.
-	cd build.gnulinux.corba ; $(MAKE) $(MAKE_FLAGS)
-	cd build.lxrt.corba ; $(MAKE) $(MAKE_FLAGS)
-	cd build.xenomai.corba ; $(MAKE) $(MAKE_FLAGS)
-	touch $@
+	touch build-stamp
 
 clean:
 	dh_testdir
@@ -72,16 +70,10 @@ clean:
 
 	dh_clean 
 
-install: build
+install: build $(INSTALL_TARGETS)
 	dh_testdir
 	dh_testroot
-	dh_clean -k 
 	dh_installdirs
-
-# Add here commands to install the package into debian/tmp
-	cd build.gnulinux.corba ; $(MAKE) DESTDIR=$(CURDIR)/debian/tmp install
-	cd build.lxrt.corba ; $(MAKE) DESTDIR=$(CURDIR)/debian/tmp install
-	cd build.xenomai.corba ; $(MAKE) DESTDIR=$(CURDIR)/debian/tmp install
 
 
 # Build architecture-independent files here.
@@ -95,7 +87,6 @@ binary-arch: build install
 	dh_installchangelogs 
 	dh_installdocs
 	dh_installexamples
-# see orocos-ocl.install file to see what gets installed.
 	dh_install --sourcedir=$(CURDIR)/debian/tmp --list-missing
 #	dh_installmenu
 #	dh_installdebconf	
@@ -108,14 +99,14 @@ binary-arch: build install
 #	dh_installinfo
 	dh_installman
 	dh_link
-	dh_strip --dbg-package=orocos-ocl-dbg
+	dh_strip --dbg-package=orocos-ocl-dbg$(major)
 	dh_compress
 	dh_fixperms
 #	dh_perl
 #	dh_python
-#	dh_makeshlibs
+	dh_makeshlibs
 	dh_installdeb
-	dh_shlibdeps
+	dh_shlibdeps -v 
 	dh_gencontrol
 	dh_md5sums
 	dh_builddeb

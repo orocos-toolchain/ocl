@@ -1,7 +1,136 @@
+
+
+Package: liborocos-ocl-@TARGET@@LIBVER@-dev
+Section: libdevel
+Architecture: any
+Depends: liborocos-ocl-@TARGET@@LIBVER@ (= ${Source-Version}), liborocos-rtt-@TARGET@@LIBVER@-dev ( >= @LIBVER@ ),
+     liborocos-ocl@LIBVER@-dev, libncurses5-dev, libreadline5-dev
+Conflicts: liborocos-ocl-@TARGET@-dev
+Replaces: liborocos-ocl-@TARGET@-dev
+Provides: liborocos-ocl-@TARGET@-dev
+Description: Orocos Component Library development for @TARGET@
+ Orocos Component Library 
+ .
+ Development files.
+
+Package: liborocos-ocl-@TARGET@@LIBVER@
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}
+Description: Orocos Component Library for @TARGET@
+ This package contains the Reporting, TaskBrowser and Deployment
+ components. The included deployer application can be used to
+ load components into an application.
+ .
+ Library and tools.
+
+Package: liborocos-ocl-corba-@TARGET@@LIBVER@-dev
+Section: libdevel
+Architecture: any
+Depends: liborocos-ocl-@TARGET@@LIBVER@-dev (= ${Source-Version}), liborocos-rtt-corba-@TARGET@@LIBVER@-dev ( >= @LIBVER@ )
+Conflicts: liborocos-ocl-corba-@TARGET@-dev
+Replaces: liborocos-ocl-corba-@TARGET@-dev
+Provides: liborocos-ocl-corba-@TARGET@-dev
+Description: Orocos Component Library - CORBA extensions for @TARGET@
+ Orocos Component Library 
+ .
+ Development files.
+
+Package: liborocos-ocl-corba-@TARGET@@LIBVER@
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}
+Description: Orocos Component Library - CORBA extensions for @TARGET@
+ This package contains the Reporting, TaskBrowser and Deployment
+ components. The included deployer application can be used to
+ load components into an application.
+ .
+ Library and tools.
+
+
+Package: liborocos-ocl-io-@TARGET@@LIBVER@-dev
+Section: libdevel
+Architecture: any
+Depends: liborocos-ocl-io-@TARGET@@LIBVER@ (= ${Source-Version}), liborocos-ocl-io@LIBVER@-dev, liborocos-ocl-@TARGET@@LIBVER@-dev
+Conflicts: liborocos-ocl-io-@TARGET@-dev
+Replaces: liborocos-ocl-io-@TARGET@-dev
+Provides: liborocos-ocl-io-@TARGET@-dev
+Description: Orocos hardware IO Component for @TARGET@
+ Development files.
+
+Package: liborocos-ocl-io-@TARGET@@LIBVER@
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}
+Description: Orocos hardware IO Component for @TARGET@
+ Manages digital and analog IO.
+ .
+ Library and tools.
+
+
+Package: liborocos-ocl-comedi-@TARGET@@LIBVER@-dev
+Section: libdevel
+Architecture: any
+Depends: liborocos-ocl-comedi-@TARGET@@LIBVER@ (= ${Source-Version}), liborocos-ocl-comedi@LIBVER@-dev, liborocos-ocl-@TARGET@@LIBVER@-dev, 
+	 liborocos-ocl-io-@TARGET@@LIBVER@-dev, libcomedi-dev
+Conflicts: liborocos-ocl-comedi-@TARGET@-dev 
+Replaces: liborocos-ocl-comedi-@TARGET@-dev 
+Provides: liborocos-ocl-comedi-@TARGET@-dev 
+Description: Orocos Comedi drivers for @TARGET@
+ Development files.
+
+Package: liborocos-ocl-comedi-@TARGET@@LIBVER@
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}
+Description: Orocos Comedi drivers for @TARGET@
+ Maps the comedi devices to Orocos C++ interfaces.
+ .
+ Library and tools.
+
+
+Package: liborocos-ocl-can-@TARGET@@LIBVER@-dev
+Section: libdevel
+Architecture: any
+Depends: liborocos-ocl-can-@TARGET@@LIBVER@ (= ${Source-Version}), liborocos-ocl-can@LIBVER@-dev, liborocos-ocl-@TARGET@@LIBVER@-dev
+Conflicts: liborocos-ocl-can-@TARGET@-dev
+Replaces: liborocos-ocl-can-@TARGET@-dev
+Provides: liborocos-ocl-can-@TARGET@-dev
+Description: Orocos CAN interfaces for @TARGET@
+ Development files.
+
+Package: liborocos-ocl-can-@TARGET@@LIBVER@
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}
+Description: Orocos CAN interfaces for @TARGET@
+ Offers C++ CAN interfaces to the Peak CAN Linux drivers.
+ .
+ Library and tools.
+
+Package: liborocos-ocl-axes-@TARGET@@LIBVER@-dev
+Section: libdevel
+Architecture: any
+Depends: liborocos-ocl-axes-@TARGET@@LIBVER@ (= ${Source-Version}), liborocos-ocl-axes@LIBVER@-dev, liborocos-ocl-@TARGET@@LIBVER@-dev
+Conflicts: liborocos-ocl-axes-@TARGET@-dev
+Replaces: liborocos-ocl-axes-@TARGET@-dev
+Provides: liborocos-ocl-axes-@TARGET@-dev
+Description: Orocos component for axis control for @TARGET@
+ Development files.
+
+Package: liborocos-ocl-axes-@TARGET@@LIBVER@
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}
+Description: Orocos component for axis control for @TARGET@
+ An alternative to the naxes components for controlling N axes independently.
+ .
+ Library and tools.
+
 Package: orocos-ocl-@TARGET@@LIBVER@-bin
 Section: libdevel
 Architecture: any
-Depends: liborocos-ocl-@TARGET@@LIBVER@ (= ${Source-Version}), liborocos-ocl-corba-@TARGET@@LIBVER@, tao-naming
+Depends: liborocos-ocl-@TARGET@@LIBVER@ (= ${Source-Version}), liborocos-ocl-corba-@TARGET@@LIBVER@, tao-naming, ${shlibs:Depends}
 Conflicts: orocos-ocl-@TARGET@-bin
 Replaces: orocos-ocl-@TARGET@-bin 
 Provides: orocos-ocl-@TARGET@-bin
@@ -33,132 +162,3 @@ Description: Orocos Component Library  - All library packages for @TARGET@
  A super package for Orocos Component Library 
  .
  Libraries.
-
-
-Package: liborocos-ocl-@TARGET@@LIBVER@-dev
-Section: libdevel
-Architecture: any
-Depends: liborocos-ocl-@TARGET@@LIBVER@ (= ${Source-Version}), liborocos-rtt-@TARGET@@LIBVER@-dev ( >= @LIBVER@ ),
-     liborocos-ocl@LIBVER@-dev, libncurses5-dev, libreadline5-dev
-Conflicts: liborocos-ocl-@TARGET@-dev
-Replaces: liborocos-ocl-@TARGET@-dev
-Provides: liborocos-ocl-@TARGET@-dev
-Description: Orocos Component Library development for @TARGET@
- Orocos Component Library 
- .
- Development files.
-
-Package: liborocos-ocl-@TARGET@@LIBVER@
-Section: libs
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: Orocos Component Library for @TARGET@
- This package contains the Reporting, TaskBrowser and Deployment
- components. The included deployer application can be used to
- load components into an application.
- .
- Library and tools.
-
-Package: liborocos-ocl-corba-@TARGET@@LIBVER@-dev
-Section: libdevel
-Architecture: any
-Depends: liborocos-ocl-@TARGET@@LIBVER@-dev (= ${Source-Version}), liborocos-rtt-corba-@TARGET@@LIBVER@-dev ( >= @LIBVER@ )
-Conflicts: liborocos-ocl-corba-@TARGET@-dev
-Replaces: liborocos-ocl-corba-@TARGET@-dev
-Provides: liborocos-ocl-corba-@TARGET@-dev
-Description: Orocos Component Library - CORBA extensions for @TARGET@
- Orocos Component Library 
- .
- Development files.
-
-Package: liborocos-ocl-corba-@TARGET@@LIBVER@
-Section: libs
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: Orocos Component Library - CORBA extensions for @TARGET@
- This package contains the Reporting, TaskBrowser and Deployment
- components. The included deployer application can be used to
- load components into an application.
- .
- Library and tools.
-
-
-Package: liborocos-ocl-io-@TARGET@@LIBVER@-dev
-Section: libdevel
-Architecture: any
-Depends: liborocos-ocl-io-@TARGET@@LIBVER@ (= ${Source-Version}), liborocos-ocl-io@LIBVER@-dev, liborocos-ocl-@TARGET@@LIBVER@-dev
-Conflicts: liborocos-ocl-io-@TARGET@-dev
-Replaces: liborocos-ocl-io-@TARGET@-dev
-Provides: liborocos-ocl-io-@TARGET@-dev
-Description: Orocos hardware IO Component for @TARGET@
- Development files.
-
-Package: liborocos-ocl-io-@TARGET@@LIBVER@
-Section: libs
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: Orocos hardware IO Component for @TARGET@
- Manages digital and analog IO.
- .
- Library and tools.
-
-
-Package: liborocos-ocl-comedi-@TARGET@@LIBVER@-dev
-Section: libdevel
-Architecture: any
-Depends: liborocos-ocl-comedi-@TARGET@@LIBVER@ (= ${Source-Version}), liborocos-ocl-comedi@LIBVER@-dev, liborocos-ocl-@TARGET@@LIBVER@-dev, 
-	 liborocos-ocl-io-@TARGET@@LIBVER@-dev, libcomedi-dev
-Conflicts: liborocos-ocl-comedi-@TARGET@-dev 
-Replaces: liborocos-ocl-comedi-@TARGET@-dev 
-Provides: liborocos-ocl-comedi-@TARGET@-dev 
-Description: Orocos Comedi drivers for @TARGET@
- Development files.
-
-Package: liborocos-ocl-comedi-@TARGET@@LIBVER@
-Section: libs
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: Orocos Comedi drivers for @TARGET@
- Maps the comedi devices to Orocos C++ interfaces.
- .
- Library and tools.
-
-
-Package: liborocos-ocl-can-@TARGET@@LIBVER@-dev
-Section: libdevel
-Architecture: any
-Depends: liborocos-ocl-can-@TARGET@@LIBVER@ (= ${Source-Version}), liborocos-ocl-can@LIBVER@-dev, liborocos-ocl-@TARGET@@LIBVER@-dev, libpcan-dev
-Conflicts: liborocos-ocl-can-@TARGET@-dev
-Replaces: liborocos-ocl-can-@TARGET@-dev
-Provides: liborocos-ocl-can-@TARGET@-dev
-Description: Orocos CAN interfaces for @TARGET@
- Development files.
-
-Package: liborocos-ocl-can-@TARGET@@LIBVER@
-Section: libs
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: Orocos CAN interfaces for @TARGET@
- Offers C++ CAN interfaces to the Peak CAN Linux drivers.
- .
- Library and tools.
-
-Package: liborocos-ocl-axes-@TARGET@@LIBVER@-dev
-Section: libdevel
-Architecture: any
-Depends: liborocos-ocl-axes-@TARGET@@LIBVER@ (= ${Source-Version}), liborocos-ocl-axes@LIBVER@-dev, liborocos-ocl-@TARGET@@LIBVER@-dev
-Conflicts: liborocos-ocl-axes-@TARGET@-dev
-Replaces: liborocos-ocl-axes-@TARGET@-dev
-Provides: liborocos-ocl-axes-@TARGET@-dev
-Description: Orocos component for axis control for @TARGET@
- Development files.
-
-Package: liborocos-ocl-axes-@TARGET@@LIBVER@
-Section: libs
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: Orocos component for axis control for @TARGET@
- An alternative to the naxes components for controlling N axes independently.
- .
- Library and tools.
-
