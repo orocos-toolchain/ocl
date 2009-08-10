@@ -56,6 +56,31 @@ namespace OCL
      * application. It allows to create connections between components,
      * load the properties and scripts for components and setup
      * component activities.
+     *
+     * The main idea is to load an XML file as described in the
+     * Deployment Component Manual. It dictates the libraries to load,
+     * the components to create, configure and start. Every aspect of
+     * the XML file can be expressed in a program script as well. If
+     * you want this component to execute a program script, assign it
+     * a periodic activity using either a 'site local' XML script (see below),
+     * or by listing the DeploymentComponent in your main
+     * XML file.
+     *
+     * @section sect-site-local Automatically loading a site local XML file
+     * It is possible to store site local settings in a separate
+     * XML configuration file which will be automatically loaded
+     * when the DeploymentComponent is created. The default name of
+     * this file is 'this->getName() + "-site.cpf"'. It is only looked
+     * for and loaded in the constructor of this class.
+     *
+     * @section sect-conf-depl Configuring the DeploymentComponent itself.
+     * When reading an XML file (for example, when using kickStart() or
+     * loadComponents() ) the DeploymentComponent checks if a section
+     * is devoted to itself by comparing the listed component name with its own
+     * name ( this->getName() ). If it matches, it applies the configuration
+     * instructions to itself in the same manner as it would configure
+     * other components.
+     *
      */
     class OCL_API DeploymentComponent
         : public RTT::TaskContext
@@ -159,7 +184,10 @@ namespace OCL
         std::string libname;
 
         /**
-         * Imports available plugins.
+         * This function imports available plugins from
+         * the path formed by the expression
+         *  @code ComponentPath + "/rtt/"+ Target + "/plugins" @endcode
+         * @return always true.
          */
         bool configureHook();
 
@@ -179,8 +207,33 @@ namespace OCL
          */
         virtual bool componentLoaded(TaskContext* c);
     public:
-        DeploymentComponent(std::string name = "Configurator");
+        /**
+         * Constructs and configures this component.
+         *
+         * The constructor looks for the site local configuration XML
+         * file ('\a name + "-site.cpf"') and if found, kickStart()'s
+         * it. You need to set AutoConf to true in order to force a
+         * call to configureHook(). In case this file is not present
+         * in the current working directory, the component is configured
+         * and is thus constructed in the Stopped state. Using a site file
+         * does not prevent you from kickstarting or loading other XML files
+         * lateron.
+         *
+         * @param name The name of this component. By default: \a Deployer
+         * @param siteFile The site-specific XML file which, if found, will be used
+         * for a site-specific kickStart. If left empty, the value becomes
+         * by default: \a name + \a "-site.cpf"
+         * @see kickStart
+         * @see configureHook
+         */
+        DeploymentComponent(std::string name = "Deployer", std::string siteFile = "");
 
+        /**
+         * Cleans up all configuration related information.
+         * If the property 'AutoUnload' is set to true, it will
+         * also call kickOutAll(), otherwise, the loaded
+         * components are left as-is.
+         */
         ~DeploymentComponent();
 
         TaskContext* myGetPeer(std::string name) {return comps[ name ].instance; }
