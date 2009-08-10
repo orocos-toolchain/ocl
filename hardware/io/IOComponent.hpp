@@ -485,6 +485,37 @@ namespace OCL
         }
 
         /**
+         * @brief Add a complete DigitalInInterface.
+         *
+         * @param name    The base name of the DigitalInputs. Their name will be appended with a number.
+         * @param devicename  The Device to read from.
+         *
+         */
+        bool addDigitalInInterface( const std::string& name, const std::string& devicename)
+        {
+            if ( this->isRunning() )
+                return false;
+
+            DigitalInInterface* input =  DigitalInInterface::nameserver.getObject(devicename);
+            if ( !input ) {
+                log(Error) << "DigitalInput: "<< devicename <<" not found."<<endlog();
+                return false;
+            }
+
+            std::stringstream name_number;
+            for(unsigned int i=0; i != input->nbOfInputs(); ++i) {
+                name_number << name;
+                name_number << i;
+                if ( d_in.count(name_number.str()) )
+                    delete d_in.find(name_number.str())->second;
+                d_in[name_number.str()] = new DigitalInput( input, i );
+                name_number.str("");
+            }
+
+            return true;
+        }
+
+        /**
          * @brief Add a complete DigitalOutInterface.
          *
          * @param name    The base name of the DigitalOutputs. Their name will be appended with a number.
@@ -504,12 +535,36 @@ namespace OCL
 
             std::stringstream name_number;
             for(unsigned int i=0; i != output->nbOfOutputs(); ++i) {
-                name_number.str( name );
+                name_number << name;
                 name_number << i;
                 if ( d_out.count(name_number.str()) )
                     delete d_out.find(name_number.str())->second;
                 d_out[name_number.str()] = new DigitalOutput( output, i );
-                name_number.clear();
+                name_number.str("");
+            }
+
+            return true;
+        }
+
+        /**
+         * @brief Remove a complete DigitalInInterface.
+         *
+         * @param name    The base name of the DigitalInputs to remove.
+         *
+         */
+        bool removeDigitalInInterface( const std::string& name)
+        {
+            if ( this->isRunning() )
+                return false;
+
+            std::stringstream name_number;
+            for(int i=0; i != 128; ++i) { // FIXME: magic number.
+                name_number << name;
+                name_number << i;
+                if ( d_in.count(name_number.str()) )
+                    delete d_in.find(name_number.str())->second;
+                d_in.erase(name_number.str());
+                name_number.str("");
             }
 
             return true;
@@ -528,12 +583,12 @@ namespace OCL
 
             std::stringstream name_number;
             for(int i=0; i != 128; ++i) { // FIXME: magic number.
-                name_number.str( name );
+                name_number << name;
                 name_number << i;
                 if ( d_out.count(name_number.str()) )
                     delete d_out.find(name_number.str())->second;
                 d_out.erase(name_number.str());
-                name_number.clear();
+                name_number.str("");
             }
 
             return true;
