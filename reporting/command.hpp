@@ -46,7 +46,7 @@ namespace TCP
     {
         protected:
             std::vector<Command*> cmds;
-            RTT::OS::MutexRecursive commands;
+            RTT::os::MutexRecursive commands;
             unsigned int parseParameters( std::string& ipt, std::string& cmd, std::string** params );
             Datasender* _parent;
 

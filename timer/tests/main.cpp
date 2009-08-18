@@ -2,8 +2,8 @@
 #include <timer/TimerComponent.hpp>
 #include <taskbrowser/TaskBrowser.hpp>
 
-#include <rtt/NonPeriodicActivity.hpp>
-#include <rtt/PeriodicActivity.hpp>
+#include <rtt/Activity.hpp>
+#include <rtt/Activity.hpp>
 #include <iostream>
 #include <rtt/os/main.h>
 
@@ -12,26 +12,26 @@ using namespace Orocos;
 using namespace RTT;
 
 class TestTaskContext
-    : public TaskContext
+    : public RTT::TaskContext
 {
-    Handle h;
+    RTT::Handle h;
 public:
     TestTaskContext(std::string name)
-        : TaskContext(name, PreOperational)
+        : RTT::TaskContext(name, PreOperational)
     {
     }
 
     bool configureHook()
     {
         log(Info) << this->getName() <<" starts listening for timeout events." << endlog();
-        if (this->getPeer("Timer") )
-            h = this->getPeer("Timer")->events()->setupConnection("timeout").callback(this, &TestTaskContext::callback).handle();
+        if (this->getPeer("os::Timer") )
+            h = this->getPeer("os::Timer")->events()->setupConnection("timeout").callback(this, &TestTaskContext::callback).handle();
 
         h.connect();
         return h.ready();
     }
 
-    void callback(Timer::TimerId id)
+    void callback(os::Timer::TimerId id)
     {
         log(Info) << this->getName() <<" detects timeout for timer " << id << endlog();
     }
@@ -41,18 +41,18 @@ int ORO_main( int argc, char** argv)
 {
     // Set log level more verbose than default,
     // such that we can see output :
-    if ( Logger::log().getLogLevel() < Logger::Info ) {
-        Logger::log().setLogLevel( Logger::Info );
+    if ( RTT::Logger::log().getLogLevel() < RTT::Logger::Info ) {
+        RTT::Logger::log().setLogLevel( RTT::Logger::Info );
         log(Info) << argv[0]
 		      << " manually raises LogLevel to 'Info' (5). See also file 'orocos.log'."<<endlog();
     }
 
 
-    TimerComponent tcomp("Timer");
-    NonPeriodicActivity act(ORO_SCHED_RT, OS::HighestPriority, tcomp.engine() );
+    TimerComponent tcomp("os::Timer");
+    RTT::Activity act(ORO_SCHED_RT, os::HighestPriority, tcomp.engine() );
 
     TestTaskContext gtc("Peer");
-    PeriodicActivity p_act(ORO_SCHED_RT, OS::HighestPriority, 0.1, gtc.engine() );
+    RTT::Activity p_act(ORO_SCHED_RT, os::HighestPriority, 0.1, gtc.engine() );
 
     gtc.addPeer(&tcomp);
 

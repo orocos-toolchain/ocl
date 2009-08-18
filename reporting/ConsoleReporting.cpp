@@ -1,7 +1,7 @@
 
 #include "ConsoleReporting.hpp"
-#include "rtt/Logger.hpp"
-#include "rtt/marsh/TableMarshaller.hpp"
+#include <rtt/Logger.hpp>
+#include "TableMarshaller.hpp"
 #include "NiceHeaderMarshaller.hpp"
 
 #include "ocl/ComponentLoader.hpp"
@@ -22,8 +22,8 @@ namespace OCL
         {
             RTT::Logger::In in("ConsoleReporting::startup");
             if (mconsole) {
-                RTT::Marshaller* fheader;
-                RTT::Marshaller* fbody;
+                RTT::marsh::Marshaller* fheader;
+                RTT::marsh::Marshaller* fbody;
                 if ( this->writeHeader)
                     fheader = new RTT::NiceHeaderMarshaller<std::ostream>( mconsole );
                 else

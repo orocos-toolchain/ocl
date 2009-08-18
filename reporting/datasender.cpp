@@ -29,20 +29,20 @@
 #include <rtt/Logger.hpp>
 #include <rtt/os/Mutex.hpp>
 #include <rtt/Property.hpp>
-#include <rtt/PropertyIntrospection.hpp>
+#include <rtt/base/PropertyIntrospection.hpp>
 #include "socket.hpp"
 #include "socketmarshaller.hpp"
 #include "datasender.hpp"
 #include "command.hpp"
 #include "TcpReporting.hpp"
-#include <rtt/TemplateTypeInfo.hpp>
+#include <rtt/types/TemplateTypeInfo.hpp>
 
 namespace OCL
 {
 namespace TCP
 {
     Datasender::Datasender(RTT::SocketMarshaller* _marshaller, Orocos::TCP::Socket* _os):
-        NonPeriodicActivity(10), os( _os ), marshaller(_marshaller)
+        Activity(10), os( _os ), marshaller(_marshaller)
     {
         limit = 0;
         curframe = 0;

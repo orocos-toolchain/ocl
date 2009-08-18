@@ -4,9 +4,9 @@
 #include <reporting/NetcdfReporting.hpp>
 #include <taskbrowser/TaskBrowser.hpp>
 
-#include <rtt/SlaveActivity.hpp>
-#include <rtt/PeriodicActivity.hpp>
-#include <rtt/Ports.hpp>
+#include <rtt/extras/SlaveActivity.hpp>
+#include <rtt/Activity.hpp>
+#include <rtt/Port.hpp>
 
 using namespace std;
 using namespace Orocos;
@@ -16,16 +16,16 @@ class TestTaskContext
     : public TaskContext
 {
     Property<string> hello;
-    WriteDataPort<char> cwport;
-    WriteDataPort<short> swport;
-    WriteDataPort<int> iwport;
-    WriteDataPort<float> fwport;
-    WriteDataPort<std::vector<double> > dwport;
-    ReadDataPort<char> crport;
-    ReadDataPort<short> srport;
-    ReadDataPort<int> irport;
-    ReadDataPort<float> frport;
-    ReadDataPort<double> drport;  
+    OutputPort<char> cwport;
+    OutputPort<short> swport;
+    OutputPort<int> iwport;
+    OutputPort<float> fwport;
+    OutputPort<std::vector<double> > dwport;
+    InputPort<char> crport;
+    InputPort<short> srport;
+    InputPort<int> irport;
+    InputPort<float> frport;
+    InputPort<double> drport;  
 
 public:
     TestTaskContext(std::string name)
@@ -63,15 +63,15 @@ class TestTaskContext2
     : public TaskContext
 {
     Property<string> hello;
-    WriteDataPort<char> cwport;
-    WriteDataPort<short> swport;
-    WriteDataPort<int> iwport;
-    WriteDataPort<float> fwport;
-    WriteDataPort<double> dwport;
-    ReadDataPort<char> crport;
-    ReadDataPort<short> srport;
-    ReadDataPort<int> irport;
-    ReadDataPort<float> frport;
+    OutputPort<char> cwport;
+    OutputPort<short> swport;
+    OutputPort<int> iwport;
+    OutputPort<float> fwport;
+    OutputPort<double> dwport;
+    InputPort<char> crport;
+    InputPort<short> srport;
+    InputPort<int> irport;
+    InputPort<float> frport;
 
 public:
     TestTaskContext2(std::string name)
@@ -111,7 +111,7 @@ int ORO_main( int argc, char** argv)
     }
 
 
-    PeriodicActivity act(10, 0.1);
+    Activity act(10, 0.1);
     NetcdfReporting rc("Reporting");
     TestTaskContext gtc("MyPeer");
     TestTaskContext2 gtc2("MyPeer2");

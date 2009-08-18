@@ -15,8 +15,8 @@
 #include <rtt/Method.hpp>
 #include <rtt/Command.hpp>
 #include <rtt/Event.hpp>
-#include <rtt/Ports.hpp>
-#include <rtt/PeriodicActivity.hpp>
+#include <rtt/Port.hpp>
+#include <rtt/Activity.hpp>
 
 #include <ocl/OCL.hpp>
 
@@ -28,12 +28,12 @@ namespace OCL
 {
 
     /**
-     * Every component inherits from the 'TaskContext' class.  This base
+     * Every component inherits from the 'RTT::TaskContext' class.  This base
      * class allow a user to add a primitive to the interface and contain
-     * an ExecutionEngine which executes application code.
+     * an RTT::ExecutionEngine which executes application code.
      */
     class HelloWorld
-        : public TaskContext
+        : public RTT::TaskContext
     {
     protected:
         /**
@@ -44,15 +44,15 @@ namespace OCL
          * Properties take a name, a value and a description
          * and are suitable for XML.
          */
-        Property<std::string> property;
+        RTT::Property<std::string> property;
         /**
          * Attributes take a name and contain changing values.
          */
-        Attribute<std::string> attribute;
+        RTT::Attribute<std::string> attribute;
         /**
          * Constants take a name and contain a constant value.
          */
-        Constant<std::string> constant;
+        RTT::Constant<std::string> constant;
         /** @} */
 
         /**
@@ -60,19 +60,18 @@ namespace OCL
          * @{
          */
         /**
-         * DataPorts share data among readers and writers.
-         * A reader always reads the most recent data.
+         * We publish our data through this RTT::OutputPort
+         *
          */
-        DataPort<std::string> dataport;
+        RTT::OutputPort<std::string> outport;
         /**
-         * BufferPorts buffer data among readers and writers.
-         * A reader reads the data in a FIFO way.
+         * This RTT::InputPort buffers incoming data.
          */
-        BufferPort<std::string> bufferport;
+        RTT::InputPort<std::string> bufferport;
         /** @} */
 
         /**
-         * @name Method
+         * @name RTT::Method
          * @{
          */
         /**
@@ -80,11 +79,11 @@ namespace OCL
          * return a value. The are executed in the
          * thread of the caller.
          */
-        Method<std::string(void)> method;
+        RTT::Method<std::string(void)> method;
 
         /**
-         * The method function is executed by
-         * the method object:
+         * The interface::method function is executed by
+         * the interface::method object:
          */
         std::string mymethod() {
             return "Hello World";
@@ -92,7 +91,7 @@ namespace OCL
         /** @} */
 
         /**
-         * @name Command
+         * @name RTT::Command
          * @{
          */
         /**
@@ -100,13 +99,13 @@ namespace OCL
          * return true or false. They are asynchronous
          * and executed in the thread of the receiver.
          */
-        Command<bool(std::string)> command;
+        RTT::Command<bool(std::string)> command;
 
         /**
          * The command function executed by the receiver.
          */
         bool mycommand(std::string arg) {
-            log() << "Hello Command: "<< arg << endlog();
+            log() << "Hello RTT::Command: "<< arg << endlog();
             if ( arg == "World" )
                 return true;
             else
@@ -117,13 +116,13 @@ namespace OCL
          * The completion condition checked by the sender.
          */
         bool mycomplete(std::string arg) {
-            log() << "Checking Command: "<< arg <<endlog();
+            log() << "Checking RTT::Command: "<< arg <<endlog();
             return true;
         }
         /** @} */
 
         /**
-         * @name Event
+         * @name RTT::Event
          * @{
          */
         /**
@@ -131,23 +130,23 @@ namespace OCL
          * to anonymous receivers. Distribution can happen
          * synchronous and asynchronous.
          */
-        Event<void(std::string)> event;
+        RTT::Event<void(std::string)> event;
 
         /**
          * Stores the connection between 'event' and 'mycallback'.
          */
-        Handle h;
+        RTT::Handle h;
 
         /**
          * An event callback (or subscriber) function.
          */
         void mycallback( std::string data )
         {
-            log() << "Receiving Event: " << data << endlog();
+            log() << "Receiving RTT::Event: " << data << endlog();
         }
         /** @} */
 
-        PeriodicActivity act;
+        RTT::Activity act;
 
     public:
         /**
@@ -155,7 +154,7 @@ namespace OCL
          * of the component.
          */
         HelloWorld(std::string name)
-            : TaskContext(name),
+            : RTT::TaskContext(name),
               // Name, description, value
               property("the_property", "the_property Description", "Hello World"),
               // Name, value
@@ -163,9 +162,9 @@ namespace OCL
               // Name, value
               constant("the_constant", "Hello World"),
               // Name, initial value
-              dataport("the_data_port","World"),
-              // Name, buffer size, initial value
-              bufferport("the_buffer_port",13, "World"),
+              outport("the_results",true),
+              // Name, policy
+              bufferport("the_buffer_port",internal::ConnPolicy::buffer(13,internal::ConnPolicy::LOCK_FREE,true) ),
               // Name, function pointer, object
               method("the_method", &HelloWorld::mymethod, this),
               // Name, command function pointer, completion condition function pointer, object
@@ -181,8 +180,8 @@ namespace OCL
         {
             // Set log level more verbose than default,
             // such that we can see output :
-            if ( log().getLogLevel() < Logger::Info ) {
-                log().setLogLevel( Logger::Info );
+            if ( log().getLogLevel() < RTT::Logger::Info ) {
+                log().setLogLevel( RTT::Logger::Info );
                 log(Info) << "HelloWorld manually raises LogLevel to 'Info' (5). See also file 'orocos.log'."<<endlog();
             }
 
@@ -200,7 +199,7 @@ namespace OCL
             this->attributes()->addAttribute(&attribute);
             this->attributes()->addConstant(&constant);
 
-            this->ports()->addPort(&dataport);
+            this->ports()->addPort(&outport);
             this->ports()->addPort(&bufferport);
 
             this->methods()->addMethod(&method, "'the_method' Description");
@@ -230,12 +229,12 @@ namespace OCL
 
 int ORO_main(int argc, char** argv)
 {
-    Logger::In in("main()");
+    RTT::Logger::In in("main()");
 
     // Set log level more verbose than default,
     // such that we can see output :
-    if ( log().getLogLevel() < Logger::Info ) {
-        log().setLogLevel( Logger::Info );
+    if ( log().getLogLevel() < RTT::Logger::Info ) {
+        log().setLogLevel( RTT::Logger::Info );
         log(Info) << argv[0] << " manually raises LogLevel to 'Info' (5). See also file 'orocos.log'."<<endlog();
     }
 
@@ -246,23 +245,23 @@ int ORO_main(int argc, char** argv)
     log(Info) << "**** Using the 'Hello' component    ****" <<endlog();
 
     // Do some 'client' calls :
-    log(Info) << "**** Reading a Property:            ****" <<endlog();
-    Property<std::string> p = hello.properties()->getProperty<std::string>("the_property");
+    log(Info) << "**** Reading a RTT::Property:            ****" <<endlog();
+    RTT::Property<std::string> p = hello.properties()->getProperty<std::string>("the_property");
     assert( p.ready() );
     log(Info) << "     "<<p.getName() << " = " << p.value() <<endlog();
 
-    log(Info) << "**** Sending a Command:             ****" <<endlog();
-    Command<bool(std::string)> c = hello.commands()->getCommand<bool(std::string)>("the_command");
+    log(Info) << "**** Sending a RTT::Command:             ****" <<endlog();
+    RTT::Command<bool(std::string)> c = hello.commands()->getCommand<bool(std::string)>("the_command");
     assert( c.ready() );
-    log(Info) << "     Sending Command : " << c("World")<<endlog();
+    log(Info) << "     Sending RTT::Command : " << c("World")<<endlog();
 
-    log(Info) << "**** Calling a Method:              ****" <<endlog();
-    Method<std::string(void)> m = hello.methods()->getMethod<std::string(void)>("the_method");
+    log(Info) << "**** Calling a RTT::Method:              ****" <<endlog();
+    RTT::Method<std::string(void)> m = hello.methods()->getMethod<std::string(void)>("the_method");
     assert( m.ready() );
-    log(Info) << "     Calling Method : " << m() << endlog();
+    log(Info) << "     Calling RTT::Method : " << m() << endlog();
 
-    log(Info) << "**** Emitting an Event:             ****" <<endlog();
-    Event<void(std::string)> e = hello.events()->getEvent<void(std::string)>("the_event");
+    log(Info) << "**** Emitting an RTT::Event:             ****" <<endlog();
+    RTT::Event<void(std::string)> e = hello.events()->getEvent<void(std::string)>("the_event");
     assert( e.ready() );
 
     e("Hello World");

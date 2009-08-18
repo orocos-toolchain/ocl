@@ -29,7 +29,7 @@
 #define HMI_CONSOLE_OUTPUT_HPP
 
 #include <rtt/TaskContext.hpp>
-#include <rtt/PeriodicActivity.hpp>
+#include <rtt/Activity.hpp>
 #include <rtt/Method.hpp>
 #include <rtt/Logger.hpp>
 #include <rtt/os/MutexLock.hpp>
@@ -59,12 +59,12 @@ namespace OCL
         std::ostringstream logmessages;
         std::ostringstream logbackup;
 
-        RTT::OS::Mutex msg_lock;
-        RTT::OS::Mutex log_lock;
+        RTT::os::Mutex msg_lock;
+        RTT::os::Mutex log_lock;
 
     public :
         HMIConsoleOutput( const std::string& name = "cout")
-            : TaskContext( name ),
+            : RTT::TaskContext( name ),
               coloron("\033[1;34m"), coloroff("\033[0m"),
               _prompt("HMIConsoleOutput :\n")
         {
@@ -113,7 +113,7 @@ namespace OCL
         void updateHook()
         {
             {
-                RTT::OS::MutexLock lock1( msg_lock );
+                RTT::os::MutexLock lock1( msg_lock );
                 if ( ! messages.str().empty() ) {
                     std::cout << coloron << _prompt<< coloroff <<
                         messages.str() << std::endl;
@@ -121,7 +121,7 @@ namespace OCL
                 }
             }
             {
-                RTT::OS::MutexLock lock1( log_lock );
+                RTT::os::MutexLock lock1( log_lock );
                 if ( ! logmessages.str().empty() ) {
                     RTT::log(RTT::Info) << logmessages.str() << RTT::endlog();
                     logmessages.rdbuf()->str("");
@@ -168,7 +168,7 @@ namespace OCL
         template<class T>
         void enqueue( const T& what )
         {
-            RTT::OS::MutexTryLock try_lock( msg_lock );
+            RTT::os::MutexTryLock try_lock( msg_lock );
             if ( try_lock.isSuccessful() ) {
                 // we got the lock, copy everything...
                 messages << backup.str();
@@ -209,7 +209,7 @@ namespace OCL
         template<class T>
         void dolog( const T& what )
         {
-            RTT::OS::MutexTryLock try_lock( log_lock );
+            RTT::os::MutexTryLock try_lock( log_lock );
             if ( try_lock.isSuccessful() ) {
                 // we got the lock, copy everything...
                 logmessages << logbackup.str();

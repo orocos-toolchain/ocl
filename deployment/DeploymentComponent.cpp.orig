@@ -29,15 +29,14 @@
 
 #include <rtt/RTT.hpp>
 #include "DeploymentComponent.hpp"
-#include <rtt/extras/Activities.hpp>
+#include <rtt/Activities.hpp>
 #include <rtt/marsh/PropertyMarshaller.hpp>
 #include <rtt/marsh/PropertyDemarshaller.hpp>
-#include <rtt/Method.hpp>
 
 #include <cstdio>
 #include <dlfcn.h>
 #include "ocl/ComponentLoader.hpp"
-#include <rtt/interface/PropertyLoader.hpp>
+#include <rtt/PropertyLoader.hpp>
 
 #undef _POSIX_C_SOURCE
 #include <sys/types.h>
@@ -81,8 +80,8 @@ namespace OCL
           validConfig("Valid", false),
           sched_RT("ORO_SCHED_RT", ORO_SCHED_RT ),
           sched_OTHER("ORO_SCHED_OTHER", ORO_SCHED_OTHER ),
-          lowest_Priority("LowestPriority", RTT::os::LowestPriority ),
-          highest_Priority("HighestPriority", RTT::os::HighestPriority ),
+          lowest_Priority("LowestPriority", RTT::OS::LowestPriority ),
+          highest_Priority("HighestPriority", RTT::OS::HighestPriority ),
           target("Target",
                  "The Orocos Target component suffix. Will be used in import statements to find matching components. Only change this if you know what you are doing.",
                  ORO_str(OROCOS_TARGET) )
@@ -166,7 +165,7 @@ namespace OCL
         typedef bool(DeploymentComponent::*DC4Fun)(const std::string&, const std::string&,
                                                    const std::string&, const std::string&);
         DC4Fun cp4 = &DeploymentComponent::connectPorts;
-        this->methods()->addMethod( RTT::method("connectInputPorts", cp4, this),
+        this->methods()->addMethod( RTT::method("connectDataPorts", cp4, this),
                                     "Connect two data ports of Components known to this Component.",
                                     "One", "The first component.","Two", "The second component.",
                                     "PortOne", "The port name of the first component.",
@@ -176,19 +175,19 @@ namespace OCL
                                     "Add a peer to a Component.",
                                     "From", "The first component.","To", "The other component.");
         typedef void(DeploymentComponent::*RPFun)(const std::string&);
-        RPFun rp = &RTT::TaskContext::removePeer;
+        RPFun rp = &TaskContext::removePeer;
         this->methods()->addMethod( RTT::method("removePeer", rp, this),
                                     "Remove a peer from this Component.",
                                     "PeerName", "The name of the peer to remove.");
 
-        this->methods()->addMethod( RTT::method("setActivity", &DeploymentComponent::setPeriodicActivity, this),
+        this->methods()->addMethod( RTT::method("setPeriodicActivity", &DeploymentComponent::setPeriodicActivity, this),
                                     "Attach a periodic activity to a Component.",
                                     "CompName", "The name of the Component.",
                                     "Period", "The period of the activity.",
                                     "Priority", "The priority of the activity.",
                                     "SchedType", "The scheduler type of the activity."
                                     );
-        this->methods()->addMethod( RTT::method("setActivity", &DeploymentComponent::setNonPeriodicActivity, this),
+        this->methods()->addMethod( RTT::method("setNonPeriodicActivity", &DeploymentComponent::setNonPeriodicActivity, this),
                                     "Attach a non periodic activity to a Component.",
                                     "CompName", "The name of the Component.",
                                     "Priority", "The priority of the activity.",
@@ -219,14 +218,14 @@ namespace OCL
         valid_names.insert("StateMachineScript");
         valid_names.insert("Ports");
         valid_names.insert("Peers");
-        valid_names.insert("RTT::Activity");
+        valid_names.insert("Activity");
         valid_names.insert("Master");
         valid_names.insert("Properties");
 
         // Check for 'Deployer-site.cpf' XML file.
         if (siteFile.empty())
-            siteFile = this->getName() + "-site.cpf";
-        std::ifstream hassite(siteFile.c_str());
+            siteFile = this->getName()  "-site.cpf";
+        std::ifstream hassite(siteFile);
         if ( !hassite ) {
             // if not, just configure
             this->configure();
@@ -251,7 +250,7 @@ namespace OCL
         return true;
     }
 
-    bool DeploymentComponent::componentLoaded(RTT::TaskContext* c) { return true; }
+    bool DeploymentComponent::componentLoaded(TaskContext* c) { return true; }
 
     DeploymentComponent::~DeploymentComponent()
     {
@@ -263,9 +262,9 @@ namespace OCL
 
     bool DeploymentComponent::connectPeers(const std::string& one, const std::string& other)
     {
-        RTT::Logger::In in("DeploymentComponent::connectPeers");
-        RTT::TaskContext* t1 = this->getPeer(one);
-        RTT::TaskContext* t2 = this->getPeer(other);
+        Logger::In in("DeploymentComponent::connectPeers");
+        TaskContext* t1 = this->getPeer(one);
+        TaskContext* t2 = this->getPeer(other);
         if (!t1) {
             log(Error)<< "No such peer: "<<one<<endlog();
             return false;
@@ -279,9 +278,9 @@ namespace OCL
 
     bool DeploymentComponent::addPeer(const std::string& from, const std::string& to)
     {
-        RTT::Logger::In in("DeploymentComponent::addPeer");
-        RTT::TaskContext* t1 = this->getPeer(from);
-        RTT::TaskContext* t2 = this->getPeer(to);
+        Logger::In in("DeploymentComponent::addPeer");
+        TaskContext* t1 = this->getPeer(from);
+        TaskContext* t2 = this->getPeer(to);
         if (!t1) {
             log(Error)<< "No such peer: "<<from<<endlog();
             return false;
@@ -295,8 +294,8 @@ namespace OCL
 
     bool DeploymentComponent::connectPorts(const std::string& one, const std::string& other)
     {
-	RTT::Logger::In in("DeploymentComponent::connectPorts");
-        RTT::TaskContext* a, *b;
+	Logger::In in("DeploymentComponent::connectPorts");
+        TaskContext* a, *b;
         a = getPeer(one);
         b = getPeer(other);
         if ( !a ) {
@@ -314,8 +313,8 @@ namespace OCL
     bool DeploymentComponent::connectPorts(const std::string& one, const std::string& one_port,
                                            const std::string& other, const std::string& other_port)
     {
-	RTT::Logger::In in("DeploymentComponent::connectPorts");
-        RTT::TaskContext* a, *b;
+	Logger::In in("DeploymentComponent::connectPorts");
+        TaskContext* a, *b;
         a = getPeer(one);
         b = getPeer(other);
         if ( !a ) {
@@ -326,7 +325,7 @@ namespace OCL
             log(Error) << other <<" could not be found."<< endlog();
             return false;
         }
-        base::PortInterface* ap, *bp;
+        PortInterface* ap, *bp;
         ap = a->ports()->getPort(one_port);
         bp = b->ports()->getPort(other_port);
         if ( !ap ) {
@@ -339,8 +338,8 @@ namespace OCL
         }
 
         // Detect already connected ports.
-        if ( ap->connected() && bp->connected() ) {
-            if ( false ) {
+        if ( ap->ready() && bp->ready() ) {
+            if (ap->connection() == bp->connection() ) {
                 log(Info) << "Port '"<< ap->getName() << "' of Component '"<<a->getName()
                           << "' is already connected to port '"<< bp->getName() << "' of Component '"<<b->getName()<<"'."<<endlog();
                 return true;
@@ -351,8 +350,8 @@ namespace OCL
             return false;
         }
 
-        // use the base::PortInterface implementation
-        if ( ap->connectTo( *bp ) ) {
+        // use the PortInterface implementation
+        if ( ap->connectTo( bp ) ) {
             // all went fine.
             log(Info)<< "Connected Port " << ap->getName() << " to peer Task "<< b->getName() <<"." << endlog();
             return true;
@@ -427,15 +426,15 @@ namespace OCL
 
     bool DeploymentComponent::loadComponents(const std::string& configurationfile)
     {
-        RTT::Logger::In in("DeploymentComponent::loadComponents");
+        Logger::In in("DeploymentComponent::loadComponents");
 
-        RTT::PropertyBag from_file;
+        PropertyBag from_file;
         log(Info) << "Loading '" <<configurationfile<<"'."<< endlog();
         // demarshalling failures:
         bool failure = false;
         // semantic failures:
         bool valid = validConfig.get();
-        marsh::PropertyDemarshaller demarshaller(configurationfile);
+        PropertyDemarshaller demarshaller(configurationfile);
         try {
             if ( demarshaller.deserialize( from_file ) )
                 {
@@ -446,11 +445,11 @@ namespace OCL
                         valid = false;
                     }
 
-                    //for (RTT::PropertyBag::Names::iterator it= nams.begin();it != nams.end();it++) {
-                    for (RTT::PropertyBag::iterator it= from_file.begin(); it!=from_file.end();it++) {
+                    //for (PropertyBag::Names::iterator it= nams.begin();it != nams.end();it++) {
+                    for (PropertyBag::iterator it= from_file.begin(); it!=from_file.end();it++) {
                         // Read in global options.
                         if ( (*it)->getName() == "Import" ) {
-                            RTT::Property<std::string> importp = *it;
+                            Property<std::string> importp = *it;
                             if ( !importp.ready() ) {
                                 log(Error)<< "Found 'Import' statement, but it is not of type='string'."<<endlog();
                                 valid = false;
@@ -461,7 +460,7 @@ namespace OCL
                             continue;
                         }
                         if ( (*it)->getName() == "Include" ) {
-                            RTT::Property<std::string> includep = *it;
+                            Property<std::string> includep = *it;
                             if ( !includep.ready() ) {
                                 log(Error)<< "Found 'Include' statement, but it is not of type='string'."<<endlog();
                                 valid = false;
@@ -473,21 +472,21 @@ namespace OCL
                             continue;
                         }
                         // Check if it is a propertybag.
-                        RTT::Property<RTT::PropertyBag> comp = *it;
+                        Property<PropertyBag> comp = *it;
                         if ( !comp.ready() ) {
-                            log(Error)<< "RTT::Property '"<< *it <<"' should be a struct, Include or Import statement." << endlog();
+                            log(Error)<< "Property '"<< *it <<"' should be a struct, Include or Import statement." << endlog();
                             valid = false;
                             continue;
                         }
                         // Parse the options before creating the component:
-                        for (RTT::PropertyBag::const_iterator optit= comp.rvalue().begin(); optit != comp.rvalue().end();optit++) {
+                        for (PropertyBag::const_iterator optit= comp.rvalue().begin(); optit != comp.rvalue().end();optit++) {
                             if ( valid_names.find( (*optit)->getName() ) == valid_names.end() ) {
                                 log(Error) << "Unknown type syntax: '"<< (*optit)->getName() << "' in component struct "<< comp.getName() <<endlog();
                                 valid = false;
                                 continue;
                             }
                             if ( (*optit)->getName() == "AutoConnect" ) {
-                                RTT::Property<bool> ps = comp.rvalue().getProperty<bool>("AutoConnect");
+                                Property<bool> ps = comp.rvalue().getProperty<bool>("AutoConnect");
                                 if (!ps.ready()) {
                                     log(Error) << "AutoConnect must be of type <boolean>" << endlog();
                                     valid = false;
@@ -496,7 +495,7 @@ namespace OCL
                                 continue;
                             }
                             if ( (*optit)->getName() == "AutoStart" ) {
-                                RTT::Property<bool> ps = comp.rvalue().getProperty<bool>("AutoStart");
+                                Property<bool> ps = comp.rvalue().getProperty<bool>("AutoStart");
                                 if (!ps.ready()) {
                                     log(Error) << "AutoStart must be of type <boolean>" << endlog();
                                     valid = false;
@@ -505,7 +504,7 @@ namespace OCL
                                 continue;
                             }
                             if ( (*optit)->getName() == "AutoSave" ) {
-                                RTT::Property<bool> ps = comp.rvalue().getProperty<bool>("AutoSave");
+                                Property<bool> ps = comp.rvalue().getProperty<bool>("AutoSave");
                                 if (!ps.ready()) {
                                     log(Error) << "AutoSave must be of type <boolean>" << endlog();
                                     valid = false;
@@ -514,7 +513,7 @@ namespace OCL
                                 continue;
                             }
                             if ( (*optit)->getName() == "AutoConf" ) {
-                                RTT::Property<bool> ps = comp.rvalue().getProperty<bool>("AutoConf");
+                                Property<bool> ps = comp.rvalue().getProperty<bool>("AutoConf");
                                 if (!ps.ready()) {
                                     log(Error) << "AutoConf must be of type <boolean>" << endlog();
                                     valid = false;
@@ -523,7 +522,7 @@ namespace OCL
                                 continue;
                             }
                             if ( (*optit)->getName() == "Server" ) {
-                                RTT::Property<bool> ps = comp.rvalue().getProperty<bool>("Server");
+                                Property<bool> ps = comp.rvalue().getProperty<bool>("Server");
                                 if (!ps.ready()) {
                                     log(Error) << "Server must be of type <boolean>" << endlog();
                                     valid = false;
@@ -532,7 +531,7 @@ namespace OCL
                                 continue;
                             }
                             if ( (*optit)->getName() == "UseNamingService" ) {
-                                RTT::Property<bool> ps = comp.rvalue().getProperty<bool>("UseNamingService");
+                                Property<bool> ps = comp.rvalue().getProperty<bool>("UseNamingService");
                                 if (!ps.ready()) {
                                     log(Error) << "UseNamingService must be of type <boolean>" << endlog();
                                     valid = false;
@@ -541,7 +540,7 @@ namespace OCL
                                 continue;
                             }
                             if ( (*optit)->getName() == "PropertyFile" ) {
-                                RTT::Property<string> ps = comp.rvalue().getProperty<string>("PropertyFile");
+                                Property<string> ps = comp.rvalue().getProperty<string>("PropertyFile");
                                 if (!ps.ready()) {
                                     log(Error) << "PropertyFile must be of type <string>" << endlog();
                                     valid = false;
@@ -550,7 +549,7 @@ namespace OCL
                                 continue;
                             }
                             if ( (*optit)->getName() == "UpdateProperties" ) {
-                                RTT::Property<string> ps = comp.rvalue().getProperty<string>("UpdateProperties");
+                                Property<string> ps = comp.rvalue().getProperty<string>("UpdateProperties");
                                 if (!ps.ready()) {
                                     log(Error) << "UpdateProperties must be of type <string>" << endlog();
                                     valid = false;
@@ -559,7 +558,7 @@ namespace OCL
                                 continue;
                             }
                             if ( (*optit)->getName() == "LoadProperties" ) {
-                                RTT::Property<string> ps = comp.rvalue().getProperty<string>("LoadProperties");
+                                Property<string> ps = comp.rvalue().getProperty<string>("LoadProperties");
                                 if (!ps.ready()) {
                                     log(Error) << "LoadProperties must be of type <string>" << endlog();
                                     valid = false;
@@ -568,7 +567,7 @@ namespace OCL
                                 continue;
                             }
                             if ( (*optit)->getName() == "Properties" ) {
-                                base::PropertyBase* ps = comp.rvalue().getProperty<RTT::PropertyBag>("Properties");
+                                PropertyBase* ps = comp.rvalue().getProperty<PropertyBag>("Properties");
                                 if (!ps) {
                                     log(Error) << "Properties must be a <struct>" << endlog();
                                     valid = false;
@@ -576,7 +575,7 @@ namespace OCL
                                 continue;
                             }
                             if ( (*optit)->getName() == "ProgramScript" ) {
-                                base::PropertyBase* ps = comp.rvalue().getProperty<string>("ProgramScript");
+                                PropertyBase* ps = comp.rvalue().getProperty<string>("ProgramScript");
                                 if (!ps) {
                                     log(Error) << "ProgramScript must be of type <string>" << endlog();
                                     valid = false;
@@ -584,7 +583,7 @@ namespace OCL
                                 continue;
                             }
                             if ( (*optit)->getName() == "StateMachineScript" ) {
-                                base::PropertyBase* ps = comp.rvalue().getProperty<string>("StateMachineScript");
+                                PropertyBase* ps = comp.rvalue().getProperty<string>("StateMachineScript");
                                 if (!ps) {
                                     log(Error) << "StateMachineScript must be of type <string>" << endlog();
                                     valid = false;
@@ -594,7 +593,7 @@ namespace OCL
                         }
 
                         // Check if we know or are this component.
-                        RTT::TaskContext* c = 0;
+                        TaskContext* c = 0;
                         if ( (*it)->getName() == this->getName() )
                             c = this;
                         else
@@ -619,17 +618,17 @@ namespace OCL
                             comp.get().getProperty<std::string>("PropFile")->setName("PropertyFile");
 
                         // connect ports 'Ports' tag is optional.
-                        RTT::Property<RTT::PropertyBag>* ports = comp.get().getProperty<RTT::PropertyBag>("Ports");
+                        Property<PropertyBag>* ports = comp.get().getProperty<PropertyBag>("Ports");
                         if ( ports != 0 ) {
-                            RTT::PropertyBag::Names pnams = ports->get().list();
-                            for (RTT::PropertyBag::Names::iterator pit= pnams.begin(); pit !=pnams.end(); pit++) {
-                                base::PortInterface* p = c->ports()->getPort(*pit);
+                            PropertyBag::Names pnams = ports->get().list();
+                            for (PropertyBag::Names::iterator pit= pnams.begin(); pit !=pnams.end(); pit++) {
+                                PortInterface* p = c->ports()->getPort(*pit);
                                 if ( !p ) {
                                     log(Error)<< "Component '"<< c->getName() <<"' does not have a Port '"<<*pit<<"'." << endlog();
                                     valid = false;
                                 }
                                 if ( ports->get().getProperty<std::string>(*pit) == 0) {
-                                    log(Error)<< "RTT::Property '"<< *pit <<"' is not of type 'string'." << endlog();
+                                    log(Error)<< "Property '"<< *pit <<"' is not of type 'string'." << endlog();
                                     valid = false;
                                 }
                                 // store the port
@@ -661,15 +660,15 @@ namespace OCL
                         // Setup the connections from this
                         // component to the others.
                         if ( comp.value().find("Peers") != 0) {
-                            RTT::Property<RTT::PropertyBag> nm = comp.value().find("Peers");
+                            Property<PropertyBag> nm = comp.value().find("Peers");
                             if ( !nm.ready() ) {
-                                log(Error)<<"RTT::Property 'Peers' must be a 'struct', was type "<< comp.value().find("Peers")->getType() << endlog();
+                                log(Error)<<"Property 'Peers' must be a 'struct', was type "<< comp.value().find("Peers")->getType() << endlog();
                                 valid = false;
                             } else {
-                                for (RTT::PropertyBag::const_iterator it= nm.rvalue().begin(); it != nm.rvalue().end();it++) {
-                                    RTT::Property<std::string> pr = *it;
+                                for (PropertyBag::const_iterator it= nm.rvalue().begin(); it != nm.rvalue().end();it++) {
+                                    Property<std::string> pr = *it;
                                     if ( !pr.ready() ) {
-                                        log(Error)<<"RTT::Property 'Peer' does not have type 'string'."<<endlog();
+                                        log(Error)<<"Property 'Peer' does not have type 'string'."<<endlog();
                                         valid = false;
                                         continue;
                                     }
@@ -678,28 +677,28 @@ namespace OCL
                         }
 
                         // Read the activity profile if present.
-                        if ( comp.value().find("RTT::Activity") != 0) {
-                            RTT::Property<RTT::PropertyBag> nm = comp.value().find("RTT::Activity");
+                        if ( comp.value().find("Activity") != 0) {
+                            Property<PropertyBag> nm = comp.value().find("Activity");
                             if ( !nm.ready() ) {
-                                log(Error)<<"RTT::Property 'RTT::Activity' must be a 'struct'."<<endlog();
+                                log(Error)<<"Property 'Activity' must be a 'struct'."<<endlog();
                                 valid = false;
                             } else {
-                                if ( nm.rvalue().getType() == "RTT::Activity" ) {
-                                    RTT::Property<double> per;
+                                if ( nm.rvalue().getType() == "PeriodicActivity" ) {
+                                    Property<double> per;
                                     if (nm.rvalue().getProperty<double>("Period") )
                                         per = nm.rvalue().getProperty<double>("Period"); // work around RTT 1.0.2 bug.
                                     if ( !per.ready() ) {
-                                        log(Error)<<"Please specify period <double> of Activity."<<endlog();
+                                        log(Error)<<"Please specify period <double> of PeriodicActivity."<<endlog();
                                         valid = false;
                                     }
-                                    RTT::Property<int> prio;
+                                    Property<int> prio;
                                     if ( nm.rvalue().getProperty<int>("Priority") )
                                         prio = nm.rvalue().getProperty<int>("Priority"); // work around RTT 1.0.2 bug
                                     if ( !prio.ready() ) {
-                                        log(Error)<<"Please specify priority <short> of Activity."<<endlog();
+                                        log(Error)<<"Please specify priority <short> of PeriodicActivity."<<endlog();
                                         valid = false;
                                     }
-                                    RTT::Property<string> sched;
+                                    Property<string> sched;
                                     if (nm.rvalue().getProperty<string>("Scheduler") )
                                         sched = nm.rvalue().getProperty<string>("Scheduler"); // work around RTT 1.0.2 bug
                                     int scheduler = ORO_SCHED_RT;
@@ -712,15 +711,15 @@ namespace OCL
                                         this->setActivity(comp.getName(), nm.rvalue().getType(), per.get(), prio.get(), scheduler );
                                     }
                                 } else
-                                    if ( nm.rvalue().getType() == "RTT::Activity" ) {
-                                        RTT::Property<int> prio;
+                                    if ( nm.rvalue().getType() == "NonPeriodicActivity" ) {
+                                        Property<int> prio;
                                         if ( nm.rvalue().getProperty<int>("Priority") )
                                             prio = nm.rvalue().getProperty<int>("Priority"); // work around RTT 1.0.2 bug
                                         if ( !prio.ready() ) {
-                                            log(Error)<<"Please specify priority <short> of Activity."<<endlog();
+                                            log(Error)<<"Please specify priority <short> of NonPeriodicActivity."<<endlog();
                                             valid = false;
                                         }
-                                        RTT::Property<string> sched;
+                                        Property<string> sched;
                                         if (nm.rvalue().getProperty<string>("Scheduler") )
                                             sched = nm.rvalue().getProperty<string>("Scheduler"); // work around RTT 1.0.2 bug
                                         int scheduler = ORO_SCHED_RT;
@@ -733,7 +732,7 @@ namespace OCL
                                             this->setActivity(comp.getName(), nm.rvalue().getType(), 0.0, prio.get(), scheduler );
                                         }
                                     } else
-                                        if ( nm.rvalue().getType() == "extras::SlaveActivity" ) {
+                                        if ( nm.rvalue().getType() == "SlaveActivity" ) {
                                             double period = 0.0;
                                             string master;
                                             if ( nm.rvalue().getProperty<string>("Master") ) {
@@ -755,8 +754,8 @@ namespace OCL
                                         }
                             }
                         } else {
-                            // no 'RTT::Activity' element, default to Slave:
-                            //this->setActivity(comp.getName(), "extras::SlaveActivity", 0.0, 0, 0 );
+                            // no 'Activity' element, default to Slave:
+                            //this->setActivity(comp.getName(), "SlaveActivity", 0.0, 0, 0 );
                         }
 
                         // put this component in the root config.
@@ -789,9 +788,9 @@ namespace OCL
 
     bool DeploymentComponent::configureComponents()
     {
-        RTT::Logger::In in("DeploymentComponent::configureComponents");
+        Logger::In in("DeploymentComponent::configureComponents");
         if ( root.empty() ) {
-            RTT::Logger::log() << RTT::Logger::Error
+            Logger::log() << Logger::Error
                           << "No configuration loaded !" <<endlog();
             return false;
         }
@@ -799,11 +798,11 @@ namespace OCL
         bool valid = true;
 
         // Connect peers
-        for (RTT::PropertyBag::iterator it= root.begin(); it!=root.end();it++) {
+        for (PropertyBag::iterator it= root.begin(); it!=root.end();it++) {
 
-            RTT::Property<RTT::PropertyBag> comp = *it;
+            Property<PropertyBag> comp = *it;
 
-            RTT::TaskContext* peer = comps[ comp.getName() ].instance;
+            TaskContext* peer = comps[ comp.getName() ].instance;
             if ( !peer ) {
                 log(Error) << "Peer not found: "<< comp.getName() <<endlog();
                 valid=false;
@@ -814,10 +813,10 @@ namespace OCL
 
             // Setup the connections from each component to the
             // others.
-            RTT::Property<RTT::PropertyBag> peers = comp.rvalue().find("Peers");
+            Property<PropertyBag> peers = comp.rvalue().find("Peers");
             if ( peers.ready() )
-                for (RTT::PropertyBag::const_iterator it= peers.rvalue().begin(); it != peers.rvalue().end();it++) {
-                    RTT::Property<string> nm = (*it);
+                for (PropertyBag::const_iterator it= peers.rvalue().begin(); it != peers.rvalue().end();it++) {
+                    Property<string> nm = (*it);
                     if ( nm.ready() )
                         {
                             this->addPeer( comps[comp.getName()].instance->getName(), nm.value() );
@@ -838,72 +837,115 @@ namespace OCL
             std::string connection_name = it->first;
 
             if ( connection->ports.size() == 1 ){
-                log(Warning) << "Can not form connection with topic "<<connection_name<<" with only one Port from "<< connection->owners[0]->getName() << endlog();
+                log(Warning) << "Can not form connection "<<connection_name<<" with only one Port from "<< connection->owners[0]<< endlog();
                 continue;
             }
-            // first find the write port. The rest must be readports.
+            // first find a write and a read port.
             // This is quite complex since a 'ReadWritePort' can act as both.
-            base::PortInterface* writer = 0;
+            PortInterface* writer = 0, *reader = 0;
             ConnectionData::Ports::iterator p = connection->ports.begin();
 
             // If one of the ports is connected, use that one as writer to connect to.
-            while (p !=connection->ports.end() ) {
-                if ( dynamic_cast<base::OutputPortInterface*>( *p ) ) {
-                    if ( writer ) {
-                        log(Error) << "Only one writer can post to a topic. OutputPort " << (*p)->getName() << " is not allowed."<<endlog();
-                        valid = false;
-                    }
+            while (p !=connection->ports.end() && (writer == 0 ) ) {
+                if ( (*p)->connected() )
                     writer = *p;
-                    std::string owner = it->second.owners[p - it->second.ports.begin()]->getName();
-                    log(Info) << "Component "<< owner << "'s OutputPort "<< writer->getName()<< " will publish topic "<<it->first<< endlog();
-                }
                 ++p;
             }
 
+            // now proceed filling in writer and reader pointers until one reader and one writer is found.
+            p = connection->ports.begin();
+            while (p !=connection->ports.end() && (writer == 0 || reader == 0) ) {
+                if ( (*p)->getPortType() == PortInterface::WritePort )
+                    {
+                        if (!reader && writer && writer->getPortType() == PortInterface::ReadWritePort && !writer->connected() ) {
+                            reader = writer;
+                            writer = 0;
+                        }
+                        if (!writer)
+                            writer = (*p);
+                    }
+                else{
+                    if ( (*p)->getPortType() == PortInterface::ReadPort )
+                        {
+                            if (!writer && reader && reader->getPortType() == PortInterface::ReadWritePort ) {
+                                writer = reader;
+                                reader = 0;
+                            }
+                            if (!reader)
+                                reader = (*p);
+                        }
+                    else{
+                        if ( (*p)->getPortType() == PortInterface::ReadWritePort )
+                            {
+                                if (writer == 0)
+                                    {
+                                        writer = (*p);
+                                    }
+                                else {
+                                    reader = (*p);
+                                }
+                            }
+                    }
+                }
+                ++p;
+            }
             // Inform the user of non-optimal connections:
             if ( writer == 0 ) {
-                log(Error) << "No OutputPort listed that publishes " << it->first << endlog();
-                valid = false;
+                log(Warning) << "Connecting only read-ports in connection " << it->first << endlog();
+                // let connectTo() below figure it out.
+                writer = reader;
             }
-
-            // connect all ports to writer
+            if ( reader == 0 ) {
+                log(Warning) << "Connecting only write-ports in connection " << it->first << endlog();
+            }
+            // Inform user which component initiates the connection:
+            p = connection->ports.begin();
+            while ( *p != writer ) ++p;
+            std::string owner = it->second.owners[p - it->second.ports.begin()]->getName();
+            log(Info) << "Creating Connection "<<it->first<<" starting from "<< owner <<"."<<writer->getName()<<" :" <<endlog();
+            // connect all ports to connection
             p = connection->ports.begin();
 
             while (p != connection->ports.end() ) {
                 // connect all readers to the first found writer.
                 if ( *p != writer )
                     {
-                        string owner = connection->owners[p - connection->ports.begin()]->getName();
+                        owner = connection->owners[p - connection->ports.begin()]->getName();
                         // only try to connect p if it is not in the same connection of writer.
+                        if ( ( writer->connected() && (*p)->connection() == writer->connection() ) ) {
+                            ++p;
+                            continue;
+                        }
                         // OK. p is definately no part of writer's connection. Try to connect and flag errors if it fails.
-                        if ( writer->connectTo( **p ) == false) {
-                            log(Error) << "Could not subscribe InputPort "<< owner<<"."<< (*p)->getName() << " to topic " << connection_name <<endlog();
+                        if ( (*p)->connectTo( writer ) == false) {
+                            log(Error) << "Could not connect Port "<< owner<<"."<< (*p)->getName() << " to connection " << connection_name <<endlog();
+                            if ((*p)->connected())
+                                log(Error) << "Port "<< owner<<"."<< (*p)->getName() << " already connected to other connection !"<<endlog();
+                            else
+                                log(Error) << "Port "<< owner<<"."<< (*p)->getName() << " has wrong type !"<<endlog();
                             valid = false;
                         } else {
-                            log(Info) << "Subscribed InputPort "<< owner<<"."<< (*p)->getName() <<" to topic " << connection_name <<endlog();
+                            log(Info) << "Connected Port "<< owner<<"."<< (*p)->getName() <<" to connection " << connection_name <<endlog();
                         }
                     }
                 ++p;
             }
         }
 
-        // Autoconnect ports. The port name is the topic name.
-        for (RTT::PropertyBag::iterator it= root.begin(); it!=root.end();it++) {
-            RTT::Property<RTT::PropertyBag> comp = *it;
+        // Autoconnect ports.
+        for (PropertyBag::iterator it= root.begin(); it!=root.end();it++) {
+            Property<PropertyBag> comp = *it;
             if ( !comp.ready() )
                 continue;
 
-            RTT::TaskContext* peer = comps[ comp.getName() ].instance;
+            TaskContext* peer = comps[ comp.getName() ].instance;
 
             // only autoconnect if AutoConnect == 1 and peer has AutoConnect == 1
-            // There should only be one writer; more than one will lead to undefined behaviour.
-            // reader<->reader connections will silently fail and be retried once a writer is found.
             if ( comps[comp.getName()].autoconnect ) {
-                // XXX/TODO This is broken: we should not rely on the peers to implement AutoConnect!
-                RTT::TaskContext::PeerList peers = peer->getPeerList();
-                for(RTT::TaskContext::PeerList::iterator pit = peers.begin(); pit != peers.end(); ++pit) {
+                TaskContext::PeerList peers = peer->getPeerList();
+                for(TaskContext::PeerList::iterator pit = peers.begin(); pit != peers.end(); ++pit) {
                     if ( comps.count( *pit ) && comps[ *pit ].autoconnect ) {
-                        RTT::TaskContext* other = peer->getPeer( *pit );
+                        TaskContext* other = peer->getPeer( *pit );
                         ::RTT::connectPorts( peer, other );
                     }
                 }
@@ -911,11 +953,11 @@ namespace OCL
         }
 
         // Main configuration
-        for (RTT::PropertyBag::iterator it= root.begin(); it!=root.end();it++) {
+        for (PropertyBag::iterator it= root.begin(); it!=root.end();it++) {
 
-            RTT::Property<RTT::PropertyBag> comp = *it;
-            RTT::Property<string> dummy;
-            RTT::TaskContext* peer = comps[ comp.getName() ].instance;
+            Property<PropertyBag> comp = *it;
+            Property<string> dummy;
+            TaskContext* peer = comps[ comp.getName() ].instance;
 
             // do not configure when not stopped.
             if ( peer->getTaskState() > Stopped) {
@@ -924,10 +966,10 @@ namespace OCL
             }
 
             // Check for default properties to set.
-            for (RTT::PropertyBag::const_iterator pf = comp.rvalue().begin(); pf!= comp.rvalue().end(); ++pf) {
+            for (PropertyBag::const_iterator pf = comp.rvalue().begin(); pf!= comp.rvalue().end(); ++pf) {
                 // set PropFile name if present
                 if ( (*pf)->getName() == "Properties"){
-                    RTT::Property<RTT::PropertyBag> props = *pf; // convert to type.
+                    Property<PropertyBag> props = *pf; // convert to type.
                     bool ret = updateProperties( *peer->properties(), props);
                     if (!ret) {
                         log(Error) << "Failed to configure properties from main configuration file for component "<< comp.getName() <<endlog();
@@ -938,12 +980,12 @@ namespace OCL
                 }
             }
             // Load/update from property files.
-            for (RTT::PropertyBag::const_iterator pf = comp.rvalue().begin(); pf!= comp.rvalue().end(); ++pf) {
+            for (PropertyBag::const_iterator pf = comp.rvalue().begin(); pf!= comp.rvalue().end(); ++pf) {
                 // set PropFile name if present
                 if ( (*pf)->getName() == "PropertyFile" || (*pf)->getName() == "UpdateProperties" || (*pf)->getName() == "LoadProperties"){
                     dummy = *pf; // convert to type.
                     string filename = dummy.get();
-                    interface::PropertyLoader pl;
+                    PropertyLoader pl;
                     bool strict = (*pf)->getName() == "PropertyFile" ? true : false;
                     bool load = (*pf)->getName() == "LoadProperties" ? true : false;
                     bool ret;
@@ -973,14 +1015,14 @@ namespace OCL
             }
 
             // Load scripts in order of appearance
-            for (RTT::PropertyBag::const_iterator ps = comp.rvalue().begin(); ps!= comp.rvalue().end(); ++ps) {
-                RTT::Property<string> pscript;
+            for (PropertyBag::const_iterator ps = comp.rvalue().begin(); ps!= comp.rvalue().end(); ++ps) {
+                Property<string> pscript;
                 if ( (*ps)->getName() == "ProgramScript" )
                     pscript = *ps;
                 if ( pscript.ready() ) {
                     valid = valid && peer->scripting()->loadPrograms( pscript.get(), false ); // no exceptions
                 }
-                RTT::Property<string> sscript;
+                Property<string> sscript;
                 if ( (*ps)->getName() == "StateMachineScript" )
                     sscript = *ps;
                 if ( sscript.ready() ) {
@@ -1005,7 +1047,7 @@ namespace OCL
         if (!valid) {
             for ( CompList::iterator cit = comps.begin(); cit != comps.end(); ++cit) {
                 ComponentData* cd = &(cit->second);
-                if ( cd->loaded && cd->autoconf && cd->instance->getTaskState() != base::TaskCore::Stopped )
+                if ( cd->loaded && cd->autoconf && cd->instance->getTaskState() != TaskCore::Stopped )
                     log(Error) << "Failed to configure component "<< cd->instance->getName() <<endlog();
             }
         } else {
@@ -1018,15 +1060,15 @@ namespace OCL
 
     bool DeploymentComponent::startComponents()
     {
-        RTT::Logger::In in("DeploymentComponent::startComponents");
+        Logger::In in("DeploymentComponent::startComponents");
         if (validConfig.get() == false) {
             log(Error) << "Not starting components with invalid configuration." <<endlog();
             return false;
         }
         bool valid = true;
-        for (RTT::PropertyBag::iterator it= root.begin(); it!=root.end();it++) {
+        for (PropertyBag::iterator it= root.begin(); it!=root.end();it++) {
 
-            RTT::TaskContext* peer = comps[ (*it)->getName() ].instance;
+            TaskContext* peer = comps[ (*it)->getName() ].instance;
             // AutoStart
             if (comps[(*it)->getName()].autostart )
                 if ( !peer || peer->start() == false)
@@ -1040,7 +1082,7 @@ namespace OCL
                     log(Error) << "Failed to start component "<< cit->first << ": not found." << endlog();
                     continue;
                 }
-                if ( it->autostart && it->instance->getTaskState() != base::TaskCore::Running )
+                if ( it->autostart && it->instance->getTaskState() != TaskCore::Running )
                     log(Error) << "Failed to start component "<< it->instance->getName() <<endlog();
             }
         } else {
@@ -1051,7 +1093,7 @@ namespace OCL
 
     bool DeploymentComponent::stopComponents()
     {
-        RTT::Logger::In in("DeploymentComponent::stopComponents");
+        Logger::In in("DeploymentComponent::stopComponents");
         bool valid = true;
         // 1. Stop all activities, give components chance to cleanup.
         for ( CompList::iterator cit = comps.begin(); cit != comps.end(); ++cit) {
@@ -1072,16 +1114,16 @@ namespace OCL
 
     bool DeploymentComponent::cleanupComponents()
     {
-        RTT::Logger::In in("DeploymentComponent::cleanupComponents");
+        Logger::In in("DeploymentComponent::cleanupComponents");
         bool valid = true;
         // 1. Cleanup all activities, give components chance to cleanup.
         for ( CompList::iterator cit = comps.begin(); cit != comps.end(); ++cit) {
             ComponentData* it = &(cit->second);
             if (it->instance && !it->proxy) {
-                if ( it->instance->getTaskState() <= base::TaskCore::Stopped ) {
+                if ( it->instance->getTaskState() <= TaskCore::Stopped ) {
                     if ( it->autosave && !it->configfile.empty()) {
                         string file = it->configfile; // get file name
-                        interface::PropertyLoader pl;
+                        PropertyLoader pl;
                         bool ret = pl.save( file, it->instance, true ); // save all !
                         if (!ret) {
                             log(Error) << "Failed to save properties for component "<< it->instance->getName() <<endlog();
@@ -1138,7 +1180,7 @@ namespace OCL
 
     bool DeploymentComponent::import(const std::string& path)
     {
-        RTT::Logger::In in("DeploymentComponent::import");
+        Logger::In in("DeploymentComponent::import");
         struct dirent **namelist;
         int n;
 
@@ -1180,7 +1222,7 @@ namespace OCL
 
     bool DeploymentComponent::loadLibrary(const std::string& name)
     {
-        RTT::Logger::In in("DeploymentComponent::loadLibrary");
+        Logger::In in("DeploymentComponent::loadLibrary");
         // Accepted abbreviated syntax:
         // loadLibrary("liborocos-helloworld-gnulinux.so")
         // loadLibrary("liborocos-helloworld-gnulinux")
@@ -1349,9 +1391,9 @@ namespace OCL
         // Lookup createComponent:
         dlerror();    /* Clear any existing error */
 
-        RTT::TaskContext* (*factory)(std::string) = 0;
+        TaskContext* (*factory)(std::string) = 0;
         std::string(*tname)(void) = 0;
-        factory = (RTT::TaskContext*(*)(std::string))(dlsym(handle, "createComponent") );
+        factory = (TaskContext*(*)(std::string))(dlsym(handle, "createComponent") );
         if ((error = dlerror()) == NULL) {
             // store factory.
             if ( ComponentFactories::Instance().count(libname) == 1 ) {
@@ -1380,9 +1422,9 @@ namespace OCL
         // Lookup plugins:
         dlerror();    /* Clear any existing error */
 
-        bool (*loadPlugin)(RTT::TaskContext*) = 0;
+        bool (*loadPlugin)(TaskContext*) = 0;
         std::string(*pluginName)(void) = 0;
-        loadPlugin = (bool(*)(RTT::TaskContext*))(dlsym(handle, "loadRTTPlugin") );
+        loadPlugin = (bool(*)(TaskContext*))(dlsym(handle, "loadRTTPlugin") );
         if ((error = dlerror()) == NULL) {
             string plugname;
             pluginName = (std::string(*)(void))(dlsym(handle, "getRTTPluginName") );
@@ -1425,9 +1467,9 @@ namespace OCL
     // or type is a shared library or it is a class type.
     bool DeploymentComponent::loadComponent(const std::string& name, const std::string& type)
     {
-        RTT::Logger::In in("DeploymentComponent::loadComponent");
+        Logger::In in("DeploymentComponent::loadComponent");
 
-        if ( type == "RTT::PropertyBag" )
+        if ( type == "PropertyBag" )
             return false; // It should be present as peer.
 
         if ( this->getPeer(name) || ( comps.find(name) != comps.end() && comps[name].instance != 0) ) {
@@ -1435,7 +1477,7 @@ namespace OCL
             return false;
         }
 
-        RTT::TaskContext* (*factory)(std::string name) = 0;
+        TaskContext* (*factory)(std::string name) = 0;
         char *error;
 
         // First: try loading from imported libraries. (see: import).
@@ -1460,7 +1502,7 @@ namespace OCL
                 return false;
 
             dlerror();    /* Clear any existing error */
-            factory = (RTT::TaskContext*(*)(std::string))(dlsym(handle, "createComponent"));
+            factory = (TaskContext*(*)(std::string))(dlsym(handle, "createComponent"));
             if ((error = dlerror()) != NULL) {
                 log(Error) << "Found plugin '"<< type <<"', but it can not create a single Orocos Component:";
                 log(Error) << error << endlog();
@@ -1528,7 +1570,7 @@ namespace OCL
                     }
                 }
                 // Lookup in the property configuration and remove:
-                RTT::Property<RTT::PropertyBag>* pcomp = root.getProperty<RTT::PropertyBag>(name);
+                Property<PropertyBag>* pcomp = root.getProperty<PropertyBag>(name);
                 if (pcomp) {
                     root.remove(pcomp);
                     deletePropertyBag( pcomp->value() );
@@ -1588,7 +1630,7 @@ namespace OCL
                                                   double period, int priority,
                                                   int scheduler)
     {
-        if ( this->setActivity(comp_name, "RTT::Activity", period, priority, scheduler) ) {
+        if ( this->setActivity(comp_name, "PeriodicActivity", period, priority, scheduler) ) {
             assert( comps[comp_name].instance );
             assert( comps[comp_name].act );
             comps[comp_name].act->run(comps[comp_name].instance->engine());
@@ -1601,7 +1643,7 @@ namespace OCL
                                                      int priority,
                                                      int scheduler)
     {
-        if ( this->setActivity(comp_name, "RTT::Activity", 0.0, priority, scheduler) ) {
+        if ( this->setActivity(comp_name, "NonPeriodicActivity", 0.0, priority, scheduler) ) {
             assert( comps[comp_name].instance );
             assert( comps[comp_name].act );
             comps[comp_name].act->run(comps[comp_name].instance->engine());
@@ -1613,7 +1655,7 @@ namespace OCL
     bool DeploymentComponent::setSlaveActivity(const std::string& comp_name,
                                                double period)
     {
-        if ( this->setActivity(comp_name, "extras::SlaveActivity", period, 0, ORO_SCHED_OTHER ) ) {
+        if ( this->setActivity(comp_name, "SlaveActivity", period, 0, ORO_SCHED_OTHER ) ) {
             assert( comps[comp_name].instance );
             assert( comps[comp_name].act );
             comps[comp_name].act->run(comps[comp_name].instance->engine());
@@ -1625,7 +1667,7 @@ namespace OCL
     bool DeploymentComponent::setMasterSlaveActivity(const std::string& master,
                                                    const std::string& slave)
     {
-        if ( this->setActivity(slave, "extras::SlaveActivity", 0, 0, ORO_SCHED_OTHER, master ) ) {
+        if ( this->setActivity(slave, "SlaveActivity", 0, 0, ORO_SCHED_OTHER, master ) ) {
             assert( comps[slave].instance );
             assert( comps[slave].act );
             comps[slave].act->run(comps[slave].instance->engine());
@@ -1640,8 +1682,8 @@ namespace OCL
                                           double period, int priority,
                                           int scheduler, const std::string& master_name)
     {
-        RTT::TaskContext* peer = 0;
-        base::ActivityInterface* master_act = 0;
+        TaskContext* peer = 0;
+        ActivityInterface* master_act = 0;
         if ( comp_name == this->getName() )
             peer = this;
         else
@@ -1650,7 +1692,7 @@ namespace OCL
             else
 	        peer = this->getPeer(comp_name); // last resort.
         if (!peer) {
-            log(Error) << "Can't create RTT::Activity: component "<<comp_name<<" not found."<<endlog();
+            log(Error) << "Can't create Activity: component "<<comp_name<<" not found."<<endlog();
             return false;
         }
         if ( !master_name.empty() ) {
@@ -1663,12 +1705,12 @@ namespace OCL
 		    master_act = this->getPeer(master_name) ? getPeer(master_name)->engine()->getActivity() : 0; // last resort.
 
 	    if ( !this->getPeer(master_name) ) {
-                log(Error) << "Can't create extras::SlaveActivity: Master component "<<master_name<<" not known as peer."<<endlog();
+                log(Error) << "Can't create SlaveActivity: Master component "<<master_name<<" not known as peer."<<endlog();
                 return false;
             }
 
             if (!master_act) {
-                log(Error) << "Can't create extras::SlaveActivity: Master component "<<master_name<<" has no activity set."<<endlog();
+                log(Error) << "Can't create SlaveActivity: Master component "<<master_name<<" has no activity set."<<endlog();
                 return false;
             }
         }
@@ -1679,18 +1721,18 @@ namespace OCL
             return false;
         }
 
-        base::ActivityInterface* newact = 0;
-        if ( act_type == "RTT::Activity" && period != 0.0)
-            newact = new RTT::Activity(scheduler, priority, period);
+        ActivityInterface* newact = 0;
+        if ( act_type == "PeriodicActivity" && period != 0.0)
+            newact = new PeriodicActivity(scheduler, priority, period);
         else
-            if ( act_type == "RTT::Activity" && period == 0.0)
-                newact = new RTT::Activity(scheduler, priority);
+            if ( act_type == "NonPeriodicActivity" && period == 0.0)
+                newact = new NonPeriodicActivity(scheduler, priority);
             else
-                if ( act_type == "extras::SlaveActivity" ) {
+                if ( act_type == "SlaveActivity" ) {
                     if ( master_act == 0 )
-                        newact = new extras::SlaveActivity(period);
+                        newact = new SlaveActivity(period);
                     else {
-		        newact = new extras::SlaveActivity(master_act);
+		        newact = new SlaveActivity(master_act);
                         this->getPeer(master_name)->addPeer( peer );
                     }
                 }
@@ -1715,8 +1757,8 @@ namespace OCL
 
     bool DeploymentComponent::configureFromFile(const std::string& name, const std::string& filename)
     {
-        RTT::Logger::In in("DeploymentComponent");
-        RTT::TaskContext* c;
+        Logger::In in("DeploymentComponent");
+        TaskContext* c;
         if ( name == this->getName() )
             c = this;
         else
@@ -1726,7 +1768,7 @@ namespace OCL
             return false;
         }
 
-        interface::PropertyLoader pl;
+        PropertyLoader pl;
         return pl.configure( filename, c, true ); // strict:true
     }
 
@@ -1737,18 +1779,18 @@ namespace OCL
 
     void DeploymentComponent::kickOut(const std::string& config_file)
     {
-        RTT::Logger::In in("DeploymentComponent::kickOut");
-        RTT::PropertyBag from_file;
-        RTT::Property<std::string>  import_file;
+        Logger::In in("DeploymentComponent::kickOut");
+        PropertyBag from_file;
+        Property<std::string>  import_file;
         std::vector<std::string> deleted_components_type;
 
         // demarshalling failures:
         bool failure = false;
 
-        marsh::PropertyDemarshaller demarshaller(config_file);
+        PropertyDemarshaller demarshaller(config_file);
         try {
             if ( demarshaller.deserialize( from_file ) ){
-                for (RTT::PropertyBag::iterator it= from_file.begin(); it!=from_file.end();it++) {
+                for (PropertyBag::iterator it= from_file.begin(); it!=from_file.end();it++) {
                     if ( (*it)->getName() == "Import" ) continue;
                     if ( (*it)->getName() == "Include" ) continue;
 
@@ -1769,11 +1811,11 @@ namespace OCL
 
     bool DeploymentComponent::cleanupComponent(RTT::TaskContext *instance)
     {
-        RTT::Logger::In in("DeploymentComponent::cleanupComponent");
+        Logger::In in("DeploymentComponent::cleanupComponent");
         bool valid = true;
         // 1. Cleanup a single activities, give components chance to cleanup.
         if (instance) {
-            if ( instance->getTaskState() <= base::TaskCore::Stopped ) {
+            if ( instance->getTaskState() <= TaskCore::Stopped ) {
                 instance->cleanup();
                 log(Info) << "Cleaned up "<< instance->getName() <<endlog();
             } else {
@@ -1786,7 +1828,7 @@ namespace OCL
 
     bool DeploymentComponent::stopComponent(RTT::TaskContext *instance)
     {
-        RTT::Logger::In in("DeploymentComponent::stopComponent");
+        Logger::In in("DeploymentComponent::stopComponent");
         bool valid = true;
 
         if ( instance ) {
@@ -1805,14 +1847,14 @@ namespace OCL
 
     bool DeploymentComponent::kickOutComponent(const std::string& comp_name)
     {
-        RTT::Logger::In in("DeploymentComponent::kickOutComponent");
-        base::PropertyBase *it = root.find( comp_name );
+        Logger::In in("DeploymentComponent::kickOutComponent");
+        PropertyBase *it = root.find( comp_name );
         if(!it) {
-            log(Error) << "Peer "<< comp_name << " not found in RTT::PropertyBag root"<< endlog();
+            log(Error) << "Peer "<< comp_name << " not found in PropertyBag root"<< endlog();
             return false;
         }
 
-        RTT::TaskContext* peer = comps[ comp_name ].instance;
+        TaskContext* peer = comps[ comp_name ].instance;
 
         if ( !peer ) {
             log(Error) << "Peer not found: "<< comp_name <<endlog();

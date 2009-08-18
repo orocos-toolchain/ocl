@@ -38,16 +38,16 @@ namespace OCL
 {
 
 // map lowercase strings to levels
-std::map<std::string, Logger::LogLevel>	logMap =
+std::map<std::string, RTT::Logger::LogLevel>	logMap =
 	boost::assign::map_list_of
-	("never",       Logger::Debug)
-	("fatal",       Logger::Fatal)
-	("critical",    Logger::Critical)
-	("error",       Logger::Error)
-	("warning",     Logger::Warning)
-	("info",        Logger::Info)
-	("debug",       Logger::Debug)
-	("realtime",    Logger::RealTime);
+	("never",       RTT::Logger::Debug)
+	("fatal",       RTT::Logger::Fatal)
+	("critical",    RTT::Logger::Critical)
+	("error",       RTT::Logger::Error)
+	("warning",     RTT::Logger::Warning)
+	("info",        RTT::Logger::Info)
+	("debug",       RTT::Logger::Debug)
+	("realtime",    RTT::Logger::RealTime);
 
 int deployerParseCmdLine(int                        argc,
                          char**                     argv,
@@ -102,7 +102,7 @@ int deployerParseCmdLine(int                        argc,
         // turn off all console logging
 		if (vm.count("no-consolelog"))
 		{
-            Logger::Instance()->mayLogStdOut(false);
+            RTT::Logger::Instance()->mayLogStdOut(false);
             log(Warning) << "Console logging disabled" << endlog();
 		}
 
@@ -112,7 +112,7 @@ int deployerParseCmdLine(int                        argc,
 		{
 			if (0 != logMap.count(logLevel))
 			{
-				Logger::Instance()->setLogLevel(logMap[logLevel]);
+				RTT::Logger::Instance()->setLogLevel(logMap[logLevel]);
 			}
 			else
 			{

@@ -31,14 +31,14 @@
 #include <errno.h>
 
 #include "TcpReporting.hpp"
-#include "rtt/NonPeriodicActivity.hpp"
-#include "rtt/Logger.hpp"
-#include "rtt/os/Mutex.hpp"
+#include <rtt/Activity.hpp>
+#include <rtt/Logger.hpp>
+#include <rtt/os/Mutex.hpp>
 #include "socket.hpp"
 #include "socketmarshaller.hpp"
 
 using RTT::Logger;
-using RTT::OS::Mutex;
+using RTT::os::Mutex;
 
 #include "ocl/ComponentLoader.hpp"
 ORO_LIST_COMPONENT_TYPE(OCL::TcpReporting);
@@ -50,7 +50,7 @@ namespace OCL
      * from clients.
      */
     class ListenThread
-        : public RTT::NonPeriodicActivity
+        : public RTT::Activity
     {
         private:
             bool inBreak;
@@ -135,14 +135,14 @@ namespace OCL
             }
 
             ListenThread( RTT::SocketMarshaller* marshaller, unsigned short port )
-            : NonPeriodicActivity(10), _marshaller(marshaller)
+            : Activity(10), _marshaller(marshaller)
             {
                 inBreak = false;
                 removeInstance();
                 _accepting = true;
                 _port = port;
                 Logger::log() << Logger::Info << "Starting server on port " << port << Logger::endl;
-                this->NonPeriodicActivity::start();
+                this->Activity::start();
             }
 
         // This method should only be called when theadCreationLock is locked.

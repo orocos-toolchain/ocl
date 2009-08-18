@@ -36,28 +36,27 @@
 
 #include <rtt/Property.hpp>
 #include <rtt/PropertyBag.hpp>
-#include <rtt/TemplateTypeInfo.hpp>
-#include <rtt/Types.hpp>
+#include <rtt/types/TemplateTypeInfo.hpp>
+#include <rtt/types/Types.hpp>
 #include <rtt/Logger.hpp>
-#include <rtt/DataSources.hpp>
+#include <rtt/internal/DataSources.hpp>
 #include <ostream>
 #include <sstream>
 #include <vector>
 
 namespace RTT
 {
-    class PropertyIntrospection;
 
     /**
      * A decomposeProperty method for decomposing a vector<T>
-     * into a PropertyBag with Property<T>'s.
+     * into a RTT::PropertyBag with RTT::Property<T>'s.
      * The dimension of the vector must be less than 100 if you want the
-     * Property<T>'s to have a different name.
+     * RTT::Property<T>'s to have a different name.
      */
     template<class T>
-    void decomposeProperty(const std::vector<T>& vec, PropertyBag& targetbag)
+    void decomposeProperty(const std::vector<T>& vec, RTT::PropertyBag& targetbag)
     {
-        std::string tname = detail::DataSourceTypeInfo<T>::getType();
+        std::string tname = internal::DataSourceTypeInfo<T>::getType();
         targetbag.setType(tname+"s");
         int dimension = vec.size();
         std::string str;
@@ -68,7 +67,7 @@ namespace RTT
             std::stringstream out;
             out << i+1;
             str = out.str();
-            targetbag.add( new Property<T>("Element " + str, str +"th element of list",vec[i]) ); // Put variables in the bag
+            targetbag.add( new RTT::Property<T>("Element " + str, str +"th element of list",vec[i]) ); // Put variables in the bag
         }
     };
     /**
@@ -76,22 +75,22 @@ namespace RTT
      * The dimension of the vector must be less than 100.
      */
     template<class T>
-    bool composeProperty(const PropertyBag& bag, std::vector<T>& result)
+    bool composeProperty(const RTT::PropertyBag& bag, std::vector<T>& result)
     {
-        std::string tname = detail::DataSourceTypeInfo<T>::getType();
+        std::string tname = internal::DataSourceTypeInfo<T>::getType();
         
         if ( bag.getType() == tname+"s" ) {
             int dimension = bag.size();
-            Logger::log() << Logger::Info << "bag size " << dimension <<Logger::endl;
+            RTT::Logger::log() << RTT::Logger::Info << "bag size " << dimension <<RTT::Logger::endl;
             result.resize( dimension );
 
             // Get values
             for (int i = 0; i < dimension ; i++) {
-                PropertyBase* element = bag.getItem( i );
-                //Property<PropertyBag>* t_bag= dynamic_cast< Property<PropertyBag>* >( element );
+                base::PropertyBase* element = bag.getItem( i );
+                //RTT::Property<RTT::PropertyBag>* t_bag= dynamic_cast< RTT::Property<RTT::PropertyBag>* >( element );
                 log(Debug)<<element->getName()<<", "<< element->getDescription()<<endlog();
-                //Property<T> my_property_t (t_abag->getName(),t_bag->getDescription());
-                Property<T> my_property_t (element->getName(),element->getDescription());
+                //RTT::Property<T> my_property_t (t_abag->getName(),t_bag->getDescription());
+                RTT::Property<T> my_property_t (element->getName(),element->getDescription());
                 if(my_property_t.getType()!=element->getType())
                     log(Error)<< "Type of "<< element->getName() << " does not match type of "<<tname+"s"<<endlog();
                 else{
@@ -101,30 +100,30 @@ namespace RTT
             }
         }
         else {
-            Logger::log() << Logger::Error << "Composing Property< std::vector<T> > :"
+            RTT::Logger::log() << RTT::Logger::Error << "Composing RTT::Property< std::vector<T> > :"
                           << " type mismatch, got type '"<< bag.getType()
-                          << "', expected type "<<tname<<"s."<<Logger::endl;
+                          << "', expected type "<<tname<<"s."<<RTT::Logger::endl;
             return false;
         }
         return true;
     };
 
     template <typename T, bool has_ostream>
-    struct StdVectorTemplateTypeInfo
-        : public TemplateContainerTypeInfo<std::vector<T>, int, T, ArrayIndexChecker<std::vector<T> >, SizeAssignChecker<std::vector<T> >, has_ostream >
+    struct types::StdVectorTemplateTypeInfo
+        : public types::TemplateContainerTypeInfo<std::vector<T>, int, T, types::ArrayIndexChecker<std::vector<T> >, types::SizeAssignChecker<std::vector<T> >, has_ostream >
     {
-        StdVectorTemplateTypeInfo<T,has_ostream>( std::string name )
-            : TemplateContainerTypeInfo<std::vector<T>, int, T, ArrayIndexChecker<std::vector<T> >, SizeAssignChecker<std::vector<T> >, has_ostream >(name)
+        types::StdVectorTemplateTypeInfo<T,has_ostream>( std::string name )
+            : types::TemplateContainerTypeInfo<std::vector<T>, int, T, types::ArrayIndexChecker<std::vector<T> >, types::SizeAssignChecker<std::vector<T> >, has_ostream >(name)
         {
         };
 
-        bool decomposeTypeImpl(const std::vector<T>& vec, PropertyBag& targetbag) const
+        bool decomposeTypeImpl(const std::vector<T>& vec, RTT::PropertyBag& targetbag) const
         {
             decomposeProperty<T>( vec, targetbag );
             return true;
         };
 
-        bool composeTypeImpl(const PropertyBag& bag, std::vector<T>& result) const
+        bool composeTypeImpl(const RTT::PropertyBag& bag, std::vector<T>& result) const
         {
             return composeProperty<T>( bag, result );
         }
@@ -151,12 +150,12 @@ namespace RTT
     };
 
     template<typename T>
-    struct stdvector_ctor
+    struct types::stdvector_ctor
         : public std::unary_function<int, const std::vector<T>&>
     {
         typedef const std::vector<T>& (Signature)( int );
         mutable boost::shared_ptr< std::vector<T> > ptr;
-        stdvector_ctor()
+        types::stdvector_ctor()
             : ptr( new std::vector<T>() ) {}
         const std::vector<T>& operator()( int size ) const
         {
@@ -166,11 +165,11 @@ namespace RTT
     };
     
     /**
-     * See NArityDataSource which requires a function object like
+     * See internal::NArityDataSource which requires a function object like
      * this one.
      */
     template<typename T>
-    struct stdvector_varargs_ctor
+    struct types::stdvector_varargs_ctor
     {
         typedef const std::vector<T>& result_type;
         typedef T argument_type;
@@ -185,31 +184,31 @@ namespace RTT
      * construction time.
      */
      template<typename T>
-     struct StdVectorBuilder
-         : public TypeBuilder
+     struct types::StdVectorBuilder
+         : public types::TypeBuilder
      {
-         virtual DataSourceBase::shared_ptr build(const std::vector<DataSourceBase::shared_ptr>& args) const {
+         virtual base::DataSourceBase::shared_ptr build(const std::vector<base::DataSourceBase::shared_ptr>& args) const {
              if (args.size() == 0 )
-                 return DataSourceBase::shared_ptr();
-             typename NArityDataSource<stdvector_varargs_ctor<T> >::shared_ptr vds = new NArityDataSource<stdvector_varargs_ctor<T> >();
+                 return base::DataSourceBase::shared_ptr();
+             typename internal::NArityDataSource<types::stdvector_varargs_ctor<T> >::shared_ptr vds = new internal::NArityDataSource<types::stdvector_varargs_ctor<T> >();
              for(unsigned int i=0; i != args.size(); ++i) {
-                 typename DataSource<T>::shared_ptr dsd = AdaptDataSource<T>()( args[i] );
+                 typename internal::DataSource<T>::shared_ptr dsd = internal::AdaptDataSource<T>()( args[i] );
                  if (dsd)
                      vds->add( dsd );
                  else
-                     return DataSourceBase::shared_ptr();
+                     return base::DataSourceBase::shared_ptr();
              }
              return vds;
          }
      };
 
     template<typename T>
-    struct stdvector_ctor2
+    struct types::stdvector_ctor2
         : public std::binary_function<int, T, const std::vector<T>&>
     {
         typedef const std::vector<T>& (Signature)( int, T );
         mutable boost::shared_ptr< std::vector<T> > ptr;
-        stdvector_ctor2()
+        types::stdvector_ctor2()
             : ptr( new std::vector<T>() ) {}
         const std::vector<T>& operator()( int size, T value ) const
         {
@@ -220,7 +219,7 @@ namespace RTT
     };
 
     template<typename T>
-    struct stdvector_index
+    struct types::stdvector_index
         : public std::binary_function<const std::vector<T>&, int, T>
     {
         T operator()(const std::vector<T>& v, int index) const
@@ -232,7 +231,7 @@ namespace RTT
     };    
 
     template<class T>
-    struct get_size
+    struct types::get_size
         : public std::unary_function<T, int>
     {
         int operator()(T cont ) const

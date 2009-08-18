@@ -33,8 +33,8 @@
 
 #include <rtt/Property.hpp>
 #include <rtt/PropertyBag.hpp>
-#include <rtt/Marshaller.hpp>
-#include <rtt/TimeService.hpp>
+#include <rtt/marsh/Marshaller.hpp>
+#include <rtt/os/TimeService.hpp>
 #include <rtt/TaskContext.hpp>
 
 #include <rtt/RTT.hpp>
@@ -70,7 +70,7 @@ namespace OCL
            <!-- Monitor all ports of a Component : -->
            <simple name="Component" type="string"><description></description><value>ComponentX</value></simple>
 
-           <!-- Monitor a single Data or Buffer-Port of another Component : -->
+           <!-- Monitor a single Data or base::Buffer-Port of another Component : -->
            <simple name="Port" type="string"><description></description><value>ComponentY.PortZ</value></simple>
            <!-- add as many lines as desired... -->
         </struct>
@@ -88,7 +88,7 @@ namespace OCL
         bool screenImpl( const std::string& comp, std::ostream& output);
     public:
 
-        typedef RTT::DataFlowInterface::Ports Ports;
+        typedef RTT::interface::DataFlowInterface::Ports Ports;
 
         /**
          * Set up a component for reporting.
@@ -109,7 +109,7 @@ namespace OCL
          * addMarshaller( new HeaderMarshaller(), new ContentsMarshaller() );
          *
          */
-        bool addMarshaller( RTT::Marshaller* headerM, RTT::Marshaller* bodyM);
+        bool addMarshaller( RTT::marsh::Marshaller* headerM, RTT::marsh::Marshaller* bodyM);
 
         /**
          * Remove and delete all added Marshallers.
@@ -122,13 +122,13 @@ namespace OCL
          */
 
         /**
-         * Implementation of TaskCore::configureHook().
+         * Implementation of base::TaskCore::configureHook().
          * Calls load().
          */
         virtual bool configureHook();
 
         /**
-         * Implementation of TaskCore::cleanupHook().
+         * Implementation of base::TaskCore::cleanupHook().
          * Calls store() and clears the reporting configuration.
          */
         virtual void cleanupHook();
@@ -181,9 +181,9 @@ namespace OCL
 
     protected:
         typedef boost::tuple<std::string,
-                             RTT::DataSourceBase::shared_ptr,
-                             boost::shared_ptr<RTT::CommandInterface>,
-                             RTT::DataSourceBase::shared_ptr,
+                             RTT::base::DataSourceBase::shared_ptr,
+                             boost::shared_ptr<RTT::base::ActionInterface>,
+                             RTT::base::DataSourceBase::shared_ptr,
                              std::string> DTupple;
         /**
          * Stores the 'datasource' of all reported items as properties.
@@ -191,7 +191,7 @@ namespace OCL
         typedef std::vector<DTupple> Reports;
         Reports root;
 
-        bool reportDataSource(std::string tag, std::string type, RTT::DataSourceBase::shared_ptr orig);
+        bool reportDataSource(std::string tag, std::string type, RTT::base::DataSourceBase::shared_ptr orig);
 
         bool unreportDataSource(std::string tag);
 
@@ -206,7 +206,7 @@ namespace OCL
 
         virtual void stopHook();
 
-        typedef std::vector< std::pair<boost::shared_ptr<RTT::Marshaller>, boost::shared_ptr<RTT::Marshaller> > > Marshallers;
+        typedef std::vector< std::pair<boost::shared_ptr<RTT::marsh::Marshaller>, boost::shared_ptr<RTT::marsh::Marshaller> > > Marshallers;
         Marshallers marshallers;
         RTT::PropertyBag report;
 
@@ -217,8 +217,8 @@ namespace OCL
         RTT::Property<bool>          synchronize_with_logging;
         RTT::Property<PropertyBag>   report_data;
 
-        RTT::TimeService::ticks starttime;
-        RTT::Property<RTT::TimeService::Seconds> timestamp;
+        RTT::os::TimeService::ticks starttime;
+        RTT::Property<RTT::os::TimeService::Seconds> timestamp;
 
     };
 

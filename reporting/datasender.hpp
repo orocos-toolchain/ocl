@@ -29,12 +29,12 @@
 #ifndef ORO_COMP_TCP_DATASENDER
 #define ORO_COMP_TCP_DATASENDER
 
-#include <rtt/NonPeriodicActivity.hpp>
+#include <rtt/Activity.hpp>
 #include <rtt/os/Mutex.hpp>
 #include <rtt/Property.hpp>
 
-using RTT::OS::Mutex;
-using RTT::PropertyBase;
+using RTT::os::Mutex;
+using RTT::base::PropertyBase;
 using RTT::Property;
 using RTT::PropertyBag;
 
@@ -45,6 +45,7 @@ namespace RTT
 namespace OCL{
 
     namespace TCP{
+        using namespace RTT;
         class TcpReportingInterpreter;
         class Socket;
 
@@ -56,13 +57,13 @@ namespace OCL{
          * It has a thread responsible for reading data from the socket.
          */
         class Datasender
-            : public RTT::NonPeriodicActivity
+            : public RTT::Activity
         {
         private:
-            Mutex lock;
+            os::Mutex lock;
             TcpReportingInterpreter* interpreter;
             void checkbag(const PropertyBag &v);
-            void writeOut(PropertyBase* v);
+            void writeOut(base::PropertyBase* v);
             void writeOut(const PropertyBag &v);
             Socket* os;
             OCL::TcpReporting* reporter;

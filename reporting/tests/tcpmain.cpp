@@ -2,9 +2,9 @@
 #include <reporting/TcpReporting.hpp>
 #include <taskbrowser/TaskBrowser.hpp>
 
-#include <rtt/SlaveActivity.hpp>
-#include <rtt/PeriodicActivity.hpp>
-#include <rtt/Ports.hpp>
+#include <rtt/extras/SlaveActivity.hpp>
+#include <rtt/Activity.hpp>
+#include <rtt/Port.hpp>
 
 using namespace std;
 using namespace Orocos;
@@ -14,8 +14,8 @@ class TestTaskContext
     : public TaskContext
 {
     Property<string> hello;
-    WriteDataPort<std::vector<double> > dwport;
-    ReadDataPort<double> drport;
+    OutputPort<std::vector<double> > dwport;
+    InputPort<double> drport;
     std::vector<double> init;
     int pos;
 
@@ -69,8 +69,8 @@ class TestTaskContext2
     : public TaskContext
 {
     Property<string> hello;
-    WriteDataPort<double> dwport;
-    ReadDataPort<std::vector<double> > drport;
+    OutputPort<double> dwport;
+    InputPort<std::vector<double> > drport;
 
     public:
         TestTaskContext2(std::string name)
@@ -95,13 +95,13 @@ int ORO_main( int argc, char** argv)
     }
 
 
-    PeriodicActivity act(10, 1.0);
+    Activity act(10, 1.0);
     TcpReporting rc("TCPReporting");
     TestTaskContext gtc("MyPeer");
     TestTaskContext2 gtc2("MyPeer2");
     TestTaskContext2 gtc3("MySoloPeer");
 
-    PeriodicActivity act1(10, 2.0);
+    Activity act1(10, 2.0);
 
     rc.addPeer( &gtc );
     rc.addPeer( &gtc2 );

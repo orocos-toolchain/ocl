@@ -29,12 +29,12 @@
 #include <rtt/os/main.h>
 #include <rtt/RTT.hpp>
 #include <deployment/CorbaDeploymentComponent.hpp>
-#include <rtt/corba/ControlTaskServer.hpp>
+#include <rtt/transports/corba/ControlTaskServer.hpp>
 #include <iostream>
 #include "deployer-funcs.hpp"
 
 using namespace std;
-using namespace RTT::Corba;
+using namespace RTT::corba;
 namespace po = boost::program_options;
 
 int ORO_main(int argc, char** argv)

@@ -38,7 +38,7 @@ namespace OCL
 	Any error causes the program usage to be displayed, and a non-0 return value.
 
 	\param argc Number of command line arguments
-	\param argv Command line arguments
+	\param argv RTT::Command line arguments
 	\param script Name of the XML file for the deployer to load and run
 	\param name Name of the deployer task
     \param vm The variables map into which the options are parsed.

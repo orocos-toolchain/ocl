@@ -31,10 +31,11 @@
 #include <rtt/Command.hpp>
 
 // Impl.
-#include <rtt/marsh/EmptyMarshaller.hpp>
+#include "EmptyMarshaller.hpp"
 #include <rtt/marsh/PropertyDemarshaller.hpp>
 #include <rtt/marsh/PropertyMarshaller.hpp>
 #include <fstream>
+#include <exception>
 
 #include "ocl/ComponentLoader.hpp"
 
@@ -81,13 +82,13 @@ namespace OCL
                     "Component", "Name of the Component"
                      );
         this->methods()->addMethod( method( "reportData", &ReportingComponent::reportData , this),
-                    "Add a Component's DataSource for reporting. Only works if DataObject exists and Component is connected.",
+                    "Add a Component's internal::DataSource for reporting. Only works if base::DataObject exists and Component is connected.",
                     "Component", "Name of the Component",
-                    "DataObject", "Name of the DataObject. For example, a property or attribute." );
+                    "base::DataObject", "Name of the DataObject. For example, a property or attribute." );
         this->methods()->addMethod( method( "unreportData", &ReportingComponent::unreportData , this),
-                    "Remove a DataObject from reporting.",
+                    "Remove a base::DataObject from reporting.",
                     "Component", "Name of the Component",
-                    "DataObject", "Name of the DataObject." );
+                    "base::DataObject", "Name of the DataObject." );
         this->methods()->addMethod( method( "reportPort", &ReportingComponent::reportPort , this),
                     "Add a Component's Connection or Port for reporting.",
                     "Component", "Name of the Component",
@@ -102,10 +103,10 @@ namespace OCL
     ReportingComponent::~ReportingComponent() {}
 
 
-    bool ReportingComponent::addMarshaller( Marshaller* headerM, Marshaller* bodyM)
+    bool ReportingComponent::addMarshaller( marsh::Marshaller* headerM, marsh::Marshaller* bodyM)
     {
-        boost::shared_ptr<Marshaller> header(headerM);
-        boost::shared_ptr<Marshaller> body(bodyM);
+        boost::shared_ptr<marsh::Marshaller> header(headerM);
+        boost::shared_ptr<marsh::Marshaller> body(bodyM);
         if ( !header && !body)
             return false;
         if ( !header )
@@ -194,10 +195,10 @@ namespace OCL
             for (PropertyBag::iterator it= bag->begin(); it != bag->end(); ++it)
                 output << "  " << (*it)->getName() << " : " << (*it)->getDataSource() << endl;
         }
-        AttributeRepository::AttributeNames atts = c->attributes()->names();
+        interface::AttributeRepository::AttributeNames atts = c->attributes()->names();
         if ( !atts.empty() ) {
             output << "Attributes :" << endl;
-            for (AttributeRepository::AttributeNames::iterator it= atts.begin(); it != atts.end(); ++it)
+            for (interface::AttributeRepository::AttributeNames::iterator it= atts.begin(); it != atts.end(); ++it)
                 output << "  " << *it << " : " << c->attributes()->getValue(*it)->getDataSource() << endl;
         }
 
@@ -207,7 +208,7 @@ namespace OCL
             for (vector<string>::iterator it= ports.begin(); it != ports.end(); ++it) {
                 output << "  " << *it << " : ";
                 if (c->ports()->getPort(*it)->connected() )
-                    output << c->ports()->getPort(*it)->connection()->getDataSource() << endl;
+                    output << "(connected)" << endl;
                 else
                     output << "(not connected)" << endl;
             }
@@ -260,38 +261,41 @@ namespace OCL
             log(Error) << "Could not report Component " << component <<" : no such peer."<<endlog();
             return false;
         }
-        PortInterface* porti   = comp->ports()->getPort(port);
+        base::PortInterface* porti   = comp->ports()->getPort(port);
         if ( !porti ) {
             log(Error) << "Could not report Port " << port
                           <<" : no such port on Component "<<component<<"."<<endlog();
             return false;
         }
-        if ( porti->connected() ) {
-            if ( this->reportDataSource( component + "." + port, "Port", porti->connection()->getDataSource() ) == false) {
-                log(Error) << "Failed reporting port " << port <<endlog();
-                return false;
-            }
 
-            log(Info) << "Reporting port " << port <<" : ok."<<endlog();
-        } else {
-            // create new port temporarily
-            // this port is only created with the purpose of
-            // creating a connection object.
-            PortInterface* ourport = porti->antiClone();
-            assert(ourport);
-
-            if ( porti->connectTo( ourport ) == false ) {
-                delete ourport;
-                return false;
-            }
-
-            delete ourport;
-            if (this->reportDataSource( component + "." + porti->getName(), "Port", porti->connection()->getDataSource() ) == false) {
-                log(Error) << "Failed reporting port " << port <<endlog();
-                return false;
-            }
-            log(Info) << "Created connection for port " << porti->getName()<<" : ok."<<endlog();
+        base::InputPortInterface* ipi =  dynamic_cast<base::InputPortInterface*>(porti);
+        if (ipi) {
+            log(Error) << "Can not report InputPort "<< porti->getName() <<" of Component " << component <<endlog();
+            return false;
         }
+            // create new port temporarily
+        // this port is only created with the purpose of
+        // creating a connection object.
+        base::PortInterface* ourport = porti->antiClone();
+        assert(ourport);
+        ipi = dynamic_cast<base::InputPortInterface*> (ourport);
+        assert(ipi);
+
+        if (porti->connectTo(*ourport) == false)
+        {
+            delete ourport; // XXX/TODO We're leaking ourport !
+            return false;
+        }
+
+        if (this->reportDataSource(component + "." + porti->getName(), "Port",
+                ipi->getDataSource()) == false)
+        {
+            log(Error) << "Failed reporting port " << port << endlog();
+            delete ourport;
+            return false;
+        }
+        log(Info) << "Reading OutputPort " << porti->getName() << " : ok."
+                << endlog();
         // Add port to ReportData properties if component nor port are listed yet.
         if ( !report_data.value().findValue<string>(component) && !report_data.value().findValue<string>( component+"."+port) )
             report_data.value().ownProperty(new Property<string>("Port","",component+"."+port));
@@ -340,7 +344,7 @@ namespace OCL
     }
 
     void ReportingComponent::snapshot() {
-        timestamp = TimeService::Instance()->secondsSince( starttime );
+        timestamp = os::TimeService::Instance()->secondsSince( starttime );
 
         // execute the copy commands (fast).
         for(Reports::iterator it = root.begin(); it != root.end(); ++it )
@@ -349,7 +353,7 @@ namespace OCL
             this->engine()->getActivity()->trigger();
     }
 
-    bool ReportingComponent::reportDataSource(std::string tag, std::string type, DataSourceBase::shared_ptr orig)
+    bool ReportingComponent::reportDataSource(std::string tag, std::string type, base::DataSourceBase::shared_ptr orig)
     {
         // check for duplicates:
         for (Reports::iterator it = root.begin();
@@ -360,16 +364,16 @@ namespace OCL
 
         // creates a copy of the data and an update command to
         // update the copy from the original.
-        DataSourceBase::shared_ptr clone = orig->getTypeInfo()->buildValue();
+        base::DataSourceBase::shared_ptr clone = orig->getTypeInfo()->buildValue();
         if ( !clone ) {
             log(Error) << "Could not report '"<< tag <<"' : unknown type." << endlog();
             return false;
         }
         try {
-            boost::shared_ptr<CommandInterface> comm( clone->updateCommand( orig.get() ) );
+            boost::shared_ptr<base::ActionInterface> comm( clone->updateCommand( orig.get() ) );
             assert( comm );
             root.push_back( boost::make_tuple( tag, orig, comm, clone, type ) );
-        } catch ( bad_assignment& ba ) {
+        } catch ( internal::bad_assignment& ba ) {
             log(Error) << "Could not report '"<< tag <<"' : failed to create Command." << endlog();
             return false;
         }
@@ -407,7 +411,7 @@ namespace OCL
         if(synchronize_with_logging.get())
             starttime = Logger::Instance()->getReferenceTime();
         else
-            starttime = TimeService::Instance()->getTicks();
+            starttime = os::TimeService::Instance()->getTicks();
         return true;
     }
 
@@ -415,7 +419,7 @@ namespace OCL
     {
         report.add( timestamp.clone() );
         for(Reports::iterator it = root.begin(); it != root.end(); ++it ) {
-            DataSourceBase::shared_ptr clone = it->get<3>();
+            base::DataSourceBase::shared_ptr clone = it->get<3>();
             Property<PropertyBag> subbag( it->get<0>(), "");
             if ( decompose.get() && clone->getTypeInfo()->decomposeType( clone, subbag.value() ) )
                 report.add( subbag.clone() );

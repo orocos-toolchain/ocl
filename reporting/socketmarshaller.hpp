@@ -28,6 +28,7 @@
 #define ORO_COMP_SOCKET_MARSHALLER
 
 #include <rtt/Property.hpp>
+#include <rtt/marsh/Marshaller.hpp>
 #include <rtt/os/Mutex.hpp>
 #include <list>
 
@@ -44,13 +45,13 @@ namespace TCP
 namespace RTT
 {
     /**
-     * Marshaller which sends data to multiple sockets.
+     * marsh::Marshaller which sends data to multiple sockets.
      */
     class SocketMarshaller
-        : public Marshaller
+        : public marsh::Marshaller
     {
         private:
-            RTT::OS::MutexRecursive lock;
+            RTT::os::MutexRecursive lock;
             std::list<OCL::TCP::Datasender*> _connections;
             OCL::TcpReporting* _reporter;
 
@@ -58,7 +59,7 @@ namespace RTT
             SocketMarshaller(OCL::TcpReporting* reporter);
             ~SocketMarshaller();
             virtual void flush();
-            virtual void serialize(RTT::PropertyBase*);
+            virtual void serialize(RTT::base::PropertyBase*);
             virtual void serialize(const PropertyBag &v);
             void addConnection(OCL::TCP::Socket* os);
             void removeConnection(OCL::TCP::Datasender* sender);

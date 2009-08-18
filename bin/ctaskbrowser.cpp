@@ -26,15 +26,15 @@
  ***************************************************************************/
 
 #include <rtt/os/main.h>
-#include <rtt/corba/ControlTaskProxy.hpp>
-#include <rtt/corba/ControlTaskServer.hpp>
+#include <rtt/transports/corba/ControlTaskProxy.hpp>
+#include <rtt/transports/corba/ControlTaskServer.hpp>
 #include <taskbrowser/TaskBrowser.hpp>
 #include <deployment/DeploymentComponent.hpp>
 #include <iostream>
 #include <string>
 
 using namespace RTT;
-using namespace RTT::Corba;
+using namespace RTT::corba;
 
 int ORO_main(int argc, char** argv)
 {
@@ -51,9 +51,9 @@ int ORO_main(int argc, char** argv)
 
     RTT::TaskContext* proxy;
     if ( name.substr(0, 4) == "IOR:" ) {
-        proxy = RTT::Corba::ControlTaskProxy::Create( name, true );
+        proxy = RTT::corba::ControlTaskProxy::Create( name, true );
     } else {
-        proxy = RTT::Corba::ControlTaskProxy::Create( name ); // is_ior = true
+        proxy = RTT::corba::ControlTaskProxy::Create( name ); // is_ior = true
     }
 
     if (proxy == 0){

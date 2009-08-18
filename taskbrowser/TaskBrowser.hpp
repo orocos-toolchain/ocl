@@ -60,8 +60,8 @@
 
 #include <rtt/RTT.hpp>
 #include <rtt/TaskContext.hpp>
-#include "rtt/OperationInterface.hpp"
-#include "rtt/DispatchInterface.hpp"
+#include <rtt/interface/OperationInterface.hpp>
+#include <rtt/base/DispatchInterface.hpp>
 #include <deque>
 #include <string>
 #include <sstream>
@@ -73,7 +73,7 @@ namespace OCL
 {
     /**
      * @brief This component allows a text client to browse the
-     * peers of a peer TaskContext and execute commands.
+     * peers of a peer RTT::TaskContext and execute commands.
      * If your console does not support colors or you want a different
      * prompt, the member variables which control these 'escape sequences'
      * are public and may be changed. The TaskBrowser is most commonly used
@@ -92,10 +92,10 @@ namespace OCL
         static RTT::TaskContext* tb;
         // the current Context: is tb or taskcontext
         static RTT::TaskContext* context;
-        static RTT::OperationInterface* taskobject;
-        RTT::ConditionInterface* condition;
-        RTT::DispatchInterface*   command;
-        RTT::DataSource<bool>::shared_ptr   accepted;
+        static RTT::interface::OperationInterface* taskobject;
+        RTT::base::ConditionInterface* condition;
+        RTT::base::DispatchInterface*   command;
+        RTT::internal::DataSource<bool>::shared_ptr   accepted;
 
         int debug;
         /* A static variable for holding the line. */
@@ -105,10 +105,10 @@ namespace OCL
         std::string storedname; //! last program listed to screen
         int storedline; //!last program line number listed to screen
 
-        std::deque<TaskContext*> taskHistory;
+        std::deque<RTT::TaskContext*> taskHistory;
 
         // store TC + program/state name + line number
-        typedef std::map<std::pair<TaskContext*,std::string>,int> PTrace;
+        typedef std::map<std::pair<RTT::TaskContext*,std::string>,int> PTrace;
         PTrace ptraces;
         PTrace straces;
 
@@ -145,7 +145,7 @@ namespace OCL
 
         void listText(std::stringstream& txtss,int start, int end, int ln, char s);
 
-        void doPrint( RTT::DataSourceBase* ds, bool recurse);
+        void doPrint( RTT::base::DataSourceBase* ds, bool recurse);
 
         void enterTask();
         void leaveTask();
@@ -172,7 +172,7 @@ namespace OCL
         void setColorTheme( ColorTheme t );
 
         /**
-         * Switch to a peer TaskContext using a \a path . For
+         * Switch to a peer RTT::TaskContext using a \a path . For
          * example, "mypeer.otherpeer.targetpeer".
          * @param path The path to the target peer.
          */
@@ -199,9 +199,9 @@ namespace OCL
         void browserAction(std::string& act );
 
         /**
-         * Evaluate a DataSource and print the result.
+         * Evaluate a internal::DataSource and print the result.
          */
-        void printResult( RTT::DataSourceBase* ds, bool recurse);
+        void printResult( RTT::base::DataSourceBase* ds, bool recurse);
 
         /**
          * Print the help page.
@@ -216,7 +216,7 @@ namespace OCL
         /**
          * Print the synopsis of a command.
          */
-        void printCommand( const std::string c, OperationInterface* ops );
+        void printCommand( const std::string c, interface::OperationInterface* ops );
 
         /**
          * Print the synopsis of a DataSource.
@@ -226,17 +226,17 @@ namespace OCL
         /**
          * Print the synopsis of a Method.
          */
-        void printMethod( const std::string m, OperationInterface* ops );
+        void printMethod( const std::string m, interface::OperationInterface* ops );
 
         /**
          * Print the synopsis of an Event.
          */
-        void printEvent( const std::string m, RTT::EventService* ops );
+        void printEvent( const std::string m, RTT::interface::EventService* ops );
 
         /**
          * Print a program listing of a loaded program centered at line \a line.
          */
-        void printProgram( const std::string& pn, int line = -1, TaskContext* progpeer = 0 );
+        void printProgram( const std::string& pn, int line = -1, RTT::TaskContext* progpeer = 0 );
 
         /**
          * Print the program listing of the last shown program centered at line \a line.
@@ -245,7 +245,7 @@ namespace OCL
 
         /**
          * Create a TaskBrowser which initially visits a given
-         * TaskContext \a c.
+         * RTT::TaskContext \a c.
          */
         TaskBrowser( RTT::TaskContext* c );
 

@@ -26,7 +26,7 @@
 
 #include <rtt/Logger.hpp>
 #include <rtt/Property.hpp>
-#include <rtt/PropertyIntrospection.hpp>
+#include <rtt/base/PropertyIntrospection.hpp>
 #include <rtt/os/Mutex.hpp>
 #include "TcpReporting.hpp"
 #include "socketmarshaller.hpp"
@@ -51,7 +51,7 @@ namespace RTT
             lock.lock();
             OCL::TCP::Datasender* conn = new OCL::TCP::Datasender(this, os);
             _connections.push_front( conn );
-            conn->NonPeriodicActivity::start();
+            conn->Activity::start();
             lock.unlock();
         }
 
@@ -81,7 +81,7 @@ namespace RTT
             return _reporter;
         }
 
-        void SocketMarshaller::serialize(RTT::PropertyBase*)
+        void SocketMarshaller::serialize(RTT::base::PropertyBase*)
         {
             // This method is pure virtual in the parent class.
             Logger::log() << Logger::Error << "Unexpected call to SocketMarshaller::serialize" <<

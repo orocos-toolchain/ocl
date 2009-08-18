@@ -25,8 +25,8 @@ namespace OCL
          */
         std::ofstream mfile;
 
-        RTT::Marshaller* fheader;
-        RTT::Marshaller* fbody;
+        RTT::marsh::Marshaller* fheader;
+        RTT::marsh::Marshaller* fbody;
     public:
         FileReporting(const std::string& fr_name);
 

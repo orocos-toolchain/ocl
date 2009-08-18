@@ -1,8 +1,8 @@
 #ifndef PI_PROPERTIES_NETCDFTABLESERIALIZER
 #define PI_PROPERTIES_NETCDFTABLESERIALIZER
 
-#include "rtt/Property.hpp"
-#include "rtt/PropertyIntrospection.hpp"
+#include <rtt/Property.hpp>
+#include <rtt/base/PropertyIntrospection.hpp>
 #include <boost/lexical_cast.hpp>
 
 #include <netcdf.h>
@@ -11,12 +11,12 @@ namespace RTT
 {
 
     /**
-     * A Marshaller for writing data logs into the variables of a netcdf file. 
+     * A marsh::Marshaller for writing data logs into the variables of a netcdf file. 
      * The dimension of the time is increased on each flush() command. 
      * The NetcdfHeaderMarshaller creates the appropriate variables in a netcdf file.
      */
     class NetcdfMarshaller 
-        : public Marshaller
+        : public marsh::Marshaller
     {
       int ncid;
       size_t index;
@@ -33,7 +33,7 @@ namespace RTT
 
         virtual ~NetcdfMarshaller() {}
 
-        virtual void serialize(PropertyBase* v) 
+        virtual void serialize(base::PropertyBase* v) 
         { 
          Property<PropertyBag>* bag = dynamic_cast< Property<PropertyBag>* >( v );
          if ( bag )

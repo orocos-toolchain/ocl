@@ -1,8 +1,8 @@
 #include "NetcdfReporting.hpp"
-#include "rtt/RTT.hpp"
-#include "rtt/Logger.hpp"
-#include "rtt/Types.hpp"
-#include "rtt/TemplateTypeInfo.hpp"
+#include <rtt/RTT.hpp>
+#include <rtt/Logger.hpp>
+#include <rtt/types/Types.hpp>
+#include <rtt/types/TemplateTypeInfo.hpp>
 #include "NetcdfMarshaller.hpp"
 #include "NetcdfHeaderMarshaller.hpp"
 

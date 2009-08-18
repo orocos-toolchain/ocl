@@ -19,12 +19,12 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <rtt/os/StartStopManager.hpp>
-#include <rtt/TemplateTypeInfo.hpp>
-#include <rtt/Operators.hpp>
-#include <rtt/OperatorTypes.hpp>
-#include <rtt/RealTimeToolkit.hpp>
+#include <rtt/types/TemplateTypeInfo.hpp>
+#include <rtt/types/Operators.hpp>
+#include <rtt/types/OperatorTypes.hpp>
+#include <rtt/types/RealTimeToolkit.hpp>
 
-#include <rtt/VectorTemplateComposition.hpp>
+#include <rtt/types/VectorTemplateComposition.hpp>
 
 namespace OCL
 {
@@ -33,38 +33,38 @@ namespace OCL
 
     int loadOCL()
     {
-        //RTT::TypeInfoRepository::Instance()->addType( new StdVectorTemplateTypeInfo<std::string>("stringList") );
-        RTT::TypeInfoRepository::Instance()->addType( new StdVectorTemplateTypeInfo<std::string,true>("strings") );
-        RTT::TypeInfoRepository::Instance()->type("strings")->addConstructor(newConstructor(stdvector_ctor<std::string>() ) );
-        RTT::TypeInfoRepository::Instance()->type("strings")->addConstructor(newConstructor(stdvector_ctor2<std::string>() ) );
-        RTT::TypeInfoRepository::Instance()->type("strings")->addConstructor(new StdVectorBuilder<std::string>() );
-        RTT::OperatorRepository::Instance()->add( newBinaryOperator( "[]", stdvector_index<std::string>() ) );
-        RTT::OperatorRepository::Instance()->add( newDotOperator( "size", get_size<const std::vector<std::string>&>() ) );
+        //RTT::types::TypeInfoRepository::Instance()->addType( new types::StdVectorTemplateTypeInfo<std::string>("stringList") );
+        RTT::types::TypeInfoRepository::Instance()->addType( new types::StdVectorTemplateTypeInfo<std::string,true>("strings") );
+        RTT::types::TypeInfoRepository::Instance()->type("strings")->addConstructor(newConstructor(types::stdvector_ctor<std::string>() ) );
+        RTT::types::TypeInfoRepository::Instance()->type("strings")->addConstructor(newConstructor(types::stdvector_ctor2<std::string>() ) );
+        RTT::types::TypeInfoRepository::Instance()->type("strings")->addConstructor(new types::StdVectorBuilder<std::string>() );
+        RTT::types::OperatorRepository::Instance()->add( newBinaryOperator( "[]", types::stdvector_index<std::string>() ) );
+        RTT::types::OperatorRepository::Instance()->add( newDotOperator( "size", types::get_size<const std::vector<std::string>&>() ) );
 
-        RTT::TypeInfoRepository::Instance()->addType( new StdVectorTemplateTypeInfo<bool,true>("bools") );
-        RTT::TypeInfoRepository::Instance()->type("bools")->addConstructor(newConstructor(stdvector_ctor<bool>() ) );
-        RTT::TypeInfoRepository::Instance()->type("bools")->addConstructor(newConstructor(stdvector_ctor2<bool>() ) );
-        RTT::TypeInfoRepository::Instance()->type("bools")->addConstructor(new StdVectorBuilder<bool>() );
-        RTT::OperatorRepository::Instance()->add( newBinaryOperator( "[]", stdvector_index<bool>() ) );
-        RTT::OperatorRepository::Instance()->add( newDotOperator( "size", get_size<const std::vector<bool>&>() ) );
+        RTT::types::TypeInfoRepository::Instance()->addType( new types::StdVectorTemplateTypeInfo<bool,true>("bools") );
+        RTT::types::TypeInfoRepository::Instance()->type("bools")->addConstructor(newConstructor(types::stdvector_ctor<bool>() ) );
+        RTT::types::TypeInfoRepository::Instance()->type("bools")->addConstructor(newConstructor(types::stdvector_ctor2<bool>() ) );
+        RTT::types::TypeInfoRepository::Instance()->type("bools")->addConstructor(new types::StdVectorBuilder<bool>() );
+        RTT::types::OperatorRepository::Instance()->add( newBinaryOperator( "[]", types::stdvector_index<bool>() ) );
+        RTT::types::OperatorRepository::Instance()->add( newDotOperator( "size", types::get_size<const std::vector<bool>&>() ) );
 
-//        RTT::TypeInfoRepository::Instance()->addType( new StdVectorTemplateTypeInfo<double,true>("doubles") );
-//        RTT::TypeInfoRepository::Instance()->type("doubles")->addConstructor(newConstructor(stdvector_ctor<double>() ) );
-//        RTT::TypeInfoRepository::Instance()->type("doubles")->addConstructor(newConstructor(stdvector_ctor2<double>() ) );
-//        RTT::TypeInfoRepository::Instance()->type("doubles")->addConstructor(new StdVectorBuilder<double>() );
-//        RTT::OperatorRepository::Instance()->add( newBinaryOperator( "[]", stdvector_index<double>() ) );
+//        RTT::types::TypeInfoRepository::Instance()->addType( new types::StdVectorTemplateTypeInfo<double,true>("doubles") );
+//        RTT::types::TypeInfoRepository::Instance()->type("doubles")->addConstructor(newConstructor(types::stdvector_ctor<double>() ) );
+//        RTT::types::TypeInfoRepository::Instance()->type("doubles")->addConstructor(newConstructor(types::stdvector_ctor2<double>() ) );
+//        RTT::types::TypeInfoRepository::Instance()->type("doubles")->addConstructor(new types::StdVectorBuilder<double>() );
+//        RTT::types::OperatorRepository::Instance()->add( newBinaryOperator( "[]", types::stdvector_index<double>() ) );
 
-        RTT::TypeInfoRepository::Instance()->addType( new StdVectorTemplateTypeInfo<int,true>("ints") );
-        RTT::TypeInfoRepository::Instance()->type("ints")->addConstructor(newConstructor(stdvector_ctor<int>() ) );
-        RTT::TypeInfoRepository::Instance()->type("ints")->addConstructor(newConstructor(stdvector_ctor2<int>() ) );
-        RTT::TypeInfoRepository::Instance()->type("ints")->addConstructor(new StdVectorBuilder<int>() );
-        RTT::OperatorRepository::Instance()->add( newBinaryOperator( "[]", stdvector_index<int>() ) );
-        RTT::OperatorRepository::Instance()->add( newDotOperator( "size", get_size<const std::vector<int>&>() ) );
+        RTT::types::TypeInfoRepository::Instance()->addType( new types::StdVectorTemplateTypeInfo<int,true>("ints") );
+        RTT::types::TypeInfoRepository::Instance()->type("ints")->addConstructor(newConstructor(types::stdvector_ctor<int>() ) );
+        RTT::types::TypeInfoRepository::Instance()->type("ints")->addConstructor(newConstructor(types::stdvector_ctor2<int>() ) );
+        RTT::types::TypeInfoRepository::Instance()->type("ints")->addConstructor(new types::StdVectorBuilder<int>() );
+        RTT::types::OperatorRepository::Instance()->add( newBinaryOperator( "[]", types::stdvector_index<int>() ) );
+        RTT::types::OperatorRepository::Instance()->add( newDotOperator( "size", types::get_size<const std::vector<int>&>() ) );
         
         return true;
     }
 
-    OS::InitFunction OCLLoader(&loadOCL);
+    os::InitFunction OCLLoader(&loadOCL);
 }
 
 

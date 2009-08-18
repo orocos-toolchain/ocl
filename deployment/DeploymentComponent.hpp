@@ -31,9 +31,10 @@
 
 #include <rtt/RTT.hpp>
 #include <rtt/TaskContext.hpp>
-#include <rtt/Properties.hpp>
+#include <rtt/extras/Properties.hpp>
 #include <rtt/Attribute.hpp>
-#include <rtt/Ports.hpp>
+#include <rtt/InputPort.hpp>
+#include <rtt/OutputPort.hpp>
 #include <ocl/OCL.hpp>
 #include <vector>
 #include <map>
@@ -122,7 +123,7 @@ namespace OCL
              * The activity created by DeploymentComponent.
              * May be null or an activity that we own.
              */
-            ActivityInterface* act;
+            base::ActivityInterface* act;
             /**
              * True if it was loaded and created by DeploymentComponent.
              * If true, instance may be deleted during
@@ -138,7 +139,7 @@ namespace OCL
          * Assembles all ports which share a connection.
          */
         struct ConnectionData {
-            typedef std::vector<RTT::PortInterface*> Ports;
+            typedef std::vector<RTT::base::PortInterface*> Ports;
             typedef std::vector<RTT::TaskContext*>   Owners;
             Ports ports;
             Owners owners;
@@ -175,7 +176,7 @@ namespace OCL
         static std::vector< LoadedLib > loadedLibs;
 
         /**
-         * Handle of last loaded library.
+         * RTT::Handle of last loaded library.
          */
         void* handle;
         /**
@@ -205,7 +206,7 @@ namespace OCL
          * @return false if the component should be unloaded again,
          * true if loading was succesful.
          */
-        virtual bool componentLoaded(TaskContext* c);
+        virtual bool componentLoaded(RTT::TaskContext* c);
     public:
         /**
          * Constructs and configures this component.
@@ -236,7 +237,7 @@ namespace OCL
          */
         ~DeploymentComponent();
 
-        TaskContext* myGetPeer(std::string name) {return comps[ name ].instance; }
+        RTT::TaskContext* myGetPeer(std::string name) {return comps[ name ].instance; }
 
         /**
          * Establish a bidirectional connection between two tasks.
@@ -288,8 +289,8 @@ namespace OCL
          */
         bool addPeer(const std::string& from, const std::string& to);
 
-        using TaskContext::addPeer;
-        using TaskContext::connectPeers;
+        using RTT::TaskContext::addPeer;
+        using RTT::TaskContext::connectPeers;
 
         /**
          * Import a library or all libraries in a given directory.
@@ -393,11 +394,11 @@ namespace OCL
          * (Re-)set the activity of a component.
          *
          * @param comp_name The name of the component to change.
-         * @param act_type  The Activity type: 'PeriodicActivity', 'NonPeriodicActivity' or 'SlaveActivity'.
+         * @param act_type  The RTT::Activity type: 'RTT::Activity', 'RTT::Activity' or 'extras::SlaveActivity'.
          * @param priority  The scheduler priority (OS dependent).
          * @param period    The period of the activity.
          * @param scheduler The scheduler type \a ORO_SCHED_RT or \a ORO_SCHED_OTHER.
-         * @param master_name The name of the master component in case of a SlaveActivity with a master.
+         * @param master_name The name of the master component in case of a extras::SlaveActivity with a master.
          *
          * @return false if one of the parameters does not match or if the
          * component is running.
@@ -503,7 +504,7 @@ namespace OCL
         bool kickOutAll();
 
 
-        using TaskCore::configure;
+        using base::TaskCore::configure;
 
         /**
          * Configure a component by loading the property file 'name.cpf' for component with

@@ -27,8 +27,8 @@
 
 
 #include "CorbaDeploymentComponent.hpp"
-#include <rtt/corba/ControlTaskProxy.hpp>
-#include <rtt/corba/ControlTaskServer.hpp>
+#include <rtt/transports/corba/ControlTaskProxy.hpp>
+#include <rtt/transports/corba/ControlTaskServer.hpp>
 #include <rtt/Method.hpp>
 #include "ocl/ComponentLoader.hpp"
 #include <fstream>
@@ -40,24 +40,24 @@ namespace OCL
      * This helper function looks up a server using the Naming Service
      * and creates a proxy for that object.
      */
-    TaskContext* createControlTaskProxy(std::string name)
+    RTT::TaskContext* createControlTaskProxy(std::string name)
     {
         log(Debug) << "createControlTaskProxy" <<endlog();
-        return ::RTT::Corba::ControlTaskProxy::Create(name, false);
+        return ::RTT::corba::ControlTaskProxy::Create(name, false);
     }
 
     /**
      * This helper function looks up a server using an IOR file
      * and creates a proxy for that object.
      */
-    TaskContext* createControlTaskProxyIORFile(std::string iorfilename)
+    RTT::TaskContext* createControlTaskProxyIORFile(std::string iorfilename)
     {
         log(Debug) << "createControlTaskProxyIORFile" <<endlog();
         std::ifstream iorfile( iorfilename.c_str() );
         if (iorfile.is_open() && iorfile.good() ) {
             std::string ior;
             iorfile >> ior;
-            return ::RTT::Corba::ControlTaskProxy::Create( ior, true);
+            return ::RTT::corba::ControlTaskProxy::Create( ior, true);
         }
         else {
             log(Error) << "Could not open IORFile: '" << iorfilename <<"'."<< endlog();
@@ -69,10 +69,10 @@ namespace OCL
      * This helper function looks up a server using an IOR file
      * and creates a proxy for that object.
      */
-    TaskContext* createControlTaskProxyIOR(std::string ior)
+    RTT::TaskContext* createControlTaskProxyIOR(std::string ior)
     {
         log(Debug) << "createControlTaskProxyIOR" <<endlog();
-        return ::RTT::Corba::ControlTaskProxy::Create( ior, true);
+        return ::RTT::corba::ControlTaskProxy::Create( ior, true);
     }
 
 
@@ -87,7 +87,7 @@ namespace OCL
 
         this->methods()->addMethod(method("server",&CorbaDeploymentComponent::createServer,this),
                                    "Creates a CORBA ControlTask server for the given component",
-                                   "tc", "Name of the TaskContext (must be a peer).",
+                                   "tc", "Name of the RTT::TaskContext (must be a peer).",
                                    "UseNamingService","Set to true to use the naming service.");
     }
 
@@ -97,20 +97,20 @@ namespace OCL
 
     bool CorbaDeploymentComponent::createServer(const std::string& tc, bool use_naming)
     {
-        TaskContext* peer = this->getPeer(tc);
+        RTT::TaskContext* peer = this->getPeer(tc);
         if (!peer) {
             log(Error)<<"No such peer: "<< tc <<endlog();
             return false;
         }
-        if ( ::RTT::Corba::ControlTaskServer::Create(peer, use_naming) != 0 )
+        if ( ::RTT::corba::ControlTaskServer::Create(peer, use_naming) != 0 )
             return true;
         return false;
     }
 
 
-    bool CorbaDeploymentComponent::componentLoaded(TaskContext* c)
+    bool CorbaDeploymentComponent::componentLoaded(RTT::TaskContext* c)
     {
-        if ( dynamic_cast<RTT::Corba::ControlTaskProxy*>(c) ) {
+        if ( dynamic_cast<RTT::corba::ControlTaskProxy*>(c) ) {
             // is a proxy.
             for ( CompList::iterator cit = comps.begin(); cit != comps.end(); ++cit) {
                 if (cit->second.instance == c) {
@@ -127,7 +127,7 @@ namespace OCL
         log(Info) << "Name:"<< c->getName() << " Server: " << server << " Naming: " << use_naming <<endlog();
         // create a server, use naming.
         if (server)
-            ::RTT::Corba::ControlTaskServer::Create(c, use_naming);
+            ::RTT::corba::ControlTaskServer::Create(c, use_naming);
         return true;
     }
 }

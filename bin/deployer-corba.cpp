@@ -29,16 +29,16 @@
 #include <rtt/RTT.hpp>
 #include <taskbrowser/TaskBrowser.hpp>
 #include <deployment/CorbaDeploymentComponent.hpp>
-#include <rtt/corba/ControlTaskServer.hpp>
+#include <rtt/transports/corba/ControlTaskServer.hpp>
 #include <iostream>
 #include "deployer-funcs.hpp"
 
-#include <rtt/corba/corba.h>
+#include <rtt/transports/corba/corba.h>
 
 using namespace std;
 using namespace OCL;
 using namespace RTT;
-using namespace RTT::Corba;
+using namespace RTT::corba;
 namespace po = boost::program_options;
 
 int ORO_main(int argc, char** argv)
@@ -100,7 +100,7 @@ int ORO_main(int argc, char** argv)
         ControlTaskServer::DestroyOrb();
 
     } catch( CORBA::Exception &e ) {
-        log(Error) << argv[0] <<" ORO_main : CORBA exception raised!" << Logger::nl;
+        log(Error) << argv[0] <<" ORO_main : CORBA exception raised!" << RTT::Logger::nl;
         log() << CORBA_EXCEPTION_INFO(e) << endlog();
     }
 

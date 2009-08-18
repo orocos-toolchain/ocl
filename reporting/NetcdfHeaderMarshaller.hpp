@@ -12,10 +12,10 @@
 namespace RTT
 {
     /**
-     * A Marshaller for generating variables in a netcdf dataset
+     * A marsh::Marshaller for generating variables in a netcdf dataset
      */
     class NetcdfHeaderMarshaller 
-    : public Marshaller
+    : public marsh::Marshaller
     {
       int nameless_counter;
       std::string prefix;
@@ -29,7 +29,7 @@ namespace RTT
 
       virtual ~NetcdfHeaderMarshaller() {}
 
-      virtual void serialize(PropertyBase* v)
+      virtual void serialize(base::PropertyBase* v)
       {
         Property<PropertyBag>* bag = dynamic_cast< Property<PropertyBag>* >( v );
         if ( bag )

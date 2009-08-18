@@ -56,11 +56,11 @@
 
 
 #include <rtt/Logger.hpp>
-#include <rtt/MultiVector.hpp>
-#include <rtt/TypeStream.hpp>
+#include <rtt/extras/MultiVector.hpp>
+#include <rtt/types/TypeStream.hpp>
 #include "TaskBrowser.hpp"
 
-#include "rtt/TryCommand.hpp"
+#include <rtt/scripting/TryCommand.hpp>
 #include <rtt/TaskContext.hpp>
 #include <rtt/scripting/parser-debug.hpp>
 #include <rtt/scripting/Parser.hpp>
@@ -95,11 +95,11 @@ namespace OCL
     std::string TaskBrowser::peerpath;
     std::string TaskBrowser::text;
 #endif
-    TaskContext* TaskBrowser::taskcontext = 0;
-    OperationInterface* TaskBrowser::taskobject = 0;
-    TaskContext* TaskBrowser::peer = 0;
-    TaskContext* TaskBrowser::tb = 0;
-    TaskContext* TaskBrowser::context = 0;
+    RTT::TaskContext* TaskBrowser::taskcontext = 0;
+    interface::OperationInterface* TaskBrowser::taskobject = 0;
+    RTT::TaskContext* TaskBrowser::peer = 0;
+    RTT::TaskContext* TaskBrowser::tb = 0;
+    RTT::TaskContext* TaskBrowser::context = 0;
 
     using boost::bind;
     using namespace RTT;
@@ -217,8 +217,8 @@ namespace OCL
                 peer = findPeer( line.substr(pos+1) );
 
             //std::string peername = text.substring( pos+1, std::string::npos );
-            TaskContext::PeerList v = peer->getPeerList();
-            for (TaskContext::PeerList::iterator i = v.begin(); i != v.end(); ++i) {
+            RTT::TaskContext::PeerList v = peer->getPeerList();
+            for (RTT::TaskContext::PeerList::iterator i = v.begin(); i != v.end(); ++i) {
                 std::string path;
                 if ( !( pos+1 > startpos) )
                     path = line.substr(pos+1, startpos - pos);
@@ -234,7 +234,7 @@ namespace OCL
                 return;
             // Add objects for 'ls'.
             v = peer->getObjectList();
-            for (TaskContext::PeerList::iterator i = v.begin(); i != v.end(); ++i) {
+            for (RTT::TaskContext::PeerList::iterator i = v.begin(); i != v.end(); ++i) {
                 std::string path;
                 if ( !( pos+1 > startpos) )
                     path = line.substr(pos+1, startpos - pos);
@@ -379,7 +379,7 @@ namespace OCL
             if ( i->find( component ) == 0 && !component.empty() )
                 completes.push_back( peerpath + *i );
         }
-        // all properties if TaskContext:
+        // all properties if RTT::TaskContext:
         if (taskobject == peer && peer->properties() != 0 ) {
             std::vector<std::string> props;
             peer->properties()->list(props);
@@ -466,11 +466,11 @@ namespace OCL
 //         cout << "Peerpath: '" << peerpath <<"'"<<endl;
 //         cout << "Component: '" << component <<"'"<<endl;
 
-        TaskContext::PeerList v;
+        RTT::TaskContext::PeerList v;
         if ( taskobject == peer ) {
             // add peer's completes:
             v = peer->getPeerList();
-            for (TaskContext::PeerList::iterator i = v.begin(); i != v.end(); ++i) {
+            for (RTT::TaskContext::PeerList::iterator i = v.begin(); i != v.end(); ++i) {
                 if ( i->find( component ) == 0 ) { // only add if match
                     completes.push_back( peerpath + *i );
                     completes.push_back( peerpath + *i + "." );
@@ -480,7 +480,7 @@ namespace OCL
         }
         // add taskobject's completes:
         v = taskobject->getObjectList();
-        for (TaskContext::PeerList::iterator i = v.begin(); i != v.end(); ++i) {
+        for (RTT::TaskContext::PeerList::iterator i = v.begin(); i != v.end(); ++i) {
             if ( i->find( component ) == 0 ) { // only add if match
                 completes.push_back( peerpath + *i );
                 if ( *i != "this" ) // "this." confuses our parsing lateron
@@ -502,8 +502,8 @@ namespace OCL
     }
 #endif // !NO_GPL
 
-    TaskBrowser::TaskBrowser( TaskContext* _c )
-        : TaskContext("TaskBrowser"),
+    TaskBrowser::TaskBrowser( RTT::TaskContext* _c )
+        : RTT::TaskContext("TaskBrowser"),
           command(0),
           debug(0),
           line_read(0),
@@ -541,7 +541,7 @@ namespace OCL
     /**
      * Helper functions to display task and script states.
      */
-    char getTaskStatusChar(TaskContext* t)
+    char getTaskStatusChar(RTT::TaskContext* t)
     {
         if (t->isRunning() )
             return 'R'; // Running
@@ -550,13 +550,13 @@ namespace OCL
         return 'U';     // Unconfigured/Preoperational
     }
 
-    char getStateMachineStatusChar(TaskContext* t, string progname)
+    char getStateMachineStatusChar(RTT::TaskContext* t, string progname)
     {
         string ps = t->scripting()->getStateMachineStatus(progname);
         return toupper(ps[0]);
     }
 
-    char getProgramStatusChar(TaskContext* t, string progname)
+    char getProgramStatusChar(RTT::TaskContext* t, string progname)
     {
         string ps = t->scripting()->getProgramStatus(progname);
         return toupper(ps[0]);
@@ -608,7 +608,7 @@ namespace OCL
 
                     char state = getTaskStatusChar(taskcontext);
 
-                    cout << "Task "<<green<< taskcontext->getName() <<coloroff<< "["<< state <<"]. (Status of last Command : ";
+                    cout << "Task "<<green<< taskcontext->getName() <<coloroff<< "["<< state <<"]. (Status of last RTT::Command : ";
                     if ( command == 0 )
                         cout << "none";
                     else if ( command->done() ) // disposed or done
@@ -626,7 +626,7 @@ namespace OCL
 
                     // print traces.
                     for (PTrace::iterator it = ptraces.begin(); it != ptraces.end(); ++it) {
-                        TaskContext* progpeer = it->first.first;
+                        RTT::TaskContext* progpeer = it->first.first;
                         int line = progpeer->scripting()->getProgramLine(it->first.second);
                         if ( line != it->second ) {
                             it->second = line;
@@ -635,7 +635,7 @@ namespace OCL
                     }
 
                     for (PTrace::iterator it = straces.begin(); it != straces.end(); ++it) {
-                        TaskContext* progpeer = it->first.first;
+                        RTT::TaskContext* progpeer = it->first.first;
                         int line = progpeer->scripting()->getStateMachineLine(it->first.second);
                         if ( line != it->second ) {
                             it->second = line;
@@ -705,7 +705,7 @@ namespace OCL
             }
     }
 
-    std::deque<TaskContext*> taskHistory;
+    std::deque<RTT::TaskContext*> taskHistory;
     std::string TaskBrowser::prompt(" (type 'ls' for context info) :");
     std::string TaskBrowser::coloron("\e[m\e[1;31m");
     std::string TaskBrowser::underline("\e[4m");
@@ -762,7 +762,7 @@ namespace OCL
         macrofile << "}"<<endl;
 
         cout << "Loading file "<< fname <<endl;
-        ProgramLoader loader;
+        scripting::ProgramLoader loader;
         if ( loader.loadProgram( fname, context ) ) {
             cout << "Done."<<endl;
         } else
@@ -774,8 +774,8 @@ namespace OCL
         if ( taskHistory.size() == 0)
             return;
         if ( !taskcontext->engine()->commands()->isProcessed( lastc ) ) {
-            Logger::log()<<Logger::Warning
-                         << "Previous command was not yet processed by previous Processor." <<Logger::nl
+            RTT::Logger::log()<<RTT::Logger::Warning
+                         << "Previous command was not yet processed by previous Processor." <<RTT::Logger::nl
                          << " Can not track command status across tasks."<< endlog();
             // memleak command...
             command = 0;
@@ -793,13 +793,13 @@ namespace OCL
     {
         // check periodically if the taskcontext did not change its ports.
 
-        DataFlowInterface::Ports ports;
+        interface::DataFlowInterface::Ports ports;
         ports = this->ports()->getPorts();
-        for( DataFlowInterface::Ports::iterator i=ports.begin(); i != ports.end(); ++i) {
+        for( interface::DataFlowInterface::Ports::iterator i=ports.begin(); i != ports.end(); ++i) {
             // If our port is no longer connected, try to reconnect.
-            PortInterface* p = *i;
-            PortInterface* tcp = taskcontext->ports()->getPort( p->getName() );
-            if ( p->ready() == false || tcp == 0 || tcp->ready() == false) {
+            base::PortInterface* p = *i;
+            base::PortInterface* tcp = taskcontext->ports()->getPort( p->getName() );
+            if ( p->connected() == false || tcp == 0 || tcp->connected() == false) {
                 this->ports()->removePort( p->getName() );
                 delete p;
             }
@@ -873,7 +873,7 @@ namespace OCL
         this->switchTaskContext( peer );
     }
 
-    void TaskBrowser::switchTaskContext(TaskContext* tc, bool store) {
+    void TaskBrowser::switchTaskContext(RTT::TaskContext* tc, bool store) {
         // put current on the stack :
         if (taskHistory.size() == 20 )
             taskHistory.pop_back();
@@ -883,8 +883,8 @@ namespace OCL
         // We need to release the comms, since taskcontext is changing,
         // and we do not keep track of in which processor the comm was dropped.
         if ( taskcontext && !taskcontext->engine()->commands()->isProcessed( lastc ) ) {
-            Logger::log()<<Logger::Warning
-                         << "Previous command was not yet processed by previous Processor." <<Logger::nl
+            RTT::Logger::log()<<RTT::Logger::Warning
+                         << "Previous command was not yet processed by previous Processor." <<RTT::Logger::nl
                          << " Can not track command status across tasks."<< endlog();
             // memleak it...
             command = 0;
@@ -897,8 +897,8 @@ namespace OCL
         this->disconnect();
 
         // cleanup port left-overs.
-        DataFlowInterface::Ports ports = this->ports()->getPorts();
-        for( DataFlowInterface::Ports::iterator i=ports.begin(); i != ports.end(); ++i) {
+        interface::DataFlowInterface::Ports ports = this->ports()->getPorts();
+        for( interface::DataFlowInterface::Ports::iterator i=ports.begin(); i != ports.end(); ++i) {
             this->ports()->removePort( (*i)->getName() );
             delete *i;
         }
@@ -916,14 +916,14 @@ namespace OCL
 
     }
 
-    TaskContext* TaskBrowser::findPeer(std::string c) {
+    RTT::TaskContext* TaskBrowser::findPeer(std::string c) {
         // returns the one but last peer, which is the one we want.
         std::string s( c );
 
         our_pos_iter_t parsebegin( s.begin(), s.end(), "teststring" );
         our_pos_iter_t parseend;
 
-        PeerParser pp( peer, true );
+        scripting::PeerParser pp( peer, true );
         try {
             parse( parsebegin, parseend, pp.parser(), SKIP_PARSER );
         }
@@ -1045,7 +1045,7 @@ namespace OCL
 
         std::string arg;
         ss >> arg;
-        ProgramLoader loader;
+        scripting::ProgramLoader loader;
         if ( instr == "loadProgram") {
             if ( loader.loadProgram( arg, context ) )
                 cout << "Done."<<endl;
@@ -1094,8 +1094,8 @@ namespace OCL
             if (arg.empty() ) {
                 cout <<nl << "TaskBrowser connects to all ports of "<<taskcontext->getName()<<endl;
                 // create 'anti-ports' to allow port-level interaction with the peer.
-                DataFlowInterface::Ports ports = taskcontext->ports()->getPorts();
-                for( DataFlowInterface::Ports::iterator i=ports.begin(); i != ports.end(); ++i) {
+                interface::DataFlowInterface::Ports ports = taskcontext->ports()->getPorts();
+                for( interface::DataFlowInterface::Ports::iterator i=ports.begin(); i != ports.end(); ++i) {
                     if (this->ports()->getPort( (*i)->getName() ) == 0 )
                         this->ports()->addPort( (*i)->antiClone() );
                 }
@@ -1104,11 +1104,11 @@ namespace OCL
             else {
                 cout <<nl << "TaskBrowser connects to port '"<<arg <<"' of "<<taskcontext->getName()<<endl;
                 // create 'anti-port' and connect.
-                DataFlowInterface::Ports ports = taskcontext->ports()->getPorts();
-                for( DataFlowInterface::Ports::iterator i=ports.begin(); i != ports.end(); ++i) {
+                interface::DataFlowInterface::Ports ports = taskcontext->ports()->getPorts();
+                for( interface::DataFlowInterface::Ports::iterator i=ports.begin(); i != ports.end(); ++i) {
                     if ( (*i)->getName() == arg && this->ports()->getPort( (*i)->getName() ) == 0 ) {
                         this->ports()->addPort( (*i)->antiClone() );
-                        this->ports()->getPort( arg )->connectTo( *i ); // this should always succeed
+                        this->ports()->getPort( arg )->connectTo( **i ); // this should always succeed
                         assert( this->ports()->getPort( arg )->connected() );
                         return;
                     }
@@ -1140,7 +1140,7 @@ namespace OCL
     {
         cout << "      Got :"<< comm <<nl;
 
-        OperationInterface* ops = context->getObject( comm );
+        interface::OperationInterface* ops = context->getObject( comm );
         if ( ops ) // only object name was typed
             {
                 sresult << nl << "Printing Interface of '"<< coloron << ops->getName() <<coloroff <<"' :"<<nl<<nl;
@@ -1171,13 +1171,13 @@ namespace OCL
             return;
         }
 
-        Parser _parser;
+        scripting::Parser _parser;
 
         if (debug)
             cerr << "Trying ValueChange..."<<nl;
         try {
             // Check if it was a method or datasource :
-            DataSourceBase::shared_ptr ds = _parser.parseValueChange( comm, context );
+            base::DataSourceBase::shared_ptr ds = _parser.parseValueChange( comm, context );
             // methods and DS'es are processed immediately.
             if ( ds.get() != 0 ) {
                 this->printResult( ds.get(), false );
@@ -1216,7 +1216,7 @@ namespace OCL
             cerr << "Trying Expression..."<<nl;
         try {
             // Check if it was a method or datasource :
-            DataSourceBase::shared_ptr ds = _parser.parseExpression( comm, context );
+            base::DataSourceBase::shared_ptr ds = _parser.parseExpression( comm, context );
             // methods and DS'es are processed immediately.
             if ( ds.get() != 0 ) {
                 this->printResult( ds.get(), true );
@@ -1254,9 +1254,9 @@ namespace OCL
         if (debug)
             cerr << "Trying Command..."<<nl;
         try {
-            CommandInterface* com = _parser.parseCommand( comm, context, true ).first; // create a dispatch command.
+            base::ActionInterface* com = _parser.parseCommand( comm, context, true ).first; // create a dispatch command.
             // check if it is a plain Action:
-            if ( com && dynamic_cast<DispatchInterface*>(com) == 0 ) {
+            if ( com && dynamic_cast<base::DispatchInterface*>(com) == 0 ) {
                 string prompt =" = ";
                 sresult <<prompt<< setw(20)<<left;
                 sresult << com->execute() << right;
@@ -1270,10 +1270,10 @@ namespace OCL
             } else {
                 delete command;
             }
-            command = dynamic_cast<DispatchInterface*>(com);
+            command = dynamic_cast<base::DispatchInterface*>(com);
         } catch ( parse_exception& pe ) {
             if (debug)
-                cerr << "CommandParser parse_exception :"<<nl;
+                cerr << "scripting::CommandParser parse_exception :"<<nl;
             cerr << pe.what() <<nl;
             return;
         } catch (...) {
@@ -1287,14 +1287,14 @@ namespace OCL
         }
 
         if ( command->dispatch() == false ) {
-            cerr << "Command not accepted by "<<context->getName()<<"'s Processor !" << nl;
+            cerr << "RTT::Command not accepted by "<<context->getName()<<"'s Processor !" << nl;
             delete command;
             command = 0;
             accepted = 0;
         }
     }
 
-    void TaskBrowser::printResult( DataSourceBase* ds, bool recurse) {
+    void TaskBrowser::printResult( base::DataSourceBase* ds, bool recurse) {
         std::string prompt(" = ");
         // setup prompt :
         sresult <<prompt<< setw(20)<<left;
@@ -1305,15 +1305,15 @@ namespace OCL
         sresult << right;
     }
 
-    void TaskBrowser::doPrint( DataSourceBase* ds, bool recurse) {
+    void TaskBrowser::doPrint( base::DataSourceBase* ds, bool recurse) {
         // this is needed for ds's that rely on initialision.
         // e.g. eval true once or time measurements.
         // becomes only really handy for 'watches' (todo).
         ds->reset();
 
-        DataSource<PropertyBag>* dspbag = DataSource<PropertyBag>::narrow(ds);
+        internal::DataSource<RTT::PropertyBag>* dspbag = internal::DataSource<RTT::PropertyBag>::narrow(ds);
         if (dspbag) {
-            PropertyBag bag( dspbag->get() );
+            RTT::PropertyBag bag( dspbag->get() );
             if (!recurse) {
                 int siz = bag.getProperties().size();
                 int wdth = siz ? (20 - (siz / 10 + 1)) : 20;
@@ -1321,20 +1321,20 @@ namespace OCL
             } else {
             if ( ! bag.empty() ) {
                 sresult <<setw(0)<<nl;
-                for( PropertyBag::iterator it= bag.getProperties().begin(); it!=bag.getProperties().end(); ++it) {
+                for( RTT::PropertyBag::iterator it= bag.getProperties().begin(); it!=bag.getProperties().end(); ++it) {
                     sresult <<setw(14)<<right<<(*it)->getType()<<" "<<coloron<<setw(14)<< (*it)->getName()<<coloroff;
-                    DataSourceBase::shared_ptr propds = (*it)->getDataSource();
+                    base::DataSourceBase::shared_ptr propds = (*it)->getDataSource();
                     this->printResult( propds.get(), false );
                     sresult <<" ("<<(*it)->getDescription()<<')' << nl;
                 }
             } else {
-                sresult <<prompt<<"(empty PropertyBag)";
+                sresult <<prompt<<"(empty RTT::PropertyBag)";
             }
             }
             return;
         }
 
-        DataSourceBase::shared_ptr dsb(ds);
+        base::DataSourceBase::shared_ptr dsb(ds);
         dsb->evaluate();
         sresult << dsb;
     }
@@ -1403,12 +1403,12 @@ namespace OCL
         cout << "  For a detailed argument list (and helpful info) of the object's methods, "<<nl;
         cout <<"   type the name of one of the listed task objects : " <<nl;
         cout <<"      this [enter]" <<nl<<nl;
-        cout <<"  Command    : bool factor( int number )" <<nl;
+        cout <<"  RTT::Command    : bool factor( int number )" <<nl;
         cout <<"   Factor a value into its primes." <<nl;
         cout <<"   number : The number to factor in primes." <<nl;
-        cout <<"  Method     : bool isRunning( )" <<nl;
-        cout <<"   Is this TaskContext started ?" <<nl;
-        cout <<"  Method     : bool loadProgram( const& std::string Filename )" <<nl;
+        cout <<"  RTT::Method     : bool isRunning( )" <<nl;
+        cout <<"   Is this RTT::TaskContext started ?" <<nl;
+        cout <<"  RTT::Method     : bool loadProgram( const& std::string Filename )" <<nl;
         cout <<"   Load an Orocos Program Script from a file." <<nl;
         cout <<"   Filename : An ops file." <<nl;
         cout <<"   ..."<<nl;
@@ -1430,7 +1430,7 @@ namespace OCL
         cout <<"   with '= true'." <<nl;
 
         cout <<titlecol("Commands")<<nl;
-        cout << "  A Command is 'sent' to a task, which will process it in its own context (thread)."<<nl;
+        cout << "  A RTT::Command is 'sent' to a task, which will process it in its own context (thread)."<<nl;
         cout << "  A command consists of an object, followed by a dot ('.'), the command "<<nl;
         cout << "  name, followed by the parameters. An example could be :"<<nl;
         cout << "     otherTask.bar.orderBeers(\"Palm\", 5) [enter] "<<nl;
@@ -1449,7 +1449,7 @@ namespace OCL
         cout << "     someTask.notifyUserState(\"Drunk\") [enter] "<<nl;
         cout << "   = (void)" <<nl;
 
-        cout <<titlecol("Program and StateMachine Scripts")<<nl;
+        cout <<titlecol("Program and scripting::StateMachine Scripts")<<nl;
         cout << "  To load a program script from local disc, type "<<comcol(".loadProgram <filename>")<<nl;
         cout << "  To load a state machine script from local disc, type "<<comcol(".loadStateMachine <filename>")<<nl;
         cout << "   ( notice the starting dot '.' )"<<nl;
@@ -1479,7 +1479,7 @@ namespace OCL
         cout << "  You can inform the TaskBrowser of your background color by typing "<<comcol(".dark")<<nl;
         cout << "  "<<comcol(".light")<<", or "<<comcol(".nocolors")<<" to increase readability."<<nl;
 
-        cout <<titlecol("Macro Recording / Command line history")<<nl;
+        cout <<titlecol("Macro Recording / RTT::Command line history")<<nl;
         cout << "  You can browse the commandline history by using the up-arrow key or press "<<comcol("Ctrl r")<<nl;
         cout << "  and a search term. Hit enter to execute the current searched command."<<nl;
         cout << "  Macros can be recorded using the "<<comcol(".record 'macro-name'")<<" command."<<nl;
@@ -1497,7 +1497,7 @@ namespace OCL
         cout << "  created connection objects remain in place (this is more or less a bug)!"<<nl;
     }
 
-    void TaskBrowser::printProgram(const std::string& progname, int cl /*= -1*/, TaskContext* progpeer /* = 0 */) {
+    void TaskBrowser::printProgram(const std::string& progname, int cl /*= -1*/, RTT::TaskContext* progpeer /* = 0 */) {
         string ps;
         char s;
         stringstream txtss;
@@ -1615,18 +1615,18 @@ namespace OCL
         }
 
         if ( peer == taskobject )
-            sresult <<nl<<" Listing TaskContext "<< green << peer->getName()<<coloroff<< " :"<<nl;
+            sresult <<nl<<" Listing RTT::TaskContext "<< green << peer->getName()<<coloroff<< " :"<<nl;
         else
-            sresult <<nl<<" Listing TaskObject "<< green << taskobject->getName()<<coloroff<< " :"<<nl;
+            sresult <<nl<<" Listing internal::TaskObject "<< green << taskobject->getName()<<coloroff<< " :"<<nl;
 
         // Only print Properties for TaskContexts
         if ( peer == taskobject ) {
             sresult <<nl<<" Configuration Properties: ";
-            PropertyBag* bag = peer->properties();
+            RTT::PropertyBag* bag = peer->properties();
             if ( bag && bag->size() != 0 ) {
                 // Print Properties:
-                for( PropertyBag::iterator it = bag->begin(); it != bag->end(); ++it) {
-                    DataSourceBase::shared_ptr pds = (*it)->getDataSource();
+                for( RTT::PropertyBag::iterator it = bag->begin(); it != bag->end(); ++it) {
+                    base::DataSourceBase::shared_ptr pds = (*it)->getDataSource();
                     sresult << nl << setw(11)<< right << (*it)->getType()<< " "
                          << coloron <<setw(14)<<left<< (*it)->getName() << coloroff;
                     this->printResult( pds.get(), false ); // do not recurse
@@ -1647,7 +1647,7 @@ namespace OCL
             sresult << nl;
             // Print Attributes:
             for( std::vector<std::string>::iterator it = objlist.begin(); it != objlist.end(); ++it) {
-                DataSourceBase::shared_ptr pds = taskobject->attributes()->getValue(*it)->getDataSource();
+                base::DataSourceBase::shared_ptr pds = taskobject->attributes()->getValue(*it)->getDataSource();
                 sresult << setw(11)<< right << pds->getType()<< " "
                      << coloron <<setw( 14 )<<left<< *it << coloroff;
                 this->printResult( pds.get(), false ); // do not recurse
@@ -1685,25 +1685,18 @@ namespace OCL
             objlist = peer->ports()->getPortNames();
             if ( !objlist.empty() ) {
                 for(vector<string>::iterator it = objlist.begin(); it != objlist.end(); ++it) {
-                    PortInterface* port = peer->ports()->getPort(*it);
-                    PortInterface::PortType pt = port->getPortType();
+                    base::PortInterface* port = peer->ports()->getPort(*it);
+                    bool writer = dynamic_cast<OutputPortInterface*>(port) ? true : false;
                     // Port type R/W
-                    sresult << nl << " " << (pt == PortInterface::ReadPort ?
-                        " R" : pt == PortInterface::WritePort ? " W" : "RW");
+                    sresult << nl << " " << ( !writer ?
+                        " In" : "Out");
                     // Port data type + name
-                    if ( !port->ready() || !port->connection() )
+                    if ( !port->connected() )
                         sresult << "(U) " << setw(11)<<right<< port->getTypeInfo()->getTypeName();
                     else
                         sresult << "(C) " << setw(11)<<right<< port->getTypeInfo()->getTypeName();
                     sresult << " "
                          << coloron <<setw( 14 )<<left<< *it << coloroff;
-                    if ( port->ready() )
-                        sresult << " = " <<port->connection()->getDataSource();
-                    else {
-                        ConnectionInterface::shared_ptr c = port->createConnection();
-                        if ( c )
-                            sresult << " = " << c->getDataSource();
-                    }
                     // Port description
 //                     if ( peer->getObject(*it) )
 //                         sresult << " ( "<< taskobject->getObject(*it)->getDescription() << " ) ";
@@ -1723,7 +1716,7 @@ namespace OCL
             sresult <<coloron<< "(none)" <<coloroff <<nl;
         }
 
-        // TaskContext specific:
+        // RTT::TaskContext specific:
         if ( peer == taskobject ) {
 
             objlist = peer->scripting()->getPrograms();
@@ -1762,13 +1755,13 @@ namespace OCL
         sresult.str("");
     }
 
-    void TaskBrowser::printCommand( const std::string m, OperationInterface* ops )
+    void TaskBrowser::printCommand( const std::string m, interface::OperationInterface* ops )
     {
         using boost::lambda::_1;
-        std::vector<ArgumentDescription> args;
+        std::vector<internal::ArgumentDescription> args;
         args = ops->commands()->getArgumentList( m );
-        sresult << "  Command    : bool " << coloron << m << coloroff<< "( ";
-        for (std::vector<ArgumentDescription>::iterator it = args.begin(); it != args.end(); ++it) {
+        sresult << "  RTT::Command    : bool " << coloron << m << coloroff<< "( ";
+        for (std::vector<internal::ArgumentDescription>::iterator it = args.begin(); it != args.end(); ++it) {
             sresult << it->type <<" ";
             sresult << coloron << it->name << coloroff;
             if ( it+1 != args.end() )
@@ -1778,16 +1771,16 @@ namespace OCL
         }
         sresult << ")"<<nl;
         sresult << "   " << ops->commands()->getDescription( m )<<nl;
-        for (std::vector<ArgumentDescription>::iterator it = args.begin(); it != args.end(); ++it)
+        for (std::vector<internal::ArgumentDescription>::iterator it = args.begin(); it != args.end(); ++it)
             sresult <<"   "<< it->name <<" : " << it->description << nl;
     }
 
-    void TaskBrowser::printMethod( const std::string m, OperationInterface* ops )
+    void TaskBrowser::printMethod( const std::string m, interface::OperationInterface* ops )
     {
-        std::vector<ArgumentDescription> args;
+        std::vector<internal::ArgumentDescription> args;
         args = ops->methods()->getArgumentList( m );
-        sresult << "  Method     : "<< ops->methods()->getResultType(m)<<" " << coloron << m << coloroff<< "( ";
-        for (std::vector<ArgumentDescription>::iterator it = args.begin(); it != args.end(); ++it) {
+        sresult << "  RTT::Method     : "<< ops->methods()->getResultType(m)<<" " << coloron << m << coloroff<< "( ";
+        for (std::vector<internal::ArgumentDescription>::iterator it = args.begin(); it != args.end(); ++it) {
             sresult << it->type <<" ";
             sresult << coloron << it->name << coloroff;
             if ( it+1 != args.end() )
@@ -1797,16 +1790,16 @@ namespace OCL
         }
         sresult << ")"<<nl;
         sresult << "   " << ops->methods()->getDescription( m )<<nl;
-        for (std::vector<ArgumentDescription>::iterator it = args.begin(); it != args.end(); ++it)
+        for (std::vector<internal::ArgumentDescription>::iterator it = args.begin(); it != args.end(); ++it)
             sresult <<"   "<< it->name <<" : " << it->description << nl;
     }
 
-    void TaskBrowser::printEvent( const std::string m, EventService* ops )
+    void TaskBrowser::printEvent( const std::string m, interface::EventService* ops )
     {
-        std::vector<ArgumentDescription> args;
+        std::vector<internal::ArgumentDescription> args;
         args = ops->getArgumentList( m );
-        sresult << "  Event     : "<< ops->getResultType(m)<<" " << coloron << m << coloroff<< "( ";
-        for (std::vector<ArgumentDescription>::iterator it = args.begin(); it != args.end(); ++it) {
+        sresult << "  RTT::Event     : "<< ops->getResultType(m)<<" " << coloron << m << coloroff<< "( ";
+        for (std::vector<internal::ArgumentDescription>::iterator it = args.begin(); it != args.end(); ++it) {
             sresult << it->type <<" ";
             sresult << coloron << it->name << coloroff;
             if ( it+1 != args.end() )
@@ -1816,7 +1809,7 @@ namespace OCL
         }
         sresult << ")"<<nl;
         sresult << "   " << ops->getDescription( m )<<nl;
-        for (std::vector<ArgumentDescription>::iterator it = args.begin(); it != args.end(); ++it)
+        for (std::vector<internal::ArgumentDescription>::iterator it = args.begin(); it != args.end(); ++it)
             sresult <<"   "<< it->name <<" : " << it->description << nl;
     }
 

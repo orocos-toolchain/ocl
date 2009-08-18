@@ -1,22 +1,22 @@
 
 #include "deployment/DeploymentComponent.hpp"
 #include "taskbrowser/TaskBrowser.hpp"
-#include <rtt/DataPort.hpp>
+#include <rtt/InputPort.hpp>
 #include <rtt/os/main.h>
 #include <rtt/RTT.hpp>
 
 using namespace Orocos;
 
 class MyTask
-    : public TaskContext
+    : public RTT::TaskContext
 {
 public:
-    ReadDataPort<double> p1;
-    WriteDataPort<double> p2;
-    DataPort<double> p3;
+    ReadInputPort<double> p1;
+    WriteInputPort<double> p2;
+    RTT::InputPort<double> p3;
 
     MyTask(std::string n)
-        : TaskContext(n),
+        : RTT::TaskContext(n),
           p1("p1"),
           p2("p2", 0.0),
           p3("p3", 0.0)

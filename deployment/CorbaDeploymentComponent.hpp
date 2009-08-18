@@ -42,7 +42,7 @@ namespace OCL
          * Check if \a c is a proxy or a local object.
          * If it is a local object, make it a server.
          */
-        virtual bool componentLoaded(TaskContext* c);
+        virtual bool componentLoaded(RTT::TaskContext* c);
     public:
         CorbaDeploymentComponent(const std::string& name);
         virtual ~CorbaDeploymentComponent();
