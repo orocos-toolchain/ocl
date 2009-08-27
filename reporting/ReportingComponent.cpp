@@ -278,6 +278,7 @@ namespace OCL
         // creating a connection object.
         base::PortInterface* ourport = porti->antiClone();
         assert(ourport);
+        ourport->setName(component + "." + porti->getName());
         ipi = dynamic_cast<base::InputPortInterface*> (ourport);
         assert(ipi);
 
@@ -294,6 +295,7 @@ namespace OCL
             delete ourport;
             return false;
         }
+        this->ports()->addPort( ourport );
         log(Info) << "Reading OutputPort " << porti->getName() << " : ok."
                 << endlog();
         // Add port to ReportData properties if component nor port are listed yet.
@@ -303,7 +305,12 @@ namespace OCL
     }
 
     bool ReportingComponent::unreportPort(const std::string& component, const std::string& port ) {
-        return this->unreportDataSource( component + "." + port ) && report_data.value().removeProperty( report_data.value().findValue<string>(component+"."+port));
+        base::PortInterface* ourport = this->ports()->getPort(component + "." + port);
+        if ( this->unreportDataSource( component + "." + port ) && report_data.value().removeProperty( report_data.value().findValue<string>(component+"."+port))) {
+            delete ourport;
+            return true;
+        }
+        return false;
     }
 
     // report a specific datasource, property,...
