@@ -897,8 +897,8 @@ namespace OCL
         this->disconnect();
 
         // cleanup port left-overs.
-        interface::DataFlowInterface::Ports ports = this->ports()->getPorts();
-        for( interface::DataFlowInterface::Ports::iterator i=ports.begin(); i != ports.end(); ++i) {
+        interface::DataFlowInterface::Ports tports = this->ports()->getPorts();
+        for( interface::DataFlowInterface::Ports::iterator i=tports.begin(); i != tports.end(); ++i) {
             this->ports()->removePort( (*i)->getName() );
             delete *i;
         }
@@ -911,6 +911,19 @@ namespace OCL
 
         // connect peer.
         this->addPeer( taskcontext );
+
+        // map data ports.
+        // create 'anti-ports' to allow port-level interaction with the peer.
+        tports = taskcontext->ports()->getPorts();
+        if ( !tports.empty() )
+            cout <<nl << "TaskBrowser connects to all data ports of "<<taskcontext->getName()<<endl;
+        for( interface::DataFlowInterface::Ports::iterator i=tports.begin(); i != tports.end(); ++i) {
+            if (this->ports()->getPort( (*i)->getName() ) == 0 )
+                this->ports()->addPort( (*i)->antiClone() );
+        }
+        RTT::connectPorts(this,taskcontext);
+
+
 
         cerr << "   Switched to : " << taskcontext->getName() <<endl;
 
@@ -1088,32 +1101,6 @@ namespace OCL
         if ( instr == "nocolors") {
             this->setColorTheme(nocolors);
             cout <<nl << "Disabling all colors"<<endl;
-            return;
-        }
-        if ( instr == "connect") {
-            if (arg.empty() ) {
-                cout <<nl << "TaskBrowser connects to all ports of "<<taskcontext->getName()<<endl;
-                // create 'anti-ports' to allow port-level interaction with the peer.
-                interface::DataFlowInterface::Ports ports = taskcontext->ports()->getPorts();
-                for( interface::DataFlowInterface::Ports::iterator i=ports.begin(); i != ports.end(); ++i) {
-                    if (this->ports()->getPort( (*i)->getName() ) == 0 )
-                        this->ports()->addPort( (*i)->antiClone() );
-                }
-                RTT::connectPorts(this,taskcontext);
-            }
-            else {
-                cout <<nl << "TaskBrowser connects to port '"<<arg <<"' of "<<taskcontext->getName()<<endl;
-                // create 'anti-port' and connect.
-                interface::DataFlowInterface::Ports ports = taskcontext->ports()->getPorts();
-                for( interface::DataFlowInterface::Ports::iterator i=ports.begin(); i != ports.end(); ++i) {
-                    if ( (*i)->getName() == arg && this->ports()->getPort( (*i)->getName() ) == 0 ) {
-                        this->ports()->addPort( (*i)->antiClone() );
-                        this->ports()->getPort( arg )->connectTo( **i ); // this should always succeed
-                        assert( this->ports()->getPort( arg )->connected() );
-                        return;
-                    }
-                }
-            }
             return;
         }
         if ( instr == "record") {
@@ -1697,6 +1684,11 @@ namespace OCL
                         sresult << "(C) " << setw(11)<<right<< port->getTypeInfo()->getTypeName();
                     sresult << " "
                          << coloron <<setw( 14 )<<left<< *it << coloroff;
+                    // Lookup if we have an input with that name:
+                    // consume the last sample this port produced.
+                    InputPortInterface* iport = dynamic_cast<InputPortInterface*>(ports()->getPort(port->getName()));
+                    if (iport)
+                        sresult << " => " << DataSourceBase::shared_ptr( iport->getDataSource());
                     // Port description
 //                     if ( peer->getObject(*it) )
 //                         sresult << " ( "<< taskobject->getObject(*it)->getDescription() << " ) ";
