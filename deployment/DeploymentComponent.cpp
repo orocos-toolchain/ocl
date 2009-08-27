@@ -181,14 +181,14 @@ namespace OCL
                                     "Remove a peer from this Component.",
                                     "PeerName", "The name of the peer to remove.");
 
-        this->methods()->addMethod( RTT::method("setActivity", &DeploymentComponent::setPeriodicActivity, this),
+        this->methods()->addMethod( RTT::method("setPeriodicActivity", &DeploymentComponent::setPeriodicActivity, this),
                                     "Attach a periodic activity to a Component.",
                                     "CompName", "The name of the Component.",
                                     "Period", "The period of the activity.",
                                     "Priority", "The priority of the activity.",
                                     "SchedType", "The scheduler type of the activity."
                                     );
-        this->methods()->addMethod( RTT::method("setActivity", &DeploymentComponent::setNonPeriodicActivity, this),
+        this->methods()->addMethod( RTT::method("setNonPeriodicActivity", &DeploymentComponent::setNonPeriodicActivity, this),
                                     "Attach a non periodic activity to a Component.",
                                     "CompName", "The name of the Component.",
                                     "Priority", "The priority of the activity.",
@@ -219,7 +219,7 @@ namespace OCL
         valid_names.insert("StateMachineScript");
         valid_names.insert("Ports");
         valid_names.insert("Peers");
-        valid_names.insert("RTT::Activity");
+        valid_names.insert("Activity");
         valid_names.insert("Master");
         valid_names.insert("Properties");
 
@@ -678,25 +678,21 @@ namespace OCL
                         }
 
                         // Read the activity profile if present.
-                        if ( comp.value().find("RTT::Activity") != 0) {
-                            RTT::Property<RTT::PropertyBag> nm = comp.value().find("RTT::Activity");
+                        if ( comp.value().find("Activity") != 0) {
+                            RTT::Property<RTT::PropertyBag> nm = comp.value().find("Activity");
                             if ( !nm.ready() ) {
-                                log(Error)<<"RTT::Property 'RTT::Activity' must be a 'struct'."<<endlog();
+                                log(Error)<<"RTT::Property 'Activity' must be a 'struct'."<<endlog();
                                 valid = false;
                             } else {
-                                if ( nm.rvalue().getType() == "RTT::Activity" ) {
-                                    RTT::Property<double> per;
-                                    if (nm.rvalue().getProperty<double>("Period") )
-                                        per = nm.rvalue().getProperty<double>("Period"); // work around RTT 1.0.2 bug.
+                                if ( nm.rvalue().getType() == "PeriodicActivity" ) {
+                                    RTT::Property<double> per = nm.rvalue().getProperty<double>("Period"); // work around RTT 1.0.2 bug.
                                     if ( !per.ready() ) {
-                                        log(Error)<<"Please specify period <double> of Activity."<<endlog();
+                                        log(Error)<<"Please specify period <double> of PeriodicActivity."<<endlog();
                                         valid = false;
                                     }
-                                    RTT::Property<int> prio;
-                                    if ( nm.rvalue().getProperty<int>("Priority") )
-                                        prio = nm.rvalue().getProperty<int>("Priority"); // work around RTT 1.0.2 bug
+                                    RTT::Property<int> prio = nm.rvalue().getProperty<int>("Priority"); // work around RTT 1.0.2 bug
                                     if ( !prio.ready() ) {
-                                        log(Error)<<"Please specify priority <short> of Activity."<<endlog();
+                                        log(Error)<<"Please specify priority <short> of PeriodicActivity."<<endlog();
                                         valid = false;
                                     }
                                     RTT::Property<string> sched;
@@ -712,17 +708,17 @@ namespace OCL
                                         this->setActivity(comp.getName(), nm.rvalue().getType(), per.get(), prio.get(), scheduler );
                                     }
                                 } else
-                                    if ( nm.rvalue().getType() == "RTT::Activity" ) {
-                                        RTT::Property<int> prio;
-                                        if ( nm.rvalue().getProperty<int>("Priority") )
-                                            prio = nm.rvalue().getProperty<int>("Priority"); // work around RTT 1.0.2 bug
+                                    if ( nm.rvalue().getType() == "Activity" || nm.rvalue().getType() == "NonPeriodicActivity" ) {
+                                        RTT::Property<double> per = nm.rvalue().getProperty<double>("Period");
+                                        if ( !per.ready() ) {
+                                            per = Property<double>("p","",0.0); // default to 0.0
+                                        }
+                                        RTT::Property<int> prio = nm.rvalue().getProperty<int>("Priority");
                                         if ( !prio.ready() ) {
                                             log(Error)<<"Please specify priority <short> of Activity."<<endlog();
                                             valid = false;
                                         }
-                                        RTT::Property<string> sched;
-                                        if (nm.rvalue().getProperty<string>("Scheduler") )
-                                            sched = nm.rvalue().getProperty<string>("Scheduler"); // work around RTT 1.0.2 bug
+                                        RTT::Property<string> sched = nm.rvalue().getProperty<string>("Scheduler");
                                         int scheduler = ORO_SCHED_RT;
                                         if ( sched.ready() ) {
                                             int scheduler = string_to_oro_sched( sched.get());
@@ -730,10 +726,10 @@ namespace OCL
                                                 valid = false;
                                         }
                                         if (valid) {
-                                            this->setActivity(comp.getName(), nm.rvalue().getType(), 0.0, prio.get(), scheduler );
+                                            this->setActivity(comp.getName(), nm.rvalue().getType(), per.get(), prio.get(), scheduler );
                                         }
                                     } else
-                                        if ( nm.rvalue().getType() == "extras::SlaveActivity" ) {
+                                        if ( nm.rvalue().getType() == "SlaveActivity" ) {
                                             double period = 0.0;
                                             string master;
                                             if ( nm.rvalue().getProperty<string>("Master") ) {
@@ -755,7 +751,7 @@ namespace OCL
                                         }
                             }
                         } else {
-                            // no 'RTT::Activity' element, default to Slave:
+                            // no 'Activity' element, default to Slave:
                             //this->setActivity(comp.getName(), "extras::SlaveActivity", 0.0, 0, 0 );
                         }
 
@@ -1588,7 +1584,7 @@ namespace OCL
                                                   double period, int priority,
                                                   int scheduler)
     {
-        if ( this->setActivity(comp_name, "RTT::Activity", period, priority, scheduler) ) {
+        if ( this->setActivity(comp_name, "PeriodicActivity", period, priority, scheduler) ) {
             assert( comps[comp_name].instance );
             assert( comps[comp_name].act );
             comps[comp_name].act->run(comps[comp_name].instance->engine());
@@ -1601,7 +1597,7 @@ namespace OCL
                                                      int priority,
                                                      int scheduler)
     {
-        if ( this->setActivity(comp_name, "RTT::Activity", 0.0, priority, scheduler) ) {
+        if ( this->setActivity(comp_name, "NonPeriodicActivity", 0.0, priority, scheduler) ) {
             assert( comps[comp_name].instance );
             assert( comps[comp_name].act );
             comps[comp_name].act->run(comps[comp_name].instance->engine());
@@ -1613,7 +1609,7 @@ namespace OCL
     bool DeploymentComponent::setSlaveActivity(const std::string& comp_name,
                                                double period)
     {
-        if ( this->setActivity(comp_name, "extras::SlaveActivity", period, 0, ORO_SCHED_OTHER ) ) {
+        if ( this->setActivity(comp_name, "SlaveActivity", period, 0, ORO_SCHED_OTHER ) ) {
             assert( comps[comp_name].instance );
             assert( comps[comp_name].act );
             comps[comp_name].act->run(comps[comp_name].instance->engine());
@@ -1625,7 +1621,7 @@ namespace OCL
     bool DeploymentComponent::setMasterSlaveActivity(const std::string& master,
                                                    const std::string& slave)
     {
-        if ( this->setActivity(slave, "extras::SlaveActivity", 0, 0, ORO_SCHED_OTHER, master ) ) {
+        if ( this->setActivity(slave, "SlaveActivity", 0, 0, ORO_SCHED_OTHER, master ) ) {
             assert( comps[slave].instance );
             assert( comps[slave].act );
             comps[slave].act->run(comps[slave].instance->engine());
@@ -1650,7 +1646,7 @@ namespace OCL
             else
 	        peer = this->getPeer(comp_name); // last resort.
         if (!peer) {
-            log(Error) << "Can't create RTT::Activity: component "<<comp_name<<" not found."<<endlog();
+            log(Error) << "Can't create Activity: component "<<comp_name<<" not found."<<endlog();
             return false;
         }
         if ( !master_name.empty() ) {
@@ -1663,12 +1659,12 @@ namespace OCL
 		    master_act = this->getPeer(master_name) ? getPeer(master_name)->engine()->getActivity() : 0; // last resort.
 
 	    if ( !this->getPeer(master_name) ) {
-                log(Error) << "Can't create extras::SlaveActivity: Master component "<<master_name<<" not known as peer."<<endlog();
+                log(Error) << "Can't create SlaveActivity: Master component "<<master_name<<" not known as peer."<<endlog();
                 return false;
             }
 
             if (!master_act) {
-                log(Error) << "Can't create extras::SlaveActivity: Master component "<<master_name<<" has no activity set."<<endlog();
+                log(Error) << "Can't create SlaveActivity: Master component "<<master_name<<" has no activity set."<<endlog();
                 return false;
             }
         }
@@ -1680,23 +1676,28 @@ namespace OCL
         }
 
         base::ActivityInterface* newact = 0;
-        if ( act_type == "RTT::Activity" && period != 0.0)
+        // standard case:
+        if ( act_type == "Activity")
             newact = new RTT::Activity(scheduler, priority, period);
         else
-            if ( act_type == "RTT::Activity" && period == 0.0)
+            // special cases:
+            if ( act_type == "PeriodicActivity" && period != 0.0)
+                newact = new RTT::extras::PeriodicActivity(scheduler, priority, period);
+            else
+            if ( act_type == "NonPeriodicActivity" && period == 0.0)
                 newact = new RTT::Activity(scheduler, priority);
             else
-                if ( act_type == "extras::SlaveActivity" ) {
+                if ( act_type == "SlaveActivity" ) {
                     if ( master_act == 0 )
                         newact = new extras::SlaveActivity(period);
                     else {
-		        newact = new extras::SlaveActivity(master_act);
+                        newact = new extras::SlaveActivity(master_act);
                         this->getPeer(master_name)->addPeer( peer );
                     }
                 }
 
         if (newact == 0) {
-            log(Error) << "Can't create "<< act_type << " for component "<<comp_name<<": incorrect arguments."<<endlog();
+            log(Error) << "Can't create '"<< act_type << "' for component "<<comp_name<<": incorrect arguments."<<endlog();
             return false;
         }
 
