@@ -105,7 +105,7 @@ namespace OCL
          * The command function executed by the receiver.
          */
         bool mycommand(std::string arg) {
-            log() << "Hello RTT::Command: "<< arg << endlog();
+            log(Info) << "Hello RTT::Command: "<< arg << endlog();
             if ( arg == "World" )
                 return true;
             else
@@ -116,7 +116,7 @@ namespace OCL
          * The completion condition checked by the sender.
          */
         bool mycomplete(std::string arg) {
-            log() << "Checking RTT::Command: "<< arg <<endlog();
+            log(Info) << "Checking RTT::Command: "<< arg <<endlog();
             return true;
         }
         /** @} */
@@ -142,11 +142,9 @@ namespace OCL
          */
         void mycallback( std::string data )
         {
-            log() << "Receiving RTT::Event: " << data << endlog();
+            log(Info) << "Receiving RTT::Event: " << data << endlog();
         }
         /** @} */
-
-        RTT::Activity act;
 
     public:
         /**
@@ -170,14 +168,11 @@ namespace OCL
               // Name, command function pointer, completion condition function pointer, object
               command("the_command", &HelloWorld::mycommand, &HelloWorld::mycomplete, this),
               // Name
-              event("the_event"),
-
-              // Create the activity which runs the task's engine:
-              // 0: Priority
-              // 0.01: Period (100Hz)
-              // engine(): is being executed.
-              act(0, 0.01, this->engine() )
+              event("the_event")
         {
+            // New activity with period 0.01s and priority 0.
+            this->setActivity( new Activity(0, 0.01) );
+
             // Set log level more verbose than default,
             // such that we can see output :
             if ( log().getLogLevel() < RTT::Logger::Info ) {
