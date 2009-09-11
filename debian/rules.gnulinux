@@ -1,0 +1,15 @@
+
+configure-gnulinux: configure-stamp-gnulinux
+configure-stamp-gnulinux:
+	mkdir -p dbuild.gnulinux
+	cd  dbuild.gnulinux; \
+	CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="-Wl,-z,defs" cmake -DCMAKE_INSTALL_PREFIX=/usr -DOROCOS_INSTALL=/usr -C $(CURDIR)/debian/CMakeCanComedi.txt -DOROCOS_TARGET:STRING=gnulinux  ..
+	touch configure-stamp-gnulinux
+
+build-gnulinux: build-stamp-gnulinux
+build-stamp-gnulinux: configure-stamp-gnulinux
+	cd dbuild.gnulinux; $(MAKE) $(MAKE_FLAGS) # VERBOSE=1
+	touch build-stamp-gnulinux
+
+install-gnulinux: build-gnulinux
+	cd dbuild.gnulinux; $(MAKE) install DESTDIR=$(CURDIR)/debian/tmp

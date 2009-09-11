@@ -1,7 +1,7 @@
 Source: orocos-ocl
 Priority: extra
 Maintainer: Peter Soetens <peter.soetens@fmtc.be>
-Build-Depends: debhelper (>= 5), autotools-dev, liborocos-rtt-corba-lxrt@LIBVER@-dev ( >= @LIBVER@ ), libcomedi-dev, libpcan-dev, liborocos-rtt-corba-gnulinux@LIBVER@-dev ( >= @LIBVER@ ), liborocos-rtt-corba-xenomai@LIBVER@-dev ( >= @LIBVER@ ), pkg-config, libncurses5-dev ( >= 5.0 ), libreadline5-dev ( >= 5.0 ), comedi-headers, liborocos-kdl-dev (=0.99)
+Build-Depends: debhelper (>= 5), cmake (>=2.6.0), libcomedi-dev, pkg-config, libncurses5-dev ( >= 5.0 ), libreadline5-dev ( >= 5.0 ), liborocos-kdl1.0-dev (>= 1.0) @BUILD_DEPS@
 Standards-Version: 3.7.2
 Section: libs
 
@@ -9,8 +9,7 @@ Package: orocos-ocl-dbg@LIBVER@
 Section: libdevel
 Priority: extra
 Architecture: any
-Depends: orocos-ocl-lxrt@LIBVER@-bin (= ${binary:Version}), orocos-ocl-lxrt@LIBVER@-dev (= ${binary:Version}),
-        orocos-ocl-gnulinux@LIBVER@-bin (= ${binary:Version}), orocos-ocl-gnulinux@LIBVER@-dev (= ${binary:Version})
+Depends: @BIN_DEPS@
 Description: Orocos Component Library (debug symbols)
  The Orocos Component Library contains components for real-time control of robots and machines.
  .

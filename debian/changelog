@@ -1,3 +1,9 @@
+orocos-ocl (1.8.0-0) jaunty; urgency=low
+
+  * New upstream release
+
+ -- Stephen Roderick <kiwi.net@mac.com>  Thu, 09 Jul 2009 16:53:18 -0400
+
 orocos-ocl (1.4.0-6) unstable; urgency=low
 
   * Fix missing timer component (r28767.)
