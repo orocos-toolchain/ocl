@@ -1,3 +1,65 @@
+         Orocos Components Library (OCL) v1.8.2
+
+This bug-fix release of the Orocos Components Library is aimed at the
+Real-Time Toolkit v1.8.x. Build problems on Mac-OS-X and a build 
+problem with KDL 1.0 have been fixed. The ctaskbrowser now loads type 
+plugins as well (but only from /usr/lib/rtt/..target../plugins), 
+an ocl-config.h header was added with version info and
+reported build/link problems have been fixed.
+
+An overview of the documented components is available here:
+  <http://www.orocos.org/stable/documentation/ocl/v1.8.x/doc-xml/ocl-overview.html>
+
+This release can be downloaded here:
+  <http://www.orocos.org/stable/ocl/v1.8.2/orocos-ocl-1.8.2-src.tar.bz2>
+
+------------------------------------------------------------------------
+         Orocos Components Library (OCL) v1.8.1
+
+This bug-fix release of the Orocos Components Library is aimed at the
+Real-Time Toolkit v1.8.x. It fixes issues in CORBA command line parsing,
+plugin loading using the ctaskbrowser and compiling with non-standard
+installation paths and other fixes for the deployment applications.
+
+An overview of the documented components is available here:
+  <http://www.orocos.org/stable/documentation/ocl/v1.8.x/doc-xml/ocl-overview.html>
+
+This release can be downloaded here:
+  <http://www.orocos.org/stable/ocl/v1.8.1/orocos-ocl-1.8.1-src.tar.bz2>
+
+------------------------------------------------------------------------
+         Orocos Components Library (OCL) v1.8.0
+
+This release of the Orocos Components Library is aimed at the
+Real-Time Toolkit v1.8.0. and offers improved functionality for
+distributed applications, motion interpolation and kinematics.  Some
+components of the OCL library are also available as Debian 4.0
+'Etch' packages from 
+ deb http://svn.fmtc.be/debian etch main
+
+Major improvements are:
+ * Simplified Reporting Component XML setup file.
+ * Improved component loading/unloading in running applications.
+ * Improved Mac OS-X support.
+ * Improved Master-Slave configuration in application deployment.
+ * Allow site-specific application deployment file.
+ * Allow to automatically save component properties.
+
+An overview of the documented components is available here:
+  <http://www.orocos.org/stable/documentation/ocl/v1.8.x/doc-xml/ocl-overview.html>
+
+This release can be downloaded here:
+  <http://www.orocos.org/stable/ocl/v1.8.0/orocos-ocl-1.8.0-src.tar.bz2>
+
+------------------------------------------------------------------------
+         Orocos Components Library (OCL) v1.6.1
+
+This release of the Orocos Components Library is aimed at the
+Real-Time Toolkit v1.6.1. and contains minor portability and
+compiler fixes, an update to the Comedi pulse train generation and
+documentation updates.
+
+------------------------------------------------------------------------
          Orocos Components Library (OCL) v1.6.0
 
 This release of the Orocos Components Library is aimed at the
