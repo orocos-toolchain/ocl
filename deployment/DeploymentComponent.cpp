@@ -30,6 +30,7 @@
 #include <rtt/RTT.hpp>
 #include "DeploymentComponent.hpp"
 #include <rtt/extras/Activities.hpp>
+#include <rtt/extras/SequentialActivity.hpp>
 #include <rtt/marsh/PropertyMarshaller.hpp>
 #include <rtt/marsh/PropertyDemarshaller.hpp>
 #include <rtt/Method.hpp>
@@ -59,6 +60,7 @@ namespace OCL
 {
     using namespace std;
     using namespace RTT;
+    using namespace RTT::detail;
 
     std::vector< DeploymentComponent::LoadedLib > DeploymentComponent::loadedLibs;
 
@@ -181,6 +183,13 @@ namespace OCL
                                     "Remove a peer from this Component.",
                                     "PeerName", "The name of the peer to remove.");
 
+        this->methods()->addMethod( RTT::method("setActivity", &DeploymentComponent::setActivity, this),
+                                    "Attach an activity to a Component.",
+                                    "CompName", "The name of the Component.",
+                                    "Period", "The period of the activity (set to 0.0 for non periodic).",
+                                    "Priority", "The priority of the activity.",
+                                    "SchedType", "The scheduler type of the activity."
+                                    );
         this->methods()->addMethod( RTT::method("setPeriodicActivity", &DeploymentComponent::setPeriodicActivity, this),
                                     "Attach a periodic activity to a Component.",
                                     "CompName", "The name of the Component.",
@@ -188,11 +197,9 @@ namespace OCL
                                     "Priority", "The priority of the activity.",
                                     "SchedType", "The scheduler type of the activity."
                                     );
-        this->methods()->addMethod( RTT::method("setNonPeriodicActivity", &DeploymentComponent::setNonPeriodicActivity, this),
-                                    "Attach a non periodic activity to a Component.",
-                                    "CompName", "The name of the Component.",
-                                    "Priority", "The priority of the activity.",
-                                    "SchedType", "The scheduler type of the activity."
+        this->methods()->addMethod( RTT::method("setSequentialActivity", &DeploymentComponent::setSequentialActivity, this),
+                                    "Attach a 'stand alone' sequential activity to a Component.",
+                                    "CompName", "The name of the Component."
                                     );
         this->methods()->addMethod( RTT::method("setSlaveActivity", &DeploymentComponent::setSlaveActivity, this),
                                     "Attach a 'stand alone' slave activity to a Component.",
@@ -705,7 +712,7 @@ namespace OCL
                                             valid = false;
                                     }
                                     if (valid) {
-                                        this->setActivity(comp.getName(), nm.rvalue().getType(), per.get(), prio.get(), scheduler );
+                                        this->setNamedActivity(comp.getName(), nm.rvalue().getType(), per.get(), prio.get(), scheduler );
                                     }
                                 } else
                                     if ( nm.rvalue().getType() == "Activity" || nm.rvalue().getType() == "NonPeriodicActivity" ) {
@@ -726,7 +733,7 @@ namespace OCL
                                                 valid = false;
                                         }
                                         if (valid) {
-                                            this->setActivity(comp.getName(), nm.rvalue().getType(), per.get(), prio.get(), scheduler );
+                                            this->setNamedActivity(comp.getName(), nm.rvalue().getType(), per.get(), prio.get(), scheduler );
                                         }
                                     } else
                                         if ( nm.rvalue().getType() == "SlaveActivity" ) {
@@ -735,26 +742,28 @@ namespace OCL
                                             if ( nm.rvalue().getProperty<string>("Master") ) {
                                                 master = nm.rvalue().getProperty<string>("Master")->get();
                                                 if (valid) {
-                                                    this->setActivity(comp.getName(), nm.rvalue().getType(), period, 0, 0, master );
+                                                    this->setNamedActivity(comp.getName(), nm.rvalue().getType(), period, 0, 0, master );
                                                 }
                                             } else {
                                                 // No master given.
                                                 if ( nm.rvalue().getProperty<double>("Period") )
                                                     period = nm.rvalue().getProperty<double>("Period")->get();
                                                 if (valid) {
-                                                    this->setActivity(comp.getName(), nm.rvalue().getType(), period, 0, 0 );
+                                                    this->setNamedActivity(comp.getName(), nm.rvalue().getType(), period, 0, 0 );
                                                 }
                                             }
-                                        } else {
-                                            log(Error) << "Unknown activity type: " << nm.rvalue().getType()<<endlog();
-                                            valid = false;
-                                        }
+                                        } else
+                                            if ( nm.rvalue().getType() == "SequentialActivity" ) {
+                                                this->setNamedActivity(comp.getName(), nm.rvalue().getType(), 0, 0, 0 );
+                                            } else {
+                                                log(Error) << "Unknown activity type: " << nm.rvalue().getType()<<endlog();
+                                                valid = false;
+                                            }
                             }
                         } else {
                             // no 'Activity' element, default to Slave:
-                            //this->setActivity(comp.getName(), "extras::SlaveActivity", 0.0, 0, 0 );
+                            //this->setNamedActivity(comp.getName(), "extras::SlaveActivity", 0.0, 0, 0 );
                         }
-
                         // put this component in the root config.
                         // existing component options are updated, new components are
                         // added to the back.
@@ -1580,11 +1589,11 @@ namespace OCL
             cout << "   (none)"<<endl;
     }
 
-    bool DeploymentComponent::setPeriodicActivity(const std::string& comp_name,
-                                                  double period, int priority,
-                                                  int scheduler)
+    bool DeploymentComponent::setActivity(const std::string& comp_name,
+                                          double period, int priority,
+                                          int scheduler)
     {
-        if ( this->setActivity(comp_name, "PeriodicActivity", period, priority, scheduler) ) {
+        if ( this->setNamedActivity(comp_name, "Activity", period, priority, scheduler) ) {
             assert( comps[comp_name].instance );
             assert( comps[comp_name].act );
             comps[comp_name].act->run(comps[comp_name].instance->engine());
@@ -1593,11 +1602,11 @@ namespace OCL
         return false;
     }
 
-    bool DeploymentComponent::setNonPeriodicActivity(const std::string& comp_name,
-                                                     int priority,
-                                                     int scheduler)
+    bool DeploymentComponent::setPeriodicActivity(const std::string& comp_name,
+                                                  double period, int priority,
+                                                  int scheduler)
     {
-        if ( this->setActivity(comp_name, "NonPeriodicActivity", 0.0, priority, scheduler) ) {
+        if ( this->setNamedActivity(comp_name, "PeriodicActivity", period, priority, scheduler) ) {
             assert( comps[comp_name].instance );
             assert( comps[comp_name].act );
             comps[comp_name].act->run(comps[comp_name].instance->engine());
@@ -1609,7 +1618,18 @@ namespace OCL
     bool DeploymentComponent::setSlaveActivity(const std::string& comp_name,
                                                double period)
     {
-        if ( this->setActivity(comp_name, "SlaveActivity", period, 0, ORO_SCHED_OTHER ) ) {
+        if ( this->setNamedActivity(comp_name, "SlaveActivity", period, 0, ORO_SCHED_OTHER ) ) {
+            assert( comps[comp_name].instance );
+            assert( comps[comp_name].act );
+            comps[comp_name].act->run(comps[comp_name].instance->engine());
+            return true;
+        }
+        return false;
+    }
+
+    bool DeploymentComponent::setSequentialActivity(const std::string& comp_name)
+    {
+        if ( this->setNamedActivity(comp_name, "SequentialActivity", 0, 0, 0 ) ) {
             assert( comps[comp_name].instance );
             assert( comps[comp_name].act );
             comps[comp_name].act->run(comps[comp_name].instance->engine());
@@ -1621,7 +1641,7 @@ namespace OCL
     bool DeploymentComponent::setMasterSlaveActivity(const std::string& master,
                                                    const std::string& slave)
     {
-        if ( this->setActivity(slave, "SlaveActivity", 0, 0, ORO_SCHED_OTHER, master ) ) {
+        if ( this->setNamedActivity(slave, "SlaveActivity", 0, 0, ORO_SCHED_OTHER, master ) ) {
             assert( comps[slave].instance );
             assert( comps[slave].act );
             comps[slave].act->run(comps[slave].instance->engine());
@@ -1631,10 +1651,10 @@ namespace OCL
     }
 
 
-    bool DeploymentComponent::setActivity(const std::string& comp_name,
-                                          const std::string& act_type,
-                                          double period, int priority,
-                                          int scheduler, const std::string& master_name)
+    bool DeploymentComponent::setNamedActivity(const std::string& comp_name,
+                                               const std::string& act_type,
+                                               double period, int priority,
+                                               int scheduler, const std::string& master_name)
     {
         RTT::TaskContext* peer = 0;
         base::ActivityInterface* master_act = 0;
@@ -1695,6 +1715,14 @@ namespace OCL
                         this->getPeer(master_name)->addPeer( peer );
                     }
                 }
+                else
+                    if (act_type == "Activity") {
+                        newact = new Activity(scheduler, priority, period);
+                    }
+                    else
+                        if (act_type == "SequentialActivity") {
+                            newact = new SequentialActivity();
+                        }
 
         if (newact == 0) {
             log(Error) << "Can't create '"<< act_type << "' for component "<<comp_name<<": incorrect arguments."<<endlog();
