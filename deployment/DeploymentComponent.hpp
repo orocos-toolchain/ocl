@@ -353,6 +353,21 @@ namespace OCL
                                  int scheduler);
 
         /**
+         * (Re-)set the activity of a component with an activity.
+         *
+         * @param comp_name The name of the component to change.
+         * @param period    The period of the activity (or 0.0 if non periodic).
+         * @param priority  The scheduler priority (OS dependent).
+         * @param scheduler The scheduler type \a ORO_SCHED_RT or \a ORO_SCHED_OTHER.
+         *
+         * @return false if one of the parameters does not match or if the
+         * component is running.
+         */
+        bool setActivity(const std::string& comp_name,
+                         double period, int priority,
+                         int scheduler);
+
+        /**
          * (Re-)set the activity of a component with a non periodic activity.
          *
          * @param comp_name The name of the component to change.
@@ -365,6 +380,16 @@ namespace OCL
         bool setNonPeriodicActivity(const std::string& comp_name,
                                     int priority,
                                     int scheduler);
+
+        /**
+         * (Re-)set the activity of a component with a (threadless, reactive) sequential activity.
+         *
+         * @param comp_name The name of the component to change.
+         *
+         * @return false if one of the parameters does not match or if the
+         * component is running.
+         */
+        bool setSequentialActivity(const std::string& comp_name);
 
         /**
          * (Re-)set the activity of a component with a (stand alone) slave activity.
@@ -393,7 +418,7 @@ namespace OCL
          * (Re-)set the activity of a component.
          *
          * @param comp_name The name of the component to change.
-         * @param act_type  The Activity type: 'PeriodicActivity', 'NonPeriodicActivity' or 'SlaveActivity'.
+         * @param act_type  The Activity type: 'Activity', 'PeriodicActivity', 'NonPeriodicActivity' or 'SlaveActivity'.
          * @param priority  The scheduler priority (OS dependent).
          * @param period    The period of the activity.
          * @param scheduler The scheduler type \a ORO_SCHED_RT or \a ORO_SCHED_OTHER.
@@ -402,7 +427,7 @@ namespace OCL
          * @return false if one of the parameters does not match or if the
          * component is running.
          */
-        bool setActivity(const std::string& comp_name,
+        bool setNamedActivity(const std::string& comp_name,
                          const std::string& act_type,
                          double period, int priority,
                          int scheduler, const std::string& master_name = "");
