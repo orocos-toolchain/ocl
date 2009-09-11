@@ -43,10 +43,10 @@ endif
 #version=2.0.5
 #major=2
 version=`grep orocos-ocl debian/changelog | head -1 | awk '{print substr($$2,2,length($$2)-2)}'`
-major=`grep orocos-ocl debian/changelog | head -1 | awk '{print substr($$2,2,3)}'`
+#major=`grep orocos-ocl debian/changelog | head -1 | awk '{print substr($$2,2,3)}'`
 # option 2, assuming the library is created as src/.libs/libfoo.so.2.0.5 or so
 #version=`find . -name liborocos-ocl*.so.* | awk '{if (match($$0,/[0-9]+\.[0-9]+\.[0-9]+$$/)) print substr($$0,RSTART)}' | head -1`
-#major=`find . -name liborocos-ocl*.so.* | awk '{if (match($$0,/\.so\.[0-9]+\.[0-9]+$$/)) print substr($$0,RSTART+4)}' | head -1`
+major=`find . -name liborocos-ocl*.so.* | awk '{if (match($$0,/\.so\.[0-9]+\.[0-9]+$$/)) print substr($$0,RSTART+4)}' | head -1`
 
 include debian/rules.targets
 
@@ -63,10 +63,11 @@ build-stamp:  configure
 clean:
 	dh_testdir
 	dh_testroot
-	rm -f build-stamp 
+	rm -f build-stamp*
+	rm -f configure-stamp*
 
 # Add here commands to clean up after the build process.
-	rm -rf build*
+	rm -rf dbuild*
 
 	dh_clean 
 
