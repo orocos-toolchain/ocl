@@ -3,13 +3,13 @@
 #include <rtt/TaskContext.hpp>
 #include <rtt/os/main.h>
 
-#include <ocl/TaskBrowser.hpp>
-#include <ocl/IOComponent.hpp>
+#include <taskbrowser/TaskBrowser.hpp>
+#include <io/IOComponent.hpp>
 
-#include <ocl/dev/ComediDevice.hpp>
-#include <ocl/dev/ComediSubDeviceAOut.hpp>
-#include <ocl/dev/ComediSubDeviceDIn.hpp>
-#include <ocl/dev/ComediSubDeviceDOut.hpp>
+#include <comedi/dev/ComediDevice.hpp>
+#include <comedi/dev/ComediSubDeviceAOut.hpp>
+#include <comedi/dev/ComediSubDeviceDIn.hpp>
+#include <comedi/dev/ComediSubDeviceDOut.hpp>
 
 using namespace Orocos;
 
@@ -29,16 +29,16 @@ int ORO_main(int arc, char* argv[])
   //ComediSubDeviceDOut SubDOut(DInOut,"DigitalOut",1);
 
   //Adding Hardware interfaces to the IOComponent
-  io.addDigitalOutput("D0",&SubDOut,0);
-  io.addDigitalOutput("D1",&SubDOut,1);
-  io.addDigitalOutput("D2",&SubDOut,2);
-  io.addDigitalOutput("D3",&SubDOut,3);
-  io.addDigitalOutput("D4",&SubDOut,4);
-  io.addDigitalOutput("D5",&SubDOut,5);
-  io.addDigitalOutput("D6",&SubDOut,6);
-  io.addDigitalOutput("D7",&SubDOut,7);
-  io.addDigitalOutput("D8",&SubDOut,8);
-  io.addDigitalOutput("D9",&SubDOut,9);
+  io.addDigitalOutput("D0","DigitalOut",0);
+  io.addDigitalOutput("D1","DigitalOut",1);
+  io.addDigitalOutput("D2","DigitalOut",2);
+  io.addDigitalOutput("D3","DigitalOut",3);
+  io.addDigitalOutput("D4","DigitalOut",4);
+  io.addDigitalOutput("D5","DigitalOut",5);
+  io.addDigitalOutput("D6","DigitalOut",6);
+  io.addDigitalOutput("D7","DigitalOut",7);
+  io.addDigitalOutput("D8","DigitalOut",8);
+  io.addDigitalOutput("D9","DigitalOut",9);
 
   //Creating the TaskBrowser:
   TaskBrowser tb(&io);
