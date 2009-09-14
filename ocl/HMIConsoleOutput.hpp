@@ -168,18 +168,24 @@ namespace OCL
         template<class T>
         void enqueue( const T& what )
         {
-            RTT::OS::MutexTryLock try_lock( msg_lock );
-            if ( try_lock.isSuccessful() ) {
-                // we got the lock, copy everything...
-                messages << backup.str();
-                messages << what << std::endl;
-                backup.rdbuf()->str("");
-                // support for non periodic logging:
-                if ( this->engine()->getActivity() )
-                    this->engine()->getActivity()->trigger();
+            {
+                RTT::OS::MutexTryLock try_lock(msg_lock);
+                if (try_lock.isSuccessful())
+                {
+                    // we got the lock, copy everything...
+                    messages << backup.str();
+                    messages << what << std::endl;
+                    backup.rdbuf()->str("");
+                }
+                else
+                    // no lock, backup.
+                    backup << what << std::endl;
             }
-            else  // no lock, backup.
-                backup << what << std::endl;
+            // support for non periodic logging:
+            // do not hold a lock when calling trigger() !
+            if (this->engine()->getActivity())
+                this->engine()->getActivity()->trigger();
+
         }
 
         /**
@@ -209,15 +215,23 @@ namespace OCL
         template<class T>
         void dolog( const T& what )
         {
-            RTT::OS::MutexTryLock try_lock( log_lock );
-            if ( try_lock.isSuccessful() ) {
-                // we got the lock, copy everything...
-                logmessages << logbackup.str();
-                logmessages << what;
-                logbackup.rdbuf()->str("");
+            {
+                RTT::OS::MutexTryLock try_lock(log_lock);
+                if (try_lock.isSuccessful())
+                {
+                    // we got the lock, copy everything...
+                    logmessages << logbackup.str();
+                    logmessages << what;
+                    logbackup.rdbuf()->str("");
+                }
+                else
+                    // no lock, backup.
+                    logbackup << what;
             }
-            else  // no lock, backup.
-                logbackup << what;
+            // support for non periodic logging:
+            // do not hold a lock when calling trigger() !
+            if (this->engine()->getActivity())
+                this->engine()->getActivity()->trigger();
         }
 
 
