@@ -403,6 +403,8 @@
     <simple name="UpdateProperties" type="string"><value>controller-opts.cpf</value></simple>
 
     <struct name="Ports" type="PropertyBag">
+      <!-- Note: the value is the name of the connection of which this port gets part.
+           All ports that share the same connection name are connected to each other -->
       <simple name="SensorValues" type="string"><value>SensorValuesConnection</value></simple>
       <simple name="SteeringSignals" type="string"><value>DriveConnection</value></simple>
     </struct>
@@ -437,9 +439,10 @@
 	  component during the
 	  <function>configureComponents()</function> step of the
 	  DeploymentComponent. Possible types of activities are
-	  <option>RTT::PeriodicActivity</option>, 
-	  <option>RTT::NonPeriodicActivity</option> and
-	  <option>RTT::SlaveActivity</option>. The latter allows a
+	  <option>PeriodicActivity</option>, 
+	  <option>NonPeriodicActivity</option>, <option>Activity</option> (the standard one), 
+	  <option>SequentialActivity</option> and
+	  <option>:SlaveActivity</option>. The latter allows a
 	  component to be executed by a master component. You can
 	  specify a master component using the <option>Master</option>
 	  simple element in the <option>Activity</option> struct. The
@@ -455,6 +458,14 @@
 	  By default <option>AutoConf</option> and <option>AutoStart</option> are 0 (off).
 	</para>
 	<para>
+	  The <option>Ports</option> struct describes which ports of this component
+	  participate in which data flow connection. So for each element in this
+	  struct, the name of the element is the port name, and the value is the
+	  name of the connection it belongs to. Ports with equal connection names
+	  are connected to each other. Failure to add one or more ports (because
+	  they don't agree on the same data type) will fail the configuration phase.
+	</para>
+	<para>
 	  The <option>AutoConnect</option> element indicates if the
 	  component's data ports should be automatically connected to
 	  peer ports which have the same name and type.  This flag is
@@ -464,11 +475,16 @@
 	  one must be peer of the other</emphasis> in order
 	  to trigger automatic connection of ports. It is possible
 	  that a port is connected to one component using the Ports
-	  element and to another component using the
+	  struct and to another component using the
 	  <option>AutoConnect</option> flag. If an automatic port
 	  connection fails, the configuration procedure will not fail
 	  and just continue. An error message may be logged. By
 	  default, <option>AutoConnect</option> is 0 (off).
+	  <note>
+	    <para>AutoConnect is only useful for simple applications,
+	    use the explicit 'Ports' connection method to connect different
+	    named ports to each other !</para>
+	  </note>
 	</para>
 	<para>
 	  The <option>Properties</option> struct allows to configure
