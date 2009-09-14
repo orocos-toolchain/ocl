@@ -20,21 +20,33 @@ namespace OCL
      *
      */
     class TimerComponent
-        : public RTT::TaskContext,
-          public RTT::Timer
+        : public RTT::TaskContext
     {
     protected:
+        /**
+         * Helper class for catching the virtual timeout function of Timer.
+         */
+        struct TimeoutCatcher : public Timer {
+            RTT::Event <void(RTT::Timer::TimerId)>& me;
+
+            TimeoutCatcher(RTT::Timer::TimerId max_timers, RTT::Event <void(RTT::Timer::TimerId)>& e) :
+                    Timer(max_timers, ORO_SCHED_RT, OS::HighestPriority), me(e) 
+            {}
+            virtual void timeout(Timer::TimerId id) {
+                me(id);
+            }
+        };
+
+        TimeoutCatcher mtimer;
         RTT::Event <void(RTT::Timer::TimerId)> mtimeoutEvent;
 
         /**
          * This hook will check if a NonPeriodicActivity has been properly
          * setup.
          */
-        bool configureHook();
         bool startHook();
         void updateHook();
         void stopHook();
-        void cleanupHook();
 
         /**
          * Command: wait until a timer expires.
@@ -67,21 +79,6 @@ namespace OCL
         TimerComponent( std::string name = "Timer" );
 
         virtual ~TimerComponent();
-
-        virtual void timeout(RTT::Timer::TimerId id);
-
-        virtual bool stop();
-
-        /**
-         * Returns the current system time in seconds.
-         */
-        double getTime() const;
-
-        /**
-         * Returns the time elapsed since a given system time.
-         */
-        double secondsSince(double stamp) const;
-
     };
 
 }

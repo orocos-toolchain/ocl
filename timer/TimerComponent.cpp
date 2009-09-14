@@ -14,7 +14,7 @@ namespace OCL
     using namespace RTT;
 
     TimerComponent::TimerComponent( std::string name /*= "Timer" */ )
-        : TaskContext( name, PreOperational ), Timer( 32 ),
+        : TaskContext( name, PreOperational ), mtimer( 32, mtimeoutEvent ),
           mtimeoutEvent("timeout"),
           waitForCommand( "waitFor", &TimerComponent::waitFor, &TimerComponent::isTimerExpired, this),
           waitCommand( "wait", &TimerComponent::wait, &TimerComponent::isTimerExpired, this)
@@ -23,21 +23,21 @@ namespace OCL
         // Add the methods, methods make sure that they are
         // executed in the context of the (non realtime) caller.
 
-        this->methods()->addMethod( method( "arm", &Timer::arm , this),
+        this->methods()->addMethod( method( "arm", &Timer::arm , &mtimer),
                                     "Arm a single shot timer.",
                                     "timerId", "A numeric id of the timer to arm.",
                                     "delay", "The delay in seconds before it fires.");
-        this->methods()->addMethod( method( "startTimer", &Timer::startTimer , this),
+        this->methods()->addMethod( method( "startTimer", &Timer::startTimer , &mtimer),
                                     "Start a periodic timer.",
                                     "timerId", "A numeric id of the timer to start.",
                                     "period", "The period in seconds.");
-        this->methods()->addMethod( method( "killTimer", &Timer::killTimer , this),
+        this->methods()->addMethod( method( "killTimer", &Timer::killTimer , &mtimer),
                                     "Kill (disable) an armed or started timer.",
                                     "timerId", "A numeric id of the timer to kill.");
-        this->methods()->addMethod( method( "isArmed", &Timer::isArmed , this),
+        this->methods()->addMethod( method( "isArmed", &Timer::isArmed , &mtimer),
                                     "Check if a given timer is armed or started.",
                                     "timerId", "A numeric id of the timer to check.");
-        this->methods()->addMethod( method( "setMaxTimers", &Timer::setMaxTimers , this),
+        this->methods()->addMethod( method( "setMaxTimers", &Timer::setMaxTimers , &mtimer),
                                     "Raise or lower the maximum amount of timers.",
                                     "timers", "The largest amount of timers. The highest timerId is max-1.");
         this->events()->addEvent( &mtimeoutEvent,
@@ -53,63 +53,26 @@ namespace OCL
 
     TimerComponent::~TimerComponent() {
         this->stop();
-        this->cleanup();
-    }
-
-    void TimerComponent::timeout(Timer::TimerId id) {
-        mtimeoutEvent(id);
-    }
-
-    bool TimerComponent::configureHook()
-    {
-        if (this->engine()->getActivity() == 0) {
-            log(Error) << "You must assign a non periodic activity to this TimerComponent." <<endlog();
-            return false;
-        }
-
-        if ( this->engine()->getActivity()->isPeriodic() ) {
-            log(Error) << "Can not run TimerComponent with a periodic activity. Use a non periodic activity." <<endlog();
-            return false;
-        }
-
-        log(Info) <<"TimerComponent correctly configured."<<endlog();
-        Timer::setActivity( this->engine()->getActivity() );
-        assert( this->Timer::getActivity() );
-        return true;
-    }
-
-    void TimerComponent::cleanupHook()
-    {
-        Timer::setActivity( 0 );
     }
 
     bool TimerComponent::startHook()
     {
-        return Timer::initialize();
+        return mtimer.getThread() && mtimer.getThread()->start();
     }
 
     void TimerComponent::updateHook()
     {
-        // ok,ok, we won't process events or commands ourselves...
-        Timer::loop();
-    }
-
-    bool TimerComponent::stop()
-    {
-        if ( isActive() )
-            return Timer::breakLoop() && TaskContext::stop();
-        else
-            return false;
+        // nop, we just process the wait commands.
     }
 
     void TimerComponent::stopHook()
     {
-        Timer::finalize();
+        mtimer.getThread()->stop();
     }
 
     bool TimerComponent::wait(RTT::Timer::TimerId id, double seconds)
     {
-        return this->arm(id, seconds);
+        return mtimer.arm(id, seconds);
     }
 
     bool TimerComponent::waitFor(RTT::Timer::TimerId id)
@@ -119,6 +82,6 @@ namespace OCL
 
     bool TimerComponent::isTimerExpired(RTT::Timer::TimerId id) const
     {
-        return !Timer::isArmed(id);
+        return !mtimer.isArmed(id);
     }
 }
