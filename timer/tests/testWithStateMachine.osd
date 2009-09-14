@@ -1,0 +1,99 @@
+StateMachine testWithStateMachine_SM
+{
+	var int timerID=-1;
+
+	// allocation of timers IDs
+	var int ID_WAIT=3;
+	var int ID_TIMEOUT=4;
+	var int ID_EXTRA=5;
+
+	  //**************************************************************************
+	  initial state START
+	  {
+	    entry { }	// empty entry() program
+	    transitions { select TEST_1 }
+	  }
+
+	//**************************************************************************
+	state TEST_1
+	{
+	  entry {
+            do log("clear-out-first-entry");
+            do log("Starting TEST_1");
+	  }
+	  run
+	    {
+	      // id, time
+	      do Timer.wait(ID_WAIT, 1.2);
+	      do log("Test 1, Wait 1 done");
+	      do Timer.wait(ID_WAIT, 1.3);
+	      do log("Test 1, Wait 2 done");
+	    }
+	  transitions { select TEST_2 }
+	}
+
+	//**************************************************************************
+	state TEST_2
+	{
+	  entry {
+            do log("Starting TEST_2");
+	    do Timer.arm(ID_TIMEOUT, 2.5);
+	  }
+	  run
+	    {
+	      do log("Waiting for timer ...");
+	      do Timer.waitFor(ID_TIMEOUT)	;
+	      do log("Test 2, Wait 1 done");
+	    }
+	  transitions { select TEST_3 }
+	}
+
+	//**************************************************************************
+	state TEST_3
+	{
+	  entry {
+            do log("Starting TEST_3");
+	    do Timer.arm(ID_EXTRA, 1.0);
+	  }
+	  run
+	    {
+	      do log("Waiting for timeout ...");
+	    }
+	  transition Timer.timeout(timerID)
+	    if timerID == ID_EXTRA then select TEST_4
+			    }
+
+	//**************************************************************************
+	state TEST_4
+	{
+	  entry {
+            do log("Starting TEST_4") ;
+	    do Timer.arm(ID_TIMEOUT, 1.1);
+	  }
+	  run
+	    {
+	      do log("Waiting for timeout ...");
+	    }
+	  transition Timer.timeout(timerID)
+	    if timerID == ID_TIMEOUT then select DONE
+	      else { do log("wrong timeout !"); do hmi.logInt(timerID); } select ERROR
+		     }
+	//**************************************************************************
+	state DONE
+	{
+	  entry { do log("DONE"); }
+	}
+
+	//**************************************************************************
+	state ERROR
+	{
+	  entry { do log("ERROR"); }
+	}
+
+	//**************************************************************************
+	final state STOP
+	{
+	}
+}
+
+RootMachine testWithStateMachine_SM testWithStateMachine
