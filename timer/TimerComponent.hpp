@@ -15,49 +15,61 @@ namespace OCL
 {
     /**
      * @brief A Component interface to the Real-Time types::Toolkit's timer.
-     * It must be configured with a RTT::Activity which will emit
+     * It must be configured with a Activity which will emit
      * the timeout event of this component.
      *
      */
     class TimerComponent
-        : public RTT::TaskContext,
-          public RTT::os::Timer
+        : public RTT::TaskContext
     {
     protected:
+        /**
+         * Helper class for catching the virtual timeout function of Timer.
+         */
+        struct TimeoutCatcher : public os::Timer {
+            RTT::Event <void(RTT::os::Timer::TimerId)>& me;
+
+            TimeoutCatcher(RTT::os::Timer::TimerId max_timers, RTT::Event <void(RTT::os::Timer::TimerId)>& e) :
+                    os::Timer(max_timers, ORO_SCHED_RT, os::HighestPriority), me(e) 
+            {}
+            virtual void timeout(os::Timer::TimerId id) {
+                me(id);
+            }
+        };
+
+        TimeoutCatcher mtimer;
         RTT::Event <void(RTT::os::Timer::TimerId)> mtimeoutEvent;
 
         /**
-         * This hook will check if a RTT::Activity has been properly
+         * This hook will check if a Activity has been properly
          * setup.
          */
-        bool configureHook();
         bool startHook();
         void updateHook();
         void stopHook();
-        void cleanupHook();
 
         /**
-         * RTT::Command: wait until a timer expires.
+         * Command: wait until a timer expires.
          */
         RTT::Command<bool(RTT::os::Timer::TimerId)> waitForCommand;
 
         /**
-         * RTT::Command: arm and wait until a timer expires.
+         * Command: arm and wait until a timer expires.
          */
         RTT::Command<bool(RTT::os::Timer::TimerId, double)> waitCommand;
 
         /**
-         * RTT::Command Implementation: wait until a timer expires.
+         * Command Implementation: wait until a timer expires.
          */
         bool waitFor(RTT::os::Timer::TimerId id);
 
         /**
-         * RTT::Command Implementation: \b arm and wait until a timer expires.
+         * Command Implementation: \b arm and wait until a timer expires.
          */
         bool wait(RTT::os::Timer::TimerId id, double seconds);
 
         /**
-         * RTT::Command Condition: return true if \a id expired.
+         * Command Condition: return true if \a id expired.
          */
         bool isTimerExpired(RTT::os::Timer::TimerId id) const;
     public:
@@ -67,21 +79,6 @@ namespace OCL
         TimerComponent( std::string name = "os::Timer" );
 
         virtual ~TimerComponent();
-
-        virtual void timeout(RTT::os::Timer::TimerId id);
-
-        virtual bool stop();
-
-        /**
-         * Returns the current system time in seconds.
-         */
-        double getTime() const;
-
-        /**
-         * Returns the time elapsed since a given system time.
-         */
-        double secondsSince(double stamp) const;
-
     };
 
 }
