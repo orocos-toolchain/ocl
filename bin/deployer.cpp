@@ -38,9 +38,11 @@ int ORO_main(int argc, char** argv)
 {
 	std::string             script;
 	std::string             name("Deployer");
+    bool                    requireNameService = false; // not used
     po::variables_map       vm;
 
-	int rc = OCL::deployerParseCmdLine(argc, argv, script, name, vm);
+	int rc = OCL::deployerParseCmdLine(argc, argv,
+                                       script, name, requireNameService, vm);
 	if (0 != rc)
 	{
 		return rc;

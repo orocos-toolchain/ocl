@@ -41,6 +41,7 @@ namespace OCL
 	\param argv RTT::Command line arguments
 	\param script Name of the XML file for the deployer to load and run
 	\param name Name of the deployer task
+    \param requireNameService Whether to require the CORBA name service, or not
     \param vm The variables map into which the options are parsed.
 	\param otherOptions Caller can pass in other options to check for. If NULL,
 	then is ignored.
@@ -51,6 +52,7 @@ extern int deployerParseCmdLine(
 	char**                                          argv,
 	std::string&                                    script,
 	std::string&                                    name,
+    bool&                                           requireNameService,
     boost::program_options::variables_map&          vm,
 	boost::program_options::options_description*    otherOptions=NULL);
 
