@@ -652,7 +652,7 @@ namespace OCL
 #else
                 std::string command;
                 cout << prompt;
-                cin >> command;
+                getline(cin,command);
 #endif
                 str_trim( command, ' ');
                 ::signal( SIGINT, SIG_DFL );        // do not catch ctrl_c
