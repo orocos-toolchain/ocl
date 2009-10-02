@@ -13,8 +13,8 @@ class TestTaskContext
     : public RTT::TaskContext
 {
     RTT::Property<string> hello;
-    WriteInputPort<std::vector<double> > dwport;
-    ReadInputPort<double> drport;
+    OutputPort<std::vector<double> > dwport;
+    InputPort<double> drport;
 
 public:
     TestTaskContext(std::string name)
@@ -27,9 +27,8 @@ public:
         this->ports()->addPort( &drport );
         this->ports()->addPort( &dwport );
 
-        // write initial value.
         std::vector<double> init(10, 1.0);
-        dwport.Set( init );
+        dwport.write(init);
     }
 };
 
@@ -37,8 +36,8 @@ class TestTaskContext2
     : public RTT::TaskContext
 {
     RTT::Property<string> hello;
-    WriteInputPort<double> dwport;
-    ReadInputPort<std::vector<double> > drport;
+    OutputPort<double> dwport;
+    InputPort<std::vector<double> > drport;
 
 public:
     TestTaskContext2(std::string name)
@@ -50,6 +49,9 @@ public:
         this->properties()->addProperty( & hello );
         this->ports()->addPort( &drport );
         this->ports()->addPort( &dwport );
+
+        // write initial value.
+        dwport.write( 0.0 );
     }
 };
 
