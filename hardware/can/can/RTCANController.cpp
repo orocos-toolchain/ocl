@@ -255,5 +255,3 @@ namespace RTT
 
     }
 }
-
-#endif /* RTCANCONTROLLER */
