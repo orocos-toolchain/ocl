@@ -34,7 +34,7 @@ class TestTaskContext
             Logger::log() << Logger::Info << "TestTaskContext initialized" << Logger::endl;
 
         // write initial value.
-            dwport.Set( init );
+            dwport.setDataSample( init );
         }
 
         virtual bool startup () {
@@ -57,7 +57,7 @@ class TestTaskContext
             }
             pos--;
             if( pos == 0 ) { pos = 10; }
-            dwport.Set( init );
+            dwport.write( init );
         }
 
         virtual void shutdown () {

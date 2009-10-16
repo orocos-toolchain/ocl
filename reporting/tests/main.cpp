@@ -30,7 +30,7 @@ public:
 
         // write initial value.
         std::vector<double> init(10, 1.0);
-        dwport.Set( init );
+        dwport.setDataSample( init );
     }
 };
 

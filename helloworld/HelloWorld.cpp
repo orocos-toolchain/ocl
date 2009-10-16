@@ -22,6 +22,7 @@
 
 using namespace std;
 using namespace RTT;
+using namespace RTT::detail; // workaround in 2.0 transition phase.
 using namespace Orocos;
 
 namespace OCL
@@ -162,7 +163,7 @@ namespace OCL
               // Name, initial value
               outport("the_results",true),
               // Name, policy
-              bufferport("the_buffer_port",internal::ConnPolicy::buffer(13,internal::ConnPolicy::LOCK_FREE,true) ),
+              bufferport("the_buffer_port",ConnPolicy::buffer(13,ConnPolicy::LOCK_FREE,true) ),
               // Name, function pointer, object
               method("the_method", &HelloWorld::mymethod, this),
               // Name, command function pointer, completion condition function pointer, object

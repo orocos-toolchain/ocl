@@ -11,15 +11,15 @@ class MyTask
     : public RTT::TaskContext
 {
 public:
-    ReadInputPort<double> p1;
-    WriteInputPort<double> p2;
-    RTT::InputPort<double> p3;
+    InputPort<double> p1;
+    OutputPort<double> p2;
+    OutputPort<double> p3;
 
     MyTask(std::string n)
         : RTT::TaskContext(n),
           p1("p1"),
-          p2("p2", 0.0),
-          p3("p3", 0.0)
+          p2("p2"),
+          p3("p3")
     {
         this->ports()->addPort( &p1, "");
         this->ports()->addPort( &p2, "");

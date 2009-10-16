@@ -4,8 +4,7 @@
 #include <timer/TimerComponent.hpp>
 #include <taskbrowser/TaskBrowser.hpp>
 
-#include <rtt/NonPeriodicActivity.hpp>
-#include <rtt/PeriodicActivity.hpp>
+#include <rtt/Activity.hpp>
 #include <rtt/Method.hpp>
 #include <iostream>
 #include <rtt/os/main.h>
@@ -34,7 +33,7 @@ public:
     bool startHook()
     {
         bool 				rc = false;		// prove otherwise
-        StateMachinePtr 	p;
+        scripting::StateMachinePtr 	p;
 
         Logger::In			in(getName());
         std::string         machineName = this->getName();
@@ -82,13 +81,13 @@ int ORO_main( int argc, char** argv)
     }
 
     HMIConsoleOutput hmi("hmi");
-    hmi.setActivity( new NonPeriodicActivity(ORO_SCHED_RT, OS::HighestPriority) );
+    hmi.setActivity( new Activity(ORO_SCHED_RT, os::HighestPriority) );
 
     TimerComponent tcomp("Timer");
-    NonPeriodicActivity act(ORO_SCHED_RT, OS::HighestPriority, tcomp.engine() );
+    Activity act(ORO_SCHED_RT, os::HighestPriority, tcomp.engine() );
 
     TestStateMachine peer("testWithStateMachine");  // match filename
-    PeriodicActivity p_act(ORO_SCHED_RT, OS::HighestPriority, 0.1, peer.engine() );
+    Activity p_act(ORO_SCHED_RT, os::HighestPriority, 0.1, peer.engine() );
 
     peer.addPeer(&tcomp);
     peer.addPeer(&hmi);
