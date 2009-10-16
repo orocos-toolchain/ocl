@@ -27,7 +27,8 @@
 
 
 #include "ParallelPort.hpp"
-#include <stdlib.h>
+#include <cstdlib>
+#include <cstdio>
 #include <sys/io.h>
 
 namespace RTT
