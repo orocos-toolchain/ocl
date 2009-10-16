@@ -152,8 +152,12 @@ namespace RTT
         {
             Logger::In in("SocketCANController");
 
-            d->bus = bus;
-            bus->setController(this);
+            if(bus == NULL)
+                log(Error) << "Can not add CANBus, CANBusInterface is not valid!" << endlog();
+            else {
+                d->bus = bus;
+                bus->setController(this);
+            }
         }
 
         void SocketCANController::process(const CANMessage* msg)
