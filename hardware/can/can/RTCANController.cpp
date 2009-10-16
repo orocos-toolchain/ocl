@@ -153,7 +153,7 @@ namespace RTT
         {
             Logger::In in("RTCANController");
 
-            if(d->mbus == NULL)
+            if(bus == NULL)
                 log(Error) << "Can not add CANBus, CANBusInterface is not valid!" << endlog();
             else {
                 d->mbus = bus;
