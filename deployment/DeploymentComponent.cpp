@@ -852,31 +852,35 @@ namespace OCL
             ConnectionData::Ports::iterator p = connection->ports.begin();
 
             // If one of the ports is connected, use that one as writer to connect to.
+            vector<OutputPortInterface*> writers;
             while (p !=connection->ports.end() ) {
-                if ( dynamic_cast<base::OutputPortInterface*>( *p ) ) {
+                if ( OutputPortInterface* out = dynamic_cast<base::OutputPortInterface*>( *p ) ) {
                     if ( writer ) {
-                        log(Error) << "Only one writer can post to a topic. OutputPort " << (*p)->getName() << " is not allowed."<<endlog();
-                        valid = false;
-                    }
-                    writer = *p;
+                        log(Info) << "Forming multi-output connections with additional OutputPort " << (*p)->getName() << "."<<endlog();
+                    } else
+                        writer = *p;
+                    writers.push_back( out );
                     std::string owner = it->second.owners[p - it->second.ports.begin()]->getName();
-                    log(Info) << "Component "<< owner << "'s OutputPort "<< writer->getName()<< " will publish topic "<<it->first<< endlog();
+                    log(Info) << "Component "<< owner << "'s OutputPort "<< writer->getName()<< " will write topic "<<it->first<< endlog();
                 }
                 ++p;
             }
 
             // Inform the user of non-optimal connections:
             if ( writer == 0 ) {
-                log(Error) << "No OutputPort listed that publishes " << it->first << endlog();
+                log(Error) << "No OutputPort listed that writes " << it->first << endlog();
                 valid = false;
+                break;
             }
 
             // connect all ports to writer
             p = connection->ports.begin();
+            vector<OutputPortInterface*>::iterator w = writers.begin();
 
-            while (p != connection->ports.end() ) {
-                // connect all readers to the first found writer.
-                if ( *p != writer )
+            while (w != writers.end() ) {
+                while (p != connection->ports.end() ) {
+                    // connect all readers to the list of writers
+                    if ( dynamic_cast<base::InputPortInterface*>( *p ) )
                     {
                         string owner = connection->owners[p - connection->ports.begin()]->getName();
                         // only try to connect p if it is not in the same connection of writer.
@@ -888,7 +892,9 @@ namespace OCL
                             log(Info) << "Subscribed InputPort "<< owner<<"."<< (*p)->getName() <<" to topic " << connection_name <<endlog();
                         }
                     }
-                ++p;
+                    ++p;
+                }
+                ++w;
             }
         }
 
