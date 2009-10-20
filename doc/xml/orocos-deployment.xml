@@ -363,6 +363,15 @@
 <properties>
   <simple name="Import" type="string"><value>/usr/local/lib</value></simple>
 
+  <!-- You can set per data flow connection policies -->
+  <struct name="SensorValuesConnection" type="ConnPolicy">
+    <!-- Type is 'shared data' or buffered: DATA: 0 , BUFFER: 1 -->
+    <simple name="type" type="short"><value>1</value></simple>
+    <!-- buffer size is 12 -->
+    <simple name="size" type="short"><value>12</value></simple>
+  </struct>
+  <!-- You can repeat this struct for each connection below ... -->
+
   <struct name="Reporter" type="OCL::FileReporting">
 
     <struct name="Activity" type="PeriodicActivity">
@@ -404,7 +413,10 @@
 
     <struct name="Ports" type="PropertyBag">
       <!-- Note: the value is the name of the connection of which this port gets part.
-           All ports that share the same connection name are connected to each other -->
+           All ports that share the same connection name are connected to each other 
+           The connection policy for SensorValuesConnection was defined above. If no
+	   policy is given, the default (DATA, LOCK_FREE) is used.
+      -->
       <simple name="SensorValues" type="string"><value>SensorValuesConnection</value></simple>
       <simple name="SteeringSignals" type="string"><value>DriveConnection</value></simple>
     </struct>
@@ -464,6 +476,10 @@
 	  name of the connection it belongs to. Ports with equal connection names
 	  are connected to each other. Failure to add one or more ports (because
 	  they don't agree on the same data type) will fail the configuration phase.
+	  You can tune each connection using a struct of type 'ConnPolicy' with the
+	  name of the connection. This is shown on top of the example,
+	  where the SensorValuesConnection is configured, which is used to connect
+	  the Controller's SensorValues port with the Plant's Position port.
 	</para>
 	<para>
 	  The <option>AutoConnect</option> element indicates if the
