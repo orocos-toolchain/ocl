@@ -34,6 +34,7 @@
 #include <rtt/marsh/PropertyMarshaller.hpp>
 #include <rtt/marsh/PropertyDemarshaller.hpp>
 #include <rtt/Method.hpp>
+#include <rtt/ConnPolicy.hpp>
 
 #include <cstdio>
 #include <dlfcn.h>
@@ -486,6 +487,17 @@ namespace OCL
                             valid = false;
                             continue;
                         }
+
+                        //Check if it is a ConnPolicy
+                        // convert to Property<ConnPolicy>
+                        Property<ConnPolicy> cp_prop((*it)->getName(),"");
+                        assert( cp_prop.ready() );
+                        if ( cp_prop.compose( comp ) ) {
+                            //It's a connection policy.
+                            conmap[cp_prop.getName()].policy = cp_prop.get();
+                            continue;
+                        }
+
                         // Parse the options before creating the component:
                         for (RTT::PropertyBag::const_iterator optit= comp.rvalue().begin(); optit != comp.rvalue().end();optit++) {
                             if ( valid_names.find( (*optit)->getName() ) == valid_names.end() ) {
@@ -885,7 +897,7 @@ namespace OCL
                         string owner = connection->owners[p - connection->ports.begin()]->getName();
                         // only try to connect p if it is not in the same connection of writer.
                         // OK. p is definately no part of writer's connection. Try to connect and flag errors if it fails.
-                        if ( writer->connectTo( **p ) == false) {
+                        if ( writer->connectTo( **p, connection->policy ) == false) {
                             log(Error) << "Could not subscribe InputPort "<< owner<<"."<< (*p)->getName() << " to topic " << connection_name <<endlog();
                             valid = false;
                         } else {

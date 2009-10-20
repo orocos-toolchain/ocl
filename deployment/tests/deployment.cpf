@@ -2,6 +2,13 @@
 <!DOCTYPE properties SYSTEM "cpf.dtd">
 <properties>
 
+  <!-- Connection policy -->
+  <struct name="AConnection" type="ConnPolicy">
+    <simple name="type" type="short"><value>1</value></simple>
+    <simple name="size" type="short"><value>12</value></simple>
+  </struct>
+    
+
   <!-- Component 1, already loaded in the application ! -->
   <struct name="ComponentA" type="PropertyBag">
     <struct name="Peers"  type="PropertyBag">

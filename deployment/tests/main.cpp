@@ -14,16 +14,19 @@ public:
     InputPort<double> p1;
     OutputPort<double> p2;
     OutputPort<double> p3;
+    Attribute<double> a;
 
     MyTask(std::string n)
         : RTT::TaskContext(n),
           p1("p1"),
           p2("p2"),
-          p3("p3")
+          p3("p3"),
+          a("a")
     {
         this->ports()->addPort( &p1, "");
         this->ports()->addPort( &p2, "");
         this->ports()->addPort( &p3, "");
+        this->attributes()->addAttribute( &a );
     }
 };
 

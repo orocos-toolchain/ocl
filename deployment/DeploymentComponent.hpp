@@ -143,6 +143,7 @@ namespace OCL
             typedef std::vector<RTT::TaskContext*>   Owners;
             Ports ports;
             Owners owners;
+            RTT::ConnPolicy policy;
         };
 
         /**
