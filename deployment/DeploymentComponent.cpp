@@ -1326,7 +1326,7 @@ namespace OCL
                 handle = dlopen ( string(compPath.get() + "/" + so_name).c_str(), RTLD_NOW | RTLD_GLOBAL);
             }
 
-            if ( !name_is_so ) {
+            if ( !handle && !name_is_so ) {
                 // no so given, try to append target:
                 so_name = name + "-" + target.get() + SO_EXT;
                 errors.push_back(string( dlerror() ));
@@ -1354,7 +1354,7 @@ namespace OCL
                 handle = dlopen ( string(compPath.get() + "/" + so_name).c_str(), RTLD_NOW | RTLD_GLOBAL);
             }
 
-            if ( !name_is_so ) {
+            if ( !handle && !name_is_so ) {
                 // no so given, try to append target:
                 so_name = name + "-" + target.get() + SO_EXT;
                 errors.push_back(string( dlerror() ));
@@ -1380,6 +1380,7 @@ namespace OCL
         }
 
         //------------- if you get here, the library has been loaded -------------
+        log(Debug)<<"Succesfully loaded "<<libname<<endlog();
         LoadedLib loading_lib(libname,handle);
         dlerror();    /* Clear any existing error */
 
@@ -1851,7 +1852,7 @@ namespace OCL
             }
         } catch (...)
             {
-                log(Error)<< "Uncaught exception in loadcomponents() !"<< endlog();
+                log(Error)<< "Uncaught exception in kickOut() !"<< endlog();
                 failure = true;
             }
     }
