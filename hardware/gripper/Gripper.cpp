@@ -11,7 +11,7 @@ ORO_CREATE_COMPONENT( OCL::Gripper )
 
 namespace OCL{
 
-    Gripper::Gripper(const std::string& name) : 
+    Gripper::Gripper(const std::string& name) :
         TaskContext(name),
         opening(false),closing(false),opened(false),closed(false),
         voltage_value("voltage","",9.9),
@@ -21,12 +21,12 @@ namespace OCL{
     {
         this->commands()->addCommand(command("open", &Gripper::openGripper, &Gripper::gripperOpened, this), "Opening gripper.");
         this->commands()->addCommand(command("close", &Gripper::closeGripper, &Gripper::gripperClosed, this), "Closing gripper.");
-        
+
         this->properties()->addProperty(&voltage_value);
         this->properties()->addProperty(&eps);
         this->properties()->addProperty(&min_time);
         this->properties()->addProperty(&actuated_grip);
-#if (defined OROPKG_OS_LXRT)                
+#if (defined OROPKG_OS_LXRT)
         ComediLoader::Instance()->CreateComediDevices();
         //check if the devices already exist:
         ni6527_dout = DigitalOutInterface::nameserver.getObject("DigitalOut");
@@ -40,14 +40,14 @@ namespace OCL{
         gripper_axis = new Axis(gripper_driver);
 #endif
     }
-    
+
     bool Gripper::configureHook(){
         return true;
     }
 
     Gripper::~Gripper()
     {
-#if (defined OROPKG_OS_LXRT)        
+#if (defined OROPKG_OS_LXRT)
         delete gripper_axis;
         delete encoder;
         ComediLoader::Instance()->DestroyComediDevices();
@@ -62,7 +62,7 @@ namespace OCL{
         time_begin=TimeService::Instance()->getTicks();
         return true;
     }
-    
+
     bool Gripper::closeGripper()
     {
         closing=true;
@@ -71,39 +71,41 @@ namespace OCL{
         time_begin=TimeService::Instance()->getTicks();
         return true;
     }
-    
+
     bool Gripper::gripperOpened() const
     {
         return opened;
     }
-    
+
     bool Gripper::gripperClosed() const
     {
         return closed;
     }
-    
+
     bool Gripper::startHook()
     {
         bool ok=true;
+#if (defined OROPKG_OS_LXRT)
         ok &= gripper_axis->unlock();
         ok &= gripper_axis->drive(0.0);
+#endif
         return ok;
     }
-    
+
     void Gripper::updateHook()
     {
-#if (defined OROPKG_OS_LXRT)        
+#if (defined OROPKG_OS_LXRT)
 
         prev_pos=pos;
         pos=encoder->readSensor();
         bool stopped = false;
         time_passed = TimeService::Instance()->secondsSince(time_begin);
-        
+
         if(time_passed>min_time.rvalue())
             stopped = (std::abs(prev_pos-pos)/getPeriod())<eps.rvalue();
 #endif
         if(opening){
-#if (defined OROPKG_OS_LXRT)        
+#if (defined OROPKG_OS_LXRT)
             gripper_axis->drive(voltage_value.rvalue());
             if(stopped)
 #endif
@@ -113,7 +115,7 @@ namespace OCL{
                 }
         }
         else if(closing){
-#if (defined OROPKG_OS_LXRT)        
+#if (defined OROPKG_OS_LXRT)
             gripper_axis->drive(-voltage_value.rvalue());
             if(stopped)
 #endif
@@ -123,23 +125,23 @@ namespace OCL{
                         closing=false;
                 }
         }else{
-#if (defined OROPKG_OS_LXRT)        
+#if (defined OROPKG_OS_LXRT)
             gripper_axis->drive(0.0);
 #endif
         }
     }
-    
+
     void Gripper::stopHook()
     {
-#if (defined OROPKG_OS_LXRT)        
+#if (defined OROPKG_OS_LXRT)
         gripper_axis->stop();
         gripper_axis->lock();
 #endif
     }
-    
+
     void Gripper::cleanupHook()
     {
-        
+
     }
-    
+
 }
