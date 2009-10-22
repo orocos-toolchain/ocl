@@ -267,10 +267,10 @@ private:
   // Members implementing the interface to the hardware
   //
   #if !defined (OROPKG_OS_LXRT)
-     std::vector<RTT::SimulationAxis*>      _axes;
+     std::vector<OCL::SimulationAxis*>      _axes;
      std::vector<RTT::AxisInterface*>    _axesInterface;
   #else
-    std::vector<RTT::Axis*>                _axes;
+    std::vector<OCL::Axis*>                _axes;
 
     std::vector<RTT::AxisInterface*>    _axesInterface;
 

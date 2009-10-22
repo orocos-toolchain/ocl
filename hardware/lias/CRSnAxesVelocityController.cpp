@@ -174,7 +174,7 @@ CRSnAxesVelocityController::CRSnAxesVelocityController(const std::string& name,c
         _reference[i] = new DigitalInput( _IP_OptoInput_DIn, i + 1 ); // Bit 1, 2, 3, 4, 5, and 6.
 
 
-        _axes[i] = new RTT::Axis( _drive[i] );
+        _axes[i] = new Axis( _drive[i] );
         log(Error) << "_axes[i]->limitDrive( jointspeedlimits[i] ) has been disabled." << endlog();
         //_axes[i]->limitDrive( jointspeedlimits[i] );
         //_axes[i]->setLimitDriveEvent( maximumDrive );  \\TODO I prefere to handle this myself.
@@ -203,7 +203,7 @@ CRSnAxesVelocityController::CRSnAxesVelocityController(const std::string& name,c
 
     for (unsigned int i = 0; i <NUM_AXES; i++) {
 	  _homed[i] = true;
-      _axes[i] = new RTT::SimulationAxis(
+      _axes[i] = new SimulationAxis(
 					0.0,
 					lowerPositionLimits.value()[i],
 					upperPositionLimits.value()[i]);

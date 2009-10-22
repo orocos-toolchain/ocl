@@ -21,6 +21,7 @@
 #include "hardware/krypton/KryptonK600Sensor.hpp"
 #include "taskbrowser/TaskBrowser.hpp"
 #include "reporting/FileReporting.hpp"
+#include <rtt/Toolkit.hpp>
 
 
 

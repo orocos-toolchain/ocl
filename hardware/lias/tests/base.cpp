@@ -25,7 +25,7 @@ int ORO_main(int arc, char* argv[])
 
     BaseVelocityController a_task("ATask");
     TestTcpTaskContext b_task("BTask");
-    WrenchSensor c_task(0.1,"CTask",0);
+    WrenchSensor c_task("CTask");
 
     a_task.connectPeers( &b_task);
     b_task.connectPeers( &c_task);

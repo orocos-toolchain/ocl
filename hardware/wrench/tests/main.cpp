@@ -1,5 +1,6 @@
 #include <rtt/PeriodicActivity.hpp>
 #include <rtt/Ports.hpp>
+#include <rtt/Toolkit.hpp>
 
 #include "hardware/wrench/WrenchSensor.hpp"
 #include <rtt/os/main.h>
@@ -32,7 +33,7 @@ int ORO_main(int arc, char* argv[])
     // import kdl toolkit
     Toolkit::Import( KDLToolkit );
 
-    WrenchSensor a_task(0.01,"ATask",0);
+    WrenchSensor a_task("ATask");
 
     PeriodicActivity periodicActivityA(0,0.1, a_task.engine() );
     FileReporting reporter("Reporting");

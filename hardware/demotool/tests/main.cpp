@@ -18,6 +18,7 @@
 #include <rtt/RTT.hpp>
 #include <rtt/PeriodicActivity.hpp>
 #include <rtt/os/main.h>
+#include <rtt/Toolkit.hpp>
 #include <kdl/bindings/rtt/toolkit.hpp>
 #include "hardware/demotool/Demotool.hpp"
 #include "hardware/krypton/KryptonK600Sensor.hpp"
@@ -51,7 +52,7 @@ int ORO_main(int arc, char* argv[])
     KryptonK600Sensor krypton("Krypton",6);
 
     // wrench sensor
-    WrenchSensor wrenchsensor(0.01, "WrenchSensor", 0);
+    WrenchSensor wrenchsensor("WrenchSensor");
     PeriodicActivity wrenchsensorTask(OS::HighestPriority, 0.01, wrenchsensor.engine() );
 
     // demotool task
@@ -74,8 +75,8 @@ int ORO_main(int arc, char* argv[])
     demotoolTask.start();
 
     // task browser
-    reporter.load();
-     TaskBrowser browser( &demotool );
+    reporter.configure();
+    TaskBrowser browser( &demotool );
     browser.loop();
 
     // stop tasks
