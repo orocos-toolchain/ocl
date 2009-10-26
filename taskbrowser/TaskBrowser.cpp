@@ -748,6 +748,7 @@ namespace OCL
     void TaskBrowser::cancelMacro() {
         cout << "Canceling macro "<< macroname <<endl;
         macrorecording = false;
+        macrotext.clear();
     }
 
     void TaskBrowser::endMacro() {
@@ -760,6 +761,7 @@ namespace OCL
         macrofile << "export function "<<macroname<<" {"<<endl;
         macrofile << macrotext.c_str();
         macrofile << "}"<<endl;
+        macrotext.clear();
 
         cout << "Loading file "<< fname <<endl;
         scripting::ProgramLoader loader;
