@@ -53,6 +53,7 @@ int deployerParseCmdLine(int                        argc,
                          char**                     argv,
                          std::string&               script,
                          std::string&               name,
+                         bool&                      requireNameService,
                          po::variables_map&         vm,
                          po::options_description*   otherOptions)
 {
@@ -72,6 +73,8 @@ int deployerParseCmdLine(int                        argc,
 		 "Level at which to log (case-insensitive) Never,Fatal,Critical,Error,Warning,Info,Debug,Realtime")
 		("no-consolelog",
 		 "Turn off logging to the console (will still log to 'orocos.log')")
+        ("require-name-service",
+         "Require CORBA name service")
 		("DeployerName",
 		 po::value<std::string>(&name),
 		 "Name of deployer component (the --DeployerName flag is optional)")
@@ -104,6 +107,12 @@ int deployerParseCmdLine(int                        argc,
 		{
             Logger::Instance()->mayLogStdOut(false);
             log(Warning) << "Console logging disabled" << endlog();
+		}
+
+		if (vm.count("require-name-service"))
+		{
+            requireNameService = true;
+            log(Info) << "CORBA name service required." << endlog();
 		}
 
  		// verify that is a valid logging level

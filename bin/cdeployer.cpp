@@ -41,6 +41,7 @@ int ORO_main(int argc, char** argv)
 {
 	std::string                 script;
 	std::string                 name("Deployer");
+    bool                        requireNameService = false;
     po::variables_map           vm;
 	po::options_description     taoOptions("Additional options after a '--' are passed through to TAO");
 	// we don't actually list any options for TAO ...
@@ -62,7 +63,8 @@ int ORO_main(int argc, char** argv)
     // if TAO options not found then process all command line options,
     // otherwise process all options up to but not including "--"
 	int rc = OCL::deployerParseCmdLine(!found ? argc : taoIndex, argv,
-                                       script, name, vm, &taoOptions);
+                                       script, name, requireNameService,
+                                       vm, &taoOptions);
 	if (0 != rc)
 	{
 		return rc;
@@ -75,7 +77,10 @@ int ORO_main(int argc, char** argv)
     // none) after "--"
     ControlTaskServer::InitOrb( argc - taoIndex, &argv[taoIndex] );
 
-    ControlTaskServer::Create( &dc );
+    if (0 == ControlTaskServer::Create( &dc, true, requireNameService ))
+    {
+        return -1;
+    }
 
     // Only start the script after the Orb was created.
     if ( !script.empty() )
