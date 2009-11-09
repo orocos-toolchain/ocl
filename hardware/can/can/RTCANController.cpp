@@ -87,8 +87,6 @@ namespace RTT
         {
             Logger::In in("RTCANController");
 
-            /* Delete member variables */
-            delete (d);
             /* Stop RTCANController component */
             this->stop();
 
@@ -98,6 +96,10 @@ namespace RTT
                 rt_dev_close(d->fd);
                 d->fd = INVALID;
             }
+
+            /* Delete member variables */
+            delete (d);
+
         }
 
         bool RTCANController::initialize()
