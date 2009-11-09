@@ -91,8 +91,6 @@ namespace RTT
         {
             Logger::In in("SocketCANController");
 
-            /* Delete member variables */
-            delete (d);
             /* Stop SocketCANController component */
             this->stop();
 
@@ -102,6 +100,10 @@ namespace RTT
                 close(d->fd);
                 d->fd = INVALID;
             }
+
+            /* Delete member variables */
+            delete (d);
+
         }
 
         bool SocketCANController::initialize()
