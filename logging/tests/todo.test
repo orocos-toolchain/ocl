@@ -1,0 +1,44 @@
+/*
+	Tests to do
+
+- small memory. at 8k on SL 64-bit build, I get a seg-fault inside of
+log4cpp::LoggingEvent creation. There is no memory checking in there ... or
+perhaps in rt_string.
+
+(gdb) r  --rt 8k -s data/good.xml
+Starting program: /opt/install/git/orocos/corba-omni/bin/deployer-macosx --rt 8k -s data/good.xml
+Reading symbols for shared libraries + done
+   Switched to : Deployer
+
+  This console reader allows you to browse and manipulate TaskContexts.
+  You can type in a command, event, method, expression or change variables.
+  (type 'help' for instructions)
+    TAB completion and HISTORY is available ('bash' like)
+
+ In Task Deployer[S]. (Status of last Command : none )
+ (type 'ls' for context info) :2009-10-15 19:58:00,160 [4350021632] ERROR org.orocos.ocl.logging.tests.TestComponent2  - ERROR=TestComponent2 1
+2009-10-15 19:58:00,660 [4350021632] ERROR org.orocos.ocl.logging.tests.TestComponent2  - ERROR=TestComponent2 3
+
+Program received signal EXC_BAD_ACCESS, Could not access memory.
+Reason: KERN_INVALID_ADDRESS at address: 0x0000000000000008
+[Switching to process 8671]
+0x0000000103124be1 in std::basic_string<char, std::char_traits<char>, rt_allocator<char> >::_Rep::_S_create (__capacity=43, __old_capacity=0, __alloc=@0x103480a3f) at basic_string.tcc:591
+591	      __p->_M_capacity = __capacity;
+(gdb) bt
+#0  0x0000000103124be1 in std::basic_string<char, std::char_traits<char>, rt_allocator<char> >::_Rep::_S_create (__capacity=43, __old_capacity=0, __alloc=@0x103480a3f) at basic_string.tcc:591
+#1  0x00000001031263c6 in std::basic_string<char, std::char_traits<char>, rt_allocator<char> >::_S_construct<char const*> (__beg=0x103315bd8 "org.orocos.ocl.logging.tests.TestComponent2", __end=0x103315c03 "", __a=@0x103480a3f) at basic_string.tcc:151
+#2  0x0000000103126438 in std::basic_string<char, std::char_traits<char>, rt_allocator<char> >::_S_construct_aux<char const*> (__beg=0x103315bd8 "org.orocos.ocl.logging.tests.TestComponent2", __end=0x103315c03 "", __a=@0x103480a3f) at basic_string.h:1464
+#3  0x0000000103126466 in std::basic_string<char, std::char_traits<char>, rt_allocator<char> >::_S_construct<char const*> (__beg=0x103315bd8 "org.orocos.ocl.logging.tests.TestComponent2", __end=0x103315c03 "", __a=@0x103480a3f) at basic_string.h:1479
+#4  0x00000001031264b5 in std::basic_string<char, std::char_traits<char>, rt_allocator<char> >::basic_string (this=0x103480a70, __s=0x103315bd8 "org.orocos.ocl.logging.tests.TestComponent2", __a=@0x103480a3f) at basic_string.tcc:228
+#5  0x00000001024aa970 in log4cpp::LoggingEvent::LoggingEvent ()
+#6  0x00000001024a274f in log4cpp::Category::_logUnconditionally2 ()
+#7  0x00000001024a0d79 in log4cpp::Category::error ()
+#8  0x00000001024dfc95 in OCL::logging::test::Component::updateHook (this=0x10330d840) at /g/o/ocl/logging/tests/TestComponent.cpp:34
+#9  0x00000001003c286f in RTT::ExecutionEngine::step (this=0x10330d4d0) at /g/o/rtt/src/ExecutionEngine.cpp:324
+#10 0x00000001003f4cfa in RTT::PeriodicActivity::step (this=0x103315c20) at /g/o/rtt/src/PeriodicActivity.cpp:178
+#11 0x00000001004bc14f in RTT::TimerThread::step (this=0x10330ccf0) at /g/o/rtt/src/TimerThread.cpp:146
+#12 0x00000001004f1cc7 in RTT::OS::periodicThread (t=0x10330ccf0) at /g/o/rtt/src/os/PeriodicThread.cpp:106
+#13 0x00007fff8768ef66 in _pthread_start ()
+#14 0x00007fff8768ee19 in thread_start ()
+
+*/

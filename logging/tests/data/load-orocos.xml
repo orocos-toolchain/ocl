@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "cpf.dtd">
+
+<properties>
+
+  <!-- necessary libraries. These need to be in whatever dynamic library
+	path your ld uses (for Linux, typically /etc/ld.so.conf and for Darwin,
+	the DYLD_LIBRARY_PATH environment variable)-->
+  <simple name="Import" type="string">
+	<value>liborocos-rtt</value>
+  </simple>
+  <simple name="Import" type="string">
+	<value>liborocos-rtt-corba</value>
+  </simple>
+  <simple name="Import" type="string">
+	<value>liborocos-logging</value>
+  </simple>
+
+</properties>

@@ -1,3 +1,6 @@
+# Modules path (for searching FindXXX.cmake files)
+list(APPEND CMAKE_MODULE_PATH "${PROJ_SOURCE_DIR}/config")
+
 ###########################################################
 #                                                         #
 # Look for dependencies required by individual components #
@@ -128,3 +131,8 @@ FIND_PATH( ULAPACK ulapack/eig.hpp )
 # Detect CORBA using user's CORBA_IMPLEMENTATION
 #
 find_package(Corba REQUIRED)
+
+# Look for Log4cpp (if needed
+IF ( BUILD_LOGGING )
+  FIND_PACKAGE( Log4cpp REQUIRED )
+ENDIF ( BUILD_LOGGING )

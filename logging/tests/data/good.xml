@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "cpf.dtd">
+<properties>
+
+  <simple name="Import" type="string">
+	<value>../liborocos-logging</value>
+  </simple>
+  <simple name="Import" type="string">
+	<value>liborocos-logging-tests</value>
+  </simple>
+
+  <simple name="Include" type="string">
+	<value>data/components.xml</value>
+  </simple>
+
+  <simple name="Include" type="string">
+	<value>data/appenders.xml</value>
+  </simple>
+
+  <!-- #################################################################
+	   LOGGING SERVICE
+	   ################################################################# -->
+
+  <struct name="LoggingService" type="OCL::logging::LoggingService">
+    <struct name="Activity" type="PeriodicActivity">
+      <simple name="Period" type="double"><value>0.5</value></simple>
+      <simple name="Priority" type="short"><value>0</value></simple>
+      <simple name="Scheduler" type="string"><value>ORO_SCHED_OTHER</value></simple>
+    </struct>
+
+    <simple name="AutoConf" type="boolean"><value>1</value></simple>
+    <simple name="AutoStart" type="boolean"><value>1</value></simple>
+
+    <struct name="Properties" type="PropertyBag">
+	  <struct name="Levels" type="PropertyBag">
+		<simple name="org.orocos.ocl.logging.tests.TestComponent" 
+				type="string"><value>info</value></simple>
+		<simple name="org.orocos.ocl.logging.tests.TestComponent2" 
+				type="string"><value>error</value></simple>
+	  </struct>
+
+	  <struct name="Appenders" type="PropertyBag">
+		<simple name="org.orocos.ocl.logging.tests.TestComponent" 
+				type="string"><value>AppenderA</value></simple>
+		<simple name="org.orocos.ocl.logging.tests.TestComponent2" 
+				type="string"><value>AppenderB</value></simple>
+		<simple name="org.orocos.ocl.logging.tests.TestComponent2" 
+				type="string"><value>AppenderC</value></simple>
+	  </struct>
+	</struct>
+
+	<struct name="Peers" type="PropertyBag">
+      <simple type="string"><value>AppenderA</value></simple>
+      <simple type="string"><value>AppenderB</value></simple>
+      <simple type="string"><value>AppenderC</value></simple>
+	</struct> 
+
+  </struct>
+
+</properties>

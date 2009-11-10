@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "cpf.dtd">
+<properties>
+
+  <!-- #################################################################
+	   OUR COMPONENTS
+	   ################################################################# -->
+
+  <struct name="TestComponent" type="OCL::logging::test::Component">
+    <struct name="Activity" type="PeriodicActivity">
+      <simple name="Period" type="double"><value>0.5</value></simple>
+      <simple name="Priority" type="short"><value>0</value></simple>
+      <simple name="Scheduler" type="string"><value>ORO_SCHED_OTHER</value></simple>
+    </struct>
+    <simple name="AutoConf" type="boolean"><value>1</value></simple>
+    <simple name="AutoStart" type="boolean"><value>1</value></simple>
+  </struct>
+
+  <struct name="TestComponent2" type="OCL::logging::test::Component">
+    <struct name="Activity" type="PeriodicActivity">
+      <simple name="Period" type="double"><value>0.5</value></simple>
+      <simple name="Priority" type="short"><value>0</value></simple>
+      <simple name="Scheduler" type="string"><value>ORO_SCHED_OTHER</value></simple>
+    </struct>
+    <simple name="AutoConf" type="boolean"><value>1</value></simple>
+    <simple name="AutoStart" type="boolean"><value>1</value></simple>
+  </struct>
+
+</properties>

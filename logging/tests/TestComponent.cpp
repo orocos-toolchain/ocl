@@ -1,0 +1,70 @@
+#include "logging/tests/TestComponent.hpp"
+#include "rtalloc/String.hpp"
+#include "logging/Category.hpp"
+
+#include <rtt/Logger.hpp>
+#include "ocl/ComponentLoader.hpp"
+
+#include <log4cpp/HierarchyMaintainer.hh>
+
+namespace OCL {
+namespace logging {
+namespace test {
+
+static const char* parentCategory = "org.orocos.ocl.logging.tests";
+
+Component::Component(std::string name) :
+		RTT::TaskContext(name),
+        categoryName(parentCategory + std::string(".") + name),
+        logger(dynamic_cast<OCL::logging::Category*>(
+                   &log4cpp::Category::getInstance(categoryName)))
+{
+}
+
+Component::~Component()
+{
+}
+
+bool Component::startHook()
+{
+    bool ok = (0 != logger);
+    if (!ok)
+    {
+        log(Error) << "Unable to find existing OCL category '" 
+                   << categoryName << "'" << endlog();
+    }
+    
+    return ok;
+}
+        
+void Component::updateHook()
+{
+	static int i=0;
+	std::stringstream	str;
+	str << getName() << " " << i;
+
+    // existing logging
+//	log(Debug) << str.str() << endlog();
+
+    // new logging
+    logger->error("ERROR " + OCL::String(str.str().c_str()));
+    logger->info( "INFO  " + OCL::String(str.str().c_str()));
+    logger->debug("DEBUG " + OCL::String(str.str().c_str()));
+
+    // and trying to use the std::string versions ...
+//    logger->error(std::string("Hello")); // COMPILER error - not accessible!
+//    logger->debug("DEBUG"); // COMPILER error - not accessible with char*!
+
+	++i;
+}
+
+// namespaces
+}
+}
+}
+
+ORO_CREATE_COMPONENT_TYPE();
+ORO_LIST_COMPONENT_TYPE(OCL::logging::test::Component);
+
+
+

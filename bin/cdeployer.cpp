@@ -40,6 +40,14 @@
 #include <iostream>
 #include "deployer-funcs.hpp"
 
+#ifdef  ORO_BUILD_LOGGING
+#   ifndef ORO_BUILD_RTALLOC
+#   warning Logging needs rtalloc!
+#   endif
+#include <log4cpp/HierarchyMaintainer.hh>
+#include "logging/Category.hpp"
+#endif
+
 using namespace std;
 using namespace RTT::corba;
 using namespace RTT;
@@ -111,6 +119,12 @@ int ORO_main(int argc, char** argv)
                   << memSize << " allocated." << endlog();
     }
 #endif  // ORO_BUILD_RTALLOC
+
+#ifdef  ORO_BUILD_LOGGING
+    log(Info) << "Setting OCL factory for real-time logging" << endlog();
+    log4cpp::HierarchyMaintainer::set_category_factory(
+        OCL::logging::Category::createOCLCategory);
+#endif
 
     // scope to force dc destruction prior to memory free
     {

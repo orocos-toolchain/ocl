@@ -42,8 +42,15 @@
 
 #include <rtt/transports/corba/corba.h>
 
+#ifdef  ORO_BUILD_LOGGING
+#   ifndef ORO_BUILD_RTALLOC
+#   warning Logging needs rtalloc!
+#   endif
+#include <log4cpp/HierarchyMaintainer.hh>
+#include "logging/Category.hpp"
+#endif
+
 using namespace std;
-using namespace OCL;
 using namespace RTT;
 using namespace RTT::corba;
 namespace po = boost::program_options;
@@ -113,6 +120,12 @@ int ORO_main(int argc, char** argv)
                   << memSize << " allocated." << endlog();
     }
 #endif  // ORO_BUILD_RTALLOC
+
+#ifdef  ORO_BUILD_LOGGING
+    log(Info) << "Setting OCL factory for real-time logging" << endlog();
+    log4cpp::HierarchyMaintainer::set_category_factory(
+        OCL::logging::Category::createOCLCategory);
+#endif
 
     try {
         // if TAO options not found then have TAO process just the program name,

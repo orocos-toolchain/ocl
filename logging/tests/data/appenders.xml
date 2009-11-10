@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "cpf.dtd">
+<properties>
+
+  <!-- #################################################################
+	   APPENDERS
+	   ################################################################# -->
+
+  <struct name="AppenderA" type="OCL::logging::FileAppender">
+    <struct name="Activity" type="PeriodicActivity">
+      <simple name="Period" type="double"><value>0.5</value></simple>
+      <simple name="Priority" type="short"><value>0</value></simple>
+      <simple name="Scheduler" type="string"><value>ORO_SCHED_OTHER</value></simple>
+    </struct>
+    <simple name="AutoConf" type="boolean"><value>1</value></simple>
+    <simple name="AutoStart" type="boolean"><value>1</value></simple>
+	<struct name="Properties" type="PropertyBag">
+      <simple name="Filename" type="string"><value>appendera.log</value></simple>
+      <simple name="LayoutName" type="string"><value>pattern</value></simple>
+      <simple name="LayoutPattern" type="string"><value>%d [%t] %-5p %c %x - %m%n</value></simple>
+	</struct>
+  </struct>
+
+  <struct name="AppenderB" type="OCL::logging::OstreamAppender">
+    <struct name="Activity" type="PeriodicActivity">
+      <simple name="Period" type="double"><value>0.5</value></simple>
+      <simple name="Priority" type="short"><value>0</value></simple>
+      <simple name="Scheduler" type="string"><value>ORO_SCHED_OTHER</value></simple>
+    </struct>
+    <simple name="AutoConf" type="boolean"><value>1</value></simple>
+    <simple name="AutoStart" type="boolean"><value>1</value></simple>
+	<struct name="Properties" type="PropertyBag">
+      <simple name="LayoutName" type="string"><value>pattern</value></simple>
+      <simple name="LayoutPattern" type="string"><value>%d [%t] %-5p %c %x - %m%n</value></simple>
+	</struct>
+  </struct>
+
+  <struct name="AppenderC" type="OCL::logging::FileAppender">
+    <struct name="Activity" type="PeriodicActivity">
+      <simple name="Period" type="double"><value>0.5</value></simple>
+      <simple name="Priority" type="short"><value>0</value></simple>
+      <simple name="Scheduler" type="string"><value>ORO_SCHED_OTHER</value></simple>
+    </struct>
+    <simple name="AutoConf" type="boolean"><value>1</value></simple>
+    <simple name="AutoStart" type="boolean"><value>1</value></simple>
+	<struct name="Properties" type="PropertyBag">
+      <simple name="Filename" type="string"><value>appenderc.log</value></simple>
+      <simple name="LayoutName" type="string"><value>pattern</value></simple>
+      <simple name="LayoutPattern" type="string"><value>%d %-5p %c %m%n</value></simple>
+	</struct>
+  </struct>
+
+</properties>

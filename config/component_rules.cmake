@@ -48,6 +48,64 @@ MACRO( PROGRAM_ADD_LIBS PROGRAM_NAME )
   endforeach( lib ${ARGN} )
 ENDMACRO( PROGRAM_ADD_LIBS PROGRAM_NAME )
 
+
+#
+# Components should add themselves by calling 'CREATE_COMPONENT'
+# instead of 'ADD_LIBRARY' in CMakeLists.txt. This macro will _NOT_
+# install this library, as opposed to GLOBAL_ADD_COMPONENT which does.
+# This macro is meant for test libraries built as part of OCL.
+#
+#
+# Usage: CREATE_COMPONENT( COMPONENT_NAME src1 src2 src3 )
+#
+
+MACRO( CREATE_COMPONENT COMPONENT_NAME )
+
+  SET( LIB_NAME "${COMPONENT_NAME}-${OROCOS_TARGET}")
+
+  IF(GLOBAL_LIBRARY)
+    MESSAGE( ERROR "BROKEN: Adding ${COMPONENT_NAME} to global sources:[ ${GLOBAL_LIBRARY_SRCS} ]" )
+    SET (GLOBAL_LIBRARY_SRCS "${GLOBAL_LIBRARY_SRCS} ${ARGN}" )
+  ENDIF(GLOBAL_LIBRARY)
+
+  IF(LOCAL_LIBRARY)
+    IF (OROCOS_RTT_1.4)
+      MESSAGE( "Building Shared library for ${COMPONENT_NAME}" )
+      ADD_LIBRARY( ${LIB_NAME} SHARED ${ARGN} )
+      SET_TARGET_PROPERTIES( ${LIB_NAME} PROPERTIES
+		DEFINE_SYMBOL OCL_DLL_EXPORT
+		VERSION ${OCL_VERSION}
+		SOVERSION ${OCL_VERSION_MAJOR}.${OCL_VERSION_MINOR}
+		)
+      foreach(lib ${OROCOS_RTT_LIBS})
+		TARGET_LINK_LIBRARIES( ${LIB_NAME} ${lib} )
+      endforeach(lib in ${OROCOS_RTT_LIBS})
+
+    ELSE (OROCOS_RTT_1.4)
+
+      IF (OROCOS_RTT_1.2)
+		MESSAGE( "Building Shared library for ${COMPONENT_NAME}" )
+		ADD_LIBRARY( ${LIB_NAME} SHARED ${ARGN} )
+		SET_TARGET_PROPERTIES( ${LIB_NAME} PROPERTIES
+		  DEFINE_SYMBOL OCL_DLL_EXPORT
+		  VERSION ${OCL_VERSION}
+		  SOVERSION ${OCL_VERSION_MAJOR}.${OCL_VERSION_MINOR}
+		  )
+		TARGET_LINK_LIBRARIES( ${LIB_NAME} orocos-rtt )
+      ELSE (OROCOS_RTT_1.2)
+		MESSAGE( "Building Static library for ${COMPONENT_NAME}" )
+		ADD_LIBRARY( ${LIB_NAME} STATIC ${ARGN} )
+      ENDIF (OROCOS_RTT_1.2)
+
+    ENDIF (OROCOS_RTT_1.4)
+
+    LINK_DIRECTORIES( ${CMAKE_CURRENT_BINARY_DIR} )
+
+  ENDIF(LOCAL_LIBRARY)
+
+ENDMACRO( CREATE_COMPONENT COMPONENT_NAME )
+
+
 #
 # Components should add themselves by calling 'GLOBAL_ADD_COMPONENT' 
 # instead of 'ADD_LIBRARY' in CMakeLists.txt.
