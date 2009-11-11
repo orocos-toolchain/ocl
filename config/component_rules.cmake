@@ -40,6 +40,13 @@ MACRO( PROGRAM_ADD_DEPS PROGRAM_NAME )
   SET_TARGET_PROPERTIES( ${PROGRAM_NAME} PROPERTIES INSTALL_RPATH_USE_LINK_PATH 1)
 ENDMACRO( PROGRAM_ADD_DEPS PROGRAM_NAME )
 
+# Link a program with an external library (qt3, gl, readline,....)
+# Usage: PROGRAM_ADD_LIBS( taskbrowser-test readline ncurses )
+MACRO( PROGRAM_ADD_LIBS PROGRAM_NAME )
+  foreach( lib ${ARGN} )
+    TARGET_LINK_LIBRARIES( ${PROGRAM_NAME} ${lib} )
+  endforeach( lib ${ARGN} )
+ENDMACRO( PROGRAM_ADD_LIBS PROGRAM_NAME )
 
 #
 # Components should add themselves by calling 'GLOBAL_ADD_COMPONENT' 
