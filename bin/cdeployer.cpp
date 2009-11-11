@@ -28,6 +28,13 @@
 
 #include <rtt/os/main.h>
 #include <rtt/RTT.hpp>
+
+#ifdef ORO_BUILD_RTALLOC
+// need access to all TLSF functions embedded in RTT
+#define ORO_MEMORY_POOL
+#include <rtt/os/tlsf/tlsf.h>
+#endif
+
 #include <deployment/CorbaDeploymentComponent.hpp>
 #include <rtt/transports/corba/TaskContextServer.hpp>
 #include <iostream>
@@ -35,6 +42,8 @@
 
 using namespace std;
 using namespace RTT::corba;
+using namespace RTT;
+using namespace OCL;
 namespace po = boost::program_options;
 
 int ORO_main(int argc, char** argv)
@@ -46,6 +55,17 @@ int ORO_main(int argc, char** argv)
     po::variables_map           vm;
 	po::options_description     taoOptions("Additional options after a '--' are passed through to TAO");
 	// we don't actually list any options for TAO ...
+
+	po::options_description     otherOptions;
+
+#ifdef  ORO_BUILD_RTALLOC
+    OCL::memorySize         rtallocMemorySize   = ORO_DEFAULT_RTALLOC_SIZE;
+	po::options_description rtallocOptions      = OCL::deployerRtallocOptions(rtallocMemorySize);
+	otherOptions.add(rtallocOptions);
+#endif
+
+    // as last set of options
+    otherOptions.add(taoOptions);
 
     // were we given TAO options? ie find "--"
     int     taoIndex    = 0;
@@ -65,38 +85,68 @@ int ORO_main(int argc, char** argv)
     // otherwise process all options up to but not including "--"
 	int rc = OCL::deployerParseCmdLine(!found ? argc : taoIndex, argv,
                                        siteFile, scriptFile, name, requireNameService,
-                                       vm, &taoOptions);
+                                       vm, &otherOptions);
 	if (0 != rc)
 	{
 		return rc;
 	}
 
-	{
-	    OCL::CorbaDeploymentComponent dc( name, siteFile );
+#ifdef  ORO_BUILD_RTALLOC
+    size_t                  memSize     = rtallocMemorySize.size;
+    void*                   rtMem       = 0;
+    if (0 < memSize)
+    {
+        // don't calloc() as is first thing TLSF does.
+        rtMem = malloc(memSize);
+        assert(rtMem);
+        size_t freeMem = init_memory_pool(memSize, rtMem);
+        if ((size_t)-1 == freeMem)
+        {
+            log(Critical) << "Invalid memory pool size of " << memSize
+                          << " bytes (TLSF has a several kilobyte overhead)." << endlog();
+            free(rtMem);
+            return -1;
+        }
+        log(Info) << "Real-time memory: " << freeMem << " bytes free of "
+                  << memSize << " allocated." << endlog();
+    }
+#endif  // ORO_BUILD_RTALLOC
 
-	    // if TAO options not found then have TAO process just the program name,
-	    // otherwise TAO processes the program name plus all options (potentially
-	    // none) after "--"
-	    TaskContextServer::InitOrb( argc - taoIndex, &argv[taoIndex] );
+    // scope to force dc destruction prior to memory free
+    {
+        OCL::CorbaDeploymentComponent dc( name, siteFile );
 
-	    if (0 == TaskContextServer::Create( &dc, true, requireNameService ))
-	    {
-	        return -1;
-	    }
+        // if TAO options not found then have TAO process just the program name,
+        // otherwise TAO processes the program name plus all options (potentially
+        // none) after "--"
+        TaskContextServer::InitOrb( argc - taoIndex, &argv[taoIndex] );
 
-	    // Only start the script after the Orb was created.
-	    if ( !scriptFile.empty() )
-	    {
-	        dc.kickStart( scriptFile );
-	    }
+        if (0 == TaskContextServer::Create( &dc, true, requireNameService ))
+        {
+            return -1;
+        }
 
-	    // Export the DeploymentComponent as CORBA server.
-	    TaskContextServer::RunOrb();
-	}
+        // Only start the script after the Orb was created.
+        if ( !scriptFile.empty() )
+        {
+            dc.kickStart( scriptFile );
+        }
 
-    TaskContextServer::ShutdownOrb();
+        // Export the DeploymentComponent as CORBA server.
+        TaskContextServer::RunOrb();
 
-    TaskContextServer::DestroyOrb();
+        TaskContextServer::ShutdownOrb();
+
+        TaskContextServer::DestroyOrb();
+    }
+
+#ifdef  ORO_BUILD_RTALLOC
+    if (!rtMem)
+    {
+        destroy_memory_pool(rtMem);
+        free(rtMem);
+    }
+#endif  // ORO_BUILD_RTALLOC
 
     return 0;
 }

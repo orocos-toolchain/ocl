@@ -21,6 +21,9 @@
 
 #include "deployer-funcs.hpp"
 #include <rtt/Logger.hpp>
+#ifdef  ORO_BUILD_RTALLOC
+#include <stdio.h>
+#endif
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -59,7 +62,6 @@ int deployerParseCmdLine(int                        argc,
                          po::options_description*   otherOptions)
 {
 	std::string                         logLevel("info");	// set to valid default
-
 	po::options_description             options;
 	po::options_description             allowed("Allowed options");
 	po::positional_options_description  pos;
@@ -74,9 +76,9 @@ int deployerParseCmdLine(int                        argc,
 		 "Site deployment file (eg 'Deployer-site.cpf' or 'Deployer-site.xml')")
 		("log-level,l",
 		 po::value<std::string>(&logLevel),
-		 "Level at which to log (case-insensitive) Never,Fatal,Critical,Error,Warning,Info,Debug,Realtime")
+		 "Level at which to log from RTT (case-insensitive) Never,Fatal,Critical,Error,Warning,Info,Debug,Realtime")
 		("no-consolelog",
-		 "Turn off logging to the console (will still log to 'orocos.log')")
+		 "Turn off RTT logging to the console (will still log to 'orocos.log')")
         ("require-name-service",
          "Require CORBA name service")
 		("DeployerName",
@@ -144,6 +146,94 @@ int deployerParseCmdLine(int                        argc,
 
     return 0;
 }
+
+#ifdef  ORO_BUILD_RTALLOC
+
+void validate(boost::any& v,
+              const std::vector<std::string>& values,
+              memorySize* target_type, int)
+{
+//    using namespace boost::program_options;
+
+    // Make sure no previous assignment to 'a' was made.
+    po::validators::check_first_occurrence(v);
+    // Extract the first string from 'values'. If there is more than
+    // one string, it's an error, and exception will be thrown.
+    const std::string& memSize = po::validators::get_single_string(values);
+
+    /* parse the string. Support "number" or "numberX" where
+       X is one of {k,K,m,M,g,G} with the expected meaning of X
+
+       e.g.
+
+       1024, 1k, 3.4M, 4.5G
+    */
+    float       value=0;
+    char        units='\0';
+    if (2 == sscanf(memSize.c_str(), "%f%c", &value, &units))
+    {
+        float       multiplier=1;
+        if (islower(units))
+        {
+            units = toupper(units);
+        }
+        switch (units)
+        {
+            case 'G':
+                multiplier *= 1024;
+                // fall through
+            case 'M':
+                multiplier *= 1024;
+                // fall through
+            case 'K':
+                multiplier *= 1024;
+                break;
+            default:
+                std::stringstream   e;
+                e << "Invalid units in rtalloc-mem-size option: " <<  memSize 
+                  << ". Valid units: 'k','m','g' (case-insensitive).";
+                throw po::validation_error(e.str());
+        }
+        value *= multiplier;
+    }
+    else if (1 == sscanf(memSize.c_str(), "%f", &value))
+    {
+        // nothing to do
+    }
+    else
+    {
+        throw po::validation_error("Could not parse rtalloc-mem-size option: " + memSize);
+    }
+
+    // provide some basic sanity checking
+    // Note that TLSF has its own internal checks on the value.
+    // TLSF's minimum size varies with build options, but it is
+    // several kilobytes at least (6-8k on Mac OS X Snow Leopard
+    // with 64-bit build, ~3k on Ubuntu Jaunty with 32-bit build).
+    if (! (0 <= value) )
+    {
+        std::stringstream   e;
+        e << "Invalid memory size of " << value << " given. Value must be >= 0.";
+        throw po::validation_error(e.str());
+    }
+
+    v = memorySize((size_t)value);
+}
+
+
+boost::program_options::options_description deployerRtallocOptions(memorySize& rtallocMemorySize)
+{
+    boost::program_options::options_description rtallocOptions("Real-time memory allocation options");
+    rtallocOptions.add_options()
+		("rtalloc-mem-size",
+         po::value<memorySize>(&rtallocMemorySize)->default_value(rtallocMemorySize),
+		 "Amount of memory to provide for real-time memory allocations (e.g. 10000, 1K, 4.3m)\n"
+         "NB the minimum size depends on TLSF build options, but it is several kilobytes.")
+        ;
+    return rtallocOptions;
+}
+
+#endif  //  ORO_BUILD_RTALLOC
 
 // namespace
 }

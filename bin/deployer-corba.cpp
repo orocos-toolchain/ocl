@@ -27,6 +27,13 @@
 
 #include <rtt/os/main.h>
 #include <rtt/RTT.hpp>
+
+#ifdef ORO_BUILD_RTALLOC
+// need access to all TLSF functions embedded in RTT
+#define ORO_MEMORY_POOL
+#include <rtt/os/tlsf/tlsf.h>
+#endif
+
 #include <taskbrowser/TaskBrowser.hpp>
 #include <deployment/CorbaDeploymentComponent.hpp>
 #include <rtt/transports/corba/TaskContextServer.hpp>
@@ -51,6 +58,17 @@ int ORO_main(int argc, char** argv)
 	po::options_description     taoOptions("Additional options can also be passed to TAO");
 	// we don't actually list any options for TAO ...
 
+	po::options_description     otherOptions;
+
+#ifdef  ORO_BUILD_RTALLOC
+    OCL::memorySize         rtallocMemorySize   = ORO_DEFAULT_RTALLOC_SIZE;
+	po::options_description rtallocOptions      = OCL::deployerRtallocOptions(rtallocMemorySize);
+	otherOptions.add(rtallocOptions);
+#endif
+
+    // as last set of options
+    otherOptions.add(taoOptions);
+
     // were we given TAO options? ie find "--"
     int     taoIndex    = 0;
     bool    found       = false;
@@ -69,11 +87,32 @@ int ORO_main(int argc, char** argv)
     // otherwise process all options up to but not including "--"
 	int rc = OCL::deployerParseCmdLine(!found ? argc : taoIndex, argv,
                                        siteFile, scriptFile, name, requireNameService,
-                                       vm, &taoOptions);
+                                       vm, &otherOptions);
 	if (0 != rc)
 	{
 		return rc;
 	}
+
+#ifdef  ORO_BUILD_RTALLOC
+    size_t                  memSize     = rtallocMemorySize.size;
+    void*                   rtMem       = 0;
+    if (0 < memSize)
+    {
+        // don't calloc() as is first thing TLSF does.
+        rtMem = malloc(memSize);
+        assert(rtMem);
+        size_t freeMem = init_memory_pool(memSize, rtMem);
+        if ((size_t)-1 == freeMem)
+        {
+            log(Critical) << "Invalid memory pool size of " << memSize 
+                          << " bytes (TLSF has a several kilobyte overhead)." << endlog();
+            free(rtMem);
+            return -1;
+        }
+        log(Info) << "Real-time memory: " << freeMem << " bytes free of " 
+                  << memSize << " allocated." << endlog();
+    }
+#endif  // ORO_BUILD_RTALLOC
 
     try {
         // if TAO options not found then have TAO process just the program name,
@@ -110,7 +149,19 @@ int ORO_main(int argc, char** argv)
     } catch( CORBA::Exception &e ) {
         log(Error) << argv[0] <<" ORO_main : CORBA exception raised!" << RTT::Logger::nl;
         log() << CORBA_EXCEPTION_INFO(e) << endlog();
+    } catch (...)
+    {
+        // catch this so that we can destroy the TLSF memory correctly
+        log(Error) << "Uncaught exception." << endlog();
     }
+
+#ifdef  ORO_BUILD_RTALLOC
+    if (!rtMem)
+    {
+        destroy_memory_pool(rtMem);
+        free(rtMem);
+    }
+#endif  // ORO_BUILD_RTALLOC
 
     return 0;
 }

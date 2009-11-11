@@ -26,12 +26,21 @@
 
 #include <rtt/os/main.h>
 #include <rtt/RTT.hpp>
+#include <rtt/Logger.hpp>
+
+#ifdef ORO_BUILD_RTALLOC
+// need access to all TLSF functions embedded in RTT
+#define ORO_MEMORY_POOL
+#include <rtt/os/tlsf/tlsf.h>
+#endif
+
 #include <taskbrowser/TaskBrowser.hpp>
 #include <deployment/DeploymentComponent.hpp>
 #include <iostream>
 #include <string>
 #include "deployer-funcs.hpp"
 
+using namespace RTT;
 namespace po = boost::program_options;
 
 int ORO_main(int argc, char** argv)
@@ -39,26 +48,66 @@ int ORO_main(int argc, char** argv)
 	std::string             siteFile;      // "" means use default in DeploymentComponent.cpp
 	std::string             scriptFile;
 	std::string             name("Deployer");
-    bool                    requireNameService = false; // not used
+    bool                    requireNameService = false;         // not used
     po::variables_map       vm;
+	po::options_description* otherOptions    = 0;
+
+#ifdef  ORO_BUILD_RTALLOC
+    OCL::memorySize         rtallocMemorySize   = ORO_DEFAULT_RTALLOC_SIZE;
+	po::options_description rtallocOptions      = OCL::deployerRtallocOptions(rtallocMemorySize);
+	otherOptions                                = &rtallocOptions;
+#endif
 
 	int rc = OCL::deployerParseCmdLine(argc, argv,
-                                       siteFile, scriptFile, name, requireNameService, vm);
+                                       siteFile, scriptFile, name, requireNameService,
+                                       vm, otherOptions);
 	if (0 != rc)
 	{
 		return rc;
 	}
 
-    OCL::DeploymentComponent dc( name, siteFile );
+#ifdef  ORO_BUILD_RTALLOC
+    size_t                  memSize     = rtallocMemorySize.size;
+    void*                   rtMem       = 0;
+    if (0 < memSize)
+    {
+        // don't calloc() as is first thing TLSF does.
+        rtMem = malloc(memSize);
+        assert(rtMem);
+        size_t freeMem = init_memory_pool(memSize, rtMem);
+        if ((size_t)-1 == freeMem)
+        {
+            log(Critical) << "Invalid memory pool size of " << memSize 
+                          << " bytes (TLSF has a several kilobyte overhead)." << endlog();
+            free(rtMem);
+            return -1;
+        }
+        log(Info) << "Real-time memory: " << freeMem << " bytes free of "
+                  << memSize << " allocated." << endlog();
+    }
+#endif  // ORO_BUILD_RTALLOC
 
-    if ( !scriptFile.empty() )
+    // scope to force dc destruction prior to memory free
+    {
+        OCL::DeploymentComponent dc( name, siteFile );
+
+        if ( !scriptFile.empty() )
         {
             dc.kickStart( scriptFile );
         }
 
-    OCL::TaskBrowser tb( &dc );
+        OCL::TaskBrowser tb( &dc );
 
-    tb.loop();
+        tb.loop();
+    }
+
+#ifdef  ORO_BUILD_RTALLOC
+    if (!rtMem)
+    {
+        destroy_memory_pool(rtMem);
+        free(rtMem);
+    }
+#endif  // ORO_BUILD_RTALLOC
 
     return 0;
 }

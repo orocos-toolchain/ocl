@@ -58,6 +58,41 @@ extern int deployerParseCmdLine(
     boost::program_options::variables_map&          vm,
 	boost::program_options::options_description*    otherOptions=NULL);
 
+
+#ifdef  ORO_BUILD_RTALLOC
+
+/** Represents a memory size in bytes.
+    The custom type allows use of boost::program_options's built-in
+    custom validator support.
+*/
+struct memorySize
+{
+public:
+    memorySize() :
+            size(0)
+    {}
+    memorySize(size_t s) :
+            size(s)
+    {}
+    size_t  size;
+};
+
+/** Stream \a m onto \a os
+    Required for default_value support in boost::program_options
+*/
+inline std::ostream& operator<<(std::ostream& os, memorySize m)
+{
+    os << m.size;
+    return os;
+}
+
+/** Get command line options for real-time memory allocation
+ */
+extern boost::program_options::options_description deployerRtallocOptions(
+    memorySize& rtallocMemorySize);
+
+#endif
+
 // namespace
 }
 
