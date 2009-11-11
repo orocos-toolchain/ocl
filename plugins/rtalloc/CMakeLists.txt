@@ -1,0 +1,26 @@
+# only build if RTALLOC being built also
+IF ( BUILD_RTALLOC )
+
+  # This gathers all the .cpp files into the variable 'CPPS'
+  SET( CPPS RTallocToolkit.cpp )
+  SET( HPPS RTallocToolkit.hpp )
+
+  GLOBAL_ADD_INCLUDE( ocl ${HPPS})
+
+  ADD_DEFINITIONS(-D_REENTRANT)
+  ADD_LIBRARY(orocos-rtalloctk-${OROCOS_TARGET} SHARED ${CPPS})
+  TARGET_LINK_LIBRARIES(orocos-rtalloctk-${OROCOS_TARGET} 
+	orocos-rtt-${OROCOS_TARGET}
+	) 
+  SET_TARGET_PROPERTIES( orocos-rtalloctk-${OROCOS_TARGET} PROPERTIES
+	OUTPUT_NAME orocos-rtalloctk-${OROCOS_TARGET}
+	CLEAN_DIRECT_OUTPUT 1
+	COMPILE_FLAGS "${CMAKE_CXX_FLAGS_ADD}"
+	SOVERSION "${OCL_VERSION_MAJOR}.${OCL_VERSION_MINOR}"
+	VERSION "${OCL_VERSION}")
+  INSTALL(TARGETS orocos-rtalloctk-${OROCOS_TARGET} LIBRARY DESTINATION lib RUNTIME DESTINATION bin )
+
+  ADD_SUBDIRECTORY( corba )
+  ADD_SUBDIRECTORY( tests )
+
+ENDIF ( BUILD_RTALLOC )
