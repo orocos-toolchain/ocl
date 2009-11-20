@@ -6,6 +6,6 @@ echo "Detected OCL Major version: $major"
 
 rm -f control
 rm -f orocos*$major*install liborocos*$major*install
-rm -f rules.targets
+rm -f rules.targets control.targets
 
 echo "Done!"

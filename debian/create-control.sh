@@ -33,6 +33,7 @@ done
 # Final control file = common + targets
 cat control.common | sed -e"s/@LIBVER@/$major/g;s/@BUILD_DEPS@/$builddeps/g;s/@BIN_DEPS@/$bindeps/g" > control
 cat control.targets >> control
+rm control.targets
 
 # Prepare target *.install files:
 for i in $(ls *template*install); do
