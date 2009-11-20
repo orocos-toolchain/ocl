@@ -16,7 +16,7 @@ fi
 echo "Building scripts for targets: $targets"
 
 # Prepare control file:
-rm -f control
+rm -f control control.targets
 
 echo "Creating control ..."
 bindeps=""
@@ -27,13 +27,12 @@ for t in $targets; do
 	builddeps=", liborocos-rtt-corba-$t$major-dev ( >= $major ) $builddeps"
     if test $t = xenomai; then tdev=", xenomai-dev | libxenomai-dev"; builddeps=", $tdev $builddeps"; fi
     if test $t = lxrt; then tdev=", librtai-dev"; builddeps=", $tdev $builddeps"; fi
+    cat control-template.in | sed -e"s/@TARGET@/$t/g;s/@TARGET-DEV@/$tdev/g;s/@LIBVER@/$major/g" >> control.targets
+    cat control-$t.in >> control.targets
 done
+# Final control file = common + targets
 cat control.common | sed -e"s/@LIBVER@/$major/g;s/@BUILD_DEPS@/$builddeps/g;s/@BIN_DEPS@/$bindeps/g" > control
-
-for t in $targets; do 
-    cat control-template.in | sed -e"s/@TARGET@/$t/g;s/@TARGET-DEV@/$tdev/g;s/@LIBVER@/$major/g" >> control
-    cat control-$t.in >> control
-done
+cat control.targets >> control
 
 # Prepare target *.install files:
 for i in $(ls *template*install); do
