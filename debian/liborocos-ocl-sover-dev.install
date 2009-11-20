@@ -1,3 +1,4 @@
+usr/include/ocl/ocl-config.h
 usr/include/ocl/OCL.hpp
 usr/include/ocl/VectorTemplateComposition.hpp
 usr/include/ocl/ComponentLoader.hpp
@@ -11,7 +12,9 @@ usr/include/ocl/socketmarshaller.hpp
 usr/include/ocl/TcpReporting.hpp
 usr/include/ocl/FileReporting.hpp
 usr/include/ocl/ConsoleReporting.hpp
-usr/include/ocl/FileReporting.hpp
 usr/include/ocl/NiceHeaderMarshaller.hpp
 usr/include/ocl/HMIConsoleOutput.hpp
 usr/include/ocl/TimerComponent.hpp
+usr/include/ocl/NetcdfReporting.hpp
+usr/include/ocl/NetcdfHeaderMarshaller.hpp
+usr/include/ocl/NetcdfMarshaller.hpp
