@@ -17,16 +17,19 @@ can type:
   make install
 
 If you have some of the ocl dependencies installed in non-standard
-locations, you have to specify this using environment variables.  
-Specify header locations using the CMAKE_INCLUDE_PATH variable.
+locations, you have to specify this using environment variables:
+
+ * Header locations using the CMAKE_INCLUDE_PATH variable.
+ * Library locations using CMAKE_LIBRARY_PATH.
+ * /opt -like locations using CMAKE_PREFIX_PATH (looks for libs, headers, binaries).
+ * Orocos RTT location using OROCOS_INSTALL (does *not* use the above paths!)
 
 E.g. using bash and fink in Mac OS X, the boost library headers are
 installed in /sw/include, so you would specify 
 
 export CMAKE_INCLUDE_PATH=/sw/include
 
-before running cmake.  For libraries in non-default locations, use the
-CMAKE_LIBRARY_PATH variable.
+before running cmake.
 
 For selecting additional (hardware related) components, setting
 include paths, or setting the installation prefix, do
@@ -80,13 +83,9 @@ Installation options
 
 	$ CC="distcc gcc-3.3" CXX="distcc g++-3.3" cmake ..
 
-     or use the 'configure' wrapper script:
-
-	$ ../configure CC="distcc gcc-3.3" CXX="distcc g++-3.3"
-
   3) use the GUI Configurator:
 
-	Use 'ccmake' rather than 'cmake' for a text-based configurator.
+	Use 'ccmake' or 'cmake-gui' rather than 'cmake' for a text-based configurator
 
   4) have packaging support:
 
