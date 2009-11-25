@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE properties SYSTEM "cpf.dtd">
 <properties>
-  <simple name="AutoTrigger" type="boolean"><description>When set to 1, the data is taken upon each update(), otherwise, the data is only taken when the user invokes 'snapshot()'.</description><value>1</value></simple>
-  <simple name="Configuration" type="string"><description>The name of the property file which lists what is to be reported.</description><value>cpf/reporter.cpf</value></simple>
   <simple name="WriteHeader" type="boolean"><description>Set to true to start each report with a header.</description><value>1</value></simple>
+  <simple name="NullSample" type="string"><description>The characters written to the log to indicate that no new data was available for that port during a snapshot(). As a special value, the string 'last' is interpreted as repeating the last value.</description><value>-</value></simple>
+  <simple name="Decompose" type="boolean"><description>Set to false in order to create multidimensional array in netcdf</description><value>1</value></simple>
+  <simple name="Synchronize" type="boolean"><description>Set to true if the timestamp should be synchronized with the logging</description><value>0</value></simple>
 
   <struct name="ReportData" type="PropertyBag">
     <simple name="Component" type="string"><description>Report all output ports of this component.</description><value>MyPeer2</value></simple>

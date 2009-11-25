@@ -38,10 +38,16 @@
     <section>
       <title>Principle</title>
       <para>
-	Each Orocos component can have one or more data ports. One
+	Each Orocos component can have a number of data ports. One
 	can configure the reporting components such that one or more
-	ports are captured of one or more peer components. The sample
-	rate and the file format can be selected.
+	ports are captured of one or more peer components. The reporting
+	components can work sample rate based or event based.
+	A number of file format can be selected.
+      </para>
+      <para>
+	The Reporter can uses buffers in order to log all data it receives
+	or just report the last values in case it is flooded with data.
+	This must be configured for all connections equally.
       </para>
       <para>
 	A common usage scenario of the
@@ -50,9 +56,9 @@
 	reporting component and various other components. The
 	reporting component is peer-connected to all components which
 	must be monitored. An XML file or script command defines which
-	data ports to log.  When the reporting component is started,
+	data ports to log of each peer.  When the reporting component is started,
 	it reads the ports and writes the exchanged data to a file at
-	a given sample rate.
+	a given sample rate or when new data is written.
       </para>
       <figure id="fig-reporting-example"><title>Component Reporting Example</title>
       <mediaobject>
@@ -69,12 +75,12 @@
       <para>
 	One can not use the <classname>OCL::ReportingComponent</classname> 
 	directly but must use a derived component which implements
-	the method of writing out the data. There exists two variants:
+	the method of writing out the data. There exists a number variants:
 	<classname>OCL::FileReporting</classname> for writing data to a
 	file and <classname>OCL::ConsoleReporting</classname> which prints
-	the data directly to the screen. These two examples can aid you
-	in writing your own data format or to transfer data over a
-	network connection.
+	the data directly to the screen. The <classname>OCL::NetcdfReporting</classname> 
+	writes the NetCDF file format. In order to support other file formats,
+	you can write your own marshaller.
       </para>
     </section>
   </section>
@@ -109,7 +115,9 @@
     <programlisting><![CDATA[   <simple name="Import" type="string"><value>/usr/lib/liborocos-reporting</value></simple>
 
   <struct name="Reporter" type="OCL::FileReporting">
-    <struct name="Activity" type="PeriodicActivity">
+
+    <!-- Note: Activity may also be non-periodic -->
+    <struct name="Activity" type="Activity">
       <simple name="Period" type="double"><value>0.01</value></simple>
       <simple name="Priority" type="short"><value>0</value></simple>
       <simple name="Scheduler" type="string"><value>ORO_SCHED_OTHER</value></simple>
@@ -128,6 +136,23 @@
       save the settings when the Reporter component is cleaned up by
       the Deployer.
     </para>
+    <para>
+      If the Reporter has a periodic activity, it will sample all its
+      input ports and write out the new values. For old values, a '-'
+      (dash) is written by default instead of a value. You can configure
+      this behaviour by using the <option>NullSample</option> property
+      (see below). 
+    </para>
+    <para>
+      If the Reporter's activity is non-periodic (<option>Period</option> omitted or
+      zero), it will only write out a new value when new data arrives
+      on one of the connected ports.  Ports that did not get a new
+      value will also output the NullSample.
+    </para>
+    <para>
+      The values of reported attributes or properties are always printed,
+      and do not cause the triggering of a new data report.
+    </para>
     <section>
       <title>Property Configuration File</title>
       <para>
@@ -136,27 +161,41 @@
       <programlisting><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE properties SYSTEM "cpf.dtd">
 <properties>
-  <simple name="AutoTrigger" type="boolean"><description>When set to 1, the data is taken upon each update(), otherwise, the data is only taken when the user invokes 'snapshot()'.</description><value>1</value></simple>
-  <simple name="WriteHeader" type="boolean"><description>Set to true to start each report with a header.</description><value>1</value></simple>
-  <simple name="Decompose" type="boolean"><description>Set to true to decompose data ports.</description><value>1</value></simple>
-  <simple name="ReportFile" type="string"><description>Location on disc to store the reports.</description><value>reports.dat</value></simple>
-  <simple name="Synchronize" type="boolean"><description>Set to true if the timestamp should be synchronized with the logging</description><value>0</value></simple>
+  <simple name="WriteHeader" type="boolean">
+    <description>Set to true to start each report with a header.</description><value>1</value>
+  </simple>
+  <simple name="NullSample" type="string">
+    <description>The characters written to the log to indicate 
+      that no new data was available for that port during a snapshot(). 
+      As a special value, the string 'last' is interpreted as repeating the last value.</description>
+    <value>-</value>
+  </simple>
+  <simple name="Decompose" type="boolean">
+    <description>Set to false in order to create multidimensional array in netcdf</description><value>1</value>
+  </simple>
+  <simple name="Synchronize" type="boolean">
+    <description>Set to true if the timestamp should be synchronized with the logging</description><value>0</value>
+  </simple>
+  <simple name="WriteHeader" type="boolean">
+    <description>Set to true to start each report with a header.</description><value>1</value>
+  </simple>
+  <simple name="ReportFile" type="string">
+    <description>Location on disc to store the reports.</description><value>reports.dat</value>
+  </simple>
 
   <struct name="ReportData" type="PropertyBag">
      <description>A PropertyBag which defines which ports or components to report.</description>
-     <simple name="Component" type="string"><value>Camera</value></simple>
-
-     <simple name="Port" type="string"><value>Controller.SensorValues</value></simple>
-     <simple name="Port" type="string"><value>Controller.SteeringSignals</value></simple>
+     <simple name="Component" type="string">
+        <description>Report all output ports of this component.</description><value>MyPeer2</value>
+     </simple>
+     <simple name="Port" type="string">
+        <description>Report this output port</description><value>MyPeer.D2Port</value>
+     </simple>
+     <simple name="Data" type="string">
+        <description>Report this property/attribute</description><value>MyPeer.Hello</value>
+     </simple>
   </struct>
 </properties>]]></programlisting>
-       <para>
-	 The <option>AutoTrigger</option> property toggles if the data is captured
-	 at the time a new line is written to file or at a user determined time.
-	 If <option>AutoTrigger</option> is set to false, a data snapshot is taken
-	 when the user invokes the <function>snapshot()</function> method of the
-	 ReportingComponent.
-       </para>
        <para>
 	 If <option>WriteHeader</option> is set to true, a header will be written
 	 describing the file format layout.
@@ -164,7 +203,13 @@
        <para>
 	 If <option>Decompose</option> is set to true, complex data on ports will
 	 be decomposed into separate table columns. Otherwise, each port appears as one
-	 column. 
+	 column. The NetcdfReporter requires this to be false, most other reporters
+	 are better of if this is true (the default).
+       </para>
+       <para>
+	 The <option>NullSample</option> is a string which you can set to <option>last</option>
+	 in order to repeat the last value if no new data arrived. This can not be 
+	 set on a per port basis.
        </para>
     </section>
     <section>
@@ -193,40 +238,74 @@
 	the current configuration can be written to disk again.
       </para>
     </section>
-    <section>
+  </section>
+  <section>
       <title>Scripting commands</title>
       <para>
 	The scripting commands of the reporting components can be listed 
 	using the <command>this</command> command on the TaskBrowser. Below is
 	a snippet of the output:
       </para>
-      <screen>  Method     : bool reportComponent( string const&amp; Component )
-   Add a Component for reporting. Only works if Component is connected.
+      <screen>    RTT::Method     : bool reportComponent( string const&amp; Component )
+   Add a peer Component and report all its data ports
    Component : Name of the Component
-  Method     : bool reportData( string const&amp; Component, string const&amp; DataObject )
-   Add a Component's DataSource for reporting. Only works if DataObject exists and Component is connected.
+  RTT::Method     : bool reportData( string const&amp; Component, string const&amp; Data )
+   Add a Component's Property or attribute for reporting.
    Component : Name of the Component
-   DataObject : Name of the DataObject. For example, a property or attribute.
-  Method     : bool reportPort( string const&amp; Component, string const&amp; Port )
-   Add a Component's Connection or Port for reporting.
+   Data : Name of the Data to report. A property's or attribute's name.
+  RTT::Method     : bool reportPort( string const&amp; Component, string const&amp; Port )
+   Add a Component's OutputPort for reporting.
    Component : Name of the Component
-   Port : Name of the Port to the connection.
-  Method     : bool screenComponent( string const&amp; Component )
+   Port : Name of the Port.
+  RTT::Method     : bool screenComponent( string const&amp; Component )
    Display the variables and ports of a Component.
    Component : Name of the Component
-  Method     : void snapshot( )
-   Take a new shapshot of the data and set the timestamp.
-  Method     : bool unreportComponent( string const&amp; Component )
-   Remove a Component from reporting.
+  RTT::Method     : void snapshot( )
+   Take a new shapshot of all data and cause them to be written out.
+  RTT::Method     : bool unreportComponent( string const&amp; Component )
+   Remove all Component's data ports from reporting.
    Component : Name of the Component
-  Method     : bool unreportData( string const&amp; Component, string const&amp; DataObject )
-   Remove a DataObject from reporting.
+  RTT::Method     : bool unreportData( string const&amp; Component, string const&amp; Data )
+   Remove a Data object from reporting.
    Component : Name of the Component
-   DataObject : Name of the DataObject.
-  Method     : bool unreportPort( string const&amp; Component, string const&amp; Port )
-   Remove a Connection for reporting.
+   Data : Name of the property or attribute.
+  RTT::Method     : bool unreportPort( string const&amp; Component, string const&amp; Port )
+   Remove a Port from reporting.
    Component : Name of the Component
-   Port : Name of the Port to the connection.</screen>
+   Port : Name of the Port.
+      </screen>
     </section>
+  <section>
+    <title>Forcing data reporting (snapshot).</title>
+    <para>
+      One can force that all current data ports are sampled and
+      written out.  This is independent of the periodic or non
+      periodic execution of the Reporter. There is a method available
+      that is called snapshot(). It may be called from real-time
+      contexts. Since a snapshot writes out all data samples, it is
+      not possible to see which ones changed in comparison to the
+      previous snapshot.
+    </para>
+    <para>
+      In case you <emphasis>only</emphasis> want to log data in case
+      of a snapshot(), you need to set the
+      <option>SnapshotOnly</option> property to 1. Even more when this
+      flag is set, the reporting component will reduce all connections
+      to being unbuffered during a configure() run, such that a snapshot()
+      always returns the most recent values.
+      <note><para>SnapshotOnly is the inverse of the OCL 1.x
+      AutoTrigger option. If you had AutoTrigger disabled, then enable
+      SnapshotOnly in OCL 2.x.</para></note>
+    </para>
+  </section>
+  <section>
+    <title>Future work</title>
+    <para>
+      In time, it should become possible to set buffering policies for
+      each connection, or let the deployment component form the
+      connections from components to reporting and let the reporting
+      component pick them up. This would allow for an easier use and
+      configurability.
+     </para>
   </section>
 </article>

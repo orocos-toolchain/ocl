@@ -44,59 +44,60 @@ ORO_CREATE_COMPONENT_TYPE()
 
 namespace OCL
 {
-  using namespace std;
-  using namespace RTT;
+    using namespace std;
+    using namespace RTT;
+    using namespace RTT::detail;
 
   ReportingComponent::ReportingComponent( std::string name /*= "Reporting" */ )
         : TaskContext( name ),
           report("Report"),
-          autotrigger("AutoTrigger","When set to 1, the data is taken upon each update(), "
-                      "otherwise, the data is only taken when the user invokes 'snapshot()'.",
-                      true),
+          snapshotOnly("SnapshotOnly","Set to true to only log data if a snapshot() was done.", false),
           writeHeader("WriteHeader","Set to true to start each report with a header.", true),
           decompose("Decompose","Set to false in order to create multidimensional array in netcdf", true),
           synchronize_with_logging("Synchronize","Set to true if the timestamp should be synchronized with the logging",false),
           report_data("ReportData","A PropertyBag which defines which ports or components to report."),
+          null("NullSample","The characters written to the log to indicate that no new data was available for that port during a snapshot(). As a special value, the string 'last' is interpreted as repeating the last value.","-"),
           starttime(0),
           timestamp("TimeStamp","The time at which the data was read.",0.0)
     {
-        this->properties()->addProperty( &autotrigger );
+        this->properties()->addProperty( &snapshotOnly );
         this->properties()->addProperty( &writeHeader );
         this->properties()->addProperty( &decompose );
         this->properties()->addProperty( &synchronize_with_logging);
         this->properties()->addProperty( &report_data);
+        this->properties()->addProperty( &null);
 
         // Add the methods, methods make sure that they are
         // executed in the context of the (non realtime) caller.
 
         this->methods()->addMethod( method( "snapshot", &ReportingComponent::snapshot , this),
-                    "Take a new shapshot of the data and set the timestamp." );
+                    "Take a new shapshot of all data and cause them to be written out." );
         this->methods()->addMethod( method( "screenComponent", &ReportingComponent::screenComponent , this),
                     "Display the variables and ports of a Component.",
                     "Component", "Name of the Component" );
         this->methods()->addMethod( method( "reportComponent", &ReportingComponent::reportComponent , this),
-                    "Add a Component for reporting. Only works if Component is connected.",
+                    "Add a peer Component and report all its data ports",
                     "Component", "Name of the Component" );
         this->methods()->addMethod( method( "unreportComponent", &ReportingComponent::unreportComponent , this),
-                    "Remove a Component from reporting.",
+                    "Remove all Component's data ports from reporting.",
                     "Component", "Name of the Component"
                      );
         this->methods()->addMethod( method( "reportData", &ReportingComponent::reportData , this),
-                    "Add a Component's internal::DataSource for reporting. Only works if base::DataObject exists and Component is connected.",
+                    "Add a Component's Property or attribute for reporting.",
                     "Component", "Name of the Component",
-                    "base::DataObject", "Name of the DataObject. For example, a property or attribute." );
+                    "Data", "Name of the Data to report. A property's or attribute's name." );
         this->methods()->addMethod( method( "unreportData", &ReportingComponent::unreportData , this),
-                    "Remove a base::DataObject from reporting.",
+                    "Remove a Data object from reporting.",
                     "Component", "Name of the Component",
-                    "base::DataObject", "Name of the DataObject." );
+                    "Data", "Name of the property or attribute." );
         this->methods()->addMethod( method( "reportPort", &ReportingComponent::reportPort , this),
-                    "Add a Component's Connection or Port for reporting.",
+                    "Add a Component's OutputPort for reporting.",
                     "Component", "Name of the Component",
-                    "Port", "Name of the Port to the connection." );
+                    "Port", "Name of the Port." );
         this->methods()->addMethod( method( "unreportPort", &ReportingComponent::unreportPort , this),
-                    "Remove a Connection for reporting.",
+                    "Remove a Port from reporting.",
                     "Component", "Name of the Component",
-                    "Port", "Name of the Port to the connection." );
+                    "Port", "Name of the Port." );
 
     }
 
@@ -134,6 +135,7 @@ namespace OCL
     {
         Logger::In in("ReportingComponent");
 
+        // we make a copy to be allowed to iterate over and exted report_data:
         PropertyBag bag = report_data.value();
 
         if ( bag.empty() ) {
@@ -151,16 +153,29 @@ namespace OCL
                     log(Error) << "Expected Property \""
                                   << (*it)->getName() <<"\" to be of type string."<< endlog();
                 else if ( compName->getName() == "Component" ) {
+                    this->unreportComponent( compName->value() );
                     ok &= this->reportComponent( compName->value() );
                 }
                 else if ( compName->getName() == "Port" ) {
                     string cname = compName->value().substr(0, compName->value().find("."));
                     string pname = compName->value().substr( compName->value().find(".")+1, string::npos);
+                    if (cname.empty() || pname.empty() ) {
+                        log(Error) << "The Port value '"<<compName->getName()<< "' must at least consist of a component name followed by a dot and the port name." <<endlog();
+                        ok = false;
+                        continue;
+                    }
+                    this->unreportPort(cname,pname);
                     ok &= this->reportPort(cname, pname);
                 }
                 else if ( compName->getName() == "Data" ) {
                     string cname = compName->value().substr(0, compName->value().find("."));
                     string pname = compName->value().substr( compName->value().find(".")+1, string::npos);
+                    if (cname.empty() || pname.empty() ) {
+                        log(Error) << "The Data value '"<<compName->getName()<< "' must at least consist of a component name followed by a dot and the property/attribute name." <<endlog();
+                        ok = false;
+                        continue;
+                    }
+                    this->unreportData(cname,pname);
                     ok &= this->reportData(cname, pname);
                 }
                 else {
@@ -245,11 +260,11 @@ namespace OCL
         Ports ports   = comp->ports()->getPorts();
         for (Ports::iterator it = ports.begin(); it != ports.end() ; ++it) {
             this->unreportDataSource( component + "." + (*it)->getName() );
-            report_data.value().removeProperty( report_data.value().findValue<string>(component));
-            if ( this->ports()->getPort( (*it)->getName() ) ) {
-                // XXX Remove the port ?
-            }
+            unreportPort(component, (*it)->getName() );
         }
+        PropertyBase* pb = report_data.value().findValue<string>(component);
+        if (pb)
+            report_data.value().removeProperty( pb );// pb is deleted by bag
         return true;
     }
 
@@ -257,6 +272,10 @@ namespace OCL
     bool ReportingComponent::reportPort(const std::string& component, const std::string& port ) {
         Logger::In in("ReportingComponent");
         TaskContext* comp = this->getPeer(component);
+        if ( this->ports()->getPort(component +"_"+port) ) {
+            log(Warning) <<"Already reporting "<<component<<"."<<port<<": removing old port first."<<endlog();
+            this->unreportPort(component,port);
+        }
         if ( !comp ) {
             log(Error) << "Could not report Component " << component <<" : no such peer."<<endlog();
             return false;
@@ -278,26 +297,41 @@ namespace OCL
         // creating a connection object.
         base::PortInterface* ourport = porti->antiClone();
         assert(ourport);
-        ourport->setName(component + "." + porti->getName());
+        ourport->setName(component + "_" + porti->getName());
         ipi = dynamic_cast<base::InputPortInterface*> (ourport);
         assert(ipi);
 
-        if (porti->connectTo(*ourport) == false)
+        ConnPolicy pol;
+        if (snapshotOnly.get() ) {
+            log(Info) << "Disabling buffering of data flow connections in SnapshotOnly mode." <<endlog();
+            pol = ConnPolicy::data(ConnPolicy::LOCK_FREE,true,false);
+        } else {
+            log(Info) << "Buffering of data flow connections is set to 10 samples." <<endlog();
+            pol = ConnPolicy::buffer(10,ConnPolicy::LOCK_FREE,true,false);
+        }
+
+        if (porti->connectTo(*ourport, ConnPolicy::buffer(10,ConnPolicy::LOCK_FREE,true,false) ) == false)
         {
+            log(Error) << "Could not connect to OutputPort " << porti->getName() << endlog();
             delete ourport; // XXX/TODO We're leaking ourport !
             return false;
         }
 
         if (this->reportDataSource(component + "." + porti->getName(), "Port",
-                ipi->getDataSource()) == false)
+                                   ipi->getDataSource(), true) == false)
         {
             log(Error) << "Failed reporting port " << port << endlog();
             delete ourport;
             return false;
         }
-        this->ports()->addPort( ourport );
-        log(Info) << "Reading OutputPort " << porti->getName() << " : ok."
-                << endlog();
+        if ( this->ports()->addEventPort( ipi ) )
+            log(Info) << "Monitoring OutputPort " << porti->getName() << " : ok." << endlog();
+        else {
+            log(Error) << "Failed to monitoring OutputPort '" 
+                       << porti->getName() << "' : could not be added to data flow interface." << endlog();
+            delete ourport;
+            return false;
+        }
         // Add port to ReportData properties if component nor port are listed yet.
         if ( !report_data.value().findValue<string>(component) && !report_data.value().findValue<string>( component+"."+port) )
             report_data.value().ownProperty(new Property<string>("Port","",component+"."+port));
@@ -305,9 +339,10 @@ namespace OCL
     }
 
     bool ReportingComponent::unreportPort(const std::string& component, const std::string& port ) {
-        base::PortInterface* ourport = this->ports()->getPort(component + "." + port);
+        base::PortInterface* ourport = this->ports()->getPort(component + "_" + port);
         if ( this->unreportDataSource( component + "." + port ) && report_data.value().removeProperty( report_data.value().findValue<string>(component+"."+port))) {
-            delete ourport;
+            this->ports()->removePort(ourport->getName());
+            delete ourport; // also deletes datasource.
             return true;
         }
         return false;
@@ -325,7 +360,7 @@ namespace OCL
         // Is it an attribute ?
         if ( comp->attributes()->getValue( dataname ) ) {
             if (this->reportDataSource( component + "." + dataname, "Data",
-                    comp->attributes()->getValue( dataname )->getDataSource() ) == false) {
+                                        comp->attributes()->getValue( dataname )->getDataSource(), false ) == false) {
                 log(Error) << "Failed reporting data " << dataname <<endlog();
                 return false;
             }
@@ -334,7 +369,7 @@ namespace OCL
         // Is it a property ?
         if ( comp->properties() && comp->properties()->find( dataname ) ) {
             if (this->reportDataSource( component + "." + dataname, "Data",
-                                           comp->properties()->find( dataname )->getDataSource() ) == false) {
+                                        comp->properties()->find( dataname )->getDataSource(), false ) == false) {
                 log(Error) << "Failed reporting data " << dataname <<endlog();
                 return false;
             }
@@ -350,17 +385,7 @@ namespace OCL
         return this->unreportDataSource( component +"." + datasource) && report_data.value().removeProperty( report_data.value().findValue<string>(component+"."+datasource));
     }
 
-    void ReportingComponent::snapshot() {
-        timestamp = os::TimeService::Instance()->secondsSince( starttime );
-
-        // execute the copy commands (fast).
-        for(Reports::iterator it = root.begin(); it != root.end(); ++it )
-            (it->get<2>())->execute();
-        if( this->engine()->getActivity() )
-            this->engine()->getActivity()->trigger();
-    }
-
-    bool ReportingComponent::reportDataSource(std::string tag, std::string type, base::DataSourceBase::shared_ptr orig)
+    bool ReportingComponent::reportDataSource(std::string tag, std::string type, base::DataSourceBase::shared_ptr orig, bool track)
     {
         // check for duplicates:
         for (Reports::iterator it = root.begin();
@@ -379,7 +404,7 @@ namespace OCL
         try {
             boost::shared_ptr<base::ActionInterface> comm( clone->updateCommand( orig.get() ) );
             assert( comm );
-            root.push_back( boost::make_tuple( tag, orig, comm, clone, type ) );
+            root.push_back( boost::make_tuple( tag, orig, comm, clone, type, false, track ) );
         } catch ( internal::bad_assignment& ba ) {
             log(Error) << "Could not report '"<< tag <<"' : failed to create Command." << endlog();
             return false;
@@ -405,34 +430,90 @@ namespace OCL
             return false;
         }
 
-        // write headers.
+        // Write initial lines.
+        this->copydata();
+        // force all as new data:
+        for(Reports::iterator it = root.begin(); it != root.end(); ++it ) {
+            it->get<5>() = true;
+        }
+        this->makeReport();
+
+        // write headers
         if (writeHeader.get()) {
-            this->snapshot();
-            this->makeReport();
+            // call all header marshallers.
             for(Marshallers::iterator it=marshallers.begin(); it != marshallers.end(); ++it) {
                 it->first->serialize( report );
                 it->first->flush();
             }
-            this->cleanReport();
         }
+
+        // write initial values with all value marshallers.
+        if (snapshotOnly.get() == false) {
+            for(Marshallers::iterator it=marshallers.begin(); it != marshallers.end(); ++it) {
+                it->second->serialize( report );
+                it->second->flush();
+            }
+        }
+
+        this->cleanReport();
+
         if(synchronize_with_logging.get())
             starttime = Logger::Instance()->getReferenceTime();
         else
             starttime = os::TimeService::Instance()->getTicks();
+
         return true;
+    }
+
+    void ReportingComponent::snapshot() {
+        // this function always copies and reports all data
+        copydata();
+        // force logging of all data.
+        for(Reports::iterator it = root.begin(); it != root.end(); ++it ) {
+            it->get<5>() = true;
+        }
+
+        if( this->engine()->getActivity() )
+            this->engine()->getActivity()->trigger();
+    }
+
+    bool ReportingComponent::copydata() {
+        timestamp = os::TimeService::Instance()->secondsSince( starttime );
+
+        bool result = false;
+        // execute the copy commands (fast).
+        for(Reports::iterator it = root.begin(); it != root.end(); ++it ) {
+            (it->get<2>())->readArguments();
+            it->get<5>() = (it->get<2>())->execute(); // stores new data flag.
+            result |= ( it->get<5>() && it->get<6>());
+        }
+        return result;
     }
 
     void ReportingComponent::makeReport()
     {
+        // This function must clone/copy all data samples because we apply
+        // decomposition of structs. So at the end of this function there are
+        // three instances of each data sample:
+        // 1. the one in the input port's datasource
+        // 2. the 1:1 copy made during copydata(), present in 'root'.
+        // 3. the decomposition of the copy, present in 'report'.
         report.add( timestamp.clone() );
         for(Reports::iterator it = root.begin(); it != root.end(); ++it ) {
-            base::DataSourceBase::shared_ptr clone = it->get<3>();
-            Property<PropertyBag> subbag( it->get<0>(), "");
-            if ( decompose.get() && clone->getTypeInfo()->decomposeType( clone, subbag.value() ) )
-                report.add( subbag.clone() );
-            else
-                report.add( clone->getTypeInfo()->buildProperty(it->get<0>(), "", clone) );
+            if (  it->get<5>() || null.rvalue() == "last" ) {
+                base::DataSourceBase::shared_ptr clone = it->get<3>();
+                Property<PropertyBag> subbag( it->get<0>(), "");
+                if ( decompose.get() && clone->getTypeInfo()->decomposeType( clone, subbag.value() ) )
+                    report.add( subbag.clone() );
+                else
+                    report.add( clone->getTypeInfo()->buildProperty(it->get<0>(), "", clone) );
+                it->get<5>() = false;
+            } else {
+                //  no new data
+                report.add( null.clone() );
+            }
         }
+        timestamp = 0.0; // reset.
     }
 
     void ReportingComponent::cleanReport()
@@ -442,21 +523,27 @@ namespace OCL
     }
 
     void ReportingComponent::updateHook() {
-        // Step 1: Make copies in order to 'snapshot' all data with a timestamp
-        if ( autotrigger )
-            this->snapshot();
+        // in snapshot only mode we only log if data has been copied by snapshot()
+        if (snapshotOnly.get() && timestamp == 0.0) 
+            return;
+        // Step 1: Make copies in order to copy all data and get the timestamp
+        // 
+        if ( !snapshotOnly.get() )
+            this->copydata();
 
-        // Step 2: Prepare bag: Decompose to native types (double,int,...)
-        this->makeReport();
+        do {
+            // Step 2: Prepare bag: Decompose to native types (double,int,...)
+            this->makeReport();
 
-        // Step 3: print out the result
-        // write out to all marshallers
-        for(Marshallers::iterator it=marshallers.begin(); it != marshallers.end(); ++it) {
-            it->second->serialize( report );
-            it->second->flush();
-        }
+            // Step 3: print out the result
+            // write out to all marshallers
+            for(Marshallers::iterator it=marshallers.begin(); it != marshallers.end(); ++it) {
+                it->second->serialize( report );
+                it->second->flush();
+            }
 
-        this->cleanReport();
+            this->cleanReport();
+        } while( copydata() && !snapshotOnly.get() ); // repeat if necessary and not in snapshotting.
     }
 
     void ReportingComponent::stopHook() {

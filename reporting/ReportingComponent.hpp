@@ -171,7 +171,13 @@ namespace OCL
 
         /**
          * This real-time function makes copies of the data to be
-         * reported.
+         * reported. 
+         * @return true if new data is available.
+         */
+        bool copydata();
+
+        /**
+         * Copy the reported data and trigger the generation of a sampling line.
          */
         void snapshot();
 
@@ -184,14 +190,14 @@ namespace OCL
                              RTT::base::DataSourceBase::shared_ptr,
                              boost::shared_ptr<RTT::base::ActionInterface>,
                              RTT::base::DataSourceBase::shared_ptr,
-                             std::string> DTupple;
+                             std::string, bool, bool> DTupple;
         /**
          * Stores the 'datasource' of all reported items as properties.
          */
         typedef std::vector<DTupple> Reports;
         Reports root;
 
-        bool reportDataSource(std::string tag, std::string type, RTT::base::DataSourceBase::shared_ptr orig);
+        bool reportDataSource(std::string tag, std::string type, RTT::base::DataSourceBase::shared_ptr origm, bool);
 
         bool unreportDataSource(std::string tag);
 
@@ -209,13 +215,14 @@ namespace OCL
         typedef std::vector< std::pair<boost::shared_ptr<RTT::marsh::Marshaller>, boost::shared_ptr<RTT::marsh::Marshaller> > > Marshallers;
         Marshallers marshallers;
         RTT::PropertyBag report;
-
-        RTT::Property<bool>          autotrigger;
+        
+        RTT::Property<bool>          snapshotOnly;
         RTT::Property<std::string>   config;
         RTT::Property<bool>          writeHeader;
         RTT::Property<bool>          decompose;
         RTT::Property<bool>          synchronize_with_logging;
         RTT::Property<PropertyBag>   report_data;
+        RTT::Property<std::string>   null;
 
         RTT::os::TimeService::ticks starttime;
         RTT::Property<RTT::os::TimeService::Seconds> timestamp;

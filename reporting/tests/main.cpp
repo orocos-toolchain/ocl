@@ -16,17 +16,20 @@ class TestTaskContext
     Property<string> hello;
     OutputPort<std::vector<double> > dwport;
     InputPort<double> drport;
+    Attribute<double> input;
 
 public:
     TestTaskContext(std::string name)
         : TaskContext(name),
           hello("Hello", "The hello thing", "World"),
           dwport("D2Port"),
-          drport("D1Port")
+          drport("D1Port"),
+          input("input")
     {
         this->properties()->addProperty( & hello );
         this->ports()->addPort( &drport );
         this->ports()->addPort( &dwport );
+        this->attributes()->addAttribute( &input );
 
         // write initial value.
         std::vector<double> init(10, 1.0);
@@ -40,17 +43,20 @@ class TestTaskContext2
     Property<string> hello;
     OutputPort<double> dwport;
     InputPort<std::vector<double> > drport;
+    Attribute<std::vector<double> > input;
 
 public:
     TestTaskContext2(std::string name)
         : TaskContext(name),
           hello("Hello", "The hello thing", "World"),
           dwport("D1Port"),
-          drport("D2Port")
+          drport("D2Port"),
+          input("input")
     {
         this->properties()->addProperty( & hello );
         this->ports()->addPort( &drport );
         this->ports()->addPort( &dwport );
+        this->attributes()->addAttribute( &input );
     }
 };
 
@@ -80,6 +86,9 @@ int ORO_main( int argc, char** argv)
     TaskBrowser tb( &rc );
 
     act.run( rc.engine() );
+
+    rc.marshalling()->loadProperties("reporter.cpf");
+    rc.configure();
 
     cout <<endl<< "  This demo allows reporting of Components." << endl;
     cout << "  Use 'reportComponent(\"MyPeer\")' and/or 'reportComponent(\"MyPeer2\")'" <<endl;
