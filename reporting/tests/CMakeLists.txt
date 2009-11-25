@@ -13,6 +13,9 @@ IF ( BUILD_REPORTING_TEST )
     # Use  TARGET_LINK_LIBRARIES( report libs... ) to add library deps.
     PROGRAM_ADD_DEPS( tcpreport orocos-taskbrowser orocos-reporting )
 
+    # Copy this file to build dir.
+    TEST_USES_FILE( reporter.cpf )
+
   IF ( NETCDF_FOUND )
 
     GLOBAL_ADD_TEST( ncreport ncmain.cpp )

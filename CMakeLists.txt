@@ -137,6 +137,7 @@ SET( ENV{OROCOS_COMPONENTS_REQUIRES} "")
 
 INCLUDE(${PROJ_SOURCE_DIR}/config/global_setup.cmake)
 INCLUDE(${PROJ_SOURCE_DIR}/config/component_rules.cmake)
+INCLUDE(${PROJ_SOURCE_DIR}/config/TestUsesFile.cmake)
 
 ## Find Orocos RTT.
 
