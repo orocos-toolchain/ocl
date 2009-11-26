@@ -985,14 +985,14 @@ namespace OCL
 
             // Attach activities
             if ( comps[comp.getName()].act ) {
-                if ( peer->engine()->getActivity() ) {
-                    peer->engine()->getActivity()->run(0);
+                if ( peer->getActivity() ) {
                     log(Info) << "Re-setting activity of "<< comp.getName() <<endlog();
                 } else {
                     log(Info) << "Setting activity of "<< comp.getName() <<endlog();
                 }
-                comps[comp.getName()].act->run( peer->engine() );
+                peer->setActivity( comps[comp.getName()].act );
                 assert( peer->engine()->getActivity() == comps[comp.getName()].act );
+                comps[comp.getName()].act = 0; // drops ownership.
             }
 
             // Load scripts in order of appearance
@@ -1112,7 +1112,9 @@ namespace OCL
                         } else {
                             log(Info) << "Saved Properties of "<< it->instance->getName() << " to "<<file<<endlog();
                         }
-                    }
+                    } else if (it->autosave) {
+		      log(Error) << "AutoSave set but no property file specified. Specify one using the UpdateProperties simple element."<<endlog();
+		    }
                     it->instance->cleanup();
                     log(Info) << "Cleaned up "<< it->instance->getName() <<endlog();
                 } else {
@@ -1615,7 +1617,8 @@ namespace OCL
         if ( this->setNamedActivity(comp_name, "Activity", period, priority, scheduler) ) {
             assert( comps[comp_name].instance );
             assert( comps[comp_name].act );
-            comps[comp_name].act->run(comps[comp_name].instance->engine());
+            comps[comp_name].instance->setActivity( comps[comp_name].act );
+            comps[comp_name].act = 0;
             return true;
         }
         return false;
@@ -1628,7 +1631,8 @@ namespace OCL
         if ( this->setNamedActivity(comp_name, "PeriodicActivity", period, priority, scheduler) ) {
             assert( comps[comp_name].instance );
             assert( comps[comp_name].act );
-            comps[comp_name].act->run(comps[comp_name].instance->engine());
+            comps[comp_name].instance->setActivity( comps[comp_name].act );
+            comps[comp_name].act = 0;
             return true;
         }
         return false;
@@ -1640,7 +1644,8 @@ namespace OCL
         if ( this->setNamedActivity(comp_name, "SlaveActivity", period, 0, ORO_SCHED_OTHER ) ) {
             assert( comps[comp_name].instance );
             assert( comps[comp_name].act );
-            comps[comp_name].act->run(comps[comp_name].instance->engine());
+            comps[comp_name].instance->setActivity( comps[comp_name].act );
+            comps[comp_name].act = 0;
             return true;
         }
         return false;
@@ -1651,7 +1656,8 @@ namespace OCL
         if ( this->setNamedActivity(comp_name, "SequentialActivity", 0, 0, 0 ) ) {
             assert( comps[comp_name].instance );
             assert( comps[comp_name].act );
-            comps[comp_name].act->run(comps[comp_name].instance->engine());
+            comps[comp_name].instance->setActivity( comps[comp_name].act );
+            comps[comp_name].act = 0;
             return true;
         }
         return false;
@@ -1663,7 +1669,8 @@ namespace OCL
         if ( this->setNamedActivity(slave, "SlaveActivity", 0, 0, ORO_SCHED_OTHER, master ) ) {
             assert( comps[slave].instance );
             assert( comps[slave].act );
-            comps[slave].act->run(comps[slave].instance->engine());
+            comps[slave].instance->setActivity( comps[slave].act );
+            comps[slave].act = 0;
             return true;
         }
         return false;
@@ -1675,6 +1682,8 @@ namespace OCL
                                                double period, int priority,
                                                int scheduler, const std::string& master_name)
     {
+        // This helper function does not actualy set the activity, it just creates it and
+        // stores it in comps[comp_name].act
         RTT::TaskContext* peer = 0;
         base::ActivityInterface* master_act = 0;
         if ( comp_name == this->getName() )
@@ -1736,7 +1745,7 @@ namespace OCL
                 }
                 else
                     if (act_type == "Activity") {
-                        newact = new Activity(scheduler, priority, period);
+                        newact = new Activity(scheduler, priority, period, 0, comp_name);
                     }
                     else
                         if (act_type == "SequentialActivity") {
