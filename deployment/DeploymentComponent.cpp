@@ -838,8 +838,8 @@ namespace OCL
                     if ( nm.ready() )
                         {
                             this->addPeer( comps[comp.getName()].instance->getName(), nm.value() );
-                            log(Debug) << this->getName() << " connects to " <<
-                                comps[comp.getName()].instance->getName()<< nm.value()  << endlog();
+                            log(Info) << this->getName() << " connects " <<
+                                comps[comp.getName()].instance->getName() << " to "<< nm.value()  << endlog();
                         }
                     else {
                         log(Error) << "Wrong property type in Peers struct. Expected property of type 'string',"
@@ -858,8 +858,7 @@ namespace OCL
                 log(Warning) << "Can not form connection with topic "<<connection_name<<" with only one Port from "<< connection->owners[0]->getName() << endlog();
                 continue;
             }
-            // first find the write port. The rest must be readports.
-            // This is quite complex since a 'ReadWritePort' can act as both.
+            // first find all write ports.
             base::PortInterface* writer = 0;
             ConnectionData::Ports::iterator p = connection->ports.begin();
 
@@ -897,16 +896,17 @@ namespace OCL
                         string owner = connection->owners[p - connection->ports.begin()]->getName();
                         // only try to connect p if it is not in the same connection of writer.
                         // OK. p is definately no part of writer's connection. Try to connect and flag errors if it fails.
-                        if ( writer->connectTo( **p, connection->policy ) == false) {
-                            log(Error) << "Could not subscribe InputPort "<< owner<<"."<< (*p)->getName() << " to topic " << connection_name <<endlog();
+                        if ( (*w)->connectTo( **p, connection->policy ) == false) {
+                            log(Error) << "Could not subscribe InputPort "<< owner<<"."<< (*p)->getName() << " to topic " << (*w)->getName() <<'/'<< connection_name <<endlog();
                             valid = false;
                         } else {
-                            log(Info) << "Subscribed InputPort "<< owner<<"."<< (*p)->getName() <<" to topic " << connection_name <<endlog();
+                            log(Info) << "Subscribed InputPort "<< owner<<"."<< (*p)->getName() <<" to topic " << (*w)->getName() <<'/'<< connection_name <<endlog();
                         }
                     }
                     ++p;
                 }
                 ++w;
+                p = connection->ports.begin();
             }
         }
 
