@@ -1130,7 +1130,7 @@ namespace OCL
     {
         // 2. Disconnect and destroy all components.
         bool valid = true;
-        while ( comps.size() > 0)
+        while ( comps.size() > 0 && valid)
             {
                 CompList::iterator cit = comps.begin();
                 valid &= this->unloadComponentImpl(cit);
