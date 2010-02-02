@@ -85,10 +85,7 @@ namespace OCL
         getFactories()["IORFile"] = &createControlTaskProxyIORFile;
         getFactories()["IOR"] = &createControlTaskProxyIOR;
 
-        this->methods()->addMethod(method("server",&CorbaDeploymentComponent::createServer,this),
-                                   "Creates a CORBA ControlTask server for the given component",
-                                   "tc", "Name of the RTT::TaskContext (must be a peer).",
-                                   "UseNamingService","Set to true to use the naming service.");
+        this->addOperation("server", &CorbaDeploymentComponent::createServer, this, ClientThread).doc("Creates a CORBA ControlTask server for the given component").arg("tc", "Name of the RTT::TaskContext (must be a peer).").arg("UseNamingService", "Set to true to use the naming service.");
     }
 
     CorbaDeploymentComponent::~CorbaDeploymentComponent()

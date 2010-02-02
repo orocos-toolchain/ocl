@@ -4,14 +4,17 @@
 #include <timer/TimerComponent.hpp>
 #include <taskbrowser/TaskBrowser.hpp>
 
+#include <rtt/scripting/Scripting.hpp>
 #include <rtt/Activity.hpp>
 #include <rtt/Method.hpp>
+#include <rtt/scripting/StateMachine.hpp>
 #include <iostream>
 #include <rtt/os/main.h>
 
 using namespace std;
 using namespace Orocos;
 using namespace RTT;
+using namespace boost;
 
 // test TimerComponent when used by state machine (ie via Orocos interface)
 class TestStateMachine
@@ -19,30 +22,30 @@ class TestStateMachine
 {
     Handle h;
 	// log a message
-	RTT::Method<void(std::string)>					log_mtd;
+	RTT::Operation<void(std::string)>					log_mtd;
 
 public:
     TestStateMachine(std::string name) :
             TaskContext(name, PreOperational),
             log_mtd("log", &TestStateMachine::doLog, this)
     {
-        methods()->addMethod(&log_mtd, "Log a message",
-                             "message", "Message to log");
+        addOperation( log_mtd ).doc("Log a message").arg("message", "Message to log");
     }
 
     bool startHook()
     {
         bool 				rc = false;		// prove otherwise
         scripting::StateMachinePtr 	p;
-
+        shared_ptr<Scripting> scripting = getProvider<Scripting>("scripting");
+        if (!scripting)
+            return false;
         Logger::In			in(getName());
         std::string         machineName = this->getName();
-        p = engine()->states()->getStateMachine(machineName);
-        if (p)
+        if ( scripting->hasStateMachine(machineName))
         {
-            if (p->activate())
+            if (scripting->activateStateMachine(machineName))
             {
-                if (p->start())
+                if (scripting->startStateMachine(machineName))
                 {
                     rc = true;
                 }
@@ -93,7 +96,8 @@ int ORO_main( int argc, char** argv)
     peer.addPeer(&hmi);
 
     std::string name = "testWithStateMachine.osd";
-	if (!peer.scripting()->loadStateMachines(name))
+    assert (peer.getProvider<Scripting>("scripting"));
+	if ( !peer.getProvider<Scripting>("scripting")->loadStateMachines(name) )
     {
         log(Error) << "Unable to load state machine: '" << name << "'" << endlog();
         return -1;

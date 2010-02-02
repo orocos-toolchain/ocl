@@ -28,12 +28,13 @@
 #include "ReportingComponent.hpp"
 #include <rtt/Logger.hpp>
 #include <rtt/Method.hpp>
-#include <rtt/Command.hpp>
+#include <rtt/Method.hpp>
 
 // Impl.
 #include "EmptyMarshaller.hpp"
 #include <rtt/marsh/PropertyDemarshaller.hpp>
 #include <rtt/marsh/PropertyMarshaller.hpp>
+#include <iostream>
 #include <fstream>
 #include <exception>
 
@@ -70,34 +71,14 @@ namespace OCL
         // Add the methods, methods make sure that they are
         // executed in the context of the (non realtime) caller.
 
-        this->methods()->addMethod( method( "snapshot", &ReportingComponent::snapshot , this),
-                    "Take a new shapshot of all data and cause them to be written out." );
-        this->methods()->addMethod( method( "screenComponent", &ReportingComponent::screenComponent , this),
-                    "Display the variables and ports of a Component.",
-                    "Component", "Name of the Component" );
-        this->methods()->addMethod( method( "reportComponent", &ReportingComponent::reportComponent , this),
-                    "Add a peer Component and report all its data ports",
-                    "Component", "Name of the Component" );
-        this->methods()->addMethod( method( "unreportComponent", &ReportingComponent::unreportComponent , this),
-                    "Remove all Component's data ports from reporting.",
-                    "Component", "Name of the Component"
-                     );
-        this->methods()->addMethod( method( "reportData", &ReportingComponent::reportData , this),
-                    "Add a Component's Property or attribute for reporting.",
-                    "Component", "Name of the Component",
-                    "Data", "Name of the Data to report. A property's or attribute's name." );
-        this->methods()->addMethod( method( "unreportData", &ReportingComponent::unreportData , this),
-                    "Remove a Data object from reporting.",
-                    "Component", "Name of the Component",
-                    "Data", "Name of the property or attribute." );
-        this->methods()->addMethod( method( "reportPort", &ReportingComponent::reportPort , this),
-                    "Add a Component's OutputPort for reporting.",
-                    "Component", "Name of the Component",
-                    "Port", "Name of the Port." );
-        this->methods()->addMethod( method( "unreportPort", &ReportingComponent::unreportPort , this),
-                    "Remove a Port from reporting.",
-                    "Component", "Name of the Component",
-                    "Port", "Name of the Port." );
+        this->addOperation("snapshot", &ReportingComponent::snapshot , this, RTT::ClientThread).doc("Take a new shapshot of all data and cause them to be written out.");
+        this->addOperation("screenComponent", &ReportingComponent::screenComponent , this, RTT::ClientThread).doc("Display the variables and ports of a Component.").arg("Component", "Name of the Component");
+        this->addOperation("reportComponent", &ReportingComponent::reportComponent , this, RTT::ClientThread).doc("Add a peer Component and report all its data ports").arg("Component", "Name of the Component");
+        this->addOperation("unreportComponent", &ReportingComponent::unreportComponent , this, RTT::ClientThread).doc("Remove all Component's data ports from reporting.").arg("Component", "Name of the Component");
+        this->addOperation("reportData", &ReportingComponent::reportData , this, RTT::ClientThread).doc("Add a Component's Property or attribute for reporting.").arg("Component", "Name of the Component").arg("Data", "Name of the Data to report. A property's or attribute's name.");
+        this->addOperation("unreportData", &ReportingComponent::unreportData , this, RTT::ClientThread).doc("Remove a Data object from reporting.").arg("Component", "Name of the Component").arg("Data", "Name of the property or attribute.");
+        this->addOperation("reportPort", &ReportingComponent::reportPort , this, RTT::ClientThread).doc("Add a Component's OutputPort for reporting.").arg("Component", "Name of the Component").arg("Port", "Name of the Port.");
+        this->addOperation("unreportPort", &ReportingComponent::unreportPort , this, RTT::ClientThread).doc("Remove a Port from reporting.").arg("Component", "Name of the Component").arg("Port", "Name of the Port.");
 
     }
 
@@ -153,8 +134,9 @@ namespace OCL
                     log(Error) << "Expected Property \""
                                   << (*it)->getName() <<"\" to be of type string."<< endlog();
                 else if ( compName->getName() == "Component" ) {
-                    this->unreportComponent( compName->value() );
-                    ok &= this->reportComponent( compName->value() );
+                    std::string name = compName->value(); // we will delete this property !
+                    this->unreportComponent( name );
+                    ok &= this->reportComponent( name );
                 }
                 else if ( compName->getName() == "Port" ) {
                     string cname = compName->value().substr(0, compName->value().find("."));
@@ -210,11 +192,11 @@ namespace OCL
             for (PropertyBag::iterator it= bag->begin(); it != bag->end(); ++it)
                 output << "  " << (*it)->getName() << " : " << (*it)->getDataSource() << endl;
         }
-        interface::AttributeRepository::AttributeNames atts = c->attributes()->names();
+        interface::AttributeRepository::AttributeNames atts = c->getAttributeNames();
         if ( !atts.empty() ) {
             output << "Attributes :" << endl;
             for (interface::AttributeRepository::AttributeNames::iterator it= atts.begin(); it != atts.end(); ++it)
-                output << "  " << *it << " : " << c->attributes()->getValue(*it)->getDataSource() << endl;
+                output << "  " << *it << " : " << c->getValue(*it)->getDataSource() << endl;
         }
 
         vector<string> ports = c->ports()->getPortNames();
@@ -327,7 +309,7 @@ namespace OCL
         if ( this->ports()->addEventPort( ipi ) )
             log(Info) << "Monitoring OutputPort " << porti->getName() << " : ok." << endlog();
         else {
-            log(Error) << "Failed to monitoring OutputPort '" 
+            log(Error) << "Failed to monitoring OutputPort '"
                        << porti->getName() << "' : could not be added to data flow interface." << endlog();
             delete ourport;
             return false;
@@ -358,9 +340,9 @@ namespace OCL
             return false;
         }
         // Is it an attribute ?
-        if ( comp->attributes()->getValue( dataname ) ) {
+        if ( comp->getValue( dataname ) ) {
             if (this->reportDataSource( component + "." + dataname, "Data",
-                                        comp->attributes()->getValue( dataname )->getDataSource(), false ) == false) {
+                                        comp->getValue( dataname )->getDataSource(), false ) == false) {
                 log(Error) << "Failed reporting data " << dataname <<endlog();
                 return false;
             }
@@ -524,10 +506,10 @@ namespace OCL
 
     void ReportingComponent::updateHook() {
         // in snapshot only mode we only log if data has been copied by snapshot()
-        if (snapshotOnly.get() && timestamp == 0.0) 
+        if (snapshotOnly.get() && timestamp == 0.0)
             return;
         // Step 1: Make copies in order to copy all data and get the timestamp
-        // 
+        //
         if ( !snapshotOnly.get() )
             this->copydata();
 

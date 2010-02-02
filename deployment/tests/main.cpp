@@ -30,7 +30,7 @@ public:
         this->ports()->addPort( &p1, "");
         this->ports()->addPort( &p2, "");
         this->ports()->addPort( &p3, "");
-        this->attributes()->addAttribute( &a );
+        this->addAttribute( &a );
         limits.set()[0] = 10;
         limits.set()[1] = 20;
     }

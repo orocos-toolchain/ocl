@@ -37,11 +37,11 @@ class TestTaskContext
             dwport.setDataSample( init );
         }
 
-        virtual bool startup () {
+        virtual bool startHook () {
             return true;
         }
 
-        virtual void update () {
+        virtual void updateHook () {
             if( pos > 9 )
             {
                 init[2]+=2;
@@ -60,7 +60,7 @@ class TestTaskContext
             dwport.write( init );
         }
 
-        virtual void shutdown () {
+        virtual void stopHook () {
 
         }
 };

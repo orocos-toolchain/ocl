@@ -34,6 +34,7 @@
 #include <rtt/marsh/PropertyMarshaller.hpp>
 #include <rtt/marsh/PropertyDemarshaller.hpp>
 #include <rtt/Method.hpp>
+#include <rtt/scripting/Scripting.hpp>
 #include <rtt/ConnPolicy.hpp>
 
 #include <cstdio>
@@ -94,124 +95,60 @@ namespace OCL
         this->properties()->addProperty( &autoUnload );
         this->properties()->addProperty( &target );
 
-        this->attributes()->addAttribute( &validConfig );
-        this->attributes()->addAttribute( &sched_RT );
-        this->attributes()->addAttribute( &sched_OTHER );
-        this->attributes()->addAttribute( &lowest_Priority );
-        this->attributes()->addAttribute( &highest_Priority );
+        this->addAttribute( &validConfig );
+        this->addAttribute( &sched_RT );
+        this->addAttribute( &sched_OTHER );
+        this->addAttribute( &lowest_Priority );
+        this->addAttribute( &highest_Priority );
 
 
-        this->methods()->addMethod( RTT::method("loadLibrary", &DeploymentComponent::loadLibrary, this),
-                                    "Load a new library into memory.",
-                                    "Name", "The name of the to be loaded library.");
-        this->methods()->addMethod( RTT::method("import", &DeploymentComponent::import, this),
-                                    "Load all libraries in Path into memory.",
-                                    "Path", "The name of the directory where libraries are located.");
+        this->addOperation("loadLibrary", &DeploymentComponent::loadLibrary, this, ClientThread).doc("Load a new library into memory.").arg("Name", "The name of the to be loaded library.");
+        this->addOperation("import", &DeploymentComponent::import, this, ClientThread).doc("Load all libraries in Path into memory.").arg("Path", "The name of the directory where libraries are located.");
 
 
-        this->methods()->addMethod( RTT::method("loadComponent", &DeploymentComponent::loadComponent, this),
-                                    "Load a new component instance from a library.",
-                                    "Name", "The name of the to be created component",
-                                    "Type", "The component type, used to lookup the library.");
-        this->methods()->addMethod( RTT::method("unloadComponent", &DeploymentComponent::unloadComponent, this),
-                                    "Unload a loaded component instance.",
-                                    "Name", "The name of the to be created component");
-        this->methods()->addMethod( RTT::method("displayComponentTypes", &DeploymentComponent::displayComponentTypes, this),
-                                    "Print out a list of all component types this component can create.");
+        this->addOperation("loadComponent", &DeploymentComponent::loadComponent, this, ClientThread).doc("Load a new component instance from a library.").arg("Name", "The name of the to be created component").arg("Type", "The component type, used to lookup the library.");
+        this->addOperation("unloadComponent", &DeploymentComponent::unloadComponent, this, ClientThread).doc("Unload a loaded component instance.").arg("Name", "The name of the to be created component");
+        this->addOperation("displayComponentTypes", &DeploymentComponent::displayComponentTypes, this, ClientThread).doc("Print out a list of all component types this component can create.");
 
-        this->methods()->addMethod( RTT::method("loadConfiguration", &DeploymentComponent::loadConfiguration, this),
-                                    "Load a new XML configuration from a file (identical to loadComponents).",
-                                    "File", "The file which contains the new configuration.");
-        this->methods()->addMethod( RTT::method("loadConfigurationString", &DeploymentComponent::loadConfigurationString, this),
-                                    "Load a new XML configuration from a string.",
-                                    "Text", "The string which contains the new configuration.");
-        this->methods()->addMethod( RTT::method("clearConfiguration", &DeploymentComponent::clearConfiguration, this),
-                                    "Clear all configuration settings.");
+        this->addOperation("loadConfiguration", &DeploymentComponent::loadConfiguration, this, ClientThread).doc("Load a new XML configuration from a file (identical to loadComponents).").arg("File", "The file which contains the new configuration.");
+        this->addOperation("loadConfigurationString", &DeploymentComponent::loadConfigurationString, this, ClientThread).doc("Load a new XML configuration from a string.").arg("Text", "The string which contains the new configuration.");
+        this->addOperation("clearConfiguration", &DeploymentComponent::clearConfiguration, this, ClientThread).doc("Clear all configuration settings.");
 
-        this->methods()->addMethod( RTT::method("loadComponents", &DeploymentComponent::loadComponents, this),
-                                    "Load components listed in an XML configuration file.",
-                                    "File", "The file which contains the new configuration.");
-        this->methods()->addMethod( RTT::method("configureComponents", &DeploymentComponent::configureComponents, this),
-                                    "Apply a loaded configuration to the components and configure() them if AutoConf is set.");
-        this->methods()->addMethod( RTT::method("startComponents", &DeploymentComponent::startComponents, this),
-                                    "Start the components configured for AutoStart.");
-        this->methods()->addMethod( RTT::method("stopComponents", &DeploymentComponent::stopComponents, this),
-                                    "Stop all the configured components (with or without AutoStart).");
-        this->methods()->addMethod( RTT::method("cleanupComponents", &DeploymentComponent::cleanupComponents, this),
-                                    "Cleanup all the configured components (with or without AutoConf).");
-        this->methods()->addMethod( RTT::method("unloadComponents", &DeploymentComponent::unloadComponents, this),
-                                    "Unload all the previously loaded components.");
+        this->addOperation("loadComponents", &DeploymentComponent::loadComponents, this, ClientThread).doc("Load components listed in an XML configuration file.").arg("File", "The file which contains the new configuration.");
+        this->addOperation("configureComponents", &DeploymentComponent::configureComponents, this, ClientThread).doc("Apply a loaded configuration to the components and configure() them if AutoConf is set.");
+        this->addOperation("startComponents", &DeploymentComponent::startComponents, this, ClientThread).doc("Start the components configured for AutoStart.");
+        this->addOperation("stopComponents", &DeploymentComponent::stopComponents, this, ClientThread).doc("Stop all the configured components (with or without AutoStart).");
+        this->addOperation("cleanupComponents", &DeploymentComponent::cleanupComponents, this, ClientThread).doc("Cleanup all the configured components (with or without AutoConf).");
+        this->addOperation("unloadComponents", &DeploymentComponent::unloadComponents, this, ClientThread).doc("Unload all the previously loaded components.");
 
-        this->methods()->addMethod( RTT::method("kickStart", &DeploymentComponent::kickStart, this),
-                                    "Calls loadComponents, configureComponents and startComponents in a row.",
-                                    "File", "The file which contains the XML configuration to use.");
-        this->methods()->addMethod( RTT::method("kickOutAll", &DeploymentComponent::kickOutAll, this),
-                                    "Calls stopComponents, cleanupComponents and unloadComponents in a row.");
+        this->addOperation("kickStart", &DeploymentComponent::kickStart, this, ClientThread).doc("Calls loadComponents, configureComponents and startComponents in a row.").arg("File", "The file which contains the XML configuration to use.");
+        this->addOperation("kickOutAll", &DeploymentComponent::kickOutAll, this, ClientThread).doc("Calls stopComponents, cleanupComponents and unloadComponents in a row.");
 
-        this->methods()->addMethod( RTT::method("kickOutComponent", &DeploymentComponent::kickOutComponent, this),
-                                    "Calls stopComponents, cleanupComponent and unloadComponent in a row.",
-                                    "comp_name", "component name");
-        this->methods()->addMethod( RTT::method("kickOut", &DeploymentComponent::kickOut, this),
-                                    "Calls stopComponents, cleanupComponents and unloadComponents in a row.",
-                                    "File", "The file which contains the name of the components to kickOut (for example, the same used in kickStart).");
+        this->addOperation("kickOutComponent", &DeploymentComponent::kickOutComponent, this, ClientThread).doc("Calls stopComponents, cleanupComponent and unloadComponent in a row.").arg("comp_name", "component name");
+        this->addOperation("kickOut", &DeploymentComponent::kickOut, this, ClientThread).doc("Calls stopComponents, cleanupComponents and unloadComponents in a row.").arg("File", "The file which contains the name of the components to kickOut (for example, the same used in kickStart).");
 
         // Work around compiler ambiguity:
         typedef bool(DeploymentComponent::*DCFun)(const std::string&, const std::string&);
         DCFun cp = &DeploymentComponent::connectPeers;
-        this->methods()->addMethod( RTT::method("connectPeers", cp, this),
-                                    "Connect two Components known to this Component.",
-                                    "One", "The first component.","Two", "The second component.");
+        this->addOperation("connectPeers", cp, this, ClientThread).doc("Connect two Components known to this Component.").arg("One", "The first component.").arg("Two", "The second component.");
         cp = &DeploymentComponent::connectPorts;
-        this->methods()->addMethod( RTT::method("connectPorts", cp, this),
-                                    "Connect the Data Ports of two Components known to this Component.",
-                                    "One", "The first component.","Two", "The second component.");
+        this->addOperation("connectPorts", cp, this, ClientThread).doc("Connect the Data Ports of two Components known to this Component.").arg("One", "The first component.").arg("Two", "The second component.");
         cp = &DeploymentComponent::addPeer;
         typedef bool(DeploymentComponent::*DC4Fun)(const std::string&, const std::string&,
                                                    const std::string&, const std::string&);
         DC4Fun cp4 = &DeploymentComponent::connectPorts;
-        this->methods()->addMethod( RTT::method("connectInputPorts", cp4, this),
-                                    "Connect two data ports of Components known to this Component.",
-                                    "One", "The first component.","Two", "The second component.",
-                                    "PortOne", "The port name of the first component.",
-                                    "PortTwo", "The port name of the second component.");
+        this->addOperation("connectInputPorts", cp4, this, ClientThread).doc("Connect two data ports of Components known to this Component.").arg("One", "The first component.").arg("Two", "The second component.").arg("PortOne", "The port name of the first component.").arg("PortTwo", "The port name of the second component.");
 
-        this->methods()->addMethod( RTT::method("addPeer", cp, this),
-                                    "Add a peer to a Component.",
-                                    "From", "The first component.","To", "The other component.");
+        this->addOperation("addPeer", cp, this, ClientThread).doc("Add a peer to a Component.").arg("From", "The first component.").arg("To", "The other component.");
         typedef void(DeploymentComponent::*RPFun)(const std::string&);
         RPFun rp = &RTT::TaskContext::removePeer;
-        this->methods()->addMethod( RTT::method("removePeer", rp, this),
-                                    "Remove a peer from this Component.",
-                                    "PeerName", "The name of the peer to remove.");
+        this->addOperation("removePeer", rp, this, ClientThread).doc("Remove a peer from this Component.").arg("PeerName", "The name of the peer to remove.");
 
-        this->methods()->addMethod( RTT::method("setActivity", &DeploymentComponent::setActivity, this),
-                                    "Attach an activity to a Component.",
-                                    "CompName", "The name of the Component.",
-                                    "Period", "The period of the activity (set to 0.0 for non periodic).",
-                                    "Priority", "The priority of the activity.",
-                                    "SchedType", "The scheduler type of the activity."
-                                    );
-        this->methods()->addMethod( RTT::method("setPeriodicActivity", &DeploymentComponent::setPeriodicActivity, this),
-                                    "Attach a periodic activity to a Component.",
-                                    "CompName", "The name of the Component.",
-                                    "Period", "The period of the activity.",
-                                    "Priority", "The priority of the activity.",
-                                    "SchedType", "The scheduler type of the activity."
-                                    );
-        this->methods()->addMethod( RTT::method("setSequentialActivity", &DeploymentComponent::setSequentialActivity, this),
-                                    "Attach a 'stand alone' sequential activity to a Component.",
-                                    "CompName", "The name of the Component."
-                                    );
-        this->methods()->addMethod( RTT::method("setSlaveActivity", &DeploymentComponent::setSlaveActivity, this),
-                                    "Attach a 'stand alone' slave activity to a Component.",
-                                    "CompName", "The name of the Component.",
-                                    "Period", "The period of the activity (set to zero for non periodic)."
-                                    );
-        this->methods()->addMethod( RTT::method("setMasterSlaveActivity", &DeploymentComponent::setMasterSlaveActivity, this),
-                                    "Attach a slave activity with a master to a Component. The slave becomes a peer of the master as well.",
-                                    "Master", "The name of the Component which is master of the Slave.",
-                                    "Slave", "The name of the Component which gets the SlaveActivity."
-                                    );
+        this->addOperation("setActivity", &DeploymentComponent::setActivity, this, ClientThread).doc("Attach an activity to a Component.").arg("CompName", "The name of the Component.").arg("Period", "The period of the activity (set to 0.0 for non periodic).").arg("Priority", "The priority of the activity.").arg("SchedType", "The scheduler type of the activity.");
+        this->addOperation("setPeriodicActivity", &DeploymentComponent::setPeriodicActivity, this, ClientThread).doc("Attach a periodic activity to a Component.").arg("CompName", "The name of the Component.").arg("Period", "The period of the activity.").arg("Priority", "The priority of the activity.").arg("SchedType", "The scheduler type of the activity.");
+        this->addOperation("setSequentialActivity", &DeploymentComponent::setSequentialActivity, this, ClientThread).doc("Attach a 'stand alone' sequential activity to a Component.").arg("CompName", "The name of the Component.");
+        this->addOperation("setSlaveActivity", &DeploymentComponent::setSlaveActivity, this, ClientThread).doc("Attach a 'stand alone' slave activity to a Component.").arg("CompName", "The name of the Component.").arg("Period", "The period of the activity (set to zero for non periodic).");
+        this->addOperation("setMasterSlaveActivity", &DeploymentComponent::setMasterSlaveActivity, this, ClientThread).doc("Attach a slave activity with a master to a Component. The slave becomes a peer of the master as well.").arg("Master", "The name of the Component which is master of the Slave.").arg("Slave", "The name of the Component which gets the SlaveActivity.");
 
         valid_names.insert("AutoUnload");
         valid_names.insert("UseNamingService");
@@ -1001,13 +938,13 @@ namespace OCL
                 if ( (*ps)->getName() == "ProgramScript" )
                     pscript = *ps;
                 if ( pscript.ready() ) {
-                    valid = valid && peer->scripting()->loadPrograms( pscript.get(), false ); // no exceptions
+                    valid = valid && peer->getProvider<Scripting>("scripting")->loadPrograms( pscript.get() );
                 }
                 RTT::Property<string> sscript;
                 if ( (*ps)->getName() == "StateMachineScript" )
                     sscript = *ps;
                 if ( sscript.ready() ) {
-                    valid = valid && peer->scripting()->loadStateMachines( sscript.get(), false ); // no exceptions
+                    valid = valid && peer->getProvider<Scripting>("scripting")->loadStateMachines( sscript.get() );
                 }
             }
 
@@ -1052,7 +989,7 @@ namespace OCL
             RTT::TaskContext* peer = comps[ (*it)->getName() ].instance;
             // AutoStart
             if (comps[(*it)->getName()].autostart )
-                if ( !peer || peer->start() == false)
+                if ( !peer || ( !peer->isRunning() && peer->start() == false) )
                     valid = false;
         }
         // Finally, report success/failure:
@@ -1067,7 +1004,7 @@ namespace OCL
                     log(Error) << "Failed to start component "<< it->instance->getName() <<endlog();
             }
         } else {
-            log(Info) << "Startup successful." <<endlog();
+            log(Info) << "Startup of 'AutoStart' components successful." <<endlog();
         }
         return valid;
     }
@@ -1080,8 +1017,7 @@ namespace OCL
         for ( CompList::iterator cit = comps.begin(); cit != comps.end(); ++cit) {
             ComponentData* it = &(cit->second);
             if ( it->instance && !it->proxy ) {
-                if ( it->instance->engine()->getActivity() == 0 ||
-                     it->instance->engine()->getActivity()->isActive() == false ||
+                if ( !it->instance->isRunning() ||
                      it->instance->stop() ) {
                     log(Info) << "Stopped "<< it->instance->getName() <<endlog();
                 } else {
@@ -1532,8 +1468,7 @@ namespace OCL
         std::string  name = cit->first;
 
         if ( it->loaded && it->instance ) {
-            if ( it->instance->engine()->getActivity() == 0 ||
-                 it->instance->engine()->getActivity()->isActive() == false ) {
+            if ( !it->instance->isRunning() ) {
                 if (!it->proxy ) {
                     log(Debug) << "Disconnecting " <<name <<endlog();
                     it->instance->disconnect();
@@ -1847,8 +1782,7 @@ namespace OCL
         bool valid = true;
 
         if ( instance ) {
-            if ( instance->engine()->getActivity() == 0 ||
-                 instance->engine()->getActivity()->isActive() == false ||
+            if ( !instance->isRunning() ||
                  instance->stop() ) {
                 log(Info) << "Stopped "<< instance->getName() <<endlog();
             }

@@ -60,7 +60,7 @@
 
 #include <rtt/RTT.hpp>
 #include <rtt/TaskContext.hpp>
-#include <rtt/interface/OperationInterface.hpp>
+#include <rtt/interface/ServiceProvider.hpp>
 #include <rtt/base/DispatchInterface.hpp>
 #include <deque>
 #include <string>
@@ -92,9 +92,7 @@ namespace OCL
         static RTT::TaskContext* tb;
         // the current Context: is tb or taskcontext
         static RTT::TaskContext* context;
-        static RTT::interface::OperationInterface* taskobject;
-        RTT::base::ConditionInterface* condition;
-        RTT::base::DispatchInterface*   command;
+        static RTT::interface::ServiceProvider* taskobject;
         RTT::internal::DataSource<bool>::shared_ptr   accepted;
 
         int debug;
@@ -214,11 +212,6 @@ namespace OCL
         void printInfo(const std::string& peerpath);
 
         /**
-         * Print the synopsis of a command.
-         */
-        void printCommand( const std::string c, interface::OperationInterface* ops );
-
-        /**
          * Print the synopsis of a DataSource.
          */
         void printSource( const std::string m );
@@ -226,12 +219,7 @@ namespace OCL
         /**
          * Print the synopsis of a Method.
          */
-        void printMethod( const std::string m, interface::OperationInterface* ops );
-
-        /**
-         * Print the synopsis of an Event.
-         */
-        void printEvent( const std::string m, RTT::interface::EventService* ops );
+        void printMethod( const std::string m, interface::ServiceProvider* ops );
 
         /**
          * Print a program listing of a loaded program centered at line \a line.
