@@ -1078,6 +1078,47 @@ namespace OCL
         scripting::Parser _parser;
 
         if (debug)
+            cerr << "Trying ValueStatement..."<<nl;
+        try {
+            // Check if it was a method or datasource :
+            base::DataSourceBase::shared_ptr ds = _parser.parseValueStatement( comm, context );
+            // methods and DS'es are processed immediately.
+            if ( ds.get() != 0 ) {
+                this->printResult( ds.get(), false );
+                cout << sresult.str() << nl;
+                sresult.str("");
+                return; // done here
+            } else if (debug)
+                cerr << "returned zero !"<<nl;
+            //cout << "    (ok)" <<nl;
+            //return; //
+        } catch ( fatal_semantic_parse_exception& pe ) { // incorr args, ...
+            // way to fatal,  must be reported immediately
+            if (debug)
+                cerr << "fatal_semantic_parse_exception: ";
+            cerr << pe.what() <<nl;
+            return;
+        } catch ( syntactic_parse_exception& pe ) { // wrong content after = sign etc..
+            // syntactic errors must be reported immediately
+            if (debug)
+                cerr << "syntactic_parse_exception: ";
+            cerr << pe.what() <<nl;
+            return;
+        } catch ( parse_exception_parser_fail &pe )
+            {
+                // ignore, try next parser
+                if (debug) {
+                    cerr << "Ignoring ValueStatement exception :"<<nl;
+                    cerr << pe.what() <<nl;
+                }
+        } catch ( parse_exception& pe ) {
+            // syntactic errors must be reported immediately
+            if (debug)
+                cerr << "parse_exception :";
+            cerr << pe.what() <<nl;
+            return;
+        }
+        if (debug)
             cerr << "Trying ValueChange..."<<nl;
         try {
             // Check if it was a method or datasource :
@@ -1266,12 +1307,12 @@ namespace OCL
         cout << "  For a detailed argument list (and helpful info) of the object's methods, "<<nl;
         cout <<"   type the name of one of the listed task objects : " <<nl;
         cout <<"      this [enter]" <<nl<<nl;
-        cout <<"  RTT::Command    : bool factor( int number )" <<nl;
+        cout <<"  factor( int number ) : bool" <<nl;
         cout <<"   Factor a value into its primes." <<nl;
         cout <<"   number : The number to factor in primes." <<nl;
-        cout <<"  RTT::Method     : bool isRunning( )" <<nl;
+        cout <<"  isRunning( ) : bool" <<nl;
         cout <<"   Is this RTT::TaskContext started ?" <<nl;
-        cout <<"  RTT::Method     : bool loadProgram( const& std::string Filename )" <<nl;
+        cout <<"  loadProgram( const& std::string Filename ) : bool" <<nl;
         cout <<"   Load an Orocos Program Script from a file." <<nl;
         cout <<"   Filename : An ops file." <<nl;
         cout <<"   ..."<<nl;
@@ -1292,32 +1333,14 @@ namespace OCL
         cout << "  If you provided a correct assignment, the browser will inform you of the success"<<nl;
         cout <<"   with '= true'." <<nl;
 
-        cout <<titlecol("Commands")<<nl;
-        cout << "  A RTT::Command is 'sent' to a task, which will process it in its own context (thread)."<<nl;
-        cout << "  A command consists of an object, followed by a dot ('.'), the command "<<nl;
-        cout << "  name, followed by the parameters. An example could be :"<<nl;
-        cout << "     otherTask.bar.orderBeers(\"Palm\", 5) [enter] "<<nl;
-        cout << "  The prompt will inform you about the status of the last command you entered. "<<nl;
-        cout << "  It is allowed to enter a new command while the previous is still busy. "<<nl;
-
         cout <<titlecol("Methods")<<nl;
-        cout << "  Methods 'look' the same as commands, but they are evaluated"<<nl;
+        cout << "  A Method is sent or called (evaluated) "<<nl;
         cout << "  immediately and print the result. An example could be :"<<nl;
         cout << "     someTask.bar.getNumberOfBeers(\"Palm\") [enter] "<<nl;
         cout << "   = 99" <<nl;
 
-        cout <<titlecol("Events")<<nl;
-        cout << "  Events behave as methods, they are emitted immediately."<<nl;
-        cout << "  An example emitting an event :"<<nl;
-        cout << "     someTask.notifyUserState(\"Drunk\") [enter] "<<nl;
-        cout << "   = (void)" <<nl;
-
         cout <<titlecol("Program and scripting::StateMachine Scripts")<<nl;
-        cout << "  To load a program script from local disc, type "<<comcol(".loadProgram <filename>")<<nl;
-        cout << "  To load a state machine script from local disc, type "<<comcol(".loadStateMachine <filename>")<<nl;
-        cout << "   ( notice the starting dot '.' )"<<nl;
-        cout << "  Likewise, "<<comcol(".loadProgram <ProgramName>")<<" and "<<comcol(".unloadStateMachine <StateMachineName>")<<nl;
-        cout << "   are available (notice it is the program's name, not the filename)."<<nl;
+        cout << "  To load a program script use the scripting service."<<nl;
         cout << "  You can use "<<comcol("ls progname")<<nl;
         cout << "   to see the programs commands, methods and variables. You can manipulate each one of these,."<<nl;
         cout << "   as if the program is a Task itself (see all items above)."<<nl;
