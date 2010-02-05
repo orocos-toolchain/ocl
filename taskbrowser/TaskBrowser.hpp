@@ -219,7 +219,7 @@ namespace OCL
         /**
          * Print the synopsis of a Method.
          */
-        void printMethod( const std::string m, interface::ServiceProvider* ops );
+        void printOperation( const std::string m, interface::ServiceProvider* ops );
 
         /**
          * Print a program listing of a loaded program centered at line \a line.

@@ -86,6 +86,7 @@
 
 namespace OCL
 {
+    using namespace boost;
     using namespace std;
     using namespace RTT;
     using namespace RTT::detail;
@@ -1050,15 +1051,25 @@ namespace OCL
         cout << "      Got :"<< comm <<nl;
 
         interface::ServiceProvider* ops = 0;
+        interface::ServiceRequester* sr = 0;
         if ( context->hasService( comm ) ) // only object name was typed
             {
                 ops = context->provides(comm);
                 sresult << nl << "Printing Interface of '"<< coloron << ops->getName() <<coloroff <<"' :"<<nl<<nl;
                 vector<string> methods = ops->getOperationNames();
-                std::for_each( methods.begin(), methods.end(), boost::bind(&TaskBrowser::printMethod, this, _1, ops) );
+                std::for_each( methods.begin(), methods.end(), boost::bind(&TaskBrowser::printOperation, this, _1, ops) );
                 cout << sresult.str();
                 sresult.str("");
-
+            }
+        if ( context->requiresService( comm ) ) // only object name was typed
+            {
+                sr = context->requires(comm);
+                sresult << nl << "Requiring '"<< coloron << sr->getRequestName() <<coloroff <<"' with methods: ";
+                vector<string> methods = sr->getMethodNames();
+                sresult << coloron;
+                std::for_each( methods.begin(), methods.end(), sresult << lambda::_1 <<" " );
+                cout << sresult.str() << coloroff << nl;
+                sresult.str("");
             }
         // Minor hack : also check if it was an attribute of current TC, for example,
         // if both the object and attribute with that name exist. the if
@@ -1071,7 +1082,7 @@ namespace OCL
                 return;
         }
 
-        if ( ops ) {
+        if ( ops || sr ) {
             return;
         }
 
@@ -1184,17 +1195,16 @@ namespace OCL
             return;
         } catch ( parse_exception_parser_fail &pe )
             {
-                // ignore, try next parser
-                if (debug) {
+                // We're the last parser!
+                if (debug)
                     cerr << "Ignoring Expression exception :"<<nl;
-                    cerr << pe.what() <<nl;
-                }
+                cerr << pe.what() <<nl;
+
         } catch ( parse_exception& pe ) {
-                // ignore, try next parser
-                if (debug) {
+                // We're the last parser!
+                if (debug)
                     cerr << "Ignoring Expression parse_exception :"<<nl;
-                    cerr << pe.what() <<nl;
-                }
+                cerr << pe.what() <<nl;
         }
     }
 
@@ -1525,7 +1535,7 @@ namespace OCL
         }
 
         // Print "this" interface (without detail) and then list objects...
-        sresult <<nl<< " Execution Interface:";
+        sresult <<nl<< " Provided Interface:";
 
         sresult <<nl<< "  Attributes   : ";
         std::vector<std::string> objlist = taskobject->getAttributeNames();
@@ -1621,13 +1631,23 @@ namespace OCL
         // RTT::TaskContext specific:
         if ( peer == taskobject ) {
 
-            objlist = peer->getRequestNames();
-            sresult <<nl<< " Requires: "<<nl;
+            objlist = peer->getMethodNames();
+            sresult <<nl<< " Requires Operations :";
             if ( !objlist.empty() ) {
                 for(vector<string>::iterator it = objlist.begin(); it != objlist.end(); ++it)
-                    sresult <<coloron<< "  " << setw(14) << *it <<coloroff<<nl;
+                    sresult <<coloron<< "  " << *it <<coloroff << '[' << (peer->getMethod(*it).ready() ? "R]" : "!]");
+                sresult << nl;
             } else {
-                sresult <<coloron<< "(none)" <<coloroff <<nl;
+                sresult <<coloron<< "  (none)" <<coloroff <<nl;
+            }
+            objlist = peer->getRequestNames();
+            sresult <<     " Requests Services   :";
+            if ( !objlist.empty() ) {
+                for(vector<string>::iterator it = objlist.begin(); it != objlist.end(); ++it)
+                    sresult <<coloron<< "  " << *it <<coloroff << '[' << (peer->requires(*it)->ready() ? "R]" : "!]");
+                sresult << nl;
+            } else {
+                sresult <<coloron<< "  (none)" <<coloroff <<nl;
             }
 
             objlist = peer->getProvider<Scripting>("scripting")->getProgramList();
@@ -1666,7 +1686,7 @@ namespace OCL
         sresult.str("");
     }
 
-    void TaskBrowser::printMethod( const std::string m, interface::ServiceProvider* ops )
+    void TaskBrowser::printOperation( const std::string m, interface::ServiceProvider* ops )
     {
         std::vector<ArgumentDescription> args;
         args = ops->getArgumentList( m );
