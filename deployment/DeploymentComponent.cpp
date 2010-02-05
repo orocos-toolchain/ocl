@@ -40,7 +40,7 @@
 #include <cstdio>
 #include <dlfcn.h>
 #include "ocl/ComponentLoader.hpp"
-#include <rtt/interface/PropertyLoader.hpp>
+#include <rtt/marsh/PropertyLoader.hpp>
 
 #undef _POSIX_C_SOURCE
 #include <sys/types.h>
@@ -903,7 +903,7 @@ namespace OCL
                 if ( (*pf)->getName() == "PropertyFile" || (*pf)->getName() == "UpdateProperties" || (*pf)->getName() == "LoadProperties"){
                     dummy = *pf; // convert to type.
                     string filename = dummy.get();
-                    interface::PropertyLoader pl;
+                    marsh::PropertyLoader pl;
                     bool strict = (*pf)->getName() == "PropertyFile" ? true : false;
                     bool load = (*pf)->getName() == "LoadProperties" ? true : false;
                     bool ret;
@@ -1040,7 +1040,7 @@ namespace OCL
                 if ( it->instance->getTaskState() <= base::TaskCore::Stopped ) {
                     if ( it->autosave && !it->configfile.empty()) {
                         string file = it->configfile; // get file name
-                        interface::PropertyLoader pl;
+                        marsh::PropertyLoader pl;
                         bool ret = pl.save( file, it->instance, true ); // save all !
                         if (!ret) {
                             log(Error) << "Failed to save properties for component "<< it->instance->getName() <<endlog();
@@ -1718,7 +1718,7 @@ namespace OCL
             return false;
         }
 
-        interface::PropertyLoader pl;
+        marsh::PropertyLoader pl;
         return pl.configure( filename, c, true ); // strict:true
     }
 
