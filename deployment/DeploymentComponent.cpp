@@ -139,6 +139,8 @@ namespace OCL
         DC4Fun cp4 = &DeploymentComponent::connectPorts;
         this->addOperation("connectInputPorts", cp4, this, ClientThread).doc("Connect two data ports of Components known to this Component.").arg("One", "The first component.").arg("Two", "The second component.").arg("PortOne", "The port name of the first component.").arg("PortTwo", "The port name of the second component.");
 
+        this->addOperation("connectServices", &DeploymentComponent::connectServices, this, ClientThread).doc("Connect the matching provides/requires services of two Components known to this Component.").arg("One", "The first component.").arg("Two", "The second component.");
+
         this->addOperation("addPeer", cp, this, ClientThread).doc("Add a peer to a Component.").arg("From", "The first component.").arg("To", "The other component.");
         typedef void(DeploymentComponent::*RPFun)(const std::string&);
         RPFun rp = &RTT::TaskContext::removePeer;
@@ -306,6 +308,25 @@ namespace OCL
             return true;
         }
     }
+
+    bool DeploymentComponent::connectServices(const std::string& one, const std::string& other)
+    {
+    RTT::Logger::In in("DeploymentComponent::connectServices");
+        RTT::TaskContext* a, *b;
+        a = getPeer(one);
+        b = getPeer(other);
+        if ( !a ) {
+            log(Error) << one <<" could not be found."<< endlog();
+            return false;
+        }
+        if ( !b ) {
+            log(Error) << other <<" could not be found."<< endlog();
+            return false;
+        }
+
+        return a->connectServices(b);
+    }
+
 
     int string_to_oro_sched(const std::string& sched) {
         if ( sched == "ORO_SCHED_OTHER" )
