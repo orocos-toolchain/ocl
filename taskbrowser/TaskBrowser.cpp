@@ -1621,6 +1621,15 @@ namespace OCL
         // RTT::TaskContext specific:
         if ( peer == taskobject ) {
 
+            objlist = peer->getRequestNames();
+            sresult <<nl<< " Requires: "<<nl;
+            if ( !objlist.empty() ) {
+                for(vector<string>::iterator it = objlist.begin(); it != objlist.end(); ++it)
+                    sresult <<coloron<< "  " << setw(14) << *it <<coloroff<<nl;
+            } else {
+                sresult <<coloron<< "(none)" <<coloroff <<nl;
+            }
+
             objlist = peer->getProvider<Scripting>("scripting")->getProgramList();
             if ( !objlist.empty() ) {
                 sresult << " Programs     : "<<coloron;
