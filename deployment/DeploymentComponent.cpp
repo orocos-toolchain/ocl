@@ -137,7 +137,11 @@ namespace OCL
         typedef bool(DeploymentComponent::*DC4Fun)(const std::string&, const std::string&,
                                                    const std::string&, const std::string&);
         DC4Fun cp4 = &DeploymentComponent::connectPorts;
-        this->addOperation("connectInputPorts", cp4, this, ClientThread).doc("Connect two data ports of Components known to this Component.").arg("One", "The first component.").arg("Two", "The second component.").arg("PortOne", "The port name of the first component.").arg("PortTwo", "The port name of the second component.");
+        this->addOperation("connectTwoPorts", cp4, this, ClientThread).doc("Connect two ports of Components known to this Component.")
+                .arg("One", "The first component.")
+                .arg("PortOne", "The port name of the first component.")
+                .arg("Two", "The second component.")
+                .arg("PortTwo", "The port name of the second component.");
 
         this->addOperation("connectServices", &DeploymentComponent::connectServices, this, ClientThread).doc("Connect the matching provides/requires services of two Components known to this Component.").arg("One", "The first component.").arg("Two", "The second component.");
 
