@@ -1015,6 +1015,7 @@ namespace OCL
                         valid = false;
                     } else {
                         log(Info) << "Configured Properties of "<< comp.getName() << " from "<<filename<<endlog();
+                        comps[ comp.getName() ].loadedProperties = true;
                     }
                 }
             }
@@ -1139,14 +1140,18 @@ namespace OCL
             if (it->instance && !it->proxy) {
                 if ( it->instance->getTaskState() <= TaskCore::Stopped ) {
                     if ( it->autosave && !it->configfile.empty()) {
-                        string file = it->configfile; // get file name
-                        PropertyLoader pl;
-                        bool ret = pl.save( file, it->instance, true ); // save all !
-                        if (!ret) {
-                            log(Error) << "Failed to save properties for component "<< it->instance->getName() <<endlog();
-                            valid = false;
+                        if (it->loadedProperties) {
+                            string file = it->configfile; // get file name
+                            PropertyLoader pl;
+                            bool ret = pl.save( file, it->instance, true ); // save all !
+                            if (!ret) {
+                                log(Error) << "Failed to save properties for component "<< it->instance->getName() <<endlog();
+                                valid = false;
+                            } else {
+                                log(Info) << "Saved Properties of "<< it->instance->getName() << " to "<<file<<endlog();
+                            }
                         } else {
-                            log(Info) << "Saved Properties of "<< it->instance->getName() << " to "<<file<<endlog();
+                            log(Info) << "Refusing to save property file that was not loaded for "<< it->instance->getName() <<endlog();
                         }
                     } else if (it->autosave) {
 		      log(Error) << "AutoSave set but no property file specified. Specify one using the UpdateProperties simple element."<<endlog();

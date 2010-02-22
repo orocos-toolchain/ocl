@@ -107,7 +107,7 @@ namespace OCL
          */
         struct ComponentData {
             ComponentData()
-                : instance(0), act(0), loaded(false),
+                : instance(0), act(0), loaded(false), loadedProperties(false),
                   autostart(false), autoconf(false),
                   autoconnect(false),  autosave(false),
                   proxy(false), server(false),
@@ -129,6 +129,11 @@ namespace OCL
              * unloadComponent.
              */
             bool loaded;
+            /**
+             * True if successfully loaded a property file, and so
+             *  will need auto-saving (it autosave is on)
+             */
+            bool loadedProperties;
             bool autostart, autoconf, autoconnect, autosave;
             bool proxy, server, use_naming;
             std::string type, configfile;
