@@ -55,7 +55,7 @@ int ORO_main( int argc, char** argv)
     TestTaskContext gtc("Peer");
     gtc.setActivity( new RTT::Activity(ORO_SCHED_RT, os::HighestPriority, 0.1) );
 
-    gtc.ports()->getPort("TimerIn")->connectTo( *tcomp.ports()->getPort("timeout"));
+    gtc.ports()->getPort("TimerIn")->connectTo( tcomp.ports()->getPort("timeout"));
 
     TaskBrowser tb( &gtc );
 

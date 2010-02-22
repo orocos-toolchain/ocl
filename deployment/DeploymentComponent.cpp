@@ -303,7 +303,7 @@ namespace OCL
         }
 
         // use the base::PortInterface implementation
-        if ( ap->connectTo( *bp ) ) {
+        if ( ap->connectTo( bp ) ) {
             // all went fine.
             log(Info)<< "Connected Port " << ap->getName() << " to peer Task "<< b->getName() <<"." << endlog();
             return true;
@@ -858,7 +858,7 @@ namespace OCL
                         string owner = connection->owners[p - connection->ports.begin()]->getName();
                         // only try to connect p if it is not in the same connection of writer.
                         // OK. p is definately no part of writer's connection. Try to connect and flag errors if it fails.
-                        if ( (*w)->connectTo( **p, connection->policy ) == false) {
+                        if ( (*w)->connectTo( *p, connection->policy ) == false) {
                             log(Error) << "Could not subscribe InputPort "<< owner<<"."<< (*p)->getName() << " to topic " << (*w)->getName() <<'/'<< connection_name <<endlog();
                             valid = false;
                         } else {

@@ -92,7 +92,7 @@ namespace OCL
         static RTT::TaskContext* tb;
         // the current Context: is tb or taskcontext
         static RTT::TaskContext* context;
-        static RTT::interface::ServiceProvider* taskobject;
+        static RTT::interface::ServiceProvider::shared_ptr taskobject;
         RTT::internal::DataSource<bool>::shared_ptr   accepted;
 
         int debug;
@@ -219,7 +219,7 @@ namespace OCL
         /**
          * Print the synopsis of a Method.
          */
-        void printOperation( const std::string m, interface::ServiceProvider* ops );
+        void printOperation( const std::string m, interface::ServiceProvider::shared_ptr ops );
 
         /**
          * Print a program listing of a loaded program centered at line \a line.

@@ -192,11 +192,11 @@ namespace OCL
             for (PropertyBag::iterator it= bag->begin(); it != bag->end(); ++it)
                 output << "  " << (*it)->getName() << " : " << (*it)->getDataSource() << endl;
         }
-        interface::AttributeRepository::AttributeNames atts = c->getAttributeNames();
+        interface::AttributeRepository::AttributeNames atts = c->provides()->getAttributeNames();
         if ( !atts.empty() ) {
             output << "Attributes :" << endl;
             for (interface::AttributeRepository::AttributeNames::iterator it= atts.begin(); it != atts.end(); ++it)
-                output << "  " << *it << " : " << c->getValue(*it)->getDataSource() << endl;
+                output << "  " << *it << " : " << c->provides()->getValue(*it)->getDataSource() << endl;
         }
 
         vector<string> ports = c->ports()->getPortNames();
@@ -292,7 +292,7 @@ namespace OCL
             pol = ConnPolicy::buffer(10,ConnPolicy::LOCK_FREE,true,false);
         }
 
-        if (porti->connectTo(*ourport, ConnPolicy::buffer(10,ConnPolicy::LOCK_FREE,true,false) ) == false)
+        if (porti->connectTo(ourport, ConnPolicy::buffer(10,ConnPolicy::LOCK_FREE,true,false) ) == false)
         {
             log(Error) << "Could not connect to OutputPort " << porti->getName() << endlog();
             delete ourport; // XXX/TODO We're leaking ourport !
@@ -306,14 +306,8 @@ namespace OCL
             delete ourport;
             return false;
         }
-        if ( this->ports()->addEventPort( ipi ) )
-            log(Info) << "Monitoring OutputPort " << porti->getName() << " : ok." << endlog();
-        else {
-            log(Error) << "Failed to monitoring OutputPort '"
-                       << porti->getName() << "' : could not be added to data flow interface." << endlog();
-            delete ourport;
-            return false;
-        }
+        this->ports()->addEventPort( ipi );
+        log(Info) << "Monitoring OutputPort " << porti->getName() << " : ok." << endlog();
         // Add port to ReportData properties if component nor port are listed yet.
         if ( !report_data.value().findValue<string>(component) && !report_data.value().findValue<string>( component+"."+port) )
             report_data.value().ownProperty(new Property<string>("Port","",component+"."+port));
@@ -340,9 +334,9 @@ namespace OCL
             return false;
         }
         // Is it an attribute ?
-        if ( comp->getValue( dataname ) ) {
+        if ( comp->provides()->getValue( dataname ) ) {
             if (this->reportDataSource( component + "." + dataname, "Data",
-                                        comp->getValue( dataname )->getDataSource(), false ) == false) {
+                                        comp->provides()->getValue( dataname )->getDataSource(), false ) == false) {
                 log(Error) << "Failed reporting data " << dataname <<endlog();
                 return false;
             }

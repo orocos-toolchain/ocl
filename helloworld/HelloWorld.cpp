@@ -121,8 +121,8 @@ namespace OCL
             // Now add it to the interface:
             this->properties()->addProperty(&property);
 
-            this->addAlias("the_attribute", attribute);
-            this->addConstAlias("the_constant", constant);
+            this->addAttribute("the_attribute", attribute);
+            this->addConstant("the_constant", constant);
 
             this->ports()->addPort(&outport);
             this->ports()->addPort(&bufferport);

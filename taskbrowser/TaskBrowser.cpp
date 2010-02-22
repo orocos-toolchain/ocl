@@ -99,7 +99,7 @@ namespace OCL
     std::string TaskBrowser::text;
 #endif
     RTT::TaskContext* TaskBrowser::taskcontext = 0;
-    interface::ServiceProvider* TaskBrowser::taskobject = 0;
+    interface::ServiceProvider::shared_ptr TaskBrowser::taskobject;
     RTT::TaskContext* TaskBrowser::peer = 0;
     RTT::TaskContext* TaskBrowser::tb = 0;
     RTT::TaskContext* TaskBrowser::context = 0;
@@ -236,7 +236,7 @@ namespace OCL
             if (line.find(std::string("cd ")) == 0)
                 return;
             // Add objects for 'ls'.
-            v = peer->getServiceNames();
+            v = peer->provides()->getServiceNames();
             for (RTT::TaskContext::PeerList::iterator i = v.begin(); i != v.end(); ++i) {
                 std::string path;
                 if ( !( pos+1 > startpos) )
@@ -383,7 +383,7 @@ namespace OCL
                 completes.push_back( peerpath + *i );
         }
         // all properties if RTT::TaskContext:
-        if (taskobject == peer && peer->properties() != 0 ) {
+        if (taskobject == peer->provides() && peer->properties() != 0 ) {
             std::vector<std::string> props;
             peer->properties()->list(props);
             for (std::vector<std::string>::iterator i = props.begin(); i!= props.end(); ++i ) {
@@ -405,7 +405,7 @@ namespace OCL
     {
         peerpath.clear();
         peer = context;
-        taskobject = context;
+        taskobject = context->provides();
 
         std::string to_parse = text.substr(startpos);
         startpos = 0;
@@ -429,7 +429,7 @@ namespace OCL
                 } else
                     if ( peer->hasPeer( item ) ) {
                         peer = peer->getPeer( item );
-                        taskobject = peer;
+                        taskobject = peer->provides();
                         itemfound = true;
                     }
                 if ( itemfound ) { // if "." found and correct path
@@ -457,7 +457,7 @@ namespace OCL
 //         cout << "Component: '" << component <<"'"<<endl;
 
         RTT::TaskContext::PeerList v;
-        if ( taskobject == peer ) {
+        if ( taskobject == peer->provides() ) {
             // add peer's completes:
             v = peer->getPeerList();
             for (RTT::TaskContext::PeerList::iterator i = v.begin(); i != v.end(); ++i) {
@@ -1050,9 +1050,9 @@ namespace OCL
     {
         cout << "      Got :"<< comm <<nl;
 
-        interface::ServiceProvider* ops = 0;
+        interface::ServiceProvider::shared_ptr ops;
         interface::ServiceRequester* sr = 0;
-        if ( context->hasService( comm ) ) // only object name was typed
+        if ( context->provides()->hasService( comm ) ) // only object name was typed
             {
                 ops = context->provides(comm);
                 sresult << nl << "Printing Interface of '"<< coloron << ops->getName() <<coloroff <<"' :"<<nl<<nl;
@@ -1061,7 +1061,7 @@ namespace OCL
                 cout << sresult.str();
                 sresult.str("");
             }
-        if ( context->requiresService( comm ) ) // only object name was typed
+        if ( context->requires()->requiresService( comm ) ) // only object name was typed
             {
                 sr = context->requires(comm);
                 sresult << nl << "Requiring '"<< coloron << sr->getRequestName() <<coloroff <<"' with methods: ";
@@ -1075,8 +1075,8 @@ namespace OCL
         // if both the object and attribute with that name exist. the if
         // statement after this one would return and not give the expr parser
         // time to evaluate 'comm'.
-        if ( context->getValue( comm ) ) {
-                this->printResult( context->getValue( comm )->getDataSource().get(), true );
+        if ( context->provides()->getValue( comm ) ) {
+                this->printResult( context->provides()->getValue( comm )->getDataSource().get(), true );
                 cout << sresult.str();
                 sresult.str("");
                 return;
@@ -1510,13 +1510,13 @@ namespace OCL
             return;
         }
 
-        if ( peer == taskobject )
+        if ( peer->provides() == taskobject )
             sresult <<nl<<" Listing TaskContext "<< green << peer->getName()<<coloroff<< " :"<<nl;
         else
             sresult <<nl<<" Listing ServiceProvider "<< green << taskobject->getName()<<coloroff<< " :"<<nl;
 
         // Only print Properties for TaskContexts
-        if ( peer == taskobject ) {
+        if ( peer->provides() == taskobject ) {
             sresult <<nl<<" Configuration Properties: ";
             RTT::PropertyBag* bag = peer->properties();
             if ( bag && bag->size() != 0 ) {
@@ -1562,7 +1562,7 @@ namespace OCL
         }
         sresult << coloroff << nl;
 
-        if ( peer == taskobject ) {
+        if ( peer->provides() == taskobject ) {
             sresult <<nl<< " Data Flow Ports: ";
             objlist = peer->ports()->getPortNames();
             if ( !objlist.empty() ) {
@@ -1623,24 +1623,24 @@ namespace OCL
         sresult <<nl<< " Services: "<<nl;
         if ( !objlist.empty() ) {
             for(vector<string>::iterator it = objlist.begin(); it != objlist.end(); ++it)
-                sresult <<coloron<< "  " << setw(14) << *it <<coloroff<< " ( "<< taskobject->provides(*it)->getDescription() << " ) "<<nl;
+                sresult <<coloron<< "  " << setw(14) << *it <<coloroff<< " ( "<< taskobject->provides(*it)->doc() << " ) "<<nl;
         } else {
             sresult <<coloron<< "(none)" <<coloroff <<nl;
         }
 
         // RTT::TaskContext specific:
-        if ( peer == taskobject ) {
+        if ( peer->provides() == taskobject ) {
 
-            objlist = peer->getMethodNames();
+            objlist = peer->requires()->getMethodNames();
             sresult <<nl<< " Requires Operations :";
             if ( !objlist.empty() ) {
                 for(vector<string>::iterator it = objlist.begin(); it != objlist.end(); ++it)
-                    sresult <<coloron<< "  " << *it <<coloroff << '[' << (peer->getMethod(*it).ready() ? "R]" : "!]");
+                    sresult <<coloron<< "  " << *it <<coloroff << '[' << (peer->requires()->getMethod(*it).ready() ? "R]" : "!]");
                 sresult << nl;
             } else {
                 sresult <<coloron<< "  (none)" <<coloroff <<nl;
             }
-            objlist = peer->getRequestNames();
+            objlist = peer->requires()->getRequestNames();
             sresult <<     " Requests Services   :";
             if ( !objlist.empty() ) {
                 for(vector<string>::iterator it = objlist.begin(); it != objlist.end(); ++it)
@@ -1686,7 +1686,7 @@ namespace OCL
         sresult.str("");
     }
 
-    void TaskBrowser::printOperation( const std::string m, interface::ServiceProvider* ops )
+    void TaskBrowser::printOperation( const std::string m, interface::ServiceProvider::shared_ptr ops )
     {
         std::vector<ArgumentDescription> args;
         args = ops->getArgumentList( m );
