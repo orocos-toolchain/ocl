@@ -80,25 +80,27 @@ int ORO_main(int argc, char** argv)
         // none) after "--"
         ControlTaskServer::InitOrb( argc - taoIndex, &argv[taoIndex] );
 
-        OCL::CorbaDeploymentComponent dc( name );
-
-        if (0 == ControlTaskServer::Create( &dc, true, requireNameService ))
         {
-            return -1;
+            OCL::CorbaDeploymentComponent dc( name );
+
+            if (0 == ControlTaskServer::Create( &dc, true, requireNameService ))
+                {
+                    return -1;
+                }
+
+            // The orb thread accepts incomming CORBA calls.
+            ControlTaskServer::ThreadOrb();
+
+            // Only start the script after the Orb was created.
+            if ( !script.empty() )
+                {
+                    dc.kickStart( script );
+                }
+
+            OCL::TaskBrowser tb( &dc );
+
+            tb.loop();
         }
-
-        // The orb thread accepts incomming CORBA calls.
-        ControlTaskServer::ThreadOrb();
-
-        // Only start the script after the Orb was created.
-        if ( !script.empty() )
-            {
-                dc.kickStart( script );
-            }
-
-        OCL::TaskBrowser tb( &dc );
-
-        tb.loop();
 
         ControlTaskServer::ShutdownOrb();
 

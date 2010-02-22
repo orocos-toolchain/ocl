@@ -55,7 +55,7 @@ int ORO_main(int argc, char** argv)
         found = (0 == strcmp("--", argv[taoIndex]));
         if(!found) taoIndex++;
     }
-        
+
     if (found) {
         argv[taoIndex] = argv[0];
     }
@@ -70,26 +70,28 @@ int ORO_main(int argc, char** argv)
 		return rc;
 	}
 
-    OCL::CorbaDeploymentComponent dc( name );
-
-    // if TAO options not found then have TAO process just the program name,
-    // otherwise TAO processes the program name plus all options (potentially
-    // none) after "--"
-    ControlTaskServer::InitOrb( argc - taoIndex, &argv[taoIndex] );
-
-    if (0 == ControlTaskServer::Create( &dc, true, requireNameService ))
-    {
-        return -1;
-    }
-
-    // Only start the script after the Orb was created.
-    if ( !script.empty() )
 	{
-        dc.kickStart( script );
-	}
+	    OCL::CorbaDeploymentComponent dc( name );
 
-    // Export the DeploymentComponent as CORBA server.
-    ControlTaskServer::RunOrb();
+	    // if TAO options not found then have TAO process just the program name,
+	    // otherwise TAO processes the program name plus all options (potentially
+	    // none) after "--"
+	    ControlTaskServer::InitOrb( argc - taoIndex, &argv[taoIndex] );
+
+	    if (0 == ControlTaskServer::Create( &dc, true, requireNameService ))
+	    {
+	        return -1;
+	    }
+
+	    // Only start the script after the Orb was created.
+	    if ( !script.empty() )
+	    {
+	        dc.kickStart( script );
+	    }
+
+	    // Export the DeploymentComponent as CORBA server.
+	    ControlTaskServer::RunOrb();
+	}
 
     ControlTaskServer::ShutdownOrb();
 
