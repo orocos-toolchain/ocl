@@ -648,7 +648,9 @@ namespace OCL
                 // Call readline wrapper :
                 ::signal( SIGINT, ctrl_c_catcher ); // catch ctrl_c only when editting a line.
 #ifndef NO_GPL
-                std::string command( rl_gets() ); // copy over to string
+                const char* const commandStr = rl_gets();
+                // quit on EOF (Ctrl-D)
+                std::string command( commandStr ? commandStr : "quit" ); // copy over to string
 #else
                 std::string command;
                 cout << prompt;
