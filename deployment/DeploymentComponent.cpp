@@ -261,6 +261,8 @@ namespace OCL
 
     bool DeploymentComponent::componentLoaded(RTT::TaskContext* c) { return true; }
 
+    void DeploymentComponent::componentUnloaded(TaskContext* c) { }
+
     DeploymentComponent::~DeploymentComponent()
     {
       // Should we unload all loaded components here ?
@@ -1535,6 +1537,8 @@ namespace OCL
             if ( it->instance->engine()->getActivity() == 0 ||
                  it->instance->engine()->getActivity()->isActive() == false ) {
                 if (!it->proxy ) {
+                    // allow subclasses to do cleanup too.
+                    componentUnloaded( it->instance );
                     log(Debug) << "Disconnecting " <<name <<endlog();
                     it->instance->disconnect();
                     log(Debug) << "Terminating " <<name <<endlog();

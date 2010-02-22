@@ -208,6 +208,14 @@ namespace OCL
          * true if loading was succesful.
          */
         virtual bool componentLoaded(RTT::TaskContext* c);
+
+        /**
+         * Hook function for subclasses. Allows a subclass
+         * to take notice of a component being deleted.
+         * @param c a valid TaskContext object.
+         */
+        virtual void componentUnloaded(RTT::TaskContext* c);
+
     public:
         /**
          * Constructs and configures this component.

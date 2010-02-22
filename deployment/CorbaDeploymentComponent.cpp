@@ -93,6 +93,8 @@ namespace OCL
 
     CorbaDeploymentComponent::~CorbaDeploymentComponent()
     {
+        // removes our own server, before removing peer's.
+        ::RTT::Corba::ControlTaskServer::CleanupServer(this);
     }
 
     bool CorbaDeploymentComponent::createServer(const std::string& tc, bool use_naming)
@@ -129,5 +131,10 @@ namespace OCL
         if (server)
             ::RTT::corba::ControlTaskServer::Create(c, use_naming);
         return true;
+    }
+
+    void CorbaDeploymentComponent::componentUnloaded(TaskContext* c)
+    {
+        ::RTT::Corba::ControlTaskServer::CleanupServer( c );
     }
 }

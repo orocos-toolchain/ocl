@@ -43,6 +43,11 @@ namespace OCL
          * If it is a local object, make it a server.
          */
         virtual bool componentLoaded(RTT::TaskContext* c);
+        /**
+         * Removes the CORBA server for this component.
+         * @param c a valid TaskContext object.
+         */
+        virtual void componentUnloaded(RTT::TaskContext* c);
     public:
         CorbaDeploymentComponent(const std::string& name);
         virtual ~CorbaDeploymentComponent();
