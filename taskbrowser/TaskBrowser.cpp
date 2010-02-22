@@ -1288,6 +1288,7 @@ namespace OCL
             return;
         }
 
+        command->readArguments();
         if ( command->dispatch() == false ) {
             cerr << "Command not accepted by "<<context->getName()<<"'s Processor !" << nl;
             delete command;
