@@ -12,10 +12,10 @@
 namespace RTT
 {
     /**
-     * A marsh::Marshaller for generating variables in a netcdf dataset
+     * A marsh::MarshallInterface for generating variables in a netcdf dataset
      */
     class NetcdfHeaderMarshaller 
-    : public marsh::Marshaller
+    : public marsh::MarshallInterface
     {
       int nameless_counter;
       std::string prefix;

@@ -181,7 +181,7 @@ namespace OCL
         RTT::Property<unsigned int> port_prop;
     protected:
         /**
-         * marsh::Marshaller
+         * marsh::MarshallInterface
          */
         RTT::SocketMarshaller* fbody;
 

@@ -18,7 +18,7 @@ namespace OCL
         : ReportingComponent( fr_name ),
           repfile("ReportFile","Location on disc to store the reports.", "reports.dat")
     {
-        this->properties()->addProperty( &repfile );
+        this->properties()->addProperty( repfile );
     }
 
     bool FileReporting::startHook()

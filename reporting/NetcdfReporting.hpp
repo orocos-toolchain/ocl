@@ -29,8 +29,8 @@ namespace OCL
          */
         int dimsid;
 
-        RTT::marsh::Marshaller* fheader;
-        RTT::marsh::Marshaller* fbody;
+        RTT::marsh::MarshallInterface* fheader;
+        RTT::marsh::MarshallInterface* fbody;
     public:
         NetcdfReporting(const std::string& fr_name);
 

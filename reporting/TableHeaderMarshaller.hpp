@@ -45,7 +45,7 @@
 namespace RTT
 {
     /**
-     * A marsh::Marshaller for generating headers of tables. It is used
+     * A marsh::MarshallInterface for generating headers of tables. It is used
      * in conjunction with TableMarshaller and generates a header
      * for the following numbers.
      *
@@ -53,7 +53,7 @@ namespace RTT
      */
     template<typename o_stream>
     class TableHeaderMarshaller
-    : public marsh::Marshaller, public marsh::StreamProcessor<o_stream>
+    : public marsh::MarshallInterface, public marsh::StreamProcessor<o_stream>
     {
         int level;
         int line;

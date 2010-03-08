@@ -22,8 +22,8 @@ namespace OCL
         {
             RTT::Logger::In in("ConsoleReporting::startup");
             if (mconsole) {
-                RTT::marsh::Marshaller* fheader;
-                RTT::marsh::Marshaller* fbody;
+                RTT::marsh::MarshallInterface* fheader;
+                RTT::marsh::MarshallInterface* fbody;
                 if ( this->writeHeader)
                     fheader = new RTT::NiceHeaderMarshaller<std::ostream>( mconsole );
                 else

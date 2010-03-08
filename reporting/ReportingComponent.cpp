@@ -61,12 +61,12 @@ namespace OCL
           starttime(0),
           timestamp("TimeStamp","The time at which the data was read.",0.0)
     {
-        this->properties()->addProperty( &snapshotOnly );
-        this->properties()->addProperty( &writeHeader );
-        this->properties()->addProperty( &decompose );
-        this->properties()->addProperty( &synchronize_with_logging);
-        this->properties()->addProperty( &report_data);
-        this->properties()->addProperty( &null);
+        this->properties()->addProperty( snapshotOnly );
+        this->properties()->addProperty( writeHeader );
+        this->properties()->addProperty( decompose );
+        this->properties()->addProperty( synchronize_with_logging);
+        this->properties()->addProperty( report_data);
+        this->properties()->addProperty( null);
 
         // Add the methods, methods make sure that they are
         // executed in the context of the (non realtime) caller.
@@ -85,10 +85,10 @@ namespace OCL
     ReportingComponent::~ReportingComponent() {}
 
 
-    bool ReportingComponent::addMarshaller( marsh::Marshaller* headerM, marsh::Marshaller* bodyM)
+    bool ReportingComponent::addMarshaller( marsh::MarshallInterface* headerM, marsh::MarshallInterface* bodyM)
     {
-        boost::shared_ptr<marsh::Marshaller> header(headerM);
-        boost::shared_ptr<marsh::Marshaller> body(bodyM);
+        boost::shared_ptr<marsh::MarshallInterface> header(headerM);
+        boost::shared_ptr<marsh::MarshallInterface> body(bodyM);
         if ( !header && !body)
             return false;
         if ( !header )
@@ -244,7 +244,7 @@ namespace OCL
             this->unreportDataSource( component + "." + (*it)->getName() );
             unreportPort(component, (*it)->getName() );
         }
-        PropertyBase* pb = report_data.value().findValue<string>(component);
+        base::PropertyBase* pb = report_data.value().findValue<string>(component);
         if (pb)
             report_data.value().removeProperty( pb );// pb is deleted by bag
         return true;
@@ -306,7 +306,7 @@ namespace OCL
             delete ourport;
             return false;
         }
-        this->ports()->addEventPort( ipi );
+        this->ports()->addEventPort( *ipi );
         log(Info) << "Monitoring OutputPort " << porti->getName() << " : ok." << endlog();
         // Add port to ReportData properties if component nor port are listed yet.
         if ( !report_data.value().findValue<string>(component) && !report_data.value().findValue<string>( component+"."+port) )

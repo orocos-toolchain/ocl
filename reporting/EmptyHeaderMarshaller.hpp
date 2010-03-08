@@ -46,11 +46,11 @@
 namespace RTT
 {
     /**
-     * @brief A Dummy Empty Header Marshaller.
+     * @brief A Dummy Empty Header MarshallInterface.
      */
     template<typename o_stream>
     class EmptyHeaderMarshaller
-        : public marsh::Marshaller,
+        : public marsh::MarshallInterface,
           public marsh::StreamProcessor<o_stream>
     {
     public:

@@ -43,19 +43,19 @@ public:
           drport("dr_port")
     { 
         this->properties()->addProperty( & hello );
-        this->ports()->addPort( &cwport );
-        this->ports()->addPort( &swport );
-        this->ports()->addPort( &iwport );
-        this->ports()->addPort( &fwport );
-        this->ports()->addPort( &dwport );
-        this->ports()->addPort( &crport );
-        this->ports()->addPort( &srport );
-        this->ports()->addPort( &irport );
-        this->ports()->addPort( &frport );
-        this->ports()->addPort( &drport );
+        this->ports()->addPort( cwport );
+        this->ports()->addPort( swport );
+        this->ports()->addPort( iwport );
+        this->ports()->addPort( fwport );
+        this->ports()->addPort( dwport );
+        this->ports()->addPort( crport );
+        this->ports()->addPort( srport );
+        this->ports()->addPort( irport );
+        this->ports()->addPort( frport );
+        this->ports()->addPort( drport );
         // write initial value.
         std::vector<double> init(10, 5.4528);
-        dwport.Set( init );
+        dwport.write( init );
     }
 };
 
@@ -88,15 +88,15 @@ public:
           frport("fr_port")
     {
         this->properties()->addProperty( & hello );
-        this->ports()->addPort( &cwport );
-        this->ports()->addPort( &swport );
-        this->ports()->addPort( &iwport );
-        this->ports()->addPort( &fwport );
-        this->ports()->addPort( &dwport );
-        this->ports()->addPort( &crport );
-        this->ports()->addPort( &srport );
-        this->ports()->addPort( &irport );
-        this->ports()->addPort( &frport );
+        this->ports()->addPort( cwport );
+        this->ports()->addPort( swport );
+        this->ports()->addPort( iwport );
+        this->ports()->addPort( fwport );
+        this->ports()->addPort( dwport );
+        this->ports()->addPort( crport );
+        this->ports()->addPort( srport );
+        this->ports()->addPort( irport );
+        this->ports()->addPort( frport );
     }
 };
 

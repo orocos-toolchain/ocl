@@ -44,7 +44,7 @@ using OCL::TCP::TcpReportingInterpreter;
 namespace
 {
         /**
-         * Buffer to prefix each line with '300 '
+         * base::Buffer to prefix each line with '300 '
          */
         class prefixbuf : public std::streambuf
         {

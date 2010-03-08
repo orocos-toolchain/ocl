@@ -216,7 +216,7 @@ namespace OCL
           port_prop("port","port to listen/send to",3142)
     {
         _finishing = false;
-        this->properties()->addProperty(&port_prop);
+        this->properties()->addProperty( port_prop);
     }
 
     TcpReporting::~TcpReporting()

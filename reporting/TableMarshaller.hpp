@@ -41,20 +41,20 @@
 #include <rtt/Property.hpp>
 #include <rtt/base/PropertyIntrospection.hpp>
 #include <rtt/marsh/StreamProcessor.hpp>
-#include <rtt/marsh/Marshaller.hpp>
+#include <rtt/marsh/MarshallInterface.hpp>
 
 namespace RTT
 {
 
     /**
-     * A marsh::Marshaller for generating a stream of numbers, ordered in
+     * A marsh::MarshallInterface for generating a stream of numbers, ordered in
      * columns. A new row is created on each flush() command. The
      * TableHeaderMarshaller can create the appropriate heading for
      * the columns.
      */
     template<typename o_stream>
     class TableMarshaller
-        : public marsh::Marshaller, public marsh::StreamProcessor<o_stream>
+        : public marsh::MarshallInterface, public marsh::StreamProcessor<o_stream>
     {
         std::string msep;
         public:

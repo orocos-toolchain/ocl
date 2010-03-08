@@ -27,10 +27,10 @@ public:
           drport("D1Port"),
           input("input")
     {
-        this->properties()->addProperty( & hello );
-        this->ports()->addPort( &drport );
-        this->ports()->addPort( &dwport );
-        this->addAttribute( &input );
+        this->properties()->addProperty( hello );
+        this->ports()->addPort( drport );
+        this->ports()->addPort( dwport );
+        this->addAttribute( input );
 
         // write initial value.
         std::vector<double> init(10, 1.0);
@@ -54,10 +54,10 @@ public:
           drport("D2Port"),
           input("input")
     {
-        this->properties()->addProperty( & hello );
-        this->ports()->addPort( &drport );
-        this->ports()->addPort( &dwport );
-        this->addAttribute( &input );
+        this->properties()->addProperty( hello );
+        this->ports()->addPort( drport );
+        this->ports()->addPort( dwport );
+        this->addAttribute( input );
     }
 };
 

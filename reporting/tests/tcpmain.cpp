@@ -27,9 +27,9 @@ class TestTaskContext
         drport("D1Port"),
         init(10,1.0)
         {
-            this->properties()->addProperty( & hello );
-            this->ports()->addPort( &drport );
-            this->ports()->addPort( &dwport );
+            this->properties()->addProperty( hello );
+            this->ports()->addPort( drport );
+            this->ports()->addPort( dwport );
             pos = 10;
             Logger::log() << Logger::Info << "TestTaskContext initialized" << Logger::endl;
 
@@ -79,9 +79,9 @@ class TestTaskContext2
         dwport("D1Port"),
         drport("D2Port")
         {
-            this->properties()->addProperty( & hello );
-            this->ports()->addPort( &drport );
-            this->ports()->addPort( &dwport );
+            this->properties()->addProperty( hello );
+            this->ports()->addPort( drport );
+            this->ports()->addPort( dwport );
         }
 };
 

@@ -151,7 +151,7 @@ namespace TCP
         *os << "306 End of list" << std::endl;
     }
 
-    void Datasender::writeOut(PropertyBase* v)
+    void Datasender::writeOut(base::PropertyBase* v)
     {
         *os<<"202 "<<v->getName()<<"\n";
         Property<PropertyBag>* bag = dynamic_cast< Property<PropertyBag>* >( v );
@@ -181,7 +181,7 @@ namespace TCP
         log(Debug)<<"Let's check the subscriptions"<<endlog();
         for(std::vector<std::string>::iterator elem = subscriptions.begin();
             elem!=subscriptions.end();elem++){
-            PropertyBase* prop = reporter->getReport()->find(*elem);
+            base::PropertyBase* prop = reporter->getReport()->find(*elem);
             if(prop!=NULL){
                 writeOut(prop);
             }else{

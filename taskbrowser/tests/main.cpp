@@ -23,9 +23,9 @@ public:
           dwport("D2Port"),
           drport("D1Port")
     {
-        this->properties()->addProperty( &hello );
-        this->ports()->addPort( &drport );
-        this->ports()->addPort( &dwport );
+        this->properties()->addProperty( hello );
+        this->ports()->addPort( drport );
+        this->ports()->addPort( dwport );
 
         std::vector<double> init(10, 1.0);
         dwport.write(init);
@@ -46,9 +46,9 @@ public:
           dwport("D1Port"),
           drport("D2Port")
     {
-        this->properties()->addProperty( & hello );
-        this->ports()->addPort( &drport );
-        this->ports()->addPort( &dwport );
+        this->properties()->addProperty( hello );
+        this->ports()->addPort( drport );
+        this->ports()->addPort( dwport );
 
         // write initial value.
         dwport.write( 0.0 );

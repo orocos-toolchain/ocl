@@ -40,12 +40,12 @@
 
 #include <rtt/Property.hpp>
 #include <rtt/marsh/StreamProcessor.hpp>
-#include <rtt/marsh/Marshaller.hpp>
+#include <rtt/marsh/MarshallInterface.hpp>
 
 namespace RTT
 {
     /**
-     * A marsh::Marshaller for generating headers usable for interpretation by
+     * A marsh::MarshallInterface for generating headers usable for interpretation by
      * plot programs. A header looks like:
      * @verbatim
      * # Col_1_name Col_2_name Col_3_name ....
@@ -53,7 +53,7 @@ namespace RTT
      */
     template<typename o_stream>
     class NiceHeaderMarshaller
-    : public marsh::Marshaller, public marsh::StreamProcessor<o_stream>
+    : public marsh::MarshallInterface, public marsh::StreamProcessor<o_stream>
     {
         bool did_comment;
         int nameless_counter;

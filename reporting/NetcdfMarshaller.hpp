@@ -11,12 +11,12 @@ namespace RTT
 {
 
     /**
-     * A marsh::Marshaller for writing data logs into the variables of a netcdf file. 
+     * A marsh::MarshallInterface for writing data logs into the variables of a netcdf file. 
      * The dimension of the time is increased on each flush() command. 
      * The NetcdfHeaderMarshaller creates the appropriate variables in a netcdf file.
      */
     class NetcdfMarshaller 
-        : public marsh::Marshaller
+        : public marsh::MarshallInterface
     {
       int ncid;
       size_t index;

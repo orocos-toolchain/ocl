@@ -874,7 +874,7 @@ namespace OCL
             cout <<nl << "TaskBrowser connects to all data ports of "<<taskcontext->getName()<<endl;
         for( interface::DataFlowInterface::Ports::iterator i=tports.begin(); i != tports.end(); ++i) {
             if (this->ports()->getPort( (*i)->getName() ) == 0 )
-                this->ports()->addPort( (*i)->antiClone() );
+                this->ports()->addPort( *(*i)->antiClone() );
         }
         RTT::connectPorts(this,taskcontext);
 

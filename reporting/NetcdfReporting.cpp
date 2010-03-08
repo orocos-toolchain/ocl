@@ -20,12 +20,12 @@ namespace OCL
         : ReportingComponent( fr_name ),
           repfile("ReportFile","Location on disc to store the reports.", "reports.nc")
     {
-        this->properties()->addProperty( &repfile );
+        this->properties()->addProperty( repfile );
 	this->decompose.set(false);
 
-	if( TypeInfoRepository::Instance()->type("short") == 0 )
+	if( types::TypeInfoRepository::Instance()->type("short") == 0 )
 	  {
-	    TypeInfoRepository::Instance()->addType(new TemplateTypeInfo<short, true>("short"));
+	    types::TypeInfoRepository::Instance()->addType(new types::TemplateTypeInfo<short, true>("short"));
           }
     }
 

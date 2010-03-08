@@ -45,14 +45,14 @@ namespace RTT
     /**
      * Converts one marshaller type to another marshaller.
      */
-    template< class InputStream, class DeMarshaller, class Marshaller, class OutputStream>
+    template< class InputStream, class DeMarshaller, class marsh::MarshallInterface, class OutputStream>
     class MarshallerAdaptor
     {
     public:
     };
 
 
-    template< class Marshaller, class OutputStream>
+    template< class marsh::MarshallInterface, class OutputStream>
     class PropertyAdaptor
     {
         public:

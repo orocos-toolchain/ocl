@@ -28,7 +28,7 @@
 #define ORO_COMP_SOCKET_MARSHALLER
 
 #include <rtt/Property.hpp>
-#include <rtt/marsh/Marshaller.hpp>
+#include <rtt/marsh/MarshallInterface.hpp>
 #include <rtt/os/Mutex.hpp>
 #include <list>
 
@@ -45,10 +45,10 @@ namespace TCP
 namespace RTT
 {
     /**
-     * marsh::Marshaller which sends data to multiple sockets.
+     * marsh::MarshallInterface which sends data to multiple sockets.
      */
     class SocketMarshaller
-        : public marsh::Marshaller
+        : public marsh::MarshallInterface
     {
         private:
             RTT::os::MutexRecursive lock;

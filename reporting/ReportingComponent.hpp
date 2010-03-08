@@ -33,7 +33,7 @@
 
 #include <rtt/Property.hpp>
 #include <rtt/PropertyBag.hpp>
-#include <rtt/marsh/Marshaller.hpp>
+#include <rtt/marsh/MarshallInterface.hpp>
 #include <rtt/os/TimeService.hpp>
 #include <rtt/TaskContext.hpp>
 
@@ -109,7 +109,7 @@ namespace OCL
          * addMarshaller( new HeaderMarshaller(), new ContentsMarshaller() );
          *
          */
-        bool addMarshaller( RTT::marsh::Marshaller* headerM, RTT::marsh::Marshaller* bodyM);
+        bool addMarshaller( RTT::marsh::MarshallInterface* headerM, RTT::marsh::MarshallInterface* bodyM);
 
         /**
          * Remove and delete all added Marshallers.
@@ -212,7 +212,7 @@ namespace OCL
 
         virtual void stopHook();
 
-        typedef std::vector< std::pair<boost::shared_ptr<RTT::marsh::Marshaller>, boost::shared_ptr<RTT::marsh::Marshaller> > > Marshallers;
+        typedef std::vector< std::pair<boost::shared_ptr<RTT::marsh::MarshallInterface>, boost::shared_ptr<RTT::marsh::MarshallInterface> > > Marshallers;
         Marshallers marshallers;
         RTT::PropertyBag report;
         

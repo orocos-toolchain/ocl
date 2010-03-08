@@ -119,13 +119,13 @@ namespace OCL
             // Check if all initialisation was ok:
             assert( property.ready() );
             // Now add it to the interface:
-            this->properties()->addProperty(&property);
+            this->properties()->addProperty( property);
 
             this->addAttribute("the_attribute", attribute);
             this->addConstant("the_constant", constant);
 
-            this->ports()->addPort(&outport);
-            this->ports()->addPort(&bufferport);
+            this->ports()->addPort( outport );
+            this->ports()->addPort( bufferport );
 
             this->addOperation( "the_method", &HelloWorld::mymethod, this, ClientThread ).doc("'the_method' Description");
 
@@ -163,7 +163,7 @@ int ORO_main(int argc, char** argv)
 
     // Do some 'client' calls :
     log(Info) << "**** Reading a RTT::Property:            ****" <<endlog();
-    RTT::Property<std::string> p = hello.properties()->getProperty<std::string>("the_property");
+    RTT::Property<std::string> p = hello.properties()->getProperty("the_property");
     assert( p.ready() );
     log(Info) << "     "<<p.getName() << " = " << p.value() <<endlog();
 #if 0

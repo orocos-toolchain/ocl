@@ -39,15 +39,15 @@
 #ifndef ORO_PROPERTIES_EMPTY_SERIALIZER
 #define ORO_PROPERTIES_EMPTY_SERIALIZER
 
-#include <rtt/marsh/Marshaller.hpp>
+#include <rtt/marsh/MarshallInterface.hpp>
 
 namespace RTT
 {
     /**
-     * @brief A Dummy Empty Marshaller.
+     * @brief A Dummy Empty MarshallInterface.
      */
     class RTT_API EmptyMarshaller
-        : public marsh::Marshaller
+        : public marsh::MarshallInterface
     {
     public:
         EmptyMarshaller()

@@ -92,15 +92,15 @@ namespace OCL
                  "The Orocos Target component suffix. Will be used in import statements to find matching components. Only change this if you know what you are doing.",
                  ORO_str(OROCOS_TARGET) )
     {
-        this->properties()->addProperty( &compPath );
-        this->properties()->addProperty( &autoUnload );
-        this->properties()->addProperty( &target );
+        this->properties()->addProperty( compPath );
+        this->properties()->addProperty( autoUnload );
+        this->properties()->addProperty( target );
 
-        this->addAttribute( &validConfig );
-        this->addAttribute( &sched_RT );
-        this->addAttribute( &sched_OTHER );
-        this->addAttribute( &lowest_Priority );
-        this->addAttribute( &highest_Priority );
+        this->addAttribute( validConfig );
+        this->addAttribute( sched_RT );
+        this->addAttribute( sched_OTHER );
+        this->addAttribute( lowest_Priority );
+        this->addAttribute( highest_Priority );
 
 
         this->addOperation("loadLibrary", &DeploymentComponent::loadLibrary, this, ClientThread).doc("Load a new library into memory.").arg("Name", "The name of the to be loaded library.");
@@ -471,7 +471,7 @@ namespace OCL
                                 continue;
                             }
                             if ( (*optit)->getName() == "AutoConnect" ) {
-                                RTT::Property<bool> ps = comp.rvalue().getProperty<bool>("AutoConnect");
+                                RTT::Property<bool> ps = comp.rvalue().getProperty("AutoConnect");
                                 if (!ps.ready()) {
                                     log(Error) << "AutoConnect must be of type <boolean>" << endlog();
                                     valid = false;
@@ -480,7 +480,7 @@ namespace OCL
                                 continue;
                             }
                             if ( (*optit)->getName() == "AutoStart" ) {
-                                RTT::Property<bool> ps = comp.rvalue().getProperty<bool>("AutoStart");
+                                RTT::Property<bool> ps = comp.rvalue().getProperty("AutoStart");
                                 if (!ps.ready()) {
                                     log(Error) << "AutoStart must be of type <boolean>" << endlog();
                                     valid = false;
@@ -489,7 +489,7 @@ namespace OCL
                                 continue;
                             }
                             if ( (*optit)->getName() == "AutoSave" ) {
-                                RTT::Property<bool> ps = comp.rvalue().getProperty<bool>("AutoSave");
+                                RTT::Property<bool> ps = comp.rvalue().getProperty("AutoSave");
                                 if (!ps.ready()) {
                                     log(Error) << "AutoSave must be of type <boolean>" << endlog();
                                     valid = false;
@@ -498,7 +498,7 @@ namespace OCL
                                 continue;
                             }
                             if ( (*optit)->getName() == "AutoConf" ) {
-                                RTT::Property<bool> ps = comp.rvalue().getProperty<bool>("AutoConf");
+                                RTT::Property<bool> ps = comp.rvalue().getProperty("AutoConf");
                                 if (!ps.ready()) {
                                     log(Error) << "AutoConf must be of type <boolean>" << endlog();
                                     valid = false;
@@ -507,7 +507,7 @@ namespace OCL
                                 continue;
                             }
                             if ( (*optit)->getName() == "Server" ) {
-                                RTT::Property<bool> ps = comp.rvalue().getProperty<bool>("Server");
+                                RTT::Property<bool> ps = comp.rvalue().getProperty("Server");
                                 if (!ps.ready()) {
                                     log(Error) << "Server must be of type <boolean>" << endlog();
                                     valid = false;
@@ -516,7 +516,7 @@ namespace OCL
                                 continue;
                             }
                             if ( (*optit)->getName() == "UseNamingService" ) {
-                                RTT::Property<bool> ps = comp.rvalue().getProperty<bool>("UseNamingService");
+                                RTT::Property<bool> ps = comp.rvalue().getProperty("UseNamingService");
                                 if (!ps.ready()) {
                                     log(Error) << "UseNamingService must be of type <boolean>" << endlog();
                                     valid = false;
@@ -525,7 +525,7 @@ namespace OCL
                                 continue;
                             }
                             if ( (*optit)->getName() == "PropertyFile" ) {
-                                RTT::Property<string> ps = comp.rvalue().getProperty<string>("PropertyFile");
+                                RTT::Property<string> ps = comp.rvalue().getProperty("PropertyFile");
                                 if (!ps.ready()) {
                                     log(Error) << "PropertyFile must be of type <string>" << endlog();
                                     valid = false;
@@ -534,7 +534,7 @@ namespace OCL
                                 continue;
                             }
                             if ( (*optit)->getName() == "UpdateProperties" ) {
-                                RTT::Property<string> ps = comp.rvalue().getProperty<string>("UpdateProperties");
+                                RTT::Property<string> ps = comp.rvalue().getProperty("UpdateProperties");
                                 if (!ps.ready()) {
                                     log(Error) << "UpdateProperties must be of type <string>" << endlog();
                                     valid = false;
@@ -543,7 +543,7 @@ namespace OCL
                                 continue;
                             }
                             if ( (*optit)->getName() == "LoadProperties" ) {
-                                RTT::Property<string> ps = comp.rvalue().getProperty<string>("LoadProperties");
+                                RTT::Property<string> ps = comp.rvalue().getProperty("LoadProperties");
                                 if (!ps.ready()) {
                                     log(Error) << "LoadProperties must be of type <string>" << endlog();
                                     valid = false;
@@ -552,7 +552,7 @@ namespace OCL
                                 continue;
                             }
                             if ( (*optit)->getName() == "Properties" ) {
-                                base::PropertyBase* ps = comp.rvalue().getProperty<RTT::PropertyBag>("Properties");
+                                base::PropertyBase* ps = comp.rvalue().getProperty("Properties");
                                 if (!ps) {
                                     log(Error) << "Properties must be a <struct>" << endlog();
                                     valid = false;
@@ -560,7 +560,7 @@ namespace OCL
                                 continue;
                             }
                             if ( (*optit)->getName() == "ProgramScript" ) {
-                                base::PropertyBase* ps = comp.rvalue().getProperty<string>("ProgramScript");
+                                base::PropertyBase* ps = comp.rvalue().getProperty("ProgramScript");
                                 if (!ps) {
                                     log(Error) << "ProgramScript must be of type <string>" << endlog();
                                     valid = false;
@@ -568,7 +568,7 @@ namespace OCL
                                 continue;
                             }
                             if ( (*optit)->getName() == "StateMachineScript" ) {
-                                base::PropertyBase* ps = comp.rvalue().getProperty<string>("StateMachineScript");
+                                base::PropertyBase* ps = comp.rvalue().getProperty("StateMachineScript");
                                 if (!ps) {
                                     log(Error) << "StateMachineScript must be of type <string>" << endlog();
                                     valid = false;
@@ -599,11 +599,11 @@ namespace OCL
                         assert(c);
 
                         // set PropFile name if present
-                        if ( comp.get().getProperty<std::string>("PropFile") )  // PropFile is deprecated
-                            comp.get().getProperty<std::string>("PropFile")->setName("PropertyFile");
+                        if ( comp.get().getProperty("PropFile") )  // PropFile is deprecated
+                            comp.get().getProperty("PropFile")->setName("PropertyFile");
 
                         // connect ports 'Ports' tag is optional.
-                        RTT::Property<RTT::PropertyBag>* ports = comp.get().getProperty<RTT::PropertyBag>("Ports");
+                        RTT::Property<RTT::PropertyBag>* ports = comp.get().getPropertyType<PropertyBag>("Ports");
                         if ( ports != 0 ) {
                             RTT::PropertyBag::Names pnams = ports->get().list();
                             for (RTT::PropertyBag::Names::iterator pit= pnams.begin(); pit !=pnams.end(); pit++) {
@@ -612,13 +612,13 @@ namespace OCL
                                     log(Error)<< "Component '"<< c->getName() <<"' does not have a Port '"<<*pit<<"'." << endlog();
                                     valid = false;
                                 }
-                                if ( ports->get().getProperty<std::string>(*pit) == 0) {
+                                if ( ports->get().getProperty(*pit) == 0) {
                                     log(Error)<< "RTT::Property '"<< *pit <<"' is not of type 'string'." << endlog();
                                     valid = false;
                                 }
                                 // store the port
                                 if (valid){
-                                    string port_name = ports->get().getProperty<string>(*pit)->get();
+                                    string port_name = ports->get().getPropertyType<string>(*pit)->get();
                                     bool to_add = true;
                                     // go through the vector to avoid duplicate items.
                                     // NOTE the sizes conmap[port_name].ports.size() and conmap[port_name].owners.size() are supposed to be equal
@@ -669,19 +669,19 @@ namespace OCL
                                 valid = false;
                             } else {
                                 if ( nm.rvalue().getType() == "PeriodicActivity" ) {
-                                    RTT::Property<double> per = nm.rvalue().getProperty<double>("Period"); // work around RTT 1.0.2 bug.
+                                    RTT::Property<double> per = nm.rvalue().getProperty("Period"); // work around RTT 1.0.2 bug.
                                     if ( !per.ready() ) {
                                         log(Error)<<"Please specify period <double> of PeriodicActivity."<<endlog();
                                         valid = false;
                                     }
-                                    RTT::Property<int> prio = nm.rvalue().getProperty<int>("Priority"); // work around RTT 1.0.2 bug
+                                    RTT::Property<int> prio = nm.rvalue().getProperty("Priority"); // work around RTT 1.0.2 bug
                                     if ( !prio.ready() ) {
                                         log(Error)<<"Please specify priority <short> of PeriodicActivity."<<endlog();
                                         valid = false;
                                     }
                                     RTT::Property<string> sched;
-                                    if (nm.rvalue().getProperty<string>("Scheduler") )
-                                        sched = nm.rvalue().getProperty<string>("Scheduler"); // work around RTT 1.0.2 bug
+                                    if (nm.rvalue().getProperty("Scheduler") )
+                                        sched = nm.rvalue().getProperty("Scheduler"); // work around RTT 1.0.2 bug
                                     int scheduler = ORO_SCHED_RT;
                                     if ( sched.ready() ) {
                                         scheduler = string_to_oro_sched( sched.get());
@@ -693,16 +693,16 @@ namespace OCL
                                     }
                                 } else
                                     if ( nm.rvalue().getType() == "Activity" || nm.rvalue().getType() == "NonPeriodicActivity" ) {
-                                        RTT::Property<double> per = nm.rvalue().getProperty<double>("Period");
+                                        RTT::Property<double> per = nm.rvalue().getProperty("Period");
                                         if ( !per.ready() ) {
                                             per = Property<double>("p","",0.0); // default to 0.0
                                         }
-                                        RTT::Property<int> prio = nm.rvalue().getProperty<int>("Priority");
+                                        RTT::Property<int> prio = nm.rvalue().getProperty("Priority");
                                         if ( !prio.ready() ) {
                                             log(Error)<<"Please specify priority <short> of Activity."<<endlog();
                                             valid = false;
                                         }
-                                        RTT::Property<string> sched = nm.rvalue().getProperty<string>("Scheduler");
+                                        RTT::Property<string> sched = nm.rvalue().getProperty("Scheduler");
                                         int scheduler = ORO_SCHED_RT;
                                         if ( sched.ready() ) {
                                             int scheduler = string_to_oro_sched( sched.get());
@@ -716,15 +716,15 @@ namespace OCL
                                         if ( nm.rvalue().getType() == "SlaveActivity" ) {
                                             double period = 0.0;
                                             string master;
-                                            if ( nm.rvalue().getProperty<string>("Master") ) {
-                                                master = nm.rvalue().getProperty<string>("Master")->get();
+                                            if ( nm.rvalue().getProperty("Master") ) {
+                                                master = nm.rvalue().getPropertyType<string>("Master")->get();
                                                 if (valid) {
                                                     this->setNamedActivity(comp.getName(), nm.rvalue().getType(), period, 0, 0, master );
                                                 }
                                             } else {
                                                 // No master given.
-                                                if ( nm.rvalue().getProperty<double>("Period") )
-                                                    period = nm.rvalue().getProperty<double>("Period")->get();
+                                                if ( nm.rvalue().getProperty("Period") )
+                                                    period = nm.rvalue().getPropertyType<double>("Period")->get();
                                                 if (valid) {
                                                     this->setNamedActivity(comp.getName(), nm.rvalue().getType(), period, 0, 0 );
                                                 }
@@ -1524,7 +1524,7 @@ namespace OCL
                     }
                 }
                 // Lookup in the property configuration and remove:
-                RTT::Property<RTT::PropertyBag>* pcomp = root.getProperty<RTT::PropertyBag>(name);
+                RTT::Property<RTT::PropertyBag>* pcomp = root.getPropertyType<PropertyBag>(name);
                 if (pcomp) {
                     root.remove(pcomp);
                     deletePropertyBag( pcomp->value() );
