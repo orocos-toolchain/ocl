@@ -1,9 +1,9 @@
 DEPENDENT_OPTION( BUILD_VIEWER "Build Viewer Component" OFF "" OFF)
 
-ADD_SUBDIRECTORY( tests )
-ADD_SUBDIRECTORY( cpf )
-
 IF ( BUILD_VIEWER )
+
+    ADD_SUBDIRECTORY( tests )
+    ADD_SUBDIRECTORY( cpf )
 
     SET(SRCS naxespositionviewer.cpp naxespositionviewer.hpp)
     
