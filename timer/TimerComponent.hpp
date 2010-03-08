@@ -2,11 +2,11 @@
 #define ORO_TIMER_COMPONENT_HPP
 
 
-#include <rtt/Event.hpp>
 #include <rtt/os/TimeService.hpp>
-#include <rtt/Command.hpp>
+#include <rtt/Method.hpp>
 #include <rtt/TaskContext.hpp>
 #include <rtt/os/Timer.hpp>
+#include <rtt/OutputPort.hpp>
 
 #include <rtt/RTT.hpp>
 #include <ocl/OCL.hpp>
@@ -27,18 +27,17 @@ namespace OCL
          * Helper class for catching the virtual timeout function of Timer.
          */
         struct TimeoutCatcher : public os::Timer {
-            RTT::Event <void(RTT::os::Timer::TimerId)>& me;
-
-            TimeoutCatcher(RTT::os::Timer::TimerId max_timers, RTT::Event <void(RTT::os::Timer::TimerId)>& e) :
-                    os::Timer(max_timers, ORO_SCHED_RT, os::HighestPriority), me(e) 
+            RTT::OutputPort<RTT::os::Timer::TimerId>& me;
+            TimeoutCatcher(RTT::os::Timer::TimerId max_timers, RTT::OutputPort<RTT::os::Timer::TimerId>& e) :
+                    os::Timer(max_timers, ORO_SCHED_RT, os::HighestPriority), me(e)
             {}
             virtual void timeout(os::Timer::TimerId id) {
-                me(id);
+                me.write(id);
             }
         };
 
         TimeoutCatcher mtimer;
-        RTT::Event <void(RTT::os::Timer::TimerId)> mtimeoutEvent;
+        OutputPort<RTT::os::Timer::TimerId> mtimeoutEvent;
 
         /**
          * This hook will check if a Activity has been properly
@@ -51,12 +50,12 @@ namespace OCL
         /**
          * Command: wait until a timer expires.
          */
-        RTT::Command<bool(RTT::os::Timer::TimerId)> waitForCommand;
+        RTT::Operation<bool(RTT::os::Timer::TimerId)> waitForCommand;
 
         /**
          * Command: arm and wait until a timer expires.
          */
-        RTT::Command<bool(RTT::os::Timer::TimerId, double)> waitCommand;
+        RTT::Operation<bool(RTT::os::Timer::TimerId, double)> waitCommand;
 
         /**
          * Command Implementation: wait until a timer expires.

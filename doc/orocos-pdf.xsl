@@ -15,7 +15,7 @@
  -->
   <xsl:param name="draft.mode" select="'no'"/>
   <xsl:param name="paper.type" select="'A4'"/>
-  <!--<xsl:param name="fop.extensions" select="1"/>-->
+  <xsl:param name="fop1.extensions" select="1"/>
   <xsl:param name="chapter.autolabel" select="1"></xsl:param>
   <xsl:param name="appendix.autolabel" select="1"></xsl:param>
   <xsl:param name="section.autolabel" select="1"></xsl:param>
@@ -65,8 +65,13 @@
   <xsl:attribute name="font-size">11pt</xsl:attribute>
 </xsl:attribute-set>
 
+  <!-- Uses microsoft font names.
   <xsl:param name="monospace.font.family" select="'Times'"/>
-
+  <xsl:param name="dingbat.font.family" select="'Times'"/>
+  <xsl:param name="body.font.family" select="'Times'"/>
+  <xsl:param name="title.font.family" select="'Arial'"/>
+  <xsl:param name="sans.font.family" select="'Arial'"/>
+  -->
 <!-- convert classname to to doxygen filenames
      xsltproc does not support fn:replace, so needed the nwalsh 'string.subst' template
      to do it, otherwise, the shorter commented line could have been used :-( -->

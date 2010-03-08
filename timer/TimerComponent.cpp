@@ -16,39 +16,20 @@ namespace OCL
     TimerComponent::TimerComponent( std::string name /*= "os::Timer" */ )
         : TaskContext( name, PreOperational ), mtimer( 32, mtimeoutEvent ),
           mtimeoutEvent("timeout"),
-          waitForCommand( "waitFor", &TimerComponent::waitFor, &TimerComponent::isTimerExpired, this),
-          waitCommand( "wait", &TimerComponent::wait, &TimerComponent::isTimerExpired, this)
+          waitForCommand( "waitFor", &TimerComponent::waitFor, this), //, &TimerComponent::isTimerExpired, this),
+          waitCommand( "wait", &TimerComponent::wait, this) //&TimerComponent::isTimerExpired, this)
     {
 
         // Add the methods, methods make sure that they are
         // executed in the context of the (non realtime) caller.
 
-        this->methods()->addMethod( method( "arm", &os::Timer::arm , &mtimer),
-                                    "Arm a single shot timer.",
-                                    "timerId", "A numeric id of the timer to arm.",
-                                    "delay", "The delay in seconds before it fires.");
-        this->methods()->addMethod( method( "startTimer", &os::Timer::startTimer , &mtimer),
-                                    "Start a periodic timer.",
-                                    "timerId", "A numeric id of the timer to start.",
-                                    "period", "The period in seconds.");
-        this->methods()->addMethod( method( "killTimer", &os::Timer::killTimer , &mtimer),
-                                    "Kill (disable) an armed or started timer.",
-                                    "timerId", "A numeric id of the timer to kill.");
-        this->methods()->addMethod( method( "isArmed", &os::Timer::isArmed , &mtimer),
-                                    "Check if a given timer is armed or started.",
-                                    "timerId", "A numeric id of the timer to check.");
-        this->methods()->addMethod( method( "setMaxTimers", &os::Timer::setMaxTimers , &mtimer),
-                                    "Raise or lower the maximum amount of timers.",
-                                    "timers", "The largest amount of timers. The highest timerId is max-1.");
-        this->events()->addEvent( &mtimeoutEvent,
-                                  "Timeout is emitted each time a timer expires.",
-                                  "timerId", "The numeric id of the timer which expired.");
-
-        this->commands()->addCommand( &waitForCommand, "Wait until a timer expires.",
-                                    "timerId", "A numeric id of the timer to wait for.");
-        this->commands()->addCommand( &waitCommand, "Arm and wait until that timer expires.",
-                                    "timerId", "A numeric id of the timer to arm and to wait for.",
-                                    "delay", "The delay in seconds before the timer expires.");
+        this->addOperation("arm", &os::Timer::arm , &mtimer, RTT::ClientThread).doc("Arm a single shot timer.").arg("timerId", "A numeric id of the timer to arm.").arg("delay", "The delay in seconds before it fires.");
+        this->addOperation("startTimer", &os::Timer::startTimer , &mtimer, RTT::ClientThread).doc("Start a periodic timer.").arg("timerId", "A numeric id of the timer to start.").arg("period", "The period in seconds.");
+        this->addOperation("killTimer", &os::Timer::killTimer , &mtimer, RTT::ClientThread).doc("Kill (disable) an armed or started timer.").arg("timerId", "A numeric id of the timer to kill.");
+        this->addOperation("isArmed", &os::Timer::isArmed , &mtimer, RTT::ClientThread).doc("Check if a given timer is armed or started.").arg("timerId", "A numeric id of the timer to check.");
+        this->addOperation("setMaxTimers", &os::Timer::setMaxTimers , &mtimer, RTT::ClientThread).doc("Raise or lower the maximum amount of timers.").arg("timers", "The largest amount of timers. The highest timerId is max-1.");
+        this->addOperation( waitForCommand ).doc("Wait until a timer expires.").arg("timerId", "A numeric id of the timer to wait for.");
+        this->addOperation( waitCommand ).doc("Arm and wait until that timer expires.").arg("timerId", "A numeric id of the timer to arm and to wait for.").arg("delay", "The delay in seconds before the timer expires.");
     }
 
     TimerComponent::~TimerComponent() {

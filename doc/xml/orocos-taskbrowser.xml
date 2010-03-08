@@ -10,8 +10,12 @@
   <articleinfo>
     <title>The TaskBrowser Component</title>
     <copyright>
+      <year>2006-2010</year>
+      <holder>Peter Soetens</holder>
+    </copyright>
+    <copyright>
       <year>2006,2007</year>
-      <holder>Peter Soetens, FMTC</holder>
+      <holder>FMTC</holder>
     </copyright>
 
     <legalnotice>
@@ -144,16 +148,7 @@
 	    TaskBrowser, as if an external component is
 	    communicating with the current component.</entry>
 	  </row>
-	  <row>
-	    <entry>.connect</entry>
-	    <entry>[port-name]</entry>
-	    <entry>Connect the TaskBrowser to <emphasis>port-name</emphasis> or <emphasis>all</emphasis> the Data
-	    Flow ports of the current component. This causes the TaskBrowser to create complementary ports
-	    which are connected to the current component. If the current component's port
-	    is already connected to another component, the existing
-	    connection is re-used. If the port is unconnected, a new connection is
-	    created.</entry>
-	  </row>
+	  <!--
 	  <row>
 	    <entry>.loadProgram</entry>
 	    <entry>program-name.ops</entry>
@@ -166,6 +161,7 @@
 	    <entry>Load a file from the current directory and send it to the
 	    component for loading as a state machine script.</entry>
 	  </row>
+	  -->
 	  <row>
 	    <entry>list</entry>
 	    <entry>[script-name] [row]</entry>

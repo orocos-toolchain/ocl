@@ -293,6 +293,12 @@ namespace OCL
                           const std::string& other, const std::string& other_port);
 
         /**
+         * Connects the required services of one component to the provided services
+         * of another and vice versa.
+         */
+        bool connectServices(const std::string& one, const std::string& other);
+
+        /**
          * Establish a uni directional connection form one task to another
          *
          * @param from The component where the connection starts.

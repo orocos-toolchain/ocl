@@ -2,6 +2,7 @@
 #include <reporting/ConsoleReporting.hpp>
 #include <taskbrowser/TaskBrowser.hpp>
 
+#include <rtt/marsh/Marshalling.hpp>
 #include <rtt/extras/SlaveActivity.hpp>
 #include <rtt/Activity.hpp>
 #include <rtt/Port.hpp>
@@ -29,7 +30,7 @@ public:
         this->properties()->addProperty( & hello );
         this->ports()->addPort( &drport );
         this->ports()->addPort( &dwport );
-        this->attributes()->addAttribute( &input );
+        this->addAttribute( &input );
 
         // write initial value.
         std::vector<double> init(10, 1.0);
@@ -56,7 +57,7 @@ public:
         this->properties()->addProperty( & hello );
         this->ports()->addPort( &drport );
         this->ports()->addPort( &dwport );
-        this->attributes()->addAttribute( &input );
+        this->addAttribute( &input );
     }
 };
 
@@ -70,8 +71,6 @@ int ORO_main( int argc, char** argv)
 		      << " manually raises LogLevel to 'Info' (5). See also file 'orocos.log'."<<endlog();
     }
 
-    // Reporter's activity: not real-time !
-    Activity act(ORO_SCHED_OTHER, 0, 1.0);
     ConsoleReporting rc("Reporting");
     TestTaskContext gtc("MyPeer");
     TestTaskContext2 gtc2("MyPeer2");
@@ -85,9 +84,10 @@ int ORO_main( int argc, char** argv)
 
     TaskBrowser tb( &rc );
 
-    act.run( rc.engine() );
+    // Reporter's activity: not real-time !
+    rc.setActivity( new Activity(ORO_SCHED_OTHER, 0, 1.0) );
 
-    rc.marshalling()->loadProperties("reporter.cpf");
+    rc.getProvider<Marshalling>("marshalling")->loadProperties("reporter.cpf");
     rc.configure();
 
     cout <<endl<< "  This demo allows reporting of Components." << endl;
@@ -97,7 +97,7 @@ int ORO_main( int argc, char** argv)
 
     tb.loop();
 
-    act.stop();
+    rc.stop();
 
     return 0;
 }

@@ -27,10 +27,10 @@ public:
           a("a")
     {
         this->properties()->addProperty(&limits);
-        this->ports()->addPort( &p1, "");
-        this->ports()->addPort( &p2, "");
-        this->ports()->addPort( &p3, "");
-        this->attributes()->addAttribute( &a );
+        this->ports()->addPort( &p1 );
+        this->ports()->addPort( &p2 );
+        this->ports()->addPort( &p3 );
+        this->addAttribute( &a );
         limits.set()[0] = 10;
         limits.set()[1] = 20;
     }

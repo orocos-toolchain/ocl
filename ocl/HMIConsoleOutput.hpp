@@ -70,38 +70,14 @@ namespace OCL
         {
             this->clear();
 
-            this->methods()->addMethod( method( "display", &HMIConsoleOutput::display, this),
-                               "Display a message on the console",
-                               "message","The message to be displayed"
-                                );
-            this->methods()->addMethod( method( "displayBool", &HMIConsoleOutput::displayBool, this),
-                               "Display a boolean on the console",
-                               "boolean","The Boolean to be displayed"
-                                );
-            this->methods()->addMethod( method( "displayInt", &HMIConsoleOutput::displayInt, this),
-                               "Display a integer on the console",
-                               "integer","The Integer to be displayed"
-                                );
-            this->methods()->addMethod( method( "displayDouble", &HMIConsoleOutput::displayDouble, this),
-                               "Display a double on the console",
-                               "double","The Double to be displayed"
-                                );
-            this->methods()->addMethod( method( "log", &HMIConsoleOutput::log, this),
-                               "Log a message on the console",
-                               "message","The message to be logged"
-                                );
-            this->methods()->addMethod( method( "logBool", &HMIConsoleOutput::logBool, this),
-                               "Log a boolean on the console",
-                               "boolean","The Boolean to be logged"
-                                );
-            this->methods()->addMethod( method( "logInt", &HMIConsoleOutput::logInt, this),
-                               "Log a integer on the console",
-                               "integer","The Integer to be logged"
-                                );
-            this->methods()->addMethod( method( "logDouble", &HMIConsoleOutput::logDouble, this),
-                               "Log a double on the console",
-                               "double","The Double to be logged"
-                                );
+            this->addOperation("display", &HMIConsoleOutput::display, this, RTT::ClientThread).doc("Display a message on the console").arg("message", "The message to be displayed");
+            this->addOperation("displayBool", &HMIConsoleOutput::displayBool, this, RTT::ClientThread).doc("Display a boolean on the console").arg("boolean", "The Boolean to be displayed");
+            this->addOperation("displayInt", &HMIConsoleOutput::displayInt, this, RTT::ClientThread).doc("Display a integer on the console").arg("integer", "The Integer to be displayed");
+            this->addOperation("displayDouble", &HMIConsoleOutput::displayDouble, this, RTT::ClientThread).doc("Display a double on the console").arg("double", "The Double to be displayed");
+            this->addOperation("log", &HMIConsoleOutput::log, this, RTT::ClientThread).doc("Log a message on the console").arg("message", "The message to be logged");
+            this->addOperation("logBool", &HMIConsoleOutput::logBool, this, RTT::ClientThread).doc("Log a boolean on the console").arg("boolean", "The Boolean to be logged");
+            this->addOperation("logInt", &HMIConsoleOutput::logInt, this, RTT::ClientThread).doc("Log a integer on the console").arg("integer", "The Integer to be logged");
+            this->addOperation("logDouble", &HMIConsoleOutput::logDouble, this, RTT::ClientThread).doc("Log a double on the console").arg("double", "The Double to be logged");
 
         }
 

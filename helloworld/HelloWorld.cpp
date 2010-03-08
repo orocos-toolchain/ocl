@@ -13,8 +13,6 @@
 #include <rtt/Property.hpp>
 #include <rtt/Attribute.hpp>
 #include <rtt/Method.hpp>
-#include <rtt/Command.hpp>
-#include <rtt/Event.hpp>
 #include <rtt/Port.hpp>
 #include <rtt/Activity.hpp>
 
@@ -47,13 +45,14 @@ namespace OCL
          */
         RTT::Property<std::string> property;
         /**
-         * Attributes take a name and contain changing values.
+         * Attributes are aliased to class variables.
          */
-        RTT::Attribute<std::string> attribute;
+        std::string attribute;
         /**
-         * Constants take a name and contain a constant value.
+         * Constants are aliased, but can only be changed
+         * from the component itself.
          */
-        RTT::Constant<std::string> constant;
+        std::string constant;
         /** @} */
 
         /**
@@ -72,81 +71,25 @@ namespace OCL
         /** @} */
 
         /**
-         * @name RTT::Method
-         * @{
-         */
-        /**
-         * Methods take a number of arguments and
-         * return a value. The are executed in the
-         * thread of the caller.
-         */
-        RTT::Method<std::string(void)> method;
-
-        /**
-         * The interface::method function is executed by
-         * the interface::method object:
+         * An operation we want to add to our interface.
          */
         std::string mymethod() {
             return "Hello World";
         }
-        /** @} */
 
         /**
-         * @name RTT::Command
-         * @{
+         * This one is executed in our own thread.
          */
-        /**
-         * Commands take a number of arguments and
-         * return true or false. They are asynchronous
-         * and executed in the thread of the receiver.
-         */
-        RTT::Command<bool(std::string)> command;
-
-        /**
-         * The command function executed by the receiver.
-         */
-        bool mycommand(std::string arg) {
-            log(Info) << "Hello RTT::Command: "<< arg << endlog();
-            if ( arg == "World" )
+        bool sayWorld( const std::string& word) {
+            cout <<"Saying Hello '"<<word<<"' in own thread." <<endl;
+            if (word == "World")
                 return true;
-            else
-                return false;
+            return false;
         }
 
-        /**
-         * The completion condition checked by the sender.
-         */
-        bool mycomplete(std::string arg) {
-            log(Info) << "Checking RTT::Command: "<< arg <<endlog();
-            return true;
+        void updateHook() {
+            //cout << "."<<endl;
         }
-        /** @} */
-
-        /**
-         * @name RTT::Event
-         * @{
-         */
-        /**
-         * The event takes a payload which is distributed
-         * to anonymous receivers. Distribution can happen
-         * synchronous and asynchronous.
-         */
-        RTT::Event<void(std::string)> event;
-
-        /**
-         * Stores the connection between 'event' and 'mycallback'.
-         */
-        RTT::Handle h;
-
-        /**
-         * An event callback (or subscriber) function.
-         */
-        void mycallback( std::string data )
-        {
-            log(Info) << "Receiving RTT::Event: " << data << endlog();
-        }
-        /** @} */
-
     public:
         /**
          * This example sets the interface up in the Constructor
@@ -156,20 +99,12 @@ namespace OCL
             : RTT::TaskContext(name),
               // Name, description, value
               property("the_property", "the_property Description", "Hello World"),
-              // Name, value
-              attribute("the_attribute", "Hello World"),
-              // Name, value
-              constant("the_constant", "Hello World"),
+              attribute("Hello World"),
+              constant("Hello World"),
               // Name, initial value
               outport("the_results",true),
               // Name, policy
-              bufferport("the_buffer_port",ConnPolicy::buffer(13,ConnPolicy::LOCK_FREE,true) ),
-              // Name, function pointer, object
-              method("the_method", &HelloWorld::mymethod, this),
-              // Name, command function pointer, completion condition function pointer, object
-              command("the_command", &HelloWorld::mycommand, &HelloWorld::mycomplete, this),
-              // Name
-              event("the_event")
+              bufferport("the_buffer_port",ConnPolicy::buffer(13,ConnPolicy::LOCK_FREE,true) )
         {
             // New activity with period 0.01s and priority 0.
             this->setActivity( new Activity(0, 0.01) );
@@ -183,32 +118,18 @@ namespace OCL
 
             // Check if all initialisation was ok:
             assert( property.ready() );
-            assert( attribute.ready() );
-            assert( constant.ready() );
-            assert( method.ready() );
-            assert( command.ready() );
-            assert( event.ready() );
-
             // Now add it to the interface:
             this->properties()->addProperty(&property);
 
-            this->attributes()->addAttribute(&attribute);
-            this->attributes()->addConstant(&constant);
+            this->addAttribute("the_attribute", attribute);
+            this->addConstant("the_constant", constant);
 
             this->ports()->addPort(&outport);
             this->ports()->addPort(&bufferport);
 
-            this->methods()->addMethod(&method, "'the_method' Description");
+            this->addOperation( "the_method", &HelloWorld::mymethod, this, ClientThread ).doc("'the_method' Description");
 
-            this->commands()->addCommand(&command, "'the_command' Description",
-                                         "the_arg", "Use 'World' as argument to make the command succeed.");
-
-            this->events()->addEvent(&event, "'the_event' Description",
-                                     "the_data", "The data of this event.");
-
-            // Adding an asynchronous callback:
-            h = this->events()->setupConnection("the_event").callback(this, &HelloWorld::mycallback, this->engine()->events() ).handle();
-            h.connect();
+            this->addOperation( "the_command", &HelloWorld::sayWorld, this, OwnThread).doc("'the_command' Description").arg("the_arg", "Use 'World' as argument to make the command succeed.");
 
             log(Info) << "**** Starting the 'Hello' component ****" <<endlog();
             // Start the component's activity:
@@ -245,23 +166,17 @@ int ORO_main(int argc, char** argv)
     RTT::Property<std::string> p = hello.properties()->getProperty<std::string>("the_property");
     assert( p.ready() );
     log(Info) << "     "<<p.getName() << " = " << p.value() <<endlog();
-
-    log(Info) << "**** Sending a RTT::Command:             ****" <<endlog();
-    RTT::Command<bool(std::string)> c = hello.commands()->getCommand<bool(std::string)>("the_command");
+#if 0
+    log(Info) << "**** Sending a RTT::Method:             ****" <<endlog();
+    RTT::Method<bool(std::string)> c = hello.getOperation<bool(std::string)>("the_command");
     assert( c.ready() );
-    log(Info) << "     Sending RTT::Command : " << c("World")<<endlog();
+    log(Info) << "     Sending RTT::Method : " << c.send("World")<<endlog();
 
     log(Info) << "**** Calling a RTT::Method:              ****" <<endlog();
-    RTT::Method<std::string(void)> m = hello.methods()->getMethod<std::string(void)>("the_method");
+    RTT::Method<std::string(void)> m = hello.getOperation<std::string(void)>("the_method");
     assert( m.ready() );
     log(Info) << "     Calling RTT::Method : " << m() << endlog();
-
-    log(Info) << "**** Emitting an RTT::Event:             ****" <<endlog();
-    RTT::Event<void(std::string)> e = hello.events()->getEvent<void(std::string)>("the_event");
-    assert( e.ready() );
-
-    e("Hello World");
-
+#endif
     log(Info) << "**** Starting the TaskBrowser       ****" <<endlog();
     // Switch to user-interactive mode.
     TaskBrowser browser( &hello );

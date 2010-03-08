@@ -3,7 +3,7 @@
 #include <taskbrowser/TaskBrowser.hpp>
 
 #include <rtt/Activity.hpp>
-#include <rtt/Activity.hpp>
+#include <rtt/InputPort.hpp>
 #include <iostream>
 #include <rtt/os/main.h>
 
@@ -14,26 +14,27 @@ using namespace RTT;
 class TestTaskContext
     : public RTT::TaskContext
 {
-    RTT::Handle h;
+    InputPort<os::Timer::TimerId> receiver;
 public:
     TestTaskContext(std::string name)
-        : RTT::TaskContext(name, PreOperational)
+        : RTT::TaskContext(name, PreOperational),
+          receiver("TimerIn")
     {
+        ports()->addEventPort(&receiver);
     }
 
     bool configureHook()
     {
-        log(Info) << this->getName() <<" starts listening for timeout events." << endlog();
-        if (this->getPeer("os::Timer") )
-            h = this->getPeer("os::Timer")->events()->setupConnection("timeout").callback(this, &TestTaskContext::callback).handle();
-
-        h.connect();
-        return h.ready();
+        if ( receiver.connected() )
+            log(Info) << this->getName() <<" starts listening for timeout events." << endlog();
+        return receiver.connected();
     }
 
-    void callback(os::Timer::TimerId id)
+    void updateHook()
     {
-        log(Info) << this->getName() <<" detects timeout for timer " << id << endlog();
+        os::Timer::TimerId id;
+        if (receiver.read(id) == NewData)
+            log(Info) << this->getName() <<" detects timeout for timer " << id << endlog();
     }
 };
 
@@ -48,13 +49,13 @@ int ORO_main( int argc, char** argv)
     }
 
 
-    TimerComponent tcomp("os::Timer");
-    RTT::Activity act(ORO_SCHED_RT, os::HighestPriority, tcomp.engine() );
+    TimerComponent tcomp("Timer");
+    tcomp.setActivity( new RTT::Activity(ORO_SCHED_RT, os::HighestPriority, 0.0) );
 
     TestTaskContext gtc("Peer");
-    RTT::Activity p_act(ORO_SCHED_RT, os::HighestPriority, 0.1, gtc.engine() );
+    gtc.setActivity( new RTT::Activity(ORO_SCHED_RT, os::HighestPriority, 0.1) );
 
-    gtc.addPeer(&tcomp);
+    gtc.ports()->getPort("TimerIn")->connectTo( tcomp.ports()->getPort("timeout"));
 
     TaskBrowser tb( &gtc );
 
