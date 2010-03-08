@@ -580,7 +580,7 @@ namespace OCL
         cout << nl<<
             coloron <<
             "  This console reader allows you to browse and manipulate TaskContexts."<<nl<<
-            "  You can type in a command, event, method, expression or change variables."<<nl;
+            "  You can type in an operation, expression, create or change variables."<<nl;
         cout <<"  (type '"<<underline<<"help"<<coloroff<<coloron<<"' for instructions)"<<nl;
 #ifndef NO_GPL
         cout << "    TAB completion and HISTORY is available ('bash' like)" <<coloroff<<nl<<nl;
@@ -1345,8 +1345,8 @@ namespace OCL
         cout << "  If you provided a correct assignment, the browser will inform you of the success"<<nl;
         cout <<"   with '= true'." <<nl;
 
-        cout <<titlecol("Methods")<<nl;
-        cout << "  A Method is sent or called (evaluated) "<<nl;
+        cout <<titlecol("Operations")<<nl;
+        cout << "  An Operation is sent or called (evaluated) "<<nl;
         cout << "  immediately and print the result. An example could be :"<<nl;
         cout << "     someTask.bar.getNumberOfBeers(\"Palm\") [enter] "<<nl;
         cout << "   = 99" <<nl;
@@ -1354,8 +1354,8 @@ namespace OCL
         cout <<titlecol("Program and scripting::StateMachine Scripts")<<nl;
         cout << "  To load a program script use the scripting service."<<nl;
         cout << "  You can use "<<comcol("ls progname")<<nl;
-        cout << "   to see the programs commands, methods and variables. You can manipulate each one of these,."<<nl;
-        cout << "   as if the program is a Task itself (see all items above)."<<nl;
+        cout << "   to see the programs operations and variables. You can manipulate each one of these"<<nl;
+        cout << "   using the service object of the program."<<nl;
 
         cout << "  To print a program or state machine listing, use "<<comcol("list progname [linenumber]")<<nl;
         cout << "   to list the contents of the current program lines being executed,"<<nl;
@@ -1555,7 +1555,7 @@ namespace OCL
             sresult << coloron << "(none)";
         }
 
-        sresult <<coloroff<<nl<< "  Methods      : "<<coloron;
+        sresult <<coloroff<<nl<< "  Operations      : "<<coloron;
         objlist = taskobject->getOperationNames();
         if ( !objlist.empty() ) {
             std::copy(objlist.begin(), objlist.end(), std::ostream_iterator<std::string>(sresult, " "));
