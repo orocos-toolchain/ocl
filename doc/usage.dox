@@ -17,6 +17,9 @@
 
 /** 
 * \mainpage Orocos Component Library
+*
+* WARNING: This is Beta quality. OCL will change drastically before the final 2.0 release.
+* Some of these components will disappear or be re-packaged in another repository.
 * 
 * \section intro Introduction
 *
