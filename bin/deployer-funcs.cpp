@@ -192,7 +192,7 @@ void validate(boost::any& v,
                 std::stringstream   e;
                 e << "Invalid units in rtalloc-mem-size option: " <<  memSize 
                   << ". Valid units: 'k','m','g' (case-insensitive).";
-                throw po::validation_error(e.str());
+                throw po::invalid_option_value(e.str());
         }
         value *= multiplier;
     }
@@ -202,7 +202,7 @@ void validate(boost::any& v,
     }
     else
     {
-        throw po::validation_error("Could not parse rtalloc-mem-size option: " + memSize);
+        throw po::invalid_option_value("Could not parse rtalloc-mem-size option: " + memSize);
     }
 
     // provide some basic sanity checking
@@ -214,7 +214,7 @@ void validate(boost::any& v,
     {
         std::stringstream   e;
         e << "Invalid memory size of " << value << " given. Value must be >= 0.";
-        throw po::validation_error(e.str());
+        throw po::invalid_option_value(e.str());
     }
 
     v = memorySize((size_t)value);
