@@ -33,6 +33,14 @@
 #include <boost/assign/list_of.hpp>
 #include <boost/algorithm/string/case_conv.hpp>
 
+#if     defined(ORO_BUILD_LOGGING) && defined(OROSEM_LOG4CPP_LOGGING)
+// to configure RTT's use of log4cpp
+#include <log4cpp/Category.hh>
+#include <log4cpp/FileAppender.hh>
+#include <log4cpp/PatternLayout.hh>
+#include <log4cpp/PropertyConfigurator.hh>
+#endif
+
 namespace po = boost::program_options;
 
 using namespace RTT;
@@ -234,6 +242,61 @@ boost::program_options::options_description deployerRtallocOptions(memorySize& r
 }
 
 #endif  //  ORO_BUILD_RTALLOC
+
+
+#if     defined(ORO_BUILD_LOGGING) && defined(OROSEM_LOG4CPP_LOGGING)
+
+boost::program_options::options_description deployerRttLog4cppOptions(std::string& rttLog4cppConfigFile)
+{
+    po::options_description     rttLog4cppOptions("RTT/Log4cpp options");
+    rttLog4cppOptions.add_options()
+		("rtt-log4cpp-config-file",
+         po::value<std::string>(&rttLog4cppConfigFile),
+		 std::string("Log4cpp configuration file to support RTT category '" + RTT::Logger::log4cppCategoryName + "'\n"+
+                     "WARNING Configure only this category. Use deployment files to configure realtime logging!").c_str())
+        ;
+    return rttLog4cppOptions;
+}
+
+int deployerConfigureRttLog4cppCategory(const std::string& rttLog4cppConfigFile)
+{
+    // configure where RTT::Logger's file logging goes to (which is through
+    // log4cpp, but not through OCL's log4cpp-derived real-time logging!)
+    if (!rttLog4cppConfigFile.empty())
+    {
+        try
+        {
+            log4cpp::PropertyConfigurator::configure(rttLog4cppConfigFile);
+        }
+        catch (log4cpp::ConfigureFailure& e)
+        {
+            std::cerr << "ERROR: Unable to read/parse log4cpp configuration file\n"
+                      << e.what() << std::endl;
+            return false;
+        }
+    }
+    else
+    {
+        // setup default of logging to 'orocos.log' file
+        log4cpp::PatternLayout*	layout=0;
+        log4cpp::Appender*		appender=0;
+        appender = new log4cpp::FileAppender(RTT::Logger::log4cppCategoryName,
+                                             "orocos.log");
+
+        layout = new log4cpp::PatternLayout();
+        // encode as (ISO date) "yyyymmddTHH:MM:SS.ms category message"
+        layout->setConversionPattern("%d{%Y%m%dT%T.%l} [%p] %m%n");
+        appender->setLayout(layout);
+
+        log4cpp::Category& category =
+            log4cpp::Category::getInstance(RTT::Logger::log4cppCategoryName);
+        category.setAppender(appender);
+        // appender and layout are now owned by category - do not delete!
+    }
+    return true;
+}
+
+#endif  //  OROSEM_LOG4CPP_LOGGING
 
 // namespace
 }

@@ -27,6 +27,7 @@
 #include <rtt/os/main.h>
 #include <rtt/RTT.hpp>
 #include <rtt/Logger.hpp>
+#include <rtt/rtt-config.h>
 
 #ifdef ORO_BUILD_RTALLOC
 // need access to all TLSF functions embedded in RTT
@@ -51,32 +52,42 @@
 using namespace RTT;
 namespace po = boost::program_options;
 
-#ifdef  TEST_RTALLOC
 int main(int argc, char** argv)
-#else
-int ORO_main(int argc, char** argv)
-#endif
 {
 	std::string             siteFile;      // "" means use default in DeploymentComponent.cpp
 	std::string             scriptFile;
 	std::string             name("Deployer");
     bool                    requireNameService = false;         // not used
     po::variables_map       vm;
-	po::options_description* otherOptions    = 0;
+	po::options_description otherOptions;
 
 #ifdef  ORO_BUILD_RTALLOC
     OCL::memorySize         rtallocMemorySize   = ORO_DEFAULT_RTALLOC_SIZE;
 	po::options_description rtallocOptions      = OCL::deployerRtallocOptions(rtallocMemorySize);
-	otherOptions                                = &rtallocOptions;
+	otherOptions.add(rtallocOptions);
+#endif
+
+#if     defined(ORO_BUILD_LOGGING) && defined(OROSEM_LOG4CPP_LOGGING)
+    // to support RTT's logging to log4cpp
+    std::string                 rttLog4cppConfigFile;
+    po::options_description     rttLog4cppOptions = OCL::deployerRttLog4cppOptions(rttLog4cppConfigFile);
+    otherOptions.add(rttLog4cppOptions);
 #endif
 
 	int rc = OCL::deployerParseCmdLine(argc, argv,
                                        siteFile, scriptFile, name, requireNameService,
-                                       vm, otherOptions);
+                                       vm, &otherOptions);
 	if (0 != rc)
 	{
 		return rc;
 	}
+
+#if     defined(ORO_BUILD_LOGGING) && defined(OROSEM_LOG4CPP_LOGGING)
+    if (!OCL::deployerConfigureRttLog4cppCategory(rttLog4cppConfigFile))
+    {
+        return -1;
+    }
+#endif
 
 #ifdef  ORO_BUILD_RTALLOC
     size_t                  memSize     = rtallocMemorySize.size;
@@ -106,39 +117,47 @@ int ORO_main(int argc, char** argv)
         OCL::logging::Category::createOCLCategory);
 #endif
 
-    // scope to force dc destruction prior to memory free
+    // start Orocos _AFTER_ setting up log4cpp
+	if (0 == __os_init(argc, argv))
     {
-        OCL::DeploymentComponent dc( name, siteFile );
-
-        if ( !scriptFile.empty() )
+        // scope to force dc destruction prior to memory free
         {
-            dc.kickStart( scriptFile );
-        }
+            OCL::DeploymentComponent dc( name, siteFile );
 
-        OCL::TaskBrowser tb( &dc );
+            if ( !scriptFile.empty() )
+            {
+                dc.kickStart( scriptFile );
+            }
 
-        tb.loop();
+            OCL::TaskBrowser tb( &dc );
+
+            tb.loop();
 #ifdef  ORO_BUILD_RTALLOC
-        if (0 != rtMem)
-        {
-            // warning: at this point all RTT components haven't yet been
-            // stopped and cleaned up, so any RT memory there hasn't yet been
-            // deallocated!
-            log(Debug) << "TLSF bytes allocated=" << memSize
-                       << " overhead=" << (memSize - freeMem)
-                       << " max-used=" << get_max_size(rtMem)
-                       << " currently-used=" << get_used_size(rtMem)
-                       << " still-allocated=" << (get_used_size(rtMem) - (memSize - freeMem))
-                       << endlog();
-        }
+            if (0 != rtMem)
+            {
+                // warning: at this point all RTT components haven't yet been
+                // stopped and cleaned up, so any RT memory there hasn't yet been
+                // deallocated!
+                log(Debug) << "TLSF bytes allocated=" << memSize
+                           << " overhead=" << (memSize - freeMem)
+                           << " max-used=" << get_max_size(rtMem)
+                           << " currently-used=" << get_used_size(rtMem)
+                           << " still-allocated=" << (get_used_size(rtMem) - (memSize - freeMem))
+                           << endlog();
+            }
 #endif
-    }
+        }
 
-#ifdef  TEST_RTALLOC
-    __os_exit();
+        __os_exit();
+        rc = 0;
+	}
+	else
+	{
+		std::cerr << "Unable to start Orocos" << std::endl;
+        rc = -1;
+	}
 
 #ifdef  ORO_BUILD_LOGGING
-    log(Debug) << "Deleting all logging categories" << endlog();
     log4cpp::HierarchyMaintainer::getDefaultMaintainer().shutdown();
     log4cpp::HierarchyMaintainer::getDefaultMaintainer().deleteAllCategories();
 #endif
@@ -152,17 +171,11 @@ int ORO_main(int argc, char** argv)
                   << " currently-used=" << get_used_size(rtMem)
                   << " still-allocated=" << (get_used_size(rtMem) - (memSize - freeMem))
                   << "\n";
-    }
-#endif
-#endif
 
-#ifdef  ORO_BUILD_RTALLOC
-    if (0 != rtMem)
-    {
         destroy_memory_pool(rtMem);
         free(rtMem);
     }
 #endif
 
-    return 0;
+    return rc;
 }

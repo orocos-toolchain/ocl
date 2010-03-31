@@ -51,6 +51,11 @@ void Component::updateHook()
     logger->info( "INFO  " + OCL::String(str.str().c_str()));
     logger->debug("DEBUG " + OCL::String(str.str().c_str()));
 
+    // RTT logging
+    log(Error)   << std::string("RTT ERROR " + str.str())   << endlog();
+    log(Warning) << std::string("RTT WARNING " + str.str()) << endlog();
+    log(Info)    << std::string("RTT INFO " + str.str())    << endlog();
+
     // and trying to use the std::string versions ...
 //    logger->error(std::string("Hello")); // COMPILER error - not accessible!
 //    logger->debug("DEBUG"); // COMPILER error - not accessible with char*!

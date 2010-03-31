@@ -54,7 +54,7 @@ using namespace RTT;
 using namespace OCL;
 namespace po = boost::program_options;
 
-int ORO_main(int argc, char** argv)
+int main(int argc, char** argv)
 {
 	std::string                 siteFile;      // "" means use default in DeploymentComponent.cpp
 	std::string                 scriptFile;
@@ -70,6 +70,13 @@ int ORO_main(int argc, char** argv)
     OCL::memorySize         rtallocMemorySize   = ORO_DEFAULT_RTALLOC_SIZE;
 	po::options_description rtallocOptions      = OCL::deployerRtallocOptions(rtallocMemorySize);
 	otherOptions.add(rtallocOptions);
+#endif
+
+#if     defined(ORO_BUILD_LOGGING) && defined(OROSEM_LOG4CPP_LOGGING)
+    // to support RTT's logging to log4cpp
+    std::string                 rttLog4cppConfigFile;
+    po::options_description     rttLog4cppOptions = OCL::deployerRttLog4cppOptions(rttLog4cppConfigFile);
+    otherOptions.add(rttLog4cppOptions);
 #endif
 
     // as last set of options
@@ -99,6 +106,13 @@ int ORO_main(int argc, char** argv)
 		return rc;
 	}
 
+#if     defined(ORO_BUILD_LOGGING) && defined(OROSEM_LOG4CPP_LOGGING)
+    if (!OCL::deployerConfigureRttLog4cppCategory(rttLog4cppConfigFile))
+    {
+        return -1;
+    }
+#endif
+
 #ifdef  ORO_BUILD_RTALLOC
     size_t                  memSize     = rtallocMemorySize.size;
     void*                   rtMem       = 0;
@@ -126,33 +140,44 @@ int ORO_main(int argc, char** argv)
         OCL::logging::Category::createOCLCategory);
 #endif
 
-    // scope to force dc destruction prior to memory free
+    // start Orocos _AFTER_ setting up log4cpp
+	if (0 == __os_init(argc, argv))
     {
-        OCL::CorbaDeploymentComponent dc( name, siteFile );
-
-        // if TAO options not found then have TAO process just the program name,
-        // otherwise TAO processes the program name plus all options (potentially
-        // none) after "--"
-        TaskContextServer::InitOrb( argc - taoIndex, &argv[taoIndex] );
-
-        if (0 == TaskContextServer::Create( &dc, true, requireNameService ))
+        // scope to force dc destruction prior to memory free
         {
-            return -1;
+            OCL::CorbaDeploymentComponent dc( name, siteFile );
+
+            // if TAO options not found then have TAO process just the program name,
+            // otherwise TAO processes the program name plus all options (potentially
+            // none) after "--"
+            TaskContextServer::InitOrb( argc - taoIndex, &argv[taoIndex] );
+
+            if (0 == TaskContextServer::Create( &dc, true, requireNameService ))
+            {
+                return -1;
+            }
+
+            // Only start the script after the Orb was created.
+            if ( !scriptFile.empty() )
+            {
+                dc.kickStart( scriptFile );
+            }
+
+            // Export the DeploymentComponent as CORBA server.
+            TaskContextServer::RunOrb();
+
+            TaskContextServer::ShutdownOrb();
+
+            TaskContextServer::DestroyOrb();
         }
 
-        // Only start the script after the Orb was created.
-        if ( !scriptFile.empty() )
-        {
-            dc.kickStart( scriptFile );
-        }
-
-        // Export the DeploymentComponent as CORBA server.
-        TaskContextServer::RunOrb();
-
-        TaskContextServer::ShutdownOrb();
-
-        TaskContextServer::DestroyOrb();
-    }
+        __os_exit();
+	}
+	else
+	{
+		std::cerr << "Unable to start Orocos" << std::endl;
+        return -1;
+	}
 
 #ifdef  ORO_BUILD_RTALLOC
     if (!rtMem)

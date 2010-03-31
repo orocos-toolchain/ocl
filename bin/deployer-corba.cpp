@@ -27,6 +27,7 @@
 
 #include <rtt/os/main.h>
 #include <rtt/RTT.hpp>
+#include <rtt/rtt-config.h>
 
 #ifdef ORO_BUILD_RTALLOC
 // need access to all TLSF functions embedded in RTT
@@ -55,7 +56,7 @@ using namespace RTT;
 using namespace RTT::corba;
 namespace po = boost::program_options;
 
-int ORO_main(int argc, char** argv)
+int main(int argc, char** argv)
 {
 	std::string                 siteFile;      // "" means use default in DeploymentComponent.cpp
 	std::string                 scriptFile;
@@ -71,6 +72,13 @@ int ORO_main(int argc, char** argv)
     OCL::memorySize         rtallocMemorySize   = ORO_DEFAULT_RTALLOC_SIZE;
 	po::options_description rtallocOptions      = OCL::deployerRtallocOptions(rtallocMemorySize);
 	otherOptions.add(rtallocOptions);
+#endif
+
+#if     defined(ORO_BUILD_LOGGING) && defined(OROSEM_LOG4CPP_LOGGING)
+    // to support RTT's logging to log4cpp
+    std::string                 rttLog4cppConfigFile;
+    po::options_description     rttLog4cppOptions = OCL::deployerRttLog4cppOptions(rttLog4cppConfigFile);
+    otherOptions.add(rttLog4cppOptions);
 #endif
 
     // as last set of options
@@ -100,6 +108,14 @@ int ORO_main(int argc, char** argv)
 		return rc;
 	}
 
+
+#if     defined(ORO_BUILD_LOGGING) && defined(OROSEM_LOG4CPP_LOGGING)
+    if (!OCL::deployerConfigureRttLog4cppCategory(rttLog4cppConfigFile))
+    {
+        return -1;
+    }
+#endif
+
 #ifdef  ORO_BUILD_RTALLOC
     size_t                  memSize     = rtallocMemorySize.size;
     void*                   rtMem       = 0;
@@ -111,29 +127,33 @@ int ORO_main(int argc, char** argv)
         size_t freeMem = init_memory_pool(memSize, rtMem);
         if ((size_t)-1 == freeMem)
         {
-            log(Critical) << "Invalid memory pool size of " << memSize 
+            log(Critical) << "Invalid memory pool size of " << memSize
                           << " bytes (TLSF has a several kilobyte overhead)." << endlog();
             free(rtMem);
             return -1;
         }
-        log(Info) << "Real-time memory: " << freeMem << " bytes free of " 
+        log(Info) << "Real-time memory: " << freeMem << " bytes free of "
                   << memSize << " allocated." << endlog();
     }
 #endif  // ORO_BUILD_RTALLOC
 
 #ifdef  ORO_BUILD_LOGGING
-    log(Info) << "Setting OCL factory for real-time logging" << endlog();
+    // use our log4cpp-derived categories to do real-time logging
     log4cpp::HierarchyMaintainer::set_category_factory(
         OCL::logging::Category::createOCLCategory);
+    log(Info) << "Using real-time logging" << endlog();
 #endif
 
-    try {
-        // if TAO options not found then have TAO process just the program name,
-        // otherwise TAO processes the program name plus all options (potentially
-        // none) after "--"
-        TaskContextServer::InitOrb( argc - taoIndex, &argv[taoIndex] );
+    // start Orocos _AFTER_ setting up log4cpp
+	if (0 == __os_init(argc, argv))
+    {
+        rc = -1;     // prove otherwise
+        try {
+            // if TAO options not found then have TAO process just the program name,
+            // otherwise TAO processes the program name plus all options (potentially
+            // none) after "--"
+            TaskContextServer::InitOrb( argc - taoIndex, &argv[taoIndex] );
 
-        {
             OCL::CorbaDeploymentComponent dc( name, siteFile );
 
             if (0 == TaskContextServer::Create( &dc, true, requireNameService ))
@@ -153,20 +173,29 @@ int ORO_main(int argc, char** argv)
             OCL::TaskBrowser tb( &dc );
 
             tb.loop();
+
+            TaskContextServer::ShutdownOrb();
+
+            TaskContextServer::DestroyOrb();
+
+            rc = 0;
+
+        } catch( CORBA::Exception &e ) {
+            log(Error) << argv[0] <<" ORO_main : CORBA exception raised!" << Logger::nl;
+            log() << CORBA_EXCEPTION_INFO(e) << endlog();
+        } catch (...) {
+            // catch this so that we can destroy the TLSF memory correctly
+            log(Error) << "Uncaught exception." << endlog();
         }
 
-        TaskContextServer::ShutdownOrb();
-
-        TaskContextServer::DestroyOrb();
-
-    } catch( CORBA::Exception &e ) {
-        log(Error) << argv[0] <<" ORO_main : CORBA exception raised!" << RTT::Logger::nl;
-        log() << CORBA_EXCEPTION_INFO(e) << endlog();
-    } catch (...)
-    {
-        // catch this so that we can destroy the TLSF memory correctly
-        log(Error) << "Uncaught exception." << endlog();
-    }
+		// shutdown Orocos
+		__os_exit();
+	}
+	else
+	{
+		std::cerr << "Unable to start Orocos" << std::endl;
+        rc = -1;
+	}
 
 #ifdef  ORO_BUILD_RTALLOC
     if (!rtMem)
@@ -176,5 +205,5 @@ int ORO_main(int argc, char** argv)
     }
 #endif  // ORO_BUILD_RTALLOC
 
-    return 0;
+    return rc;
 }
