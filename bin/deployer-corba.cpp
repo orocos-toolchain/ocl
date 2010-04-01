@@ -29,7 +29,7 @@
 #include <rtt/RTT.hpp>
 #include <taskbrowser/TaskBrowser.hpp>
 #include <deployment/CorbaDeploymentComponent.hpp>
-#include <rtt/transports/corba/ControlTaskServer.hpp>
+#include <rtt/transports/corba/TaskContextServer.hpp>
 #include <iostream>
 #include "deployer-funcs.hpp"
 
@@ -78,18 +78,18 @@ int ORO_main(int argc, char** argv)
         // if TAO options not found then have TAO process just the program name,
         // otherwise TAO processes the program name plus all options (potentially
         // none) after "--"
-        ControlTaskServer::InitOrb( argc - taoIndex, &argv[taoIndex] );
+        TaskContextServer::InitOrb( argc - taoIndex, &argv[taoIndex] );
 
         {
             OCL::CorbaDeploymentComponent dc( name );
 
-            if (0 == ControlTaskServer::Create( &dc, true, requireNameService ))
+            if (0 == TaskContextServer::Create( &dc, true, requireNameService ))
                 {
                     return -1;
                 }
 
             // The orb thread accepts incomming CORBA calls.
-            ControlTaskServer::ThreadOrb();
+            TaskContextServer::ThreadOrb();
 
             // Only start the script after the Orb was created.
             if ( !script.empty() )
@@ -102,9 +102,9 @@ int ORO_main(int argc, char** argv)
             tb.loop();
         }
 
-        ControlTaskServer::ShutdownOrb();
+        TaskContextServer::ShutdownOrb();
 
-        ControlTaskServer::DestroyOrb();
+        TaskContextServer::DestroyOrb();
 
     } catch( CORBA::Exception &e ) {
         log(Error) << argv[0] <<" ORO_main : CORBA exception raised!" << RTT::Logger::nl;

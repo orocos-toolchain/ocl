@@ -29,7 +29,7 @@
 #include <rtt/os/main.h>
 #include <rtt/RTT.hpp>
 #include <deployment/CorbaDeploymentComponent.hpp>
-#include <rtt/transports/corba/ControlTaskServer.hpp>
+#include <rtt/transports/corba/TaskContextServer.hpp>
 #include <iostream>
 #include "deployer-funcs.hpp"
 
@@ -76,9 +76,9 @@ int ORO_main(int argc, char** argv)
 	    // if TAO options not found then have TAO process just the program name,
 	    // otherwise TAO processes the program name plus all options (potentially
 	    // none) after "--"
-	    ControlTaskServer::InitOrb( argc - taoIndex, &argv[taoIndex] );
+	    TaskContextServer::InitOrb( argc - taoIndex, &argv[taoIndex] );
 
-	    if (0 == ControlTaskServer::Create( &dc, true, requireNameService ))
+	    if (0 == TaskContextServer::Create( &dc, true, requireNameService ))
 	    {
 	        return -1;
 	    }
@@ -90,12 +90,12 @@ int ORO_main(int argc, char** argv)
 	    }
 
 	    // Export the DeploymentComponent as CORBA server.
-	    ControlTaskServer::RunOrb();
+	    TaskContextServer::RunOrb();
 	}
 
-    ControlTaskServer::ShutdownOrb();
+    TaskContextServer::ShutdownOrb();
 
-    ControlTaskServer::DestroyOrb();
+    TaskContextServer::DestroyOrb();
 
     return 0;
 }

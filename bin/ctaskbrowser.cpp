@@ -26,8 +26,8 @@
  ***************************************************************************/
 
 #include <rtt/os/main.h>
-#include <rtt/transports/corba/ControlTaskProxy.hpp>
-#include <rtt/transports/corba/ControlTaskServer.hpp>
+#include <rtt/transports/corba/TaskContextProxy.hpp>
+#include <rtt/transports/corba/TaskContextServer.hpp>
 #include <taskbrowser/TaskBrowser.hpp>
 #include <deployment/DeploymentComponent.hpp>
 #include <iostream>
@@ -39,21 +39,21 @@ using namespace RTT::corba;
 int ORO_main(int argc, char** argv)
 {
     if ( argc == 1) {
-        std::cerr << "Please specify the CORBA ControlTask name or IOR to connect to." << std::endl;
+        std::cerr << "Please specify the CORBA TaskContext name or IOR to connect to." << std::endl;
         std::cerr << "  " << argv[0] << " [ComponentName | IOR]" << std::endl;
         return -1;
     }
     std::string name = argv[1];
 
-    ControlTaskServer::InitOrb( argc, argv);
+    TaskContextServer::InitOrb( argc, argv);
 
-    ControlTaskServer::ThreadOrb();
+    TaskContextServer::ThreadOrb();
 
     RTT::TaskContext* proxy;
     if ( name.substr(0, 4) == "IOR:" ) {
-        proxy = RTT::corba::ControlTaskProxy::Create( name, true );
+        proxy = RTT::corba::TaskContextProxy::Create( name, true );
     } else {
-        proxy = RTT::corba::ControlTaskProxy::Create( name ); // is_ior = true
+        proxy = RTT::corba::TaskContextProxy::Create( name ); // is_ior = true
     }
 
     if (proxy == 0){
@@ -66,8 +66,8 @@ int ORO_main(int argc, char** argv)
     OCL::TaskBrowser tb( proxy );
     tb.loop();
 
-    ControlTaskServer::ShutdownOrb();
-    ControlTaskServer::DestroyOrb();
+    TaskContextServer::ShutdownOrb();
+    TaskContextServer::DestroyOrb();
 
     return 0;
 }

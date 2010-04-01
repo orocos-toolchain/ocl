@@ -236,7 +236,7 @@ namespace OCL
             if (line.find(std::string("cd ")) == 0)
                 return;
             // Add objects for 'ls'.
-            v = peer->provides()->getServiceNames();
+            v = peer->provides()->getProviderNames();
             for (RTT::TaskContext::PeerList::iterator i = v.begin(); i != v.end(); ++i) {
                 std::string path;
                 if ( !( pos+1 > startpos) )
@@ -394,7 +394,7 @@ namespace OCL
         }
 
         // methods:
-        vector<string> comps = taskobject->getOperationNames();
+        vector<string> comps = taskobject->getNames();
         for (std::vector<std::string>::iterator i = comps.begin(); i!= comps.end(); ++i ) {
             if ( i->find( component ) == 0  )
                 completes.push_back( peerpath + *i );
@@ -469,7 +469,7 @@ namespace OCL
             }
         }
         // add taskobject's completes:
-        v = taskobject->getServiceNames();
+        v = taskobject->getProviderNames();
         for (RTT::TaskContext::PeerList::iterator i = v.begin(); i != v.end(); ++i) {
             if ( i->find( component ) == 0 ) { // only add if match
                 completes.push_back( peerpath + *i );
@@ -1058,7 +1058,7 @@ namespace OCL
             {
                 ops = context->provides(comm);
                 sresult << nl << "Printing Interface of '"<< coloron << ops->getName() <<coloroff <<"' :"<<nl<<nl;
-                vector<string> methods = ops->getOperationNames();
+                vector<string> methods = ops->getNames();
                 std::for_each( methods.begin(), methods.end(), boost::bind(&TaskBrowser::printOperation, this, _1, ops) );
                 cout << sresult.str();
                 sresult.str("");
@@ -1556,7 +1556,7 @@ namespace OCL
         }
 
         sresult <<coloroff<<nl<< "  Operations      : "<<coloron;
-        objlist = taskobject->getOperationNames();
+        objlist = taskobject->getNames();
         if ( !objlist.empty() ) {
             std::copy(objlist.begin(), objlist.end(), std::ostream_iterator<std::string>(sresult, " "));
         } else {
@@ -1621,7 +1621,7 @@ namespace OCL
             sresult << coloroff << nl;
         }
 
-        objlist = taskobject->getServiceNames();
+        objlist = taskobject->getProviderNames();
         sresult <<nl<< " Services: "<<nl;
         if ( !objlist.empty() ) {
             for(vector<string>::iterator it = objlist.begin(); it != objlist.end(); ++it)
@@ -1642,7 +1642,7 @@ namespace OCL
             } else {
                 sresult <<coloron<< "  (none)" <<coloroff <<nl;
             }
-            objlist = peer->requires()->getRequestNames();
+            objlist = peer->requires()->getRequesterNames();
             sresult <<     " Requests Services   :";
             if ( !objlist.empty() ) {
                 for(vector<string>::iterator it = objlist.begin(); it != objlist.end(); ++it)
@@ -1652,20 +1652,22 @@ namespace OCL
                 sresult <<coloron<< "  (none)" <<coloroff <<nl;
             }
 
-            objlist = peer->getProvider<Scripting>("scripting")->getProgramList();
-            if ( !objlist.empty() ) {
-                sresult << " Programs     : "<<coloron;
-                for(vector<string>::iterator it = objlist.begin(); it != objlist.end(); ++it)
-                    sresult << *it << "["<<getProgramStatusChar(peer,*it)<<"] ";
-                sresult << coloroff << nl;
-            }
+            if (peer->getProvider<Scripting>("scripting")) {
+                objlist = peer->getProvider<Scripting>("scripting")->getProgramList();
+                if ( !objlist.empty() ) {
+                    sresult << " Programs     : "<<coloron;
+                    for(vector<string>::iterator it = objlist.begin(); it != objlist.end(); ++it)
+                        sresult << *it << "["<<getProgramStatusChar(peer,*it)<<"] ";
+                    sresult << coloroff << nl;
+                }
 
-            objlist = peer->getProvider<Scripting>("scripting")->getStateMachineList();
-            if ( !objlist.empty() ) {
-                sresult << " StateMachines: "<<coloron;
-                for(vector<string>::iterator it = objlist.begin(); it != objlist.end(); ++it)
-                    sresult << *it << "["<<getStateMachineStatusChar(peer,*it)<<"] ";
-                sresult << coloroff << nl;
+                objlist = peer->getProvider<Scripting>("scripting")->getStateMachineList();
+                if ( !objlist.empty() ) {
+                    sresult << " StateMachines: "<<coloron;
+                    for(vector<string>::iterator it = objlist.begin(); it != objlist.end(); ++it)
+                        sresult << *it << "["<<getStateMachineStatusChar(peer,*it)<<"] ";
+                    sresult << coloroff << nl;
+                }
             }
 
             // if we are in the TB, display the peers of our connected task:
