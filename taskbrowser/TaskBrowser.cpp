@@ -927,7 +927,9 @@ namespace OCL
         our_pos_iter_t parsebegin( s.begin(), s.end(), "teststring" );
         our_pos_iter_t parseend;
 
-        PeerParser pp( peer, true );
+        CommonParser cp;
+        PeerParser pp( peer, cp, true );
+        bool &skipref = cp.skipeol;
         try {
             parse( parsebegin, parseend, pp.parser(), SKIP_PARSER );
         }
