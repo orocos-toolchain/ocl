@@ -20,6 +20,7 @@
 
 #include <rtt/os/StartStopManager.hpp>
 #include <rtt/types/TemplateTypeInfo.hpp>
+#include <rtt/types/TemplateConstructor.hpp>
 #include <rtt/types/Operators.hpp>
 #include <rtt/types/OperatorTypes.hpp>
 #include <rtt/types/RealTimeToolkit.hpp>
@@ -38,15 +39,13 @@ namespace OCL
         RTT::types::TypeInfoRepository::Instance()->type("strings")->addConstructor(newConstructor(types::stdvector_ctor<std::string>() ) );
         RTT::types::TypeInfoRepository::Instance()->type("strings")->addConstructor(newConstructor(types::stdvector_ctor2<std::string>() ) );
         RTT::types::TypeInfoRepository::Instance()->type("strings")->addConstructor(new types::StdVectorBuilder<std::string>() );
-        RTT::types::OperatorRepository::Instance()->add( newBinaryOperator( "[]", types::stdvector_index<std::string>() ) );
-        RTT::types::OperatorRepository::Instance()->add( newDotOperator( "size", types::get_size<const std::vector<std::string>&>() ) );
 
-        RTT::types::TypeInfoRepository::Instance()->addType( new types::StdVectorTemplateTypeInfo<bool,true>("bools") );
-        RTT::types::TypeInfoRepository::Instance()->type("bools")->addConstructor(newConstructor(types::stdvector_ctor<bool>() ) );
-        RTT::types::TypeInfoRepository::Instance()->type("bools")->addConstructor(newConstructor(types::stdvector_ctor2<bool>() ) );
-        RTT::types::TypeInfoRepository::Instance()->type("bools")->addConstructor(new types::StdVectorBuilder<bool>() );
-        RTT::types::OperatorRepository::Instance()->add( newBinaryOperator( "[]", types::stdvector_index<bool>() ) );
-        RTT::types::OperatorRepository::Instance()->add( newDotOperator( "size", types::get_size<const std::vector<bool>&>() ) );
+//        RTT::types::TypeInfoRepository::Instance()->addType( new types::StdVectorTemplateTypeInfo<bool,true>("bools") );
+//        RTT::types::TypeInfoRepository::Instance()->type("bools")->addConstructor(newConstructor(types::stdvector_ctor<bool>() ) );
+//        RTT::types::TypeInfoRepository::Instance()->type("bools")->addConstructor(newConstructor(types::stdvector_ctor2<bool>() ) );
+//        RTT::types::TypeInfoRepository::Instance()->type("bools")->addConstructor(new types::StdVectorBuilder<bool>() );
+//        RTT::types::OperatorRepository::Instance()->add( newBinaryOperator( "[]", types::stdvector_index<bool>() ) );
+//        RTT::types::OperatorRepository::Instance()->add( newDotOperator( "size", types::get_size<const std::vector<bool>&>() ) );
 
 //        RTT::types::TypeInfoRepository::Instance()->addType( new types::StdVectorTemplateTypeInfo<double,true>("doubles") );
 //        RTT::types::TypeInfoRepository::Instance()->type("doubles")->addConstructor(newConstructor(types::stdvector_ctor<double>() ) );
@@ -58,9 +57,7 @@ namespace OCL
         RTT::types::TypeInfoRepository::Instance()->type("ints")->addConstructor(newConstructor(types::stdvector_ctor<int>() ) );
         RTT::types::TypeInfoRepository::Instance()->type("ints")->addConstructor(newConstructor(types::stdvector_ctor2<int>() ) );
         RTT::types::TypeInfoRepository::Instance()->type("ints")->addConstructor(new types::StdVectorBuilder<int>() );
-        RTT::types::OperatorRepository::Instance()->add( newBinaryOperator( "[]", types::stdvector_index<int>() ) );
-        RTT::types::OperatorRepository::Instance()->add( newDotOperator( "size", types::get_size<const std::vector<int>&>() ) );
-        
+
         return true;
     }
 

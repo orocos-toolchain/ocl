@@ -676,6 +676,8 @@ namespace OCL
                 } else {
                     try {
                         this->evalCommand( command );
+                    } catch(std::exception& e) {
+                        cerr << "The command '"<<command<<"' caused a std::exception: '"<< e.what()<<"' and could not be completed."<<endl;
                     } catch(...){
                         cerr << "The command '"<<command<<"' caused an unknown exception and could not be completed."<<endl;
                     }
@@ -893,7 +895,9 @@ namespace OCL
         our_pos_iter_t parsebegin( s.begin(), s.end(), "teststring" );
         our_pos_iter_t parseend;
 
-        scripting::PeerParser pp( peer, true );
+        CommonParser cp;
+        scripting::PeerParser pp( peer, cp, true );
+        bool skipref = true;
         try {
             parse( parsebegin, parseend, pp.parser(), SKIP_PARSER );
         }

@@ -378,7 +378,7 @@ namespace OCL
             return false;
         }
         try {
-            boost::shared_ptr<base::ActionInterface> comm( clone->updateCommand( orig.get() ) );
+            boost::shared_ptr<base::ActionInterface> comm( clone->updateAction( orig.get() ) );
             assert( comm );
             root.push_back( boost::make_tuple( tag, orig, comm, clone, type, false, track ) );
         } catch ( internal::bad_assignment& ba ) {
