@@ -216,6 +216,8 @@ namespace OCL
             if ( pos+1 != line.length() ) // bounds check
                 peer = findPeer( line.substr(pos+1) );
 
+            if (!peer)
+                return;
             //std::string peername = text.substring( pos+1, std::string::npos );
             TaskContext::PeerList v = peer->getPeerList();
             for (TaskContext::PeerList::iterator i = v.begin(); i != v.end(); ++i) {
