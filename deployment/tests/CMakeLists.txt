@@ -10,4 +10,9 @@ IF ( BUILD_DEPLOYMENT_TEST )
     # Use  TARGET_LINK_LIBRARIES( report libs... ) to add library deps.
     PROGRAM_ADD_DEPS( deploy orocos-taskbrowser orocos-deployment )
 
+    # Copy this file to build dir.
+    TEST_USES_FILE( ComponentA.cpf )
+    TEST_USES_FILE( ComponentB.cpf )
+    TEST_USES_FILE( deployment.cpf )
+
 ENDIF ( BUILD_DEPLOYMENT_TEST )

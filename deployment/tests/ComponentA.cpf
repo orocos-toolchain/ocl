@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "cpf.dtd">
+<properties>
+  <struct name="limits" type="array">
+     <description>desc</description>
+     <simple name="limits" type="double"><value>10</value></simple>
+     <simple type="double"><value>10</value></simple>
+     <simple type="double"><value>10</value></simple>
+     <simple type="double"><value>5</value></simple>
+     <simple type="double"><value>5</value></simple>
+     <simple type="double"><value>5</value></simple>
+     <simple type="double"><value>5</value></simple>
+     <simple type="double"><value>5</value></simple>
+     <simple type="double"><value>5</value></simple>
+     <simple type="double"><value>10</value></simple>
+     <simple type="double"><value>10</value></simple>
+     <simple type="double"><value>10</value></simple>
+     <simple type="double"><value>10</value></simple>
+     <simple type="double"><value>10</value></simple>
+     <simple type="double"><value>5</value></simple>
+  </struct>
+</properties>

@@ -7,7 +7,6 @@
     <simple name="type" type="short"><value>1</value></simple>
     <simple name="size" type="short"><value>12</value></simple>
   </struct>
-    
 
   <!-- Component 1, already loaded in the application ! -->
   <struct name="ComponentA" type="PropertyBag">
@@ -25,6 +24,8 @@
     </struct>
     <simple name="AutoConf" type="boolean"><value>1</value></simple>
     <simple name="AutoStart" type="boolean"><value>1</value></simple>
+    <simple name="AutoSave" type="boolean"><value>1</value></simple>
+    <simple name="UpdateProperties" type="string"><value>ComponentA.cpf</value></simple>
   </struct>
 
   <!-- Component 2 , already loaded in the application ! -->
@@ -44,12 +45,14 @@
     </struct>
     <simple name="AutoConf" type="boolean"><value>1</value></simple>
     <simple name="AutoStart" type="boolean"><value>1</value></simple>
+    <simple name="UpdateProperties" type="string"><value>ComponentB.cpf</value></simple>
   </struct>
 
   <!-- Component 2 , This overrides the options above -->
   <struct name="ComponentB" type="PropertyBag">
     <simple name="AutoConf" type="boolean"><value>1</value></simple>
     <simple name="AutoStart" type="boolean"><value>0</value></simple>
+    <simple name="AutoSave" type="boolean"><value>1</value></simple>
   </struct>
 
 </properties>
