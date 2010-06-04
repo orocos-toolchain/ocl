@@ -29,7 +29,7 @@ int ORO_main(int argc, char* argv[])
     void* rtMem     = malloc(RT_MEM_SIZE);
     assert(rtMem);
     size_t freeMem  = init_memory_pool(RT_MEM_SIZE, rtMem);
-    assert(-1 != freeMem);
+    assert((size_t)-1 != freeMem);
     freeMem = freeMem;      // avoid compiler warning
 
     // forcibly load the toolkit
