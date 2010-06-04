@@ -19,6 +19,21 @@ protected:
     
     /// Name of file to append to
     RTT::Property<std::string>      filename_prop;
+    /** 
+     * Property to set maximum number of log events to pop per cycle
+     */
+    RTT::Property<int>              maxEventsPerCycle_prop;
+
+    /** 
+     * Maximum number of log events to pop per cycle
+     *
+     * Defaults to 1.
+     *
+     * A value of 0 indicates to not limit the number of events per cycle.
+     * With enough event production, this could lead to thread
+     * starvation!
+     */
+    int                           maxEventsPerCycle;
 };
 
 // namespaces
