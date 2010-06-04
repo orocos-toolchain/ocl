@@ -182,10 +182,12 @@ namespace OCL
         if ( !hassite ) {
             // if not, just configure
             this->configure();
+            log(Debug) << "Not using site file." << endlog();
             return;
         }
 
         // OK: kick-start it. Need to set AutoConf to configure self.
+        log(Info) << "Using site file '" << siteFile << "'." << endlog();
         this->kickStart( siteFile );
 
     }
@@ -990,12 +992,16 @@ namespace OCL
                 }
         }
 
-        // Finally, report success/failure:
+        // Finally, report success/failure (but ignore components that are actually running, as
+        // they will have been configured/started previously)
         if (!valid) {
             for ( CompList::iterator cit = comps.begin(); cit != comps.end(); ++cit) {
                 ComponentData* cd = &(cit->second);
-                if ( cd->loaded && cd->autoconf && cd->instance->getTaskState() != base::TaskCore::Stopped )
-                    log(Error) << "Failed to configure component "<< cd->instance->getName() <<endlog();
+                if ( cd->loaded && cd->autoconf &&
+                     (cd->instance->getTaskState() != TaskCore::Stopped) &&
+                     (cd->instance->getTaskState() != TaskCore::Running))
+                    log(Error) << "Failed to configure component "<< cd->instance->getName()
+                               << ": state is " << cd->instance->getTaskState() <<endlog();
             }
         } else {
             log(Info) << "Configuration successful." <<endlog();
@@ -1015,7 +1021,15 @@ namespace OCL
         bool valid = true;
         for (RTT::PropertyBag::iterator it= root.begin(); it!=root.end();it++) {
 
-            RTT::TaskContext* peer = comps[ (*it)->getName() ].instance;
+            TaskContext* peer = comps[ (*it)->getName() ].instance;
+
+            // only start if not already running (peer may have been previously
+            // loaded/configured/started from the site deployer file)
+            if (peer->isRunning()) 
+            {
+                continue;
+            }
+
             // AutoStart
             if (comps[(*it)->getName()].autostart )
                 if ( !peer || ( !peer->isRunning() && peer->start() == false) )

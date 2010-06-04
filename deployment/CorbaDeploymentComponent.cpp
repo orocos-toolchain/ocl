@@ -76,8 +76,8 @@ namespace OCL
     }
 
 
-    CorbaDeploymentComponent::CorbaDeploymentComponent(const std::string& name)
-        : DeploymentComponent(name)
+CorbaDeploymentComponent::CorbaDeploymentComponent(const std::string& name, const std::string& siteFile)
+        : DeploymentComponent(name, siteFile)
     {
         log(Info) << "Registering TaskContextProxy factory." <<endlog();
         getFactories()["TaskContextProxy"] = &createTaskContextProxy;
