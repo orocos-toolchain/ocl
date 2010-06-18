@@ -36,23 +36,24 @@ namespace po = boost::program_options;
 
 int ORO_main(int argc, char** argv)
 {
-	std::string             script;
+	std::string             siteFile;      // "" means use default in DeploymentComponent.cpp
+	std::string             scriptFile;
 	std::string             name("Deployer");
     bool                    requireNameService = false; // not used
     po::variables_map       vm;
 
 	int rc = OCL::deployerParseCmdLine(argc, argv,
-                                       script, name, requireNameService, vm);
+                                       siteFile, scriptFile, name, requireNameService, vm);
 	if (0 != rc)
 	{
 		return rc;
 	}
 
-    OCL::DeploymentComponent dc( name );
+    OCL::DeploymentComponent dc( name, siteFile );
 
-    if ( !script.empty() )
+    if ( !scriptFile.empty() )
         {
-            dc.kickStart( script );
+            dc.kickStart( scriptFile );
         }
 
     OCL::TaskBrowser tb( &dc );

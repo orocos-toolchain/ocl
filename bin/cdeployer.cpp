@@ -39,7 +39,8 @@ namespace po = boost::program_options;
 
 int ORO_main(int argc, char** argv)
 {
-	std::string                 script;
+	std::string                 siteFile;      // "" means use default in DeploymentComponent.cpp
+	std::string                 scriptFile;
 	std::string                 name("Deployer");
     bool                        requireNameService = false;
     po::variables_map           vm;
@@ -63,7 +64,7 @@ int ORO_main(int argc, char** argv)
     // if TAO options not found then process all command line options,
     // otherwise process all options up to but not including "--"
 	int rc = OCL::deployerParseCmdLine(!found ? argc : taoIndex, argv,
-                                       script, name, requireNameService,
+                                       siteFile, scriptFile, name, requireNameService,
                                        vm, &taoOptions);
 	if (0 != rc)
 	{
@@ -71,7 +72,7 @@ int ORO_main(int argc, char** argv)
 	}
 
 	{
-	    OCL::CorbaDeploymentComponent dc( name );
+	    OCL::CorbaDeploymentComponent dc( name, siteFile );
 
 	    // if TAO options not found then have TAO process just the program name,
 	    // otherwise TAO processes the program name plus all options (potentially
@@ -84,9 +85,9 @@ int ORO_main(int argc, char** argv)
 	    }
 
 	    // Only start the script after the Orb was created.
-	    if ( !script.empty() )
+	    if ( !scriptFile.empty() )
 	    {
-	        dc.kickStart( script );
+	        dc.kickStart( scriptFile );
 	    }
 
 	    // Export the DeploymentComponent as CORBA server.

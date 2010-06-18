@@ -49,7 +49,7 @@ namespace OCL
          */
         virtual void componentUnloaded(TaskContext* c);
     public:
-        CorbaDeploymentComponent(const std::string& name);
+        CorbaDeploymentComponent(const std::string& name, const std::string& siteFile = "");
         virtual ~CorbaDeploymentComponent();
         /**
          * Creates a ControlTask CORBA server for a given peer TaskContext.
