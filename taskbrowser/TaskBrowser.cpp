@@ -579,7 +579,6 @@ namespace OCL
      */
     void TaskBrowser::loop()
     {
-        using boost::lambda::_1;
 
         // Intercept Ctrl-C
         ::signal( SIGINT, ctrl_c_catcher );
@@ -1773,7 +1772,6 @@ namespace OCL
 
     void TaskBrowser::printCommand( const std::string m, OperationInterface* ops )
     {
-        using boost::lambda::_1;
         std::vector<ArgumentDescription> args;
         args = ops->commands()->getArgumentList( m );
         sresult << "  Command    : bool " << coloron << m << coloroff<< "( ";
