@@ -38,6 +38,13 @@ if (NOT EXISTS ${PROJ_SOURCE_DIR}/orocos-ocl.cmake)
     "See orocos-ocl.default.cmake")
 endif ()
 
+INCLUDE(CTest)
+ENABLE_TESTING()
+IF(BUILD_TESTING)
+  SET(BUILDNAME "${BUILDNAME}" CACHE STRING "Name of build on the dashboard")
+  MARK_AS_ADVANCED(BUILDNAME)
+ENDIF(BUILD_TESTING)
+
 # Do not rely on environment variables to find the path, because that's confusing
 IF(NOT CMAKE_INSTALL_PREFIX)
   SET( CMAKE_INSTALL_PREFIX /usr/local CACHE PATH "Installation directory" FORCE)
