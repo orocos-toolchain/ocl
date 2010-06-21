@@ -39,6 +39,7 @@
 #include <exception>
 
 #include "ocl/ComponentLoader.hpp"
+#include <rtt/types/PropertyDecomposition.hpp>
 
 ORO_CREATE_COMPONENT_TYPE()
 
@@ -479,7 +480,7 @@ namespace OCL
             if (  it->get<5>() || null.rvalue() == "last" ) {
                 base::DataSourceBase::shared_ptr clone = it->get<3>();
                 Property<PropertyBag> subbag( it->get<0>(), "");
-                if ( decompose.get() && clone->getTypeInfo()->decomposeType( clone, subbag.value() ) )
+                if ( decompose.get() && typeDecomposition( clone, subbag.value() ) )
                     report.add( subbag.clone() );
                 else
                     report.add( clone->getTypeInfo()->buildProperty(it->get<0>(), "", clone) );

@@ -2,6 +2,8 @@ OPTION( BUILD_REPORTING "Build Reporting Component" ON )
 
 IF ( BUILD_REPORTING )
 
+    find_package(RTTPlugin REQUIRED rtt-marshalling)
+
     # This gathers all the .cpp files into the variable 'SRCS'
     SET( SRCS command.cpp ConsoleReporting.cpp datasender.cpp FileReporting.cpp ReportingComponent.cpp socket.cpp socketmarshaller.cpp TcpReporting.cpp)
     SET( HPPS command.hpp ConsoleReporting.hpp datasender.hpp FileReporting.hpp NiceHeaderMarshaller.hpp ReportingComponent.hpp socket.hpp socketmarshaller.hpp TcpReporting.hpp)
@@ -20,6 +22,8 @@ IF ( BUILD_REPORTING )
       COMPONENT_ADD_LIBS( orocos-reporting-netcdf ${NETCDF_LIBS} )
       COMPONENT_ADD_DEPS( orocos-reporting-netcdf orocos-reporting )
     ENDIF ( NETCDF_FOUND )
+    
+    COMPONENT_ADD_LIBS( orocos-reporting ${RTT_PLUGIN_rtt-marshalling_LIBRARIES} )
     
     ADD_SUBDIRECTORY( tests )
 ENDIF ( BUILD_REPORTING )

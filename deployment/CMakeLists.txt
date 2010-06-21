@@ -2,6 +2,8 @@ OPTION( BUILD_DEPLOYMENT "Build Deployment Component" ON )
 
 IF ( BUILD_DEPLOYMENT )
 
+  find_package(RTTPlugin REQUIRED rtt-marshalling rtt-scripting)
+
   # Better inform user instead of hiding the option.
   IF(NOT OROCOS_RTT_1.2 )
     MESSAGE(FATAL_ERROR "Deployment Component requires Orocos RTT 1.1.0 or newer." )
@@ -15,6 +17,7 @@ IF ( BUILD_DEPLOYMENT )
     GLOBAL_ADD_INCLUDE( ocl ${HPPS})
 
     COMPONENT_ADD_LIBS( orocos-deployment "dl" )
+    COMPONENT_ADD_LIBS( orocos-deployment ${RTT_PLUGIN_rtt-marshalling_LIBRARIES} ${RTT_PLUGIN_rtt-scripting_LIBRARIES})
     
     IF (CORBA_ENABLED)
         GLOBAL_ADD_COMPONENT(orocos-deployment-corba CorbaDeploymentComponent.cpp)

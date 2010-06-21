@@ -131,6 +131,8 @@ INCLUDE (${CMAKE_ROOT}/Modules/CMakeDetermineCXXCompiler.cmake)
 #                                                 #
 ###################################################
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJ_SOURCE_DIR}/config/")
+
 #
 # This is the first in the include path.
 INCLUDE_DIRECTORIES( ${PROJ_SOURCE_DIR} ${PROJ_BINARY_DIR}/ocl )

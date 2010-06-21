@@ -2,6 +2,8 @@ OPTION( BUILD_TASKBROWSER "Build TaskBrowser" ON )
 
 IF ( BUILD_TASKBROWSER )
 
+    find_package(RTTPlugin REQUIRED rtt-scripting)
+
     IF(NOT CURSES AND NOT READLINE AND NOT NO_GPL)
        MESSAGE( FATAL_ERROR "Can not build TaskBrowser without the
        ncurses/readline library. Try 'sudo apt-get install libncurses5-dev libreadline5-dev' or
@@ -15,12 +17,13 @@ IF ( BUILD_TASKBROWSER )
        GLOBAL_ADD_INCLUDE( ocl ${HPPS})
 
        IF (NOT NO_GPL)
-	 OROCOS_PKGCONFIG_LIBS(ncurses readline)
-	 INCLUDE_DIRECTORIES(${READLINE_H})
-	 COMPONENT_ADD_LIBS( orocos-taskbrowser ncurses ${READLINE_LIBRARY} )
+    	 OROCOS_PKGCONFIG_LIBS(ncurses readline)
+	     INCLUDE_DIRECTORIES(${READLINE_H})
+	     COMPONENT_ADD_LIBS( orocos-taskbrowser ncurses ${READLINE_LIBRARY} )
        ENDIF (NOT NO_GPL)
 
        COMPONENT_ADD_DEPS( orocos-taskbrowser orocos-ocl-common )
+       COMPONENT_ADD_LIBS( orocos-taskbrowser ${RTT_PLUGIN_rtt-scripting_LIBRARIES} )
 
        ADD_SUBDIRECTORY( tests )
     ENDIF(NOT CURSES AND NOT READLINE AND NOT NO_GPL)
