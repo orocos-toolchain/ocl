@@ -268,7 +268,7 @@ namespace OCL
             tbcoms.push_back(".record");
             tbcoms.push_back(".end");
             tbcoms.push_back(".cancel");
-            tbcoms.push_back(".provides");
+            tbcoms.push_back(".provide");
             tbcoms.push_back(".services");
             tbcoms.push_back(".typekits");
             tbcoms.push_back(".types");
@@ -1093,7 +1093,7 @@ namespace OCL
         }
         if (instr == "services") {
             vector<string> names = PluginLoader::Instance()->listServices();
-            cout << "Available Plugins: ";
+            cout << "Available Services: ";
             for (std::vector<std::string>::iterator it = names.begin(); it != names.end(); ++it) {
                 cout << " " << *it;
             }
