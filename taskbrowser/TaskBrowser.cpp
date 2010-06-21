@@ -268,6 +268,10 @@ namespace OCL
             tbcoms.push_back(".record");
             tbcoms.push_back(".end");
             tbcoms.push_back(".cancel");
+            tbcoms.push_back(".provides");
+            tbcoms.push_back(".services");
+            tbcoms.push_back(".typekits");
+            tbcoms.push_back(".types");
 
             // then see which one matches the already typed line :
             for( std::vector<std::string>::iterator it = tbcoms.begin();
@@ -287,25 +291,26 @@ namespace OCL
             lcommand += ' ';
             std::vector<std::string> progs;
 
-            // THIS:
-            progs = context->getProvider<Scripting>("scripting")->getProgramList();
-            // then see which one matches the already typed line :
-            for( std::vector<std::string>::iterator it = progs.begin();
-                 it != progs.end();
-                 ++it) {
-                string res = lcommand + *it;
-                if ( res.find(line) == 0 )
-                    completes.push_back( *it ); // if partial match, add.
+            if ( context->provides()->hasService("scripting") ) {
+                // THIS:
+                progs = context->getProvider<Scripting>("scripting")->getProgramList();
+                // then see which one matches the already typed line :
+                for( std::vector<std::string>::iterator it = progs.begin();
+                        it != progs.end();
+                        ++it) {
+                    string res = lcommand + *it;
+                    if ( res.find(line) == 0 )
+                        completes.push_back( *it ); // if partial match, add.
+                }
+                progs = context->getProvider<Scripting>("scripting")->getStateMachineList();
+                for( std::vector<std::string>::iterator it = progs.begin();
+                        it != progs.end();
+                        ++it) {
+                    string res = lcommand + *it;
+                    if ( res.find(line) == 0 )
+                        completes.push_back( *it ); // if partial match, add.
+                }
             }
-            progs = context->getProvider<Scripting>("scripting")->getStateMachineList();
-            for( std::vector<std::string>::iterator it = progs.begin();
-                 it != progs.end();
-                 ++it) {
-                string res = lcommand + *it;
-                if ( res.find(line) == 0 )
-                    completes.push_back( *it ); // if partial match, add.
-            }
-
             return;
         }
 
@@ -717,6 +722,14 @@ namespace OCL
 
     void TaskBrowser::recordMacro(std::string name)
     {
+        if (macrorecording) {
+            log(Error)<< "Macro already active." <<endlog();
+            return;
+        }
+        if (context->provides()->hasService("scripting") == false) {
+            log(Error)<< "Can not create a macro in a TaskContext without scripting service." <<endlog();
+            return;
+        }
         if ( name.empty() ) {
             cerr << "Please specify a macro name." <<endl;
             return;
@@ -730,12 +743,20 @@ namespace OCL
     }
 
     void TaskBrowser::cancelMacro() {
+        if (!macrorecording) {
+            log(Warning)<< "Macro recording was not active." <<endlog();
+            return;
+        }
         cout << "Canceling macro "<< macroname <<endl;
         macrorecording = false;
         macrotext.clear();
     }
 
     void TaskBrowser::endMacro() {
+        if (!macrorecording) {
+            log(Warning)<< "Macro recording was not active." <<endlog();
+            return;
+        }
         string fname = macroname + ".ops";
         macrorecording = false;
         cout << "}" <<endl;
@@ -919,6 +940,10 @@ namespace OCL
         ss >> instr;
 
         if ( instr == "list" ) {
+            if (context->provides()->hasService("scripting") == false) {
+                log(Error)<< "Can not list a program in a TaskContext without scripting service." <<endlog();
+                return;
+            }
             int line;
             ss >> line;
             if (ss) {
@@ -949,6 +974,11 @@ namespace OCL
         // TRACING
         //
         if ( instr == "trace") {
+            if (context->provides()->hasService("scripting") == false) {
+                log(Error)<< "Can not trace a program in a TaskContext without scripting service." <<endlog();
+                return;
+            }
+
             string arg;
             ss >> arg;
             if (ss) {
@@ -989,6 +1019,10 @@ namespace OCL
         }
 
         if ( instr == "untrace") {
+            if (context->provides()->hasService("scripting") == false) {
+                log(Error)<< "Can not untrace a program in a TaskContext without scripting service." <<endlog();
+                return;
+            }
             string arg;
             ss >> arg;
             if (ss) {
@@ -1044,6 +1078,44 @@ namespace OCL
         }
         if ( instr == "end") {
             endMacro();
+            return;
+        }
+        if ( instr == "provide") {
+            while ( ss ) {
+                cout << "Trying to locate service '" << arg << "'..."<<endl;
+                if ( PluginLoader::Instance()->loadService(arg, context) )
+                    cout << "Service '"<< arg << "' loaded in " << context->getName() << endl;
+                else
+                    cout << "Service not found." <<endl;
+                ss >> arg;
+            }
+            return;
+        }
+        if (instr == "services") {
+            vector<string> names = PluginLoader::Instance()->listServices();
+            cout << "Available Plugins: ";
+            for (std::vector<std::string>::iterator it = names.begin(); it != names.end(); ++it) {
+                cout << " " << *it;
+            }
+            cout <<endl;
+            return;
+        }
+        if (instr == "typekits") {
+            vector<string> names = PluginLoader::Instance()->listTypekits();
+            cout << "Available Typekits: ";
+            for (std::vector<std::string>::iterator it = names.begin(); it != names.end(); ++it) {
+                cout << " " << *it;
+            }
+            cout <<endl;
+            return;
+        }
+        if (instr == "types") {
+            vector<string> names = TypeInfoRepository::Instance()->getTypes();
+            cout << "Available data types: ";
+            for (std::vector<std::string>::iterator it = names.begin(); it != names.end(); ++it) {
+                cout << " " << *it;
+            }
+            cout <<endl;
             return;
         }
         cerr << "Unknown Browser Action : "<< act <<endl;
@@ -1359,6 +1431,7 @@ namespace OCL
 
         cout <<titlecol("Program and scripting::StateMachine Scripts")<<nl;
         cout << "  To load a program script use the scripting service."<<nl;
+        cout << "   Use "<<comcol(".provide scripting")<< " to load the scripting service in a TaskContext."<<nl;
         cout << "  You can use "<<comcol("ls progname")<<nl;
         cout << "   to see the programs operations and variables. You can manipulate each one of these"<<nl;
         cout << "   using the service object of the program."<<nl;
@@ -1399,7 +1472,14 @@ namespace OCL
         cout << "  to all ports if [port-name] is omitted or to the specified port otherwise."<<nl;
         cout << "  The TaskBrowser disconnects these ports when it visits another component, but the"<<nl;
         cout << "  created connection objects remain in place (this is more or less a bug)!"<<nl;
-    }
+
+        cout <<titlecol("Plugins, Typekits and Services")<<nl;
+        cout << "  Use "<<comcol(".provide [servicename]")<< " to load a service in a TaskContext."<<nl;
+        cout << "  For example, to add XML marshalling, type: "<<comcol(".provide marshalling")<< "."<<nl;
+        cout << "  Use "<<comcol(".services")<< " to get a list of available services."<<nl;
+        cout << "  Use "<<comcol(".typekits")<< " to get a list of available typekits."<<nl;
+        cout << "  Use "<<comcol(".types")<< " to get a list of available data types."<<nl;
+}
 
     void TaskBrowser::printProgram(const std::string& progname, int cl /*= -1*/, RTT::TaskContext* progpeer /* = 0 */) {
         string ps;
@@ -1658,7 +1738,7 @@ namespace OCL
                 sresult <<coloron<< "  (none)" <<coloroff <<nl;
             }
 
-            if (peer->getProvider<Scripting>("scripting")) {
+            if (peer->provides()->hasService("scripting")) {
                 objlist = peer->getProvider<Scripting>("scripting")->getProgramList();
                 if ( !objlist.empty() ) {
                     sresult << " Programs     : "<<coloron;
