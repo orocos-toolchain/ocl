@@ -1,7 +1,7 @@
 /***************************************************************************
-  tag: Peter Soetens  Thu Jul 3 15:35:28 CEST 2008  ComponentLoader.hpp
+  tag: Peter Soetens  Thu Jul 3 15:35:28 CEST 2008  Component.hpp
 
-                        ComponentLoader.hpp -  description
+                        Component.hpp -  description
                            -------------------
     begin                : Thu July 03 2008
     copyright            : (C) 2008 Peter Soetens
@@ -25,9 +25,16 @@
  *                                                                         *
  ***************************************************************************/
 
+/**
+ * @file Component.hpp
+ *
+ * This file contains the macros and definitions to create dynamically
+ * loadable components. You need to include this header and use one
+ * of the macros if you wish to make a run-time loadable component.
+ */
 
-#ifndef OCL_COMPONENT_LOADER_HPP
-#define OCL_COMPONENT_LOADER_HPP
+#ifndef OCL_COMPONENT_HPP
+#define OCL_COMPONENT_HPP
 
 #include <string>
 #include <map>
@@ -49,6 +56,8 @@ namespace OCL
     /**
      * A global variable storing all component factories added with
      * \a ORO_LIST_COMPONENT_TYPE.
+     * This factory needs to be present in both static and dynamic library
+     * deployments
      */
     class ComponentFactories
     {
@@ -66,15 +75,16 @@ namespace OCL
     };
 
     /**
-     * A helper class storing a single component factory.
+     * A helper class storing a single component factory
+     * in case of static library deployments.
      */
     template<class C>
-    class ComponentLoader
+    class ComponentFactoryLoader
     {
     public:
-        ComponentLoader(std::string type_name)
+        ComponentFactoryLoader(std::string type_name)
         {
-            ComponentFactories::Instance()[type_name] = &ComponentLoader<C>::createComponent;
+            ComponentFactories::Instance()[type_name] = &ComponentFactoryLoader<C>::createComponent;
         }
 
         static RTT::TaskContext* createComponent(std::string instance_name)
@@ -158,7 +168,7 @@ extern "C" { \
 
 // Static OCL library:
 // Identical to ORO_LIST_COMPONENT_TYPE:
-#define ORO_CREATE_COMPONENT(CLASS_NAME) namespace { namespace ORO_CONCAT_LINE(LOADER_) { OCL::ComponentLoader<CLASS_NAME> m_cloader(ORO_LIST_COMPONENT_TYPE_str(CLASS_NAME)); } }
+#define ORO_CREATE_COMPONENT(CLASS_NAME) namespace { namespace ORO_CONCAT_LINE(LOADER_) { OCL::ComponentFactoryLoader<CLASS_NAME> m_cloader(ORO_LIST_COMPONENT_TYPE_str(CLASS_NAME)); } }
 #define ORO_CREATE_COMPONENT_TYPE() __attribute__((weak)) OCL::FactoryMap* OCL::ComponentFactories::Factories = 0;
 
 #endif
@@ -182,7 +192,7 @@ extern "C" { \
  * @param CLASS_NAME the class name of the component you are adding to the library.
  */
 
-#define ORO_LIST_COMPONENT_TYPE(CLASS_NAME) namespace { namespace ORO_CONCAT_LINE(LOADER_) { OCL::ComponentLoader<CLASS_NAME> m_cloader(ORO_LIST_COMPONENT_TYPE_str(CLASS_NAME)); } }
+#define ORO_LIST_COMPONENT_TYPE(CLASS_NAME) namespace { namespace ORO_CONCAT_LINE(LOADER_) { OCL::ComponentFactoryLoader<CLASS_NAME> m_cloader(ORO_LIST_COMPONENT_TYPE_str(CLASS_NAME)); } }
 
 
 #endif

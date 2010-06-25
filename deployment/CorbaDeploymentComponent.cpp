@@ -30,7 +30,7 @@
 #include <rtt/transports/corba/TaskContextProxy.hpp>
 #include <rtt/transports/corba/TaskContextServer.hpp>
 #include <rtt/Method.hpp>
-#include "ocl/ComponentLoader.hpp"
+#include "ocl/Component.hpp"
 #include <fstream>
 
 namespace OCL

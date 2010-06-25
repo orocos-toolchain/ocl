@@ -40,13 +40,13 @@
 #include <map>
 #include <rtt/marsh/PropertyDemarshaller.hpp>
 
-// Suppress warnings in ocl/ComponentLoader.hpp
+// Suppress warnings in ocl/Component.hpp
 #ifndef OCL_STATIC
 #define OCL_STATIC
-#include <ocl/ComponentLoader.hpp>
+#include <ocl/Component.hpp>
 #undef OCL_STATIC
 #else
-#include <ocl/ComponentLoader.hpp>
+#include <ocl/Component.hpp>
 #endif
 
 namespace OCL
@@ -112,7 +112,7 @@ namespace OCL
                   autostart(false), autoconf(false),
                   autoconnect(false),  autosave(false),
                   proxy(false), server(false),
-                  use_naming(true),type(""),
+                  use_naming(true),
                   configfile("")
             {}
             /**
@@ -137,7 +137,7 @@ namespace OCL
             bool loadedProperties;
             bool autostart, autoconf, autoconnect, autosave;
             bool proxy, server, use_naming;
-            std::string type, configfile;
+            std::string configfile;
         };
 
         /**
@@ -162,33 +162,6 @@ namespace OCL
          */
         typedef std::map<std::string, ComponentData> CompList;
         CompList comps;
-
-        /**
-         * Keep a list of all loaded libraries such that double
-         * loads are avoided during import/loadLibrary.
-         */
-        class LoadedLib{
-	    public:
-            LoadedLib(std::string n, void* h)
-            {
-                name = n;
-                handle = h;
-            }
-            std::string name;
-            void* handle;
-            std::vector<std::string> components_type;
-        };
-
-        static std::vector< LoadedLib > loadedLibs;
-
-        /**
-         * RTT::Handle of last loaded library.
-         */
-        void* handle;
-        /**
-         * Name of last loaded library.
-         */
-        std::string libname;
 
         /**
          * This function imports available plugins from

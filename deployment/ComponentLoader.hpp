@@ -5,8 +5,6 @@
 #include <vector>
 #include <boost/shared_ptr.hpp>
 
-#include "../rtt-fwd.hpp"
-
 namespace OCL {
         /**
          * Locates Component libraries found on the filesystem and keeps track of loaded Components.
@@ -51,12 +49,31 @@ namespace OCL {
                 std::vector<std::string> components_type;
             };
 
+            struct ComponentData {
+                ComponentData()
+                    : instance(0), type("")
+                {}
+                /**
+                 * The component instance. This is always a valid pointer.
+                 */
+                RTT::TaskContext* instance;
+                std::string type;
+            };
+
+            /**
+             * This vector holds the dynamically loaded components.
+             */
+            typedef std::map<std::string, ComponentData> CompList;
+
+            CompList comps;
+
+
             std::vector< LoadedLib > loadedLibs;
 
             /**
              * Path to look for if all else fails.
              */
-            std::string Component_path;
+            std::string component_path;
 
             /**
              * Internal function that does all library loading.
@@ -67,23 +84,6 @@ namespace OCL {
              * @return true if a new library was loaded or if this library was already loaded.
              */
             bool loadInProcess(std::string filename, std::string shortname, bool log_error );
-            /**
-             * Helper function for loadComponent.
-             * @param name
-             * @param path_list
-             * @param subdir
-             * @param kind
-             * @return
-             */
-            bool loadComponentInternal( std::string const& name, std::string const& path_list, std::string const& subdir);
-            /**
-             * Helper function for loadTypekits and loadComponents.
-             * @param path_list
-             * @param subdir
-             * @param kind
-             * @return
-             */
-            void loadComponentsInternal( std::string const& path_list, std::string const& subdir);
         public:
             typedef boost::shared_ptr<ComponentLoader> shared_ptr;
             /**
@@ -127,7 +127,7 @@ namespace OCL {
 
             /**
              * Creates a new component an earlier discovered component type.
-             * @param name The name of the to be created Component 
+             * @param name The name of the to be created Component
              * @param type The type of component to be created.
              * @return null on error or a new component.
              */
@@ -136,9 +136,10 @@ namespace OCL {
             /**
              * Destroys an earlier created component.
              * @param tc The TaskContext to be destroyed. tc may no longer
-             * be used after this function returns.
+             * be used after this function returns true.
+             * @return false if \a tc was not loaded by this ComponentLoader.
              */
-            void unloadComponent( RTT::TaskContext* tc );
+            bool unloadComponent( RTT::TaskContext* tc );
 
             /**
              * Lists all Component created by loadComponent().
@@ -168,7 +169,6 @@ namespace OCL {
              */
             void setComponentPath( std::string const& newpath );
         };
-    }
 }
 
 

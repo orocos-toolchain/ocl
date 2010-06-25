@@ -3,6 +3,8 @@ OPTION( BUILD_DEPLOYMENT "Build Deployment Component" ON )
 IF ( BUILD_DEPLOYMENT )
 
   find_package(RTTPlugin REQUIRED rtt-marshalling rtt-scripting)
+  
+  find_package(Boost 1.36 REQUIRED filesystem system)
 
   # Better inform user instead of hiding the option.
   IF(NOT OROCOS_RTT_1.2 )
@@ -18,6 +20,7 @@ IF ( BUILD_DEPLOYMENT )
 
     COMPONENT_ADD_LIBS( orocos-deployment "dl" )
     COMPONENT_ADD_LIBS( orocos-deployment ${RTT_PLUGIN_rtt-marshalling_LIBRARIES} ${RTT_PLUGIN_rtt-scripting_LIBRARIES})
+    COMPONENT_ADD_LIBS( orocos-deployment ${Boost_FILESYSTEM_LIBRARIES} ${Boost_SYSTEM_LIBRARIES})
     
     IF (CORBA_ENABLED)
         GLOBAL_ADD_COMPONENT(orocos-deployment-corba CorbaDeploymentComponent.cpp)
