@@ -640,6 +640,8 @@ namespace OCL
                 std::string command;
                 cout << prompt;
                 getline(cin,command);
+                if (!cin) // Ctrl-D
+                    command = "quit";
 #endif
                 str_trim( command, ' ');
                 ::signal( SIGINT, SIG_DFL );        // do not catch ctrl_c
