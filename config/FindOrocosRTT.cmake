@@ -138,7 +138,7 @@ IF ( CMAKE_PKGCONFIG_EXECUTABLE AND NOT SKIP_BUILD)
 	  MESSAGE( FATAL_ERROR "Could not detect target OS!" )
 	ENDIF ( NOT OS_LXRT AND NOT OS_GNULINUX AND NOT OS_XENOMAI )
 
-	FIND_FILE( CORBA_ENABLED rtt/corba/ControlTaskProxy.hpp ${OROCOS_RTT_INCLUDE_DIRS} )
+	FIND_FILE( CORBA_ENABLED rtt/transports/corba/TaskContextProxy.hpp ${OROCOS_RTT_INCLUDE_DIRS} )
 	IF (CORBA_ENABLED)
 	  MESSAGE( "Detected CORBA build of RTT: ${CORBA_ENABLED}" )
 	  # Work around RTT 1.2.0 bug when rtt/corba libs are not in ldconfig/standard paths.
