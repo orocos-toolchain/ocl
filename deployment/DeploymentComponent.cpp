@@ -69,9 +69,6 @@ namespace OCL
 
     DeploymentComponent::DeploymentComponent(std::string name, std::string siteFile)
         : RTT::TaskContext(name, Stopped),
-          compPath("ComponentPath",
-                   "Location to look for components in addition to the local directory and system paths.",
-                   "/usr/lib"),
           autoUnload("AutoUnload",
                      "Stop, cleanup and unload all components loaded by the DeploymentComponent when it is destroyed.",
                      true),
@@ -84,9 +81,9 @@ namespace OCL
                  "The Orocos Target component suffix. Will be used in import statements to find matching components. Only change this if you know what you are doing.",
                  ORO_str(OROCOS_TARGET) )
     {
-        this->properties()->addProperty( compPath );
-        this->properties()->addProperty( autoUnload );
-        this->properties()->addProperty( target );
+        this->addProperty( "RTT_COMPONENT_PATH", compPath ).doc("Locations to look for components. Use a colon or semi-colon separated list of paths. Defaults to the environment variable with the same name.");
+        this->addProperty( autoUnload );
+        this->addProperty( target );
 
         this->addAttribute( validConfig );
         this->addAttribute( sched_RT );
@@ -187,13 +184,15 @@ namespace OCL
     bool DeploymentComponent::configureHook()
     {
         char* paths = getenv("RTT_COMPONENT_PATH");
-        if (paths) {
-            string component_paths = paths;
-            log(Info) <<"RTT_COMPONENT_PATH was set to " << component_paths << endlog();
-            ComponentLoader::Instance()->setComponentPath(component_paths);
-        } else {
-            log(Info) <<"No RTT_COMPONENT_PATH set." <<endlog();
-        }
+        if (compPath.empty() )
+            if (paths) {
+                compPath = string(paths);
+            } else {
+                log(Info) <<"No RTT_COMPONENT_PATH set. Using default." <<endlog();
+                compPath = default_comp_path ;
+            }
+        log(Info) <<"RTT_COMPONENT_PATH was set to " << compPath << endlog();
+        ComponentLoader::Instance()->setComponentPath(compPath);
         ComponentLoader::Instance()->import("");
         return true;
     }

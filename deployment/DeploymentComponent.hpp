@@ -92,7 +92,7 @@ namespace OCL
          * It is the cumulation of all loadConfiguration() calls.
          */
         RTT::PropertyBag root;
-        RTT::Property<std::string> compPath;
+        std::string compPath;
         RTT::Property<bool> autoUnload;
         RTT::Attribute<bool> validConfig;
         RTT::Constant<int> sched_RT;
@@ -162,6 +162,8 @@ namespace OCL
          */
         typedef std::map<std::string, ComponentData> CompList;
         CompList comps;
+
+        static std::string default_comp_path;
 
         /**
          * This function imports available plugins from
