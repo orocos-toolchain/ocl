@@ -8,7 +8,7 @@ Recv::Recv(std::string name) :
 		RTT::TaskContext(name),
 		rtstring_port("rtstring")
 {
-	ports()->addPort(&rtstring_port);
+	ports()->addPort( rtstring_port );
 }
 
 Recv::~Recv()

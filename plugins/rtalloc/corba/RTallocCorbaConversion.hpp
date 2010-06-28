@@ -2,7 +2,7 @@
  Copyright (c) 2008 S Roderick <xxxstephen AT theptrgroupxxx DOT comxxx>
                                (remove the x's above)
  ***************************************************************************/
-#include <rtt/corba/CorbaConversion.hpp>
+#include <rtt/transports/corba/CorbaConversion.hpp>
 #include "rtalloc/String.hpp"
 
 // must be in RTT namespace to match some rtt/corba code
@@ -11,7 +11,7 @@ namespace RTT
 
 
 template<>
-struct AnyConversion< OCL::String >
+struct corba::AnyConversion< OCL::String >
 {
     typedef const char*     CorbaType;
     typedef OCL::String     StdType;

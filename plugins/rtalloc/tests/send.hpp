@@ -6,14 +6,14 @@
 #define	__SEND_HPP 1
 
 #include <rtt/TaskContext.hpp>
-#include <rtt/Ports.hpp>
+#include <rtt/Port.hpp>
 #include "rtalloc/String.hpp"
 
 // send RTalloc types on ports
 class Send : public RTT::TaskContext
 {
 public:
-	RTT::DataPort<OCL::String>		        rtstring_port;
+	RTT::OutputPort<OCL::String>		        rtstring_port;
 
 public:
 	Send(std::string name);

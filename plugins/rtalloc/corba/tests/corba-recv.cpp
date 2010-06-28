@@ -6,10 +6,10 @@
 #include <rtt/corba/ControlTaskServer.hpp>
 #include <rtt/corba/ControlTaskProxy.hpp>
 #include <rtt/RTT.hpp>
-#include <rtt/PeriodicActivity.hpp>
+#include <rtt/Activity.hpp>
 #include <rtt/TaskContext.hpp>
 #include <rtt/os/main.h>
-#include <rtt/Ports.hpp>
+#include <rtt/Port.hpp>
 
 // need access to all TLSF functions embedded in RTT
 #define ORO_MEMORY_POOL
@@ -18,14 +18,14 @@
 #include "../RTallocCorbaToolkit.hpp"
 #include "../../RTallocToolkit.hpp"
 
-// use RTalloc RTT Toolkit test components
+// use RTalloc RTT types::TypekitRepository test components
 #include "../../tests/recv.hpp"
 
 #include "taskBrowser/TaskBrowser.hpp"
 
 using namespace std;
 using namespace Orocos;
-using namespace RTT::Corba;
+using namespace RTT::corba;
 
 
 int ORO_main(int argc, char* argv[])
@@ -38,11 +38,11 @@ int ORO_main(int argc, char* argv[])
     assert((size_t)-1 != freeMem);
     freeMem = freeMem;      // avoid compiler warning
 
-    RTT::Toolkit::Import( RTT::RTallocToolkit  );
-    RTT::Toolkit::Import( RTT::Corba::corbaRTallocPlugin  );
+    RTT::types::TypekitRepository::Import( RTT::RTallocToolkit  );
+    RTT::types::TypekitRepository::Import( RTT::corba::corbaRTallocPlugin  );
 
 	Recv			    recv("Recv");
-    PeriodicActivity	recv_activity(
+    Activity	recv_activity(
         ORO_SCHED_OTHER, 0, 1.0 / 5, recv.engine());    // 5 Hz
 
 	// Setup Corba and Export:

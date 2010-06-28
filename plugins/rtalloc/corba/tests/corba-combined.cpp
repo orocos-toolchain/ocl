@@ -10,22 +10,22 @@
 #include <rtt/corba/ControlTaskServer.hpp>
 #include <rtt/corba/ControlTaskProxy.hpp>
 #include <rtt/RTT.hpp>
-#include <rtt/PeriodicActivity.hpp>
+#include <rtt/Activity.hpp>
 #include <rtt/TaskContext.hpp>
 #include <rtt/os/main.h>
-#include <rtt/Ports.hpp>
+#include <rtt/Port.hpp>
 
 // need access to all TLSF functions embedded in RTT
 #define ORO_MEMORY_POOL
 #include <rtt/os/tlsf/tlsf.h>
 
-// use RTalloc RTT Toolkit test components
+// use RTalloc RTT types::TypekitRepository test components
 #include "../../tests/send.hpp"
 #include "../../tests/recv.hpp"
 
 using namespace std;
 using namespace Orocos;
-using namespace RTT::Corba;
+using namespace RTT::corba;
 
 
 void sighandler(int, siginfo_t*, void*)
@@ -44,10 +44,10 @@ int ORO_main(int argc, char* argv[])
     freeMem = freeMem;      // avoid compiler warning
 
 	Recv		        recv("Recv");
-    PeriodicActivity	recv_activity(
+    Activity	recv_activity(
 		ORO_SCHED_OTHER, 0, 0.1, recv.engine());
 	Send     		    send("Send");
-    PeriodicActivity	send_activity(
+    Activity	send_activity(
 		ORO_SCHED_OTHER, 0, 0.2, send.engine());
 
 	// Setup Corba, create a server and then a proxy for the send

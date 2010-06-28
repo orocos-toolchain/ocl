@@ -6,10 +6,10 @@
 #ifndef __RTALLOC_TOOLKIT_HPP
 #define __RTALLOC_TOOLKIT_HPP 1
 
-#include <rtt/Toolkit.hpp>
+#include <rtt/types/TypekitRepository.hpp>
 #include <rtt/PropertyBag.hpp>
-#include <rtt/TemplateTypeInfo.hpp>
-#include <rtt/ToolkitPlugin.hpp>
+#include <rtt/types/TemplateTypeInfo.hpp>
+#include <rtt/types/TypekitPlugin.hpp>
 #include <iostream>
 
 #include "rtalloc/String.hpp"
@@ -17,7 +17,7 @@
 namespace RTT
 {
    
-// these have to be in RTT namespace to work with the Toolkit
+// these have to be in RTT namespace to work with the types::TypekitRepository
 
 /// put the time onto the stream
 std::ostream& operator<<(std::ostream& os, const OCL::String& s);
@@ -28,7 +28,7 @@ std::istream& operator>>(std::istream& is, OCL::String& s);
 /**
  * This interface defines the types that we can pass around within Orocos.
  */
-class RTallocPlugin : public RTT::ToolkitPlugin
+class RTallocPlugin : public RTT::types::TypekitPlugin
 {
 public:
     virtual std::string getName();
@@ -38,15 +38,15 @@ public:
     virtual bool loadOperators();
 };
 
-/// The single global instance of the Toolkit.
+/// The single global instance of the TypekitRepository.
 extern RTallocPlugin RTallocToolkit;
 
 /// Provide OCL::String type to RTT type system
 struct RTallocPtimeTypeInfo : 
-        public RTT::TemplateTypeInfo<OCL::String,true> 
+        public RTT::types::TemplateTypeInfo<OCL::String,true> 
 {
     RTallocPtimeTypeInfo(std::string name) :
-            RTT::TemplateTypeInfo<OCL::String,true>(name)
+            RTT::types::TemplateTypeInfo<OCL::String,true>(name)
     {};
     bool decomposeTypeImpl(const OCL::String& img, RTT::PropertyBag& targetbag);
     bool composeTypeImpl(const RTT::PropertyBag& bag, OCL::String& img);

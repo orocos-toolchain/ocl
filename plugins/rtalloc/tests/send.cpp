@@ -10,7 +10,7 @@ Send::Send(std::string name) :
 		RTT::TaskContext(name),
 		rtstring_port("rtstring")
 {
-	ports()->addPort(&rtstring_port);
+	ports()->addPort( rtstring_port );
 }
 
 Send::~Send()
@@ -27,7 +27,7 @@ void Send::updateHook()
     
     OCL::String r(&str[0]);
 //    log(Error) << "r=" << r.c_str() << endlog();  
-    rtstring_port.Set(r);
+    rtstring_port.write( r );
     
     ++i;
 }

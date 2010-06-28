@@ -9,7 +9,7 @@ namespace OCL {
 /// Real-time allocatable, dynamically-sized string
 typedef std::basic_string<char,
                           std::char_traits<char>,
-                          RTT::OS::rt_allocator<char> >      String;
+                          RTT::os::rt_allocator<char> >      String;
 
 // convert from real-time string to std::string
 inline std::string makeString(const OCL::String& str)

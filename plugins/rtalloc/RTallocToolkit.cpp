@@ -3,9 +3,9 @@
                                (remove the x's above)
  ***************************************************************************/
 #include "RTallocToolkit.hpp"
-#include <rtt/Types.hpp>
-#include <rtt/TypeStream-io.hpp>
-#include <rtt/TemplateTypeInfo.hpp>
+#include <rtt/types/Types.hpp>
+#include <rtt/types/TypeStream-io.hpp>
+#include <rtt/types/TemplateTypeInfo.hpp>
 
 namespace RTT
 {
@@ -36,7 +36,7 @@ namespace RTT
 
     bool RTallocPlugin::loadTypes()
     {
-        TypeInfoRepository::shared_ptr ti = TypeInfoRepository::Instance();
+        types::TypeInfoRepository::shared_ptr ti = types::TypeInfoRepository::Instance();
 
         ti->addType( new RTallocPtimeTypeInfo("rtstring") );
 
@@ -82,4 +82,4 @@ namespace RTT
 
 }
 
-ORO_TOOLKIT_PLUGIN(RTT::RTallocToolkit)
+ORO_TYPEKIT_PLUGIN(RTT::RTallocPlugin)

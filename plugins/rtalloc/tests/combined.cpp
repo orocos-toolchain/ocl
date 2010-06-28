@@ -4,15 +4,15 @@
 
  Test components that are directly connected within the same executable.
  ***************************************************************************/
-#include <assert.h>
-#include <rtt/RTT.hpp>
-#include <rtt/PeriodicActivity.hpp>
-#include <rtt/TaskContext.hpp>
-#include <rtt/os/main.h>
-#include <rtt/Ports.hpp>
 // need access to all TLSF functions embedded in RTT
 #define ORO_MEMORY_POOL
 #include <rtt/os/tlsf/tlsf.h>
+#include <assert.h>
+#include <rtt/RTT.hpp>
+#include <rtt/Activity.hpp>
+#include <rtt/TaskContext.hpp>
+#include <rtt/os/main.h>
+#include <rtt/Port.hpp>
 #include "taskbrowser/TaskBrowser.hpp"
 
 #include "send.hpp"
@@ -25,7 +25,7 @@ using namespace Orocos;
 int ORO_main(int argc, char* argv[])
 {
     // initialize TLSF
-    static const size_t RT_MEM_SIZE = 20*1024;  // 20 kb should do  
+    static const size_t RT_MEM_SIZE = 20*1024;  // 20 kb should do
     void* rtMem     = malloc(RT_MEM_SIZE);
     assert(rtMem);
     size_t freeMem  = init_memory_pool(RT_MEM_SIZE, rtMem);
@@ -33,16 +33,16 @@ int ORO_main(int argc, char* argv[])
     freeMem = freeMem;      // avoid compiler warning
 
     // forcibly load the toolkit
-    RTT::Toolkit::Import(RTT::RTallocToolkit);
-	
+    RTT::types::TypekitRepository::Import(RTT::RTallocToolkit);
+
 	Recv		        recv("Recv");
-    PeriodicActivity	recv_activity(
+    Activity	recv_activity(
 		ORO_SCHED_OTHER, 0, 0.1, recv.engine());
 	Send     		send("Send");
-    PeriodicActivity	send_activity(
+    Activity	send_activity(
 		ORO_SCHED_OTHER, 0, 0.2, send.engine());
 
-    // connect the two components 
+    // connect the two components
 	if ( connectPeers( &send, &recv ) == false )
 	{
 		log(Error) << "Could not connect peers !"<<endlog();

@@ -6,14 +6,14 @@
 #define	__RECV_HPP 1
 
 #include <rtt/TaskContext.hpp>
-#include <rtt/Ports.hpp>
+#include <rtt/Port.hpp>
 #include "rtalloc/String.hpp"
 
 // receive boost types from ports
 class Recv : public RTT::TaskContext
 {
 public:
-	RTT::DataPort<OCL::String>		        rtstring_port;
+	RTT::InputPort<OCL::String>		        rtstring_port;
 
 public:
 	Recv(std::string name);

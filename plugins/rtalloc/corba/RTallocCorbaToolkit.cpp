@@ -3,28 +3,28 @@
                                (remove the x's above)
  ***************************************************************************/
 #include "RTallocCorbaToolkit.hpp"
-#include <rtt/Types.hpp>
-#include <rtt/Toolkit.hpp>
-#include <rtt/Plugin.hpp>
-#include <rtt/corba/CorbaTemplateProtocol.hpp>
+#include <rtt/types/Types.hpp>
+#include <rtt/types/TypekitRepository.hpp>
+#include <rtt/plugin/Plugin.hpp>
+#include <rtt/transports/corba/CorbaTemplateProtocol.hpp>
 #include "RTallocCorbaConversion.hpp"
 
 using namespace RTT;
 using namespace RTT::detail;
-using namespace RTT::Corba;
+using namespace RTT::corba;
 
 namespace RTT
 {
     namespace Corba
     {
     
-    bool CorbaRTallocPlugin::registerTransport(std::string name, TypeInfo* ti)
+    bool CorbaRTallocPlugin::registerTransport(std::string name, types::TypeInfo* ti)
     {
         assert( name == ti->getTypeName() );
         // name must match that in plugin::loadTypes() and 
         // typeInfo::composeTypeInfo(), etc
         if ( name == "rtstring" )
-            return ti->addProtocol(ORO_CORBA_PROTOCOL_ID, new CorbaTemplateProtocol< OCL::String >() );
+            return ti->addProtocol(ORO_CORBA_PROTOCOL_ID, new corba::CorbaTemplateProtocol< OCL::String >() );
         return false;
     }
 
@@ -42,5 +42,5 @@ namespace RTT
 }
 }
 
-ORO_TOOLKIT_PLUGIN(RTT::Corba::corbaRTallocPlugin);
+ORO_TOOLKIT_PLUGIN(RTT::corba::corbaRTallocPlugin);
 

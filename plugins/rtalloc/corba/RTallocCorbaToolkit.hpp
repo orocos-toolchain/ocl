@@ -5,17 +5,17 @@
 #ifndef __RTALLOCCORBATOOLKIT_HPP
 #define __RTALLOCCORBATOOLKIT_HPP 1
 
-#include <rtt/TransportPlugin.hpp>
+#include <rtt/types/TransportPlugin.hpp>
 
 namespace RTT
 {
     namespace Corba
     {
 
-    class CorbaRTallocPlugin : public RTT::TransportPlugin
+    class CorbaRTallocPlugin : public RTT::types::TransportPlugin
     {
     public:
-        bool registerTransport(std::string name, RTT::TypeInfo* ti);
+        bool registerTransport(std::string name, RTT::types::TypeInfo* ti);
         
         std::string getTransportName() const;
         
