@@ -13,7 +13,7 @@
 // need access to all TLSF functions embedded in RTT
 #define ORO_MEMORY_POOL
 #include <rtt/os/tlsf/tlsf.h>
-#include "taskBrowser/TaskBrowser.hpp"
+#include "taskbrowser/TaskBrowser.hpp"
 
 #include "send.hpp"
 #include "recv.hpp"
