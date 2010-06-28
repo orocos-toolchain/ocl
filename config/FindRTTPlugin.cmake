@@ -32,10 +32,10 @@ FOREACH(COMPONENT ${RTTPlugin_FIND_COMPONENTS})
     # Find plugins
     if(OROCOS_ROOT_DIR)
         # Use location specified by environment variable
-        find_library(RTT_PLUGIN_${COMPONENT}_LIBRARY        NAMES ${PLUGIN_NAME} PATHS ${OROCOS_ROOT_DIR}/lib  PATH_SUFFIXES plugins plugins/${OROCOS_TARGET}  NO_DEFAULT_PATH)
+        find_library(RTT_PLUGIN_${COMPONENT}_LIBRARY        NAMES ${PLUGIN_NAME} PATHS ${OROCOS_ROOT_DIR}/lib PATH_SUFFIXES orocos/plugins orocos/plugins/${OROCOS_TARGET}  NO_DEFAULT_PATH)
     else()
         # Use default CMake search process
-        find_library(RTT_PLUGIN_${COMPONENT}_LIBRARY        NAMES ${PLUGIN_NAME} PATHS ${OROCOS_INSTALL}/lib PATH_SUFFIXES plugins plugins/${OROCOS_TARGET})
+        find_library(RTT_PLUGIN_${COMPONENT}_LIBRARY        NAMES ${PLUGIN_NAME} PATHS ${OROCOS_INSTALL}/lib PATH_SUFFIXES orocos/plugins orocos/plugins/${OROCOS_TARGET})
     endif()
 
     # Set the include dir variables and the libraries and let libfind_process do the rest.
