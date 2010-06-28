@@ -21,9 +21,9 @@ LoggingService::LoggingService(std::string name) :
         appenders_prop("Appenders","A PropertyBag defining the appenders for each category of interest."),
         logCategories_mtd("logCategories", &LoggingService::logCategories, this)
 {
-    this->properties()->addProperty( &levels_prop );
-    this->properties()->addProperty( &appenders_prop );
-    this->methods()->addMethod( &logCategories_mtd, "Log category hierarchy (not realtime!)" );
+    this->properties()->addProperty( levels_prop );
+    this->properties()->addProperty( appenders_prop );
+    this->provides()->addOperation( logCategories_mtd ).doc("Log category hierarchy (not realtime!)");
 }
 
 LoggingService::~LoggingService()
@@ -126,7 +126,7 @@ bool LoggingService::configureHook()
             if (appender)
             {
                 // connect category port with appender port
-                RTT::PortInterface* appenderPort = 0;
+                RTT::base::PortInterface* appenderPort = 0;
 
                 appenderPort	= appender->ports()->getPort("LogPort");
                 if (appenderPort)

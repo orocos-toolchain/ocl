@@ -10,13 +10,13 @@ namespace OCL {
 namespace logging {
 
 FileAppender::FileAppender(std::string name) :
-		OCL::logging::Appender(name), 
+		OCL::logging::Appender(name),
         filename_prop("Filename", "Name of file to log to"),
         maxEventsPerCycle_prop("MaxEventsPerCycle", "Maximum number of log events to pop per cycle"),
         maxEventsPerCycle(1)
 {
-    properties()->addProperty(&filename_prop);
-    properties()->addProperty(&maxEventsPerCycle_prop);
+    properties()->addProperty(filename_prop);
+    properties()->addProperty(maxEventsPerCycle_prop);
 }
 
 FileAppender::~FileAppender()
@@ -25,20 +25,20 @@ FileAppender::~FileAppender()
 
 bool FileAppender::configureHook()
 {
-    // verify valid limits 
+    // verify valid limits
     int m = maxEventsPerCycle_prop.rvalue();
     if ((0 > m))
     {
-        log(Error) << "Invalid maxEventsPerCycle value of " 
+        log(Error) << "Invalid maxEventsPerCycle value of "
                    << m << ". Value must be >= 0."
                    << endlog();
         return false;
     }
     maxEventsPerCycle = m;
-    
+
     // \todo error checking
     appender = new log4cpp::FileAppender(getName(), filename_prop.rvalue());
-    
+
     return configureLayout();
 }
 
@@ -46,12 +46,12 @@ void FileAppender::updateHook()
 {
     // \todo use v2.0 data flow to trigger this when new data is available
 
-    if (!log_port.ready()) return;      // no category connected to us
+    if (!log_port.connected()) return;      // no category connected to us
 
-    /* Consume waiting events until 
+    /* Consume waiting events until
        a) the buffer is empty
        b) we consume too many events on one cycle
-     */    
+     */
     OCL::logging::LoggingEvent   event;
     assert(appender);
     assert(0 <= maxEventsPerCycle);
@@ -60,7 +60,7 @@ void FileAppender::updateHook()
         // consume infinite events
         for (;;)
         {
-            if (log_port.Pop(event))
+            if (log_port.read( event ) == NewData)
             {
                 log4cpp::LoggingEvent   e2 = event.toLog4cpp();
                 appender->doAppend(e2);
@@ -69,7 +69,7 @@ void FileAppender::updateHook()
             {
                 break;      // nothing to do
             }
-        }        
+        }
     }
     else
     {
@@ -78,7 +78,7 @@ void FileAppender::updateHook()
         int n       = maxEventsPerCycle;
         do
         {
-            if (log_port.Pop(event))
+            if (log_port.read( event ) == NewData)
             {
                 log4cpp::LoggingEvent   e2 = event.toLog4cpp();
                 appender->doAppend(e2);

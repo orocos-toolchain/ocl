@@ -2,7 +2,7 @@
 #define	APPENDER_HPP 1
 
 #include <rtt/TaskContext.hpp>
-#include <rtt/BufferPort.hpp>
+#include <rtt/Port.hpp>
 #include "logging/LoggingEvent.hpp"
 
 // forward declare
@@ -31,7 +31,7 @@ public:
 protected:
     /// Port we receive logging events on
     /// Initially unconnected. The logging service connects appenders.
-    RTT::ReadBufferPort<OCL::logging::LoggingEvent> log_port;
+    RTT::InputPort<OCL::logging::LoggingEvent> log_port;
 
     /// Appender created by derived class
     log4cpp::Appender*                              appender;

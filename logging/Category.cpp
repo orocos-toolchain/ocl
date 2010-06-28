@@ -10,8 +10,8 @@ namespace logging {
 
 static const int BUFFER_SIZE = 20;  // \todo
 
-Category::Category(const std::string& name, 
-                   log4cpp::Category* parent, 
+Category::Category(const std::string& name,
+                   log4cpp::Category* parent,
                    log4cpp::Priority::Value priority) :
         log4cpp::Category(name, parent, priority),
         log_port(convertName(name), BUFFER_SIZE)
@@ -22,7 +22,7 @@ Category::~Category()
 {
 }
 
-void Category::log(log4cpp::Priority::Value priority, 
+void Category::log(log4cpp::Priority::Value priority,
                  const OCL::String& message) throw()
 {
     if (isPriorityEnabled(priority))
@@ -86,15 +86,15 @@ void Category::fatal(const OCL::String& message) throw()
 }
 
 
-void Category::_logUnconditionally2(log4cpp::Priority::Value priority, 
-                                    const OCL::String& message) throw() 
+void Category::_logUnconditionally2(log4cpp::Priority::Value priority,
+                                    const OCL::String& message) throw()
 {
     try
     {
         OCL::logging::LoggingEvent event(OCL::String(getName().c_str()),
                                          OCL::String(message.c_str()),
                                          // NDC's are not real-time
-//                                     OCL::String(log4cpp::NDC::get().c_str()), 
+//                                     OCL::String(log4cpp::NDC::get().c_str()),
                                          OCL::String(""),
                                          priority);
         callAppenders(event);
@@ -107,30 +107,12 @@ void Category::_logUnconditionally2(log4cpp::Priority::Value priority,
     }
 }
 
-void Category::callAppenders(const OCL::logging::LoggingEvent& event) throw() 
+void Category::callAppenders(const OCL::logging::LoggingEvent& event) throw()
 {
-    // only push for categories that have connected ports (not all do)
-    if (log_port.ready())
-    {
-        if (!log_port.Push(event))
-        {
-            /// \todo ++numFailedPush
-//            RTT::Logger::log(RTT::Logger::Error) << "Push failed in " << getName() << endlog();
-        }
-    }
-    else
-    {
-        /* this produces a _lot_ of output if you set parent categories to
-           log, but not leaf categories (due to recursive call to this 
-           function for each parent, all the way up to the root category).
-
-           Useful for debugging, however, ...
-        */
-//        RTT::Logger::log(RTT::Logger::Debug) << "Logging port not ready in " << getName() << RTT::endlog();
-    }
+    log_port.write( event );
 
     // let our parent categories append (if they want to)
-    if (getAdditivity() && (getParent() != NULL)) 
+    if (getAdditivity() && (getParent() != NULL))
     {
         OCL::logging::Category* parent = dynamic_cast<OCL::logging::Category*>(getParent());
         if (parent)
@@ -145,16 +127,16 @@ std::string Category::convertName(const std::string& name)
 {
     std::string     rc(name);
 
-    std::replace_if(rc.begin(), 
-                    rc.end(), 
-                    std::bind2nd(std::equal_to<char>(), '.'), 
+    std::replace_if(rc.begin(),
+                    rc.end(),
+                    std::bind2nd(std::equal_to<char>(), '.'),
                     '_');
 
     return rc;
 }
 
-log4cpp::Category* Category::createOCLCategory(const std::string& name, 
-                                               log4cpp::Category* parent, 
+log4cpp::Category* Category::createOCLCategory(const std::string& name,
+                                               log4cpp::Category* parent,
                                                log4cpp::Priority::Value priority)
 {
     // do _NOT_ log from within this function! You will cause a lockup due to

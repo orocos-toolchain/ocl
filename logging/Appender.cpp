@@ -16,10 +16,10 @@ Appender::Appender(std::string name) :
         layoutName_prop("LayoutName", "Layout name (e.g. 'simple', 'pattern')"),
         layoutPattern_prop("LayoutPattern", "Layout conversion pattern (for those layouts that use a pattern)")
 {
-    ports()->addPort(&log_port);
+    ports()->addPort( log_port );
 
-    properties()->addProperty(&layoutName_prop);
-    properties()->addProperty(&layoutPattern_prop);
+    properties()->addProperty(layoutName_prop);
+    properties()->addProperty(layoutPattern_prop);
 }
 
 Appender::~Appender()

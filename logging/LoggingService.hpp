@@ -36,7 +36,7 @@ protected:
     /** Log all categories
      * \warning Not realtime!
      */
-    RTT::Method<void(void)>             logCategories_mtd;
+    RTT::Operation<void(void)>             logCategories_mtd;
     void logCategories();
 };
 

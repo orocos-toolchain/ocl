@@ -3,7 +3,7 @@
 
 #include <log4cpp/Category.hh>
 #include "LoggingEvent.hpp"
-#include <rtt/BufferPort.hpp>
+#include <rtt/Port.hpp>
 
 namespace OCL {
 namespace logging {
@@ -145,7 +145,7 @@ public:
 
 protected:
 //protected:
-    RTT::WriteBufferPort<OCL::logging::LoggingEvent>   log_port;
+    RTT::OutputPort<OCL::logging::LoggingEvent>   log_port;
     /// for access to \a log_port
     friend class OCL::logging::LoggingService;
     
