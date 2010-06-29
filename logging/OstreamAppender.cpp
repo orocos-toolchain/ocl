@@ -1,5 +1,5 @@
 #include "logging/OstreamAppender.hpp"
-#include "ocl/ComponentLoader.hpp"
+#include "ocl/Component.hpp"
 
 #include <log4cpp/OstreamAppender.hh>
 

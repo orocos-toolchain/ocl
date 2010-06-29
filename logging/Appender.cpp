@@ -1,5 +1,5 @@
 #include "logging/Appender.hpp"
-#include "ocl/ComponentLoader.hpp"
+#include "ocl/Component.hpp"
 
 #include <log4cpp/Appender.hh>
 #include <log4cpp/BasicLayout.hh>

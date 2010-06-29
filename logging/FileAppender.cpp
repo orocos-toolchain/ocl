@@ -1,5 +1,5 @@
 #include "logging/FileAppender.hpp"
-#include "ocl/ComponentLoader.hpp"
+#include "ocl/Component.hpp"
 #include <rtt/Logger.hpp>
 
 #include <log4cpp/FileAppender.hh>

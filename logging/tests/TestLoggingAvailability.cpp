@@ -3,7 +3,7 @@
 #include "logging/Category.hpp"
 
 #include <rtt/Logger.hpp>
-#include "ocl/ComponentLoader.hpp"
+#include "ocl/Component.hpp"
 
 #include <log4cpp/HierarchyMaintainer.hh>
 

@@ -1,6 +1,6 @@
 #include "logging/LoggingService.hpp"
 #include "logging/Category.hpp"
-#include "ocl/ComponentLoader.hpp"
+#include "ocl/Component.hpp"
 
 #include <boost/algorithm/string.hpp>
 #include <log4cpp/Category.hh>
