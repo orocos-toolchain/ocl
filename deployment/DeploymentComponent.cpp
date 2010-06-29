@@ -185,12 +185,14 @@ namespace OCL
     {
         char* paths = getenv("RTT_COMPONENT_PATH");
         if (compPath.empty() )
+        {
             if (paths) {
                 compPath = string(paths);
             } else {
                 log(Info) <<"No RTT_COMPONENT_PATH set. Using default." <<endlog();
                 compPath = default_comp_path ;
             }
+        }
         log(Info) <<"RTT_COMPONENT_PATH was set to " << compPath << endlog();
         ComponentLoader::Instance()->setComponentPath(compPath);
         ComponentLoader::Instance()->import("");
