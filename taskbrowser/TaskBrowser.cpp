@@ -539,6 +539,12 @@ namespace OCL
      */
     char getTaskStatusChar(RTT::TaskContext* t)
     {
+        if (t->inFatalError())
+            return 'F';
+        if (t->inRunTimeError())
+            return 'E';
+        if (t->inException())
+            return 'X';
         if (t->isRunning() )
             return 'R'; // Running
         if (t->isConfigured() )
@@ -1409,12 +1415,16 @@ namespace OCL
         cout <<"   Filename : An ops file." <<nl;
         cout <<"   ..."<<nl;
 
+        cout << "   A status character shows the TaskState of a component."<<nl;
+        cout << "     'E':RunTimeError, 'S':Stopped, 'R':Running, 'U':PreOperational (Unconfigured)"<<nl;
+        cout << "     'X':Exception, 'F':FatalError" << nl;
+
         cout <<titlecol("Expressions")<<nl;
         cout << "  You can evaluate any script expression by merely typing it :"<<nl;
         cout << "     1+1 [enter]" <<nl;
         cout << "   = 2" <<nl;
         cout << "  or inspect the status of a program :"<<nl;
-        cout << "     programs.myProgram.isRunning [enter]" <<nl;
+        cout << "     myProgram.isRunning [enter]" <<nl;
         cout << "   = false" <<nl;
         cout << "  and display the contents of complex data types (vector, array,...) :"<<nl;
         cout << "     array(6)" <<nl;
@@ -1423,7 +1433,7 @@ namespace OCL
         cout <<titlecol("Changing Attributes and Properties")<<nl;
         cout << "  To change the value of a Task's attribute, type "<<comcol("varname = <newvalue>")<<nl;
         cout << "  If you provided a correct assignment, the browser will inform you of the success"<<nl;
-        cout <<"   with '= true'." <<nl;
+        cout <<"   with the set value." <<nl;
 
         cout <<titlecol("Operations")<<nl;
         cout << "  An Operation is sent or called (evaluated) "<<nl;
