@@ -40,7 +40,7 @@
 using RTT::Logger;
 using RTT::os::Mutex;
 
-#include "ocl/ComponentLoader.hpp"
+#include "ocl/Component.hpp"
 ORO_LIST_COMPONENT_TYPE(OCL::TcpReporting);
 
 namespace OCL

@@ -4,7 +4,7 @@
 #include <rtt/Method.hpp>
 #include <rtt/Logger.hpp>
 
-#include "ocl/ComponentLoader.hpp"
+#include "ocl/Component.hpp"
 
 ORO_CREATE_COMPONENT_TYPE()
 ORO_LIST_COMPONENT_TYPE( OCL::TimerComponent )

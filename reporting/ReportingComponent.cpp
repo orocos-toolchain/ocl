@@ -38,7 +38,7 @@
 #include <fstream>
 #include <exception>
 
-#include "ocl/ComponentLoader.hpp"
+#include "ocl/Component.hpp"
 #include <rtt/types/PropertyDecomposition.hpp>
 
 ORO_CREATE_COMPONENT_TYPE()

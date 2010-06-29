@@ -189,7 +189,7 @@ int ORO_main(int argc, char** argv)
 
 #else
 
-#include "ocl/ComponentLoader.hpp"
+#include "ocl/Component.hpp"
 ORO_CREATE_COMPONENT( OCL::HelloWorld )
 
 #endif

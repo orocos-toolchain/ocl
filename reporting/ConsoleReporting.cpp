@@ -4,7 +4,7 @@
 #include "TableMarshaller.hpp"
 #include "NiceHeaderMarshaller.hpp"
 
-#include "ocl/ComponentLoader.hpp"
+#include "ocl/Component.hpp"
 ORO_LIST_COMPONENT_TYPE(OCL::ConsoleReporting)
 
 namespace OCL
