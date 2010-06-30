@@ -320,6 +320,7 @@ RTT::TaskContext *ComponentLoader::loadComponent(const std::string & name, const
 {
     TaskContext* instance = 0;
     RTT::TaskContext* (*factory)(std::string name) = 0;
+    log(Debug) << "Trying to create component "<< name <<" of type "<< type << endlog();
 
     // First: try loading from imported libraries. (see: import).
     if ( ComponentFactories::Instance().count(type) == 1 ) {

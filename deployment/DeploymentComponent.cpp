@@ -461,6 +461,7 @@ namespace OCL
                         if ( cp_prop.compose( comp ) ) {
                             //It's a connection policy.
                             conmap[cp_prop.getName()].policy = cp_prop.get();
+                            log(Debug) << "Saw connection policy " << (*it)->getName() << endlog();
                             continue;
                         }
 
@@ -775,7 +776,7 @@ namespace OCL
         RTT::Logger::In in("DeploymentComponent::configureComponents");
         if ( root.empty() ) {
             RTT::Logger::log() << RTT::Logger::Error
-                          << "No configuration loaded !" <<endlog();
+                          << "No components loaded by DeploymentComponent !" <<endlog();
             return false;
         }
 
@@ -1024,7 +1025,7 @@ namespace OCL
 
             // only start if not already running (peer may have been previously
             // loaded/configured/started from the site deployer file)
-            if (peer->isRunning()) 
+            if (peer->isRunning())
             {
                 continue;
             }
@@ -1156,8 +1157,9 @@ namespace OCL
 
         TaskContext* instance = ComponentLoader::Instance()->loadComponent(name, type);
 
-        if (!instance)
+        if (!instance) {
             return false;
+        }
 
         if (!this->componentLoaded( instance ) ) {
             log(Error) << "This deployer type refused to connect to "<< instance->getName() << ": aborting !" << endlog(Error);
@@ -1211,9 +1213,7 @@ namespace OCL
                 // Lookup in the property configuration and remove:
                 RTT::Property<RTT::PropertyBag>* pcomp = root.getPropertyType<PropertyBag>(name);
                 if (pcomp) {
-                    root.remove(pcomp);
-                    deletePropertyBag( pcomp->value() );
-                    delete pcomp;
+                    root.removeProperty(pcomp);
                 }
 
                 // Finally, delete the activity before the TC !
