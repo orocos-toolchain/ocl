@@ -318,7 +318,7 @@ void ComponentLoader::setComponentPath( std::string const& newpath ) {
 
 RTT::TaskContext *ComponentLoader::loadComponent(const std::string & name, const std::string & type)
 {
-    TaskContext* instance;
+    TaskContext* instance = 0;
     RTT::TaskContext* (*factory)(std::string name) = 0;
 
     // First: try loading from imported libraries. (see: import).
