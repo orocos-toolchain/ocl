@@ -23,7 +23,7 @@
 #include <rtt/types/TemplateConstructor.hpp>
 #include <rtt/types/Operators.hpp>
 #include <rtt/types/OperatorTypes.hpp>
-#include <rtt/types/RealTimeToolkit.hpp>
+#include <rtt/types/TypekitPlugin.hpp>
 
 #include <rtt/types/VectorTemplateComposition.hpp>
 
