@@ -37,6 +37,7 @@
 #include <rtt/Method.hpp>
 #include <rtt/scripting/Scripting.hpp>
 #include <rtt/ConnPolicy.hpp>
+#include <rtt/plugin/PluginLoader.hpp>
 
 #include <cstdio>
 #include <cstdlib>
@@ -194,6 +195,10 @@ namespace OCL
             }
         }
         log(Info) <<"RTT_COMPONENT_PATH was set to " << compPath << endlog();
+        log(Info) <<"Re-scanning for plugins and components..."<<endlog();
+        PluginLoader::Instance()->setPluginPath(compPath);
+        PluginLoader::Instance()->loadTypekits("");
+        PluginLoader::Instance()->loadPlugins("");
         ComponentLoader::Instance()->setComponentPath(compPath);
         ComponentLoader::Instance()->import("");
         return true;
