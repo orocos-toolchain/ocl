@@ -67,7 +67,7 @@ namespace OCL
          */
         OCL_HIDE static FactoryMap* Factories;
     public:
-        OCL_EXPORT static FactoryMap& Instance() {
+        OCL_API static FactoryMap& Instance() {
             if ( Factories == 0)
                 Factories = new FactoryMap();
             return *Factories;
