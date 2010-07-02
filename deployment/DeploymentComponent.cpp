@@ -184,6 +184,7 @@ namespace OCL
 
     bool DeploymentComponent::configureHook()
     {
+        Logger::In in("DeploymentComponent::configure");
         char* paths = getenv("RTT_COMPONENT_PATH");
         if (compPath.empty() )
         {
@@ -1131,7 +1132,9 @@ namespace OCL
     bool DeploymentComponent::import(const std::string& path)
     {
         RTT::Logger::In in("DeploymentComponent::import");
-        log(Debug) << "Importing " <<  path << endlog();
+        log(Debug) << "Importing Components, plugins and typekits from " <<  path << endlog();
+        PluginLoader::Instance()->loadTypekits(path);
+        PluginLoader::Instance()->loadPlugins(path);
         ComponentLoader::Instance()->import( path );
         return true;
     }
