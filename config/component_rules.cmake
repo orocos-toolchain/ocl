@@ -37,7 +37,9 @@ MACRO( PROGRAM_ADD_DEPS PROGRAM_NAME )
   foreach( lib ${ARGN} )
     TARGET_LINK_LIBRARIES( ${PROGRAM_NAME} ${lib}-${OROCOS_TARGET} )
   endforeach( lib ${ARGN} )
-  SET_TARGET_PROPERTIES( ${PROGRAM_NAME} PROPERTIES INSTALL_RPATH_USE_LINK_PATH 1)
+  SET_TARGET_PROPERTIES( ${PROGRAM_NAME} PROPERTIES 
+    INSTALL_RPATH_USE_LINK_PATH 1
+    INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/orocos")
 ENDMACRO( PROGRAM_ADD_DEPS PROGRAM_NAME )
 
 # Link a program with an external library (qt3, gl, readline,....)
@@ -150,7 +152,7 @@ MACRO( GLOBAL_ADD_COMPONENT COMPONENT_NAME )
       ENDIF (OROCOS_RTT_1.2)
     ENDIF (OROCOS_RTT_1.4)
 
-    INSTALL(TARGETS ${LIB_NAME} LIBRARY DESTINATION lib)
+    INSTALL(TARGETS ${LIB_NAME} LIBRARY DESTINATION lib/orocos)
     #The later a component is added, the earlier it apears in the -l list.
     SET (ENV{SELECTED_LIBS} "-l${LIB_NAME} $ENV{SELECTED_LIBS} ")
     #This is an ugly work around
