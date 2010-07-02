@@ -256,6 +256,7 @@ bool ComponentLoader::loadInProcess(string file, string libname, bool log_error)
 
     // Lookup Component factories (multi component case):
     FactoryMap* (*getfactory)(void) = 0;
+    vector<string> (*getcomponenttypes)(void) = 0;
     FactoryMap* fmap = 0;
     getfactory = (FactoryMap*(*)(void))( dlsym(handle, "getComponentFactoryMap") );
     if ((error = dlerror()) == NULL) {
@@ -263,10 +264,14 @@ bool ComponentLoader::loadInProcess(string file, string libname, bool log_error)
         fmap = (*getfactory)();
         ComponentFactories::Instance().insert( fmap->begin(), fmap->end() );
         log(Info) << "Loaded multi component library '"<< file <<"'"<<endlog();
-        log(Debug) << "Components:";
-        for (FactoryMap::iterator it = fmap->begin(); it != fmap->end(); ++it)
-            log(Debug) <<" "<<it->first;
-        log(Debug) << endlog();
+        getcomponenttypes = (vector<string>(*)(void))(dlsym(handle, "getComponentTypeNames"));
+        if ((error = dlerror()) == NULL) {
+            log(Debug) << "Components:";
+            vector<string> ctypes = getcomponenttypes();
+            for (vector<string>::iterator it = ctypes.begin(); it != ctypes.end(); ++it)
+                log(Debug) <<" "<< *it;
+            log(Debug) << endlog();
+        }
         loadedLibs.push_back(loading_lib);
         return true;
     }
