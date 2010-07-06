@@ -282,15 +282,15 @@ bool ComponentLoader::loadInProcess(string file, string libname, bool log_error)
     RTT::TaskContext* (*factory)(std::string) = 0;
     std::string(*tname)(void) = 0;
     factory = (RTT::TaskContext*(*)(std::string))(dlsym(handle, "createComponent") );
-    error = dlerror();
+    string create_error = dlerror();
     tname = (std::string(*)(void))(dlsym(handle, "getComponentType") );
-    error = error ? error : dlerror(); // store first error only.
+    string gettype_error = dlerror();
     if ( factory && tname ) {
         std::string cname = (*tname)();
-        ComponentFactories::Instance()[cname] = factory;
         if ( ComponentFactories::Instance().count(cname) == 1 ) {
             log(Warning) << "Component type name "<<cname<<" already used: overriding."<<endlog();
         }
+        ComponentFactories::Instance()[cname] = factory;
         log(Info) << "Loaded component type '"<< cname <<"'"<<endlog();
         loading_lib.components_type.push_back( cname );
         loadedLibs.push_back(loading_lib);
@@ -298,7 +298,10 @@ bool ComponentLoader::loadInProcess(string file, string libname, bool log_error)
     }
 
     log(Error) <<"Unloading "<< loading_lib.filename  <<": not a valid component library:" <<endlog();
-    log(Error) << error << endlog();
+    if (!create_error.empty())
+        log(Error) << "   " << create_error << endlog();
+    if (!gettype_error.empty())
+        log(Error) << "   " << gettype_error << endlog();
     dlclose(handle);
     return false;
 }
