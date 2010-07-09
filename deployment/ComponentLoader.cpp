@@ -298,9 +298,13 @@ bool ComponentLoader::loadInProcess(string file, string libname, bool log_error)
     RTT::TaskContext* (*factory)(std::string) = 0;
     std::string(*tname)(void) = 0;
     factory = (RTT::TaskContext*(*)(std::string))(dlsym(handle, "createComponent") );
-    string create_error = dlerror();
+    string create_error;
+    error = dlerror();
+    if (error) create_error = error;
     tname = (std::string(*)(void))(dlsym(handle, "getComponentType") );
-    string gettype_error = dlerror();
+    string gettype_error;
+    error = dlerror();
+    if (error) gettype_error = error;
     if ( factory && tname ) {
         std::string cname = (*tname)();
         if ( ComponentFactories::Instance().count(cname) == 1 ) {
