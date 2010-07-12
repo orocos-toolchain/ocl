@@ -61,7 +61,6 @@
 #include <rtt/RTT.hpp>
 #include <rtt/TaskContext.hpp>
 #include <rtt/interface/ServiceProvider.hpp>
-#include <rtt/base/DispatchInterface.hpp>
 #include <deque>
 #include <string>
 #include <sstream>
