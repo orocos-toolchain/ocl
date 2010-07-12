@@ -31,6 +31,7 @@ namespace OCL
         this->addOperation("setMaxTimers", &os::Timer::setMaxTimers , &mtimer, RTT::ClientThread).doc("Raise or lower the maximum amount of timers.").arg("timers", "The largest amount of timers. The highest timerId is max-1.");
         this->addOperation( waitForCommand ).doc("Wait until a timer expires.").arg("timerId", "A numeric id of the timer to wait for.");
         this->addOperation( waitCommand ).doc("Arm and wait until that timer expires.").arg("timerId", "A numeric id of the timer to arm and to wait for.").arg("delay", "The delay in seconds before the timer expires.");
+        this->addPort(mtimeoutEvent).doc("This port is written each time a timer expires. The timer id is the value sent in this port.");
     }
 
     TimerComponent::~TimerComponent() {
