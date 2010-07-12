@@ -58,7 +58,7 @@ namespace OCL
         RTT::types::TypeInfoRepository::Instance()->type("ints")->addConstructor(newConstructor(types::stdvector_ctor2<int>() ) );
         RTT::types::TypeInfoRepository::Instance()->type("ints")->addConstructor(new types::StdVectorBuilder<int>() );
 
-        return true;
+        return 0;
     }
 
     os::InitFunction OCLLoader(&loadOCL);
