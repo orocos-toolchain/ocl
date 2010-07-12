@@ -983,13 +983,13 @@ namespace OCL
             // AutoConf
             if (comps[comp.getName()].autoconf )
                 {
-                    if( !peer->isActive() )
+                    if( !peer->iRunning() )
                         {
                             if ( peer->configure() == false)
                                 valid = false;
                         }
                     else
-                        log(Warning) << "Apparently component "<< peer->getName()<< " don't need to be configured." <<endlog();
+                        log(Warning) << "Apparently component "<< peer->getName()<< " don't need to be configured (already Running)." <<endlog();
                 }
         }
 
