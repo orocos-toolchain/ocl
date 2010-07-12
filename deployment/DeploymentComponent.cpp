@@ -983,7 +983,7 @@ namespace OCL
             // AutoConf
             if (comps[comp.getName()].autoconf )
                 {
-                    if( !peer->iRunning() )
+                    if( !peer->isRunning() )
                         {
                             if ( peer->configure() == false)
                                 valid = false;
