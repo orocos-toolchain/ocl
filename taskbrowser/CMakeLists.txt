@@ -13,7 +13,7 @@ IF ( BUILD_TASKBROWSER )
        FILE( GLOB HPPS [^.]*.hpp )
        FILE( GLOB SRCS [^.]*.cpp )
 
-       GLOBAL_ADD_COMPONENT( orocos-taskbrowser ${SRCS} )
+       GLOBAL_ADD_COMPONENT( orocos-taskbrowser ${SRCS} INSTALL lib )
        GLOBAL_ADD_INCLUDE( ocl ${HPPS})
 
        IF (NOT NO_GPL)

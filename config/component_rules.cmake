@@ -4,6 +4,38 @@
 
 ADD_DEFINITIONS( "-Wall" )
 
+#From: http://www.cmake.org/Wiki/CMakeMacroParseArguments
+MACRO(PARSE_ARGUMENTS prefix arg_names option_names)
+  SET(DEFAULT_ARGS)
+  FOREACH(arg_name ${arg_names})    
+    SET(${prefix}_${arg_name})
+  ENDFOREACH(arg_name)
+  FOREACH(option ${option_names})
+    SET(${prefix}_${option} FALSE)
+  ENDFOREACH(option)
+
+  SET(current_arg_name DEFAULT_ARGS)
+  SET(current_arg_list)
+  FOREACH(arg ${ARGN})            
+    SET(larg_names ${arg_names})    
+    LIST(FIND larg_names "${arg}" is_arg_name)                   
+    IF (is_arg_name GREATER -1)
+      SET(${prefix}_${current_arg_name} ${current_arg_list})
+      SET(current_arg_name ${arg})
+      SET(current_arg_list)
+    ELSE (is_arg_name GREATER -1)
+      SET(loption_names ${option_names})    
+      LIST(FIND loption_names "${arg}" is_option)            
+      IF (is_option GREATER -1)
+         SET(${prefix}_${arg} TRUE)
+      ELSE (is_option GREATER -1)
+         SET(current_arg_list ${current_arg_list} ${arg})
+      ENDIF (is_option GREATER -1)
+    ENDIF (is_arg_name GREATER -1)
+  ENDFOREACH(arg)
+  SET(${prefix}_${current_arg_name} ${current_arg_list})
+ENDMACRO(PARSE_ARGUMENTS)
+
 
 #
 # Components supply header files which should be included when 
@@ -60,7 +92,6 @@ ENDMACRO( PROGRAM_ADD_LIBS PROGRAM_NAME )
 #
 # Usage: CREATE_COMPONENT( COMPONENT_NAME src1 src2 src3 )
 #
-
 MACRO( CREATE_COMPONENT COMPONENT_NAME )
 
   SET( LIB_NAME "${COMPONENT_NAME}-${OROCOS_TARGET}")
@@ -116,16 +147,28 @@ ENDMACRO( CREATE_COMPONENT COMPONENT_NAME )
 # and lets us add various things to all components in just one place.
 #
 #
-# Usage: GLOBAL_ADD_COMPONENT( COMPONENT_NAME src1 src2 src3 )
+# Usage: GLOBAL_ADD_COMPONENT( COMPONENT_NAME src1 src2 src3 [INSTALL lib/orocos] )
 #
-
-MACRO( GLOBAL_ADD_COMPONENT COMPONENT_NAME )
+MACRO( GLOBAL_ADD_COMPONENT )
   
+  PARSE_ARGUMENTS(ADD_COMPONENT
+    "INSTALL"
+    ""
+    ${ARGN}
+    )
+  list(GET ADD_COMPONENT_DEFAULT_ARGS 0 COMPONENT_NAME)
+  list(REMOVE_AT ADD_COMPONENT_DEFAULT_ARGS 0)
+  SET( SOURCES ${ADD_COMPONENT_DEFAULT_ARGS} )
   SET( LIB_NAME "${COMPONENT_NAME}-${OROCOS_TARGET}")
+  if ( ADD_COMPONENT_INSTALL )
+    set(AC_INSTALL_DIR ${ADD_COMPONENT_INSTALL})
+  else()
+    set(AC_INSTALL_DIR lib/orocos)
+  endif()
   
     IF (OROCOS_RTT_1.4)
       MESSAGE( "Building Shared library for ${COMPONENT_NAME}" )
-      ADD_LIBRARY( ${LIB_NAME} SHARED ${ARGN} )
+      ADD_LIBRARY( ${LIB_NAME} SHARED ${SOURCES} )
       SET_TARGET_PROPERTIES( ${LIB_NAME} PROPERTIES 
 	DEFINE_SYMBOL OCL_DLL_EXPORT 
 	VERSION ${OCL_VERSION}
@@ -139,7 +182,7 @@ MACRO( GLOBAL_ADD_COMPONENT COMPONENT_NAME )
     ELSE (OROCOS_RTT_1.4)
       IF (OROCOS_RTT_1.2)
 	MESSAGE( "Building Shared library for ${COMPONENT_NAME}" )
-	ADD_LIBRARY( ${LIB_NAME} SHARED ${ARGN} )
+	ADD_LIBRARY( ${LIB_NAME} SHARED ${SOURCES} )
 	SET_TARGET_PROPERTIES( ${LIB_NAME} PROPERTIES 
 	  DEFINE_SYMBOL OCL_DLL_EXPORT 
 	  VERSION ${OCL_VERSION}
@@ -148,11 +191,11 @@ MACRO( GLOBAL_ADD_COMPONENT COMPONENT_NAME )
 	TARGET_LINK_LIBRARIES( ${LIB_NAME} orocos-rtt )
       ELSE (OROCOS_RTT_1.2)
 	MESSAGE( "Building Static library for ${COMPONENT_NAME}" )
-	ADD_LIBRARY( ${LIB_NAME} STATIC ${ARGN} )
+	ADD_LIBRARY( ${LIB_NAME} STATIC ${SOURCES} )
       ENDIF (OROCOS_RTT_1.2)
     ENDIF (OROCOS_RTT_1.4)
 
-    INSTALL(TARGETS ${LIB_NAME} LIBRARY DESTINATION lib/orocos)
+    INSTALL(TARGETS ${LIB_NAME} LIBRARY DESTINATION ${AC_INSTALL_DIR} )
     #The later a component is added, the earlier it apears in the -l list.
     SET (ENV{SELECTED_LIBS} "-l${LIB_NAME} $ENV{SELECTED_LIBS} ")
     #This is an ugly work around
