@@ -133,6 +133,10 @@ namespace OCL
                 .arg("PortOne", "The port name of the first component.")
                 .arg("Two", "The second component.")
                 .arg("PortTwo", "The port name of the second component.");
+        this->addOperation("createStream", &DeploymentComponent::createStream, this, ClientThread).doc("Creates a stream to or from a port.")
+                .arg("component", "The component which owns 'port'.")
+                .arg("port", "The port to create a stream from or to.")
+                .arg("policy", "The connection policy which serves to describe the stream to be created.");
 
         this->addOperation("connectServices", &DeploymentComponent::connectServices, this, ClientThread).doc("Connect the matching provides/requires services of two Components known to this Component.").arg("One", "The first component.").arg("Two", "The second component.");
 
@@ -316,6 +320,21 @@ namespace OCL
             log(Error)<< "Failed to connect Port " << ap->getName() << " to peer Task "<< b->getName() <<"." << endlog();
             return true;
         }
+    }
+
+    bool DeploymentComponent::createStream(const std::string& comp, const std::string& port, ConnPolicy policy)
+    {
+        TaskContext* peer = getPeer(comp);
+        if ( !peer ) {
+            log(Error) << comp <<" could not be found."<< endlog();
+            return false;
+        }
+        PortInterface* porti = peer->ports()->getPort(port);
+        if ( !porti ) {
+            log(Error) << comp <<" has no port "<< port << "."<< endlog();
+            return false;
+        }
+        return porti->createStream( policy );
     }
 
     bool DeploymentComponent::connectServices(const std::string& one, const std::string& other)
@@ -823,7 +842,14 @@ namespace OCL
             std::string connection_name = it->first;
 
             if ( connection->ports.size() == 1 ){
-                log(Warning) << "Can not form connection with topic "<<connection_name<<" with only one Port from "<< connection->owners[0]->getName() << endlog();
+                string owner = connection->owners[0]->getName();
+                string portname = connection->ports.front()->getName();
+                string porttype = dynamic_cast<InputPortInterface*>(connection->ports.front() ) ? "InputPort" : "OutputPort";
+                if ( connection->ports.front()->createStream( connection->policy ) == false) {
+                    log(Warning) << "Creating stream with name "<<connection_name<<" with Port "<<portname<<" from "<< owner << " failed."<< endlog();
+                } else {
+                    log(Info) << "Component "<< owner << "'s " + porttype<< " " + portname << " will stream to "<< connection->policy.name_id << endlog();
+                }
                 continue;
             }
             // first find all write ports.

@@ -267,6 +267,7 @@ namespace OCL
         bool connectPorts(const std::string& one, const std::string& one_port,
                           const std::string& other, const std::string& other_port);
 
+        bool createStream(const std::string& component, const std::string& port, ConnPolicy policy);
         /**
          * Connects the required services of one component to the provided services
          * of another and vice versa.
