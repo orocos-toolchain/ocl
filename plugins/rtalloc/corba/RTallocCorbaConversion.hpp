@@ -8,10 +8,11 @@
 // must be in RTT namespace to match some rtt/corba code
 namespace RTT
 {
-
+namespace corba
+{
 
 template<>
-struct corba::AnyConversion< OCL::String >
+struct AnyConversion< OCL::String >
 {
     typedef const char*     CorbaType;
     typedef OCL::String     StdType;
@@ -39,10 +40,17 @@ struct corba::AnyConversion< OCL::String >
         *ret <<= toAny( t );
         return ret;
     }
+
+    static bool updateAny( StdType t, CORBA::Any& any ) {
+        any <<= toAny( t );
+        return true;
+    }
 };
 
 
 // namespace
-};
+}
+}
+
 
 

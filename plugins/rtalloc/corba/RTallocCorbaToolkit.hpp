@@ -9,8 +9,8 @@
 
 namespace RTT
 {
-    namespace Corba
-    {
+namespace corba
+{
 
     class CorbaRTallocPlugin : public RTT::types::TransportPlugin
     {
@@ -18,12 +18,11 @@ namespace RTT
         bool registerTransport(std::string name, RTT::types::TypeInfo* ti);
         
         std::string getTransportName() const;
+
+        std::string getTypekitName() const;
         
         std::string getName() const;
     };
-
-    // the global instance
-    extern CorbaRTallocPlugin     corbaRTallocPlugin;
 
 // namespace
 }
