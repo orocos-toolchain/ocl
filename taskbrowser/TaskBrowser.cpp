@@ -579,8 +579,6 @@ namespace OCL
      */
     void TaskBrowser::loop()
     {
-        using boost::lambda::_1;
-
         // Intercept Ctrl-C
         ::signal( SIGINT, ctrl_c_catcher );
 #ifndef NO_GPL
