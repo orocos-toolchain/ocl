@@ -1,4 +1,4 @@
-IF (BUILD_TESTING)
+IF (BUILD_TESTING AND BUILD_RTALLOC_TEST)
 
   # Workaround for RTT pkgconfig file issue
   find_package(Boost 1.32 COMPONENTS thread REQUIRED)

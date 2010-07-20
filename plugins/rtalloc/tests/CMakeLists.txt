@@ -1,4 +1,4 @@
-IF (BUILD_TESTING)
+IF (BUILD_TESTING AND BUILD_RTALLOC_TEST)
 
   ADD_EXECUTABLE(rtalloc-combined combined.cpp send.cpp recv.cpp)
   TARGET_LINK_LIBRARIES(rtalloc-combined

@@ -1,4 +1,4 @@
-IF (ENABLE_CORBA)
+IF (ENABLE_CORBA AND BUILD_RTALLOC)
 
   SET( IDLS RTallocTypes.idl )
   SET( CPPS RTallocCorbaToolkit.cpp )
