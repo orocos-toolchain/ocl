@@ -6,18 +6,17 @@
  ***************************************************************************/
 #include <signal.h>
 
-#include <rtt/os/main.h>
-#include <rtt/corba/ControlTaskServer.hpp>
-#include <rtt/corba/ControlTaskProxy.hpp>
-#include <rtt/RTT.hpp>
-#include <rtt/Activity.hpp>
-#include <rtt/TaskContext.hpp>
-#include <rtt/os/main.h>
-#include <rtt/Port.hpp>
-
 // need access to all TLSF functions embedded in RTT
 #define ORO_MEMORY_POOL
 #include <rtt/os/tlsf/tlsf.h>
+
+#include <rtt/os/main.h>
+#include <rtt/transports/corba/TaskContextServer.hpp>
+#include <rtt/transports/corba/TaskContextProxy.hpp>
+#include <rtt/RTT.hpp>
+#include <rtt/Activity.hpp>
+#include <rtt/TaskContext.hpp>
+#include <rtt/Port.hpp>
 
 // use RTalloc RTT types::TypekitRepository test components
 #include "../../tests/send.hpp"
@@ -30,7 +29,7 @@ using namespace RTT::corba;
 
 void sighandler(int, siginfo_t*, void*)
 {
-	ControlTaskServer::ShutdownOrb(false);
+	TaskContextServer::ShutdownOrb(false);
 }
 
 int ORO_main(int argc, char* argv[])
@@ -52,10 +51,10 @@ int ORO_main(int argc, char* argv[])
 
 	// Setup Corba, create a server and then a proxy for the send
     // component, and then connect recv to the proxy
-	ControlTaskServer::InitOrb(argc, argv);
-	ControlTaskServer::Create( &send );
+	TaskContextServer::InitOrb(argc, argv);
+	TaskContextServer::Create( &send );
 
-	TaskContext* proxy = ControlTaskProxy::Create( "Send" );
+	TaskContext* proxy = TaskContextProxy::Create( "Send" );
 	assert(NULL != proxy);
 	if ( connectPeers( proxy, &recv ) == false )
 	{
@@ -86,13 +85,13 @@ int ORO_main(int argc, char* argv[])
 		return -1;
 	}
 	
-	ControlTaskServer::RunOrb();
+	TaskContextServer::RunOrb();
 
 	send_activity.stop();
 	recv_activity.stop();
 
 	// Cleanup Corba:
-//	ControlTaskServer::ShutdownOrb(false);
+//	TaskContextServer::ShutdownOrb(false);
 
 	(void)sigaction(SIGINT, &old_sa, NULL);
 
