@@ -158,6 +158,11 @@ bool ComponentLoader::import( std::string const& package, std::string const& pat
     path dir = arg.parent_path();
     string file = arg.filename();
 
+    // if path exists don't try to be smart
+    if (is_regular_file(arg)) {
+	    return loadInProcess(arg.string(), makeShortFilename(file), true);
+    }
+
     for (vector<string>::iterator it = paths.begin(); it != paths.end(); ++it)
     {
         path p = path(*it) / dir / (file + SO_EXT);
