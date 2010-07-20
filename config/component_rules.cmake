@@ -49,11 +49,39 @@ ENDMACRO( GLOBAL_ADD_INCLUDE COMPONENT_LOCATION )
 
 # Link a component library with an external library (qt3, gl, readline,....)
 # Usage: COMPONENT_ADD_LIBS( orocos-taskbrowser readline ncurses )
+#
+# Explicitly deal with library lists of the form "optimized;xxx;debug;xxx-d"
+# These lists can be chained e.g. "optimized;xxx;debug;xxx-d;optimized;yyy;debug;yyy-d"
+#
 MACRO( COMPONENT_ADD_LIBS COMPONENT_NAME  )
+
+  UNSET(previous)
   foreach( lib ${ARGN} )
-    TARGET_LINK_LIBRARIES( ${COMPONENT_NAME}-${OROCOS_TARGET} ${lib} )
+	if (DEFINED previous)
+	  # assume that previous is either "optimized" or "debug"
+	  # TODO enforce the above assumption
+      TARGET_LINK_LIBRARIES( ${COMPONENT_NAME}-${OROCOS_TARGET} ${previous} ${lib})
+	  UNSET(previous)
+	else (DEFINED previous)
+	  if ("${lib}" STREQUAL "optimized" OR "${lib}" STREQUAL "debug")
+		# store value for next arg
+		SET(previous "${lib}")
+	  else ("${lib}" STREQUAL "optimized" OR "${lib}" STREQUAL "debug")
+		TARGET_LINK_LIBRARIES( ${COMPONENT_NAME}-${OROCOS_TARGET} "${lib}")
+	  endif ("${lib}" STREQUAL "optimized" OR "${lib}" STREQUAL "debug")
+	endif (DEFINED previous)
   endforeach( lib ${ARGN} )
+
+  # TODO check that we don't have a "previous" waiting for a next library
+
 ENDMACRO( COMPONENT_ADD_LIBS COMPONENT_NAME )
+
+# Link a component library with a list of external libraries (qt3, gl, readline,....)
+# Usage: COMPONENT_ADD_LIBS( orocos-taskbrowser ${Boost_FILESYSTEM_LIBRARIES} )
+MACRO( COMPONENT_ADD_LIB_LIST COMPONENT_NAME  )
+  MESSAGE("ADD_LIB_LIST '${ARGN}'")
+  TARGET_LINK_LIBRARIES( ${COMPONENT_NAME}-${OROCOS_TARGET} ${ARGN} )
+ENDMACRO( COMPONENT_ADD_LIB_LIST COMPONENT_NAME )
 
 # Link a component library with another component library
 # Usage: COMPONENT_ADD_DEPS( orocos-taskbrowser orocos-reporting )
