@@ -1,0 +1,8 @@
+<package>
+    <description brief="Orocos component library">
+        This package contains standard packages base on the Orocos/RTT
+    </description>
+    <depend package="rtt" />
+    <depend package="boost" />
+</package>
+
