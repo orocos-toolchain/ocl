@@ -1,4 +1,6 @@
 OPTION( BUILD_REPORTING "Build Reporting Component" ON )
+# Set to OFF by default as it does not compile
+OPTION( BUILD_REPORTING_NETCDF "Build the Netcdf Reporting Component" OFF )
 
 IF ( BUILD_REPORTING )
 
@@ -13,7 +15,7 @@ IF ( BUILD_REPORTING )
     GLOBAL_ADD_COMPONENT( orocos-reporting ${SRCS})
     GLOBAL_ADD_INCLUDE( ocl ${HPPS})
 
-    IF ( NETCDF_FOUND )
+    IF ( BUILD_REPORTING_NETCDF AND NETCDF_FOUND )
       SET( NETCDF_SRCS NetcdfReporting.cpp )
       SET( NETCDF_HPPS NetcdfReporting.hpp NetcdfMarshaller.hpp NetcdfHeaderMarshaller.hpp )
 
@@ -21,7 +23,7 @@ IF ( BUILD_REPORTING )
       GLOBAL_ADD_INCLUDE ( ocl ${NETCDF_HPPS} )
       COMPONENT_ADD_LIBS( orocos-reporting-netcdf ${NETCDF_LIBS} )
       COMPONENT_ADD_DEPS( orocos-reporting-netcdf orocos-reporting )
-    ENDIF ( NETCDF_FOUND )
+    ENDIF ( BUILD_REPORTING_NETCDF AND NETCDF_FOUND )
     
     COMPONENT_ADD_LIBS( orocos-reporting ${RTT_PLUGIN_rtt-marshalling_LIBRARIES} )
     
