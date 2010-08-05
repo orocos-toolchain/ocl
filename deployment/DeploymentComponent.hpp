@@ -138,6 +138,7 @@ namespace OCL
             bool autostart, autoconf, autoconnect, autosave;
             bool proxy, server, use_naming;
             std::string configfile;
+            vector<string> plugins;
         };
 
         /**

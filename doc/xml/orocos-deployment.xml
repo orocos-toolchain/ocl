@@ -10,8 +10,9 @@
   <articleinfo>
     <title>The Deployment Component</title>
     <copyright>
-      <year>2006,2007,2008,2009</year>
+      <year>2006,2007,2008,2009, 2010</year>
       <holder>Peter Soetens, FMTC</holder>
+      <holder>Peter Soetens, The SourceWorks</holder>
     </copyright>
 
     <legalnotice>
@@ -209,7 +210,7 @@
 	to load and configure Orocos components. One can divide the
 	instructions in three groups:
 	<itemizedlist>
-	  <listitem><para>Where to look for component libraries</para></listitem>
+	  <listitem><para>Where to look for component libraries and plugins</para></listitem>
 	  <listitem><para>Which components to create and with which name</para></listitem>
 	  <listitem><para>How each component is setup</para></listitem>
 	</itemizedlist>
@@ -245,7 +246,7 @@
 	  component libraries in a given directory to be pre-loaded.
 	  It does not cause any component to be created, but
 	  allows the <classname>OCL::DeploymentComponent</classname> to know where the 
-	  component libraries are located. This function works recursively
+	  component libraries are located. This function <emphasis>does not work recursively</emphasis>
 	  and may be called for multiple paths.
 	</para>
 	<para>
@@ -255,18 +256,20 @@
 <properties>
   <!-- ....  -->
 
-  <simple name="Import" type="string"><value>/usr/local/lib</value></simple>
+  <simple name="Import" type="string"><value>/usr/local/lib/orocos</value></simple>
 
 </properties>]]></programlisting>
 	</para>
 	<para>
 	  The script method equivalent is:
-	  <programlisting>  import("/usr/local/lib")</programlisting>
+	  <programlisting>  import("/usr/local/lib/orocos")</programlisting>
 	</para>
 	<para>
-	  Each library found under the given location is pre-loaded. The
-	  import statement allows you to load non-Orocos libraries as
-	  well. If a library contains one or more Orocos components, 
+	  Each component library found under the given location is pre-loaded. The
+	  import statement <emphasis>only allows you to load Orocos plugin or component libraries</emphasis>.
+	  See the Plugin manual for creating such a library.
+	  Regular libraries (like libfoo.so or win32.dll,...) can not be loaded.
+	  If a library contains one or more Orocos components, 
 	  the contained component types become available in the next step.
 	</para>
 	<para>
@@ -322,7 +325,7 @@
 <!DOCTYPE properties SYSTEM "cpf.dtd">
 <properties>
   <!-- ... import statements locate Orocos reporting library ...  -->
-  <simple name="Import" type="string"><value>/usr/local/lib</value></simple>
+  <simple name="Import" type="string"><value>/usr/local/lib/orocos</value></simple>
 
   <struct name="Reporter" type="OCL::FileReporting">
   </struct>
@@ -334,12 +337,13 @@
 	  This component is added as a peer component to the
 	  DeploymentComponent such that it becomes immediately
 	  available to the application. This step can be
-	  repeated any number of times with any number of types.
+	  repeated any number of times with any number of components
+	  or names.
 	</para>
 	<para>
 	  Alternatively, the type may be a filename if that file
 	  contains only one component, which is exported using
-	  the <function>createComponent</function> function.
+	  the <function>ORO_CREATE_COMPONENT</function> macro (see below).
 	</para>
 	<para>
 	  The script method equivalent is:
@@ -355,13 +359,13 @@
 	  you can do this using XML or the scripting language.
 	</para>
 	<para>
-	  In XML, one adds additional elements to the component
-	  struct.
+	  Below is an example of about all options you can use. They are
+	  explained in the sections below.
 	</para>
 	  <programlisting><![CDATA[<?xml version="1.0" encoding="UTF-8"?> 
 <!DOCTYPE properties SYSTEM "cpf.dtd">
 <properties>
-  <simple name="Import" type="string"><value>/usr/local/lib</value></simple>
+  <simple name="Import" type="string"><value>/usr/local/lib/orocos</value></simple>
 
   <!-- You can set per data flow connection policies -->
   <struct name="SensorValuesConnection" type="ConnPolicy">
@@ -397,6 +401,9 @@
       <simple name="Priority" type="short"><value>99</value></simple>
       <simple name="Scheduler" type="string"><value>ORO_SCHED_RT</value></simple>
     </struct>
+
+    <!-- loads the 'scripting' service (aka plugin) in this component -->
+    <simple name="Service" type="string"><value>scripting</value></simple>
 
     <simple name="AutoConf" type="boolean"><value>1</value></simple>
     <simple name="AutoStart" type="boolean"><value>1</value></simple>
@@ -441,6 +448,7 @@
     </struct>
   </struct>
 </properties>]]></programlisting>
+	  <section><title>Thread, period, priority and scheduler.</title>
 	<para>
 	  The first section of all three components sets up the active
 	  behaviour of the component in the <option>Activity</option>
@@ -452,15 +460,40 @@
 	  <function>configureComponents()</function> step of the
 	  DeploymentComponent. Possible types of activities are
 	  <option>PeriodicActivity</option>, 
-	  <option>NonPeriodicActivity</option>, <option>Activity</option> (the standard one), 
+	  <option>Activity</option> (the standard one), 
 	  <option>SequentialActivity</option> and
-	  <option>:SlaveActivity</option>. The latter allows a
+	  <option>SlaveActivity</option>. The latter allows a
 	  component to be executed by a master component. You can
 	  specify a master component using the <option>Master</option>
 	  simple element in the <option>Activity</option> struct. The
 	  DeploymentComponent makes slaves automatically a peer of
-	  their master.
+	  their master, but does nothing more. Ie, the code in the master's
+	  updateHook() must call trigger on each of its slaves that are peers.
 	</para>
+	  </section>
+	  <section><title>Loading Services or Plugins.</title>
+	  <para>
+	    You can load any number of plugins into a component. A
+	    plugin may also add a Service object to a component's
+	    interface, but this is optional.  The
+	    <option>Service</option> (or <option>Plugin</option> or
+	    <option>Provides</option>, they are all equivalent)
+	    element may occur any number of times in the component
+	    struct to list a specific service that must be loaded in
+	    that component.
+	    For example, in order to execute a script in your
+	    component, you may load the 'scripting' service. Or in
+	    order to serialize its properties to XML, you'll need the
+	    'marshalling' service. These services add new functions to
+	    your component which provide that functionality.
+	  </para>
+	  <para>
+	    You can check the available services (ie discovered by the DeploymentComponent)
+	    with '.services' and load a service from the TaskBrowser prompt with
+	    <programlisting>.provides &lt;servicename&gt;</programlisting>.
+	  </para>
+	  </section>
+	  <section><title>Auto-Configuration and Auto-Starting components.</title>
 	<para>
 	  The next section of the Controller contains the <option>AutoConf</option> and <option>AutoStart</option>
 	  elements. If <option>AutoConf</option> is set to 1, the DeploymentComponent will call
@@ -468,18 +501,32 @@
 	  after the properties are loaded. If <option>AutoStart</option> is set to 1, the component's start() 
 	  method will be called during <function>startComponents()</function>.
 	  By default <option>AutoConf</option> and <option>AutoStart</option> are 0 (off).
-	</para>
+	</para></section>
+	  <section><title>Connecting Data Ports</title>
 	<para>
 	  The <option>Ports</option> struct describes which ports of this component
 	  participate in which data flow connection. So for each element in this
 	  struct, the name of the element is the port name, and the value is the
-	  name of the connection it belongs to. Ports with equal connection names
-	  are connected to each other. Failure to add one or more ports (because
-	  they don't agree on the same data type) will fail the configuration phase.
-	  You can tune each connection using a struct of type 'ConnPolicy' with the
-	  name of the connection. This is shown on top of the example,
+	  name of the connection it belongs to. Ports with equal <emphasis>connection names</emphasis>
+	  are connected to each other. The port name itself is <emphasis>not used</emphasis>.
+	  If ports of different data types are being connected, the configuration phase
+	  will fail.
+	  You can tune each connection using a struct of type <option>ConnPolicy</option> with the
+	  name of the connection. This is shown on top of the example XML file,
 	  where the SensorValuesConnection is configured, which is used to connect
 	  the Controller's SensorValues port with the Plant's Position port.
+	</para>
+	<para>
+	  Looking at the Ports section of the Controller above, it has two data ports listed
+	  (SensorValues and SteeringSignals), which are added to
+	  two connection objects.  These connections show up in the
+	  Plant component's <option>Ports</option> section as well. And it shows that
+	  the SensorValues Port is connected to the Position Port and
+	  the SteeringSignals Port is connected to the Velocity
+	  Port. If other component's ports in the same file refer to
+	  the same connection object, the ports are connected to each
+	  other by the DeploymentComponent during the
+	  <function>configureComponents()</function> step.
 	</para>
 	<para>
 	  The <option>AutoConnect</option> element indicates if the
@@ -501,7 +548,8 @@
 	    use the explicit 'Ports' connection method to connect different
 	    named ports to each other !</para>
 	  </note>
-	</para>
+	</para></section>
+	  <section><title>Setting Properties (component parameters)</title>
 	<para>
 	  The <option>Properties</option> struct allows to configure
 	  a component's properties from the main XML file. These values
@@ -523,25 +571,23 @@
 	  property is turned on, the listed property file will be
 	  saved again with the values of the Component, just before
 	  the Component is <function>cleanup()</function>.
-	</para>
+	</para></section>
+	  <section><title>Setting up peer-to-peer relations</title>
 	<para>
 	  The last section of the Reporter component lists its
-	  peers. The Reporter has one peer, the Controller, with which
-	  it will be able to communicate and monitor its data
-	  ports. The Controller component has the Plant as peer, which
-	  means it can control it. It has two data ports listed as
-	  well (SensorValues and SteeringSignals), which are added to
-	  two connection objects.  These connections show up in the
-	  Plant component's <option>Ports</option> section as well. And it shows that
-	  the SensorValues Port is connected to the Position Port and
-	  the SteeringSignals Port is connected to the Velocity
-	  Port. If other component's ports in the same file refer to
-	  the same connection object, the ports are connected to each
-	  other by the DeploymentComponent during the
-	  <function>configureComponents()</function> step.
-	  The Component Builder's Manual goes into detail about
-	  the possible connection mechanisms.
+	  peers. The Reporter has one peer, the Controller, which allows
+	  the Reporter component to scan and use the interface of the Controller
+	  component. For example, it will discover which ports Controller
+	  exposes and be able to create connections to them, without the
+	  need of a supervisor to do so.
 	</para>
+	<para>
+	  The Controller component has the Plant as peer, which
+	  means it can query and control it. For example, use its
+	  services, start and stop it etc.
+	</para>
+	  </section>
+	  <section><title>Loading scripts</title>
 	<para>
 	  The Controller has at the end two additional elements
 	  describing which script files must be loaded into that
@@ -552,6 +598,7 @@
 	  loaded. This is again done during the
 	  <function>configureComponents()</function> step.
 	</para>
+	  </section>
       </section>
       <section>
 	<title>Include XML files</title>

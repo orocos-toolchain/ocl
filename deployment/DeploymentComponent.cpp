@@ -167,6 +167,9 @@ namespace OCL
         valid_names.insert("Activity");
         valid_names.insert("Master");
         valid_names.insert("Properties");
+        valid_names.insert("Service");
+        valid_names.insert("Plugin"); // equivalent to Service.
+        valid_names.insert("Provides"); // equivalent to Service.
 
         // Check for 'Deployer-site.cpf' XML file.
         if (siteFile.empty())
@@ -536,6 +539,16 @@ namespace OCL
                                     comps[comp.getName()].server = ps.get();
                                 continue;
                             }
+                            if ( (*optit)->getName() == "Service" || (*optit)->getName() == "Plugin"  || (*optit)->getName() == "Provides") {
+                                RTT::Property<string> ps = *optit;
+                                if (!ps.ready()) {
+                                    log(Error) << (*optit)->getName() << " must be of type <string>" << endlog();
+                                    valid = false;
+                                } else {
+                                    comps[comp.getName()].plugins.push_back(ps.value());
+                                }
+                                continue;
+                            }
                             if ( (*optit)->getName() == "UseNamingService" ) {
                                 RTT::Property<bool> ps = comp.rvalue().getProperty("UseNamingService");
                                 if (!ps.ready()) {
@@ -618,6 +631,14 @@ namespace OCL
                         }
 
                         assert(c);
+
+                        // load plugins/services:
+                        vector<string>& services = comps[(*it)->getName()].plugins;
+                        for (vector<string>::iterator it = services.begin(); it != services.end(); ++it) {
+                            if ( c->provides()->hasService( *it ) == false) {
+                                PluginLoader::Instance()->loadService(*it, c);
+                            }
+                        }
 
                         // set PropFile name if present
                         if ( comp.get().getProperty("PropFile") )  // PropFile is deprecated
