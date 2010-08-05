@@ -319,6 +319,22 @@ namespace OCL
         bool loadComponent(const std::string& name, const std::string& type);
 
         /**
+         * Loads a service in the given component.
+         * If a service with the name of \a service is already loaded,
+         * does nothing and returns true.
+         *
+         * @note If the loaded service uses another name to expose itself
+         * or does not register itself with an RTT::Service object, this function will
+         * load the service anyway in case it has been loaded before.
+         *
+         * @param component A peer of this component.
+         * @param service A service discovered by the PluginLoader which will be
+         * loaded into \a component.
+         * @return false if component is not a peer or service is not known. true otherwise.
+         */
+        bool loadService(const std::string& component, const std::string& service);
+
+        /**
          * Unload a loaded component from the current process. It may not
          * be running.
          *

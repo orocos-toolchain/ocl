@@ -488,9 +488,16 @@
 	    your component which provide that functionality.
 	  </para>
 	  <para>
-	    You can check the available services (ie discovered by the DeploymentComponent)
-	    with '.services' and load a service from the TaskBrowser prompt with
-	    <programlisting>.provides &lt;servicename&gt;</programlisting>.
+	    You can check the available services (ie discovered by the
+	    DeploymentComponent) with '.services' and load a service
+	    from the TaskBrowser prompt <emphasis>in the current
+	    visited component</emphasis> with
+	    <programlisting>.provides
+	    &lt;servicename&gt;</programlisting>. The Deployer has 
+	    the equivalent function which looks like this:
+	    <programlisting>loadService("Reporter","scripting")
+	    </programlisting> Where Reporter must be a peer of the
+	    Deployer.
 	  </para>
 	  </section>
 	  <section><title>Auto-Configuration and Auto-Starting components.</title>

@@ -97,6 +97,7 @@ namespace OCL
 
 
         this->addOperation("loadComponent", &DeploymentComponent::loadComponent, this, ClientThread).doc("Load a new component instance from a library.").arg("Name", "The name of the to be created component").arg("Type", "The component type, used to lookup the library.");
+        this->addOperation("loadService", &DeploymentComponent::loadService, this, ClientThread).doc("Load a discovered service or plugin in an existing component.").arg("Name", "The name of the component which will receive the service").arg("Service", "The name of the service or plugin.");
         this->addOperation("unloadComponent", &DeploymentComponent::unloadComponent, this, ClientThread).doc("Unload a loaded component instance.").arg("Name", "The name of the to be created component");
         this->addOperation("displayComponentTypes", &DeploymentComponent::displayComponentTypes, this, ClientThread).doc("Print out a list of all component types this component can create.");
 
@@ -1189,6 +1190,21 @@ namespace OCL
     {
         RTT::Logger::In in("DeploymentComponent::loadLibrary");
         return ComponentLoader::Instance()->import(name, "");
+    }
+
+    bool DeploymentComponent::loadService(const std::string& name, const std::string& type) {
+        TaskContext* peer = 0;
+        if (name == getName() )
+            peer = this;
+        else if ( (peer = getPeer(name)) == 0) {
+            log(Error)<<"No such peer: "<< name<< ". Can not load service '"<<type<<"'."<<endlog();
+            return false;
+        }
+        // note: in case the service is not exposed as a 'service' object with the same name,
+        // we can not detect double loads. So this check is flaky.
+        if (peer->provides()->hasService(type))
+            return true;
+        return PluginLoader::Instance()->loadService(type, peer);
     }
 
     // or type is a shared library or it is a class type.
