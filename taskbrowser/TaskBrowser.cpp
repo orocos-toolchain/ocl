@@ -58,6 +58,7 @@
 #include <rtt/Logger.hpp>
 #include <rtt/extras/MultiVector.hpp>
 #include <rtt/types/TypeStream.hpp>
+#include <rtt/types/Types.hpp>
 #include "TaskBrowser.hpp"
 
 #include <rtt/scripting/TryCommand.hpp>
@@ -406,6 +407,14 @@ namespace OCL
             if ( i->find( component ) == 0  )
                 completes.push_back( peerpath + *i );
         }
+
+        // types:
+        comps = Types()->getTypes();
+        for (std::vector<std::string>::iterator i = comps.begin(); i!= comps.end(); ++i ) {
+            if ( i->find( component ) == 0  )
+                completes.push_back( peerpath + *i );
+        }
+
     }
 
     void TaskBrowser::find_peers( std::string::size_type startpos )
@@ -1307,13 +1316,15 @@ namespace OCL
         sresult << right;
     }
 
-    void TaskBrowser::doPrint( base::DataSourceBase* ds, bool recurse) {
+    void TaskBrowser::doPrint( base::DataSourceBase::shared_ptr ds, bool recurse) {
         // this is needed for ds's that rely on initialision.
         // e.g. eval true once or time measurements.
         // becomes only really handy for 'watches' (todo).
+        if (!ds)
+            return;
         ds->reset();
 
-        DataSource<RTT::PropertyBag>* dspbag = DataSource<RTT::PropertyBag>::narrow(ds);
+        DataSource<RTT::PropertyBag>* dspbag = DataSource<RTT::PropertyBag>::narrow(ds.get());
         if (dspbag) {
             RTT::PropertyBag bag( dspbag->get() );
             if (!recurse) {
@@ -1336,9 +1347,46 @@ namespace OCL
             return;
         }
 
+        // Print the members of the type:
         base::DataSourceBase::shared_ptr dsb(ds);
         dsb->evaluate();
-        sresult << dsb;
+        if (dsb->getMemberNames().empty() || dsb->getTypeName() == "string")
+            sresult << dsb;
+        else {
+            sresult << setw(0);
+            sresult << "{";
+            vector<string> names = dsb->getMemberNames();
+            if ( find(names.begin(), names.end(), "capacity") != names.end() &&
+                    find(names.begin(), names.end(), "size") != names.end() ) {
+                // is a container/sequence:
+                DataSource<int>::shared_ptr seq_size = dynamic_pointer_cast<DataSource<int> >(dsb->getMember("size"));
+                if (seq_size) {
+                    ValueDataSource<int>::shared_ptr index = new ValueDataSource<int>(0);
+                    // print max 10 items of sequence:
+                    sresult << " [";
+                    for (int i=0; i != seq_size->get(); ++i) {
+                        index->set( i );
+                        if (i == 10) {
+                            sresult << "...("<< seq_size->get() - 10 <<" items omitted)...";
+                            break;
+                        } else {
+                            DataSourceBase::shared_ptr element = dsb->getMember(index, DataSourceBase::shared_ptr() );
+                            doPrint(element, true);
+                            if (i+1 != seq_size->get())
+                                sresult <<", ";
+                        }
+                    }
+                    sresult << " ], "; // size and capacity will follow...
+                }
+            }
+            for(vector<string>::iterator it = names.begin(); it != names.end(); ) {
+                sresult  << *it << " = ";
+                doPrint( dsb->getMember(*it), true);
+                if (++it != names.end())
+                    sresult <<", ";
+            }
+            sresult <<" }";
+        }
     }
 
     struct comcol

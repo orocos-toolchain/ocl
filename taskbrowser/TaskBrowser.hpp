@@ -142,7 +142,7 @@ namespace OCL
 
         void listText(std::stringstream& txtss,int start, int end, int ln, char s);
 
-        void doPrint( RTT::base::DataSourceBase* ds, bool recurse);
+        void doPrint( RTT::base::DataSourceBase::shared_ptr ds, bool recurse);
 
         void enterTask();
         void leaveTask();
