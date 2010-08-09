@@ -5,8 +5,11 @@ if (ENABLE_CORBA)
   SET(CORBA_FOUND)
     IF(${CORBA_IMPLEMENTATION} STREQUAL "TAO")
         # Look for TAO and ACE
-	if(${OROCOS_TARGET} MATCHES "win32|macosx")
-	  set(XTRA_TAO_LIBS AnyTypeCode ValueType)
+	if(${OROCOS_TARGET} MATCHES "win32")
+	  set(XTRA_TAO_LIBS AnyTypeCode ValueType) #note: capital T
+	endif()
+	if(${OROCOS_TARGET} MATCHES "macosx|gnulinux|xenomai|lxrt")
+	  set(XTRA_TAO_LIBS AnyTypeCode Valuetype) #note: small T
 	endif()
         find_package(TAO REQUIRED IDL PortableServer CosNaming Messaging ${XTRA_TAO_LIBS})
 	    SET(CORBA_FOUND ${TAO_FOUND})
@@ -27,7 +30,10 @@ if (ENABLE_CORBA)
 	      SET(CORBA_TAO_HAS_MESSAGING 1)
 	    endif()
 
-        ENDIF(NOT TAO_FOUND)
+ 	    # Including a TAO header is sufficient to depend on this library.
+	    set(CORBA_USER_LINK_LIBS ${TAO_CLIENT_LIBRARIES})
+
+       ENDIF(NOT TAO_FOUND)
     ELSEIF(${CORBA_IMPLEMENTATION} STREQUAL "OMNIORB")
         find_package(OmniORB REQUIRED)
 	    SET(CORBA_FOUND ${OMNIORB4_FOUND})
@@ -43,6 +49,9 @@ if (ENABLE_CORBA)
 	    SET(CORBA_DEFINITIONS ${OMNIORB4_DEFINITIONS})
 	    # Flag used in rtt-corba-config.h
 	    SET(CORBA_IS_OMNIORB 1)
+
+        # Including an Omniorb header is sufficient to depend on this library.
+        set(CORBA_USER_LINK_LIBS ${OMNIORB4_CLIENT_LIBRARIES} )
 
         ENDIF(NOT OMNIORB4_FOUND)
     ELSE(${CORBA_IMPLEMENTATION} STREQUAL "TAO")
