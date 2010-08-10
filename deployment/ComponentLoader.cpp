@@ -25,7 +25,7 @@
  *                                                                         *
  ***************************************************************************/
 
-// suppress warning in ComponentLoader.hpp
+// suppress warning in Component.hpp
 #define OCL_STATIC
 #include "ocl/Component.hpp"
 #include "ComponentLoader.hpp"
@@ -41,6 +41,8 @@ using namespace boost::filesystem;
 
 namespace OCL
 {
+    // We have our own copy of the Factories object to store all
+    // loaded component types. This is pointer is only shared with the DeploymentComponent.
     FactoryMap* ComponentFactories::Factories = 0;
 }
 
