@@ -452,17 +452,29 @@
 	<para>
 	  The first section of all three components sets up the active
 	  behaviour of the component in the <option>Activity</option>
-	  element. Both have periodic activities, which run with a
+	  element. 
+	</para><programlisting><![CDATA[
+    <struct name="Activity" type="PeriodicActivity">
+      <simple name="Period" type="double"><value>0.005</value></simple>
+      <simple name="Priority" type="short"><value>0</value></simple>
+      <simple name="Scheduler" type="string"><value>ORO_SCHED_OTHER</value></simple>
+    </struct>
+	]]></programlisting>
+	<para>
+	Both have periodic activities, which run with a
 	  given period, priority and in a scheduler. The Controller
 	  and Plant run in a real-time scheduler, the Reporter
 	  doesn't. The activities are created and attached to each
 	  component during the
 	  <function>configureComponents()</function> step of the
 	  DeploymentComponent. Possible types of activities are
-	  <option>PeriodicActivity</option>, 
-	  <option>Activity</option> (the standard one), 
-	  <option>SequentialActivity</option> and
-	  <option>SlaveActivity</option>. The latter allows a
+	  <itemizedlist>
+	    <listitem><para><option>PeriodicActivity</option>, </para></listitem>
+	  <listitem><para><option>Activity</option> (the standard one), </para></listitem>
+	  <listitem><para><option>SequentialActivity</option> and</para></listitem>
+	  <listitem><para><option>SlaveActivity</option>.</para></listitem>
+	  </itemizedlist>
+	  The latter allows a
 	  component to be executed by a master component. You can
 	  specify a master component using the <option>Master</option>
 	  simple element in the <option>Activity</option> struct. The
@@ -475,7 +487,14 @@
 	  <para>
 	    You can load any number of plugins into a component. A
 	    plugin may also add a Service object to a component's
-	    interface, but this is optional.  The
+	    interface, but this is optional.  
+	    </para>
+	    <programlisting><![CDATA[
+    <!-- loads the 'scripting' service (aka plugin) in this component -->
+    <simple name="Service" type="string"><value>scripting</value></simple>
+    ]]></programlisting>
+	  <para>
+	    The
 	    <option>Service</option> (or <option>Plugin</option> or
 	    <option>Provides</option>, they are all equivalent)
 	    element may occur any number of times in the component
@@ -492,10 +511,11 @@
 	    DeploymentComponent) with '.services' and load a service
 	    from the TaskBrowser prompt <emphasis>in the current
 	    visited component</emphasis> with
-	    <programlisting>.provides
-	    &lt;servicename&gt;</programlisting>. The Deployer has 
+	    <programlisting>.provides &lt;servicename&gt;</programlisting>. 
+	    The Deployer has 
 	    the equivalent function which looks like this:
-	    <programlisting>loadService("Reporter","scripting")
+	    <programlisting>
+  loadService("Reporter","scripting")
 	    </programlisting> Where Reporter must be a peer of the
 	    Deployer.
 	  </para>
@@ -503,7 +523,15 @@
 	  <section><title>Auto-Configuration and Auto-Starting components.</title>
 	<para>
 	  The next section of the Controller contains the <option>AutoConf</option> and <option>AutoStart</option>
-	  elements. If <option>AutoConf</option> is set to 1, the DeploymentComponent will call
+	  elements. 
+	</para>
+	    <programlisting><![CDATA[
+    <simple name="AutoConf" type="boolean"><value>1</value></simple>
+    <simple name="AutoStart" type="boolean"><value>1</value></simple>
+    <simple name="AutoConnect" type="boolean"><value>1</value></simple>
+    ]]></programlisting>
+	<para>
+	If <option>AutoConf</option> is set to 1, the DeploymentComponent will call
 	  the component's configure() method during <function>configureComponents()</function>,
 	  after the properties are loaded. If <option>AutoStart</option> is set to 1, the component's start() 
 	  method will be called during <function>startComponents()</function>.
@@ -512,15 +540,37 @@
 	  <section><title>Connecting Data Ports</title>
 	<para>
 	  The <option>Ports</option> struct describes which ports of this component
-	  participate in which data flow connection. So for each element in this
+	  participate in which data flow connection. 
+	</para>
+	    <programlisting><![CDATA[
+    <struct name="Ports" type="PropertyBag">
+      <simple name="Position" type="string"><value>SensorValuesConnection</value></simple>
+      <simple name="Velocity" type="string"><value>DriveConnection</value></simple>
+    </struct>
+    ]]></programlisting>
+	<para>
+	So for each element in this
 	  struct, the name of the element is the port name, and the value is the
 	  name of the connection it belongs to. Ports with equal <emphasis>connection names</emphasis>
 	  are connected to each other. The port name itself is <emphasis>not used</emphasis>.
 	  If ports of different data types are being connected, the configuration phase
 	  will fail.
 	  You can tune each connection using a struct of type <option>ConnPolicy</option> with the
-	  name of the connection. This is shown on top of the example XML file,
-	  where the SensorValuesConnection is configured, which is used to connect
+	  name of the connection. 
+	</para>
+	    <programlisting><![CDATA[
+  <!-- You can set per data flow connection policies -->
+  <struct name="SensorValuesConnection" type="ConnPolicy">
+    <!-- Type is 'shared data' or buffered: DATA: 0 , BUFFER: 1 -->
+    <simple name="type" type="short"><value>1</value></simple>
+    <!-- buffer size is 12 -->
+    <simple name="size" type="short"><value>12</value></simple>
+  </struct>
+  <!-- You can repeat this struct for each connection below ... -->
+    ]]></programlisting>
+	<para>
+	In this example,
+	  the SensorValuesConnection is configured, which is used to connect
 	  the Controller's SensorValues port with the Plant's Position port.
 	</para>
 	<para>
@@ -560,17 +610,38 @@
 	<para>
 	  The <option>Properties</option> struct allows to configure
 	  a component's properties from the main XML file. These values
-	  can be overridden by the listed property files.
+	  can be overridden by the listed property files:
 	</para>
+	    <programlisting><![CDATA[
+  <!-- You can repeat this struct for each connection below ... -->
+    <struct name="Properties" type="PropertyBag">
+      <simple name="K" type="double"><value>1.0</value></simple>
+    </struct>
+    ]]></programlisting>
 	<para>
 	  The <option>PropertyFile</option> element specifies from
 	  which XML file each component is configured and this file
 	  <emphasis>must</emphasis> contain values for all properties
-	  of the component. In case you only want to update part of
+	  of the component.
+	</para>
+	<para>
+	  In case you only want to update part of
 	  the properties, use the <option>UpdateProperties</option>
-	  element. Finally, it is also possible to load and create
+	  element. 
+	</para>
+        <programlisting><![CDATA[
+    <simple name="PropertyFile" type="string"><value>controller-main.cpf</value></simple>
+    <simple name="UpdateProperties" type="string"><value>controller-opts.cpf</value></simple>
+    ]]></programlisting>
+	<para>
+	  Finally, it is also possible to load and create
 	  new properties from a file using <option>LoadProperties</option>
-	  (the Reporting component requires this for example).
+	  the Reporting component requires this for example:
+	</para>
+        <programlisting><![CDATA[
+    <simple name="LoadProperties" type="string"><value>file-reporting.cpf</value></simple>
+    ]]></programlisting>
+	<para>	
 	  You can use any number or combination of these elements.
 	  The order is respected. The properties are read during the
 	  <function>configureComponents()</function> step of the
@@ -582,7 +653,15 @@
 	  <section><title>Setting up peer-to-peer relations</title>
 	<para>
 	  The last section of the Reporter component lists its
-	  peers. The Reporter has one peer, the Controller, which allows
+	  peers. 
+	</para>
+        <programlisting><![CDATA[
+    <struct name="Peers" type="PropertyBag">
+      <simple type="string"><value>Controller</value></simple>
+    </struct>
+    ]]></programlisting>
+	<para>
+	The Reporter has one peer, the Controller, which allows
 	  the Reporter component to scan and use the interface of the Controller
 	  component. For example, it will discover which ports Controller
 	  exposes and be able to create connections to them, without the
@@ -599,44 +678,20 @@
 	  The Controller has at the end two additional elements
 	  describing which script files must be loaded into that
 	  component: <option>ProgramScript</option> and
-	  <option>StateMachineScript</option>. Any number of scripts
+	  <option>StateMachineScript</option>. 
+	</para>
+        <programlisting><![CDATA[
+    <simple name="ProgramScript" type="string"><value>controller-program.ops</value></simple>
+    <simple name="StateMachineScript" type="string"><value>controller-states.ops</value></simple>
+    ]]></programlisting>
+	<para>
+	  Any number of scripts
 	  can be loaded and they are loaded in order.  Both Orocos
 	  program scripts and state machine scripts can be
 	  loaded. This is again done during the
 	  <function>configureComponents()</function> step.
 	</para>
 	  </section>
-      </section>
-      <section>
-	<title>Include XML files</title>
-	<para>
-	  The deployer XML format supports include directives, which
-	  allow you to manage your application configuration file in
-	  different files. This can be useful to separate the OS dependent
-	  settings from the OS independent settings, or share XML
-	  files between users. The include directive works similar like
-	  in "C":
-	</para>
-	  <programlisting><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE properties SYSTEM "cpf.dtd">
-<properties>
-  <!-- ... -->
-
-  <simple name="Include" type="string"><value>common-settings.xml</value></simple>
-
-  <!-- ... -->
-
-</properties>]]></programlisting>
-        <para>
-	  You can override settings or components in an include file
-	  by redefining them after the include statement. The last
-	  seen setting is always used by the deployer.
-	</para>
-	<note>
-	  <para>Currently, include directives always look into the
-	  current working directory, also when an included file
-	  includes a file from another directory.</para>
-	</note>
       </section>
       <section>
 	<title>CORBA extensions</title>
@@ -736,7 +791,7 @@
 	  following code is added to HelloWorld.cpp:
 	</para>
 	<programlisting>  #include "HelloWorld.hpp"
-  #include &lt;ocl/ComponentLoader.hpp&gt;
+  #include &lt;ocl/Component.hpp&gt;
 
   /* ... Hello World implementation file ... */
 
@@ -757,7 +812,7 @@
 	   <filename>ComponentX.cpp</filename>:
 	 </para>
 	<programlisting>  #include "ComponentX.hpp"
-  #include &lt;ocl/ComponentLoader.hpp&gt;
+  #include &lt;ocl/Component.hpp&gt;
 
   /* ... ComponentX implementation file ... */
   // <emphasis>once</emphasis>:
@@ -769,7 +824,7 @@
 	   ORO_CREATE_COMPONENT_TYPE macro:
 	 </para>
 	<programlisting>  #include "ComponentY.hpp"
-  #include &lt;ocl/ComponentLoader.hpp&gt;
+  #include &lt;ocl/Component.hpp&gt;
 
   /* ... ComponentY implementation file ... */
 
@@ -804,7 +859,7 @@
 	<para>
 	  The macros need some help to figure out if you are compiling
 	  a shared or static library. You need to define the
-	  <emphasis>OCL_DLL_EXPORT</emphasis> macro (see below) when
+	  <emphasis>RTT_COMPONENT</emphasis> macro (see below) when
 	  compiling for a shared library. If this macro is not
 	  defined, it is assumed that you are compiling for a static
 	  library.
@@ -814,7 +869,7 @@
 	  The compilation flag of a component for a shared library
 	  might look like:
 	</para>
-	<programlisting>  CFLAGS= -O2 -Wall -fPIC -DOCL_DLL_EXPORT
+	<programlisting>  CFLAGS= -O2 -Wall -fPIC -DRTT_COMPONENT
   LDFLAGS= -fPIC</programlisting>
 	<para>
 	  The compilation flag of a component for a static library
