@@ -187,11 +187,7 @@ MACRO( GLOBAL_ADD_COMPONENT )
       ENDIF (OROCOS_RTT_1.2)
     ENDIF (OROCOS_RTT_1.4)
 
-<<<<<<< HEAD:config/component_rules.cmake
-    INSTALL(TARGETS ${LIB_NAME} LIBRARY DESTINATION ${AC_INSTALL_DIR} )
-=======
-    INSTALL( TARGETS ${LIB_NAME} ARCHIVE DESTINATION lib LIBRARY DESTINATION lib RUNTIME DESTINATION bin )
->>>>>>> b711323... win32: initial changes to make ocl work on win32 native.:config/component_rules.cmake
+    INSTALL(TARGETS ${LIB_NAME} LIBRARY DESTINATION ${AC_INSTALL_DIR} ARCHIVE DESTINATION lib RUNTIME DESTINATION bin)
     #The later a component is added, the earlier it apears in the -l list.
     SET (ENV{SELECTED_LIBS} "-l${LIB_NAME} $ENV{SELECTED_LIBS} ")
     #This is an ugly work around

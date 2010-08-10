@@ -15,8 +15,8 @@ IF ( BUILD_REPORTING )
     SET( SOCKET_HPPS command.hpp datasender.hpp socket.hpp socketmarshaller.hpp TcpReporting.hpp)
 
     if(NOT OROCOS_TARGET STREQUAL "win32")
-      set(SRCS ${SRCS} {SOCKET_SRCS})
-      set(HPPS ${HPPS} {SOCKET_HPPS})
+      set(SRCS ${SRCS} ${SOCKET_SRCS})
+      set(HPPS ${HPPS} ${SOCKET_HPPS})
     endif()
 
     INCLUDE_DIRECTORIES ( ${BOOST} ${BOOST_OPTIONS} )

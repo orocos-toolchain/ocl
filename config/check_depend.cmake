@@ -7,9 +7,6 @@ list(APPEND CMAKE_MODULE_PATH "${PROJ_SOURCE_DIR}/config")
 #                                                         #
 ###########################################################
 
-# Modules path (for searching FindXXX.cmake files)
-list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/config")
-
 # Can we use pkg-config?
 INCLUDE (${PROJ_SOURCE_DIR}/config/FindPkgConfig.cmake)
 
@@ -113,11 +110,6 @@ INCLUDE_DIRECTORIES( ${Boost_INCLUDE_DIR} ${READLINE_INCLUDE_DIR} )
 
 # Look for ulapack
 FIND_PATH( ULAPACK ulapack/eig.hpp )
-
-#
-# Detect CORBA using user's CORBA_IMPLEMENTATION
-#
-find_package(Corba REQUIRED)
 
 # Look for Log4cpp (if needed
 IF ( BUILD_LOGGING )
