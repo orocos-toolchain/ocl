@@ -1,9 +1,6 @@
 #
 # Include and link against required stuff
 #
-
-ADD_DEFINITIONS( "-Wall" )
-
 #From: http://www.cmake.org/Wiki/CMakeMacroParseArguments
 MACRO(PARSE_ARGUMENTS prefix arg_names option_names)
   SET(DEFAULT_ARGS)
@@ -36,7 +33,6 @@ MACRO(PARSE_ARGUMENTS prefix arg_names option_names)
   SET(${prefix}_${current_arg_name} ${current_arg_list})
 ENDMACRO(PARSE_ARGUMENTS)
 
-
 #
 # Components supply header files which should be included when 
 # using these components. Each component should use this macro
@@ -50,9 +46,7 @@ ENDMACRO( GLOBAL_ADD_INCLUDE COMPONENT_LOCATION )
 # Link a component library with an external library (qt3, gl, readline,....)
 # Usage: COMPONENT_ADD_LIBS( orocos-taskbrowser readline ncurses )
 MACRO( COMPONENT_ADD_LIBS COMPONENT_NAME  )
-  foreach( lib ${ARGN} )
-    TARGET_LINK_LIBRARIES( ${COMPONENT_NAME}-${OROCOS_TARGET} ${lib} )
-  endforeach( lib ${ARGN} )
+    TARGET_LINK_LIBRARIES( ${COMPONENT_NAME}-${OROCOS_TARGET} ${ARGN} )
 ENDMACRO( COMPONENT_ADD_LIBS COMPONENT_NAME )
 
 # Link a component library with another component library
@@ -170,14 +164,12 @@ MACRO( GLOBAL_ADD_COMPONENT )
       MESSAGE( "Building Shared library for ${COMPONENT_NAME}" )
       ADD_LIBRARY( ${LIB_NAME} SHARED ${SOURCES} )
       SET_TARGET_PROPERTIES( ${LIB_NAME} PROPERTIES 
-	DEFINE_SYMBOL OCL_DLL_EXPORT 
+	DEFINE_SYMBOL "OCL_DLL_EXPORT"
 	VERSION ${OCL_VERSION}
 	SOVERSION ${OCL_VERSION_MAJOR}.${OCL_VERSION_MINOR}
       INSTALL_RPATH_USE_LINK_PATH 1
 	)
-      foreach(lib ${OROCOS_RTT_LIBS})
- 	TARGET_LINK_LIBRARIES( ${LIB_NAME} ${lib} )
-      endforeach(lib in ${OROCOS_RTT_LIBS})
+ 	TARGET_LINK_LIBRARIES( ${LIB_NAME} ${OROCOS_RTT_LIBS} )
 
     ELSE (OROCOS_RTT_1.4)
       IF (OROCOS_RTT_1.2)
@@ -195,7 +187,11 @@ MACRO( GLOBAL_ADD_COMPONENT )
       ENDIF (OROCOS_RTT_1.2)
     ENDIF (OROCOS_RTT_1.4)
 
+<<<<<<< HEAD:config/component_rules.cmake
     INSTALL(TARGETS ${LIB_NAME} LIBRARY DESTINATION ${AC_INSTALL_DIR} )
+=======
+    INSTALL( TARGETS ${LIB_NAME} ARCHIVE DESTINATION lib LIBRARY DESTINATION lib RUNTIME DESTINATION bin )
+>>>>>>> b711323... win32: initial changes to make ocl work on win32 native.:config/component_rules.cmake
     #The later a component is added, the earlier it apears in the -l list.
     SET (ENV{SELECTED_LIBS} "-l${LIB_NAME} $ENV{SELECTED_LIBS} ")
     #This is an ugly work around

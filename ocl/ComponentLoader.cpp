@@ -135,7 +135,7 @@ void ComponentLoader::import( std::string const& path_list )
                 else {
                     if (is_symlink(itr->symlink_status()))
                         log(Debug) << "is symlink: ignored."<<endlog();
-                    else 
+                    else
                         if (!is_regular_file(itr->status()))
                             log(Debug) << "not a regular file: ignored."<<endlog();
                 }
@@ -157,7 +157,7 @@ void ComponentLoader::import( std::string const& path_list )
                 else {
                     if (is_symlink(itr->symlink_status()))
                         log(Debug) << "is symlink: ignored."<<endlog();
-                    else 
+                    else
                         if (!is_regular_file(itr->status()))
                             log(Debug) << "not a regular file: ignored."<<endlog();
                 }

@@ -29,6 +29,6 @@ IF ( CMAKE_PKGCONFIG_EXECUTABLE )
 ELSE  ( CMAKE_PKGCONFIG_EXECUTABLE )
 
     # Can't find pkg-config -- have to search manually
-    MESSAGE( FATAL_ERROR "Can't find BFL without pkgconfig !")
+    MESSAGE( "Can't find BFL without pkgconfig !")
 
 ENDIF ( CMAKE_PKGCONFIG_EXECUTABLE )

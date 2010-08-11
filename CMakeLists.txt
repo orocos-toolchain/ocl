@@ -104,26 +104,17 @@ SET(CMAKE_VERBOSE_MAKEFILE FALSE)
 #                                                 #
 ###################################################
 
-#
-# Set the build type (affects debugging symbols and optimization)
-#
-IF ( NOT CMAKE_BUILD_TYPE )
-  SET( CMAKE_BUILD_TYPE "OCL" CACHE STRING "Build type: None (Use CMAKE_C_FLAGS and CMAKE_CXX_FLAGS), OCL (Recommended), Release, Debug, RelWithDebInfo, MinSizeRel." FORCE )
-  MESSAGE( "Setting build type to '${CMAKE_BUILD_TYPE}'" )
-  SET( CMAKE_C_FLAGS_OCL "-O2 -DNDEBUG" CACHE STRING "The CFLAGS for OCL" )
-  SET( CMAKE_CXX_FLAGS_OCL "-O2 -DNDEBUG" CACHE STRING "The CXXFLAGS flags for OCL"  )
-ELSE ( NOT CMAKE_BUILD_TYPE )
-  MESSAGE( "Build type set to '${CMAKE_BUILD_TYPE}' by user." )
-  IF ( NOT CMAKE_BUILD_TYPE STREQUAL "OCL" )
-    MARK_AS_ADVANCED(FORCE CMAKE_C_FLAGS_OCL CMAKE_CXX_FLAGS_OCL)
-  ELSE ( NOT CMAKE_BUILD_TYPE STREQUAL "OCL" )
-    MARK_AS_ADVANCED(CLEAR CMAKE_C_FLAGS_OCL CMAKE_CXX_FLAGS_OCL)
-  ENDIF ( NOT CMAKE_BUILD_TYPE STREQUAL "OCL" )
-
-ENDIF ( NOT CMAKE_BUILD_TYPE )
-
-# MESSAGE("Looking for compiler:")
-INCLUDE (${CMAKE_ROOT}/Modules/CMakeDetermineCXXCompiler.cmake)
+if(OROCOS_TARGET STREQUAL "win32")
+  if (MSVC)
+    if (NOT MSVC80)
+      set(NUM_PARALLEL_BUILD 4 CACHE STRING "Number of parallel builds")
+      set(PARALLEL_FLAG "/MP${NUM_PARALLEL_BUILD}")
+    endif()
+    add_definitions(/wd4355 /wd4251 /wd4180 /wd4996 /bigobj ${PARALLEL_FLAG} /DBOOST_ALL_NO_LIB)
+    #list(APPEND OROCOS-RTT_LIBRARIES kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib  ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib Ws2_32.lib winmm.lib)
+  endif()
+  set(CMAKE_DEBUG_POSTFIX "d")
+endif(OROCOS_TARGET STREQUAL "win32")
 
 ###################################################
 #                                                 #

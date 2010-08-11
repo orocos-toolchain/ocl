@@ -137,7 +137,7 @@ extern "C" { \
  * each class added with ORO_LIST_COMPONENT_TYPE.
  */
 #define ORO_CREATE_COMPONENT_TYPE() \
-OCL::FactoryMap* OCL::ComponentFactories::Factories = 0; \
+OCL::FactoryMap* OCL::ComponentFactories::Factories = 0;	\
 extern "C" { \
   OCL_EXPORT RTT::TaskContext* createComponentType(std::string instance_name, std::string type_name) \
   { \

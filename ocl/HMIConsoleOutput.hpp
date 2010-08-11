@@ -47,7 +47,7 @@ namespace OCL
      *
      * HMI == Human-Machine Interface
      */
-    class HMIConsoleOutput
+    class OCL_API HMIConsoleOutput
         : public RTT::TaskContext
     {
         std::string coloron;
