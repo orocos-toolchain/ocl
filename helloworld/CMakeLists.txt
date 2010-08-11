@@ -8,7 +8,7 @@ IF ( BUILD_HELLOWORLD )
 
     ADD_EXECUTABLE( helloworld ${SRCS} )
     GLOBAL_ADD_COMPONENT( orocos-helloworld ${SRCS} )
-    COMPONENT_ADD_DEPS( orocos-helloworld orocos-ocl-common )
+    COMPONENT_ADD_DEPS( orocos-helloworld )
     SET_TARGET_PROPERTIES( orocos-helloworld-${OROCOS_TARGET}
       PROPERTIES COMPILE_FLAGS "-DOCL_COMPONENT_ONLY" )
 

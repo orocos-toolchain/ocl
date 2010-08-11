@@ -25,6 +25,7 @@ endif()
 
 
 FOREACH(COMPONENT ${RTTPlugin_FIND_COMPONENTS})
+    # We search for both 'given name' and 'given name + -target'
     set(PLUGIN_NAME   ${COMPONENT} ${COMPONENT}-${OROCOS_TARGET} )
     #STRING(TOUPPER ${COMPONENT} COMPONENT)
 
