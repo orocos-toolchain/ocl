@@ -25,12 +25,21 @@ using namespace OCL;
 #ifdef  __APPLE__
 static const std::string SO_EXT(".dylib");
 #else
-# ifdef __WIN32__
+# ifdef _WIN32
 static const std::string SO_EXT(".dll");
 # else
 static const std::string SO_EXT(".so");
 # endif
 #endif
+
+// choose how the PATH looks like
+# ifdef _WIN32
+static const std::string delimiters(";");
+static const std::string default_delimiter(";");
+# else
+static const std::string delimiters(":;");
+static const std::string default_delimiter(":");
+# endif
 
 boost::shared_ptr<ComponentLoader> ComponentLoader::minstance;
 
@@ -40,7 +49,6 @@ namespace {
 vector<string> splitPaths(string const& str)
 {
     vector<string> paths;
-    string delimiters = ";:";
 
     // Skip delimiters at beginning.
     string::size_type lastPos = str.find_first_not_of(delimiters, 0);
@@ -91,7 +99,7 @@ void ComponentLoader::Release() {
 
 void ComponentLoader::import( std::string const& path_list )
 {
-    vector<string> paths = splitPaths(path_list + ":" + component_path);
+    vector<string> paths = splitPaths(path_list + default_delimiter + component_path);
 
     for (vector<string>::iterator it = paths.begin(); it != paths.end(); ++it)
     {
@@ -143,7 +151,7 @@ void ComponentLoader::import( std::string const& path_list )
 
 bool ComponentLoader::import( std::string const& package, std::string const& path_list )
 {
-    vector<string> paths = splitPaths(path_list + ":" + component_path);
+    vector<string> paths = splitPaths(path_list + default_delimiter + component_path);
     vector<string> tryouts( paths.size() * 4 );
     tryouts.clear();
 
