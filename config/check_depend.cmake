@@ -47,18 +47,11 @@ ELSE ( READLINE_H  )
     SET( READLINE 0 CACHE INTERNAL "libreadline" )
 ENDIF ( READLINE_H )
 
-# Look for boost
-FIND_PATH(BOOST boost/numeric/ublas/matrix.hpp  )
-IF ( BOOST )
-    MESSAGE("-- Looking for Boost Ublas - found")
-ELSE ( BOOST )
-    MESSAGE("-- Looking for Boost Ublas - not found")
-ENDIF ( BOOST )
-
-find_package(Boost COMPONENTS program_options)
-INCLUDE_DIRECTORIES( ${Boost_INCLUDE_DIR} )
-
 # Look for Log4cpp (if needed
 IF ( BUILD_LOGGING )
   FIND_PACKAGE( Log4cpp REQUIRED )
 ENDIF ( BUILD_LOGGING )
+
+find_package(Boost COMPONENTS program_options filesystem system)
+INCLUDE_DIRECTORIES( ${Boost_INCLUDE_DIR} ${READLINE_INCLUDE_DIR} ${CURSES_INCLUDE_DIR} )
+
