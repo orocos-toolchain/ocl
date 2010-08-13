@@ -4,6 +4,6 @@
     </description>
     <depend package="rtt" />
     <depend package="boost" />
-    <depend package="readline5" />
+    <depend package="readline" />
 </package>
 
