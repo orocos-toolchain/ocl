@@ -193,10 +193,10 @@ namespace OCL
             for (PropertyBag::iterator it= bag->begin(); it != bag->end(); ++it)
                 output << "  " << (*it)->getName() << " : " << (*it)->getDataSource() << endl;
         }
-        interface::AttributeRepository::AttributeNames atts = c->provides()->getAttributeNames();
+        interface::ConfigurationInterface::AttributeNames atts = c->provides()->getAttributeNames();
         if ( !atts.empty() ) {
             output << "Attributes :" << endl;
-            for (interface::AttributeRepository::AttributeNames::iterator it= atts.begin(); it != atts.end(); ++it)
+            for (interface::ConfigurationInterface::AttributeNames::iterator it= atts.begin(); it != atts.end(); ++it)
                 output << "  " << *it << " : " << c->provides()->getValue(*it)->getDataSource() << endl;
         }
 

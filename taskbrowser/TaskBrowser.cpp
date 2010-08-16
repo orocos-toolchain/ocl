@@ -99,7 +99,7 @@ namespace OCL
     std::string TaskBrowser::text;
 #endif
     RTT::TaskContext* TaskBrowser::taskcontext = 0;
-    interface::ServiceProvider::shared_ptr TaskBrowser::taskobject;
+    interface::Service::shared_ptr TaskBrowser::taskobject;
     RTT::TaskContext* TaskBrowser::peer = 0;
     RTT::TaskContext* TaskBrowser::tb = 0;
     RTT::TaskContext* TaskBrowser::context = 0;
@@ -1138,7 +1138,7 @@ namespace OCL
     {
         cout << "      Got :"<< comm <<nl;
 
-        interface::ServiceProvider::shared_ptr ops;
+        interface::Service::shared_ptr ops;
         interface::ServiceRequester* sr = 0;
         if ( context->provides()->hasService( comm ) ) // only object name was typed
             {
@@ -1613,7 +1613,7 @@ namespace OCL
         if ( peer->provides() == taskobject )
             sresult <<nl<<" Listing TaskContext "<< green << peer->getName()<<coloroff<< " :"<<nl;
         else
-            sresult <<nl<<" Listing ServiceProvider "<< green << taskobject->getName()<<coloroff<< " :"<<nl;
+            sresult <<nl<<" Listing Service "<< green << taskobject->getName()<<coloroff<< " :"<<nl;
 
         // Only print Properties for TaskContexts
         if ( peer->provides() == taskobject ) {
@@ -1709,7 +1709,7 @@ namespace OCL
                     } else {
                         sresult << "(TaskBrowser not connected to this port)";
                     }
-                    // Port description (see ServiceProvider)
+                    // Port description (see Service)
 //                     if ( peer->provides(*it) )
 //                         sresult << " ( "<< taskobject->provides(*it)->getDescription() << " ) ";
                 }
@@ -1788,7 +1788,7 @@ namespace OCL
         sresult.str("");
     }
 
-    void TaskBrowser::printOperation( const std::string m, interface::ServiceProvider::shared_ptr ops )
+    void TaskBrowser::printOperation( const std::string m, interface::Service::shared_ptr ops )
     {
         std::vector<ArgumentDescription> args;
         args = ops->getArgumentList( m );
