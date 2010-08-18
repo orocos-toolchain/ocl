@@ -52,7 +52,7 @@ namespace OCL
      * function, which is typically done in sub classes of this
      * component.
      *
-     * @par Configuration 
+     * @par Configuration
      * The ReportingComponent is configured using
      * its properties. For example, to enable writing a header or
      * not. The ReportData struct describes which ports and peer components need
@@ -76,7 +76,7 @@ namespace OCL
         </struct>
      </properties>
      @endcode
-     * 
+     *
      */
     class ReportingComponent
         : public RTT::TaskContext
@@ -88,7 +88,7 @@ namespace OCL
         bool screenImpl( const std::string& comp, std::ostream& output);
     public:
 
-        typedef RTT::interface::DataFlowInterface::Ports Ports;
+        typedef RTT::DataFlowInterface::Ports Ports;
 
         /**
          * Set up a component for reporting.
@@ -171,7 +171,7 @@ namespace OCL
 
         /**
          * This real-time function makes copies of the data to be
-         * reported. 
+         * reported.
          * @return true if new data is available.
          */
         bool copydata();
@@ -215,7 +215,7 @@ namespace OCL
         typedef std::vector< std::pair<boost::shared_ptr<RTT::marsh::MarshallInterface>, boost::shared_ptr<RTT::marsh::MarshallInterface> > > Marshallers;
         Marshallers marshallers;
         RTT::PropertyBag report;
-        
+
         RTT::Property<bool>          snapshotOnly;
         RTT::Property<std::string>   config;
         RTT::Property<bool>          writeHeader;

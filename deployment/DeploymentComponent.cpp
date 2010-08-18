@@ -34,7 +34,6 @@
 #include <rtt/extras/SequentialActivity.hpp>
 #include <rtt/marsh/PropertyMarshaller.hpp>
 #include <rtt/marsh/PropertyDemarshaller.hpp>
-#include <rtt/Method.hpp>
 #include <rtt/scripting/Scripting.hpp>
 #include <rtt/ConnPolicy.hpp>
 #include <rtt/plugin/PluginLoader.hpp>

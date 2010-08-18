@@ -12,7 +12,7 @@
 #include <rtt/Logger.hpp>
 #include <rtt/Property.hpp>
 #include <rtt/Attribute.hpp>
-#include <rtt/Method.hpp>
+#include <rtt/OperationCaller.hpp>
 #include <rtt/Port.hpp>
 #include <rtt/Activity.hpp>
 
@@ -167,15 +167,15 @@ int ORO_main(int argc, char** argv)
     assert( p.ready() );
     log(Info) << "     "<<p.getName() << " = " << p.value() <<endlog();
 #if 0
-    log(Info) << "**** Sending a RTT::Method:             ****" <<endlog();
-    RTT::Method<bool(std::string)> c = hello.getOperation<bool(std::string)>("the_command");
+    log(Info) << "**** Sending a RTT::OperationCaller:             ****" <<endlog();
+    RTT::OperationCaller<bool(std::string)> c = hello.getOperation<bool(std::string)>("the_command");
     assert( c.ready() );
-    log(Info) << "     Sending RTT::Method : " << c.send("World")<<endlog();
+    log(Info) << "     Sending RTT::OperationCaller : " << c.send("World")<<endlog();
 
-    log(Info) << "**** Calling a RTT::Method:              ****" <<endlog();
-    RTT::Method<std::string(void)> m = hello.getOperation<std::string(void)>("the_method");
+    log(Info) << "**** Calling a RTT::OperationCaller:              ****" <<endlog();
+    RTT::OperationCaller<std::string(void)> m = hello.getOperation<std::string(void)>("the_method");
     assert( m.ready() );
-    log(Info) << "     Calling RTT::Method : " << m() << endlog();
+    log(Info) << "     Calling RTT::OperationCaller : " << m() << endlog();
 #endif
     log(Info) << "**** Starting the TaskBrowser       ****" <<endlog();
     // Switch to user-interactive mode.

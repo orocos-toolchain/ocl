@@ -1,9 +1,6 @@
 
 #include "TimerComponent.hpp"
-
-#include <rtt/Method.hpp>
 #include <rtt/Logger.hpp>
-
 #include "ocl/Component.hpp"
 
 ORO_CREATE_COMPONENT_TYPE()

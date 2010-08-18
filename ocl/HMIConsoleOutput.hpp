@@ -30,7 +30,6 @@
 
 #include <rtt/TaskContext.hpp>
 #include <rtt/Activity.hpp>
-#include <rtt/Method.hpp>
 #include <rtt/Logger.hpp>
 #include <rtt/os/MutexLock.hpp>
 #include <sstream>

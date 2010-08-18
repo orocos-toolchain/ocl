@@ -3,7 +3,6 @@
 
 
 #include <rtt/os/TimeService.hpp>
-#include <rtt/Method.hpp>
 #include <rtt/TaskContext.hpp>
 #include <rtt/os/Timer.hpp>
 #include <rtt/OutputPort.hpp>

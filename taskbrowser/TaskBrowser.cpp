@@ -99,7 +99,7 @@ namespace OCL
     std::string TaskBrowser::text;
 #endif
     RTT::TaskContext* TaskBrowser::taskcontext = 0;
-    interface::Service::shared_ptr TaskBrowser::taskobject;
+    Service::shared_ptr TaskBrowser::taskobject;
     RTT::TaskContext* TaskBrowser::peer = 0;
     RTT::TaskContext* TaskBrowser::tb = 0;
     RTT::TaskContext* TaskBrowser::context = 0;
@@ -794,9 +794,9 @@ namespace OCL
     {
         // check periodically if the taskcontext did not change its ports.
 
-        interface::DataFlowInterface::Ports ports;
+        DataFlowInterface::Ports ports;
         ports = this->ports()->getPorts();
-        for( interface::DataFlowInterface::Ports::iterator i=ports.begin(); i != ports.end(); ++i) {
+        for( DataFlowInterface::Ports::iterator i=ports.begin(); i != ports.end(); ++i) {
             // If our port is no longer connected, try to reconnect.
             base::PortInterface* p = *i;
             base::PortInterface* tcp = taskcontext->ports()->getPort( p->getName() );
@@ -885,8 +885,8 @@ namespace OCL
         this->disconnect();
 
         // cleanup port left-overs.
-        interface::DataFlowInterface::Ports tports = this->ports()->getPorts();
-        for( interface::DataFlowInterface::Ports::iterator i=tports.begin(); i != tports.end(); ++i) {
+        DataFlowInterface::Ports tports = this->ports()->getPorts();
+        for( DataFlowInterface::Ports::iterator i=tports.begin(); i != tports.end(); ++i) {
             this->ports()->removePort( (*i)->getName() );
             delete *i;
         }
@@ -905,7 +905,7 @@ namespace OCL
         tports = taskcontext->ports()->getPorts();
         if ( !tports.empty() )
             cout <<nl << "TaskBrowser connects to all data ports of "<<taskcontext->getName()<<endl;
-        for( interface::DataFlowInterface::Ports::iterator i=tports.begin(); i != tports.end(); ++i) {
+        for( DataFlowInterface::Ports::iterator i=tports.begin(); i != tports.end(); ++i) {
             if (this->ports()->getPort( (*i)->getName() ) == 0 )
                 this->ports()->addPort( *(*i)->antiClone() );
         }
@@ -1138,8 +1138,8 @@ namespace OCL
     {
         cout << "      Got :"<< comm <<nl;
 
-        interface::Service::shared_ptr ops;
-        interface::ServiceRequester* sr = 0;
+        Service::shared_ptr ops;
+        ServiceRequester* sr = 0;
         if ( context->provides()->hasService( comm ) ) // only object name was typed
             {
                 ops = context->provides(comm);
@@ -1153,7 +1153,7 @@ namespace OCL
             {
                 sr = context->requires(comm);
                 sresult << nl << "Requiring '"<< coloron << sr->getRequestName() <<coloroff <<"' with methods: ";
-                vector<string> methods = sr->getMethodNames();
+                vector<string> methods = sr->getOperationCallerNames();
                 sresult << coloron;
                 std::for_each( methods.begin(), methods.end(), sresult << lambda::_1 <<" " );
                 cout << sresult.str() << coloroff << nl;
@@ -1731,11 +1731,11 @@ namespace OCL
         // RTT::TaskContext specific:
         if ( peer->provides() == taskobject ) {
 
-            objlist = peer->requires()->getMethodNames();
+            objlist = peer->requires()->getOperationCallerNames();
             sresult <<nl<< " Requires Operations :";
             if ( !objlist.empty() ) {
                 for(vector<string>::iterator it = objlist.begin(); it != objlist.end(); ++it)
-                    sresult <<coloron<< "  " << *it <<coloroff << '[' << (peer->requires()->getMethod(*it).ready() ? "R]" : "!]");
+                    sresult <<coloron<< "  " << *it <<coloroff << '[' << (peer->requires()->getOperationCaller(*it).ready() ? "R]" : "!]");
                 sresult << nl;
             } else {
                 sresult <<coloron<< "  (none)" <<coloroff <<nl;
@@ -1788,7 +1788,7 @@ namespace OCL
         sresult.str("");
     }
 
-    void TaskBrowser::printOperation( const std::string m, interface::Service::shared_ptr ops )
+    void TaskBrowser::printOperation( const std::string m, Service::shared_ptr ops )
     {
         std::vector<ArgumentDescription> args;
         args = ops->getArgumentList( m );
