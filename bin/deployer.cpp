@@ -24,16 +24,15 @@
  *   Suite 330, Boston, MA  02111-1307  USA                                *
  ***************************************************************************/
 
-#include <rtt/os/main.h>
-#include <rtt/RTT.hpp>
-#include <rtt/Logger.hpp>
 #include <rtt/rtt-config.h>
-
-#ifdef ORO_BUILD_RTALLOC
+#ifdef OS_RT_MALLOC
 // need access to all TLSF functions embedded in RTT
 #define ORO_MEMORY_POOL
 #include <rtt/os/tlsf/tlsf.h>
 #endif
+#include <rtt/os/main.h>
+#include <rtt/RTT.hpp>
+#include <rtt/Logger.hpp>
 
 #include <taskbrowser/TaskBrowser.hpp>
 #include <deployment/DeploymentComponent.hpp>
@@ -42,7 +41,7 @@
 #include "deployer-funcs.hpp"
 
 #ifdef  ORO_BUILD_LOGGING
-#   ifndef ORO_BUILD_RTALLOC
+#   ifndef OS_RT_MALLOC
 #   warning Logging needs rtalloc!
 #   endif
 #include <log4cpp/HierarchyMaintainer.hh>

@@ -3,7 +3,7 @@
 
 #include <rtt/TaskContext.hpp>
 #include <rtt/PropertyBag.hpp>
-#include <rtt/Method.hpp>
+#include <rtt/Operation.hpp>
 
 namespace OCL {
 namespace logging {

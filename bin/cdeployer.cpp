@@ -26,14 +26,15 @@
  ***************************************************************************/
 
 
-#include <rtt/os/main.h>
-#include <rtt/RTT.hpp>
-
-#ifdef ORO_BUILD_RTALLOC
+#include <rtt/rtt-config.h>
+#ifdef OS_RT_MALLOC
 // need access to all TLSF functions embedded in RTT
 #define ORO_MEMORY_POOL
 #include <rtt/os/tlsf/tlsf.h>
 #endif
+
+#include <rtt/os/main.h>
+#include <rtt/RTT.hpp>
 
 #include <deployment/CorbaDeploymentComponent.hpp>
 #include <rtt/transports/corba/TaskContextServer.hpp>

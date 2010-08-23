@@ -33,7 +33,7 @@ int ORO_main(int argc, char* argv[])
     freeMem = freeMem;      // avoid compiler warning
 
     // forcibly load the toolkit
-    RTT::types::TypekitRepository::Import(RTT::RTallocToolkit);
+    RTT::types::TypekitRepository::Import( new RTT::RTallocPlugin );
 
 	Recv		        recv("Recv");
     Activity	recv_activity(

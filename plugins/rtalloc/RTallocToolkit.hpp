@@ -38,9 +38,6 @@ public:
     virtual bool loadOperators();
 };
 
-/// The single global instance of the TypekitRepository.
-extern RTallocPlugin RTallocToolkit;
-
 /// Provide OCL::String type to RTT type system
 struct RTallocPtimeTypeInfo : 
         public RTT::types::TemplateTypeInfo<OCL::String,true> 

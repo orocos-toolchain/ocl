@@ -21,7 +21,7 @@
 
 #include "deployer-funcs.hpp"
 #include <rtt/Logger.hpp>
-#ifdef  ORO_BUILD_RTALLOC
+#ifdef  OS_RT_MALLOC
 #include <stdio.h>
 #endif
 #include <iostream>
