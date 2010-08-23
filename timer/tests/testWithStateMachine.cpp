@@ -6,7 +6,6 @@
 
 #include <rtt/scripting/Scripting.hpp>
 #include <rtt/Activity.hpp>
-#include <rtt/Method.hpp>
 #include <rtt/scripting/StateMachine.hpp>
 #include <iostream>
 #include <rtt/os/main.h>
