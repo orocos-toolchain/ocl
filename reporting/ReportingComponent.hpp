@@ -57,7 +57,7 @@ namespace OCL
      * its properties. For example, to enable writing a header or
      * not. The ReportData struct describes which ports and peer components need
      * to be monitored. You need to load properties into this struct
-     * (see TaskContext::marshalling()).
+     * (see RTT::Marshalling service).
      * This struct can be filled in as such:
      *
      * @code
@@ -186,11 +186,22 @@ namespace OCL
         /** @} */
 
     protected:
+        /**
+         * tuple that describes each sample. Uses get<N>() to read it:
+         * @0 The qualified name of the data (componentname.portname)
+         * @1 The data source of the data. Always returns the last value.
+         * @2 A copy command to copy from this data source to another one
+         * @3 The target data source for the copy operation
+         * @4 The type of the data, "Data" (props and attrs) or "Port".
+         * @5 The new data flag. Flags if the DataSource contains new data.
+         * @6 True if this source must be tracked, ie always print its value
+         * if a report is made. Used for props and attrs.
+         */
         typedef boost::tuple<std::string,
                              RTT::base::DataSourceBase::shared_ptr,
                              boost::shared_ptr<RTT::base::ActionInterface>,
                              RTT::base::DataSourceBase::shared_ptr,
-                             std::string, bool, bool> DTupple;
+                             std::string,bool,bool> DTupple;
         /**
          * Stores the 'datasource' of all reported items as properties.
          */

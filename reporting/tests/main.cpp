@@ -25,7 +25,7 @@ public:
           hello("Hello", "The hello thing", "World"),
           dwport("D2Port"),
           drport("D1Port"),
-          input("input")
+          input("input",3.33)
     {
         this->properties()->addProperty( hello );
         this->ports()->addPort( drport );
@@ -35,6 +35,12 @@ public:
         // write initial value.
         std::vector<double> init(10, 1.0);
         dwport.setDataSample( init );
+        this->setPeriod(0.1);
+    }
+
+    void updateHook() {
+        std::vector<double> init(10, input.get() );
+        dwport.write( init );
     }
 };
 
@@ -44,7 +50,7 @@ class TestTaskContext2
     Property<string> hello;
     OutputPort<double> dwport;
     InputPort<std::vector<double> > drport;
-    Attribute<std::vector<double> > input;
+    Attribute<double> input;
 
 public:
     TestTaskContext2(std::string name)
@@ -52,12 +58,17 @@ public:
           hello("Hello", "The hello thing", "World"),
           dwport("D1Port"),
           drport("D2Port"),
-          input("input")
+          input("input", 5.55)
     {
         this->properties()->addProperty( hello );
         this->ports()->addPort( drport );
         this->ports()->addPort( dwport );
         this->addAttribute( input );
+        this->setPeriod(0.2);
+    }
+
+    void updateHook() {
+        dwport.write( input.get() );
     }
 };
 

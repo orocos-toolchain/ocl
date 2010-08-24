@@ -477,11 +477,13 @@ namespace OCL
         for(Reports::iterator it = root.begin(); it != root.end(); ++it ) {
             if (  it->get<5>() || null.rvalue() == "last" ) {
                 base::DataSourceBase::shared_ptr clone = it->get<3>();
-                Property<PropertyBag> subbag( it->get<0>(), "");
-                if ( decompose.get() && typeDecomposition( clone, subbag.value() ) )
-                    report.add( subbag.clone() );
-                else
+                Property<PropertyBag>* subbag = new Property<PropertyBag>( it->get<0>(), "");
+                if ( decompose.get() && typeDecomposition( clone, subbag->value() ) )
+                    report.add( subbag );
+                else {
                     report.add( clone->getTypeInfo()->buildProperty(it->get<0>(), "", clone) );
+                    delete subbag;
+                }
                 it->get<5>() = false;
             } else {
                 //  no new data
