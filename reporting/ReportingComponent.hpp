@@ -193,9 +193,11 @@ namespace OCL
          * @2 A copy command to copy from this data source to another one
          * @3 The target data source for the copy operation
          * @4 The type of the data, "Data" (props and attrs) or "Port".
-         * @5 The new data flag. Flags if the DataSource contains new data.
-         * @6 True if this source must be tracked, ie always print its value
-         * if a report is made. Used for props and attrs.
+         * @5 'newdata': The new data flag. Flags if the DataSource contains new data.
+         * @6 'tracked': True if this source may lead to additional data. If false, the source
+         * in itself will not cause to a re-scan. Used in copydata() to allow ports
+         * to be rescanned, while props and attrs never cause this (they always have newdata,
+         * but this is ignored).
          */
         typedef boost::tuple<std::string,
                              RTT::base::DataSourceBase::shared_ptr,

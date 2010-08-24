@@ -458,9 +458,17 @@ namespace OCL
         bool result = false;
         // execute the copy commands (fast).
         for(Reports::iterator it = root.begin(); it != root.end(); ++it ) {
-            (it->get<2>())->readArguments();
-            it->get<5>() = (it->get<2>())->execute(); // stores new data flag.
-            result |= ( it->get<5>() && it->get<6>());
+            bool newdata = false;
+            do {
+                // execute() will only return true if the InputPortSource's evaluate()
+                // returned true too during readArguments().
+                (it->get<2>())->readArguments();
+                newdata = (it->get<2>())->execute(); // stores new data flag.
+                (it->get<5>()) |= newdata;
+                // if its a property/attr, get<5> will always be true, so we override with get<6>.
+                result |= newdata && (it->get<6>());
+                // if periodic, keep reading until we hit the last sample (or none are available):
+            } while ( newdata && (it->get<6>()) && this->getActivity()->isPeriodic() );
         }
         return result;
     }
