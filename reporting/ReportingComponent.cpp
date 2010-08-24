@@ -56,7 +56,7 @@ namespace OCL
           decompose("Decompose","Set to false in order to create multidimensional array in netcdf", true),
           synchronize_with_logging("Synchronize","Set to true if the timestamp should be synchronized with the logging",false),
           report_data("ReportData","A PropertyBag which defines which ports or components to report."),
-          null("NullSample","The characters written to the log to indicate that no new data was available for that port during a snapshot(). As a special value, the string 'last' is interpreted as repeating the last value.","-"),
+          null("NullSample","The characters written to the log to indicate that no new data was available for that port during a snapshot(). As a special value, the string 'last' is interpreted as repeating the last value.","last"),
           starttime(0),
           timestamp("TimeStamp","The time at which the data was read.",0.0)
     {
