@@ -109,9 +109,15 @@ namespace OCL
     using namespace RTT;
     using namespace std;
 
-    string TaskBrowser::red("\e[m\e[1;31m");
-    string TaskBrowser::green("\e[m\e[1;32m");
-    string TaskBrowser::blue("\e[m\e[1;34m");
+    string TaskBrowser::red;
+    string TaskBrowser::green;
+    string TaskBrowser::blue;
+    std::deque<TaskContext*> taskHistory;
+    std::string TaskBrowser::prompt(" (type 'ls' for context info) :");
+    std::string TaskBrowser::coloron;
+    std::string TaskBrowser::underline;
+    std::string TaskBrowser::coloroff;
+
 
     /**
      * Our own defined "\n"
@@ -734,12 +740,6 @@ namespace OCL
             }
     }
 
-    std::deque<RTT::TaskContext*> taskHistory;
-    std::string TaskBrowser::prompt(" (type 'ls' for context info) :");
-    std::string TaskBrowser::coloron("\e[m\e[1;31m");
-    std::string TaskBrowser::underline("\e[4m");
-    std::string TaskBrowser::coloroff("\e[m");
-
     void TaskBrowser::enterTask()
     {
         if ( context == taskcontext ) {
@@ -849,8 +849,8 @@ namespace OCL
         const char* g = "32m";
         const char* b = "34m";
         const char* con = "31m";
-        const char* coff = "\e[m";
-        const char* und  = "\e[4m";
+        const char* coff = "\33[0m";
+        const char* und  = "\33[4m";
 
         switch (t)
             {
@@ -868,12 +868,14 @@ namespace OCL
                 red = dbg;
                 blue = dbg;
                 coloron = dbg;
+				coloroff = wbg;
                 break;
             case whitebg:
                 green = wbg;
                 red = wbg;
                 blue = wbg;
                 coloron = wbg;
+				coloroff = wbg;
                 break;
             }
         green += g;
