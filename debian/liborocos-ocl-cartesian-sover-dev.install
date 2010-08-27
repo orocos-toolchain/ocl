@@ -1,7 +1,0 @@
-usr/include/ocl/CartesianComponents.hpp
-usr/include/ocl/CartesianControllerPos.hpp
-usr/include/ocl/CartesianControllerPosVel.hpp
-usr/include/ocl/CartesianControllerVel.hpp
-usr/include/ocl/CartesianEffectorVel.hpp
-usr/include/ocl/CartesianGeneratorPos.hpp
-usr/include/ocl/CartesianSensor.hpp

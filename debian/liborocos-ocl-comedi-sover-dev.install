@@ -1,8 +1,0 @@
-usr/include/ocl/dev/ComediDevice.hpp
-usr/include/ocl/dev/ComediEncoder.hpp
-usr/include/ocl/dev/ComediPulseTrainGenerator.hpp
-usr/include/ocl/dev/ComediSubDeviceAIn.hpp
-usr/include/ocl/dev/ComediSubDeviceAOut.hpp
-usr/include/ocl/dev/ComediSubDeviceDIn.hpp
-usr/include/ocl/dev/ComediSubDeviceDOut.hpp
-usr/include/ocl/dev/ComediThreadScope.hpp

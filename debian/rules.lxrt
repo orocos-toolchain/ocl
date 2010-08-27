@@ -3,7 +3,7 @@ configure-lxrt: configure-stamp-lxrt
 configure-stamp-lxrt:
 	mkdir -p dbuild.lxrt
 	cd  dbuild.lxrt; \
-	CFLAGS="$(CFLAGS)" LDFLAGS="-Wl,-z,defs" cmake -DCMAKE_INSTALL_PREFIX=/usr -DOROCOS_INSTALL=/usr -C $(CURDIR)/debian/CMakeCanComedi.txt -DOROCOS_TARGET=lxrt -DCOMEDI_INSTALL=/usr/realtime  ..
+	CFLAGS="$(CFLAGS)" LDFLAGS="-Wl,-z,defs" cmake -DCMAKE_INSTALL_PREFIX=/usr -DOROCOS_TARGET=lxrt ..
 	touch configure-stamp-lxrt
 
 build-lxrt: build-stamp-lxrt
