@@ -3,8 +3,8 @@
                                (remove the x's above)
  ***************************************************************************/
 
-#include <rtt/corba/ControlTaskServer.hpp>
-#include <rtt/corba/ControlTaskProxy.hpp>
+#include <rtt/transports/corba/TaskContextServer.hpp>
+#include <rtt/transports/corba/TaskContextProxy.hpp>
 #include <rtt/RTT.hpp>
 #include <rtt/Activity.hpp>
 #include <rtt/TaskContext.hpp>
@@ -15,7 +15,7 @@
 #define ORO_MEMORY_POOL
 #include <rtt/os/tlsf/tlsf.h>
 
-#include "taskBrowser/TaskBrowser.hpp"
+#include "taskbrowser/TaskBrowser.hpp"
 
 #include "../RTallocCorbaToolkit.hpp"
 #include "../../RTallocToolkit.hpp"
@@ -30,7 +30,7 @@ using namespace RTT::corba;
 int ORO_main(int argc, char* argv[])
 {
     // initialize TLSF
-    static const size_t RT_MEM_SIZE = 20*1024;  // 20 kb should do  
+    static const size_t RT_MEM_SIZE = 20*1024;  // 20 kb should do
     void* rtMem     = malloc(RT_MEM_SIZE);
     assert(rtMem);
     size_t freeMem  = init_memory_pool(RT_MEM_SIZE, rtMem);
