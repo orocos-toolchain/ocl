@@ -60,18 +60,8 @@ IF(NOT NETCDF_INSTALL)
   SET( NETCDF_INSTALL ${CMAKE_INSTALL_PREFIX} CACHE PATH "The NETCDF installation directory.")
 ENDIF(NOT NETCDF_INSTALL)
 
-# The name of the resulting library.
-#SET( COMPONENTS_LIBRARY orocos-components CACHE STRING "Name of the resulting library")
-#INSTALL_TARGETS( /lib ${COMPONENTS_LIBRARY} )
-
 # The dependencies of the COMPONENTS_LIBRARY
 SET( COMPONENTS_LIBRARY_DEPS "" CACHE STRING "Dependencies of the resulting library")
-
-# Toggle if the whole build gets in a single library.
-#Broken: SET( GLOBAL_LIBRARY ON CACHE BOOL "Build a large ${COMPONENTS_LIBRARY} library")
-
-# Toggle if an executable must be built.
-#Broken: SET( STANDALONE_COMPONENTS OFF CACHE BOOL "Build an executable for each component.")
 
 # Make compilation verbose by default
 SET(CMAKE_VERBOSE_MAKEFILE FALSE)
