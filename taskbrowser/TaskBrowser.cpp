@@ -612,7 +612,6 @@ namespace OCL
      */
     void TaskBrowser::loop()
     {
-        using boost::lambda::_1;
 #ifdef _POSIX_VERSION
         // Intercept Ctrl-C
         ::signal( SIGINT, ctrl_c_catcher );
