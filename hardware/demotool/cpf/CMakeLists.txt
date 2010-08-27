@@ -1,8 +1,0 @@
-IF ( BUILD_TESTS)
-IF ( BUILD_DEMOTOOL_TEST )
-
-    INSTALL_FILES( /cpf [^.]*.cpf)  
-    INSTALL_FILES( /cpf [^.]*.dtd)  
-
-ENDIF ( BUILD_DEMOTOOL_TEST )
-ENDIF ( BUILD_TESTS)

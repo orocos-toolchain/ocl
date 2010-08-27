@@ -1,8 +1,0 @@
-This directory contains a driver for the JR3 force-torque sensor.
-
-The module should compile with 2.4 and 2.6 kernels,
-but the provided makefile assumes a 2.6 kernel.
-
-You should edit the Makefile and change the values of KERNEL_DIR and RTAI_INSTALL_DIR.
-
-Then 'make driver' should build the driver.

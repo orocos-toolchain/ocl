@@ -1,8 +1,0 @@
-IF ( BUILD_TESTS)
-IF ( BUILD_CAMERA_TEST )
-
-    INSTALL_FILES( /cpf [^.]*.cpf)  
-    INSTALL_FILES( /cpf [^.]*.dtd)  
-
-ENDIF ( BUILD_CAMERA_TEST )
-ENDIF ( BUILD_TESTS)
