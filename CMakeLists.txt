@@ -18,7 +18,7 @@ ENDIF(${CMAKE_MAJOR_VERSION} EQUAL 2 AND ${CMAKE_MINOR_VERSION} GREATER 4)
 
 PROJECT(orocos-ocl)
 
-SET( OCL_VERSION 1.99.4 )
+SET( OCL_VERSION 1.99.5 )
 STRING( REGEX MATCHALL "[0-9]+" OCL_VERSIONS ${OCL_VERSION} )
 LIST( GET OCL_VERSIONS 0 OCL_VERSION_MAJOR)
 LIST( GET OCL_VERSIONS 1 OCL_VERSION_MINOR)
@@ -51,29 +51,10 @@ IF(NOT CMAKE_INSTALL_PREFIX)
   MESSAGE( "Setting installation directory to ${CMAKE_INSTALL_PREFIX}" )
 ENDIF(NOT CMAKE_INSTALL_PREFIX)
 
-IF(NOT OROCOS_INSTALL)
-  SET( OROCOS_INSTALL ${CMAKE_INSTALL_PREFIX} CACHE PATH "The RTT installation directory.")
-ENDIF(NOT OROCOS_INSTALL)
+# Used by Doxygen.in !
 IF(NOT RTT_VVERSION)
   SET( RTT_VVERSION "v${OCL_VERSION_MAJOR}.${OCL_VERSION_MINOR}.x" )
 ENDIF(NOT RTT_VVERSION)
-
-IF(NOT KDL_INSTALL)
-  SET( KDL_INSTALL ${CMAKE_INSTALL_PREFIX} CACHE PATH "The KDL installation directory.")
-ENDIF(NOT KDL_INSTALL)
-IF(NOT KDL_VVERSION)
-  SET( KDL_VVERSION "v0.4.x" )
-ENDIF(NOT KDL_VVERSION)
-
-IF(NOT BFL_INSTALL)
-  SET( BFL_INSTALL ${CMAKE_INSTALL_PREFIX} CACHE PATH "The BFL installation directory.")
-ENDIF(NOT BFL_INSTALL)
-
-IF(NOT COMEDI_INSTALL)
-  SET( COMEDI_INSTALL ${CMAKE_INSTALL_PREFIX} CACHE PATH "The COMEDI installation directory.")
-ELSE(NOT COMEDI_INSTALL)
-  SET( COMEDI_INSTALL "${COMEDI_INSTALL}" CACHE PATH "The COMEDI installation directory.")
-ENDIF(NOT COMEDI_INSTALL)
 
 IF(NOT NETCDF_INSTALL)
   SET( NETCDF_INSTALL ${CMAKE_INSTALL_PREFIX} CACHE PATH "The NETCDF installation directory.")
@@ -88,9 +69,6 @@ SET( COMPONENTS_LIBRARY_DEPS "" CACHE STRING "Dependencies of the resulting libr
 
 # Toggle if the whole build gets in a single library.
 #Broken: SET( GLOBAL_LIBRARY ON CACHE BOOL "Build a large ${COMPONENTS_LIBRARY} library")
-
-# Toggle if individual libs must be built.
-SET( LOCAL_LIBRARY ON ) # CACHE BOOL "Build a library for each component.")
 
 # Toggle if an executable must be built.
 #Broken: SET( STANDALONE_COMPONENTS OFF CACHE BOOL "Build an executable for each component.")
@@ -136,30 +114,17 @@ SET( ENV{OROCOS_COMPONENTS_CFLAGS} "")
 SET( ENV{OROCOS_COMPONENTS_LINKFLAGS} "")
 SET( ENV{OROCOS_COMPONENTS_REQUIRES} "")
 
-INCLUDE(${PROJ_SOURCE_DIR}/config/global_setup.cmake)
 INCLUDE(${PROJ_SOURCE_DIR}/config/component_rules.cmake)
 INCLUDE(${PROJ_SOURCE_DIR}/config/TestUsesFile.cmake)
 
 ## Find Orocos RTT.
-
-INCLUDE (${PROJ_SOURCE_DIR}/config/FindOrocosRTT.cmake)
-IF (OROCOS_RTT_1.4)
-  OROCOS_PKGCONFIG_REQUIRES("orocos-rtt-${OROCOS_TARGET}")
-ELSE (OROCOS_RTT_1.4)
-  OROCOS_PKGCONFIG_REQUIRES("orocos-rtt")
-ENDIF (OROCOS_RTT_1.4)
-
-## Find KDL
-
-INCLUDE (${PROJ_SOURCE_DIR}/config/FindKDL.cmake)
-
-## Find BFL
-
-INCLUDE (${PROJ_SOURCE_DIR}/config/FindBFL.cmake)
-
-## Find Comedi
-
-INCLUDE (${PROJ_SOURCE_DIR}/config/FindComedi.cmake)
+find_package(OROCOS-RTT 2.0.0)
+if (NOT OROCOS-RTT_FOUND)
+  message(FATAL_ERROR "\n   RTT not found. Is the version correct? Use the CMAKE_PREFIX_PATH cmake or environment variable to point to the installation directory of RTT.")
+else()
+  include(${OROCOS-RTT_USE_FILE_PATH}/UseOROCOS-RTT.cmake)
+  add_definitions( -DRTT_COMPONENT )
+endif()
 
 ## Find Netcdf
 INCLUDE (${PROJ_SOURCE_DIR}/config/FindNetcdf.cmake)
@@ -196,13 +161,8 @@ ADD_SUBDIRECTORY( taskbrowser )
 ADD_SUBDIRECTORY( timer )
 ADD_SUBDIRECTORY( helloworld )
 ADD_SUBDIRECTORY( reporting )
-ADD_SUBDIRECTORY( hardware )
-ADD_SUBDIRECTORY( motion_control ) 
-ADD_SUBDIRECTORY( viewer )
 ADD_SUBDIRECTORY( deployment )
 ADD_SUBDIRECTORY( bin )
-ADD_SUBDIRECTORY( rtalloc )
-ADD_SUBDIRECTORY( plugins )
 ADD_SUBDIRECTORY( logging )
 
 MESSAGE("Selected Libraries: $ENV{SELECTED_LIBS}")
@@ -221,55 +181,6 @@ INSTALL_FILES( /include/ocl FILES ocl/ocl-config.h)
 
 CONFIGURE_FILE(Doxyfile.in Doxyfile @ONLY)
 
-############################################################
-##                                                         #
-## Setup PACKAGING   THIS IS EXPERIMENTAL/BETA/NOT USED    #
-##                                                         #
-############################################################
-
-IF ( "${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}" STREQUAL "2.4" )
-OPTION( CPACK_PACKAGES "Set to ON to build the packages. Requires cmake >2.4" OFF )
-MARK_AS_ADVANCED( CPACK_PACKAGES )
-IF (CPACK_PACKAGES)
-
-INCLUDE(InstallRequiredSystemLibraries)
-
-# ATTENTION: There is sometimes a _SOURCE_ version of an
-# option as well, set both if necessary !
-
-# Create .tar.gz and .tar.tbz2 files:
-SET(CPACK_GENERATOR "TBZ2")
-SET(CPACK_SOURCE_GENERATOR "TBZ2")
-
-# The plain 'package' target works correctly.
-SET(CPACK_IGNORE_FILES        "/CVS/;/.svn/;.swp$;.#;/#;/build/")
-# Since the 'package_source' target does a bold copy, define a list of
-# files which should be excluded. Note that 'subpattern' matching is used,
-# thus to exclude a directory use /mydir/
-SET(CPACK_SOURCE_IGNORE_FILES "/CVS/;/.svn/;.swp$;.#;/#;/build/;~")
-
-SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Orocos Components")
-SET(CPACK_PACKAGE_VENDOR "The Orocos Community")
-SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README")
-SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
-SET(CPACK_PACKAGE_MAJOR_VERSION "0")
-SET(CPACK_PACKAGE_MINOR_VERSION "1")
-SET(CPACK_PACKAGE_VERSION_PATCH "1")
-
-SET(CPACK_PACKAGE_EXECUTABLES "OrocosExec" "Orocos Executable")
-
-SET(CPACK_PACKAGE_INSTALL_DIRECTORY "${CMAKE_INSTALL_PREFIX}")
-SET(CPACK_SOURCE_TOPLEVEL_TAG "src")
-SET(CPACK_PACKAGE_FILE_NAME "orocos-ocl")
-
-INCLUDE(CPack)
-ENDIF (CPACK_PACKAGES)
-ELSE ( "${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}" STREQUAL "2.4" )
-
-   MESSAGE ( "Disabling packaging for version ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}")
-
-ENDIF ( "${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}" STREQUAL "2.4" )
-
 #############################
 #			    #
 # Building Doxygen documents#
@@ -277,7 +188,6 @@ ENDIF ( "${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}" STREQUAL "2.4" )
 #############################
 
 ADD_CUSTOM_TARGET(docapi "doxygen" "Doxyfile")
-  
 
 ## Debugging
 OPTION( DISPLAY_FLAGS "Display cmake variables at end of configure step." OFF)

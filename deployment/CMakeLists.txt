@@ -6,11 +6,6 @@ IF ( BUILD_DEPLOYMENT )
   
   find_package(Boost 1.36 REQUIRED filesystem system)
 
-  # Better inform user instead of hiding the option.
-  IF(NOT OROCOS_RTT_1.2 )
-    MESSAGE(FATAL_ERROR "Deployment Component requires Orocos RTT 1.1.0 or newer." )
-  ENDIF(NOT OROCOS_RTT_1.2 )
-
     # This gathers all the .cpp files into the variable 'SRCS'
     SET( HPPS DeploymentComponent.hpp )
     SET( SRCS DeploymentComponent.cpp ComponentLoader.cpp comppath.cpp)
@@ -22,12 +17,12 @@ IF ( BUILD_DEPLOYMENT )
     COMPONENT_ADD_LIBS( orocos-deployment ${RTT_PLUGIN_rtt-marshalling_LIBRARIES} ${RTT_PLUGIN_rtt-scripting_LIBRARIES})
     COMPONENT_ADD_LIBS( orocos-deployment ${Boost_FILESYSTEM_LIBRARIES} ${Boost_SYSTEM_LIBRARIES})
     
-    IF (CORBA_ENABLED)
+    IF (OROCOS-RTT_CORBA_FOUND)
         GLOBAL_ADD_COMPONENT(orocos-deployment-corba CorbaDeploymentComponent.cpp INSTALL lib)
         GLOBAL_ADD_INCLUDE( ocl CorbaDeploymentComponent.hpp)
         COMPONENT_ADD_DEPS( orocos-deployment-corba orocos-deployment)
-	COMPONENT_ADD_LIBS( orocos-deployment-corba ${OROCOS_RTT_CORBA_LIBS})
-    ENDIF(CORBA_ENABLED)
+	COMPONENT_ADD_LIBS( orocos-deployment-corba ${OROCOS-RTT_CORBA_LIBRARIES})
+    ENDIF(OROCOS-RTT_CORBA_FOUND)
      
     ADD_SUBDIRECTORY( tests )
 

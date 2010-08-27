@@ -1,14 +1,23 @@
   Orocos Component Library
   ========================
 
-Installation
-============
+NOTE - The Orocos Component Library is now part of the 
+Orocos Toolchain and should seldomly be installed
+separately. Install the Orocos Toolchain instead.
+
+
+Installation Details
+====================
 
 For the minimal ocl library, do
 
   tar -xjvf orocos-ocl-<version>-src.tar.bz2
   cd orocos-ocl-<version>
-  cmake .
+  CMAKE_PREFIX_PATH=/opt/orocos cmake .
+
+Where CMAKE_PREFIX_PATH contains the installation directory of 
+the Orocos libraries. It is set to ../install in case you do
+a toolchain build.
 
 If all dependencies could be found, a Makefile is generated and you
 can type:
@@ -22,7 +31,6 @@ locations, you have to specify this using environment variables:
  * Header locations using the CMAKE_INCLUDE_PATH variable.
  * Library locations using CMAKE_LIBRARY_PATH.
  * /opt -like locations using CMAKE_PREFIX_PATH (looks for libs, headers, binaries).
- * Orocos RTT location using OROCOS_INSTALL (does *not* use the above paths!)
 
 E.g. using bash and fink in Mac OS X, the boost library headers are
 installed in /sw/include, so you would specify 
@@ -31,43 +39,16 @@ export CMAKE_INCLUDE_PATH=/sw/include
 
 before running cmake.
 
-For selecting additional (hardware related) components, setting
-include paths, or setting the installation prefix, do
-
-  cd orocos-ocl-<version>
-  cmake .
-  ccmake .
-
-Now a config screen appears:
-
-  [ edit paths ]
-  [ press 'c' ]
-  [ check for errors, press 'e' ]
-  [ select additional components ]
-  [ press 'c'; check for errors, press 'e', ... ]
-
-When all is fine, you can press 'g' in the config screen. If no 'g'
-appears, the configuration is not yet correct.
-
-Finally:
-
-  make
-  make install
-
-
 Installation options
 --------------------
 
 * Orocos uses cmake (http://www.cmake.org) for its build configuration.
-  CMake is a cross-platform build system. Use version 2.2 or 2.4.
-
-* Orocos uses the 'pkg-config' program to detect installed libraries.
+  CMake is a cross-platform build system. Use version 2.6.3 or later
 
 * This library requires that the Orocos RTT (liborocos-rtt) is installed
-  (path in OROCOS_INSTALL) Some components require the Orocos KDL (path in KDL_INSTALL)
-  or the Orocos BFL (path in BFL_INSTALL).
+  (path in CMAKE_PREFIX_PATH).
 
-* You can set the installation prefix in the CMAKE_INSTALL_PREFIX variable
+* You can set the installation path in the CMAKE_INSTALL_PREFIX variable
   using ccmake.
 
 * You can additionally
