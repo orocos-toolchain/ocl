@@ -1,5 +1,5 @@
 #include "logging/tests/TestLoggingAvailability.hpp"
-#include "rtalloc/String.hpp"
+#include <rtt/rt_string.hpp"
 #include "logging/Category.hpp"
 
 #include <rtt/Logger.hpp>
@@ -29,7 +29,7 @@ bool LoggingAvailability::configureHook()
 {
     if (logger)
     {
-        logger->info(OCL::String("Available in configureHook"));
+        logger->info(RTT::rt_string("Available in configureHook"));
     }
     else
     {
@@ -42,7 +42,7 @@ bool LoggingAvailability::startHook()
 {
     if (logger)
     {
-        logger->info(OCL::String("Available in startHook"));
+        logger->info(RTT::rt_string("Available in startHook"));
     }
     else
     {
@@ -55,7 +55,7 @@ void LoggingAvailability::updateHook()
 {
     if (logger)
     {
-        logger->info(OCL::String("Available in updateHook"));
+        logger->info(RTT::rt_string("Available in updateHook"));
     }
     else
     {
@@ -67,7 +67,7 @@ void LoggingAvailability::stopHook()
 {
     if (logger)
     {
-        logger->info(OCL::String("Available in stopHook"));
+        logger->info(RTT::rt_string("Available in stopHook"));
     }
     else
     {

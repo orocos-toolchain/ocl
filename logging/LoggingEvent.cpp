@@ -3,6 +3,8 @@
 #include <log4cpp/threading/Threading.hh>
 #include <cstdio>
 
+using namespace RTT;
+
 namespace OCL {
 namespace logging {
     
@@ -24,9 +26,9 @@ LoggingEvent::LoggingEvent(const LoggingEvent& toCopy) :
 {
 }
 
-LoggingEvent::LoggingEvent(const String& categoryName, 
-                           const String& message,
-                           const String& ndc, 
+LoggingEvent::LoggingEvent(const rt_string& categoryName, 
+                           const rt_string& message,
+                           const rt_string& ndc, 
                            log4cpp::Priority::Value priority) :
         categoryName(categoryName),
         message(message),

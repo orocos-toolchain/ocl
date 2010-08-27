@@ -47,9 +47,9 @@ void Component::updateHook()
 //	log(Debug) << str.str() << endlog();
 
     // new logging
-    logger->error("ERROR " + OCL::String(str.str().c_str()));
-    logger->info( "INFO  " + OCL::String(str.str().c_str()));
-    logger->debug("DEBUG " + OCL::String(str.str().c_str()));
+    logger->error("ERROR " + RTT::rt_string(str.str().c_str()));
+    logger->info( "INFO  " + RTT::rt_string(str.str().c_str()));
+    logger->debug("DEBUG " + RTT::rt_string(str.str().c_str()));
 
     // RTT logging
     log(Error)   << std::string("RTT ERROR " + str.str())   << endlog();

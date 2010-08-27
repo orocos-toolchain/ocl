@@ -24,20 +24,20 @@ public:
     // these replace std::string versions in the base class
 public:
     virtual void log(log4cpp::Priority::Value priority, 
-                     const OCL::String& message) throw();
-    void debug(const OCL::String& message) throw();
-    void info(const OCL::String& message) throw();
-    void notice(const OCL::String& message) throw();
-    void warn(const OCL::String& message) throw();
-    void error(const OCL::String& message) throw();
-    void crit(const OCL::String& message) throw();
-    void alert(const OCL::String& message) throw();
-    void emerg(const OCL::String& message) throw();
-    void fatal(const OCL::String& message) throw();
+                     const RTT::rt_string& message) throw();
+    void debug(const RTT::rt_string& message) throw();
+    void info(const RTT::rt_string& message) throw();
+    void notice(const RTT::rt_string& message) throw();
+    void warn(const RTT::rt_string& message) throw();
+    void error(const RTT::rt_string& message) throw();
+    void crit(const RTT::rt_string& message) throw();
+    void alert(const RTT::rt_string& message) throw();
+    void emerg(const RTT::rt_string& message) throw();
+    void fatal(const RTT::rt_string& message) throw();
 
 protected:
     void _logUnconditionally2(log4cpp::Priority::Value priority, 
-                              const OCL::String& message) throw();
+                              const RTT::rt_string& message) throw();
 
 
     // real-time - available to user

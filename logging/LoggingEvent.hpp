@@ -1,7 +1,7 @@
 #ifndef _LOGGINGEVENT_HPP 
 #define _LOGGINGEVENT_HPP 1
 
-#include "String.hpp"   // OCL/rtalloc
+#include <rtt/rt_string.hpp>
 #include <log4cpp/LoggingEvent.hh>
 
 namespace OCL {
@@ -11,9 +11,9 @@ namespace logging {
 struct LoggingEvent 
 {
 public:
-    LoggingEvent(const OCL::String& category, 
-                 const OCL::String& message, 
-                 const OCL::String& ndc, 
+    LoggingEvent(const RTT::rt_string& category, 
+                 const RTT::rt_string& message, 
+                 const RTT::rt_string& ndc, 
                  log4cpp::Priority::Value priority);
     /// Create with empty values
     LoggingEvent();
@@ -23,15 +23,15 @@ public:
     const LoggingEvent& operator=(const LoggingEvent& rhs);
     ~LoggingEvent();
 
-    /*const */OCL::String       categoryName;
+    /*const */RTT::rt_string       categoryName;
 
-    /*const */OCL::String       message;
+    /*const */RTT::rt_string       message;
 
-    /*const */OCL::String       ndc;
+    /*const */RTT::rt_string       ndc;
 
     log4cpp::Priority::Value    priority;
 
-    /*const */OCL::String       threadName;
+    /*const */RTT::rt_string       threadName;
 
     log4cpp::TimeStamp          timeStamp;
 
