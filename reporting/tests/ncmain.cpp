@@ -42,7 +42,7 @@ public:
           frport("fr_port"),
           drport("dr_port")
     { 
-        this->properties()->addProperty( & hello );
+        this->properties()->addProperty( hello );
         this->ports()->addPort( cwport );
         this->ports()->addPort( swport );
         this->ports()->addPort( iwport );
@@ -87,7 +87,7 @@ public:
           irport("ir_port"),
           frport("fr_port")
     {
-        this->properties()->addProperty( & hello );
+        this->properties()->addProperty( hello );
         this->ports()->addPort( cwport );
         this->ports()->addPort( swport );
         this->ports()->addPort( iwport );

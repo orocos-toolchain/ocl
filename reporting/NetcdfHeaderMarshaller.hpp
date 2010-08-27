@@ -71,12 +71,6 @@ namespace RTT
               store(Pv);
               return;
             }
-
-          Property<PropertyBag> bag( v->getName(), "");
-          v->getTypeInfo()->decomposeType( v->getDataSource(), bag.value() );
-          this->serialize( bag );
-          deleteProperties( bag.value() );
-
         }
       }
 

@@ -6,7 +6,7 @@
 #include "NetcdfMarshaller.hpp"
 #include "NetcdfHeaderMarshaller.hpp"
 
-#include "ocl/ComponentLoader.hpp"
+#include "ocl/Component.hpp"
 ORO_CREATE_COMPONENT(OCL::NetcdfReporting)
 
 #include <netcdf.h>
