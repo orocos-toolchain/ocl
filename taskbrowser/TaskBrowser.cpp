@@ -96,6 +96,7 @@ namespace OCL
     std::vector<std::string> TaskBrowser::completes;
     std::vector<std::string>::iterator TaskBrowser::complete_iter;
     std::string TaskBrowser::component;
+    std::string TaskBrowser::component_found;
     std::string TaskBrowser::peerpath;
     std::string TaskBrowser::text;
 #endif
@@ -411,7 +412,7 @@ namespace OCL
         std::vector<std::string> attrs;
         attrs = taskobject->getAttributeNames();
         for (std::vector<std::string>::iterator i = attrs.begin(); i!= attrs.end(); ++i ) {
-            if ( i->find( component ) == 0 && !component.empty() )
+            if ( i->find( component ) == 0 && !component.empty() && component.size() <= i->size() )
                 completes.push_back( peerpath + *i );
         }
         // all properties if RTT::TaskContext:
@@ -419,7 +420,7 @@ namespace OCL
             std::vector<std::string> props;
             peer->properties()->list(props);
             for (std::vector<std::string>::iterator i = props.begin(); i!= props.end(); ++i ) {
-                if ( i->find( component ) == 0 && !component.empty() ) {
+                if ( i->find( component ) == 0 && !component.empty()  && component.size() <= i->size() ) {
                     completes.push_back( peerpath + *i );
                 }
             }
@@ -439,6 +440,37 @@ namespace OCL
                 completes.push_back( peerpath + *i );
         }
 
+        // complete on types:
+        bool try_deeper = false;
+        try {
+            Parser parser;
+            DataSourceBase::shared_ptr result = parser.parseExpression( peerpath + component_found, context );
+            if (result && !component.empty() ) {
+                vector<string> members = result->getMemberNames();
+                for (std::vector<std::string>::iterator i = members.begin(); i!= members.end(); ++i ) {
+                    if ( string( component_found + "." + *i ).find( component ) == 0  )
+                        completes.push_back( peerpath + component_found + "." + *i );
+                    if ( component_found + "." + *i == component )
+                        try_deeper = true;
+                }
+            }
+        } catch(...) {}
+        // this is a hack to initiate a complete on a valid expression that might have members.
+        // the completer above would only return the expression itself, while this one tries to 
+        // go a level deeper again.
+        if (try_deeper) {
+            try {
+                Parser parser;
+                DataSourceBase::shared_ptr result = parser.parseExpression( peerpath + component, context );
+                if (result && !component.empty() ) {
+                    vector<string> members = result->getMemberNames();
+                    for (std::vector<std::string>::iterator i = members.begin(); i!= members.end(); ++i ) {
+                        if (component_found + "." != component ) // catch corner case.
+                            completes.push_back( peerpath + component + "." + *i );
+                    }
+                }
+            } catch(...) {}
+        }
     }
 
     void TaskBrowser::find_peers( std::string::size_type startpos )
@@ -453,6 +485,7 @@ namespace OCL
         // Traverse the entered peer-list
         component.clear();
         peerpath.clear();
+        // This loop separates the peer/service from the member/method
         while (endpos != std::string::npos )
             {
                 bool itemfound = false;
@@ -482,8 +515,10 @@ namespace OCL
                 }
                 else {
                     // no match: typo or member name
-                    // store the (incompletely) typed text
-                    component = item;
+                    // store the text until the last dot:
+                    component_found = to_parse.substr(startpos, to_parse.rfind("."));
+                    // store the complete text
+                    component = to_parse.substr(startpos, std::string::npos);
                     break;
                 }
             }
@@ -494,7 +529,8 @@ namespace OCL
 //         cout << "text: '" << text <<"'"<<endl;
 //         cout << "to_parse: '" << text <<"'"<<endl;
 //         cout << "Peerpath: '" << peerpath <<"'"<<endl;
-//         cout << "Component: '" << component <<"'"<<endl;
+        // cout <<endl<< "Component: '" << component <<"'"<<endl;
+        // cout << "Component_found: '" << component_found <<"'"<<endl;
 
         RTT::TaskContext::PeerList v;
         if ( taskobject == peer->provides() ) {

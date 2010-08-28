@@ -120,6 +120,7 @@ namespace OCL
         static std::vector<std::string> completes;
         static std::vector<std::string>::iterator complete_iter;
 
+        static std::string component_found;
         static std::string component;
         static std::string peerpath;
         static std::string text;
