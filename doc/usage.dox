@@ -18,46 +18,35 @@
 /** 
 * \mainpage Orocos Component Library
 *
-* WARNING: This is Beta quality. OCL will change drastically before the final 2.0 release.
-* Some of these components will disappear or be re-packaged in another repository.
-* 
 * \section intro Introduction
 *
-* This project consists of a series of independent Orocos
-* components which can be used to build a control application.
-* It uses the Orocos RealTime Toolkit and KDL, a kinematic and dynamic
-* library which is available through svn at
-* http://svn.mech.kuleuven.be/repos/orocos/trunk/kdl
+* This project consists of a series of standard Orocos
+* components which are used to build control applications.
 * 
-* Examples for the usage of all components can be found in the
-* respective tests subdirectory 
-*
 * \section deps Dependencies
 *
 * Some Orocos Components requires a number of libraries in order
 * to build. These are:
 *
 * - Every component requires the Real-Time Toolkit (RTT).
-* - KDL for kinematics and path interpolation
 * - ncurses and readline for the OCL::TaskBrowser
-* - Comedi for the hardware comedi support
-* - OpenCV for the OCL::CaptureCamera firewire component.
 *
 * \section structure Structure:
 *
-* \subsection hello Hello World: [ready]
+* \subsection hello Hello World:
 * The OCL::HelloWorld component demonstrates the TaskContext interface
 * and how it can be used in applications.
 * 
-* \subsection reporting Reporting: [ready]
+* \subsection reporting Reporting:
 * 	Components for real-time data capturing. Currently console
 * 	and file reporting is supported.
 *   <ul>
+*   <li>OCL::NetcdfReporting
 *   <li>OCL::ReportingComponent
 *   <li>OCL::ConsoleReporting
 *   <li>OCL::FileReporting
 *   </ul>
-* \subsection taskbrowser Taskbrowser: [ready]
+* \subsection taskbrowser Taskbrowser:
 * 	A Component for online interaction with any other component.
 * 	Your main tool during component development, testing or
 * 	experimenting.
@@ -65,126 +54,13 @@
 *   <li>OCL::TaskBrowser
 *   </ul>
 *
-* \subsection deployment Component Deployment: [ready]
+* \subsection deployment Component Deployment:
 * 	Component for loading and configuring components into an
 *       application.
 *   <ul>
 *   <li>OCL::DeploymentComponent
+*   <li>OCL::CorbaDeploymentComponent
 *   </ul>
 *                                                               
-* \subsection viewer Viewer: [beta stage]
-*   A Component which sends naxisposition values to the
-*   kdlviewer. KDLViewer is an application of KDL and can be found on
-*   http://svn.mech.kuleuven.be/repos/orocos/apps/kdl/kdlviewer
-*   <ul>
-*   <li>OCL::NAxesPositionViewer
-*   </ul>
-*
-* \subsection hardware Hardware: [ready] 
-*   Components for various devices (like sensors)
-* 	and hardware platforms, the simulation devices can be used by
-* 	everyone,
-*   <ul>
-*     <li>kuka: Implementation for use with Kuka160 and Kuka361,
-*         simulation can be used for everyone, realtime execution only in our
-*         lab (KULeuven/PMA/robotics) since the interface to the different
-*         DAQ-cards is very specific. A software EmergencyStop is
-*         implemented to safely stop the robots.
-*         <ul>
-*         <li> OCL::Kuka160nAxesVelocityController
-*         <li> OCL::Kuka361nAxesVelocityController
-*         <li> OCL::EmergencyStop
-*         </ul>
-*
-*     <li>wrench: Implementation for use with JR3-sensor, can be used
-*         by everyone using the pci-interface to a JR3-sensor. The
-*         specific lxrt-drivers can be found in the driver
-*         subdirectory.
-*         <ul>
-*         <li> OCL::WrenchSensor
-*         </ul>
-*
-* 	  <li>camera: Implementation for use with firewire camera's and
-*        OpenCV. Can be used by everyone.
-*        <ul>
-*        <li> OCL::CaptureCamera
-*        </ul>
-*
-*     <li>krypton: Implementation to get Krypton (see www.metris.com)
-*         measurements in realtime. The specific lxrt-drivers can be found in
-*         the driver subdirectory.
-*         <ul>
-*         <li>OCL::KryptonK600Sensor
-*         </ul>
-*
-*     <li>demotool: Implementation to combine Krypton and WrenchSensor
-*        measurement for the human demonstration tool in our lab (KULeuven/PMA/Robotics)
-* 	      <ul>
-*         <li>OCL::Demotool
-*         </ul> 
-*
-*     <li>laserdistance: Implementation to read and convert the LaserSensor
-*     measurements. Can only be used through the NI-6024 pci card in
-*     our lab(KULeuven/PMA/Robotics). But can be an example for everyone.
-*         <ul>
-*         <li>OCL::LaserSensor
-*         </ul>
-*
-*     <li>io: Implementation to read/write the Orocos device interface.
-*        It can handle the RTT::AnalogInInterface, RTT::AnalogOutInterface,
-*        RTT::DigitalInInterface and RTT::DigitalOutInterface objects.
-*        The analog IO is made available as Data ports and methods, while the digital IO
-*        is available only through methods.
-* 	      <ul>
-*         <li>OCL::IOComponent
-*         </ul> 
-*
-*     <li>axes: Implementation to access the Orocos Axis interface.
-*        It uses the RTT::AxisInterface to allow the user to manipulate them.
-*        Several ports and methods are available per axis in a single component.
-*        Usefull for quick testing of axis implementations.
-* 	      <ul>
-*         <li>OCL::AxesComponent
-*         </ul> 
-*
-*     </ul>
-*
-* \subsection motion Motion_control: [ready]
-* 	Components for path interpolation and control in cartesian and joint space.
-* 	These components need KDL for the path interpolation and for the
-*   cartesian operations.
-*   <ul>
-*   <li> naxes: These components include different controllers and
-*        generators(interpolators) and an effector(output) and sensor(input)
-*        which sends velocity setpoints to and reads position measurements
-*        from dataports shared with one of the
-*        hardware-components. It can be used for any number of axes.
-*        <ul>
-*           <li>OCL::nAxesSensor
-*           <li>OCL::nAxesGeneratorPos
-*           <li>OCL::nAxesGeneratorVel
-*           <li>OCL::nAxesControllerPos
-*           <li>OCL::nAxesControllerPosVel
-*           <li>OCL::nAxesControllerVel
-*           <li>OCL::nAxesEffectorVel
-*           <li>OCL::ReferenceSensor
-*        </ul>
-*   <li> cartesian: These components include different controllers and
-*        generators(interpolators) that control cartesian setpoints
-*        in 6D (3 translations and 3 rotations). It uses a
-*        KDL::KinematicFamily (see KDL) to convert the axes positions to
-*        cartesian position and the cartesian velocity to axes
-*        velocities. It gets and sends its position and velocities
-*        to dataports shared with one of the hardware-components. It
-*        can be used for any number of axes.  
-*        <ul>
-*           <li>OCL::CartesianSensor
-*           <li>OCL::CartesianGeneratorPos
-*           <li>OCL::CartesianControllerPos
-*           <li>OCL::CartesianControllerPosVel
-*           <li>OCL::CartesianControllerVel
-*           <li>OCL::CartesianEffectorVel
-*        </ul>
-*   </ul>  
 *
 */
