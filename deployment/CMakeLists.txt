@@ -26,7 +26,7 @@ IF ( BUILD_DEPLOYMENT )
      
     ADD_SUBDIRECTORY( tests )
 
-    SET(DEFAULT_COMPONENT_PATH "${OROCOS_INSTALL}/lib/orocos" CACHE STRING "Default component lookup path when none given. (semi-)colon separated list.")
+    SET(DEFAULT_COMPONENT_PATH "${OROCOS-RTT_PATH}/lib/orocos" CACHE STRING "Default component lookup path when none given. (semi-)colon separated list.")
     configure_file(comppath.cpp.in ${CMAKE_CURRENT_SOURCE_DIR}/comppath.cpp @ONLY)
 
     # This requires the orocos-rtt library to be carefully tagged

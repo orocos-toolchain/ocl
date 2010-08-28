@@ -20,7 +20,7 @@ function getcompiler
     fi
     if [ $(expr match "$arg" "--prefix=") != 0 ]; then
 	CMAKE_PREFIX="${arg:9}"
-	CMAKE_ARGS="$CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=$CMAKE_PREFIX -DOROCOS_INSTALL=$CMAKE_PREFIX"
+	CMAKE_ARGS="$CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=$CMAKE_PREFIX -DCMAKE_PREFIX_PATH=$CMAKE_PREFIX"
     fi
 }
 
@@ -50,7 +50,7 @@ fi
 
 if [ x$(which cmake) == x ]; then
    echo "Error: 'cmake' executable not found. Download it from http://www.cmake.org"
-   echo "Error: or install the cmake package of your distribution version 2.2 or higher."
+   echo "Error: or install the cmake package of your distribution version 2.6.2 or higher."
    exit 1
 fi
 
