@@ -4,11 +4,69 @@ require("ansicolors")
 local print, type, table, getmetatable, pairs, ipairs, tostring, assert = print, type, table, getmetatable, pairs, ipairs, tostring, assert
 local string = string
 local utils = utils
-local color = ansicolors
+local col = ansicolors
 local rtt = rtt
 local debug = debug
 
 module("rttlib")
+
+color=true
+
+local function red(str, bright)
+   if color then
+      str = col.red(str)
+      if bright then str=col.bright(str) end
+   end
+   return str
+end
+
+local function blue(str, bright)
+   if color then
+      str = col.blue(str)
+      if bright then str=col.bright(str) end
+   end
+   return str
+end
+
+local function green(str, bright)
+   if color then
+      str = col.green(str)
+      if bright then str=col.bright(str) end
+   end
+   return str
+end
+
+local function yellow(str, bright)
+   if color then
+      str = col.yellow(str)
+      if bright then str=col.bright(str) end
+   end
+   return str
+end
+
+local function magenta(str, bright)
+   if color then
+      str = col.magenta(str)
+      if bright then str=col.bright(str) end
+   end
+   return str
+end
+
+local function cyan(str, bright)
+   if color then
+      str = col.cyan(str)
+      if bright then str=col.bright(str) end
+   end
+   return str
+end
+
+local function white(str, bright)
+   if color then
+      str = col.white(str)
+      if bright then str=col.bright(str) end
+   end
+   return str
+end
 
 -- pretty print a ConnPolicy
 function ConnPolicy2tab(cp)
@@ -78,7 +136,7 @@ end
 -- pretty print properties
 --
 function prop2str(p)
-   return p:getName() .. '(' .. p:get():getType() .. ')' .. " = " .. var2str(p:get()) .. ' (' .. p:getDescription() .. ')'
+   return white(p:getName()) .. '(' .. p:get():getType() .. ')' .. " = " .. yellow(var2str(p:get())) .. ' (' .. red(p:getDescription()) .. ')'
 end
 
 --
@@ -90,9 +148,9 @@ function op2str(tc, op)
    local str = ""
 
    if #args < 1  then
-      str = rettype .. " " .. op .. "()"
+      str = rettype .. " " .. blue(op, true) .. "()"
    else
-      str = rettype .. " " .. op .. "("
+      str = rettype .. " " .. blue(op, true) .. "("
 
       for i=1,#args-1 do
 	 str = str .. args[i]["type"] .. " " .. args[i]["name"] .. ", "
@@ -103,28 +161,29 @@ function op2str(tc, op)
    return str
 end
 
+
 --
 -- pretty print a taskcontext
 --
 function tc2str(tc)
    local res = {}
-   res[#res+1] = '--- TaskContext "' .. tc:getName() .. '" ---'
-   res[#res+1] = "state: " .. tc:getState()
+   res[#res+1] = '--- TaskContext ' .. green(tc:getName(), true) .. ' ---'
+   res[#res+1] = magenta("state") .. ": " .. tc:getState()
 
    for i,v in ipairs( { "isActive", "getPeriod" } )
    do
-      res[#res+1] = v .. ": " .. tostring(tc:call(v)) .. ""
+      res[#res+1] = magenta(v) .. ": " .. tostring(tc:call(v)) .. ""
    end
 
-   res[#res+1] = "peers: " .. table.concat(tc:getPeers(), ', ')
-   res[#res+1] = "ports: " .. table.concat(tc:getPortNames(), ', ')
+   res[#res+1] = magenta("peers") .. ": " .. table.concat(tc:getPeers(), ', ')
+   res[#res+1] = magenta("ports") .. ": " .. table.concat(tc:getPortNames(), ', ')
 
-   res[#res+1] = "properties:"
+   res[#res+1] = magenta("properties") .. ":"
    for i,p in ipairs(tc:getProperties()) do
       res[#res+1] = "   " .. prop2str(p)
    end
 
-   res[#res+1] = "operations:"
+   res[#res+1] = magenta("operations") .. ":"
    for i,v in ipairs(tc:getOps()) do
       res[#res+1] = "   " .. op2str(tc, v)
    end
@@ -144,3 +203,4 @@ if type(debug) == 'table' then
 else
    print("no debug library, if required pretty printing must be enabled manually")
 end
+
