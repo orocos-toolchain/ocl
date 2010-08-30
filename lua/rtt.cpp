@@ -366,6 +366,10 @@ static int __Variable_tolua(lua_State *L, DataSourceBase::shared_ptr dsb)
 		DataSource<std::string>* dsb = DataSource<std::string>::narrow(ds);
 		if(dsb) lua_pushlstring(L, dsb->get().c_str(), dsb->get().size());
 		else goto out_nodsb;
+	} else if(type=="void") {
+		DataSource<void>* dsb = DataSource<void>::narrow(ds);
+		if(dsb) lua_pushnil(L);
+		else goto out_nodsb;
 	} else {
 		goto out_conv_err;
 	}

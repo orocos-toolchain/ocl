@@ -1,8 +1,10 @@
 require("utils")
+require("ansicolors")
 
 local print, type, table, getmetatable, pairs, ipairs, tostring, assert = print, type, table, getmetatable, pairs, ipairs, tostring, assert
 local string = string
 local utils = utils
+local color = ansicolors
 local rtt = rtt
 local debug = debug
 
@@ -59,7 +61,6 @@ function var2tab(var)
    return __var2tab(var)
 end
 
-
 function var2str(var)
    local res = var2tab(var)
 
@@ -112,7 +113,7 @@ function tc2str(tc)
 
    for i,v in ipairs( { "isActive", "getPeriod" } )
    do
-      -- res[#res+1] = v .. ": " .. tostring(rtt.call(tc, v)) .. ""
+      res[#res+1] = v .. ": " .. tostring(tc:call(v)) .. ""
    end
 
    res[#res+1] = "peers: " .. table.concat(tc:getPeers(), ', ')
