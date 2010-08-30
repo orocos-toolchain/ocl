@@ -640,6 +640,21 @@ static int Variable_index(lua_State *L)
 	return Variable_opDot(L);
 }
 
+static int Variable_newindex(lua_State *L)
+{
+	DataSourceBase::shared_ptr master = *(lua_userdata_cast2(L, 1, Variable, DataSourceBase::shared_ptr));
+	const char* member = luaL_checkstring(L, 2);
+	DataSourceBase::shared_ptr newval = *(lua_userdata_cast2(L, 3, Variable, DataSourceBase::shared_ptr));
+
+	/* get dsb to be updated */
+	types::OperatorRepository::shared_ptr opreg = types::OperatorRepository::Instance();
+	DataSourceBase *curval = opreg->applyDot(member, master.get());
+
+	lua_pushboolean(L, curval->update(newval.get()));
+	return 1;
+}
+
+
 
 // static int Variable_gc(lua_State *L)
 // {
@@ -694,6 +709,7 @@ static const struct luaL_Reg Variable_m [] = {
 	{ "__lt", Variable_lt },
 	{ "__le", Variable_le },
 	{ "__index", Variable_index },
+	{ "__newindex", Variable_newindex },
 	{ "__gc", GCMethod<DataSourceBase::shared_ptr> },
 	// {"__gc", Variable_gc},
 	{ NULL, NULL}
