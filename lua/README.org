@@ -1,0 +1,55 @@
+#+STARTUP: showall
+#+STARTUP: hidestars
+
+* RTT-Lua bindings
+
+** Overview
+
+The RTT Lua bindings provide a slim but powerful interface to the RTT
+framework. In general the bindings can be divided into two groups:
+
+   1. bindings for /Coordination/ purposes
+   2. bindings for implementing components in the scripting language
+
+Up to now the focus has been mostly on 1, although being able to write
+components themselves in a higher level language could be very usefull
+too.
+
+The API described as follows. It consists of mostly objects and some
+free functions. The approach is to find a balance between the naming
+scheme of RTT and simplifying where possible.
+
+** Requirements
+*** Compilation
+
+    - requires Lua-5.1
+
+*** Runtime:
+
+    - setup =LUA_PATH= and =LUA_CPATH= so that the necessary modules
+      are found. The former is for lua modules (.lua) and the later is
+      for binary ones (.so). For example:
+
+#+BEGIN_EXAMPLE
+      $ export LUA_PATH=";;;/usr/share/lua/5.1/?.lua;\
+	      /usr/share/lua/5.1/?/init.lua;\
+	      /home/mk/src/git/gitorocos/orocos-ocl/lua/lua-modules/?.lua"
+#+END_EXAMPLE
+
+
+    - if using =rttlua= scripting: export correct =RTT_COMPONENT_PATH=
+      variable, e.g.
+
+#+BEGIN_EXAMPLE
+      $ export RTT_COMPONENT_PATH=/home/mk/tmp/rtt-2.0/lib/orocos
+#+END_EXAMPLE
+
+** Objects
+
+** the 'rttlib' convenience library
+   This library adds some pretty printing functions to the standard
+   objects.
+
+** Known issues
+
+** Todo
