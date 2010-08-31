@@ -18,9 +18,9 @@ using namespace RTT::base;
 using namespace RTT::internal;
 
 
-/***************************************************************
- * Tricks from here: http://lua-users.org/wiki/DoItYourselfCppBinding
- ***************************************************************/
+/*
+ * Using some tricks from here: http://lua-users.org/wiki/DoItYourselfCppBinding
+ */
 
 /* overloading new */
 void* operator new(size_t size, lua_State* L, const char* metatableName)
@@ -994,6 +994,110 @@ static int TaskContext_call(lua_State *L)
 	return 1;
 }
 
+/*
+ * SendHandle (required for send)
+ */
+
+static void SendStatus_push(lua_State *L, SendStatus ss)
+{
+	switch (ss) {
+	case SendSuccess: lua_pushstring(L, "SendSuccess"); break;
+	case SendNotReady: lua_pushstring(L, "SendNotReady"); break;
+	case SendFailure: lua_pushstring(L, "SendFailure"); break;
+	default: lua_pushstring(L, "unkown");
+	}
+}
+
+static int __SendHandle_collect(lua_State *L, bool block)
+{
+	std::vector<DataSourceBase::shared_ptr> coll_args;
+	SendStatus ss;
+	const types::TypeInfo *ti;
+	OperationInterfacePart *orp;
+	DataSourceBase::shared_ptr tmpdsb;
+	int coll_argc;
+
+	SendHandleC *shc = lua_userdata_cast2(L, 1, SendHandle, SendHandleC);
+
+	/* get orp pointer */
+	orp = shc->getOrp();
+	coll_argc = orp->collectArity();
+
+	/* create appropriate datasources */
+	for(unsigned int i=1; i <= coll_argc; i++) {
+		ti = orp->getCollectType(i);
+		tmpdsb = ti->buildValue();
+		coll_args.push_back(tmpdsb);
+		shc->arg(tmpdsb);
+	}
+
+	if(block) ss = shc->collect();
+	else ss = shc->collectIfDone();
+
+	SendStatus_push(L, ss);
+
+	/* store all DSB in coll_args to luabind::object */
+	for (unsigned int i=0; i<coll_argc; i++) {
+		lua_pushobject2(L, Variable, DataSourceBase::shared_ptr)(coll_args[i]);
+	}
+	/* SendStatus + collect args */
+	return coll_argc + 1;
+}
+
+static int SendHandle_collect(lua_State *L)
+{
+	return __SendHandle_collect(L, true);
+}
+
+static int SendHandle_collectIfDone(lua_State *L)
+{
+	return __SendHandle_collect(L, false);
+}
+
+
+static const struct luaL_Reg SendHandle_f [] = {
+	{ "collect", SendHandle_collect },
+	{ "collectIfDone", SendHandle_collectIfDone },
+	{ NULL, NULL }
+};
+
+static const struct luaL_Reg SendHandle_m [] = {
+	{ "collect", SendHandle_collect },
+	{ "collectIfDone", SendHandle_collectIfDone },
+	{ "__gc", GCMethod<SendHandleC> },
+	{ NULL, NULL }
+};
+
+/* TaskContext continued */
+static int TaskContext_send(lua_State *L)
+{
+	unsigned int argc = lua_gettop(L);
+	TaskContext *tc = *(lua_getudata_bx(L, 1, TaskContext));
+	const char *op = luaL_checkstring(L, 2);
+
+	OperationInterfacePart *orp = tc->operations()->getPart(op);
+	OperationCallerC *occ = new OperationCallerC(orp, op, NULL); // todo: alloc on stack?
+	DataSourceBase::shared_ptr *dsbp;
+	SendHandleC *shc;
+
+	if(!orp)
+		luaL_error(L, "TaskContext.send: no operation %s for TaskContext %s",
+			   op, tc->getName().c_str());
+
+	if(orp->arity() != argc-2)
+		luaL_error(L, "TaskContext.send: wrong number of args. expected %d, got %d",
+			   orp->arity(), argc);
+
+	for(unsigned int arg=3; arg<=argc; arg++) {
+		dsbp = lua_userdata_cast2(L, arg, Variable, DataSourceBase::shared_ptr);
+		occ->arg(*dsbp);
+	}
+
+	/* call send and construct push SendHandle userdata */
+	lua_pushobject2(L, SendHandle, SendHandleC)(occ->send());
+	return 1;
+}
+
 /* only explicit destruction allowed */
 static int TaskContext_del(lua_State *L)
 {
@@ -1028,6 +1132,7 @@ static const struct luaL_Reg TaskContext_f [] = {
 	{ "getOps", TaskContext_getOps },
 	{ "getOpInfo", TaskContext_getOpInfo },
 	{ "call", TaskContext_call },
+	{ "send", TaskContext_send },
 	{ "delete", TaskContext_del },
 	{ NULL, NULL}
 };
@@ -1053,6 +1158,7 @@ static const struct luaL_Reg TaskContext_m [] = {
 	{ "getOps", TaskContext_getOps },
 	{ "getOpInfo", TaskContext_getOpInfo },
 	{ "call", TaskContext_call },
+	{ "send", TaskContext_send },
 	/* we don't GC TaskContexts
 	 * { "__gc", GCMethod<TaskContext> }, */
 	{ NULL, NULL}
@@ -1129,6 +1235,12 @@ int luaopen_rtt(lua_State *L)
 	lua_setfield(L, -2, "__index");
 	luaL_register(L, NULL, TaskContext_m);
 	luaL_register(L, "rtt.TaskContext", TaskContext_f);
+
+	luaL_newmetatable(L, "SendHandle");
+	lua_pushvalue(L, -1); /* duplicates metatable */
+	lua_setfield(L, -2, "__index");
+	luaL_register(L, NULL, SendHandle_m);
+	luaL_register(L, "rtt.SendHandle", SendHandle_f);
 
 	luaL_newmetatable(L, "InputPort");
 	lua_pushvalue(L, -1); /* duplicates metatable */
