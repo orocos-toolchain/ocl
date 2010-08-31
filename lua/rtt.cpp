@@ -635,11 +635,11 @@ static int Variable_index(lua_State *L)
 	lua_getmetatable(L, 1);
 	lua_getfield(L, -1, key);
 
-	// Either key is name of a method in the metatable
+	/* Either key is name of a method in the metatable */
 	if(!lua_isnil(L, -1))
 		return 1;
 
-	// ... or its a field access, so recall as self.get(self, value).
+	/* ... or its a field access, so recall as self.get(self, value). */
 	lua_settop(L, 2);
 	return Variable_opDot(L);
 }
@@ -657,15 +657,6 @@ static int Variable_newindex(lua_State *L)
 	lua_pushboolean(L, curval->update(newval.get()));
 	return 1;
 }
-
-
-
-// static int Variable_gc(lua_State *L)
-// {
-// 	DataSourceBase::shared_ptr *dsbp = (DataSourceBase::shared_ptr *) luaL_checkudata(L, 1, "Variable");
-// 	(*dsbp).~intrusive_ptr();
-// 	return 0;
-// }
 
 static const struct luaL_Reg Variable_f [] = {
 	{ "new", Variable_new },
@@ -779,20 +770,14 @@ static int TaskContext_getState(lua_State *L)
 	ts = (*tc)->getTaskState();
 
 	switch(ts) {
-	case TaskCore::Init:
-		lua_pushstring(L, "Init"); break;
-	case TaskCore::PreOperational:
-		lua_pushstring(L, "PreOperational"); break;
-	case TaskCore::FatalError:
-		lua_pushstring(L, "FatalError"); break;
-	case TaskCore::Exception:
-		lua_pushstring(L, "Exception"); break;
-	case TaskCore::Stopped:
-		lua_pushstring(L, "Stopped"); break;
-	case TaskCore::Running:
-		lua_pushstring(L, "Running"); break;
-	case TaskCore::RunTimeError:
-		lua_pushstring(L, "RunTimeError"); break;
+	case TaskCore::Init: 		lua_pushstring(L, "Init"); break;
+	case TaskCore::PreOperational:	lua_pushstring(L, "PreOperational"); break;
+	case TaskCore::FatalError:	lua_pushstring(L, "FatalError"); break;
+	case TaskCore::Exception:	lua_pushstring(L, "Exception"); break;
+	case TaskCore::Stopped:		lua_pushstring(L, "Stopped"); break;
+	case TaskCore::Running:		lua_pushstring(L, "Running"); break;
+	case TaskCore::RunTimeError:	lua_pushstring(L, "RunTimeError"); break;
+	default: 			lua_pushstring(L, "unknown");
 	}
 	return 1;
 }
@@ -1001,10 +986,10 @@ static int TaskContext_call(lua_State *L)
 static void SendStatus_push(lua_State *L, SendStatus ss)
 {
 	switch (ss) {
-	case SendSuccess: lua_pushstring(L, "SendSuccess"); break;
+	case SendSuccess:  lua_pushstring(L, "SendSuccess"); break;
 	case SendNotReady: lua_pushstring(L, "SendNotReady"); break;
-	case SendFailure: lua_pushstring(L, "SendFailure"); break;
-	default: lua_pushstring(L, "unkown");
+	case SendFailure:  lua_pushstring(L, "SendFailure"); break;
+	default: 	   lua_pushstring(L, "unkown");
 	}
 }
 
