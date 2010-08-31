@@ -14,7 +14,7 @@ module("deployment")
 -- recursively find rtt components
 --
 
-local rtt_comp_regexp = "liborocos-[%a%d%-_]+.so.%d+.%d+.%d+"
+local rtt_comp_regexp = "lib[%a%d%-_]+.so.%d+.%d+.%d+"
 
 function find_comps(dir)
    local res = {}

@@ -136,14 +136,14 @@ end
 -- pretty print properties
 --
 function prop2str(p)
-   return white(p:getName()) .. '(' .. p:get():getType() .. ')' .. " = " .. yellow(var2str(p:get())) .. ' (' .. red(p:getDescription()) .. ')'
+   return white(p:getName()) .. ' (' .. p:get():getType() .. ')' .. " = " .. yellow(var2str(p:get())) .. red(" // " .. p:getDescription()) .. ""
 end
 
 --
 -- convert a method to a string
 --
 function op2str(tc, op)
-   local rettype, arity, args = tc:getOpInfo(op)
+   local rettype, arity, descr, args = tc:getOpInfo(op)
 
    local str = ""
 
@@ -158,6 +158,7 @@ function op2str(tc, op)
 
       str = str .. args[#args]["type"] .. " " .. args[#args]["name"] .. ")"
    end
+   if descr then str = str .. " " .. red("// " .. descr) .. "" end
    return str
 end
 

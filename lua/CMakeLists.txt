@@ -39,6 +39,9 @@ else(NOT LUA51_FOUND)
      target_link_libraries(rttlua lua-repl ${LUA_LIBRARIES} ${OROCOS_RTT_LIBS})
      target_link_libraries(rttlua-${OROCOS_TARGET} ${LUA_LIBRARIES} ${OROCOS_RTT_LIBS})
 
+     # testcomponent
+     add_subdirectory( testing )
+
   endif(BUILD_LUA_COMPONENT)
 
   if(BUILD_LUA_DYN_RTT_PLUGINS)

@@ -823,10 +823,17 @@ static int TaskContext_getPeer(lua_State *L)
 	strpeer = luaL_checkstring(L, 2);
 	peer = self->getPeer(strpeer);
 
+	if(!peer) {
+		lua_pushnil(L);
+		goto out;
+	}
+
 	tc = (TaskContext**) lua_newuserdata(L, sizeof(TaskContext*));
 	*tc = peer;
 	luaL_getmetatable(L, "TaskContext");
 	lua_setmetatable(L, -2);
+
+ out:
 	return 1;
 }
 
@@ -933,6 +940,7 @@ static int TaskContext_getOpInfo(lua_State *L)
 
 	lua_pushstring(L, tc->operations()->getResultType(op).c_str()); /* result type */
 	lua_pushinteger(L, tc->operations()->getArity(op));		/* arity */
+	lua_pushstring(L, tc->operations()->getDescription(op).c_str()); /* description */
 
 	args = tc->operations()->getArgumentList(op);
 
@@ -946,7 +954,7 @@ static int TaskContext_getOpInfo(lua_State *L)
 		lua_rawseti(L, -2, i++);
 	}
 
-	return 3;
+	return 4;
 }
 
 
