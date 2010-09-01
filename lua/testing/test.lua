@@ -24,9 +24,9 @@ function test_call_op_0_ct() return testcomp:call("op_0_ct") end
 function test_call_op_0_ot() return testcomp:call("op_0_ot") end
 
 function test_call_op_2()
-   dbl = var.new("double", 1.1)
-   s = var.new("string", "hello op2")
-   res = testcomp:call("op_2", s, dbl)
+   local dbl = var.new("double", 1.1)
+   local s = var.new("string", "hello op2")
+   local res = testcomp:call("op_2", s, dbl)
 
    if not res == var.new("double", 2.2) then
       print("wrong result, expected 2.2, got ", res)
@@ -38,8 +38,8 @@ end
 
 -- test
 function test_call_op_1_out()
-   i = var.new("int", 1)
-   res = testcomp:call("op_1_out", i)
+   local i = var.new("int", 1)
+   local res = testcomp:call("op_1_out", i)
    print("result testcomp:call('op_1_out', i): ", i)
    print("result testcomp:call('op_1_out', i): ", i)
    if i ~= var.new("int", 2) then
@@ -51,10 +51,10 @@ function test_call_op_1_out()
 end
 
 function test_call_op_3_out()
-   s = var.new("string", "hello op3")
-   d = var.new("double", 1.1)
-   i = var.new("int", 33)
-   res=testcomp:call("op_3_out", s, d, i)
+   local s = var.new("string", "hello op3")
+   local d = var.new("double", 1.1)
+   local i = var.new("int", 33)
+   local res=testcomp:call("op_3_out", s, d, i)
 
    if s ~= var.new("string", "hello op3-this-string-has-a-tail") or d ~= var.new("double", 2.2) or i ~= var.new("int", 4711) then
       print("Checkpoint 1: wrong state of outvalues", s, d, i)
@@ -71,8 +71,8 @@ function test_call_op_3_out()
 end
 
 function test_call_op_1_out_retval()
-   i = var.new("int", 33)
-   res = testcomp:call("op_1_out_retval", i)
+   local i = var.new("int", 33)
+   local res = testcomp:call("op_1_out_retval", i)
 
    if i ~= var.new("int", 34) then
       print("Checkpoint 1: wrong i, expected 34, got ", i)
@@ -85,6 +85,24 @@ function test_call_op_1_out_retval()
 
    if i ~= var.new("int", 34) then
       print("Checkpoint 2: wrong i, expected 34, got ", i)
+      return false
+   end
+   return true
+end
+
+function test_var_assignment()
+   local i1= var.new("int", 2)
+   local i2= var.new("int", 99)
+
+   if i1 == i2 then
+      print("comparison error")
+      return false
+   end
+
+   i1:assign(i2)
+
+   if i1 ~= i2 then
+      print("assigment failed")
       return false
    end
    return true
@@ -106,6 +124,7 @@ local tests = {
    { tfunc=test_call_op_1_out, descr="post(testcomp:call('op_1_out', 1)), i==2" },
    { tfunc=test_call_op_3_out, descr="postconditions of testcomp:call('op_3_out', 1)" },
    { tfunc=test_call_op_1_out_retval, descr="post(testcomp:call('op_1_out_retval', 33)), i==34" },
+   { tfunc=test_var_assignment, descr="testing assigment of variables" },
 }
 
 uunit.run_tests(tests, true)

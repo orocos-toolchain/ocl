@@ -68,7 +68,7 @@ function run_tests(tests, verb)
 	 out(cyan(rpad(tostring(i) .. '.', 4)) .. "Tested " ..
 	  rpad(cyan(t.tstr or t.descr), 75, ' ') , t.result and green("OK", true) or red("FAILED", true)) 
       end
-      out(string.rep('-', 10))
+      -- out(string.rep('-', 10))
    end
 end
 
