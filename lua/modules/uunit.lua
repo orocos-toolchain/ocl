@@ -9,6 +9,7 @@ require("ansicolors")
 local rttlib=rttlib
 local utils=utils
 local col=ansicolors
+local string=string
 local loadstring=loadstring
 local tostring=tostring
 
@@ -63,7 +64,11 @@ function run_tests(tests, verb)
    for i = 1,#tests do
       local t = tests[i]
       t.result = run_test(t)
-      if verb then out(cyan(rpad(tostring(i) .. '.', 4)) .. rpad(cyan(t.tstr or t.descr), 73, ' ') , t.result and green("OK", true) or red("FAILED", true)) end
+      if verb then
+	 out(cyan(rpad(tostring(i) .. '.', 4)) .. "Tested " ..
+	  rpad(cyan(t.tstr or t.descr), 75, ' ') , t.result and green("OK", true) or red("FAILED", true)) 
+      end
+      out(string.rep('-', 10))
    end
 end
 

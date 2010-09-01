@@ -957,7 +957,6 @@ static int TaskContext_getOpInfo(lua_State *L)
 	return 4;
 }
 
-
 static int TaskContext_call(lua_State *L)
 {
 	unsigned int argc = lua_gettop(L);
@@ -965,7 +964,8 @@ static int TaskContext_call(lua_State *L)
 	const char *op = luaL_checkstring(L, 2);
 	std::vector<base::DataSourceBase::shared_ptr> args;
 	DataSourceBase::shared_ptr *dsbp;
-	base::DataSourceBase::shared_ptr ret;
+	DataSourceBase::shared_ptr ret, ret2;
+	types::TypeInfo *ti;
 
 	OperationInterfacePart *orp = tc->operations()->getPart(op);
 
@@ -982,8 +982,20 @@ static int TaskContext_call(lua_State *L)
 	}
 
 	ret = tc->operations()->produce(op, args, NULL);
-	ret->evaluate();
-	lua_pushobject2(L, Variable, DataSourceBase::shared_ptr)(ret);
+
+	/* not so nice: construct a ValueDataSource for the return Value
+	 * todo: at least avoid the type conversion to string.
+	 */
+	if(orp->resultType() != "void") {
+		ti = types::TypeInfoRepository::Instance()->type(orp->resultType());
+		assert(ti);
+		ret2 = ti->buildValue();
+		ret2->update(ret.get());
+		lua_pushobject2(L, Variable, DataSourceBase::shared_ptr)(ret2);
+	} else {
+		ret->evaluate();
+		lua_pushnil(L);
+	}
 	return 1;
 }
 

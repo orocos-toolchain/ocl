@@ -17,7 +17,7 @@ function test_create_testcomp()
    return testcomp:getName() == "testcomp"
 end
 
-function test_call_op_null_0() return testcomp:call("null_0") end
+function test_call_op_null_0() return testcomp:call("null_0") == nil end
 function test_send_op_null_0() return testcomp:send("null_0"):collect() == 'SendSuccess' end
 
 function test_call_op_0_ct() return testcomp:call("op_0_ct") end
@@ -102,10 +102,10 @@ local tests = {
    { tfunc=test_send_op_null_0, descr="sending testcomp operation null_0" },
    { tfunc=test_call_op_0_ct, descr="calling testcomp operation op_0_ct, client thread" },
    { tfunc=test_call_op_0_ot, descr="calling testcomp operation op_0_ot, own thread" },
-   { tfunc=test_call_op_2, descr="testing: testcomp:call('op_2', 'hello op2', 1.1)==2.2" },
-   { tfunc=test_call_op_1_out, descr="testing: post(testcomp:call('op_1_out', 1)), i==2" },
-   { tfunc=test_call_op_3_out, descr="testing: postconditions of testcomp:call('op_3_out', 1)" },
-   { tfunc=test_call_op_1_out_retval, descr="testing: post(testcomp:call('op_1_out_retval', 33)), i==34" },
+   { tfunc=test_call_op_2, descr="testcomp:call('op_2', 'hello op2', 1.1)==2.2" },
+   { tfunc=test_call_op_1_out, descr="post(testcomp:call('op_1_out', 1)), i==2" },
+   { tfunc=test_call_op_3_out, descr="postconditions of testcomp:call('op_3_out', 1)" },
+   { tfunc=test_call_op_1_out_retval, descr="post(testcomp:call('op_1_out_retval', 33)), i==34" },
 }
 
 uunit.run_tests(tests, true)
