@@ -56,6 +56,9 @@ void* operator new(size_t size, lua_State* L, const char* metatableName)
 #define lua_userdata_cast2(L, pos, MT, T) reinterpret_cast<T*>(luaL_checkudata((L), (pos), #MT))
 #define lua_getudata_bx2(L, pos, MT, T) (T**) (luaL_checkudata((L), (pos), #MT))
 
+/* this flavor doesn't fail but just returns NULL */
+#define luaM_testudata2(L, pos, MT, T) (T*) (luaL_testudata((L), (pos), #MT))
+
 /* template for generating GC function */
 template<typename T>
 int GCMethod(lua_State* L)
@@ -410,13 +413,12 @@ static int Variable_create(lua_State *L)
 	return 1;
 }
 
-/* create variable and initialize */
-static int Variable_create_ival(lua_State *L, int typeind, int valind)
+/* try to coveert lua value on stack at valind to DSB of type */
+static DataSourceBase::shared_ptr Variable_fromlua(lua_State *L, const char* type, int valind)
 {
 	DataSourceBase::shared_ptr dsb;
 	luaL_checkany(L, valind);
-	const char* type = luaL_checkstring(L, typeind);	/* target dsb type */
-	int luatype = lua_type(L, valind);			/* type of lua variable */
+	int luatype = lua_type(L, valind); 	/* type of lua variable */
 
 	if(strcmp(type, "bool") == 0) {
 		lua_Number x;
@@ -428,7 +430,6 @@ static int Variable_create_ival(lua_State *L, int typeind, int valind)
 			goto out_conv_err;
 
 		dsb = new ValueDataSource<bool>((bool) x);
-		lua_pushobject2(L, Variable, DataSourceBase::shared_ptr)(dsb);
 
 	} else if (strcmp(type, "int") == 0) {
 		lua_Number x;
@@ -438,7 +439,6 @@ static int Variable_create_ival(lua_State *L, int typeind, int valind)
 			goto out_conv_err;
 
 		dsb = new ValueDataSource<int>(x); // (int)
-		lua_pushobject2(L, Variable, DataSourceBase::shared_ptr)(dsb);
 
 	} else if (strcmp(type, "uint") == 0) {
 		lua_Number x;
@@ -448,7 +448,7 @@ static int Variable_create_ival(lua_State *L, int typeind, int valind)
 			goto out_conv_err;
 
 		dsb = new ValueDataSource<unsigned int>((unsigned int) x);
-		lua_pushobject2(L, Variable, DataSourceBase::shared_ptr)(dsb);
+
 	} else if (strcmp(type, "double") == 0) {
 		lua_Number x;
 		if (luatype == LUA_TNUMBER)
@@ -457,7 +457,7 @@ static int Variable_create_ival(lua_State *L, int typeind, int valind)
 			goto out_conv_err;
 
 		dsb = new ValueDataSource<double>((double) x);
-		lua_pushobject2(L, Variable, DataSourceBase::shared_ptr)(dsb);
+
 	} else if (strcmp (type, "float") == 0) {
 		lua_Number x;
 		if (luatype == LUA_TNUMBER)
@@ -466,7 +466,7 @@ static int Variable_create_ival(lua_State *L, int typeind, int valind)
 			goto out_conv_err;
 
 		dsb = new ValueDataSource<float>((float) x);
-		lua_pushobject2(L, Variable, DataSourceBase::shared_ptr)(dsb);
+
 	} else if (strcmp(type, "char") == 0) {
 		const char *x;
 		size_t l;
@@ -476,7 +476,7 @@ static int Variable_create_ival(lua_State *L, int typeind, int valind)
 			goto out_conv_err;
 
 		dsb = new ValueDataSource<char>(x[0]);
-		lua_pushobject2(L, Variable, DataSourceBase::shared_ptr)(dsb);
+
 	} else if (strcmp(type, "string") == 0) {
 		// std::string x;
 		const char *x;
@@ -486,17 +486,28 @@ static int Variable_create_ival(lua_State *L, int typeind, int valind)
 			goto out_conv_err;
 
 		dsb = new ValueDataSource<std::string>(x);
-		lua_pushobject2(L, Variable, DataSourceBase::shared_ptr)(dsb);
+
 	} else {
 		goto out_conv_err;
 	}
 
 	/* everybody happy */
-	return 1;
+	return dsb;
 
  out_conv_err:
-	luaL_error(L, "Variable.tovar: can't convert lua %s to %s variable", lua_typename(L, luatype), type);
-	return 0;
+	luaL_error(L, "__lua_todsb: can't convert lua %s to %s variable", lua_typename(L, luatype), type);
+	return NULL;
+}
+
+
+static int Variable_create_ival(lua_State *L, int typeind, int valind)
+{
+	DataSourceBase::shared_ptr dsb;
+	luaL_checkany(L, valind);
+	const char* type = luaL_checkstring(L, typeind);	/* target dsb type */
+	dsb = Variable_fromlua(L, type, valind);
+	lua_pushobject2(L, Variable, DataSourceBase::shared_ptr)(dsb);
+	return 1;
 }
 
 static int Variable_new(lua_State *L)
@@ -962,7 +973,9 @@ static int TaskContext_call(lua_State *L)
 	unsigned int argc = lua_gettop(L);
 	TaskContext *tc = *(lua_getudata_bx(L, 1, TaskContext));
 	const char *op = luaL_checkstring(L, 2);
+
 	std::vector<base::DataSourceBase::shared_ptr> args;
+	DataSourceBase::shared_ptr dsb;
 	DataSourceBase::shared_ptr *dsbp;
 	DataSourceBase::shared_ptr ret, ret2;
 	types::TypeInfo *ti;
@@ -976,9 +989,15 @@ static int TaskContext_call(lua_State *L)
 		luaL_error(L, "TaskContext.call: wrong number of args. expected %d, got %d", orp->arity(), argc);
 
 	for(unsigned int arg=3; arg<=argc; arg++) {
-		dsbp = lua_userdata_cast2(L, arg, Variable, DataSourceBase::shared_ptr);
-		/* tbd: coerce reasonably */
-		args.push_back(*dsbp);
+		/* fastpath: Variable argument */
+		if ((dsbp = luaM_testudata2(L, arg, Variable, DataSourceBase::shared_ptr)) != NULL) {
+			dsb = *dsbp;
+		} else  {
+			/* slowpath: convert lua value to dsb */
+			std::string type = orp->getArgumentType(arg-2)->getTypeName().c_str();
+			dsb = Variable_fromlua(L, type.c_str() ,arg);
+		}
+		args.push_back(dsb);
 	}
 
 	ret = tc->operations()->produce(op, args, NULL);
