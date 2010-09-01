@@ -1101,6 +1101,7 @@ static int TaskContext_send(lua_State *L)
 
 	OperationInterfacePart *orp = tc->operations()->getPart(op);
 	OperationCallerC *occ = new OperationCallerC(orp, op, NULL); // todo: alloc on stack?
+	DataSourceBase::shared_ptr dsb;
 	DataSourceBase::shared_ptr *dsbp;
 	SendHandleC *shc;
 
@@ -1113,8 +1114,15 @@ static int TaskContext_send(lua_State *L)
 			   orp->arity(), argc);
 
 	for(unsigned int arg=3; arg<=argc; arg++) {
-		dsbp = lua_userdata_cast2(L, arg, Variable, DataSourceBase::shared_ptr);
-		occ->arg(*dsbp);
+		/* fastpath: Variable argument */
+		if ((dsbp = luaM_testudata2(L, arg, Variable, DataSourceBase::shared_ptr)) != NULL) {
+			dsb = *dsbp;
+		} else  {
+			/* slowpath: convert lua value to dsb */
+			std::string type = orp->getArgumentType(arg-2)->getTypeName().c_str();
+			dsb = Variable_fromlua(L, type.c_str() ,arg);
+		}
+		occ->arg(dsb);
 	}
 
 	/* call send and construct push SendHandle userdata */
