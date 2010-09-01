@@ -108,6 +108,21 @@ function test_var_assignment()
    return true
 end
 
+function test_coercion()
+   local x = testcomp:call("op_2", "a-lua-string", 33.3)
+   return x:tolua() == 66.6
+end
+
+function test_send_op2()
+   local sh = testcomp:send("op_2", "hullo", 55.5)
+   ss, res = sh:collect()
+   if ss ~= "SendSuccess" or res ~= var.new("double", 111) then
+      return false
+   else
+      return true
+   end
+end
+
 local tests = {
    { tstr='return TC:getName() == "lua"' },
    { tstr='return TC:getState() == "PreOperational"' },
@@ -125,6 +140,8 @@ local tests = {
    { tfunc=test_call_op_3_out, descr="postconditions of testcomp:call('op_3_out', 1)" },
    { tfunc=test_call_op_1_out_retval, descr="post(testcomp:call('op_1_out_retval', 33)), i==34" },
    { tfunc=test_var_assignment, descr="testing assigment of variables" },
+   { tfunc=test_coercion, descr="testing coercion of variables in call" },
+   { tfunc=test_send_op2, descr="testing send for op_2" },
 }
 
 uunit.run_tests(tests, true)
