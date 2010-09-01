@@ -51,7 +51,7 @@ namespace OCL
 
 		void op_1_out(int &i) {
 			log(Warning) << "in: void op_1_out(int &i) " << i << endlog();
-			i = 9999;
+			i = i+1;
 			return;
 		}
 
