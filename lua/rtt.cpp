@@ -669,7 +669,7 @@ static const struct luaL_Reg Variable_f [] = {
 	{ "getMember", Variable_getMember },
 	{ "opBinary", Variable_opBinary },
 	{ "opDot", Variable_opDot },
-	{ "update", Variable_update },
+	{ "assign", Variable_update }, /* assign seems a better name than update */
 	{ "unm", Variable_unm },
 	{ "add", Variable_add },
 	{ "sub", Variable_sub },
@@ -692,7 +692,7 @@ static const struct luaL_Reg Variable_m [] = {
 	{ "getMember", Variable_getMember },
 	{ "opBinary", Variable_opBinary },
 	{ "opDot", Variable_opDot },
-	{ "update", Variable_update },
+	{ "assign", Variable_update }, /* assign seems a better name than update */
 	{ "__unm", Variable_unm },
 	{ "__add", Variable_add },
 	{ "__sub", Variable_sub },
