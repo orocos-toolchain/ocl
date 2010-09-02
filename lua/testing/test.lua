@@ -122,6 +122,17 @@ function test_send_op2()
    end
 end
 
+function test_dataflow_lua()
+   po = rtt.OutputPort.new("string", "po", "my output port")
+   pi = rtt.InputPort.new("string", "pi", "my input port")
+   TC:addPort(po)
+   TC:addPort(pi)
+   d:call("connectTwoPorts", "lua", "po", "lua", "pi")
+   po:write("hello_ports")
+   local res, val = pi:read()
+   return res == "NewData" and val:tolua() == "hello_ports"
+end
+
 local tests = {
    { tstr='return TC:getName() == "lua"' },
    { tstr='return TC:getState() == "PreOperational"' },
@@ -141,6 +152,7 @@ local tests = {
    { tfunc=test_var_assignment, descr="testing assigment of variables" },
    { tfunc=test_coercion, descr="testing coercion of variables in call" },
    { tfunc=test_send_op2, descr="testing send for op_2" },
+   { tfunc=test_dataflow_lua, descr="testing dataflow with conversion from/to basic lua types" },
 }
 
 uunit.run_tests(tests, true)

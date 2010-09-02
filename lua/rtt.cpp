@@ -99,253 +99,6 @@ void push_vect_str(lua_State *L, const std::vector<std::string> &v)
 	}
 }
 
-/***************************************************************
- * Property (boxed)
- ***************************************************************/
-static int Property_new(lua_State *L)
-{
-	const char *type, *name, *desc;
-	PropertyBase **pb;
-	type = luaL_checkstring(L, 1);
-	name = luaL_checkstring(L, 2);
-
-	/* make description optional */
-	if(lua_gettop(L) == 3)
-		desc = luaL_checkstring(L, 3);
-	else
-		desc = "";
-
-	types::TypeInfo *ti = types::TypeInfoRepository::Instance()->type(type);
-
-	if(!ti)
-		luaL_error(L, "Property.new: unknown type %s", type);
-
-	pb = (PropertyBase**) lua_newuserdata(L, sizeof(PropertyBase*));
-	*pb = ti->buildProperty(name, desc);
-	luaL_getmetatable(L, "Property");
-	lua_setmetatable(L, -2);
-	return 1;
-}
-
-static int Property_get(lua_State *L)
-{
-	PropertyBase *pb = *(lua_getudata_bx2(L, 1, Property, PropertyBase));
-	lua_pushobject2(L, Variable, DataSourceBase::shared_ptr)(pb->getDataSource());
-	return 1;
-}
-
-static int Property_set(lua_State *L)
-{
-	PropertyBase *pb = *(lua_getudata_bx2(L, 1, Property, PropertyBase));
-	DataSourceBase::shared_ptr newdsb = *(lua_userdata_cast2(L, 2, Variable, DataSourceBase::shared_ptr));
-	DataSourceBase::shared_ptr propdsb = pb->getDataSource();
-	propdsb->update(newdsb.get());
-	return 1;
-}
-
-static int Property_getName(lua_State *L)
-{
-	PropertyBase *pb = *(lua_getudata_bx2(L, 1, Property, PropertyBase));
-	lua_pushstring(L, pb->getName().c_str());
-	return 1;
-}
-
-static int Property_getDescription(lua_State *L)
-{
-	PropertyBase *pb = *(lua_getudata_bx2(L, 1, Property, PropertyBase));
-	lua_pushstring(L, pb->getDescription().c_str());
-	return 1;
-}
-
-
-/*
- * Race condition if we collect properties: if we add this property to
- * a TC and our life ends before that of the TC, the property will be
- * deleted before the TaskContext.
- */
-static int Property_gc(lua_State *L)
-{
-	PropertyBase *pb = *(lua_getudata_bx2(L, 1, Property, PropertyBase));
-	delete pb;
-	return 0;
-}
-
-static const struct luaL_Reg Property_f [] = {
-	{"new", Property_new },
-	{"get", Property_get },
-	{"set", Property_set },
-	{NULL, NULL}
-};
-
-static const struct luaL_Reg Property_m [] = {
-	{"get", Property_get },
-	{"set", Property_set },
-	{"getName", Property_getName },
-	{"getDescription", Property_getDescription },
-	// todo: shall we or not? s.o. {"__gc", Property_gc },
-	{NULL, NULL}
-};
-
-/***************************************************************
- * Ports (boxed)
- ***************************************************************/
-
-/* both input or output */
-static int Port_info(lua_State *L)
-{
-	int arg_type;
-	PortInterface **pip;
-	PortInterface *pi;
-
-	if((pip = (PortInterface**) luaL_testudata(L, 1, "InputPort")) != NULL)
-		pi = *pip;
-	else if((pip = (PortInterface**) luaL_testudata(L, 1, "OutputPort")) != NULL)
-		pi = *pip;
-	else {
-		arg_type = lua_type(L, 1);
-		luaL_error(L, "Port.info: invalid argument, expected Port, got %s",
-			   lua_typename(L, arg_type));
-	}
-
-	lua_newtable(L);
-	lua_pushstring(L, "name"); lua_pushstring(L, pi->getName().c_str()); lua_rawset(L, -3);
-	lua_pushstring(L, "desc"); lua_pushstring(L, pi->getDescription().c_str()); lua_rawset(L, -3);
-	lua_pushstring(L, "connected"); lua_pushboolean(L, pi->connected()); lua_rawset(L, -3);
-	lua_pushstring(L, "isLocal"); lua_pushboolean(L, pi->isLocal()); lua_rawset(L, -3);
-
-	return 1;
-}
-
-/* InputPort (boxed) */
-static void InputPort_push(lua_State *L, InputPortInterface *ipi)
-{
-	InputPortInterface **ipip;
-	ipip = (InputPortInterface**) lua_newuserdata(L, sizeof(InputPortInterface*));
-	*ipip = ipi;
-	luaL_getmetatable(L, "InputPort");
-	lua_setmetatable(L, -2);
-}
-
-static int InputPort_new(lua_State *L)
-{
-	const char *type, *name, *desc;
-	InputPortInterface* ipi;
-	type = luaL_checkstring(L, 1);
-	name = luaL_checkstring(L, 2);
-
-	/* make description optional */
-	if(lua_gettop(L) == 3)
-		desc = luaL_checkstring(L, 3);
-	else
-		desc = "";
-
-	types::TypeInfo *ti = types::TypeInfoRepository::Instance()->type(type);
-	if(ti==0)
-		luaL_error(L, "InputPort.new: unknown type %s", type);
-
-	ipi = ti->inputPort(name);
-	ipi->doc(desc);
-	InputPort_push(L, ipi);
-	return 1;
-}
-
-static int InputPort_read(lua_State *L)
-{
-	InputPortInterface *ip = *(lua_getudata_bx2(L, 1, InputPort, InputPortInterface));
-	DataSourceBase::shared_ptr *dsbp = lua_userdata_cast2(L, 2, Variable, DataSourceBase::shared_ptr);
-
-	enum FlowStatus fs = ip->read(*dsbp);
-
-	if(fs == NoData) lua_pushstring(L, "NoData");
-	else if (fs == NewData) lua_pushstring(L, "NewData");
-	else if (fs == OldData) lua_pushstring(L, "OldData");
-	else luaL_error(L, "InputPort.read: unknown FlowStatus returned");
-	return 1;
-}
-
-static int InputPort_gc(lua_State *L)
-{
-	InputPortInterface *ip = *(lua_getudata_bx2(L, 1, InputPort, InputPortInterface));
-	delete ip;
- 	return 0;
-}
-
-static const struct luaL_Reg InputPort_f [] = {
-	{"new", InputPort_new },
-	{"read", InputPort_read },
-	{"info", Port_info },
-	{NULL, NULL}
-};
-
-static const struct luaL_Reg InputPort_m [] = {
-	{"read", InputPort_read },
-	{"info", Port_info },
-	/* {"__gc", InputPort_gc }, */
-	{NULL, NULL}
-};
-
-/* OutputPort */
-static void OutputPort_push(lua_State *L, OutputPortInterface *opi)
-{
-	OutputPortInterface **opip;
-	opip = (OutputPortInterface**) lua_newuserdata(L, sizeof(OutputPortInterface*));
-	*opip = opi;
-	luaL_getmetatable(L, "OutputPort");
-	lua_setmetatable(L, -2);
-}
-
-static int OutputPort_new(lua_State *L)
-{
-	const char *type, *name, *desc;
-	OutputPortInterface* opi;
-	type = luaL_checkstring(L, 1);
-	name = luaL_checkstring(L, 2);
-
-	/* make description optional */
-	if(lua_gettop(L) == 3)
-		desc = luaL_checkstring(L, 3);
-	else
-		desc = "";
-
-	types::TypeInfo *ti = types::TypeInfoRepository::Instance()->type(type);
-	if(ti==0)
-		luaL_error(L, "OutputPort.new: unknown type %s", type);
-
-	opi = ti->outputPort(name);
-	opi->doc(desc);
-	OutputPort_push(L, opi);
-	return 1;
-}
-
-static int OutputPort_write(lua_State *L)
-{
-	OutputPortInterface *op = *(lua_getudata_bx2(L, 1, OutputPort, OutputPortInterface));
-	DataSourceBase::shared_ptr *dsbp = lua_userdata_cast2(L, 2, Variable, DataSourceBase::shared_ptr);
-	op->write(*dsbp);
-	return 0;
-}
-
-static int OutputPort_gc(lua_State *L)
-{
-	OutputPortInterface *op = *(lua_getudata_bx2(L, 1, OutputPort, OutputPortInterface));
-	delete op;
- 	return 0;
-}
-
-static const struct luaL_Reg OutputPort_f [] = {
-	{"new", OutputPort_new },
-	{"write", OutputPort_write },
-	{"info", Port_info },
-	{NULL, NULL}
-};
-
-static const struct luaL_Reg OutputPort_m [] = {
-	{"write", OutputPort_write },
-	{"info", Port_info },
-	/* {"__gc", OutputPort_gc }, */
-	{NULL, NULL}
-};
-
 
 /***************************************************************
  * Variable (DataSourceBase)
@@ -782,6 +535,286 @@ static const struct luaL_Reg Variable_m [] = {
 };
 
 
+
+/***************************************************************
+ * Property (boxed)
+ ***************************************************************/
+static int Property_new(lua_State *L)
+{
+	const char *type, *name, *desc;
+	PropertyBase **pb;
+	type = luaL_checkstring(L, 1);
+	name = luaL_checkstring(L, 2);
+
+	/* make description optional */
+	if(lua_gettop(L) == 3)
+		desc = luaL_checkstring(L, 3);
+	else
+		desc = "";
+
+	types::TypeInfo *ti = types::TypeInfoRepository::Instance()->type(type);
+
+	if(!ti)
+		luaL_error(L, "Property.new: unknown type %s", type);
+
+	pb = (PropertyBase**) lua_newuserdata(L, sizeof(PropertyBase*));
+	*pb = ti->buildProperty(name, desc);
+	luaL_getmetatable(L, "Property");
+	lua_setmetatable(L, -2);
+	return 1;
+}
+
+static int Property_get(lua_State *L)
+{
+	PropertyBase *pb = *(lua_getudata_bx2(L, 1, Property, PropertyBase));
+	lua_pushobject2(L, Variable, DataSourceBase::shared_ptr)(pb->getDataSource());
+	return 1;
+}
+
+static int Property_set(lua_State *L)
+{
+	PropertyBase *pb = *(lua_getudata_bx2(L, 1, Property, PropertyBase));
+	DataSourceBase::shared_ptr newdsb = *(lua_userdata_cast2(L, 2, Variable, DataSourceBase::shared_ptr));
+	DataSourceBase::shared_ptr propdsb = pb->getDataSource();
+	propdsb->update(newdsb.get());
+	return 1;
+}
+
+static int Property_getName(lua_State *L)
+{
+	PropertyBase *pb = *(lua_getudata_bx2(L, 1, Property, PropertyBase));
+	lua_pushstring(L, pb->getName().c_str());
+	return 1;
+}
+
+static int Property_getDescription(lua_State *L)
+{
+	PropertyBase *pb = *(lua_getudata_bx2(L, 1, Property, PropertyBase));
+	lua_pushstring(L, pb->getDescription().c_str());
+	return 1;
+}
+
+
+/*
+ * Race condition if we collect properties: if we add this property to
+ * a TC and our life ends before that of the TC, the property will be
+ * deleted before the TaskContext.
+ */
+static int Property_gc(lua_State *L)
+{
+	PropertyBase *pb = *(lua_getudata_bx2(L, 1, Property, PropertyBase));
+	delete pb;
+	return 0;
+}
+
+static const struct luaL_Reg Property_f [] = {
+	{"new", Property_new },
+	{"get", Property_get },
+	{"set", Property_set },
+	{NULL, NULL}
+};
+
+static const struct luaL_Reg Property_m [] = {
+	{"get", Property_get },
+	{"set", Property_set },
+	{"getName", Property_getName },
+	{"getDescription", Property_getDescription },
+	// todo: shall we or not? s.o. {"__gc", Property_gc },
+	{NULL, NULL}
+};
+
+/***************************************************************
+ * Ports (boxed)
+ ***************************************************************/
+
+/* both input or output */
+static int Port_info(lua_State *L)
+{
+	int arg_type;
+	const char* port_type;
+	PortInterface **pip;
+	PortInterface *pi;
+
+	if((pip = (PortInterface**) luaL_testudata(L, 1, "InputPort")) != NULL) {
+		pi = *pip;
+		port_type = "in";
+	} else if((pip = (PortInterface**) luaL_testudata(L, 1, "OutputPort")) != NULL) {
+		pi = *pip;
+		port_type = "out";
+	}
+	else {
+		arg_type = lua_type(L, 1);
+		luaL_error(L, "Port.info: invalid argument, expected Port, got %s",
+			   lua_typename(L, arg_type));
+	}
+
+	lua_newtable(L);
+	lua_pushstring(L, "name"); lua_pushstring(L, pi->getName().c_str()); lua_rawset(L, -3);
+	lua_pushstring(L, "desc"); lua_pushstring(L, pi->getDescription().c_str()); lua_rawset(L, -3);
+	lua_pushstring(L, "connected"); lua_pushboolean(L, pi->connected()); lua_rawset(L, -3);
+	lua_pushstring(L, "isLocal"); lua_pushboolean(L, pi->isLocal()); lua_rawset(L, -3);
+	lua_pushstring(L, "type"); lua_pushstring(L, pi->getTypeInfo()->getTypeName().c_str()); lua_rawset(L, -3);
+	lua_pushstring(L, "porttype"); lua_pushstring(L, port_type); lua_rawset(L, -3);
+
+	return 1;
+}
+
+/* InputPort (boxed) */
+static void InputPort_push(lua_State *L, InputPortInterface *ipi)
+{
+	InputPortInterface **ipip;
+	ipip = (InputPortInterface**) lua_newuserdata(L, sizeof(InputPortInterface*));
+	*ipip = ipi;
+	luaL_getmetatable(L, "InputPort");
+	lua_setmetatable(L, -2);
+}
+
+static int InputPort_new(lua_State *L)
+{
+	const char *type, *name, *desc;
+	InputPortInterface* ipi;
+	type = luaL_checkstring(L, 1);
+	name = luaL_checkstring(L, 2);
+
+	/* make description optional */
+	if(lua_gettop(L) == 3)
+		desc = luaL_checkstring(L, 3);
+	else
+		desc = "";
+
+	types::TypeInfo *ti = types::TypeInfoRepository::Instance()->type(type);
+	if(ti==0)
+		luaL_error(L, "InputPort.new: unknown type %s", type);
+
+	ipi = ti->inputPort(name);
+	ipi->doc(desc);
+	InputPort_push(L, ipi);
+	return 1;
+}
+
+static int InputPort_read(lua_State *L)
+{
+	int ret = 1;
+	InputPortInterface *ip = *(lua_getudata_bx2(L, 1, InputPort, InputPortInterface));
+	DataSourceBase::shared_ptr dsb;
+	DataSourceBase::shared_ptr *dsbp;
+	enum FlowStatus fs;
+
+	/* if we get don't get a DS to store the result, create one */
+	if ((dsbp = luaM_testudata2(L, 2, Variable, DataSourceBase::shared_ptr)) != NULL)
+		dsb = *dsbp;
+	else {
+		dsb = ip->getTypeInfo()->buildValue();
+		ret = 2;
+	}
+
+	fs = ip->read(dsb);
+
+	if(fs == NoData) lua_pushstring(L, "NoData");
+	else if (fs == NewData) lua_pushstring(L, "NewData");
+	else if (fs == OldData) lua_pushstring(L, "OldData");
+	else luaL_error(L, "InputPort.read: unknown FlowStatus returned");
+
+	if(ret>1)
+		lua_pushobject2(L, Variable, DataSourceBase::shared_ptr)(dsb);
+
+	return ret;
+}
+
+static int InputPort_gc(lua_State *L)
+{
+	InputPortInterface *ip = *(lua_getudata_bx2(L, 1, InputPort, InputPortInterface));
+	delete ip;
+ 	return 0;
+}
+
+static const struct luaL_Reg InputPort_f [] = {
+	{"new", InputPort_new },
+	{"read", InputPort_read },
+	{"info", Port_info },
+	{NULL, NULL}
+};
+
+static const struct luaL_Reg InputPort_m [] = {
+	{"read", InputPort_read },
+	{"info", Port_info },
+	/* {"__gc", InputPort_gc }, */
+	{NULL, NULL}
+};
+
+/* OutputPort */
+static void OutputPort_push(lua_State *L, OutputPortInterface *opi)
+{
+	OutputPortInterface **opip;
+	opip = (OutputPortInterface**) lua_newuserdata(L, sizeof(OutputPortInterface*));
+	*opip = opi;
+	luaL_getmetatable(L, "OutputPort");
+	lua_setmetatable(L, -2);
+}
+
+static int OutputPort_new(lua_State *L)
+{
+	const char *type, *name, *desc;
+	OutputPortInterface* opi;
+	type = luaL_checkstring(L, 1);
+	name = luaL_checkstring(L, 2);
+
+	/* make description optional */
+	if(lua_gettop(L) == 3)
+		desc = luaL_checkstring(L, 3);
+	else
+		desc = "";
+
+	types::TypeInfo *ti = types::TypeInfoRepository::Instance()->type(type);
+	if(ti==0)
+		luaL_error(L, "OutputPort.new: unknown type %s", type);
+
+	opi = ti->outputPort(name);
+	opi->doc(desc);
+	OutputPort_push(L, opi);
+	return 1;
+}
+
+static int OutputPort_write(lua_State *L)
+{
+	DataSourceBase::shared_ptr dsb;
+	DataSourceBase::shared_ptr *dsbp;
+
+	OutputPortInterface *op = *(lua_getudata_bx2(L, 1, OutputPort, OutputPortInterface));
+
+	/* fastpath: Variable argument */
+	if ((dsbp = luaM_testudata2(L, 2, Variable, DataSourceBase::shared_ptr)) != NULL) {
+		dsb = *dsbp;
+	} else  {
+		/* slowpath: convert lua value to dsb */
+		std::string type = op->getTypeInfo()->getTypeName();
+		dsb = Variable_fromlua(L, type.c_str(), 2);
+	}
+	op->write(dsb);
+	return 0;
+}
+
+static int OutputPort_gc(lua_State *L)
+{
+	OutputPortInterface *op = *(lua_getudata_bx2(L, 1, OutputPort, OutputPortInterface));
+	delete op;
+	return 0;
+}
+
+static const struct luaL_Reg OutputPort_f [] = {
+	{"new", OutputPort_new },
+	{"write", OutputPort_write },
+	{"info", Port_info },
+	{NULL, NULL}
+};
+
+static const struct luaL_Reg OutputPort_m [] = {
+	{"write", OutputPort_write },
+	{"info", Port_info },
+	/* {"__gc", OutputPort_gc }, */
+	{NULL, NULL}
+};
+
 /***************************************************************
  * TaskContext (boxed)
  ***************************************************************/
@@ -1081,7 +1114,7 @@ static int TaskContext_call(lua_State *L)
 		} else  {
 			/* slowpath: convert lua value to dsb */
 			std::string type = orp->getArgumentType(arg-2)->getTypeName().c_str();
-			dsb = Variable_fromlua(L, type.c_str() ,arg);
+			dsb = Variable_fromlua(L, type.c_str(), arg);
 		}
 		args.push_back(dsb);
 	}

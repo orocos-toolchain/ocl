@@ -167,14 +167,17 @@ function port2str(p)
    local inf = p:info()
    local ret = {}
 
-   ret[#ret+1] = inf.name
+   ret[#ret+1] = white(inf.name)
+   -- ret[#ret+1] = ' (' .. inf.type .. ')'
    ret[#ret+1] = " ["
 
    local attrs = {}
-   if inf.connected then attrs[#attrs+1] = green("conn")
+   attrs[#attrs+1] = inf.porttype
+   attrs[#attrs+1] = inf.type
+   if inf.connected then attrs[#attrs+1] = green("conn") 
    else  attrs[#attrs+1] = yellow("unconn") end
 
-   if inf.isLocal then attrs[#attrs+1] = green("local")
+   if inf.isLocal then attrs[#attrs+1] = cyan("local")
    else  attrs[#attrs+1] = magenta("nonlocal") end
 
    ret [#ret+1] = table.concat(attrs, ', ')
