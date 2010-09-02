@@ -952,14 +952,18 @@ static int TaskContext_getPortNames(lua_State *L)
 static int TaskContext_addPort(lua_State *L)
 {
 	PortInterface **pi;
+	int argc = lua_gettop(L);
 	TaskContext *tc = *(lua_getudata_bx(L, 1, TaskContext));
 
-	if((pi = (PortInterface**) luaL_testudata(L, 2, "InputPort")) != NULL)
-		tc->ports()->addPort(**pi);
-	else if((pi = (PortInterface**) luaL_testudata(L, 2, "OutputPort")) != NULL)
-		tc->ports()->addPort(**pi);
-	else
-		luaL_error(L, "addPort: invalid argument, not a Port");
+	for(int i = 2; i<=argc; i++) {
+		if((pi = (PortInterface**) luaL_testudata(L, i, "InputPort")) != NULL)
+			tc->ports()->addPort(**pi);
+		else if((pi = (PortInterface**) luaL_testudata(L, i, "OutputPort")) != NULL)
+			tc->ports()->addPort(**pi);
+		else
+			luaL_error(L, "addPort: invalid argument, not a Port");
+	}
+
  	return 0;
 }
 

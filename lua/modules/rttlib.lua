@@ -172,13 +172,16 @@ function port2str(p)
    ret[#ret+1] = " ["
 
    local attrs = {}
-   attrs[#attrs+1] = inf.porttype
-   attrs[#attrs+1] = inf.type
-   if inf.connected then attrs[#attrs+1] = green("conn") 
-   else  attrs[#attrs+1] = yellow("unconn") end
+   if inf.porttype == 'in' then attrs[#attrs+1] = cyan(inf.porttype, true)
+   else attrs[#attrs+1] = magenta(inf.porttype, true) end
 
-   if inf.isLocal then attrs[#attrs+1] = cyan("local")
-   else  attrs[#attrs+1] = magenta("nonlocal") end
+   attrs[#attrs+1] = inf.type
+
+   if inf.connected then attrs[#attrs+1] = green("conn")
+   else attrs[#attrs+1] = yellow("unconn") end
+
+   if inf.isLocal then attrs[#attrs+1] = "local"
+   else  attrs[#attrs+1] = "nonlocal" end
 
    ret [#ret+1] = table.concat(attrs, ', ')
 
