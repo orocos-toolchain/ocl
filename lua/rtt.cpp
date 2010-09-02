@@ -99,6 +99,8 @@ void push_vect_str(lua_State *L, const std::vector<std::string> &v)
 	}
 }
 
+/* forw decl */
+static DataSourceBase::shared_ptr Variable_fromlua(lua_State *L, const char* type, int valind);
 
 /***************************************************************
  * Variable (DataSourceBase)
@@ -135,10 +137,16 @@ static int Variable_getMember(lua_State *L)
 static int Variable_update(lua_State *L)
 {
 	int ret;
-	DataSourceBase::shared_ptr *self = lua_userdata_cast2(L, 1, Variable, DataSourceBase::shared_ptr);
-	DataSourceBase::shared_ptr *dsbp = lua_userdata_cast2(L, 2, Variable, DataSourceBase::shared_ptr);
+	DataSourceBase::shared_ptr dsb;
+	DataSourceBase::shared_ptr *dsbp;
+	DataSourceBase::shared_ptr self = *(lua_userdata_cast2(L, 1, Variable, DataSourceBase::shared_ptr));
 
-	ret = (*self)->update(dsbp->get());
+	if ((dsbp = luaM_testudata2(L, 2, Variable, DataSourceBase::shared_ptr)) != NULL)
+		dsb = *dsbp;
+	else
+		dsb = Variable_fromlua(L, self->getType().c_str(), 2);
+
+	ret = self->update(dsb.get());
 	lua_pushboolean(L, ret);
 	return 1;
 }
