@@ -203,7 +203,7 @@ static int Port_info(lua_State *L)
 		pi = *pip;
 	else {
 		arg_type = lua_type(L, 1);
-		luaL_error(L, "Port.info: invalid argument, expected Port, got %s", 
+		luaL_error(L, "Port.info: invalid argument, expected Port, got %s",
 			   lua_typename(L, arg_type));
 	}
 
@@ -228,15 +228,23 @@ static void InputPort_push(lua_State *L, InputPortInterface *ipi)
 
 static int InputPort_new(lua_State *L)
 {
-	const char *type, *name;
+	const char *type, *name, *desc;
 	InputPortInterface* ipi;
 	type = luaL_checkstring(L, 1);
 	name = luaL_checkstring(L, 2);
+
+	/* make description optional */
+	if(lua_gettop(L) == 3)
+		desc = luaL_checkstring(L, 3);
+	else
+		desc = "";
+
 	types::TypeInfo *ti = types::TypeInfoRepository::Instance()->type(type);
 	if(ti==0)
 		luaL_error(L, "InputPort.new: unknown type %s", type);
 
 	ipi = ti->inputPort(name);
+	ipi->doc(desc);
 	InputPort_push(L, ipi);
 	return 1;
 }
@@ -288,15 +296,23 @@ static void OutputPort_push(lua_State *L, OutputPortInterface *opi)
 
 static int OutputPort_new(lua_State *L)
 {
-	const char *type, *name;
+	const char *type, *name, *desc;
 	OutputPortInterface* opi;
 	type = luaL_checkstring(L, 1);
 	name = luaL_checkstring(L, 2);
+
+	/* make description optional */
+	if(lua_gettop(L) == 3)
+		desc = luaL_checkstring(L, 3);
+	else
+		desc = "";
+
 	types::TypeInfo *ti = types::TypeInfoRepository::Instance()->type(type);
 	if(ti==0)
 		luaL_error(L, "OutputPort.new: unknown type %s", type);
 
 	opi = ti->outputPort(name);
+	opi->doc(desc);
 	OutputPort_push(L, opi);
 	return 1;
 }
