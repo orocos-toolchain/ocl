@@ -101,7 +101,7 @@ namespace OCL
 			this->addAttribute("the_attribute", attribute);
 			this->addConstant("the_constant", constant);
 
-			this->ports()->addPort( outport );
+			this->ports()->addPort( outport ).doc("dummy test port");
 			this->ports()->addPort( bufferport );
 
 			this->addOperation( "null_0", &Testcomp::null_0, this, OwnThread ).doc("'null_0' Description");

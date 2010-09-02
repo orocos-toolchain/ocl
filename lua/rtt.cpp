@@ -190,21 +190,54 @@ static const struct luaL_Reg Property_m [] = {
  * Ports (boxed)
  ***************************************************************/
 
+/* both input or output */
+static int Port_info(lua_State *L)
+{
+	int arg_type;
+	PortInterface **pip;
+	PortInterface *pi;
+
+	if((pip = (PortInterface**) luaL_testudata(L, 1, "InputPort")) != NULL)
+		pi = *pip;
+	else if((pip = (PortInterface**) luaL_testudata(L, 1, "OutputPort")) != NULL)
+		pi = *pip;
+	else {
+		arg_type = lua_type(L, 1);
+		luaL_error(L, "Port.info: invalid argument, expected Port, got %s", 
+			   lua_typename(L, arg_type));
+	}
+
+	lua_newtable(L);
+	lua_pushstring(L, "name"); lua_pushstring(L, pi->getName().c_str()); lua_rawset(L, -3);
+	lua_pushstring(L, "desc"); lua_pushstring(L, pi->getDescription().c_str()); lua_rawset(L, -3);
+	lua_pushstring(L, "connected"); lua_pushboolean(L, pi->connected()); lua_rawset(L, -3);
+	lua_pushstring(L, "isLocal"); lua_pushboolean(L, pi->isLocal()); lua_rawset(L, -3);
+
+	return 1;
+}
+
 /* InputPort (boxed) */
+static void InputPort_push(lua_State *L, InputPortInterface *ipi)
+{
+	InputPortInterface **ipip;
+	ipip = (InputPortInterface**) lua_newuserdata(L, sizeof(InputPortInterface*));
+	*ipip = ipi;
+	luaL_getmetatable(L, "InputPort");
+	lua_setmetatable(L, -2);
+}
+
 static int InputPort_new(lua_State *L)
 {
 	const char *type, *name;
-	InputPortInterface** ip;
+	InputPortInterface* ipi;
 	type = luaL_checkstring(L, 1);
 	name = luaL_checkstring(L, 2);
 	types::TypeInfo *ti = types::TypeInfoRepository::Instance()->type(type);
 	if(ti==0)
 		luaL_error(L, "InputPort.new: unknown type %s", type);
 
-	ip = (InputPortInterface**) lua_newuserdata(L, sizeof(InputPortInterface*));
-	*ip = ti->inputPort(name);
-	luaL_getmetatable(L, "InputPort");
-	lua_setmetatable(L, -2);
+	ipi = ti->inputPort(name);
+	InputPort_push(L, ipi);
 	return 1;
 }
 
@@ -232,30 +265,39 @@ static int InputPort_gc(lua_State *L)
 static const struct luaL_Reg InputPort_f [] = {
 	{"new", InputPort_new },
 	{"read", InputPort_read },
+	{"info", Port_info },
 	{NULL, NULL}
 };
 
 static const struct luaL_Reg InputPort_m [] = {
 	{"read", InputPort_read },
-	{"__gc", InputPort_gc },
+	{"info", Port_info },
+	/* {"__gc", InputPort_gc }, */
 	{NULL, NULL}
 };
 
 /* OutputPort */
+static void OutputPort_push(lua_State *L, OutputPortInterface *opi)
+{
+	OutputPortInterface **opip;
+	opip = (OutputPortInterface**) lua_newuserdata(L, sizeof(OutputPortInterface*));
+	*opip = opi;
+	luaL_getmetatable(L, "OutputPort");
+	lua_setmetatable(L, -2);
+}
+
 static int OutputPort_new(lua_State *L)
 {
 	const char *type, *name;
-	OutputPortInterface** op;
+	OutputPortInterface* opi;
 	type = luaL_checkstring(L, 1);
 	name = luaL_checkstring(L, 2);
 	types::TypeInfo *ti = types::TypeInfoRepository::Instance()->type(type);
 	if(ti==0)
 		luaL_error(L, "OutputPort.new: unknown type %s", type);
 
-	op = (OutputPortInterface**) lua_newuserdata(L, sizeof(OutputPortInterface*));
-	*op = ti->outputPort(name);
-	luaL_getmetatable(L, "OutputPort");
-	lua_setmetatable(L, -2);
+	opi = ti->outputPort(name);
+	OutputPort_push(L, opi);
 	return 1;
 }
 
@@ -277,12 +319,14 @@ static int OutputPort_gc(lua_State *L)
 static const struct luaL_Reg OutputPort_f [] = {
 	{"new", OutputPort_new },
 	{"write", OutputPort_write },
+	{"info", Port_info },
 	{NULL, NULL}
 };
 
 static const struct luaL_Reg OutputPort_m [] = {
 	{"write", OutputPort_write },
-	{"__gc", OutputPort_gc },
+	{"info", Port_info },
+	/* {"__gc", OutputPort_gc }, */
 	{NULL, NULL}
 };
 
@@ -413,7 +457,7 @@ static int Variable_create(lua_State *L)
 	return 1;
 }
 
-/* try to coveert lua value on stack at valind to DSB of type */
+/* try to convert lua value on stack at valind to DSB of type */
 static DataSourceBase::shared_ptr Variable_fromlua(lua_State *L, const char* type, int valind)
 {
 	DataSourceBase::shared_ptr dsb;
@@ -882,6 +926,32 @@ static int TaskContext_addEventPort(lua_State *L)
  	return 0;
 }
 
+static int TaskContext_getPort(lua_State *L)
+{
+	const char* name;
+	PortInterface *pi;
+	InputPortInterface *ipi;
+	OutputPortInterface *opi;
+
+	TaskContext *tc = *(lua_getudata_bx(L, 1, TaskContext));
+	name = luaL_checkstring(L, 2);
+
+	pi = tc->getPort(name);
+	if(!pi)
+		luaL_error(L, "TaskContext.getPort: no port %s for taskcontext %s",
+			   name, tc->getName().c_str());
+
+	/* input or output? */
+	if ((ipi = dynamic_cast<InputPortInterface *> (pi)) != NULL)
+		InputPort_push(L, ipi);
+	else if ((opi = dynamic_cast<OutputPortInterface *> (pi)) != NULL)
+		OutputPort_push(L, opi);
+	else
+		luaL_error(L, "TaskContext.getPort: unknown port returned");
+
+	return 1;
+}
+
 static int TaskContext_addProperty(lua_State *L)
 {
 	int ret;
@@ -1158,6 +1228,7 @@ static const struct luaL_Reg TaskContext_f [] = {
 	{ "getPortNames", TaskContext_getPortNames },
 	{ "addPort", TaskContext_addPort },
 	{ "addEventPort", TaskContext_addEventPort },
+	{ "getPort", TaskContext_getPort },
 	{ "addProperty", TaskContext_addProperty },
 	{ "getProperty", TaskContext_getProperty },
 	{ "getProperties", TaskContext_getProperties },
@@ -1184,6 +1255,7 @@ static const struct luaL_Reg TaskContext_m [] = {
 	{ "getPortNames", TaskContext_getPortNames },
 	{ "addPort", TaskContext_addPort },
 	{ "addEventPort", TaskContext_addEventPort },
+	{ "getPort", TaskContext_getPort },
 	{ "addProperty", TaskContext_addProperty },
 	{ "getProperty", TaskContext_getProperty },
 	{ "getProperties", TaskContext_getProperties },

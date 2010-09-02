@@ -19,7 +19,6 @@ end
 
 function test_call_op_null_0() return testcomp:call("null_0") == nil end
 function test_send_op_null_0() return testcomp:send("null_0"):collect() == 'SendSuccess' end
-
 function test_call_op_0_ct() return testcomp:call("op_0_ct") end
 function test_call_op_0_ot() return testcomp:call("op_0_ot") end
 

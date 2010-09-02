@@ -163,6 +163,27 @@ function op2str(tc, op)
 end
 
 
+function port2str(p)
+   local inf = p:info()
+   local ret = {}
+
+   ret[#ret+1] = inf.name
+   ret[#ret+1] = " ["
+
+   local attrs = {}
+   if inf.connected then attrs[#attrs+1] = green("conn")
+   else  attrs[#attrs+1] = yellow("unconn") end
+
+   if inf.isLocal then attrs[#attrs+1] = green("local")
+   else  attrs[#attrs+1] = magenta("nonlocal") end
+
+   ret [#ret+1] = table.concat(attrs, ', ')
+
+   ret[#ret+1] = "] "
+   ret[#ret+1] = red("// " .. inf.desc)
+   return table.concat(ret, '')
+end
+
 --
 -- pretty print a taskcontext
 --
@@ -177,7 +198,10 @@ function tc2str(tc)
    end
 
    res[#res+1] = magenta("peers") .. ": " .. table.concat(tc:getPeers(), ', ')
-   res[#res+1] = magenta("ports") .. ": " .. table.concat(tc:getPortNames(), ', ')
+   res[#res+1] = magenta("ports") .. ": "
+   for i,p in ipairs(tc:getPortNames(p)) do
+      res[#res+1] = "   " .. port2str(tc:getPort(p))
+   end
 
    res[#res+1] = magenta("properties") .. ":"
    for i,p in ipairs(tc:getProperties()) do
@@ -204,4 +228,3 @@ if type(debug) == 'table' then
 else
    print("no debug library, if required pretty printing must be enabled manually")
 end
-
