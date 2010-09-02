@@ -970,12 +970,16 @@ static int TaskContext_addPort(lua_State *L)
 static int TaskContext_addEventPort(lua_State *L)
 {
 	InputPortInterface **ipi;
+	int argc = lua_gettop(L);
 	TaskContext *tc = *(lua_getudata_bx(L, 1, TaskContext));
 
-	if((ipi = (InputPortInterface**) luaL_testudata(L, 2, "InputPort")) != NULL)
-		tc->ports()->addEventPort(**ipi);
-	else
-		luaL_error(L, "addEventPort: invalid argument, not an InputPort");
+	for(int i = 2; i<=argc; i++) {
+		if((ipi = (InputPortInterface**) luaL_testudata(L, i, "InputPort")) != NULL)
+			tc->ports()->addEventPort(**ipi);
+		else
+			luaL_error(L, "addEventPort: invalid argument, not an InputPort");
+	}
+
  	return 0;
 }
 
@@ -1007,12 +1011,16 @@ static int TaskContext_getPort(lua_State *L)
 
 static int TaskContext_addProperty(lua_State *L)
 {
-	int ret;
+	int argc = lua_gettop(L);
 	TaskContext *tc = *(lua_getudata_bx(L, 1, TaskContext));
-	PropertyBase *pb = *(lua_getudata_bx2(L, 2, Property, PropertyBase));
-	ret = tc->addProperty(*pb);
-	lua_pushboolean(L, ret);
-	return 1;
+
+	for(int i = 2; i<=argc; i++) {
+		PropertyBase *pb = *(lua_getudata_bx2(L, i, Property, PropertyBase));
+		if(!tc->addProperty(*pb))
+			luaL_error(L, "TaskContext.addProperty: failed to add property %s.",
+				   pb->getName().c_str());
+	}
+	return 0;
 }
 
 static int TaskContext_getProperty(lua_State *L)
