@@ -581,8 +581,16 @@ static int Property_get(lua_State *L)
 
 static int Property_set(lua_State *L)
 {
+	DataSourceBase::shared_ptr newdsb;
+	DataSourceBase::shared_ptr *newdsbp;
 	PropertyBase *pb = *(lua_getudata_bx2(L, 1, Property, PropertyBase));
-	DataSourceBase::shared_ptr newdsb = *(lua_userdata_cast2(L, 2, Variable, DataSourceBase::shared_ptr));
+
+	if ((newdsbp = luaM_testudata2(L, 2, Variable, DataSourceBase::shared_ptr)) != NULL)
+		newdsb = *newdsbp;
+	else
+		newdsb = Variable_fromlua(L, pb->getTypeInfo()->getTypeName().c_str(), 2);
+
+
 	DataSourceBase::shared_ptr propdsb = pb->getDataSource();
 	propdsb->update(newdsb.get());
 	return 1;
