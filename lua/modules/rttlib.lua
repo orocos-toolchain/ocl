@@ -195,7 +195,7 @@ end
 --
 function tc2str(tc)
    local res = {}
-   res[#res+1] = '--- TaskContext ' .. green(tc:getName(), true) .. ' ---'
+   res[#res+1] = magenta('TaskContext') .. ': ' .. green(tc:getName(), true)
    res[#res+1] = magenta("state") .. ": " .. tc:getState()
 
    for i,v in ipairs( { "isActive", "getPeriod" } )

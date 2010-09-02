@@ -9,6 +9,11 @@ void dotty (lua_State *L);
 void l_message (const char *pname, const char *msg);
 int dofile (lua_State *L, const char *name);
 int dostring (lua_State *L, const char *s, const char *name);
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <wordexp.h>
 }
 
 #include "rtt.hpp"
@@ -16,18 +21,10 @@ int dostring (lua_State *L, const char *s, const char *name);
 #include <string>
 #include <rtt/os/main.h>
 #include <rtt/TaskContext.hpp>
-
-// #include <taskbrowser/TaskBrowser.hpp>
-// #include <rtt/Logger.hpp>
-// #include <rtt/Property.hpp>
-// #include <rtt/Attribute.hpp>
-// #include <rtt/Method.hpp>
-// #include <rtt/Port.hpp>
-
 #include <ocl/OCL.hpp>
 #include <deployment/DeploymentComponent.hpp>
 
-// #include "class-lua/RTTLua.hpp"
+#define INIT_FILE	"~/.rttlua"
 
 using namespace std;
 using namespace RTT;
@@ -136,6 +133,9 @@ namespace OCL
 
 int ORO_main(int argc, char** argv)
 {
+	struct stat stb;
+	wordexp_t init_exp;
+
 	Logger::In in("main()");
 
 	if ( log().getLogLevel() < Logger::Info ) {
@@ -145,6 +145,16 @@ int ORO_main(int argc, char** argv)
 	LuaComponent lua("lua");
 	DeploymentComponent dc("deployer");
 	lua.connectPeers(&dc);
+
+	/* run init file */
+	wordexp(INIT_FILE, &init_exp, 0);
+	if(stat(init_exp.we_wordv[0], &stb) != -1) {
+		if((stb.st_mode & S_IFMT) != S_IFREG)
+			cout << "rttlua: warning: init file " << init_exp.we_wordv[0] << " is not a regular file" << endl;
+		else
+			lua.exec_file(init_exp.we_wordv[0]);
+	}
+	wordfree(&init_exp);
 
 	if(argc>1) {
 		Logger::log(Logger::Info) << "executing script: " << argv[1] << endlog();
