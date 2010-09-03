@@ -19,45 +19,65 @@ using namespace RTT::internal;
 
 
 /*
- * Using some tricks from here: http://lua-users.org/wiki/DoItYourselfCppBinding
+ * Inspired by tricks from here: http://lua-users.org/wiki/DoItYourselfCppBinding
  */
 
 /* overloading new */
-void* operator new(size_t size, lua_State* L, const char* metatableName)
+void* operator new(size_t size, lua_State* L, const char* mt)
 {
 	void* ptr = lua_newuserdata(L, size);
-	luaL_getmetatable(L, metatableName);
+	luaL_getmetatable(L, mt);
 	/* assert(lua_istable(L, -1)) */  /* if you're paranoid */
 	lua_setmetatable(L, -2);
 	return ptr;
 }
+
 /*
- * lua_pushobject(L, MyObj)("ctr_arg)
+ * luaM_pushobject_mt(L, "Port", InputPortInterface )(ctr_arg,...)
  * expands to
- * new(L, "MyObj") MyObj("ctr_arg")
+ * new(L, "Port") InputPortInterface(ctr_arg,...)
  */
-#define lua_pushobject(L, T) new(L, #T) T
+
+#define luaM_pushobject(L, T) new(L, #T) T
+#define luaM_pushobject_mt(L, MT, T) new(L, MT) T
+
+/* return udata ptr or fail if wrong metatable */
+#define luaM_checkudata(L, pos, T) reinterpret_cast<T*>(luaL_checkudata((L), (pos), #T))
+#define luaM_checkudata_mt(L, pos, MT, T) reinterpret_cast<T*>(luaL_checkudata((L), (pos), MT))
+
+/* return udata ptr or NULL if wrong metatable */
+#define luaM_testudata(L, pos, T) (T*) (luaL_testudata((L), (pos), #T))
+#define luaM_testudata_mt(L, pos, MT, T) (T*) (luaL_testudata((L), (pos), MT))
 
 /*
- * cast objects back
+ * boxed variants
  */
-#define lua_userdata_cast(L, pos, T) reinterpret_cast<T*>(luaL_checkudata((L), (pos), #T))
 
-/*
- * get boxed (returns ptr**)
- */
-#define lua_getudata_bx(L, pos, T) (T**) (luaL_checkudata((L), (pos), #T))
+/* return boxed udata ptr or fail if wrong metatable */
+#define luaM_checkudata_bx(L, pos, T) (T**) (luaL_checkudata((L), (pos), #T))
+#define luaM_checkudata_mt_bx(L, pos, MT, T) (T**) (luaL_checkudata((L), (pos), MT))
 
-/*
- * variants which allows define metatable name independent of object
- * created.  used to create a base class O of T
- */
-#define lua_pushobject2(L, MT, T) new(L, #MT) T
-#define lua_userdata_cast2(L, pos, MT, T) reinterpret_cast<T*>(luaL_checkudata((L), (pos), #MT))
-#define lua_getudata_bx2(L, pos, MT, T) (T**) (luaL_checkudata((L), (pos), #MT))
+/* return udata ptr or NULL if wrong metatable */
+#define luaM_testudata_bx(L, pos, T) (T**) (luaL_testudata((L), (pos), #T))
+#define luaM_testudata_mt_bx(L, pos, MT, T) (T**) (luaL_testudata((L), (pos), MT))
 
-/* this flavor doesn't fail but just returns NULL */
-#define luaM_testudata2(L, pos, MT, T) (T*) (luaL_testudata((L), (pos), #MT))
+// conversion table
+
+/// luaM_testudata2	luaM_testudata_mt
+/// lua_getudata_bx2	luaM_checkudata_mt_bx
+/// lua_userdata_cast2	luaM_checkudata_mt
+/// lua_pushobject2	luaM_pushobject_mt
+/// lua_getudata_bx	luaM_checkudata_bx
+/// lua_userdata_cast 	luaM_checkudata
+// lua_pushobject 	luaM_pushobject
+
+// #define lua_pushobject(L, T) new(L, #T) T
+// #define lua_userdata_cast(L, pos, T) reinterpret_cast<T*>(luaL_checkudata((L), (pos), #T))
+// #define lua_getudata_bx(L, pos, T) (T**) (luaL_checkudata((L), (pos), #T))
+// #define lua_pushobject2(L, MT, T) new(L, #MT) T
+// #define lua_userdata_cast2(L, pos, MT, T) reinterpret_cast<T*>(luaL_checkudata((L), (pos), #MT))
+// #define lua_getudata_bx2(L, pos, MT, T) (T**) (luaL_checkudata((L), (pos), #MT))
+// #define luaM_testudata2(L, pos, MT, T) (T*) (luaL_testudata((L), (pos), #MT))
 
 /* template for generating GC function */
 template<typename T>
@@ -114,14 +134,14 @@ static int Variable_getTypes(lua_State *L)
 
 static int Variable_getMemberNames(lua_State *L)
 {
-	DataSourceBase::shared_ptr *dsbp = lua_userdata_cast2(L, 1, Variable, DataSourceBase::shared_ptr);
+	DataSourceBase::shared_ptr *dsbp = luaM_checkudata_mt(L, 1, "Variable", DataSourceBase::shared_ptr);
 	push_vect_str(L, (*dsbp)->getMemberNames());
 	return 1;
 }
 
 static int Variable_getMember(lua_State *L)
 {
-	DataSourceBase::shared_ptr *dsbp = lua_userdata_cast2(L, 1, Variable, DataSourceBase::shared_ptr);
+	DataSourceBase::shared_ptr *dsbp = luaM_checkudata_mt(L, 1, "Variable", DataSourceBase::shared_ptr);
 	DataSourceBase::shared_ptr memdsb;
 	const char *mem = luaL_checkstring(L, 2);
 
@@ -130,7 +150,7 @@ static int Variable_getMember(lua_State *L)
 	if(memdsb == 0)
 		luaL_error(L, "Variable.getMember: no member named %s ", mem);
 
-	lua_pushobject2(L, Variable, DataSourceBase::shared_ptr)(memdsb);
+	luaM_pushobject_mt(L, "Variable", DataSourceBase::shared_ptr)(memdsb);
 	return 1;
 }
 
@@ -139,9 +159,9 @@ static int Variable_update(lua_State *L)
 	int ret;
 	DataSourceBase::shared_ptr dsb;
 	DataSourceBase::shared_ptr *dsbp;
-	DataSourceBase::shared_ptr self = *(lua_userdata_cast2(L, 1, Variable, DataSourceBase::shared_ptr));
+	DataSourceBase::shared_ptr self = *(luaM_checkudata_mt(L, 1, "Variable", DataSourceBase::shared_ptr));
 
-	if ((dsbp = luaM_testudata2(L, 2, Variable, DataSourceBase::shared_ptr)) != NULL)
+	if ((dsbp = luaM_testudata_mt(L, 2, "Variable", DataSourceBase::shared_ptr)) != NULL)
 		dsb = *dsbp;
 	else
 		dsb = Variable_fromlua(L, self->getType().c_str(), 2);
@@ -212,7 +232,7 @@ static int __Variable_tolua(lua_State *L, DataSourceBase::shared_ptr dsb)
 
 static int Variable_tolua(lua_State *L)
 {
-	DataSourceBase::shared_ptr dsb = *(lua_userdata_cast2(L, 1, Variable, DataSourceBase::shared_ptr));
+	DataSourceBase::shared_ptr dsb = *(luaM_checkudata_mt(L, 1, "Variable", DataSourceBase::shared_ptr));
 	return __Variable_tolua(L, dsb);
 }
 
@@ -230,7 +250,7 @@ static int Variable_create(lua_State *L)
 	if(ti==0)
 		luaL_error(L, "Variable.new: unknown type %s", type);
 
-	lua_pushobject2(L, Variable, DataSourceBase::shared_ptr)(ti->buildValue());
+	luaM_pushobject_mt(L, "Variable", DataSourceBase::shared_ptr)(ti->buildValue());
 	return 1;
 }
 
@@ -327,7 +347,7 @@ static int Variable_create_ival(lua_State *L, int typeind, int valind)
 	luaL_checkany(L, valind);
 	const char* type = luaL_checkstring(L, typeind);	/* target dsb type */
 	dsb = Variable_fromlua(L, type, valind);
-	lua_pushobject2(L, Variable, DataSourceBase::shared_ptr)(dsb);
+	luaM_pushobject_mt(L, "Variable", DataSourceBase::shared_ptr)(dsb);
 	return 1;
 }
 
@@ -346,21 +366,21 @@ static int Variable_new(lua_State *L)
 
 static int Variable_toString(lua_State *L)
 {
-	DataSourceBase::shared_ptr *dsbp = lua_userdata_cast2(L, 1, Variable, DataSourceBase::shared_ptr);
+	DataSourceBase::shared_ptr *dsbp = luaM_checkudata_mt(L, 1, "Variable", DataSourceBase::shared_ptr);
 	lua_pushstring(L, ((*dsbp)->toString()).c_str());
 	return 1;
 }
 
 static int Variable_getType(lua_State *L)
 {
-	DataSourceBase::shared_ptr *dsbp = lua_userdata_cast2(L, 1, Variable, DataSourceBase::shared_ptr);
+	DataSourceBase::shared_ptr *dsbp = luaM_checkudata_mt(L, 1, "Variable", DataSourceBase::shared_ptr);
 	lua_pushstring(L, (*dsbp)->getType().c_str());
 	return 1;
 }
 
 static int Variable_getTypeName(lua_State *L)
 {
-	DataSourceBase::shared_ptr *dsbp = lua_userdata_cast2(L, 1, Variable, DataSourceBase::shared_ptr);
+	DataSourceBase::shared_ptr *dsbp = luaM_checkudata_mt(L, 1, "Variable", DataSourceBase::shared_ptr);
 	lua_pushstring(L, (*dsbp)->getTypeName().c_str());
 	return 1;
 }
@@ -371,9 +391,9 @@ static int Variable_getTypeName(lua_State *L)
 static int Variable_unm(lua_State *L)
 {
 	types::OperatorRepository::shared_ptr opreg = types::OperatorRepository::Instance();
-	DataSourceBase::shared_ptr arg = *(lua_userdata_cast2(L, 1, Variable, DataSourceBase::shared_ptr));
+	DataSourceBase::shared_ptr arg = *(luaM_checkudata_mt(L, 1, "Variable", DataSourceBase::shared_ptr));
 	DataSourceBase::shared_ptr res = opreg->applyUnary("-", arg.get());
-	lua_pushobject2(L, Variable, DataSourceBase::shared_ptr)(res);
+	luaM_pushobject_mt(L, "Variable", DataSourceBase::shared_ptr)(res);
 	return 1;
 }
 
@@ -382,14 +402,14 @@ static int Variable_unm(lua_State *L)
 #define gen_opmet(name, op)					\
 static int name(lua_State *L)					\
 {								\
-	DataSourceBase::shared_ptr arg1 = *(lua_userdata_cast2(L, 1, Variable, DataSourceBase::shared_ptr)); \
-	DataSourceBase::shared_ptr arg2 = *(lua_userdata_cast2(L, 2, Variable, DataSourceBase::shared_ptr)); \
+	DataSourceBase::shared_ptr arg1 = *(luaM_checkudata_mt(L, 1, "Variable", DataSourceBase::shared_ptr)); \
+	DataSourceBase::shared_ptr arg2 = *(luaM_checkudata_mt(L, 2, "Variable", DataSourceBase::shared_ptr)); \
 	types::OperatorRepository::shared_ptr opreg = types::OperatorRepository::Instance(); \
 	DataSourceBase *res = opreg->applyBinary(#op, arg1.get(), arg2.get()); \
 	if(res == 0)							\
 		luaL_error(L , "%s (operator %s) failed", #name, #op);	\
 	res->evaluate();						\
-	lua_pushobject2(L, Variable, DataSourceBase::shared_ptr)(res);	\
+	luaM_pushobject_mt(L, "Variable", DataSourceBase::shared_ptr)(res);	\
 	return 1;							\
 }									\
 
@@ -404,8 +424,8 @@ gen_opmet(Variable_pow, ^)
 #define gen_opmet_bool(name, op)				\
 static int name(lua_State *L)					\
 {								\
-	DataSourceBase::shared_ptr arg1 = *(lua_userdata_cast2(L, 1, Variable, DataSourceBase::shared_ptr)); \
-	DataSourceBase::shared_ptr arg2 = *(lua_userdata_cast2(L, 2, Variable, DataSourceBase::shared_ptr)); \
+	DataSourceBase::shared_ptr arg1 = *(luaM_checkudata_mt(L, 1, "Variable", DataSourceBase::shared_ptr)); \
+	DataSourceBase::shared_ptr arg2 = *(luaM_checkudata_mt(L, 2, "Variable", DataSourceBase::shared_ptr)); \
 	types::OperatorRepository::shared_ptr opreg = types::OperatorRepository::Instance(); \
 	DataSourceBase *res = opreg->applyBinary(#op, arg1.get(), arg2.get()); \
 	if(res == 0)							\
@@ -422,8 +442,8 @@ static int Variable_opBinary(lua_State *L)
 {
 	types::OperatorRepository::shared_ptr opreg = types::OperatorRepository::Instance();
 	const char *op = luaL_checkstring(L, 1);
-	DataSourceBase::shared_ptr arg1 = *(lua_userdata_cast2(L, 2, Variable, DataSourceBase::shared_ptr));
-	DataSourceBase::shared_ptr arg2 = *(lua_userdata_cast2(L, 3, Variable, DataSourceBase::shared_ptr));
+	DataSourceBase::shared_ptr arg1 = *(luaM_checkudata_mt(L, 2, "Variable", DataSourceBase::shared_ptr));
+	DataSourceBase::shared_ptr arg2 = *(luaM_checkudata_mt(L, 3, "Variable", DataSourceBase::shared_ptr));
 	DataSourceBase *res;
 
 	res = opreg->applyBinary(op, arg1.get(), arg2.get());
@@ -432,14 +452,14 @@ static int Variable_opBinary(lua_State *L)
 
 	res->evaluate();
 
-	lua_pushobject2(L, Variable, DataSourceBase::shared_ptr)(res);
+	luaM_pushobject_mt(L, "Variable", DataSourceBase::shared_ptr)(res);
 	return 1;
 }
 
 
 static int Variable_opDot(lua_State *L)
 {
-	DataSourceBase::shared_ptr dsb = *(lua_userdata_cast2(L, 1, Variable, DataSourceBase::shared_ptr));
+	DataSourceBase::shared_ptr dsb = *(luaM_checkudata_mt(L, 1, "Variable", DataSourceBase::shared_ptr));
 	const char *member = luaL_checkstring(L, 2);
 
 	types::OperatorRepository::shared_ptr opreg = types::OperatorRepository::Instance();
@@ -449,7 +469,7 @@ static int Variable_opDot(lua_State *L)
 		luaL_error(L, "Variable.opDot: indexing failed, no member %s", member);
 	} else {
 		res->evaluate();
-		lua_pushobject2(L, Variable, DataSourceBase::shared_ptr)(res);
+		luaM_pushobject_mt(L, "Variable", DataSourceBase::shared_ptr)(res);
 	}
 
 	return 1;
@@ -478,9 +498,9 @@ static int Variable_index(lua_State *L)
 
 static int Variable_newindex(lua_State *L)
 {
-	DataSourceBase::shared_ptr master = *(lua_userdata_cast2(L, 1, Variable, DataSourceBase::shared_ptr));
+	DataSourceBase::shared_ptr master = *(luaM_checkudata_mt(L, 1, "Variable", DataSourceBase::shared_ptr));
 	const char* member = luaL_checkstring(L, 2);
-	DataSourceBase::shared_ptr newval = *(lua_userdata_cast2(L, 3, Variable, DataSourceBase::shared_ptr));
+	DataSourceBase::shared_ptr newval = *(luaM_checkudata_mt(L, 3, "Variable", DataSourceBase::shared_ptr));
 
 	/* get dsb to be updated */
 	types::OperatorRepository::shared_ptr opreg = types::OperatorRepository::Instance();
@@ -574,8 +594,8 @@ static int Property_new(lua_State *L)
 
 static int Property_get(lua_State *L)
 {
-	PropertyBase *pb = *(lua_getudata_bx2(L, 1, Property, PropertyBase));
-	lua_pushobject2(L, Variable, DataSourceBase::shared_ptr)(pb->getDataSource());
+	PropertyBase *pb = *(luaM_checkudata_mt_bx(L, 1, "Property", PropertyBase));
+	luaM_pushobject_mt(L, "Variable", DataSourceBase::shared_ptr)(pb->getDataSource());
 	return 1;
 }
 
@@ -583,9 +603,9 @@ static int Property_set(lua_State *L)
 {
 	DataSourceBase::shared_ptr newdsb;
 	DataSourceBase::shared_ptr *newdsbp;
-	PropertyBase *pb = *(lua_getudata_bx2(L, 1, Property, PropertyBase));
+	PropertyBase *pb = *(luaM_checkudata_mt_bx(L, 1, "Property", PropertyBase));
 
-	if ((newdsbp = luaM_testudata2(L, 2, Variable, DataSourceBase::shared_ptr)) != NULL)
+	if ((newdsbp = luaM_testudata_mt(L, 2, "Variable", DataSourceBase::shared_ptr)) != NULL)
 		newdsb = *newdsbp;
 	else
 		newdsb = Variable_fromlua(L, pb->getTypeInfo()->getTypeName().c_str(), 2);
@@ -598,14 +618,14 @@ static int Property_set(lua_State *L)
 
 static int Property_getName(lua_State *L)
 {
-	PropertyBase *pb = *(lua_getudata_bx2(L, 1, Property, PropertyBase));
+	PropertyBase *pb = *(luaM_checkudata_mt_bx(L, 1, "Property", PropertyBase));
 	lua_pushstring(L, pb->getName().c_str());
 	return 1;
 }
 
 static int Property_getDescription(lua_State *L)
 {
-	PropertyBase *pb = *(lua_getudata_bx2(L, 1, Property, PropertyBase));
+	PropertyBase *pb = *(luaM_checkudata_mt_bx(L, 1, "Property", PropertyBase));
 	lua_pushstring(L, pb->getDescription().c_str());
 	return 1;
 }
@@ -618,7 +638,7 @@ static int Property_getDescription(lua_State *L)
  */
 static int Property_gc(lua_State *L)
 {
-	PropertyBase *pb = *(lua_getudata_bx2(L, 1, Property, PropertyBase));
+	PropertyBase *pb = *(luaM_checkudata_mt_bx(L, 1, "Property", PropertyBase));
 	delete pb;
 	return 0;
 }
@@ -711,13 +731,13 @@ static int InputPort_new(lua_State *L)
 static int InputPort_read(lua_State *L)
 {
 	int ret = 1;
-	InputPortInterface *ip = *(lua_getudata_bx2(L, 1, InputPort, InputPortInterface));
+	InputPortInterface *ip = *(luaM_checkudata_mt_bx(L, 1, "InputPort", InputPortInterface));
 	DataSourceBase::shared_ptr dsb;
 	DataSourceBase::shared_ptr *dsbp;
 	enum FlowStatus fs;
 
 	/* if we get don't get a DS to store the result, create one */
-	if ((dsbp = luaM_testudata2(L, 2, Variable, DataSourceBase::shared_ptr)) != NULL)
+	if ((dsbp = luaM_testudata_mt(L, 2, "Variable", DataSourceBase::shared_ptr)) != NULL)
 		dsb = *dsbp;
 	else {
 		dsb = ip->getTypeInfo()->buildValue();
@@ -732,14 +752,14 @@ static int InputPort_read(lua_State *L)
 	else luaL_error(L, "InputPort.read: unknown FlowStatus returned");
 
 	if(ret>1)
-		lua_pushobject2(L, Variable, DataSourceBase::shared_ptr)(dsb);
+		luaM_pushobject_mt(L, "Variable", DataSourceBase::shared_ptr)(dsb);
 
 	return ret;
 }
 
 static int InputPort_gc(lua_State *L)
 {
-	InputPortInterface *ip = *(lua_getudata_bx2(L, 1, InputPort, InputPortInterface));
+	InputPortInterface *ip = *(luaM_checkudata_mt_bx(L, 1, "InputPort", InputPortInterface));
 	delete ip;
  	return 0;
 }
@@ -796,10 +816,10 @@ static int OutputPort_write(lua_State *L)
 	DataSourceBase::shared_ptr dsb;
 	DataSourceBase::shared_ptr *dsbp;
 
-	OutputPortInterface *op = *(lua_getudata_bx2(L, 1, OutputPort, OutputPortInterface));
+	OutputPortInterface *op = *(luaM_checkudata_mt_bx(L, 1, "OutputPort", OutputPortInterface));
 
 	/* fastpath: Variable argument */
-	if ((dsbp = luaM_testudata2(L, 2, Variable, DataSourceBase::shared_ptr)) != NULL) {
+	if ((dsbp = luaM_testudata_mt(L, 2, "Variable", DataSourceBase::shared_ptr)) != NULL) {
 		dsb = *dsbp;
 	} else  {
 		/* slowpath: convert lua value to dsb */
@@ -812,7 +832,7 @@ static int OutputPort_write(lua_State *L)
 
 static int OutputPort_gc(lua_State *L)
 {
-	OutputPortInterface *op = *(lua_getudata_bx2(L, 1, OutputPort, OutputPortInterface));
+	OutputPortInterface *op = *(luaM_checkudata_mt_bx(L, 1, "OutputPort", OutputPortInterface));
 	delete op;
 	return 0;
 }
@@ -837,7 +857,7 @@ static const struct luaL_Reg OutputPort_m [] = {
 static int TaskContext_getName(lua_State *L)
 {
 	const char *s;
-	TaskContext *tc = *(lua_getudata_bx(L, 1, TaskContext));
+	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
 	s = tc->getName().c_str();
 	lua_pushstring(L, s);
 	return 1;
@@ -845,7 +865,7 @@ static int TaskContext_getName(lua_State *L)
 
 static int TaskContext_start(lua_State *L)
 {
-	TaskContext *tc = *(lua_getudata_bx(L, 1, TaskContext));
+	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
 	bool b = tc->start();
 	lua_pushboolean(L, b);
 	return 1;
@@ -853,7 +873,7 @@ static int TaskContext_start(lua_State *L)
 
 static int TaskContext_stop(lua_State *L)
 {
-	TaskContext *tc = *(lua_getudata_bx(L, 1, TaskContext));
+	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
 	bool b = tc->stop();
 	lua_pushboolean(L, b);
 	return 1;
@@ -861,7 +881,7 @@ static int TaskContext_stop(lua_State *L)
 
 static int TaskContext_configure(lua_State *L)
 {
-	TaskContext *tc = *(lua_getudata_bx(L, 1, TaskContext));
+	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
 	bool ret = tc->configure();
 	lua_pushboolean(L, ret);
 	return 1;
@@ -869,7 +889,7 @@ static int TaskContext_configure(lua_State *L)
 
 static int TaskContext_activate(lua_State *L)
 {
-	TaskContext *tc = *(lua_getudata_bx(L, 1, TaskContext));
+	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
 	bool ret = tc->activate();
 	lua_pushboolean(L, ret);
 	return 1;
@@ -877,7 +897,7 @@ static int TaskContext_activate(lua_State *L)
 
 static int TaskContext_cleanup(lua_State *L)
 {
-	TaskContext *tc = *(lua_getudata_bx(L, 1, TaskContext));
+	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
 	bool ret = tc->cleanup();
 	lua_pushboolean(L, ret);
 	return 1;
@@ -886,7 +906,7 @@ static int TaskContext_cleanup(lua_State *L)
 static int TaskContext_getState(lua_State *L)
 {
 	enum TaskCore::TaskState ts;
-	TaskContext **tc = (TaskContext**) lua_getudata_bx(L, 1, TaskContext);
+	TaskContext **tc = (TaskContext**) luaM_checkudata_bx(L, 1, TaskContext);
 	ts = (*tc)->getTaskState();
 
 	switch(ts) {
@@ -906,7 +926,7 @@ static int TaskContext_getState(lua_State *L)
 /* should better return array of TC's */
 static int TaskContext_getPeers(lua_State *L)
 {
-	TaskContext *tc = *(lua_getudata_bx(L, 1, TaskContext));
+	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
 	std::vector<std::string> plist = tc->getPeerList();
 	push_vect_str(L, plist);
 	return 1;
@@ -916,8 +936,8 @@ static int TaskContext_getPeers(lua_State *L)
 static int TaskContext_addPeer(lua_State *L)
 {
 	bool ret;
-	TaskContext *self = *(lua_getudata_bx(L, 1, TaskContext));
-	TaskContext *peer = *(lua_getudata_bx(L, 2, TaskContext));
+	TaskContext *self = *(luaM_checkudata_bx(L, 1, TaskContext));
+	TaskContext *peer = *(luaM_checkudata_bx(L, 2, TaskContext));
 	ret = self->addPeer(peer);
 	lua_pushboolean(L, ret);
 	return 1;
@@ -927,7 +947,7 @@ static int TaskContext_addPeer(lua_State *L)
 static int TaskContext_removePeer(lua_State *L)
 {
 	std::string peer;
-	TaskContext *self = *(lua_getudata_bx(L, 1, TaskContext));
+	TaskContext *self = *(luaM_checkudata_bx(L, 1, TaskContext));
 	peer = luaL_checkstring(L, 2);
 	self->removePeer(peer);
 	return 0;
@@ -939,7 +959,7 @@ static int TaskContext_getPeer(lua_State *L)
 	std::string strpeer;
 	TaskContext *peer;
 	TaskContext **tc; /* boxed TC */
-	TaskContext *self = *(lua_getudata_bx(L, 1, TaskContext));
+	TaskContext *self = *(luaM_checkudata_bx(L, 1, TaskContext));
 	strpeer = luaL_checkstring(L, 2);
 	peer = self->getPeer(strpeer);
 
@@ -959,7 +979,7 @@ static int TaskContext_getPeer(lua_State *L)
 
 static int TaskContext_getPortNames(lua_State *L)
 {
-	TaskContext *tc = *(lua_getudata_bx(L, 1, TaskContext));
+	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
 	std::vector<std::string> plist = tc->ports()->getPortNames();
 	push_vect_str(L, plist);
 	return 1;
@@ -969,7 +989,7 @@ static int TaskContext_addPort(lua_State *L)
 {
 	PortInterface **pi;
 	int argc = lua_gettop(L);
-	TaskContext *tc = *(lua_getudata_bx(L, 1, TaskContext));
+	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
 
 	for(int i = 2; i<=argc; i++) {
 		if((pi = (PortInterface**) luaL_testudata(L, i, "InputPort")) != NULL)
@@ -987,7 +1007,7 @@ static int TaskContext_addEventPort(lua_State *L)
 {
 	InputPortInterface **ipi;
 	int argc = lua_gettop(L);
-	TaskContext *tc = *(lua_getudata_bx(L, 1, TaskContext));
+	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
 
 	for(int i = 2; i<=argc; i++) {
 		if((ipi = (InputPortInterface**) luaL_testudata(L, i, "InputPort")) != NULL)
@@ -1006,7 +1026,7 @@ static int TaskContext_getPort(lua_State *L)
 	InputPortInterface *ipi;
 	OutputPortInterface *opi;
 
-	TaskContext *tc = *(lua_getudata_bx(L, 1, TaskContext));
+	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
 	name = luaL_checkstring(L, 2);
 
 	pi = tc->getPort(name);
@@ -1028,10 +1048,10 @@ static int TaskContext_getPort(lua_State *L)
 static int TaskContext_addProperty(lua_State *L)
 {
 	int argc = lua_gettop(L);
-	TaskContext *tc = *(lua_getudata_bx(L, 1, TaskContext));
+	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
 
 	for(int i = 2; i<=argc; i++) {
-		PropertyBase *pb = *(lua_getudata_bx2(L, i, Property, PropertyBase));
+		PropertyBase *pb = *(luaM_checkudata_mt_bx(L, i, "Property", PropertyBase));
 		if(!tc->addProperty(*pb))
 			luaL_error(L, "TaskContext.addProperty: failed to add property %s.",
 				   pb->getName().c_str());
@@ -1045,7 +1065,7 @@ static int TaskContext_getProperty(lua_State *L)
 	PropertyBase *prop;
 	PropertyBase **pb;
 
-	TaskContext *tc = *(lua_getudata_bx(L, 1, TaskContext));
+	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
 	name = luaL_checkstring(L, 2);
 
 	prop = tc->getProperty(name);
@@ -1063,7 +1083,7 @@ static int TaskContext_getProperty(lua_State *L)
 static int TaskContext_getProperties(lua_State *L)
 {
 	PropertyBase **pb;
-	TaskContext *tc = *(lua_getudata_bx(L, 1, TaskContext));
+	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
 	vector<PropertyBase*> props = tc->properties()->getProperties();
 
 	int key = 1;
@@ -1082,7 +1102,7 @@ static int TaskContext_getProperties(lua_State *L)
 
 static int TaskContext_getOps(lua_State *L)
 {
-	TaskContext *tc = *(lua_getudata_bx(L, 1, TaskContext));
+	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
 	std::vector<std::string> oplst = tc->operations()->getNames();
 	push_vect_str(L, oplst);
 	return 1;
@@ -1092,7 +1112,7 @@ static int TaskContext_getOps(lua_State *L)
 static int TaskContext_getOpInfo(lua_State *L)
 {
 	int i=1;
-	TaskContext *tc = *(lua_getudata_bx(L, 1, TaskContext));
+	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
 	const char *op = luaL_checkstring(L, 2);
 	std::vector<ArgumentDescription> args;
 
@@ -1118,7 +1138,7 @@ static int TaskContext_getOpInfo(lua_State *L)
 static int TaskContext_call(lua_State *L)
 {
 	unsigned int argc = lua_gettop(L);
-	TaskContext *tc = *(lua_getudata_bx(L, 1, TaskContext));
+	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
 	const char *op = luaL_checkstring(L, 2);
 
 	std::vector<base::DataSourceBase::shared_ptr> args;
@@ -1137,7 +1157,7 @@ static int TaskContext_call(lua_State *L)
 
 	for(unsigned int arg=3; arg<=argc; arg++) {
 		/* fastpath: Variable argument */
-		if ((dsbp = luaM_testudata2(L, arg, Variable, DataSourceBase::shared_ptr)) != NULL) {
+		if ((dsbp = luaM_testudata_mt(L, arg, "Variable", DataSourceBase::shared_ptr)) != NULL) {
 			dsb = *dsbp;
 		} else  {
 			/* slowpath: convert lua value to dsb */
@@ -1157,7 +1177,7 @@ static int TaskContext_call(lua_State *L)
 		assert(ti);
 		ret2 = ti->buildValue();
 		ret2->update(ret.get());
-		lua_pushobject2(L, Variable, DataSourceBase::shared_ptr)(ret2);
+		luaM_pushobject_mt(L, "Variable", DataSourceBase::shared_ptr)(ret2);
 	} else {
 		ret->evaluate();
 		lua_pushnil(L);
@@ -1188,7 +1208,7 @@ static int __SendHandle_collect(lua_State *L, bool block)
 	DataSourceBase::shared_ptr tmpdsb;
 	int coll_argc;
 
-	SendHandleC *shc = lua_userdata_cast2(L, 1, SendHandle, SendHandleC);
+	SendHandleC *shc = luaM_checkudata_mt(L, 1, "SendHandle", SendHandleC);
 
 	/* get orp pointer */
 	orp = shc->getOrp();
@@ -1209,7 +1229,7 @@ static int __SendHandle_collect(lua_State *L, bool block)
 
 	/* store all DSB in coll_args to luabind::object */
 	for (unsigned int i=0; i<coll_argc; i++) {
-		lua_pushobject2(L, Variable, DataSourceBase::shared_ptr)(coll_args[i]);
+		luaM_pushobject_mt(L, "Variable", DataSourceBase::shared_ptr)(coll_args[i]);
 	}
 	/* SendStatus + collect args */
 	return coll_argc + 1;
@@ -1243,7 +1263,7 @@ static const struct luaL_Reg SendHandle_m [] = {
 static int TaskContext_send(lua_State *L)
 {
 	unsigned int argc = lua_gettop(L);
-	TaskContext *tc = *(lua_getudata_bx(L, 1, TaskContext));
+	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
 	const char *op = luaL_checkstring(L, 2);
 
 	OperationInterfacePart *orp = tc->operations()->getPart(op);
@@ -1262,7 +1282,7 @@ static int TaskContext_send(lua_State *L)
 
 	for(unsigned int arg=3; arg<=argc; arg++) {
 		/* fastpath: Variable argument */
-		if ((dsbp = luaM_testudata2(L, arg, Variable, DataSourceBase::shared_ptr)) != NULL) {
+		if ((dsbp = luaM_testudata_mt(L, arg, "Variable", DataSourceBase::shared_ptr)) != NULL) {
 			dsb = *dsbp;
 		} else  {
 			/* slowpath: convert lua value to dsb */
@@ -1273,14 +1293,14 @@ static int TaskContext_send(lua_State *L)
 	}
 
 	/* call send and construct push SendHandle userdata */
-	lua_pushobject2(L, SendHandle, SendHandleC)(occ->send());
+	luaM_pushobject_mt(L, "SendHandle", SendHandleC)(occ->send());
 	return 1;
 }
 
 /* only explicit destruction allowed */
 static int TaskContext_del(lua_State *L)
 {
-	TaskContext *tc = *(lua_getudata_bx(L, 1, TaskContext));
+	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
 	tc->~TaskContext();
 
 	/* this prevents calling rtt methods which would cause a crash */
