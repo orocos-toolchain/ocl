@@ -490,13 +490,22 @@ static int Variable_index(lua_State *L)
 
 static int Variable_newindex(lua_State *L)
 {
+	DataSourceBase::shared_ptr *newvalp;
+	DataSourceBase::shared_ptr newval;
 	DataSourceBase::shared_ptr master = *(luaM_checkudata_mt(L, 1, "Variable", DataSourceBase::shared_ptr));
 	const char* member = luaL_checkstring(L, 2);
-	DataSourceBase::shared_ptr newval = *(luaM_checkudata_mt(L, 3, "Variable", DataSourceBase::shared_ptr));
 
-	/* get dsb to be updated */
+	/* get dsb to be updated: we need its type before get-or-create'ing arg3 */
 	types::OperatorRepository::shared_ptr opreg = types::OperatorRepository::Instance();
 	DataSourceBase *curval = opreg->applyDot(member, master.get());
+
+	if (!curval)
+		luaL_error(L, "Variable.opDot: indexing failed, no member %s", member);
+
+	if ((newvalp = luaM_testudata_mt(L, 3, "Variable", DataSourceBase::shared_ptr)) != NULL)
+		newval = *newvalp;
+	else
+		newval = Variable_fromlua(L, curval->getType().c_str(), 3);
 
 	lua_pushboolean(L, curval->update(newval.get()));
 	return 1;
@@ -600,7 +609,6 @@ static int Property_set(lua_State *L)
 		newdsb = *newdsbp;
 	else
 		newdsb = Variable_fromlua(L, pb->getTypeInfo()->getTypeName().c_str(), 2);
-
 
 	DataSourceBase::shared_ptr propdsb = pb->getDataSource();
 	propdsb->update(newdsb.get());
