@@ -61,23 +61,15 @@ void* operator new(size_t size, lua_State* L, const char* mt)
 #define luaM_testudata_bx(L, pos, T) (T**) (luaL_testudata((L), (pos), #T))
 #define luaM_testudata_mt_bx(L, pos, MT, T) (T**) (luaL_testudata((L), (pos), MT))
 
-// conversion table
-
-/// luaM_testudata2	luaM_testudata_mt
-/// lua_getudata_bx2	luaM_checkudata_mt_bx
-/// lua_userdata_cast2	luaM_checkudata_mt
-/// lua_pushobject2	luaM_pushobject_mt
-/// lua_getudata_bx	luaM_checkudata_bx
-/// lua_userdata_cast 	luaM_checkudata
-// lua_pushobject 	luaM_pushobject
-
-// #define lua_pushobject(L, T) new(L, #T) T
-// #define lua_userdata_cast(L, pos, T) reinterpret_cast<T*>(luaL_checkudata((L), (pos), #T))
-// #define lua_getudata_bx(L, pos, T) (T**) (luaL_checkudata((L), (pos), #T))
-// #define lua_pushobject2(L, MT, T) new(L, #MT) T
-// #define lua_userdata_cast2(L, pos, MT, T) reinterpret_cast<T*>(luaL_checkudata((L), (pos), #MT))
-// #define lua_getudata_bx2(L, pos, MT, T) (T**) (luaL_checkudata((L), (pos), #MT))
-// #define luaM_testudata2(L, pos, MT, T) (T*) (luaL_testudata((L), (pos), #MT))
+/* generate a function to push boxed pointers to lua */
+#define gen_push_bxptr(name, MT, T)			   \
+static void name(lua_State *L, T* ptr)		   	   \
+{							   \
+	T** ptrptr = (T**) lua_newuserdata(L, sizeof(T*)); \
+	*ptrptr = ptr;					   \
+	luaL_getmetatable(L, MT);			   \
+	lua_setmetatable(L, -2);			   \
+}							   \
 
 /* template for generating GC function */
 template<typename T>
@@ -563,10 +555,12 @@ static const struct luaL_Reg Variable_m [] = {
 };
 
 
-
 /***************************************************************
  * Property (boxed)
  ***************************************************************/
+
+gen_push_bxptr(Property_push, "Property", PropertyBase)
+
 static int Property_new(lua_State *L)
 {
 	const char *type, *name, *desc;
@@ -585,10 +579,7 @@ static int Property_new(lua_State *L)
 	if(!ti)
 		luaL_error(L, "Property.new: unknown type %s", type);
 
-	pb = (PropertyBase**) lua_newuserdata(L, sizeof(PropertyBase*));
-	*pb = ti->buildProperty(name, desc);
-	luaL_getmetatable(L, "Property");
-	lua_setmetatable(L, -2);
+	Property_push(L, ti->buildProperty(name, desc));
 	return 1;
 }
 
@@ -696,14 +687,8 @@ static int Port_info(lua_State *L)
 }
 
 /* InputPort (boxed) */
-static void InputPort_push(lua_State *L, InputPortInterface *ipi)
-{
-	InputPortInterface **ipip;
-	ipip = (InputPortInterface**) lua_newuserdata(L, sizeof(InputPortInterface*));
-	*ipip = ipi;
-	luaL_getmetatable(L, "InputPort");
-	lua_setmetatable(L, -2);
-}
+
+gen_push_bxptr(InputPort_push, "InputPort", InputPortInterface)
 
 static int InputPort_new(lua_State *L)
 {
@@ -779,14 +764,8 @@ static const struct luaL_Reg InputPort_m [] = {
 };
 
 /* OutputPort */
-static void OutputPort_push(lua_State *L, OutputPortInterface *opi)
-{
-	OutputPortInterface **opip;
-	opip = (OutputPortInterface**) lua_newuserdata(L, sizeof(OutputPortInterface*));
-	*opip = opi;
-	luaL_getmetatable(L, "OutputPort");
-	lua_setmetatable(L, -2);
-}
+
+gen_push_bxptr(OutputPort_push, "OutputPort", OutputPortInterface)
 
 static int OutputPort_new(lua_State *L)
 {
@@ -854,6 +833,9 @@ static const struct luaL_Reg OutputPort_m [] = {
 /***************************************************************
  * TaskContext (boxed)
  ***************************************************************/
+
+gen_push_bxptr(TaskContext_push, "TaskContext", TaskContext)
+
 static int TaskContext_getName(lua_State *L)
 {
 	const char *s;
@@ -968,11 +950,7 @@ static int TaskContext_getPeer(lua_State *L)
 		goto out;
 	}
 
-	tc = (TaskContext**) lua_newuserdata(L, sizeof(TaskContext*));
-	*tc = peer;
-	luaL_getmetatable(L, "TaskContext");
-	lua_setmetatable(L, -2);
-
+	TaskContext_push(L, peer);
  out:
 	return 1;
 }
@@ -1063,7 +1041,6 @@ static int TaskContext_getProperty(lua_State *L)
 {
 	const char *name;
 	PropertyBase *prop;
-	PropertyBase **pb;
 
 	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
 	name = luaL_checkstring(L, 2);
@@ -1073,10 +1050,7 @@ static int TaskContext_getProperty(lua_State *L)
 	if(!prop)
 		luaL_error(L, "%s failed. No such property", __FILE__);
 
-	pb = (PropertyBase**) lua_newuserdata(L, sizeof(PropertyBase*));
-	*pb = prop;
-	luaL_getmetatable(L, "Property");
-	lua_setmetatable(L, -2);
+	Property_push(L, prop);
 	return 1;
 }
 
@@ -1089,10 +1063,7 @@ static int TaskContext_getProperties(lua_State *L)
 	int key = 1;
 	lua_createtable(L, props.size(), 0);
 	for(vector<PropertyBase*>::iterator it = props.begin(); it != props.end(); ++it) {
-		pb = (PropertyBase**) lua_newuserdata(L, sizeof(PropertyBase*));
-		*pb = *it;
-		luaL_getmetatable(L, "Property");
-		lua_setmetatable(L, -2);
+		Property_push(L, *it);
 		lua_rawseti(L, -2, key++);
 	}
 
