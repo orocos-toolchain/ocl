@@ -18,7 +18,7 @@
     <subtitle><emphasis>Open RObot COntrol Software</emphasis>
     </subtitle>
     <copyright>
-      <year>2002-2008</year>
+      <year>2002-2010</year>
       <holder>Herman Bruyninckx, Peter Soetens</holder>
     </copyright>
 
@@ -91,22 +91,6 @@
 	  <ulink url="orocos-deployment.html">Deployment Component
 	  Manual</ulink>: a component which can be used to load and
 	  configure components in the same process.
-	</para>
-      </listitem>
-      <listitem>
-	<para>
-	  <ulink url="orocos-hardware-components.html">IOComponent
-	  Manual</ulink>: a component which can be used to test Orocos
-	  device drivers interactively.
-	</para>
-      </listitem>
-      <listitem>
-	<para>
-	  <ulink url="orocos-comedi.html">Comedi Manual</ulink>:
-	  Explains briefly how the <ulink
-	  url="http://www.comedi.org">Comedi</ulink> layer of Orocos
-	  can be used to access IO devices supported by the comedi
-	  library.
 	</para>
       </listitem>
     </itemizedlist>
