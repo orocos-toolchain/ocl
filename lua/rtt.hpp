@@ -1,5 +1,5 @@
 
-#define RTTLUA_VERSION	"1.0-rc1"
+#define RTTLUA_VERSION	"1.0-beta1"
 
 extern "C" {
 #include <lua.h>

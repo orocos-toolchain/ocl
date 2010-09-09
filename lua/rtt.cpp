@@ -18,6 +18,14 @@ using namespace RTT::base;
 using namespace RTT::internal;
 
 
+#define DEBUG
+
+#ifdef DEBUG
+# define _DBG(fmt, args...) printf("%s:%d\t" fmt "\n", __FUNCTION__, __LINE__, ##args)
+#else
+# define _DBG(fmt, args...) do { } while(0);
+#endif
+
 /*
  * Inspired by tricks from here: http://lua-users.org/wiki/DoItYourselfCppBinding
  */
@@ -85,18 +93,26 @@ int GCMethod(lua_State* L)
  ***************************************************************/
 
 /* test if userdata on position ud has metatable tname */
-void* luaL_testudata (lua_State *L, int ud, const char *tname) {
+void* luaL_testudata (lua_State *L, int ud, const char *tname) 
+{
 	void *p = lua_touserdata(L, ud);
-	if (p != NULL) {  /* value is a userdata? */
-		if (lua_getmetatable(L, ud)) {  /* does it have a metatable? */
-			lua_getfield(L, LUA_REGISTRYINDEX, tname);  /* get correct metatable */
-			if (lua_rawequal(L, -1, -2)) {  /* does it have the correct mt? */
-				lua_pop(L, 2);  /* remove both metatables */
-				return p;
-			}
-		}
+
+	if (p == NULL)
+		goto out;
+
+	if (!lua_getmetatable(L, ud))  {
+		p = NULL;
+		goto out;
 	}
-	return NULL;
+
+	/* it has a MT, is it the right one? */
+	lua_getfield(L, LUA_REGISTRYINDEX, tname);
+	if (!lua_rawequal(L, -1, -2))
+		p = NULL;
+
+	lua_pop(L, 2);  /* remove both metatables */
+ out:
+	return p;
 }
 
 
@@ -971,21 +987,68 @@ static int TaskContext_getPortNames(lua_State *L)
 	return 1;
 }
 
+
+#if 0
+static int __tc_addport(lua_State *L, TaskContext *tc, int tcind,
+		       PortInterface *pi, int piind)
+{
+	int len;
+	_DBG("in: gettop=%d", lua_gettop(L));
+	/* manage TC to which the port has been added
+	 * PortOwners={p1={tc1, tc2, tc3}, p2={tc3}}
+	 */
+	lua_getfield(L, LUA_ENVIRONINDEX, "PortOwners");
+	if (lua_isnil(L, -1)) {
+		_DBG("creating new PortOwners");
+		lua_pop(L, 1);
+		lua_newtable(L);
+	} else {
+		_DBG("PortOwners exists... len=%d", lua_objlen(L, -1));
+	}
+
+	/* now we have the "PortOwners" table at the top either way */
+	lua_pushvalue(L, piind);	/* make copy of Port userdata */
+	lua_rawget(L, -2);		/* get table at PortOwners[piind] */
+
+	if (lua_isnil(L, -1)) {
+		_DBG("creating new PortOwners[0x%x]", (unsigned long) pi);
+		lua_pop(L, 1);
+		lua_newtable(L);	/* create new table for adding TC's */
+	} else {
+		_DBG("PortOwners[0x%x] exists, len=%d", (unsigned long) pi, lua_objlen(L, -1));
+	}
+
+	lua_pushvalue(L, 1); 	/* stack: -1 TC-userdata, -2 PortOwners[pi] table, -3 PortOwners tab */
+	len = lua_objlen(L, -2);
+	lua_rawseti(L, -2, len+1);	/* store TC ud in table at next free index */
+					/* stack: -1 PortOwners[pi] table, -2 PortOwners tab */
+
+	lua_pushvalue(L, piind); /* push Port userdata (key), stack: port-ud, tab, PortOwners */
+	lua_rawset(L, -3);	/* PortOwners[port-ud] = { tc }, stack: PortOwners */
+
+	lua_setfield(L, LUA_ENVIRONINDEX, "PortOwners");
+
+	_DBG("out: gettop=%d", lua_gettop(L));
+}
+#endif
+
 static int TaskContext_addPort(lua_State *L)
 {
+	_DBG("gettop=%d", lua_gettop(L));
 	PortInterface **pi;
 	int argc = lua_gettop(L);
 	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
-
 	for(int i = 2; i<=argc; i++) {
-		if((pi = (PortInterface**) luaL_testudata(L, i, "InputPort")) != NULL)
+		if((pi = (PortInterface**) luaL_testudata(L, i, "InputPort")) != NULL) {
 			tc->ports()->addPort(**pi);
-		else if((pi = (PortInterface**) luaL_testudata(L, i, "OutputPort")) != NULL)
+			// __tc_addport(L, tc, 1, *pi, i);
+		} else if ((pi = (PortInterface**) luaL_testudata(L, i, "OutputPort")) != NULL) {
 			tc->ports()->addPort(**pi);
-		else
+			// __tc_addport(L, tc, 1, *pi, i);
+		} else {
 			luaL_error(L, "addPort: invalid argument, not a Port");
+		}
 	}
-
  	return 0;
 }
 
