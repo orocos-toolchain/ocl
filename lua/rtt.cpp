@@ -1400,6 +1400,9 @@ extern "C" int luaopen_rtt(lua_State *L);
 
 int luaopen_rtt(lua_State *L)
 {
+	lua_newtable(L);
+	lua_replace(L, LUA_ENVIRONINDEX);
+
 	luaL_newmetatable(L, "__dead__");
 
 	/* register MyObj

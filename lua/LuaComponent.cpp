@@ -54,7 +54,8 @@ namespace OCL
 			}
 
 			/* setup rtt bindings */
-			luaopen_rtt(L);
+			lua_pushcfunction(L, luaopen_rtt);
+			lua_call(L, 0, 0);
 
 			/* set global TC */
 			TaskContext** tc = (TaskContext**) lua_newuserdata(L, sizeof(TaskContext*));
