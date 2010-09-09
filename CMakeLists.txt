@@ -108,7 +108,7 @@ INCLUDE(${PROJ_SOURCE_DIR}/config/component_rules.cmake)
 INCLUDE(${PROJ_SOURCE_DIR}/config/TestUsesFile.cmake)
 
 ## Find Orocos RTT.
-find_package(OROCOS-RTT 1.99.5)
+find_package(OROCOS-RTT 2.0.0)
 if (NOT OROCOS-RTT_FOUND)
   message(FATAL_ERROR "\n   RTT not found. Is the version correct? Use the CMAKE_PREFIX_PATH cmake or environment variable to point to the installation directory of RTT.")
 else()
