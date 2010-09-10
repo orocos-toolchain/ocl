@@ -72,13 +72,13 @@ end
 function ConnPolicy2tab(cp)
    local tab = {}
    if cp.type == 0 then tab.type = "DATA"
-   elseif cp.type == 1 then tab.type = "DATA"
-   else tab.type = "unknown" end
+   elseif cp.type == 1 then tab.type = "BUFFER"
+   else tab.type = tostring(cp.type) .. " (invalid!)" end
 
    if cp.lock_policy == 0 then tab.lock_policy = "UNSYNC"
    elseif cp.lock_policy == 1 then tab.lock_policy = "LOCKED"
    elseif cp.lock_policy == 2 then tab.lock_policy = "LOCK_FREE"
-   else tab.lock_policy = "unknown" end
+   else tab.lock_policy = tostring(cp.lock_policy) .. " (invalid!)" end
 
    tab.init = cp.init
    tab.pull = cp.pull

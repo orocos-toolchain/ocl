@@ -464,28 +464,9 @@ static int Variable_opBinary(lua_State *L)
 	return 1;
 }
 
-
-static int Variable_opDot(lua_State *L)
-{
-	DataSourceBase::shared_ptr dsb = *(luaM_checkudata_mt(L, 1, "Variable", DataSourceBase::shared_ptr));
-	const char *member = luaL_checkstring(L, 2);
-
-	types::OperatorRepository::shared_ptr opreg = types::OperatorRepository::Instance();
-	DataSourceBase *res = opreg->applyDot(member, dsb.get());
-
-	if (res == 0) {
-		luaL_error(L, "Variable.opDot: indexing failed, no member %s", member);
-	} else {
-		res->evaluate();
-		luaM_pushobject_mt(L, "Variable", DataSourceBase::shared_ptr)(res);
-	}
-
-	return 1;
-}
-
 /*
  * this is a dispatcher which checks if the key is a method, otherwise
- * calls opDot for looking up the field. Inspired by
+ * calls get for looking up the field. Inspired by
  * http://lua-users.org/wiki/ObjectProperties
  */
 static int Variable_index(lua_State *L)
@@ -501,7 +482,7 @@ static int Variable_index(lua_State *L)
 
 	/* ... or its a field access, so recall as self.get(self, value). */
 	lua_settop(L, 2);
-	return Variable_opDot(L);
+	return Variable_getMember(L);
 }
 
 static int Variable_newindex(lua_State *L)
@@ -513,10 +494,11 @@ static int Variable_newindex(lua_State *L)
 
 	/* get dsb to be updated: we need its type before get-or-create'ing arg3 */
 	types::OperatorRepository::shared_ptr opreg = types::OperatorRepository::Instance();
-	DataSourceBase *curval = opreg->applyDot(member, master.get());
+	// DataSourceBase *curval = opreg->applyDot(member, master.get());
+	DataSourceBase::shared_ptr curval = master->getMember(member);
 
-	if (!curval)
-		luaL_error(L, "Variable.opDot: indexing failed, no member %s", member);
+	if (curval == 0)
+		luaL_error(L, "Variable.newindex: indexing failed, no member %s", member);
 
 	if ((newvalp = luaM_testudata_mt(L, 3, "Variable", DataSourceBase::shared_ptr)) != NULL)
 		newval = *newvalp;
@@ -537,7 +519,6 @@ static const struct luaL_Reg Variable_f [] = {
 	{ "getMemberNames", Variable_getMemberNames },
 	{ "getMember", Variable_getMember },
 	{ "opBinary", Variable_opBinary },
-	{ "opDot", Variable_opDot },
 	{ "assign", Variable_update }, /* assign seems a better name than update */
 	{ "unm", Variable_unm },
 	{ "add", Variable_add },
@@ -560,7 +541,6 @@ static const struct luaL_Reg Variable_m [] = {
 	{ "getMemberNames", Variable_getMemberNames },
 	{ "getMember", Variable_getMember },
 	{ "opBinary", Variable_opBinary },
-	{ "opDot", Variable_opDot },
 	{ "assign", Variable_update }, /* assign seems a better name than update */
 	{ "__unm", Variable_unm },
 	{ "__add", Variable_add },
