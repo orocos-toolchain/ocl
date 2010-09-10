@@ -93,7 +93,7 @@ int GCMethod(lua_State* L)
  ***************************************************************/
 
 /* test if userdata on position ud has metatable tname */
-void* luaL_testudata (lua_State *L, int ud, const char *tname) 
+void* luaL_testudata (lua_State *L, int ud, const char *tname)
 {
 	void *p = lua_touserdata(L, ud);
 
@@ -835,10 +835,266 @@ static const struct luaL_Reg OutputPort_m [] = {
 };
 
 /***************************************************************
+ * Operation (boxed)
+ ***************************************************************/
+
+gen_push_bxptr(Operation_push, "Operation", OperationInterfacePart)
+
+static int Operation_info(lua_State *L)
+{
+	int i=1;
+	OperationInterfacePart *oip = *(luaM_checkudata_mt_bx(L, 1, "Operation", OperationInterfacePart));
+	// const char *op = luaL_checkstring(L, 2);
+	std::vector<ArgumentDescription> args;
+
+	lua_pushstring(L, oip->resultType().c_str()); /* result type */
+	lua_pushinteger(L, oip->arity());		/* arity */
+	lua_pushstring(L, oip->description().c_str()); /* description */
+
+	args = oip->getArgumentList();
+
+	lua_newtable(L);
+
+	for (std::vector<ArgumentDescription>::iterator it = args.begin(); it != args.end(); it++) {
+		lua_newtable(L);
+		lua_pushstring(L, "name"); lua_pushstring(L, it->name.c_str()); lua_rawset(L, -3);
+		lua_pushstring(L, "type"); lua_pushstring(L, it->type.c_str()); lua_rawset(L, -3);
+		lua_pushstring(L, "desc"); lua_pushstring(L, it->description.c_str()); lua_rawset(L, -3);
+		lua_rawseti(L, -2, i++);
+	}
+
+	return 4;
+}
+
+static int Operation_call(lua_State *L)
+{
+	std::vector<base::DataSourceBase::shared_ptr> args;
+	DataSourceBase::shared_ptr dsb;
+	DataSourceBase::shared_ptr *dsbp;
+	DataSourceBase::shared_ptr ret, ret2;
+	types::TypeInfo *ti;
+
+	unsigned int argc = lua_gettop(L);
+	OperationInterfacePart *oip = *(luaM_checkudata_mt_bx(L, 1, "Operation", OperationInterfacePart));
+
+	if(oip->arity() != argc-1)
+		luaL_error(L, "Operation.call: wrong number of args. expected %d, got %d", oip->arity(), argc-1);
+
+	for(unsigned int arg=2; arg<=argc; arg++) {
+		/* fastpath: Variable argument */
+		if ((dsbp = luaM_testudata_mt(L, arg, "Variable", DataSourceBase::shared_ptr)) != NULL) {
+			dsb = *dsbp;
+		} else  {
+			/* slowpath: convert lua value to dsb */
+			std::string type = oip->getArgumentType(arg-1)->getTypeName().c_str();
+			dsb = Variable_fromlua(L, type.c_str(), arg);
+		}
+		args.push_back(dsb);
+	}
+
+	ret = oip->produce(args, NULL);
+
+	/* not so nice: construct a ValueDataSource for the return Value
+	 * todo: at least avoid the type conversion to string.
+	 */
+	if(oip->resultType() != "void") {
+		ti = types::TypeInfoRepository::Instance()->type(oip->resultType());
+		assert(ti);
+		ret2 = ti->buildValue();
+		ret2->update(ret.get());
+		luaM_pushobject_mt(L, "Variable", DataSourceBase::shared_ptr)(ret2);
+	} else {
+		ret->evaluate();
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
+static const struct luaL_Reg Operation_f [] = {
+	{"info", Operation_info },
+	{"call", Operation_call },
+	{NULL, NULL}
+
+};
+
+static const struct luaL_Reg Operation_m [] = {
+	{"info", Operation_info },
+	{"__call", Operation_call },
+	{NULL, NULL}
+};
+
+/***************************************************************
+ * Service (boxed)
+ ***************************************************************/
+
+static int Service_getName(lua_State *L)
+{
+	Service::shared_ptr srv = *(luaM_checkudata_mt(L, 1, "Service", Service::shared_ptr));
+	lua_pushstring(L, srv->getName().c_str());
+	return 1;
+}
+
+static int Service_doc(lua_State *L)
+{
+	int ret;
+	const char* doc;
+	Service::shared_ptr srv = *(luaM_checkudata_mt(L, 1, "Service", Service::shared_ptr));
+	if(lua_gettop(L) == 1) {
+		lua_pushstring(L, srv->doc().c_str());
+		ret = 1;
+	} else {
+		doc = luaL_checkstring(L, 2);
+		srv->doc(doc);
+		ret = 0;
+	}
+
+	return ret;
+}
+
+static int Service_getProviderNames(lua_State *L)
+{
+	Service::shared_ptr srv = *(luaM_checkudata_mt(L, 1, "Service", Service::shared_ptr));
+	push_vect_str(L, srv->getProviderNames());
+	return 1;
+}
+
+static int Service_getOperationNames(lua_State *L)
+{
+	Service::shared_ptr srv = *(luaM_checkudata_mt(L, 1, "Service", Service::shared_ptr));
+	push_vect_str(L, srv->getOperationNames());
+	return 1;
+}
+
+static int Service_getPortNames(lua_State *L)
+{
+	Service::shared_ptr srv = *(luaM_checkudata_mt(L, 1, "Service", Service::shared_ptr));
+	push_vect_str(L, srv->getPortNames());
+	return 1;
+}
+
+static int Service_provides(lua_State *L)
+{
+	int ret, i, argc;
+	const char* subsrv_str;
+	Service::shared_ptr srv, subsrv;
+
+	srv = *(luaM_checkudata_mt(L, 1, "Service", Service::shared_ptr));
+	argc=lua_gettop(L);
+
+	/* return "this" if no args given */
+	if(argc == 1) {
+		ret = 1;
+		goto out;
+	}
+
+	for(i=2; i<=argc; i++) {
+		subsrv_str = luaL_checkstring(L, i);
+		subsrv = srv->provides(subsrv_str);
+		if (subsrv == 0)
+			luaL_error(L, "Service.provides: no subservice %s of service %s", 
+				   srv->getName().c_str(), subsrv_str);
+		else
+			luaM_pushobject_mt(L, "Service", Service::shared_ptr)(subsrv);
+	}
+	ret = argc - 1;
+
+ out:
+	return ret;
+}
+
+static int Service_getOperation(lua_State *L)
+{
+	int i, argc;
+	const char *op_str;
+	OperationInterfacePart *oip;
+	Service::shared_ptr srv;
+
+	srv = *(luaM_checkudata_mt(L, 1, "Service", Service::shared_ptr));
+	op_str = luaL_checkstring(L, 2);
+	oip = srv->getOperation(op_str);
+
+	if(!oip)
+		luaL_error(L, "Service_getOperation: service %s has no operation %s", 
+			   srv->getName().c_str(), op_str);
+	Operation_push(L, oip);
+	return 1;
+}
+
+static int Service_getPort(lua_State *L)
+{
+	const char* name;
+	PortInterface *pi;
+	InputPortInterface *ipi;
+	OutputPortInterface *opi;
+
+	Service::shared_ptr srv;
+
+	srv = *(luaM_checkudata_mt(L, 1, "Service", Service::shared_ptr));
+	name = luaL_checkstring(L, 2);
+
+	pi = srv->getPort(name);
+	if(!pi)
+		luaL_error(L, "Service.getPort: service %s has no port %",
+			   srv->getName().c_str(), name);
+
+	/* input or output? */
+	if ((ipi = dynamic_cast<InputPortInterface *> (pi)) != NULL)
+		InputPort_push(L, ipi);
+	else if ((opi = dynamic_cast<OutputPortInterface *> (pi)) != NULL)
+		OutputPort_push(L, opi);
+	else
+		luaL_error(L, "Service.getPort: unknown port type returned");
+
+	return 1;
+}
+
+static const struct luaL_Reg Service_f [] = {
+	{ "getName", Service_getName },
+	{ "doc", Service_doc },
+	{ "getProviderNames", Service_getProviderNames },
+	{ "getOperationNames", Service_getOperationNames },
+	{ "getPortNames", Service_getPortNames },
+	{ "provides", Service_provides },
+	{ "getOperation", Service_getOperation },
+	{ "getPort", Service_getPort },
+	{ NULL, NULL }
+};
+
+static const struct luaL_Reg Service_m [] = {
+	{ "getName", Service_getName },
+	{ "doc", Service_doc },
+	{ "getProviderNames", Service_getProviderNames },
+	{ "getOperationNames", Service_getOperationNames },
+	{ "getPortNames", Service_getPortNames },
+	{ "provides", Service_provides },
+	{ "getOperation", Service_getOperation },
+	{ "getPort", Service_getPort },
+	{ "__gc", GCMethod<Service::shared_ptr> },
+	{ NULL, NULL }
+};
+
+
+
+/***************************************************************
  * TaskContext (boxed)
  ***************************************************************/
 
 gen_push_bxptr(TaskContext_push, "TaskContext", TaskContext)
+
+static int TaskContext_provides(lua_State *L)
+{
+	const char* subsrv;
+	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
+	Service::shared_ptr srv = tc->provides();
+
+	if(srv == 0)
+		luaL_error(L, "TaskContext.provides: no default service");
+
+	/* forward to Serivce.provides */
+	luaM_pushobject_mt(L, "Service", Service::shared_ptr)(srv);
+	lua_replace(L, 1);
+	return Service_provides(L);
+}
 
 static int TaskContext_getName(lua_State *L)
 {
@@ -1175,7 +1431,7 @@ static int TaskContext_call(lua_State *L)
 		luaL_error(L, "TaskContext.call: no operation %s", op);
 
 	if(orp->arity() != argc-2)
-		luaL_error(L, "TaskContext.call: wrong number of args. expected %d, got %d", orp->arity(), argc);
+		luaL_error(L, "TaskContext.call: wrong number of args. expected %d, got %d", orp->arity(), argc-2);
 
 	for(unsigned int arg=3; arg<=argc; arg++) {
 		/* fastpath: Variable argument */
@@ -1353,6 +1609,7 @@ static const struct luaL_Reg TaskContext_f [] = {
 	{ "getProperties", TaskContext_getProperties },
 	{ "getOps", TaskContext_getOps },
 	{ "getOpInfo", TaskContext_getOpInfo },
+	{ "provides", TaskContext_provides },
 	{ "call", TaskContext_call },
 	{ "send", TaskContext_send },
 	{ "delete", TaskContext_del },
@@ -1380,6 +1637,7 @@ static const struct luaL_Reg TaskContext_m [] = {
 	{ "getProperties", TaskContext_getProperties },
 	{ "getOps", TaskContext_getOps },
 	{ "getOpInfo", TaskContext_getOpInfo },
+	{ "provides", TaskContext_provides },
 	{ "call", TaskContext_call },
 	{ "send", TaskContext_send },
 	/* we don't GC TaskContexts
@@ -1461,6 +1719,18 @@ int luaopen_rtt(lua_State *L)
 	lua_setfield(L, -2, "__index");
 	luaL_register(L, NULL, TaskContext_m);
 	luaL_register(L, "rtt.TaskContext", TaskContext_f);
+
+	luaL_newmetatable(L, "Operation");
+	lua_pushvalue(L, -1);
+	lua_setfield(L, -2, "__index");
+	luaL_register(L, NULL, Operation_m);
+	luaL_register(L, "rtt.Operation", Operation_f);
+
+	luaL_newmetatable(L, "Service");
+	lua_pushvalue(L, -1);
+	lua_setfield(L, -2, "__index");
+	luaL_register(L, NULL, Service_m);
+	luaL_register(L, "rtt.Service", Service_f);
 
 	luaL_newmetatable(L, "SendHandle");
 	lua_pushvalue(L, -1); /* duplicates metatable */
