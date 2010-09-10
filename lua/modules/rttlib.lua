@@ -10,7 +10,7 @@ local debug = debug
 
 module("rttlib")
 
-color=true
+color=false
 
 local function red(str, bright)
    if color then
@@ -148,9 +148,9 @@ function op2str(tc, op)
    local str = ""
 
    if #args < 1  then
-      str = rettype .. " " .. blue(op, true) .. "()"
+      str = rettype .. " " .. cyan(op, false) .. "()"
    else
-      str = rettype .. " " .. blue(op, true) .. "("
+      str = rettype .. " " .. cyan(op, false) .. "("
 
       for i=1,#args-1 do
 	 str = str .. args[i]["type"] .. " " .. args[i]["name"] .. ", "
@@ -190,13 +190,21 @@ function port2str(p)
    return table.concat(ret, '')
 end
 
+local function tc_colorstate(state)
+   if state == "Init" then return yellow(state, false)
+   elseif state == "PreOperational" then return yellow(state, false)
+   elseif state == "Running" then return green(state, false) 
+   elseif state == "Stopped" then return red(state, false) end
+   return red(state, true)
+end
+
 --
 -- pretty print a taskcontext
 --
 function tc2str(tc)
    local res = {}
    res[#res+1] = magenta('TaskContext') .. ': ' .. green(tc:getName(), true)
-   res[#res+1] = magenta("state") .. ": " .. tc:getState()
+   res[#res+1] = magenta("state") .. ": " .. tc_colorstate(tc:getState())
 
    for i,v in ipairs( { "isActive", "getPeriod" } )
    do
