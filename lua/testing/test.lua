@@ -127,7 +127,7 @@ function test_dataflow_lua()
    pi = rtt.InputPort.new("string", "pi", "my input port")
    TC:addPort(po)
    TC:addPort(pi)
-   d:call("connectTwoPorts", "lua", "po", "lua", "pi")
+   print("connecting ports... ", d:call("connectTwoPorts", "lua", "po", "lua", "pi"))
    po:write("hello_ports")
    local res, val = pi:read()
    return res == "NewData" and val:tolua() == "hello_ports"

@@ -844,7 +844,6 @@ static int Operation_info(lua_State *L)
 {
 	int i=1;
 	OperationInterfacePart *oip = *(luaM_checkudata_mt_bx(L, 1, "Operation", OperationInterfacePart));
-	// const char *op = luaL_checkstring(L, 2);
 	std::vector<ArgumentDescription> args;
 
 	lua_pushstring(L, oip->resultType().c_str()); /* result type */
@@ -910,17 +909,51 @@ static int Operation_call(lua_State *L)
 	return 1;
 }
 
+static int Operation_send(lua_State *L)
+{
+	SendHandleC *shc;
+	DataSourceBase::shared_ptr dsb, *dsbp;
+
+	unsigned int argc = lua_gettop(L);
+	OperationInterfacePart *oip = *(luaM_checkudata_mt_bx(L, 1, "Operation", OperationInterfacePart));
+
+	/* todo: extend OperationInterfacePart with getName method */
+	OperationCallerC *occ = new OperationCallerC(oip, "FordPrefect", NULL); // todo: alloc on stack?
+
+	if(oip->arity() != argc-1)
+		luaL_error(L, "Operation.send: wrong number of args. expected %d, got %d",
+			   oip->arity(), argc);
+
+	for(unsigned int arg=2; arg<=argc; arg++) {
+		/* fastpath: Variable argument */
+		if ((dsbp = luaM_testudata_mt(L, arg, "Variable", DataSourceBase::shared_ptr)) != NULL) {
+			dsb = *dsbp;
+		} else  {
+			/* slowpath: convert lua value to dsb */
+			std::string type = oip->getArgumentType(arg-1)->getTypeName().c_str();
+			dsb = Variable_fromlua(L, type.c_str(), arg);
+		}
+		occ->arg(dsb);
+	}
+
+	/* call send and construct push SendHandle userdata */
+	luaM_pushobject_mt(L, "SendHandle", SendHandleC)(occ->send());
+	return 1;
+}
+
 static const struct luaL_Reg Operation_f [] = {
-	{"info", Operation_info },
-	{"call", Operation_call },
-	{NULL, NULL}
+	{ "info", Operation_info },
+	{ "call", Operation_call },
+	{ "send", Operation_send },
+	{ NULL, NULL }
 
 };
 
 static const struct luaL_Reg Operation_m [] = {
-	{"info", Operation_info },
-	{"__call", Operation_call },
-	{NULL, NULL}
+	{ "info", Operation_info },
+	{ "send", Operation_send },
+	{ "__call", Operation_call },
+	{ NULL, NULL }
 };
 
 /***************************************************************
@@ -1080,21 +1113,6 @@ static const struct luaL_Reg Service_m [] = {
  ***************************************************************/
 
 gen_push_bxptr(TaskContext_push, "TaskContext", TaskContext)
-
-static int TaskContext_provides(lua_State *L)
-{
-	const char* subsrv;
-	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
-	Service::shared_ptr srv = tc->provides();
-
-	if(srv == 0)
-		luaL_error(L, "TaskContext.provides: no default service");
-
-	/* forward to Serivce.provides */
-	luaM_pushobject_mt(L, "Service", Service::shared_ptr)(srv);
-	lua_replace(L, 1);
-	return Service_provides(L);
-}
 
 static int TaskContext_getName(lua_State *L)
 {
@@ -1270,7 +1288,6 @@ static int __tc_addport(lua_State *L, TaskContext *tc, int tcind,
 
 static int TaskContext_addPort(lua_State *L)
 {
-	_DBG("gettop=%d", lua_gettop(L));
 	PortInterface **pi;
 	int argc = lua_gettop(L);
 	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
@@ -1411,6 +1428,21 @@ static int TaskContext_getOpInfo(lua_State *L)
 	}
 
 	return 4;
+}
+
+static int TaskContext_provides(lua_State *L)
+{
+	const char* subsrv;
+	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
+	Service::shared_ptr srv = tc->provides();
+
+	if(srv == 0)
+		luaL_error(L, "TaskContext.provides: no default service");
+
+	/* forward to Serivce.provides */
+	luaM_pushobject_mt(L, "Service", Service::shared_ptr)(srv);
+	lua_replace(L, 1);
+	return Service_provides(L);
 }
 
 static int TaskContext_call(lua_State *L)
@@ -1587,6 +1619,39 @@ static int TaskContext_del(lua_State *L)
 	return 0;
 }
 
+#if 0
+/* dispatcher: if a method with name then use that, else forward to
+ * default service.
+ *
+ * This is useful but also potentially very confusing, because it
+ * creates a mix of ':' and '.' for calling methods. For some like
+ * 'activate' which are duplicates this is really bad. For consistency
+ * it would be better to have sth. like TaskContext:ops() which
+ * returns an indexable object that returns services like:
+ * TC:ops().op_1("hullo")
+ */
+static int TaskContext_index(lua_State *L)
+{
+	Service::shared_ptr srv;
+	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
+	const char* key = luaL_checkstring(L, 2);
+
+	lua_getmetatable(L, 1);
+	lua_getfield(L, -1, key);
+
+	/* Either key is name of a method in the metatable */
+	if(!lua_isnil(L, -1))
+		return 1;
+
+	/* ... or its a field access, so recall as self.get(self, value). */
+	lua_settop(L, 2);
+	srv = tc->provides();
+	luaM_pushobject_mt(L, "Service", Service::shared_ptr)(srv);
+	lua_replace(L, 1);
+	/* todo: could fall back on ports? */
+	return Service_getOperation(L);
+}
+#endif
 
 static const struct luaL_Reg TaskContext_f [] = {
 	{ "getName", TaskContext_getName },
@@ -1640,6 +1705,7 @@ static const struct luaL_Reg TaskContext_m [] = {
 	{ "provides", TaskContext_provides },
 	{ "call", TaskContext_call },
 	{ "send", TaskContext_send },
+	// { "__index", TaskContext_index },
 	/* we don't GC TaskContexts
 	 * { "__gc", GCMethod<TaskContext> }, */
 	{ NULL, NULL}
