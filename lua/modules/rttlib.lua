@@ -142,9 +142,7 @@ end
 --
 -- convert a method to a string
 --
-function op2str(tc, op)
-   local rettype, arity, descr, args = tc:getOpInfo(op)
-
+function __op2str(rettype, arity, descr, args)
    local str = ""
 
    if #args < 1  then
@@ -162,6 +160,50 @@ function op2str(tc, op)
    return str
 end
 
+function op2str(op)
+   return __op2str(op:info())
+end
+
+function tc_op2str(tc, op)
+   local rettype, arity, descr, args = tc:getOpInfo(op)
+   local str = ""
+
+   if #args < 1  then
+      str = rettype .. " " .. cyan(op, false) .. "()"
+   else
+      str = rettype .. " " .. cyan(op, false) .. "("
+
+      for i=1,#args-1 do
+	 str = str .. args[i]["type"] .. " " .. args[i]["name"] .. ", "
+      end
+
+      str = str .. args[#args]["type"] .. " " .. args[#args]["name"] .. ")"
+   end
+   if descr then str = str .. " " .. red("// " .. descr) .. "" end
+   return str
+end
+
+function service2str(s, inds, indn)
+   local inds = inds or '    '
+   local indn = indn or 0
+   local t = {}
+
+   local function __s2str(s, inds, indn)
+      local ind = string.rep(inds, indn)
+      t[#t+1] = ind .. magenta("Service: ") .. cyan(s:getName())
+      t[#t+1] = ind .. magenta("   Subservices: ") .. cyan(table.concat(s:getProviderNames(), ', '))
+      t[#t+1] = ind .. magenta("   Operations:  ") .. cyan(table.concat(s:getOperationNames(), ', '))
+      t[#t+1] = ind .. magenta("   Ports:       ") .. cyan(table.concat(s:getPortNames(), ', '))
+
+      utils.foreach(function (sstr)
+		       local nexts = s:provides(sstr)
+		       __s2str(nexts, inds, indn+1)
+		    end, s:getProviderNames())
+   end
+
+   __s2str(s, inds, indn)
+   return table.concat(t, '\n')
+end
 
 function port2str(p)
    local inf = p:info()
@@ -224,7 +266,7 @@ function tc2str(tc)
 
    res[#res+1] = magenta("operations") .. ":"
    for i,v in ipairs(tc:getOps()) do
-      res[#res+1] = "   " .. op2str(tc, v)
+      res[#res+1] = "   " .. tc_op2str(tc, v)
    end
    return table.concat(res, '\n')
 end
@@ -239,6 +281,10 @@ if type(debug) == 'table' then
    reg.TaskContext.__tostring=tc2str
    reg.Variable.__tostring=var2str
    reg.Property.__tostring=prop2str
+   reg.Service.__tostring=service2str
+   reg.Operation.__tostring=op2str
+   reg.InputPort.__tostring=port2str
+   reg.OutputPort.__tostring=port2str
 else
    print("no debug library, if required pretty printing must be enabled manually")
 end

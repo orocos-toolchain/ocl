@@ -898,7 +898,9 @@ static int Operation_call(lua_State *L)
 	 */
 	if(oip->resultType() != "void") {
 		ti = types::TypeInfoRepository::Instance()->type(oip->resultType());
-		assert(ti);
+		if(!ti)
+			luaL_error(L, "Operation.call: can't create return value DSB of type '%s'", 
+				   oip->resultType().c_str());
 		ret2 = ti->buildValue();
 		ret2->update(ret.get());
 		luaM_pushobject_mt(L, "Variable", DataSourceBase::shared_ptr)(ret2);
