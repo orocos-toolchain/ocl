@@ -1764,6 +1764,32 @@ static const struct luaL_Reg Logger_f [] = {
 	{NULL, NULL}
 };
 
+/* misc stuff */
+
+static int rtt_services(lua_State *L)
+{
+	push_vect_str(L, PluginLoader::Instance()->listServices());
+	return 1;
+}
+
+static int rtt_typekits(lua_State *L)
+{
+	push_vect_str(L, PluginLoader::Instance()->listTypekits());
+	return 1;
+}
+
+static int rtt_types(lua_State *L)
+{
+	push_vect_str(L, TypeInfoRepository::Instance()->getTypes());
+	return 1;
+}
+
+static const struct luaL_Reg rtt_f [] = {
+	{"services", rtt_services },
+	{"typekits", rtt_typekits },
+	{"types", rtt_types },
+	{NULL, NULL}
+};
 
 extern "C" int luaopen_rtt(lua_State *L);
 
@@ -1831,8 +1857,10 @@ int luaopen_rtt(lua_State *L)
 	luaL_register(L, "rtt.Property", Property_f);
 
 	/* only functions */
-	luaL_newmetatable(L, "Logger");
 	luaL_register(L, "rtt.Logger", Logger_f);
+
+	/* misc toplevel functions */
+	luaL_register(L, "rtt", rtt_f);
 
 	return 1;
 }
