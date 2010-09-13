@@ -29,7 +29,6 @@
 #include <rtt/transports/corba/TaskContextProxy.hpp>
 #include <rtt/transports/corba/TaskContextServer.hpp>
 #include <taskbrowser/TaskBrowser.hpp>
-#include <deployment/DeploymentComponent.hpp>
 #include <iostream>
 #include <string>
 
@@ -38,7 +37,7 @@ using namespace RTT::corba;
 
 int ORO_main(int argc, char** argv)
 {
-    if ( argc == 1) {
+    if ( argc == 1 || (argc == 2 && strncmp(argv[1],"--help",6) == 0)) {
         std::cerr << "Please specify the CORBA TaskContext name or IOR to connect to." << std::endl;
         std::cerr << "  " << argv[0] << " [ComponentName | IOR]" << std::endl;
         return -1;
@@ -61,8 +60,6 @@ int ORO_main(int argc, char** argv)
         return -1;
     }
 
-    // we're not exposing it, just using it to load plugins.
-    OCL::DeploymentComponent dc("Deployer");
     OCL::TaskBrowser tb( proxy );
     tb.loop();
 
