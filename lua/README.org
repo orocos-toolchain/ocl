@@ -1,30 +1,53 @@
+#+TITLE:    Lua RTT bindings
+#+AUTHOR:    Markus Klotzbuecher
+#+EMAIL:     markus.klotzbuecher@mech.kuleuven.be
+#+DATE:      2010-09-13 Mon
+#+DESCRIPTION:
+#+KEYWORDS:
+#+LANGUAGE:  en
+#+OPTIONS:   H:3 num:t toc:t \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
+#+OPTIONS:   TeX:t LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
+#+INFOJS_OPT: view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
+#+EXPORT_SELECT_TAGS: export
+#+EXPORT_EXCLUDE_TAGS: noexport
+#+LINK_UP:
+#+LINK_HOME:
+#+XSLT:
+#+STYLE:    <link rel="stylesheet" type="text/css" href="doc/css/stylesheet.css" />
 #+STARTUP: showall
 #+STARTUP: hidestars
 
-* RTT-Lua bindings
+* Overview
 
-** Overview
+  The RTT Lua bindings provide a slim but powerful interface to the
+  RTT framework. These bindings can be used in three different ways:
 
-The RTT Lua bindings provide a slim but powerful interface to the RTT
-framework. In general the bindings can be divided into two groups:
+   1. As RTT enabled Lua interpreter
 
-   1. bindings for /Coordination/ purposes
-   2. bindings for implementing components in the scripting language
+      This is the easiest way to test a script and see if it works or
+      for use as a scriptable deployer.
 
-Up to now the focus has been mostly on 1, although being able to write
-components themselves in a higher level language could be very usefull
-too.
 
-The API described as follows. It consists of mostly objects and some
-free functions. The approach is to find a balance between the naming
-scheme of RTT and simplifying where possible.
+   2. As a Lua component
 
-** Requirements
-*** Compilation
+      A Lua component which offers two operations. The first for
+      executing a given lua script and the second for executing a
+      string with lua code.
 
-    - requires Lua-5.1
 
-*** Runtime:
+   3. As a RTT plugin. A Lua Service can be loaded into a component
+      and used e.g. for /intra-component/ coordination. It offers the
+      same API as the Lua component.
+
+  The Lua API consists of objects and free functions. The API naming
+  mostly follows that RTT while simplifying where possible.
+
+* Requirements
+** Compilation
+
+   - requires Lua-5.1 (debian: liblua5.1-0-dev, liblua5.1-0, lua5.1)
+
+** Runtime:
 
     - setup =LUA_PATH= and =LUA_CPATH= so that the necessary modules
       are found. The former is for lua modules (.lua) and the later is
@@ -33,9 +56,8 @@ scheme of RTT and simplifying where possible.
 #+BEGIN_EXAMPLE
       $ export LUA_PATH=";;;/usr/share/lua/5.1/?.lua;\
 	      /usr/share/lua/5.1/?/init.lua;\
-	      /home/mk/src/git/gitorocos/orocos-ocl/lua/lua-modules/?.lua"
+	      /home/mk/src/git/orocos/ocl/lua/lua-modules/?.lua"
 #+END_EXAMPLE
-
 
     - if using =rttlua= scripting: export correct =RTT_COMPONENT_PATH=
       variable, e.g.
@@ -44,12 +66,75 @@ scheme of RTT and simplifying where possible.
       $ export RTT_COMPONENT_PATH=/home/mk/tmp/rtt-2.0/lib/orocos
 #+END_EXAMPLE
 
-** Objects
 
-** the 'rttlib' convenience library
-   This library adds some pretty printing functions to the standard
-   objects.
+* Quickstart
 
-** Known issues
 
-** Todo
+* Lua API
+
+** Overview
+
+   All rtt related functions are stored in a global table called
+   =rtt=. They are further subdivided as followed:
+
+   - =TaskContext=
+   - =Variable=
+   - =InputPort= and =OutputPort=
+   - =Property=
+   - =SendHandle=
+   - =Service=
+   - =Operation=
+   - =Logger=
+
+     The flag column describes different properties of a function/method:
+     - =RT=: real-time safe
+     - =GC=: garbage collected object
+
+
+** =TaskContext=
+
+   | Method                                           | flag | description                                                         |
+   |--------------------------------------------------+------+---------------------------------------------------------------------|
+   | =string getName()=                               |      | returns TaskContext name                                            |
+   | =bool start()=                                   |      | start TaskContext                                                   |
+   | =bool stop()=                                    |      | stop TaskContext                                                    |
+   | =bool configure()=                               |      | configure TaskContext                                               |
+   | =bool activate()=                                |      | activate TaskContext                                                |
+   | =bool cleanup()=                                 |      | cleanup TaskContext                                                 |
+   | =string getState()=                              |      | return string describing current state                              |
+   | =table getPeers()=                               |      | return a table of all peers                                         |
+   | =void addPeer(TaskContext)=                      |      | add a TaskContext as a peer                                         |
+   | =void removePeer(string)=                        |      | remove a peer                                                       |
+   | =TaskContext getPeer(string)=                    |      | get a peer                                                          |
+   | =table getPortNames()=                           |      | return a table of port names                                        |
+   | =void addPort(port)=                             |      | add a port to TaskContext                                           |
+   | =void addEventPort(port)=                        |      | add a port as an event driven port                                  |
+   | =Port getPort(string)=                           |      | get a port with given name                                          |
+   | =addProperty(Property)=                          |      | add a property to TaskContext                                       |
+   | =getProperty(string)=                            |      | get a property with the given name                                  |
+   | =table getProperties()=                          |      | return all properties in a table                                    |
+   | =table getOps()=                                 |      | return a table of Operation names                                   |
+   | =string, number string, table getOpInfo(string)= |      | returns name, arity, description and table of argument descriptions |
+   | =Service provides(...)=                          |      | return service (provides/0 default, provides/1 subservice)          |
+   | =Variable call(string, ...)=                     |      | call operation with name specified by string and right arguments    |
+   | =SendHandle send(string, ...)=                   |      | as above but send. returns SendHandle                               |
+   | =void delete(TaskContext)=                       |      | explicit deletion of a TaskContext                                  |
+
+
+
+** =Variable=
+
+** =InputPort= and =OutputPort=
+
+
+* Pitfalls
+* The =rttlib= convenience module
+  This library adds some pretty printing functions to the standard
+  objects.
+
+  Todo: how add a custom pretty printer
+
+* Tipps and tricks
+** Using functions instead of methods
+** rttlua init file =~/.rttlua=
+* Known issues
