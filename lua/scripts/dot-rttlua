@@ -1,0 +1,4 @@
+require "modules/rttlib"
+rttlib.color=true
+var = rtt.Variable
+d=TC:getPeer("deployer")

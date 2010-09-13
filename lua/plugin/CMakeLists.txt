@@ -1,0 +1,10 @@
+
+CMAKE_DEPENDENT_OPTION( LUA_PLUGIN "Build lua scripting plugin" ON "BUILD_LUA_COMPONENT" OFF )
+
+IF (LUA_PLUGIN)
+  FILE( GLOB CPPS [^.]*.cpp )
+  FILE( GLOB HPPS [^.]*.hpp [^.]*.h [^.]*.inl)
+  SET(RTT_DEFINITIONS "${OROCOS-RTT_DEFINITIONS}")
+  ADD_RTT_PLUGIN( rttlua ${RTT_VERSION} ${CPPS})
+  
+ENDIF (LUA_PLUGIN)
