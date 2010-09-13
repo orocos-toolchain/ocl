@@ -9,20 +9,23 @@
 #include "../rtt.hpp"
 
 extern "C" {
-#include "lua-repl.h"
-	void dotty (lua_State *L);
-	void l_message (const char *pname, const char *msg);
-	int dofile (lua_State *L, const char *name);
-	int dostring (lua_State *L, const char *s, const char *name);
+#include "../lua-repl.h"
+void dotty (lua_State *L);
+void l_message (const char *pname, const char *msg);
+int dofile (lua_State *L, const char *name);
+int dostring (lua_State *L, const char *s, const char *name);
 }
 
 using namespace RTT;
 
 class LuaService : public Service
 {
+protected:
+	lua_State *L;
+
 public:
-	LuaService(RTT::TaskContext* c) 
-		: RTT::Service("Lua", c) 
+	LuaService(RTT::TaskContext* c)
+		: RTT::Service("Lua", c)
 	{
 		/* initialize lua */
 		L = lua_open();
@@ -38,9 +41,9 @@ public:
 		/* setup rtt bindings */
 		lua_pushcfunction(L, luaopen_rtt);
 		lua_call(L, 0, 0);
-		
-		this->addOperation("exec_file", &exec_file, this);
-		this->addOperation("exec_str", &exec_str, this);
+
+		this->addOperation("exec_file", &LuaService::exec_file, this);
+		this->addOperation("exec_str", &LuaService::exec_str, this);
 	}
 
 	bool exec_file(const std::string &file)
@@ -62,4 +65,4 @@ public:
 	}
 };
 
-ORO_SERVICE_NAMED_PLUGIN(MyService, "myservice")
+ORO_SERVICE_NAMED_PLUGIN(LuaService , "lua")
