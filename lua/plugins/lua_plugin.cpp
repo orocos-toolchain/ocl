@@ -34,13 +34,20 @@ public:
 		lua_gc(L, LUA_GCRESTART, 0);
 
 		if (L == NULL) {
-			l_message("Class Lua ctr", "cannot create state: not enough memory");
+			l_message("LuaService ctr", "cannot create state: not enough memory");
 			throw;
 		}
 
 		/* setup rtt bindings */
 		lua_pushcfunction(L, luaopen_rtt);
 		lua_call(L, 0, 0);
+
+		/* set global TC */
+		TaskContext** tc = (TaskContext**) lua_newuserdata(L, sizeof(TaskContext*));
+		*tc = (TaskContext*) this;
+		luaL_getmetatable(L, "TaskContext");
+		lua_setmetatable(L, -2);
+		lua_setglobal(L, "TC");
 
 		this->addOperation("exec_file", &LuaService::exec_file, this);
 		this->addOperation("exec_str", &LuaService::exec_str, this);
@@ -65,4 +72,4 @@ public:
 	}
 };
 
-ORO_SERVICE_NAMED_PLUGIN(LuaService , "lua")
+ORO_SERVICE_NAMED_PLUGIN(LuaService , "Lua")
