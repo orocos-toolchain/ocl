@@ -1,4 +1,4 @@
-#+TITLE:	Lua RTT bindings
+#+TITLE:	Lua RTT bindings (beta1)
 #+AUTHOR:	Markus Klotzbuecher
 #+EMAIL:	markus.klotzbuecher@mech.kuleuven.be
 #+DATE:		2010-09-13 Mon
@@ -23,32 +23,33 @@
   The RTT Lua bindings provide a slim but powerful interface to the
   RTT framework. These bindings can be used in three different ways:
 
-   1. As RTT enabled Lua interpreter
+   1. As *RTT enabled Lua interpreter*
 
       This is the easiest way to test a script and see if it works or
       for use as a scriptable deployer.
 
-
-   2. As a Lua component
+   2. As a *Lua component*
 
       A Lua component which offers two operations. The first for
       executing a given lua script and the second for executing a
       string with lua code.
 
+   3. As a *RTT plugin*
 
-   3. As a RTT plugin. A Lua Service can be loaded into a component
-      and used e.g. for /intra-component/ coordination. It offers the
-      same API as the Lua component.
+      A /Lua Service/ can be loaded into a component and used e.g. for
+      /intra-component/ coordination. It offers the same API as the
+      Lua component.
 
   The Lua API consists of objects and free functions. The API naming
   mostly follows that RTT while simplifying where possible.
 
-* Requirements
+* Setup
+
 ** Compilation
 
    - requires Lua-5.1 (debian: liblua5.1-0-dev, liblua5.1-0, lua5.1)
 
-** Runtime:
+** Runtime
 
     - setup =LUA_PATH= and =LUA_CPATH= so that the necessary modules
       are found. The former is for lua modules (.lua) and the later is
@@ -64,10 +65,15 @@
       variable, e.g.
 
 #+BEGIN_EXAMPLE
-      $ export RTT_COMPONENT_PATH=/home/mk/tmp/rtt-2.0/lib/orocos
+      $ export RTT_COMPONENT_PATH=/home/mk/tmp/rtt-2.0/lib/orocos:home/mk/src/git/ocl/lua
 #+END_EXAMPLE
 
 * Quickstart
+
+  Run the =rttlua= interpreter:
+
+
+
 * Lua API
 
 ** Overview
@@ -131,12 +137,16 @@
 
   Todo: how add a custom pretty printer
 
-* Tipps and tricks
+* Tips and tricks
 ** Using functions instead of methods
 ** rttlua init file =~/.rttlua=
 
 * Known issues
 
+* Todo
+** TODO reintegrate tlsf
+** TODO hard-real
+
 * License
 
-  The RTT Lua bindings are licensed under the LGPL as the RTT itself.
+  The Lua-RTT bindings are licensed under the LGPL.
