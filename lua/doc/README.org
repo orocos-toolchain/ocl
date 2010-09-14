@@ -1,21 +1,22 @@
-#+TITLE:    Lua RTT bindings
-#+AUTHOR:    Markus Klotzbuecher
-#+EMAIL:     markus.klotzbuecher@mech.kuleuven.be
-#+DATE:      2010-09-13 Mon
+#+TITLE:	Lua RTT bindings
+#+AUTHOR:	Markus Klotzbuecher
+#+EMAIL:	markus.klotzbuecher@mech.kuleuven.be
+#+DATE:		2010-09-13 Mon
 #+DESCRIPTION:
 #+KEYWORDS:
-#+LANGUAGE:  en
-#+OPTIONS:   H:3 num:t toc:t \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
-#+OPTIONS:   TeX:t LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
-#+INFOJS_OPT: view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
+#+LANGUAGE:	en
+#+OPTIONS:	H:3 num:t toc:t \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
+#+OPTIONS:	TeX:t LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
+#+INFOJS_OPT:	view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
 #+EXPORT_SELECT_TAGS: export
 #+EXPORT_EXCLUDE_TAGS: noexport
 #+LINK_UP:
 #+LINK_HOME:
 #+XSLT:
-#+STYLE:    <link rel="stylesheet" type="text/css" href="doc/css/stylesheet.css" />
-#+STARTUP: showall
-#+STARTUP: hidestars
+#+STYLE:	<link rel="stylesheet" type="text/css" href="css/stylesheet.css" />
+
+#+STARTUP:	showall
+#+STARTUP:	hidestars
 
 * Overview
 
@@ -66,10 +67,7 @@
       $ export RTT_COMPONENT_PATH=/home/mk/tmp/rtt-2.0/lib/orocos
 #+END_EXAMPLE
 
-
 * Quickstart
-
-
 * Lua API
 
 ** Overview
@@ -126,7 +124,6 @@
 
 ** =InputPort= and =OutputPort=
 
-
 * Pitfalls
 * The =rttlib= convenience module
   This library adds some pretty printing functions to the standard
@@ -137,4 +134,9 @@
 * Tipps and tricks
 ** Using functions instead of methods
 ** rttlua init file =~/.rttlua=
+
 * Known issues
+
+* License
+
+  The RTT Lua bindings are licensed under the LGPL as the RTT itself.
