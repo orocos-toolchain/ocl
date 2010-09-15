@@ -1109,6 +1109,86 @@ static const struct luaL_Reg Service_m [] = {
 	{ NULL, NULL }
 };
 
+/***************************************************************
+ * ServiceRequester
+ ***************************************************************/
+
+gen_push_bxptr(ServiceRequester_push, "ServiceRequester", ServiceRequester)
+
+static int ServiceRequester_getRequestName(lua_State *L)
+{
+	const char* name;
+	ServiceRequester *sr;
+
+	sr = *(luaM_checkudata_bx(L, 1, ServiceRequester));
+	lua_pushstring(L, sr->getRequestName().c_str());
+	return 1;
+}
+
+static int ServiceRequester_getRequesterNames(lua_State *L)
+{
+	ServiceRequester *sr;
+	sr = *(luaM_checkudata_bx(L, 1, ServiceRequester));
+	push_vect_str(L, sr->getRequesterNames());
+	return 1;
+}
+
+static int ServiceRequester_ready(lua_State *L)
+{
+	int ret;
+	ServiceRequester *sr;
+	sr = *(luaM_checkudata_bx(L, 1, ServiceRequester));
+	ret = sr->ready();
+	lua_pushboolean(L, ret);
+	return 1;
+}
+
+static int ServiceRequester_requires(lua_State *L)
+{
+	int argc, ret, i;
+	const char* subsr_str;
+	ServiceRequester *sr;
+	ServiceRequester *subsr;
+
+	sr = *(luaM_checkudata_bx(L, 1, ServiceRequester));
+	argc = lua_gettop(L);
+
+	/* return "this" if no args given */
+	if(argc == 1) {
+		ret = 1;
+		goto out;
+	}
+
+	for(i=2; i<=argc; i++) {
+		subsr_str = luaL_checkstring(L, i);
+		subsr = sr->requires(subsr_str);
+		if (subsr == 0)
+			luaL_error(L, "ServiceRequester: no required subservice %s of service %s",
+				   subsr_str, sr->getRequestName().c_str());
+		else
+			ServiceRequester_push(L, subsr);
+	}
+	ret = argc - 1;
+
+ out:
+	return ret;
+}
+
+static const struct luaL_Reg ServiceRequester_f [] = {
+	{ "getRequestName", ServiceRequester_getRequestName },
+	{ "getRequesterNames", ServiceRequester_getRequesterNames },
+	{ "ready", ServiceRequester_ready },
+	{ "requires", ServiceRequester_requires },
+	{ NULL, NULL }
+};
+
+static const struct luaL_Reg ServiceRequester_m [] = {
+	{ "getRequestName", ServiceRequester_getRequestName },
+	{ "getRequesterNames", ServiceRequester_getRequesterNames },
+	{ "ready", ServiceRequester_ready },
+	{ "requires", ServiceRequester_requires },
+	{ NULL, NULL }
+};
 
 
 /***************************************************************
@@ -1448,6 +1528,30 @@ static int TaskContext_provides(lua_State *L)
 	return Service_provides(L);
 }
 
+static int TaskContext_requires(lua_State *L)
+{
+	ServiceRequester *sr;
+	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
+	sr = tc->requires();
+
+	if(!sr)
+		luaL_error(L, "TaskContext.requires returned NULL");
+
+	ServiceRequester_push(L, sr);
+	lua_replace(L, 1);
+	return ServiceRequester_requires(L);
+}
+
+static int TaskContext_connectServices(lua_State *L)
+{
+	int ret;
+	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
+	TaskContext *peer = *(luaM_checkudata_bx(L, 2, TaskContext));
+	ret = tc->connectServices(peer);
+	lua_pushboolean(L, ret);
+	return 1;
+}
+
 static int TaskContext_call(lua_State *L)
 {
 	unsigned int argc = lua_gettop(L);
@@ -1678,6 +1782,7 @@ static const struct luaL_Reg TaskContext_f [] = {
 	{ "getOps", TaskContext_getOps },
 	{ "getOpInfo", TaskContext_getOpInfo },
 	{ "provides", TaskContext_provides },
+	{ "connectServices", TaskContext_connectServices },
 	{ "call", TaskContext_call },
 	{ "send", TaskContext_send },
 	{ "delete", TaskContext_del },
@@ -1706,6 +1811,8 @@ static const struct luaL_Reg TaskContext_m [] = {
 	{ "getOps", TaskContext_getOps },
 	{ "getOpInfo", TaskContext_getOpInfo },
 	{ "provides", TaskContext_provides },
+	{ "requires", TaskContext_requires },
+	{ "connectServices", TaskContext_connectServices },
 	{ "call", TaskContext_call },
 	{ "send", TaskContext_send },
 	// { "__index", TaskContext_index },
@@ -1826,6 +1933,12 @@ int luaopen_rtt(lua_State *L)
 	lua_setfield(L, -2, "__index");
 	luaL_register(L, NULL, Service_m);
 	luaL_register(L, "rtt.Service", Service_f);
+
+	luaL_newmetatable(L, "ServiceRequester");
+	lua_pushvalue(L, -1);
+	lua_setfield(L, -2, "__index");
+	luaL_register(L, NULL, ServiceRequester_m);
+	luaL_register(L, "rtt.ServiceRequester", ServiceRequester_f);
 
 	luaL_newmetatable(L, "SendHandle");
 	lua_pushvalue(L, -1); /* duplicates metatable */

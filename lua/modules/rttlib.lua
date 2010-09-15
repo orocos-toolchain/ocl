@@ -205,6 +205,27 @@ function service2str(s, inds, indn)
    return table.concat(t, '\n')
 end
 
+function service_req2str(sr, inds, indn)
+   local inds = inds or '    '
+   local indn = indn or 0
+   local t = {}
+
+   local function __sr2str(sr, inds, indn)
+      local ind = string.rep(inds, indn)
+      t[#t+1] = ind .. magenta("ServiceRequester: ") .. cyan(sr:getRequestName())
+      t[#t+1] = ind .. magenta("   Required subservices: ") .. cyan(table.concat(sr:getRequesterNames(), ', '))
+
+      utils.foreach(function (sstr)
+		       local nexts = sr:requires(sstr)
+		       __sr2str(nexts, inds, indn+1)
+		    end, sr:getRequesterNames())
+   end
+
+   __sr2str(sr, inds, indn)
+   return table.concat(t, '\n')
+end
+
+
 function port2str(p)
    local inf = p:info()
    local ret = {}
@@ -282,6 +303,7 @@ if type(debug) == 'table' then
    reg.Variable.__tostring=var2str
    reg.Property.__tostring=prop2str
    reg.Service.__tostring=service2str
+   reg.ServiceRequester.__tostring=service_req2str
    reg.Operation.__tostring=op2str
    reg.InputPort.__tostring=port2str
    reg.OutputPort.__tostring=port2str
