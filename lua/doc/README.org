@@ -23,7 +23,7 @@
   The RTT Lua bindings provide a slim but powerful interface to the
   RTT framework. These bindings can be used in three different ways:
 
-   1. As *RTT enabled Lua interpreter*
+   1. As a *RTT enabled Lua interpreter*
 
       This is the easiest way to test a script and see if it works or
       for use as a scriptable deployer.

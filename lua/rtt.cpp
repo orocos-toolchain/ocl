@@ -1024,7 +1024,8 @@ static int Service_provides(lua_State *L)
 
 	for(i=2; i<=argc; i++) {
 		subsrv_str = luaL_checkstring(L, i);
-		subsrv = srv->provides(subsrv_str);
+		// subsrv = srv->provides(subsrv_str);
+		subsrv = srv->getService(subsrv_str);
 		if (subsrv == 0)
 			luaL_error(L, "Service.provides: no subservice %s of service %s", 
 				   srv->getName().c_str(), subsrv_str);
