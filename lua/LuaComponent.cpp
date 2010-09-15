@@ -41,7 +41,6 @@ namespace OCL
 		LuaComponent(std::string name)
 			: TaskContext(name, PreOperational)
 		{
-			Logger::In in("constructor()");
 			
 			L = lua_open();
 			lua_gc(L, LUA_GCSTOP, 0);
@@ -137,12 +136,8 @@ int ORO_main(int argc, char** argv)
 	struct stat stb;
 	wordexp_t init_exp;
 
-	Logger::In in("main()");
+  	// log().setLogLevel( Logger::Warning );
 
-	if ( log().getLogLevel() < Logger::Info ) {
-		log().setLogLevel( Logger::Info );
-	}
-	
 	LuaComponent lua("lua");
 	DeploymentComponent dc("deployer");
 	lua.connectPeers(&dc);

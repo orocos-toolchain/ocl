@@ -899,7 +899,7 @@ static int Operation_call(lua_State *L)
 	if(oip->resultType() != "void") {
 		ti = types::TypeInfoRepository::Instance()->type(oip->resultType());
 		if(!ti)
-			luaL_error(L, "Operation.call: can't create return value DSB of type '%s'", 
+			luaL_error(L, "Operation.call: can't create return value DSB of type '%s'",
 				   oip->resultType().c_str());
 		ret2 = ti->buildValue();
 		ret2->update(ret.get());
@@ -1027,7 +1027,7 @@ static int Service_provides(lua_State *L)
 		// subsrv = srv->provides(subsrv_str);
 		subsrv = srv->getService(subsrv_str);
 		if (subsrv == 0)
-			luaL_error(L, "Service.provides: no subservice %s of service %s", 
+			luaL_error(L, "Service.provides: no subservice %s of service %s",
 				   srv->getName().c_str(), subsrv_str);
 		else
 			luaM_pushobject_mt(L, "Service", Service::shared_ptr)(subsrv);
@@ -1050,7 +1050,7 @@ static int Service_getOperation(lua_State *L)
 	oip = srv->getOperation(op_str);
 
 	if(!oip)
-		luaL_error(L, "Service_getOperation: service %s has no operation %s", 
+		luaL_error(L, "Service_getOperation: service %s has no operation %s",
 			   srv->getName().c_str(), op_str);
 	Operation_push(L, oip);
 	return 1;
