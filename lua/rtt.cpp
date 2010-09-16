@@ -1143,6 +1143,14 @@ static int ServiceRequester_ready(lua_State *L)
 	return 1;
 }
 
+static int ServiceRequester_disconnect(lua_State *L)
+{
+	ServiceRequester *sr;
+	sr = *(luaM_checkudata_bx(L, 1, ServiceRequester));
+	sr->disconnect();
+	return 0;
+}
+
 static int ServiceRequester_requires(lua_State *L)
 {
 	int argc, ret, i;
@@ -1178,6 +1186,7 @@ static const struct luaL_Reg ServiceRequester_f [] = {
 	{ "getRequestName", ServiceRequester_getRequestName },
 	{ "getRequesterNames", ServiceRequester_getRequesterNames },
 	{ "ready", ServiceRequester_ready },
+	{ "disconnect", ServiceRequester_disconnect },
 	{ "requires", ServiceRequester_requires },
 	{ NULL, NULL }
 };
@@ -1186,6 +1195,7 @@ static const struct luaL_Reg ServiceRequester_m [] = {
 	{ "getRequestName", ServiceRequester_getRequestName },
 	{ "getRequesterNames", ServiceRequester_getRequesterNames },
 	{ "ready", ServiceRequester_ready },
+	{ "disconnect", ServiceRequester_disconnect },
 	{ "requires", ServiceRequester_requires },
 	{ NULL, NULL }
 };
