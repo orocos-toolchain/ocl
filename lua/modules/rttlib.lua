@@ -70,24 +70,16 @@ end
 
 -- pretty print a ConnPolicy
 function ConnPolicy2tab(cp)
-   local tab = {}
-   if cp.type == 0 then tab.type = "DATA"
-   elseif cp.type == 1 then tab.type = "BUFFER"
-   else tab.type = tostring(cp.type) .. " (invalid!)" end
+   if cp.type == 0 then cp.type = "DATA"
+   elseif cp.type == 1 then cp.type = "BUFFER"
+   else cp.type = tostring(cp.type) .. " (invalid!)" end
 
-   if cp.lock_policy == 0 then tab.lock_policy = "UNSYNC"
-   elseif cp.lock_policy == 1 then tab.lock_policy = "LOCKED"
-   elseif cp.lock_policy == 2 then tab.lock_policy = "LOCK_FREE"
-   else tab.lock_policy = tostring(cp.lock_policy) .. " (invalid!)" end
+   if cp.lock_policy == 0 then cp.lock_policy = "UNSYNC"
+   elseif cp.lock_policy == 1 then cp.lock_policy = "LOCKED"
+   elseif cp.lock_policy == 2 then cp.lock_policy = "LOCK_FREE"
+   else cp.lock_policy = tostring(cp.lock_policy) .. " (invalid!)" end
 
-   tab.init = cp.init
-   tab.pull = cp.pull
-   tab.size = cp.size
-   tab.transport = cp.transport
-   tab.data_size = cp.data_size
-   tab.name_id = cp.name_id
-
-   return tab
+   return cp
 end
 
 local function var_is_basic(var)
@@ -119,11 +111,20 @@ function var2tab(var)
    return __var2tab(var)
 end
 
+-- table of Variable pretty printers
+-- must accept a table and return a table or string
+var_pp = {}
+var_pp.ConnPolicy = ConnPolicy2tab
+
 function var2str(var)
    local res = var2tab(var)
 
-   -- post-beautification
-   if var:getType() == 'ConnPolicy' then res = ConnPolicy2tab(res) end
+   -- post-beautification:
+   local pp = var_pp[var:getType()]
+   if pp then
+      assert(type(pp) == 'function')
+      res = pp(res)
+   end
 
    if type(res) == 'table' then
       return utils.tab2str(res)
@@ -256,7 +257,7 @@ end
 local function tc_colorstate(state)
    if state == "Init" then return yellow(state, false)
    elseif state == "PreOperational" then return yellow(state, false)
-   elseif state == "Running" then return green(state, false) 
+   elseif state == "Running" then return green(state, false)
    elseif state == "Stopped" then return red(state, false) end
    return red(state, true)
 end
