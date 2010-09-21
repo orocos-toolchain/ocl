@@ -1226,8 +1226,12 @@ namespace OCL
             return false;
         }
 
+        // we need to set instance such that componentLoaded can lookup 'instance' in 'comps'
+        comps[name].instance = instance;
+
         if (!this->componentLoaded( instance ) ) {
             log(Error) << "This deployer type refused to connect to "<< instance->getName() << ": aborting !" << endlog(Error);
+            comps[name].instance = 0;
             ComponentLoader::Instance()->unloadComponent( instance );
             return false;
         }
@@ -1236,7 +1240,6 @@ namespace OCL
         this->addPeer( instance );
         log(Info) << "Adding "<< instance->getName() << " as new peer:  OK."<< endlog(Info);
 
-        comps[name].instance = instance;
         comps[name].loaded = true;
 
         return true;

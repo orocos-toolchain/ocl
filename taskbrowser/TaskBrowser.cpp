@@ -1885,8 +1885,10 @@ namespace OCL
             objlist = peer->getPeerList();
             if ( !objlist.empty() )
                 for(vector<string>::iterator it = objlist.begin(); it != objlist.end(); ++it) {
-                    assert( peer->getPeer(*it) );
-                    sresult << *it << "["<<getTaskStatusChar(peer->getPeer(*it))<<"] ";
+                    if( peer->getPeer(*it) )
+                    	sresult << *it << "["<<getTaskStatusChar(peer->getPeer(*it))<<"] ";
+                    else
+                    	sresult << *it << "[X] ";
 	      }
             else
                 sresult << "(none)";

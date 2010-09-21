@@ -18,7 +18,7 @@ ENDIF(${CMAKE_MAJOR_VERSION} EQUAL 2 AND ${CMAKE_MINOR_VERSION} GREATER 4)
 
 PROJECT(orocos-ocl)
 
-SET( OCL_VERSION 1.99.5 )
+SET( OCL_VERSION 2.0.1 )
 STRING( REGEX MATCHALL "[0-9]+" OCL_VERSIONS ${OCL_VERSION} )
 LIST( GET OCL_VERSIONS 0 OCL_VERSION_MAJOR)
 LIST( GET OCL_VERSIONS 1 OCL_VERSION_MINOR)
@@ -108,7 +108,7 @@ INCLUDE(${PROJ_SOURCE_DIR}/config/component_rules.cmake)
 INCLUDE(${PROJ_SOURCE_DIR}/config/TestUsesFile.cmake)
 
 ## Find Orocos RTT.
-find_package(OROCOS-RTT 1.99.5)
+find_package(OROCOS-RTT 2.0.0)
 if (NOT OROCOS-RTT_FOUND)
   message(FATAL_ERROR "\n   RTT not found. Is the version correct? Use the CMAKE_PREFIX_PATH cmake or environment variable to point to the installation directory of RTT.")
 else()
