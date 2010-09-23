@@ -27,7 +27,7 @@ OPTION( BUILD_TESTS "Turn me off to disable compilation of all tests" OFF )
 #                                                         #
 ###########################################################
 
-INCLUDE( ${CMAKE_ROOT}/Modules/FindCurses.cmake )
+find_package( Curses )
 IF ( CURSES_INCLUDE_DIR )
     MESSAGE("-- Looking for libncurses - found")
     SET( CURSES 1 CACHE INTERNAL "libncurses" )
@@ -56,7 +56,7 @@ ELSE ( BOOST )
 ENDIF ( BOOST )
 
 find_package(Boost COMPONENTS program_options)
-INCLUDE_DIRECTORIES( ${Boost_INCLUDE_DIR} ${READLINE_INCLUDE_DIR} )
+INCLUDE_DIRECTORIES( ${Boost_INCLUDE_DIR} )
 
 # Look for Log4cpp (if needed
 IF ( BUILD_LOGGING )
