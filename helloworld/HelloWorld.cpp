@@ -43,7 +43,13 @@ namespace OCL
          * Properties take a name, a value and a description
          * and are suitable for XML.
          */
-        RTT::Property<std::string> property;
+        std::string property;
+
+        /**
+         * Attribute that you can toggle to influence what is printed
+         * in updateHook()
+         */
+        bool flag;
         /**
          * Attributes are aliased to class variables.
          */
@@ -88,7 +94,12 @@ namespace OCL
         }
 
         void updateHook() {
-            //cout << "."<<endl;
+        	if (flag) {
+        		cout <<"flag: " << flag <<endl;
+        		cout <<"the_property: "<< property <<endl;
+        		cout <<"the_attribute: "<< attribute <<endl;
+        		cout <<"the_constant: "<< constant <<endl;
+        	}
         }
     public:
         /**
@@ -98,16 +109,16 @@ namespace OCL
         HelloWorld(std::string name)
             : RTT::TaskContext(name),
               // Name, description, value
-              property("the_property", "the_property Description", "Hello World"),
-              attribute("Hello World"),
-              constant("Hello World"),
+              property("Hello Property"), flag(true),
+              attribute("Hello Attribute"),
+              constant("Hello Constant"),
               // Name, initial value
               outport("the_results",true),
               // Name, policy
               bufferport("the_buffer_port",ConnPolicy::buffer(13,ConnPolicy::LOCK_FREE,true) )
         {
-            // New activity with period 0.01s and priority 0.
-            this->setActivity( new Activity(0, 0.01) );
+            // New activity with period 0.1s and priority 0.
+            this->setActivity( new Activity(0, 0.1) );
 
             // Set log level more verbose than default,
             // such that we can see output :
@@ -116,11 +127,10 @@ namespace OCL
                 log(Info) << "HelloWorld manually raises LogLevel to 'Info' (5). See also file 'orocos.log'."<<endlog();
             }
 
-            // Check if all initialisation was ok:
-            assert( property.ready() );
-            // Now add it to the interface:
-            this->properties()->addProperty( property);
+            // Now add member variables to the interface:
+            this->properties()->addProperty("the_property", property).doc("A friendly property.");
 
+            this->addAttribute("flag", flag);
             this->addAttribute("the_attribute", attribute);
             this->addConstant("the_constant", constant);
 
