@@ -865,7 +865,7 @@ static int Operation_info(lua_State *L)
 	return 4;
 }
 
-static int Operation_call(lua_State *L)
+static int __Operation_call(lua_State *L)
 {
 	std::vector<base::DataSourceBase::shared_ptr> args;
 	DataSourceBase::shared_ptr dsb;
@@ -911,7 +911,18 @@ static int Operation_call(lua_State *L)
 	return 1;
 }
 
-static int Operation_send(lua_State *L)
+static int Operation_call(lua_State *L)
+{
+	int ret;
+	try {
+		ret = __Operation_call(L);
+	} catch(...) {
+		luaL_error(L, "Operation.call: caught exception");
+	}
+	return ret;
+}
+
+static int __Operation_send(lua_State *L)
 {
 	SendHandleC *shc;
 	DataSourceBase::shared_ptr dsb, *dsbp;
@@ -942,6 +953,18 @@ static int Operation_send(lua_State *L)
 	luaM_pushobject_mt(L, "SendHandle", SendHandleC)(occ->send());
 	return 1;
 }
+
+static int Operation_send(lua_State *L)
+{
+	int ret;
+	try {
+		ret = __Operation_send(L);
+	} catch(...) {
+		luaL_error(L, "Operation.send: caught exception");
+	}
+	return ret;
+}
+
 
 static const struct luaL_Reg Operation_f [] = {
 	{ "info", Operation_info },
@@ -1562,7 +1585,7 @@ static int TaskContext_connectServices(lua_State *L)
 	return 1;
 }
 
-static int TaskContext_call(lua_State *L)
+static int __TaskContext_call(lua_State *L)
 {
 	unsigned int argc = lua_gettop(L);
 	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
@@ -1610,6 +1633,17 @@ static int TaskContext_call(lua_State *L)
 		lua_pushnil(L);
 	}
 	return 1;
+}
+
+static int TaskContext_call(lua_State *L)
+{
+	int ret;
+	try {
+		ret = __TaskContext_call(L);
+	} catch(...) {
+		luaL_error(L, "TaskContext.call: caught exception");
+	}
+	return ret;
 }
 
 /*
@@ -1687,7 +1721,7 @@ static const struct luaL_Reg SendHandle_m [] = {
 };
 
 /* TaskContext continued */
-static int TaskContext_send(lua_State *L)
+static int __TaskContext_send(lua_State *L)
 {
 	unsigned int argc = lua_gettop(L);
 	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
@@ -1722,6 +1756,17 @@ static int TaskContext_send(lua_State *L)
 	/* call send and construct push SendHandle userdata */
 	luaM_pushobject_mt(L, "SendHandle", SendHandleC)(occ->send());
 	return 1;
+}
+
+static int TaskContext_send(lua_State *L)
+{
+	int ret;
+	try {
+		ret = __TaskContext_send(L);
+	} catch(...) {
+		luaL_error(L, "TaskContext.send: caught exception");
+	}
+	return ret;
 }
 
 /* only explicit destruction allowed */
