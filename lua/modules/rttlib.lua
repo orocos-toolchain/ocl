@@ -134,6 +134,26 @@ function var2str(var)
 end
 
 --
+-- update contents of var from a table
+--
+function varfromtab(var, tab)
+   local memdsb
+   if type(tab) ~= 'table' then error("arg 2 is not a table") end
+
+   for k,v in pairs(tab) do
+      memdsb = var:getMember(k)
+      if memdsb == nil then error("no member " .. k) end
+
+      if var_is_basic(memdsb) then
+	 memdsb:assign(v);
+      else
+	 fromtab(memdsb, v)
+      end
+   end
+end
+
+
+--
 -- pretty print properties
 --
 function prop2str(p)
@@ -302,6 +322,8 @@ if type(debug) == 'table' then
    reg = debug.getregistry()
    reg.TaskContext.__tostring=tc2str
    reg.Variable.__tostring=var2str
+   reg.Variable.fromtab=varfromtab
+   reg.Variable.var2tab=var2tab
    reg.Property.__tostring=prop2str
    reg.Service.__tostring=service2str
    reg.ServiceRequester.__tostring=service_req2str

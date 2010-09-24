@@ -156,9 +156,9 @@ static int Variable_getMember(lua_State *L)
 	memdsb = (*dsbp)->getMember(mem);
 
 	if(memdsb == 0)
-		luaL_error(L, "Variable.getMember: no member named %s ", mem);
-
-	luaM_pushobject_mt(L, "Variable", DataSourceBase::shared_ptr)(memdsb);
+		lua_pushnil(L);
+	else
+		luaM_pushobject_mt(L, "Variable", DataSourceBase::shared_ptr)(memdsb);
 	return 1;
 }
 
