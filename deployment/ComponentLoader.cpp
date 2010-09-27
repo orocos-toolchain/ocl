@@ -80,8 +80,8 @@ string makeShortFilename(string const& str) {
     string ret = str;
     if (str.substr(0,3) == "lib")
         ret = str.substr(3);
-    if (str.rfind(SO_EXT) != string::npos)
-        ret = ret.substr(0, str.rfind(SO_EXT) - SO_EXT.length() );
+    if (ret.rfind(SO_EXT) != string::npos)
+        ret = ret.substr(0, ret.rfind(SO_EXT) );
     return ret;
 }
 
