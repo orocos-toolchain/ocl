@@ -1246,7 +1246,7 @@ namespace OCL
         // time to evaluate 'comm'.
         if ( context->provides()->getValue( comm ) ) {
                 this->printResult( context->provides()->getValue( comm )->getDataSource().get(), true );
-                cout << sresult.str();
+                cout << sresult.str()<<nl;
                 sresult.str("");
                 return;
         }
