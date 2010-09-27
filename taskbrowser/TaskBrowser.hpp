@@ -207,6 +207,11 @@ namespace OCL
         void printHelp();
 
         /**
+         * Print help about an operation
+         */
+        void printHelp(string command);
+
+        /**
          * Print info this peer or another peer at "peerpath".
          */
         void printInfo(const std::string& peerpath);

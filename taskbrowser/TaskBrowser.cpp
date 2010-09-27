@@ -731,6 +731,8 @@ namespace OCL
                     return;
                 } else if ( command == "help") {
                     printHelp();
+                } else if ( command.find("help ") == 0) {
+                    printHelp( command.substr(command.rfind(' ')));
                 } else if ( command == "#debug") {
                     debug = !debug;
                 } else if ( command.find("list ") == 0 || command == "list" ) {
@@ -1548,6 +1550,10 @@ namespace OCL
         cout << "  immediately and print the result. An example could be :"<<nl;
         cout << "     someTask.bar.getNumberOfBeers(\"Palm\") [enter] "<<nl;
         cout << "   = 99" <<nl;
+        cout << "  You can ask help on an operation by using the 'help' command: "<<nl;
+        cout << "     help start"<<nl;
+        cout << "    start( ) : bool"<<nl;
+        cout << "      Start this TaskContext (= startHook() + updateHook() )." <<nl;
 
         cout <<titlecol("Program and scripting::StateMachine Scripts")<<nl;
         cout << "  To load a program script use the scripting service."<<nl;
@@ -1599,7 +1605,28 @@ namespace OCL
         cout << "  Use "<<comcol(".services")<< " to get a list of available services."<<nl;
         cout << "  Use "<<comcol(".typekits")<< " to get a list of available typekits."<<nl;
         cout << "  Use "<<comcol(".types")<< " to get a list of available data types."<<nl;
-}
+    }
+
+    void TaskBrowser::printHelp( string helpstring ) {
+    	peer = context;
+    	if ( findPeer( helpstring ) ) {
+    		try {
+    			// trim garbage:
+    			str_trim(helpstring, ' ');
+    			str_trim(helpstring, '.');
+    			if (helpstring.rfind('.') != string::npos )
+    				printOperation( helpstring.substr(helpstring.rfind('.')+1 ), taskobject );
+    			else
+    				printOperation( helpstring, taskobject );
+    	        cout << sresult.str();
+    	        sresult.str("");
+    		} catch (...) {
+        		cerr<< "  help: No such operation known: '"<< helpstring << "'"<<nl;
+    		}
+    	} else {
+    		cerr<< "  help: No such operation known: '"<< helpstring << "'"<<nl;
+    	}
+    }
 
     void TaskBrowser::printProgram(const std::string& progname, int cl /*= -1*/, RTT::TaskContext* progpeer /* = 0 */) {
         string ps;
@@ -1718,10 +1745,13 @@ namespace OCL
             return;
         }
 
+        //                     	sresult << *it << "["<<getTaskStatusChar(peer->getPeer(*it))<<"] ";
+
+
         if ( peer->provides() == taskobject )
-            sresult <<nl<<" Listing TaskContext "<< green << peer->getName()<<coloroff<< " :"<<nl;
+            sresult <<nl<<" Listing TaskContext "<< green << peer->getName()<<coloroff << "["<<getTaskStatusChar(peer)<<"] :"<<nl;
         else
-            sresult <<nl<<" Listing Service "<< green << taskobject->getName()<<coloroff<< " :"<<nl;
+            sresult <<nl<<" Listing Service "<< green << taskobject->getName()<<coloroff<< "["<<getTaskStatusChar(peer)<<"] :"<<nl;
 
         // Only print Properties for TaskContexts
         if ( peer->provides() == taskobject ) {
