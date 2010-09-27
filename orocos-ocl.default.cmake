@@ -41,6 +41,8 @@
 #
 if (MSVC)
   set( OROCOS_TARGET win32 CACHE STRING "The Operating System target. One of [lxrt gnulinux xenomai macosx win32]")
+  set( OROCOS_INSTALL "C:\Program Files\orocos" )
+  set( CMAKE_INSTALL_PREFIX "C:\Program Files\orocos" )
 elseif( APPLE AND ${CMAKE_SYSTEM_NAME} MATCHES "Darwin" )
   set( OROCOS_TARGET macosx CACHE STRING "The Operating System target. One of [lxrt gnulinux xenomai macosx win32]")
 else()
