@@ -46,10 +46,6 @@
       /intra-component/ coordination. It offers the same API as the
       Lua component.
 
-  The Lua API consists of objects and free functions. The API naming
-  mostly follows that RTT while simplifying where possible.
-
-
 * Setup
 
 ** Compilation
@@ -64,8 +60,8 @@
 
 #+BEGIN_EXAMPLE
       $ export LUA_PATH=";;;/usr/share/lua/5.1/?.lua;\
-	      /usr/share/lua/5.1/?/init.lua;\
-	      /home/mk/src/git/orocos/ocl/lua/lua-modules/?.lua"
+              /usr/share/lua/5.1/?/init.lua;\
+              /home/mk/src/git/orocos/ocl/lua/lua-modules/?.lua"
 #+END_EXAMPLE
 
     - if using =rttlua= scripting: export correct =RTT_COMPONENT_PATH=
@@ -114,21 +110,40 @@
 
 ** Overview
 
-   All rtt related functions are stored in a global table called
-   =rtt=. They are further subdivided as followed:
+   The Lua API consists of objects and free functions. The API naming
+   mostly follows that RTT while simplifying where possible. All rtt
+   related functions are stored in a global table called =rtt=. They
+   are further subdivided as followed:
 
    - =TaskContext=
+   - =SendHandle=
    - =Variable=
    - =InputPort= and =OutputPort=
    - =Property=
-   - =SendHandle=
    - =Service=
    - =Operation=
    - =Logger=
 
-     The flag column describes different properties of a function/method:
-     - =RT=: real-time safe
-     - =GC=: garbage collected object
+  *Note*: the API consists of what was needed so far and what was
+  easy. If something is missing which you need let us know. Chances
+  are high that it is easy to add.
+
+  Most of the API can be used in two ways: as functions and
+  objects. The first uses the dot '.' syntax and takes the object as
+  the first parameter. The second uses the ':' and will internally
+  pass the object as a first parameter.
+
+  For example the following two calls are equivalent:
+
+#+BEGIN_EXAMPLE
+  > print( rtt.TaskContext.getName(TC) )
+  > print( TC:getName() )
+#+END_EXAMPLE
+
+  The flag column describes additonal properties of the
+  function/method:
+    - 'R': real-time safe
+    - 'F' or 'M': only available as function or method
 
 
 ** =TaskContext=
@@ -162,11 +177,106 @@
 
 
 
+** =SendHandle=
+
+   An object returned by a TaskContext send() operation.
+
+   | Method                           | flag | description                                              |
+   |----------------------------------+------+----------------------------------------------------------|
+   | =string, variable collect()=     |      | collect results of send, may block. string is SendStatus |
+   | =string, variable collectIfDone= |      | as above, non blocking version                           |
+   |                                  |      |                                                          |
+
+
 ** =Variable=
+
+   Variable are the types know to the RTT. They consist of basic types
+   (numeric, =string=, =char=, =bool=) and user defined types. The
+   function =rtt.Variable.getTypes()= returns a table of these types:
+
+#+BEGIN_EXAMPLE
+   > print(table.concat(rtt.Variable.getTypes(), ', '))
+   ConnPolicy, FlowStatus, PropertyBag, SendHandle, SendStatus, array, bool, char, double, float, int, rt_string, string, uint, void
+#+END_EXAMPLE
+
+
+   | Method                            | flag | description                                                                 |
+   |-----------------------------------+------+-----------------------------------------------------------------------------|
+   | =variable new(type)=              | F    | create a new Variable of type                                               |
+   | =variable new(type, ival)=        | F    | create new Variable of type and initialize with ival (only for basic types) |
+   | =luaval tolua()=                  |      | convert to lua value (only for basic types)                                 |
+   | =table getTypes()=                | F    | return a list of types know to the RTT                                      |
+   | =string getType()=                |      | return the RTT type name in human readable format                           |
+   | =string getTypeName()=            |      | return the RTT type name                                                    |
+   | =table getMemberNames()=          |      | return a table of the names of subtypes of this variable                    |
+   | =variable getMember(name)=        |      | return variable which is a member with name                                 |
+   | =opBinary(string_op, var1, var2)= | F    | execute: var1 string_op var2                                                |
+   | =bool assign(value)=              |      | assign value which can be a lua type or a Variable                          |
+   |                                   |      |                                                                             |
+
+   - the unary operator =-= and the binary operators =+=, =-=, =*=,
+     =/= =%=, =^=, and the comparison operators '==', '<=', '>=' are
+     supported. See the [[#ComparisonIssue][warning]] on comparing Variables with
+     corresponding Lua types.
+
+   - indexing and assigment
+
+     Variables with members can be index and assigned. See the
+     following example:
+
+#+BEGIN_EXAMPLE
+     > cp = rtt.Variable.new("ConnPolicy")
+     > print(cp)
+     {data_size=0,type=0,name_id="",init=false,pull=false,transport=0,lock_policy=2,size=0}
+     > print(cp.data_size)
+     0
+     > cp.data_size = 4711
+     > print(cp.data_size)
+     4711
+#+END_EXAMPLE
+
 
 ** =InputPort= and =OutputPort=
 
-* Pitfalls
+   InputPort
+
+   | Method                    | flag | description                                                                  |
+   |---------------------------+------+------------------------------------------------------------------------------|
+   | =new(type)=               |      | create a new InputPort of type                                               |
+   | =string, variable read()= |      | read from Port, returns a FlowStatus string and if data available a Variable |
+   | =string read(variable)=   |      | read from Port and write result into Variable given. Returns FlowStatus      |
+   | =table info()=            |      | return a table containing information about this port                        |
+
+   OuputPort
+
+   | Method            | flag | description                                           |
+   |-------------------+------+-------------------------------------------------------|
+   | =new(type)=       |      | create a new OutputPort of type                       |
+   | =write(Variable)= |      | write Variable to port                                |
+   | =table info()=    |      | return a table containing information about this port |
+
+
+
+** =Property=
+
+** Service Interface
+
+*** =Service=
+
+*** =ServiceRequester=
+
+*** =Operation=
+
+** miscellaneous
+
+*** =Logger=
+
+*** =alloc=
+
+
+* Real-Time
+
+
 * The =rttlib= convenience module
   This library adds some pretty printing functions to the standard
   objects.
@@ -237,28 +347,60 @@
 
 * Known issues
 
-  - Not all types are garbage collected.
+** Assignment is not like RTT scripting
 
-  - Comparison of equivalent Lua and RTT Variable types is does *not*
-    work. You can only compare entities of the _same_ type:
+   Except for the Lua primitive types (string, number, boolean) Lua
+   works with references. So assignment between RTT Variables and Lua
+   types might not do what you expect:
 
-    #+BEGIN_EXAMPLE
-    -- lua with lua works:
-    > ="just a string" == "just a string"
-    true
-    -- and rtt.Variable with rtt.Variable too...
-    > return rtt.Variable.new("string", "just a string") == rtt.Variable.new("string", "just a string")
-    true
-    -- but unfortunately not a mixture of both:
-    > return "just a string" == rtt.Variable.new("string", "just a string")
-    false
-    #+END_EXAMPLE
+#+BEGIN_EXAMPLE
+   > s=rtt.Variable.new("string", "hello world")
+   > print(s)
+   hello world
+   > =type(s)
+   userdata
+   > =s:getType()
+   string
+   > s = "a new string" -- carful! now its a Lua string, the former Variable will be garbage collected.
+   > =type(s)
+   string
+   > s:getType()
+   stdin:1: attempt to call method 'getType' (a nil value)
+   stack traceback:
+   stdin:1: in main chunk
+#+END_EXAMPLE
+
+** Not all types are garbage collected
+
+** Comparing Lua types and RTT Variables fails
+   :PROPERTIES:
+   :CUSTOM_ID: ComparisonIssue
+   :END:
+
+   Comparison of equivalent Lua and RTT Variable types is does *not*
+   work. You can only compare entities of the _same_ type:
+
+     #+BEGIN_EXAMPLE
+     -- lua with lua works:
+     > ="just a string" == "just a string"
+     true
+     -- and rtt.Variable with rtt.Variable too...
+     > return rtt.Variable.new("string", "just a string") == rtt.Variable.new("string", "just a string")
+     true
+     -- but unfortunately not a mixture of both:
+     > return "just a string" == rtt.Variable.new("string", "just a string")
+     false
+     #+END_EXAMPLE
+
+   - It is currently not possible to call or send a connected local
+     required Operation.
+
+
 
 * Todo
 
   - reintegrate tlsf and real-time validation
   - Support for creating Operations from Lua (probably not soon)
-  -
 
 * License
 

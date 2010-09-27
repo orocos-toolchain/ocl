@@ -92,11 +92,25 @@ lang="en" xml:lang="en">
 <ul>
 <li><a href="#sec-4_1">4.1 Overview </a></li>
 <li><a href="#sec-4_2">4.2 <code>TaskContext</code> </a></li>
-<li><a href="#sec-4_3">4.3 <code>Variable</code> </a></li>
-<li><a href="#sec-4_4">4.4 <code>InputPort</code> and <code>OutputPort</code> </a></li>
+<li><a href="#sec-4_3">4.3 <code>SendHandle</code> </a></li>
+<li><a href="#sec-4_4">4.4 <code>Variable</code> </a></li>
+<li><a href="#sec-4_5">4.5 <code>InputPort</code> and <code>OutputPort</code> </a></li>
+<li><a href="#sec-4_6">4.6 <code>Property</code> </a></li>
+<li><a href="#sec-4_7">4.7 Service Interface </a>
+<ul>
+<li><a href="#sec-4_7_1">4.7.1 <code>Service</code> </a></li>
+<li><a href="#sec-4_7_2">4.7.2 <code>ServiceRequester</code> </a></li>
+<li><a href="#sec-4_7_3">4.7.3 <code>Operation</code> </a></li>
 </ul>
 </li>
-<li><a href="#sec-5">5 Pitfalls </a></li>
+<li><a href="#sec-4_8">4.8 miscellaneous </a>
+<ul>
+<li><a href="#sec-4_8_1">4.8.1 <code>Logger</code> </a></li>
+<li><a href="#sec-4_8_2">4.8.2 <code>alloc</code> </a></li>
+</ul></li>
+</ul>
+</li>
+<li><a href="#sec-5">5 Real-Time </a></li>
 <li><a href="#sec-6">6 The <code>rttlib</code> convenience module </a>
 <ul>
 <li><a href="#sec-6_1">6.1 how to add a pretty printer for a custom type </a></li>
@@ -108,7 +122,13 @@ lang="en" xml:lang="en">
 <li><a href="#sec-7_2">7.2 rttlua init file <code>~/.rttlua</code> </a></li>
 </ul>
 </li>
-<li><a href="#sec-8">8 Known issues </a></li>
+<li><a href="#sec-8">8 Known issues </a>
+<ul>
+<li><a href="#sec-8_1">8.1 Assignment is not like RTT scripting </a></li>
+<li><a href="#sec-8_2">8.2 Not all types are garbage collected </a></li>
+<li><a href="#ComparisonIssue">8.3 Comparing Lua types and RTT Variables fails </a></li>
+</ul>
+</li>
 <li><a href="#sec-9">9 Todo  </a></li>
 <li><a href="#sec-10">10 License </a></li>
 <li><a href="#sec-11">11 Links </a></li>
@@ -168,11 +188,6 @@ Lua component.
 </p>
 </li>
 </ol>
-
-<p>The Lua API consists of objects and free functions. The API naming
-mostly follows that RTT while simplifying where possible.
-</p>
-
 </div>
 
 </div>
@@ -304,12 +319,17 @@ I can create the following component types:
 
 
 <p>
-All rtt related functions are stored in a global table called
-<code>rtt</code>. They are further subdivided as followed:
+The Lua API consists of objects and free functions. The API naming
+mostly follows that RTT while simplifying where possible. All rtt
+related functions are stored in a global table called <code>rtt</code>. They
+are further subdivided as followed:
 </p>
 <ul>
 <li>
 <code>TaskContext</code>
+</li>
+<li>
+<code>SendHandle</code>
 </li>
 <li>
 <code>Variable</code>
@@ -321,9 +341,6 @@ All rtt related functions are stored in a global table called
 <code>Property</code>
 </li>
 <li>
-<code>SendHandle</code>
-</li>
-<li>
 <code>Service</code>
 </li>
 <li>
@@ -332,18 +349,42 @@ All rtt related functions are stored in a global table called
 <li>
 <code>Logger</code>
 
-<p>
-The flag column describes different properties of a function/method:
-</p><ul>
-<li>
-<code>RT</code>: real-time safe
-</li>
-<li>
-<code>GC</code>: garbage collected object
-
-
 </li>
 </ul>
+
+<p><b>Note</b>: the API consists of what was needed so far and what was
+easy. If something is missing which you need let us know. Chances
+are high that it is easy to add.
+</p>
+<p>
+Most of the API can be used in two ways: as functions and
+objects. The first uses the dot '.' syntax and takes the object as
+the first parameter. The second uses the ':' and will internally
+pass the object as a first parameter.
+</p>
+<p>
+For example the following two calls are equivalent:
+</p>
+
+
+
+<pre class="example">&gt; print( rtt.TaskContext.getName(TC) )
+&gt; print( TC:getName() )
+</pre>
+
+
+
+<p>
+The flag column describes additonal properties of the
+function/method:
+</p><ul>
+<li>
+'R': real-time safe
+</li>
+<li>
+'F' or 'M': only available as function or method
+
+
 </li>
 </ul>
 </div>
@@ -398,8 +439,26 @@ The flag column describes different properties of a function/method:
 </div>
 
 <div id="outline-container-4_3" class="outline-3">
-<h3 id="sec-4_3"><span class="section-number-3">4.3</span> <code>Variable</code> </h3>
+<h3 id="sec-4_3"><span class="section-number-3">4.3</span> <code>SendHandle</code> </h3>
 <div class="outline-text-3" id="text-4_3">
+
+
+<p>
+An object returned by a TaskContext send() operation.
+</p>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption></caption>
+<colgroup><col align="left" /><col align="left" /><col align="left" />
+</colgroup>
+<thead>
+<tr><th scope="col">Method</th><th scope="col">flag</th><th scope="col">description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>string, variable collect()</code></td><td></td><td>collect results of send, may block. string is SendStatus</td></tr>
+<tr><td><code>string, variable collectIfDone</code></td><td></td><td>as above, non blocking version</td></tr>
+</tbody>
+</table>
+
 
 
 </div>
@@ -407,18 +466,211 @@ The flag column describes different properties of a function/method:
 </div>
 
 <div id="outline-container-4_4" class="outline-3">
-<h3 id="sec-4_4"><span class="section-number-3">4.4</span> <code>InputPort</code> and <code>OutputPort</code> </h3>
+<h3 id="sec-4_4"><span class="section-number-3">4.4</span> <code>Variable</code> </h3>
 <div class="outline-text-3" id="text-4_4">
 
 
+<p>
+Variable are the types know to the RTT. They consist of basic types
+(numeric, <code>string</code>, <code>char</code>, <code>bool</code>) and user defined types. The
+function <code>rtt.Variable.getTypes()</code> returns a table of these types:
+</p>
+
+
+
+<pre class="example">&gt; print(table.concat(rtt.Variable.getTypes(), ', '))
+ConnPolicy, FlowStatus, PropertyBag, SendHandle, SendStatus, array, bool, char, double, float, int, rt_string, string, uint, void
+</pre>
+
+
+
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption></caption>
+<colgroup><col align="left" /><col align="left" /><col align="left" />
+</colgroup>
+<thead>
+<tr><th scope="col">Method</th><th scope="col">flag</th><th scope="col">description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>variable new(type)</code></td><td>F</td><td>create a new Variable of type</td></tr>
+<tr><td><code>variable new(type, ival)</code></td><td>F</td><td>create new Variable of type and initialize with ival (only for basic types)</td></tr>
+<tr><td><code>luaval tolua()</code></td><td></td><td>convert to lua value (only for basic types)</td></tr>
+<tr><td><code>table getTypes()</code></td><td>F</td><td>return a list of types know to the RTT</td></tr>
+<tr><td><code>string getType()</code></td><td></td><td>return the RTT type name in human readable format</td></tr>
+<tr><td><code>string getTypeName()</code></td><td></td><td>return the RTT type name</td></tr>
+<tr><td><code>table getMemberNames()</code></td><td></td><td>return a table of the names of subtypes of this variable</td></tr>
+<tr><td><code>variable getMember(name)</code></td><td></td><td>return variable which is a member with name</td></tr>
+<tr><td><code>opBinary(string_op, var1, var2)</code></td><td>F</td><td>execute: var1 string<sub>op</sub> var2</td></tr>
+<tr><td><code>bool assign(value)</code></td><td></td><td>assign value which can be a lua type or a Variable</td></tr>
+</tbody>
+</table>
+
+
+<ul>
+<li>
+the unary operator <code>-</code> and the binary operators <code>+</code>, <code>-</code>, <code>*</code>,
+<code>/</code> <code>%</code>, <code>^</code>, and the comparison operators '==', '&lt;=', '&gt;=' are
+supported. See the <a href="#ComparisonIssue">warning</a> on comparing Variables with
+corresponding Lua types.
+
+</li>
+<li>
+indexing and assigment
+
+<p>
+Variables with members can be index and assigned. See the
+following example:
+</p>
+
+</li>
+</ul>
+
+
+<pre class="example">&gt; cp = rtt.Variable.new("ConnPolicy")
+&gt; print(cp)
+{data_size=0,type=0,name_id="",init=false,pull=false,transport=0,lock_policy=2,size=0}
+&gt; print(cp.data_size)
+0
+&gt; cp.data_size = 4711
+&gt; print(cp.data_size)
+4711
+</pre>
+
+
+
+
+</div>
+
+</div>
+
+<div id="outline-container-4_5" class="outline-3">
+<h3 id="sec-4_5"><span class="section-number-3">4.5</span> <code>InputPort</code> and <code>OutputPort</code> </h3>
+<div class="outline-text-3" id="text-4_5">
+
+
+<p>
+InputPort
+</p>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption></caption>
+<colgroup><col align="left" /><col align="left" /><col align="left" />
+</colgroup>
+<thead>
+<tr><th scope="col">Method</th><th scope="col">flag</th><th scope="col">description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>new(type)</code></td><td></td><td>create a new InputPort of type</td></tr>
+<tr><td><code>string, variable read()</code></td><td></td><td>read from Port, returns a FlowStatus string and if data available a Variable</td></tr>
+<tr><td><code>string read(variable)</code></td><td></td><td>read from Port and write result into Variable given. Returns FlowStatus</td></tr>
+<tr><td><code>table info()</code></td><td></td><td>return a table containing information about this port</td></tr>
+</tbody>
+</table>
+
+
+<p>
+OuputPort
+</p>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption></caption>
+<colgroup><col align="left" /><col align="left" /><col align="left" />
+</colgroup>
+<thead>
+<tr><th scope="col">Method</th><th scope="col">flag</th><th scope="col">description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>new(type)</code></td><td></td><td>create a new OutputPort of type</td></tr>
+<tr><td><code>write(Variable)</code></td><td></td><td>write Variable to port</td></tr>
+<tr><td><code>table info()</code></td><td></td><td>return a table containing information about this port</td></tr>
+</tbody>
+</table>
+
+
+
+
+</div>
+
+</div>
+
+<div id="outline-container-4_6" class="outline-3">
+<h3 id="sec-4_6"><span class="section-number-3">4.6</span> <code>Property</code> </h3>
+<div class="outline-text-3" id="text-4_6">
+
+
+</div>
+
+</div>
+
+<div id="outline-container-4_7" class="outline-3">
+<h3 id="sec-4_7"><span class="section-number-3">4.7</span> Service Interface </h3>
+<div class="outline-text-3" id="text-4_7">
+
+
+
+</div>
+
+<div id="outline-container-4_7_1" class="outline-4">
+<h4 id="sec-4_7_1"><span class="section-number-4">4.7.1</span> <code>Service</code> </h4>
+<div class="outline-text-4" id="text-4_7_1">
+
+
+</div>
+
+</div>
+
+<div id="outline-container-4_7_2" class="outline-4">
+<h4 id="sec-4_7_2"><span class="section-number-4">4.7.2</span> <code>ServiceRequester</code> </h4>
+<div class="outline-text-4" id="text-4_7_2">
+
+
+</div>
+
+</div>
+
+<div id="outline-container-4_7_3" class="outline-4">
+<h4 id="sec-4_7_3"><span class="section-number-4">4.7.3</span> <code>Operation</code> </h4>
+<div class="outline-text-4" id="text-4_7_3">
+
+
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-4_8" class="outline-3">
+<h3 id="sec-4_8"><span class="section-number-3">4.8</span> miscellaneous </h3>
+<div class="outline-text-3" id="text-4_8">
+
+
+
+</div>
+
+<div id="outline-container-4_8_1" class="outline-4">
+<h4 id="sec-4_8_1"><span class="section-number-4">4.8.1</span> <code>Logger</code> </h4>
+<div class="outline-text-4" id="text-4_8_1">
+
+
+</div>
+
+</div>
+
+<div id="outline-container-4_8_2" class="outline-4">
+<h4 id="sec-4_8_2"><span class="section-number-4">4.8.2</span> <code>alloc</code> </h4>
+<div class="outline-text-4" id="text-4_8_2">
+
+
+
+</div>
 </div>
 </div>
 
 </div>
 
 <div id="outline-container-5" class="outline-2">
-<h2 id="sec-5"><span class="section-number-2">5</span> Pitfalls </h2>
+<h2 id="sec-5"><span class="section-number-2">5</span> Real-Time </h2>
 <div class="outline-text-2" id="text-5">
+
+
 
 </div>
 
@@ -556,15 +808,62 @@ if found execute it. It can be used for doing initalization
 <div class="outline-text-2" id="text-8">
 
 
-<ul>
-<li>
-Not all types are garbage collected.
 
-</li>
-<li>
+</div>
+
+<div id="outline-container-8_1" class="outline-3">
+<h3 id="sec-8_1"><span class="section-number-3">8.1</span> Assignment is not like RTT scripting </h3>
+<div class="outline-text-3" id="text-8_1">
+
+
+<p>
+Except for the Lua primitive types (string, number, boolean) Lua
+works with references. So assignment between RTT Variables and Lua
+types might not do what you expect:
+</p>
+
+
+
+<pre class="example">&gt; s=rtt.Variable.new("string", "hello world")
+&gt; print(s)
+hello world
+&gt; =type(s)
+userdata
+&gt; =s:getType()
+string
+&gt; s = "a new string" -- carful! now its a Lua string, the former Variable will be garbage collected.
+&gt; =type(s)
+string
+&gt; s:getType()
+stdin:1: attempt to call method 'getType' (a nil value)
+stack traceback:
+stdin:1: in main chunk
+</pre>
+
+
+
+</div>
+
+</div>
+
+<div id="outline-container-8_2" class="outline-3">
+<h3 id="sec-8_2"><span class="section-number-3">8.2</span> Not all types are garbage collected </h3>
+<div class="outline-text-3" id="text-8_2">
+
+
+</div>
+
+</div>
+
+<div id="outline-container-ComparisonIssue" class="outline-3">
+<h3 id="ComparisonIssue"><a name="sec-8_3" id="sec-8_3"></a><span class="section-number-3">8.3</span> Comparing Lua types and RTT Variables fails </h3>
+<div class="outline-text-3" id="text-ComparisonIssue">
+
+
+<p>
 Comparison of equivalent Lua and RTT Variable types is does <b>not</b>
 work. You can only compare entities of the <span style="text-decoration:underline;">same</span> type:
-
+</p>
 
 
 
@@ -581,8 +880,16 @@ false
 
 
 
+<ul>
+<li>
+It is currently not possible to call or send a connected local
+required Operation.
+
+
+
 </li>
 </ul>
+</div>
 </div>
 
 </div>
@@ -598,11 +905,10 @@ reintegrate tlsf and real-time validation
 </li>
 <li>
 Support for creating Operations from Lua (probably not soon)
+
+
 </li>
 </ul>
-
-<p>-
-</p>
 </div>
 
 </div>
