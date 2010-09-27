@@ -222,9 +222,14 @@ namespace OCL
         void printSource( const std::string m );
 
         /**
-         * Print the synopsis of a Method.
+         * Print the synopsis of an Operation
          */
         void printOperation( const std::string m, Service::shared_ptr ops );
+
+        /**
+         * Print the synopsis of a Service.
+         */
+        bool printService( const std::string name);
 
         /**
          * Print a program listing of a loaded program centered at line \a line.

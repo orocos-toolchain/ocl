@@ -114,7 +114,7 @@ namespace OCL
     string TaskBrowser::green;
     string TaskBrowser::blue;
     std::deque<TaskContext*> taskHistory;
-    std::string TaskBrowser::prompt(" (type 'ls' for context info) :");
+    std::string TaskBrowser::prompt("> ");
     std::string TaskBrowser::coloron;
     std::string TaskBrowser::underline;
     std::string TaskBrowser::coloroff;
@@ -663,26 +663,27 @@ namespace OCL
             coloron <<
             "  This console reader allows you to browse and manipulate TaskContexts."<<nl<<
             "  You can type in an operation, expression, create or change variables."<<nl;
-        cout <<"  (type '"<<underline<<"help"<<coloroff<<coloron<<"' for instructions)"<<nl;
+        cout <<"  (type '"<<underline<<"help"<<coloroff<<coloron<<"' for instructions and '"
+        		<<underline<<"ls"<<coloroff<<coloron<<"' for context info)"<<nl<<nl;
 #ifndef NO_GPL
         cout << "    TAB completion and HISTORY is available ('bash' like)" <<coloroff<<nl<<nl;
 #else
         cout << "    TAB completion and history is NOT available (LGPL-version)" <<coloroff<<nl<<nl;
 #endif
+
         while (1)
             {
                 if (!macrorecording) {
                     if ( context == tb )
                         cout << green << " Watching " <<coloroff;
-                    else
-                        cout << red << " In " << coloroff;
 
                     char state = getTaskStatusChar(taskcontext);
 
-                    cout << "Task "<<green<< taskcontext->getName() <<coloroff<< "["<< state <<"]";
+                    // sets prompt for readline:
+                    prompt = green + taskcontext->getName() + coloroff + "[" + state + "]> ";
                     // This 'endl' is important because it flushes the whole output to screen of all
                     // processing that previously happened, which was using 'nl'.
-                    cout << endl;
+                    cout.flush();
 
                     // print traces.
                     for (PTrace::iterator it = ptraces.begin(); it != ptraces.end(); ++it) {
@@ -1205,31 +1206,40 @@ namespace OCL
         this->evalCommand(comm);
     }
 
-    void TaskBrowser::evalCommand(std::string& comm )
-    {
-        cout << "      Got :"<< comm <<nl;
-
+    bool TaskBrowser::printService( string name ) {
+    	bool result = false;
         Service::shared_ptr ops;
         ServiceRequester* sr = 0;
-        if ( context->provides()->hasService( comm ) ) // only object name was typed
+
+        if ( context->provides()->hasService( name ) ) // only object name was typed
             {
-                ops = context->provides(comm);
+                ops = context->provides(name);
                 sresult << nl << "Printing Interface of '"<< coloron << ops->getName() <<coloroff <<"' :"<<nl<<nl;
                 vector<string> methods = ops->getNames();
                 std::for_each( methods.begin(), methods.end(), boost::bind(&TaskBrowser::printOperation, this, _1, ops) );
                 cout << sresult.str();
                 sresult.str("");
+                result = true;
             }
-        if ( context->requires()->requiresService( comm ) ) // only object name was typed
+        if ( context->requires()->requiresService( name ) ) // only object name was typed
             {
-                sr = context->requires(comm);
+                sr = context->requires(name);
                 sresult << nl << "Requiring '"<< coloron << sr->getRequestName() <<coloroff <<"' with methods: ";
                 vector<string> methods = sr->getOperationCallerNames();
                 sresult << coloron;
                 std::for_each( methods.begin(), methods.end(), sresult << lambda::_1 <<" " );
                 cout << sresult.str() << coloroff << nl;
                 sresult.str("");
+                result = true;
             }
+        return result;
+    }
+
+    void TaskBrowser::evalCommand(std::string& comm )
+    {
+        // deprecated: use 'help servicename'
+        bool result = printService(comm);
+
         // Minor hack : also check if it was an attribute of current TC, for example,
         // if both the object and attribute with that name exist. the if
         // statement after this one would return and not give the expr parser
@@ -1241,7 +1251,7 @@ namespace OCL
                 return;
         }
 
-        if ( ops || sr ) {
+        if ( result ) {
             return;
         }
 
@@ -1609,23 +1619,28 @@ namespace OCL
 
     void TaskBrowser::printHelp( string helpstring ) {
     	peer = context;
+		// trim garbage:
+		str_trim(helpstring, ' ');
+		str_trim(helpstring, '.');
+
+    	if ( printService(helpstring))
+    		return;
+
     	if ( findPeer( helpstring ) ) {
     		try {
-    			// trim garbage:
-    			str_trim(helpstring, ' ');
-    			str_trim(helpstring, '.');
+    			sresult << nl;
     			if (helpstring.rfind('.') != string::npos )
     				printOperation( helpstring.substr(helpstring.rfind('.')+1 ), taskobject );
     			else
     				printOperation( helpstring, taskobject );
     	        cout << sresult.str();
-    	        sresult.str("");
     		} catch (...) {
         		cerr<< "  help: No such operation known: '"<< helpstring << "'"<<nl;
     		}
     	} else {
     		cerr<< "  help: No such operation known: '"<< helpstring << "'"<<nl;
     	}
+        sresult.str("");
     }
 
     void TaskBrowser::printProgram(const std::string& progname, int cl /*= -1*/, RTT::TaskContext* progpeer /* = 0 */) {
