@@ -99,6 +99,8 @@ namespace OCL
         		cout <<"the_property: "<< property <<endl;
         		cout <<"the_attribute: "<< attribute <<endl;
         		cout <<"the_constant: "<< constant <<endl;
+        		cout <<"Setting 'flag' back to false."<<endl;
+        		flag = false;
         	}
         }
     public:
@@ -109,7 +111,7 @@ namespace OCL
         HelloWorld(std::string name)
             : RTT::TaskContext(name),
               // Name, description, value
-              property("Hello Property"), flag(true),
+              property("Hello Property"), flag(false),
               attribute("Hello Attribute"),
               constant("Hello Constant"),
               // Name, initial value
