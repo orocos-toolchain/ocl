@@ -38,6 +38,15 @@ if (NOT EXISTS ${PROJ_SOURCE_DIR}/orocos-ocl.cmake)
     "See orocos-ocl.default.cmake")
 endif ()
 
+IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  IF (MSVC)
+    SET(CMAKE_INSTALL_PREFIX
+      "C:/Program Files/orocos" CACHE PATH "Orocos install prefix" FORCE
+      )
+  set( OROCOS_INSTALL "C:/Program Files/orocos" CACHE PATH "RTT installation path")
+  ENDIF(MSVC)
+ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+
 INCLUDE(CTest)
 ENABLE_TESTING()
 IF(BUILD_TESTING)
@@ -128,7 +137,11 @@ CONFIGURE_FILE(
 ADD_CUSTOM_TARGET(uninstall
   "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake")
 
-OPTION( NO_GPL "Set to 'ON' to exclude all GPL'd code" OFF)
+if (MSVC)
+  OPTION( NO_GPL "Set to 'ON' to exclude all GPL'd code" ON)
+else()
+  OPTION( NO_GPL "Set to 'ON' to exclude all GPL'd code" OFF)
+endif()
 IF(NO_GPL)
   ADD_DEFINITIONS( -DNO_GPL )
 ENDIF(NO_GPL)

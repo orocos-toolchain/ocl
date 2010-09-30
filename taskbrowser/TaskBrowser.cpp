@@ -1768,24 +1768,21 @@ namespace OCL
         else
             sresult <<nl<<" Listing Service "<< green << taskobject->getName()<<coloroff<< "["<<getTaskStatusChar(peer)<<"] :"<<nl;
 
-        // Only print Properties for TaskContexts
-        if ( peer->provides() == taskobject ) {
-            sresult <<nl<<" Configuration Properties: ";
-            RTT::PropertyBag* bag = peer->properties();
-            if ( bag && bag->size() != 0 ) {
-                // Print Properties:
-                for( RTT::PropertyBag::iterator it = bag->begin(); it != bag->end(); ++it) {
-                    base::DataSourceBase::shared_ptr pds = (*it)->getDataSource();
-                    sresult << nl << setw(11)<< right << (*it)->getType()<< " "
-                         << coloron <<setw(14)<<left<< (*it)->getName() << coloroff;
-                    this->printResult( pds.get(), false ); // do not recurse
-                    sresult<<" ("<< (*it)->getDescription() <<')';
-                }
-            } else {
-                sresult << "(none)";
-            }
-            sresult <<nl;
-        }
+		sresult <<nl<<" Configuration Properties: ";
+		RTT::PropertyBag* bag = taskobject->properties();
+		if ( bag && bag->size() != 0 ) {
+			// Print Properties:
+			for( RTT::PropertyBag::iterator it = bag->begin(); it != bag->end(); ++it) {
+				base::DataSourceBase::shared_ptr pds = (*it)->getDataSource();
+				sresult << nl << setw(11)<< right << (*it)->getType()<< " "
+					 << coloron <<setw(14)<<left<< (*it)->getName() << coloroff;
+				this->printResult( pds.get(), false ); // do not recurse
+				sresult<<" ("<< (*it)->getDescription() <<')';
+			}
+		} else {
+			sresult << "(none)";
+		}
+		sresult <<nl;
 
         // Print "this" interface (without detail) and then list objects...
         sresult <<nl<< " Provided Interface:";
@@ -1815,62 +1812,60 @@ namespace OCL
         }
         sresult << coloroff << nl;
 
-        if ( peer->provides() == taskobject ) {
-            sresult <<nl<< " Data Flow Ports: ";
-            objlist = peer->ports()->getPortNames();
-            if ( !objlist.empty() ) {
-                for(vector<string>::iterator it = objlist.begin(); it != objlist.end(); ++it) {
-                    base::PortInterface* port = peer->ports()->getPort(*it);
-                    bool writer = dynamic_cast<OutputPortInterface*>(port) ? true : false;
-                    // Port type R/W
-                    sresult << nl << " " << ( !writer ?
-                        " In" : "Out");
-                    // Port data type + name
-                    if ( !port->connected() )
-                        sresult << "(U) " << setw(11)<<right<< port->getTypeInfo()->getTypeName();
-                    else
-                        sresult << "(C) " << setw(11)<<right<< port->getTypeInfo()->getTypeName();
-                    sresult << " "
-                         << coloron <<setw( 14 )<<left<< *it << coloroff;
-                    // only show if we're connected to it
-                    if (peer == taskcontext) {
-                        // Lookup if we have an input with that name and
-                        // consume the last sample this port produced.
-                        InputPortInterface* iport = dynamic_cast<InputPortInterface*>(ports()->getPort(port->getName()));
-                        if (iport) {
-                            // consume sample
-                            iport->getDataSource()->evaluate();
-                            // display
-                            if ( peer == this)
-                                sresult << " <= " << DataSourceBase::shared_ptr( iport->getDataSource());
-                            else
-                                sresult << " => " << DataSourceBase::shared_ptr( iport->getDataSource());
-                        }
-                        OutputPortInterface* oport = dynamic_cast<OutputPortInterface*>(ports()->getPort(port->getName()));
-                        if (oport) {
-                            // display last written value:
-                            DataSourceBase::shared_ptr ds = oport->getDataSource();
-                            if (ds) {
-                                if ( peer == this)
-                                    sresult << " => " << ds;
-                                else
-                                    sresult << " <= " << ds << " (sent from TaskBrowser)";
-                            } else {
-                                sresult << "(no last written value kept)";
-                            }
-                        }
-                    } else {
-                        sresult << "(TaskBrowser not connected to this port)";
-                    }
-                    // Port description (see Service)
+		sresult <<nl<< " Data Flow Ports: ";
+		objlist = taskobject->getPortNames();
+		if ( !objlist.empty() ) {
+			for(vector<string>::iterator it = objlist.begin(); it != objlist.end(); ++it) {
+				base::PortInterface* port = taskobject->getPort(*it);
+				bool writer = dynamic_cast<OutputPortInterface*>(port) ? true : false;
+				// Port type R/W
+				sresult << nl << " " << ( !writer ?
+					" In" : "Out");
+				// Port data type + name
+				if ( !port->connected() )
+					sresult << "(U) " << setw(11)<<right<< port->getTypeInfo()->getTypeName();
+				else
+					sresult << "(C) " << setw(11)<<right<< port->getTypeInfo()->getTypeName();
+				sresult << " "
+					 << coloron <<setw( 14 )<<left<< *it << coloroff;
+				// only show if we're connected to it
+				if (peer == taskcontext && peer->provides() == taskobject) {
+					// Lookup if we have an input with that name and
+					// consume the last sample this port produced.
+					InputPortInterface* iport = dynamic_cast<InputPortInterface*>(ports()->getPort(port->getName()));
+					if (iport) {
+						// consume sample
+						iport->getDataSource()->evaluate();
+						// display
+						if ( peer == this)
+							sresult << " <= " << DataSourceBase::shared_ptr( iport->getDataSource());
+						else
+							sresult << " => " << DataSourceBase::shared_ptr( iport->getDataSource());
+					}
+					OutputPortInterface* oport = dynamic_cast<OutputPortInterface*>(ports()->getPort(port->getName()));
+					if (oport) {
+						// display last written value:
+						DataSourceBase::shared_ptr ds = oport->getDataSource();
+						if (ds) {
+							if ( peer == this)
+								sresult << " => " << ds;
+							else
+								sresult << " <= " << ds << " (sent from TaskBrowser)";
+						} else {
+							sresult << "(no last written value kept)";
+						}
+					}
+				} else {
+					sresult << "(TaskBrowser not connected to this port)";
+				}
+				// Port description (see Service)
 //                     if ( peer->provides(*it) )
 //                         sresult << " ( "<< taskobject->provides(*it)->getDescription() << " ) ";
-                }
-            } else {
-                sresult << "(none)";
-            }
-            sresult << coloroff << nl;
-        }
+			}
+		} else {
+			sresult << "(none)";
+		}
+		sresult << coloroff << nl;
 
         objlist = taskobject->getProviderNames();
         sresult <<nl<< " Services: "<<nl;
