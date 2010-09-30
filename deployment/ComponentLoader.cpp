@@ -99,7 +99,19 @@ void ComponentLoader::Release() {
 
 void ComponentLoader::import( std::string const& path_list )
 {
-    vector<string> paths = splitPaths(path_list + default_delimiter + component_path);
+	// check first for exact match:
+    path arg( path_list );
+    if (is_regular_file(arg)) {
+	    loadInProcess(arg.string(), makeShortFilename(path_list), true);
+	    return;
+    }
+
+    // search:
+    vector<string> paths;
+    if (path_list.empty())
+    	paths = splitPaths( component_path);
+    else
+    	paths = splitPaths( path_list );
 
     for (vector<string>::iterator it = paths.begin(); it != paths.end(); ++it)
     {
@@ -155,7 +167,12 @@ void ComponentLoader::import( std::string const& path_list )
 
 bool ComponentLoader::import( std::string const& package, std::string const& path_list )
 {
-    vector<string> paths = splitPaths(path_list + default_delimiter + component_path);
+    vector<string> paths;
+    if (path_list.empty())
+    	paths = splitPaths( component_path);
+    else
+    	paths = splitPaths( path_list );
+
     vector<string> tryouts( paths.size() * 4 );
     tryouts.clear();
 
