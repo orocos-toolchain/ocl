@@ -37,6 +37,8 @@
 #include <rtt/scripting/Scripting.hpp>
 #include <rtt/ConnPolicy.hpp>
 #include <rtt/plugin/PluginLoader.hpp>
+#include <boost/algorithm/string.hpp>
+
 
 #include <cstdio>
 #include <cstdlib>
@@ -123,20 +125,29 @@ namespace OCL
         DCFun cp = &DeploymentComponent::connectPeers;
         this->addOperation("connectPeers", cp, this, ClientThread).doc("Connect two Components known to this Component.").arg("One", "The first component.").arg("Two", "The second component.");
         cp = &DeploymentComponent::connectPorts;
-        this->addOperation("connectPorts", cp, this, ClientThread).doc("Connect the Data Ports of two Components known to this Component.").arg("One", "The first component.").arg("Two", "The second component.");
+        this->addOperation("connectPorts", cp, this, ClientThread).doc("DEPRECATED. Connect the Data Ports of two Components known to this Component.").arg("One", "The first component.").arg("Two", "The second component.");
         cp = &DeploymentComponent::addPeer;
         typedef bool(DeploymentComponent::*DC4Fun)(const std::string&, const std::string&,
                                                    const std::string&, const std::string&);
         DC4Fun cp4 = &DeploymentComponent::connectPorts;
-        this->addOperation("connectTwoPorts", cp4, this, ClientThread).doc("Connect two ports of Components known to this Component.")
+        this->addOperation("connectTwoPorts", cp4, this, ClientThread).doc("DEPRECATED. Connect two ports of Components known to this Component.")
                 .arg("One", "The first component.")
                 .arg("PortOne", "The port name of the first component.")
                 .arg("Two", "The second component.")
                 .arg("PortTwo", "The port name of the second component.");
-        this->addOperation("createStream", &DeploymentComponent::createStream, this, ClientThread).doc("Creates a stream to or from a port.")
+        this->addOperation("createStream", &DeploymentComponent::createStream, this, ClientThread).doc("DEPRECATED. Creates a stream to or from a port.")
                 .arg("component", "The component which owns 'port'.")
                 .arg("port", "The port to create a stream from or to.")
                 .arg("policy", "The connection policy which serves to describe the stream to be created.");
+
+        // New API:
+        this->addOperation("connect", &DeploymentComponent::connect, this, ClientThread).doc("Creates a connection between two ports.")
+                .arg("portOne", "The first port of the connection. Use a dot-separated-path.")
+                .arg("portTwo", "The second port of the connection. Use a dot-separated-path.")
+                .arg("policy", "The connection policy which serves to describe the stream to be created. Use 'ConnPolicy()' to use the default.");
+        this->addOperation("stream", &DeploymentComponent::stream, this, ClientThread).doc("Creates a stream to or from a port.")
+                .arg("port", "The port to create a stream from or to. Use a dot-separated-path.")
+                .arg("policy", "The connection policy which serves to describe the stream to be created. Use 'ConnPolicy()' to use the default.");
 
         this->addOperation("connectServices", &DeploymentComponent::connectServices, this, ClientThread).doc("Connect the matching provides/requires services of two Components known to this Component.").arg("One", "The first component.").arg("Two", "The second component.");
 
@@ -255,6 +266,69 @@ namespace OCL
         return t1->addPeer(t2);
     }
 
+    Service::shared_ptr DeploymentComponent::stringToService(string const& names) {
+    	std::vector<std::string> strs;
+    	boost::split(strs, names, boost::is_any_of("."));
+
+    	string component = strs.front();
+    	if (!hasPeer(component) && component != this->getName() ) {
+    		log(Error) << "No such component: '"<< component <<"'" <<endlog();
+    		if ( names.find('.') != string::npos )
+    			log(Error)<< " when looking for service '" << names <<"'" <<endlog();
+    		return Service::shared_ptr();
+    	}
+    	// component is peer or self:
+    	Service::shared_ptr ret = (component != this->getName() ? getPeer(component)->provides() : this->provides());
+
+    	// remove component name:
+    	strs.erase( strs.begin() );
+
+    	// iterate over remainders:
+    	while ( !strs.empty() && ret) {
+    		ret = ret->getService( strs.front() );
+    		if (ret)
+    			strs.erase( strs.begin() );
+    	}
+    	if (!ret) {
+    		log(Error) <<"No such service: '"<< strs.front() <<"' while looking for service '"<< names<<"'"<<endlog();
+    	}
+    	return ret;
+    }
+
+    base::PortInterface* DeploymentComponent::stringToPort(string const& names) {
+    	std::vector<std::string> strs;
+    	boost::split(strs, names, boost::is_any_of("."));
+
+    	string component = strs.front();
+    	if (!hasPeer(component) && component != this->getName() ) {
+    		log(Error) << "No such component: '"<< component <<"'" ;
+    		log(Error)<< " when looking for port '" << names <<"'" <<endlog();
+    		return 0;
+    	}
+    	// component is peer or self:
+    	Service::shared_ptr serv = (component != this->getName() ? getPeer(component)->provides() : this->provides());
+    	base::PortInterface* ret = 0;
+
+    	// remove component name:
+    	strs.erase( strs.begin() );
+
+    	// iterate over remainders:
+    	while ( strs.size() != 1 && serv) {
+    		serv = serv->getService( strs.front() );
+    		if (serv)
+    			strs.erase( strs.begin() );
+    	}
+    	if (!serv) {
+    		log(Error) <<"No such service: '"<< strs.front() <<"' while looking for port '"<< names<<"'"<<endlog();
+    	}
+    	ret = serv->getPort(strs.front());
+    	if (!ret) {
+    		log(Error) <<"No such port: '"<< strs.front() <<"' while looking for port '"<< names<<"'"<<endlog();
+    	}
+
+    	return ret;
+    }
+
     bool DeploymentComponent::connectPorts(const std::string& one, const std::string& other)
     {
 	RTT::Logger::In in("DeploymentComponent::connectPorts");
@@ -277,20 +351,14 @@ namespace OCL
                                            const std::string& other, const std::string& other_port)
     {
 	RTT::Logger::In in("DeploymentComponent::connectPorts");
-        RTT::TaskContext* a, *b;
-        a = getPeer(one);
-        b = getPeer(other);
-        if ( !a ) {
-            log(Error) << one <<" could not be found."<< endlog();
-            return false;
-        }
-        if ( !b ) {
-            log(Error) << other <<" could not be found."<< endlog();
-            return false;
-        }
+		Service::shared_ptr a,b;
+		a = stringToService(one);
+		b = stringToService(other);
+		if (!a || !b)
+			return false;
         base::PortInterface* ap, *bp;
-        ap = a->ports()->getPort(one_port);
-        bp = b->ports()->getPort(other_port);
+        ap = a->getPort(one_port);
+        bp = b->getPort(other_port);
         if ( !ap ) {
             log(Error) << one <<" does not have a port "<<one_port<< endlog();
             return false;
@@ -300,40 +368,69 @@ namespace OCL
             return false;
         }
 
-        // Detect already connected ports.
+        // Warn about already connected ports.
         if ( ap->connected() && bp->connected() ) {
-            if ( false ) {
-                log(Info) << "Port '"<< ap->getName() << "' of Component '"<<a->getName()
-                          << "' is already connected to port '"<< bp->getName() << "' of Component '"<<b->getName()<<"'."<<endlog();
-                return true;
-            }
-            log(Error) << "Port '"<< ap->getName() << "' of Component '"<<a->getName()
+            log(Warning) << "Port '"<< ap->getName() << "' of Component '"<<a->getName()
                        << "' and port '"<< bp->getName() << "' of Component '"<<b->getName()
                        << "' are already connected but (probably) not to each other."<<endlog();
-            return false;
         }
 
         // use the base::PortInterface implementation
         if ( ap->connectTo( bp ) ) {
             // all went fine.
-            log(Info)<< "Connected Port " << ap->getName() << " to peer Task "<< b->getName() <<"." << endlog();
+            log(Info)<< "Connected Port " << one +"." + one_port << " to  "<< other +"." + other_port <<"." << endlog();
             return true;
         } else {
-            log(Error)<< "Failed to connect Port " << ap->getName() << " to peer Task "<< b->getName() <<"." << endlog();
+            log(Error)<< "Failed to connect Port " << one +"." + one_port << " to  "<< other +"." + other_port <<"." << endlog();
             return true;
         }
     }
 
     bool DeploymentComponent::createStream(const std::string& comp, const std::string& port, ConnPolicy policy)
     {
-        TaskContext* peer = getPeer(comp);
-        if ( !peer ) {
-            log(Error) << comp <<" could not be found."<< endlog();
+        Service::shared_ptr serv = stringToService(comp);
+        if ( !serv )
+            return false;
+        PortInterface* porti = serv->getPort(port);
+        if ( !porti ) {
+            log(Error) <<"Service in component "<<comp<<" has no port "<< port << "."<< endlog();
             return false;
         }
-        PortInterface* porti = peer->ports()->getPort(port);
+        return porti->createStream( policy );
+    }
+
+    // New API:
+    bool DeploymentComponent::connect(const std::string& one, const std::string& other, ConnPolicy cp)
+    {
+	RTT::Logger::In in("DeploymentComponent::connectPorts");
+		base::PortInterface* ap, *bp;
+		ap = stringToPort(one);
+		bp = stringToPort(other);
+		if (!ap || !bp)
+			return false;
+
+        // Warn about already connected ports.
+        if ( ap->connected() && bp->connected() ) {
+            log(Warning) << "Port '"<< ap->getName() << "' of '"<< one
+                       << "' and port '"<< bp->getName() << "' of '"<< other
+                       << "' are already connected but (probably) not to each other."<<endlog();
+        }
+
+        // use the base::PortInterface implementation
+        if ( ap->connectTo( bp, cp ) ) {
+            // all went fine.
+            log(Info)<< "Connected Port " << one << " to  "<< other <<"." << endlog();
+            return true;
+        } else {
+            log(Error)<< "Failed to connect Port " << one << " to  "<< other <<"." << endlog();
+            return true;
+        }
+    }
+
+    bool DeploymentComponent::stream(const std::string& port, ConnPolicy policy)
+    {
+        base::PortInterface* porti = stringToPort(port);
         if ( !porti ) {
-            log(Error) << comp <<" has no port "<< port << "."<< endlog();
             return false;
         }
         return porti->createStream( policy );
