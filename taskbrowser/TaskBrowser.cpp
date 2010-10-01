@@ -76,7 +76,12 @@
 #include <deque>
 #include <stdio.h>
 #include <algorithm>
-#ifndef NO_GPL
+
+#if defined(HAS_READLINE) && !defined(NO_GPL)
+#define USE_READLINE
+#endif
+
+#ifdef USE_READLINE
 #include <readline/readline.h>
 #include <readline/history.h>
 #endif
@@ -91,7 +96,7 @@ namespace OCL
     using namespace std;
     using namespace RTT;
     using namespace RTT::detail;
-#ifndef NO_GPL
+#ifdef USE_READLINE
     std::vector<std::string> TaskBrowser::candidates;
     std::vector<std::string> TaskBrowser::completes;
     std::vector<std::string>::iterator TaskBrowser::complete_iter;
@@ -132,7 +137,7 @@ namespace OCL
     void ctrl_c_catcher(int sig)
     {
         ::signal(sig, SIG_IGN);
-#ifndef NO_GPL
+#ifdef USE_READLINE
 //        cerr <<nl<<"TaskBrowser intercepted Ctrl-C. Type 'quit' to exit."<<endl;
 //         rl_delete_text(0, rl_end);
 //         //cerr << "deleted " <<deleted <<endl;
@@ -143,7 +148,7 @@ namespace OCL
     }
 #endif
 
-#ifndef NO_GPL
+#ifdef USE_READLINE
     char *TaskBrowser::rl_gets ()
     {
         /* If the buffer has already been allocated,
@@ -566,7 +571,7 @@ namespace OCL
 
         return ( matches );
     }
-#endif // !NO_GPL
+#endif // USE_READLINE
 
     TaskBrowser::TaskBrowser( RTT::TaskContext* _c )
         : RTT::TaskContext("TaskBrowser"),
@@ -578,7 +583,7 @@ namespace OCL
         tb = this;
         context = tb;
         this->switchTaskContext(_c);
-#ifndef NO_GPL
+#ifdef USE_READLINE
         rl_completion_append_character = '\0'; // avoid adding spaces
         rl_attempted_completion_function = &TaskBrowser::orocos_hmi_completion;
 
@@ -592,7 +597,7 @@ namespace OCL
     }
 
     TaskBrowser::~TaskBrowser() {
-#ifndef NO_GPL
+#ifdef USE_READLINE
         if (line_read)
             {
                 free (line_read);
@@ -651,7 +656,7 @@ namespace OCL
 #ifdef _POSIX_VERSION
         // Intercept Ctrl-C
         ::signal( SIGINT, ctrl_c_catcher );
-#ifndef NO_GPL
+#ifdef USE_READLINE
         // Let readline intercept relevant signals
         if(rl_catch_signals == 0)
             cerr << "Error: not catching signals !"<<endl;
@@ -664,7 +669,7 @@ namespace OCL
             "  This console reader allows you to browse and manipulate TaskContexts."<<nl<<
             "  You can type in an operation, expression, create or change variables."<<nl;
         cout <<"  (type '"<<underline<<"help"<<coloroff<<coloron<<"' for instructions)"<<nl;
-#ifndef NO_GPL
+#ifdef USE_READLINE
         cout << "    TAB completion and HISTORY is available ('bash' like)" <<coloroff<<nl<<nl;
 #else
         cout << "    TAB completion and history is NOT available (LGPL-version)" <<coloroff<<nl<<nl;
@@ -709,7 +714,7 @@ namespace OCL
                 // Call readline wrapper :
                 ::signal( SIGINT, ctrl_c_catcher ); // catch ctrl_c only when editting a line.
 #endif
-#ifndef NO_GPL
+#ifdef USE_READLINE
                 const char* const commandStr = rl_gets();
                 // quit on EOF (Ctrl-D)
                 std::string command( commandStr ? commandStr : "quit" ); // copy over to string
