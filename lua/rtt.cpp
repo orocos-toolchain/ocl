@@ -642,6 +642,8 @@ static const struct luaL_Reg Property_f [] = {
 	{"new", Property_new },
 	{"get", Property_get },
 	{"set", Property_set },
+	{"getName", Property_getName },
+	{"getDescription", Property_getDescription },
 	{NULL, NULL}
 };
 

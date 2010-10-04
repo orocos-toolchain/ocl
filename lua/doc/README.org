@@ -47,10 +47,13 @@
       Lua component.
 
 * Setup
-
 ** Compilation
 
    - requires Lua-5.1 (debian: =liblua5.1-0-dev=, =liblua5.1-0=, =lua5.1=)
+
+   - CMake options:
+     - =
+     -
 
 ** Runtime
 
@@ -60,8 +63,8 @@
 
 #+BEGIN_EXAMPLE
       $ export LUA_PATH=";;;/usr/share/lua/5.1/?.lua;\
-              /usr/share/lua/5.1/?/init.lua;\
-              /home/mk/src/git/orocos/ocl/lua/lua-modules/?.lua"
+	      /usr/share/lua/5.1/?/init.lua;\
+	      /home/mk/src/git/orocos/ocl/lua/lua-modules/?.lua"
 #+END_EXAMPLE
 
     - if using =rttlua= scripting: export correct =RTT_COMPONENT_PATH=
@@ -105,7 +108,6 @@
   -- todo
 #+END_EXAMPLE
 
-
 * Lua API
 
 ** Overview
@@ -124,8 +126,8 @@
    - =Operation=
    - =Logger=
 
-  *Note*: the API consists of what was needed so far and what was
-  easy. If something is missing which you need let us know. Chances
+  *Note*: the API consists of what was needed so far and what was easy
+  to do. If something is missing which you need let us know. Chances
   are high that it is easy to add.
 
   Most of the API can be used in two ways: as functions and
@@ -144,7 +146,6 @@
   function/method:
     - 'R': real-time safe
     - 'F' or 'M': only available as function or method
-
 
 ** =TaskContext=
 
@@ -256,16 +257,49 @@
    | =table info()=    |      | return a table containing information about this port |
 
 
-
 ** =Property=
+
+   | Method                    | flag | description                                     |
+   |---------------------------+------+-------------------------------------------------|
+   | =new(type)=               |      | create a new Property                           |
+   | =Variable get()=          |      | return the Variable contained in this Property  |
+   | =bool set(Variable)=      |      | set the Property to the value in given Variable |
+   | =string getName()=        |      | return the name of the property                 |
+   | =string getDescription()= |      | return the description of the property          |
 
 ** Service Interface
 
 *** =Service=
 
+   | Method                     | flag | description                          |
+   |----------------------------+------+--------------------------------------|
+   | =string getName()=         |      | return Name of Service               |
+   | =string doc()=             |      | return documentation of this service |
+   | =table getProviderNames()= |      | return table of subservice names     |
+   | getOperationNames          |      |                                      |
+   | getPortNames               |      |                                      |
+   | provides                   |      |                                      |
+   | getOperation               |      |                                      |
+   | getPort                    |      |                                      |
+
 *** =ServiceRequester=
 
+   | Method            | flag | description |
+   |-------------------+------+-------------|
+   | getRequestName    |      |             |
+   | getRequesterNames |      |             |
+   | ready             |      |             |
+   | disconnect        |      |             |
+   | requires          |      |             |
+
 *** =Operation=
+
+   | Method | flag | description |
+   |--------+------+-------------|
+   | info   |      |             |
+   | call   |      |             |
+   | send   |      |             |
+
 
 ** miscellaneous
 
@@ -273,21 +307,21 @@
 
 *** =alloc=
 
-
 * Real-Time
-
 
 * The =rttlib= convenience module
   This library adds some pretty printing functions to the standard
-  objects.
+  objects. It is recommended to load it for all applications by adding
+  the following to scripts:
 
+  =require("rttlib")=
 
 ** how to add a pretty printer for a custom type
 
    In short: write a function which accepts a lua table representation
    of you data type and returns either a table or a string. Assign it
    to =rttlib.pp_var.mytype=, where mytype is the value returned by
-   the =var:getType()= method. Thats should do it.
+   the =var:getType()= method. That's all!
 
    *Quick example:* =ConnPolicy= type
 
@@ -337,13 +371,31 @@
    #+END_EXAMPLE
 
 * Tips and tricks
-** Using functions instead of methods
-
 ** rttlua init file =~/.rttlua=
 
    =rttlua= will look for a file =.rttlua= in your home directory and
    if found execute it. It can be used for doing initalization
    (e.g. loading =rttlib= etc.)
+
+** Understanding functions vs. methods
+
+   Methods and functions are essentially the same in Lua. RTTLua most
+   of the time supports both ways of calling.
+
+   Calling the function =call= which is stored in the table
+   =rtt.TaskContext=. The TaskContext object is the first parameter.
+
+#+BEGIN_EXAMPLE
+   > return rtt.TaskContext.call(TC, "getPeriod")
+#+END_EXAMPLE
+
+   Calling as a method can be done with the =:= syntax. Lua will
+   automatically pass the entity before the colon as the first
+   parameter:
+
+#+BEGIN_EXAMPLE
+   > return TC:call("setPeriod", 1.1)
+#+END_EXAMPLE
 
 * Known issues
 
@@ -371,7 +423,6 @@
 #+END_EXAMPLE
 
 ** Not all types are garbage collected
-
 ** Comparing Lua types and RTT Variables fails
    :PROPERTIES:
    :CUSTOM_ID: ComparisonIssue
@@ -396,11 +447,12 @@
      required Operation.
 
 
-
 * Todo
 
-  - reintegrate tlsf and real-time validation
   - Support for creating Operations from Lua (probably not soon)
+
+  - Calling a Connected Required Operation is not possible from Lua
+    right now.
 
 * License
 
