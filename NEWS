@@ -1,3 +1,68 @@
+         Orocos Components Library (OCL) v1.12.0
+
+This major release of the Orocos Components Library is aimed at the
+Real-Time Toolkit v1.12.x. Major changes are:
+
+* Component loading 2.0-style
+* Component Deployment and TaskBrowsing on Windows / win32 target
+* Various usability fixes in (CORBA) deployment
+
+An overview of the documented components is available here:
+  <http://www.orocos.org/stable/documentation/ocl/v1.12.x/doc-xml/ocl-overview.html>
+
+This release can be downloaded here:
+  <http://www.orocos.org/stable/ocl/v1.12.0/orocos-ocl-1.12.0-src.tar.bz2>
+
+------------------------------------------------------------------------
+         Orocos Components Library (OCL) v1.10.3
+
+This bugfix release of the Orocos Components Library is aimed at the
+Real-Time Toolkit v1.10.x. Changes are:
+
+* Fixing crash during tab-completion in TaskBrowser
+* Misc cmake build fixes
+* Fix missing symbol when doing Component loading in static deployments
+
+An overview of the documented components is available here:
+  <http://www.orocos.org/stable/documentation/ocl/v1.10.x/doc-xml/ocl-overview.html>
+
+This release can be downloaded here:
+  <http://www.orocos.org/stable/ocl/v1.10.3/orocos-ocl-1.10.3-src.tar.bz2>
+
+------------------------------------------------------------------------
+         Orocos Components Library (OCL) v1.10.2
+
+This bugfix release of the Orocos Components Library is aimed at the
+Real-Time Toolkit v1.10.x. Changes are:
+
+* Fixing Ctrl-D at the TaskBrowser prompt
+* Fixes in the DeploymentComponent for saving properties and setting activities.
+
+An overview of the documented components is available here:
+  <http://www.orocos.org/stable/documentation/ocl/v1.10.x/doc-xml/ocl-overview.html>
+
+This release can be downloaded here:
+  <http://www.orocos.org/stable/ocl/v1.10.2/orocos-ocl-1.10.2-src.tar.bz2>
+
+------------------------------------------------------------------------
+         Orocos Components Library (OCL) v1.10.0
+
+This major release of the Orocos Components Library is aimed at the
+Real-Time Toolkit v1.10.x. Major changes are:
+
+* Refactoring of the CAN classes and added Socket-CAN and RTSocket-CAN
+ controller classes
+* Updated deployer to use the new RTT::Activity classes
+* Many fixes for building Debian packages for Orocos target of choice
+* Uses KDL 1.0 API
+
+An overview of the documented components is available here:
+  <http://www.orocos.org/stable/documentation/ocl/v1.10.x/doc-xml/ocl-overview.html>
+
+This release can be downloaded here:
+  <http://www.orocos.org/stable/ocl/v1.10.0/orocos-ocl-1.10.0-src.tar.bz2>
+
+------------------------------------------------------------------------
          Orocos Components Library (OCL) v1.8.2
 
 This bug-fix release of the Orocos Components Library is aimed at the
