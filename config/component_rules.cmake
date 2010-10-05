@@ -1,10 +1,6 @@
 #
 # Include and link against required stuff
 #
-
-ADD_DEFINITIONS( "-Wall" )
-
-
 #
 # Components supply header files which should be included when 
 # using these components. Each component should use this macro
@@ -12,15 +8,13 @@ ADD_DEFINITIONS( "-Wall" )
 #
 # Usage: GLOBAL_ADD_INCLUDE( RELATIVE_LOCATION hpp1, hpp2 ...)
 MACRO( GLOBAL_ADD_INCLUDE COMPONENT_LOCATION )
-  INSTALL_FILES( /include/${COMPONENT_LOCATION} FILES ${ARGN})
+  INSTALL(FILES ${ARGN} DESTINATION /include/${COMPONENT_LOCATION} )
 ENDMACRO( GLOBAL_ADD_INCLUDE COMPONENT_LOCATION )
 
 # Link a component library with an external library (qt3, gl, readline,....)
 # Usage: COMPONENT_ADD_LIBS( orocos-taskbrowser readline ncurses )
 MACRO( COMPONENT_ADD_LIBS COMPONENT_NAME  )
-  foreach( lib ${ARGN} )
-    TARGET_LINK_LIBRARIES( ${COMPONENT_NAME}-${OROCOS_TARGET} ${lib} )
-  endforeach( lib ${ARGN} )
+    TARGET_LINK_LIBRARIES( ${COMPONENT_NAME}-${OROCOS_TARGET} ${ARGN} )
 ENDMACRO( COMPONENT_ADD_LIBS COMPONENT_NAME )
 
 # Link a component library with another component library
@@ -72,13 +66,11 @@ MACRO( GLOBAL_ADD_COMPONENT COMPONENT_NAME )
       MESSAGE( "Building Shared library for ${COMPONENT_NAME}" )
       ADD_LIBRARY( ${LIB_NAME} SHARED ${ARGN} )
       SET_TARGET_PROPERTIES( ${LIB_NAME} PROPERTIES 
-	DEFINE_SYMBOL OCL_DLL_EXPORT 
+	DEFINE_SYMBOL "OCL_DLL_EXPORT"
 	VERSION ${OCL_VERSION}
 	SOVERSION ${OCL_VERSION_MAJOR}.${OCL_VERSION_MINOR}
 	)
-      foreach(lib ${OROCOS_RTT_LIBS})
- 	TARGET_LINK_LIBRARIES( ${LIB_NAME} ${lib} )
-      endforeach(lib in ${OROCOS_RTT_LIBS})
+ 	TARGET_LINK_LIBRARIES( ${LIB_NAME} ${OROCOS_RTT_LIBS} )
 
     ELSE (OROCOS_RTT_1.4)
       IF (OROCOS_RTT_1.2)
@@ -96,7 +88,7 @@ MACRO( GLOBAL_ADD_COMPONENT COMPONENT_NAME )
       ENDIF (OROCOS_RTT_1.2)
     ENDIF (OROCOS_RTT_1.4)
 
-    INSTALL_TARGETS( /lib ${LIB_NAME} )
+    INSTALL( TARGETS ${LIB_NAME} ARCHIVE DESTINATION lib LIBRARY DESTINATION lib RUNTIME DESTINATION bin )
     #The later a component is added, the earlier it apears in the -l list.
     SET (ENV{SELECTED_LIBS} "-l${LIB_NAME} $ENV{SELECTED_LIBS} ")
     #This is an ugly work around

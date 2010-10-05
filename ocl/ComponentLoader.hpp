@@ -58,11 +58,11 @@ namespace OCL
          */
         OCL_HIDE static FactoryMap* Factories;
     public:
-        OCL_EXPORT static FactoryMap& Instance() {
-            if ( Factories == 0)
-                Factories = new FactoryMap();
-            return *Factories;
-        }
+        OCL_HIDE static FactoryMap& Instance() {
+	  if ( Factories == 0)
+	    Factories = new FactoryMap();
+	  return *Factories;
+	}
     };
 
     /**
@@ -93,7 +93,7 @@ namespace OCL
 #define ORO_LIST_COMPONENT_TYPE__str(s) #s
 
 // ORO_CREATE_COMPONENT and ORO_CREATE_COMPONENT_TYPE are only used in shared libraries.
-#if defined(OCL_DLL_EXPORT)
+#if defined(OCL_DLL_EXPORT) || defined(RTT_COMPONENT)
 
 /**
  * Use this macro to register a single component in a shared library (plug-in).
@@ -110,11 +110,11 @@ namespace OCL
  */
 #define ORO_CREATE_COMPONENT(CNAME) \
 extern "C" { \
-  OCL_API RTT::TaskContext* createComponent(std::string instance_name) \
+  OCL_EXPORT RTT::TaskContext* createComponent(std::string instance_name) \
   { \
     return new CNAME(instance_name); \
   } \
-  OCL_API std::string getComponentType() \
+  OCL_EXPORT std::string getComponentType() \
   { \
     return ORO_LIST_COMPONENT_TYPE_str(CNAME); \
   } \
@@ -127,15 +127,15 @@ extern "C" { \
  * each class added with ORO_LIST_COMPONENT_TYPE.
  */
 #define ORO_CREATE_COMPONENT_TYPE() \
-OCL::FactoryMap* OCL::ComponentFactories::Factories = 0; \
+OCL::FactoryMap* OCL::ComponentFactories::Factories = 0;	\
 extern "C" { \
-  OCL_API RTT::TaskContext* createComponentType(std::string instance_name, std::string type_name) \
+  OCL_EXPORT RTT::TaskContext* createComponentType(std::string instance_name, std::string type_name) \
   { \
     if( OCL::ComponentFactories::Instance().count(type_name) ) \
       return OCL::ComponentFactories::Instance()[type_name](instance_name); \
     return 0; \
   } \
-  OCL_API std::vector<std::string> getComponentTypeNames() \
+  OCL_EXPORT std::vector<std::string> getComponentTypeNames() \
   { \
     std::vector<std::string> ret; \
     OCL::FactoryMap::iterator it; \
@@ -144,16 +144,16 @@ extern "C" { \
     } \
     return ret; \
   } \
-  OCL_API OCL::FactoryMap* getComponentFactoryMap() { return &OCL::ComponentFactories::Instance(); } \
+  OCL_EXPORT OCL::FactoryMap* getComponentFactoryMap() { return &OCL::ComponentFactories::Instance(); } \
 } /* extern "C" */
 
 #else
 
-#ifndef OCL_STATIC
+#if !defined(OCL_STATIC) && !defined(RTT_STATIC)
 #warning "You're compiling with static library settings. The resulting component library \
  will not be loadable at runtime with the deployer.\
- Compile with -DOCL_DLL_EXPORT to enable dynamic loadable components, \
- or use -DOCL_STATIC to suppress this warning."
+ Compile with -DRTT_COMPONENT to enable dynamic loadable components, \
+ or use -DRTT_STATIC to suppress this warning."
 #endif
 
 // Static OCL library:

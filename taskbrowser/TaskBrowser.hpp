@@ -81,7 +81,7 @@ namespace OCL
      * invoke some other commands, to control what is displayed or to
      * execute a fixed set of commands prior to showng the prompt.
      */
-    class TaskBrowser
+    class OCL_API TaskBrowser
         : public RTT::TaskContext
     {
         // the 'current' task context

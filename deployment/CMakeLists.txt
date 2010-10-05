@@ -9,7 +9,7 @@ IF ( BUILD_DEPLOYMENT )
 
     # This gathers all the .cpp files into the variable 'SRCS'
     SET( HPPS DeploymentComponent.hpp )
-    SET( SRCS DeploymentComponent.cpp ComponentLoader.cpp )
+    SET( SRCS DeploymentComponent.cpp )
 
     GLOBAL_ADD_COMPONENT( orocos-deployment ${SRCS} )
     GLOBAL_ADD_INCLUDE( ocl ${HPPS})

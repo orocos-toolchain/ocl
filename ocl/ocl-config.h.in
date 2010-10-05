@@ -27,10 +27,22 @@
 #  define OCL_HIDE   __attribute__((visibility("hidden")))
 # endif
 #else
-   // NOT GNU
+   // Win32 and NOT GNU
+# if defined( WIN32 ) && !defined ( __MINGW32__ )
+#  if defined(OCL_DLL_EXPORT)
+#   define OCL_API    __declspec(dllexport)
+#   define OCL_EXPORT __declspec(dllexport)
+#   define OCL_HIDE   
+#  else
+#   define OCL_API	 __declspec(dllimport)
+#   define OCL_EXPORT __declspec(dllimport)
+#   define OCL_HIDE 
+#  endif
+# else
 #  define OCL_API
 #  define OCL_EXPORT
 #  define OCL_HIDE
+# endif
 #endif
 
 #endif // OCL_CONFIG_H

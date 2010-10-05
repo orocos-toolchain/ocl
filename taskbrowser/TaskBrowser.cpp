@@ -105,9 +105,9 @@ namespace OCL
     using namespace RTT;
     using namespace std;
 
-    string TaskBrowser::red("\e[m\e[1;31m");
-    string TaskBrowser::green("\e[m\e[1;32m");
-    string TaskBrowser::blue("\e[m\e[1;34m");
+    string TaskBrowser::red("\\e[m\\e[1;31m");
+    string TaskBrowser::green("\\e[m\\e[1;32m");
+    string TaskBrowser::blue("\\e[m\\e[1;34m");
 
     /**
      * Our own defined "\n"
@@ -116,6 +116,7 @@ namespace OCL
     nl(std::ostream& __os)
     { return __os.put(__os.widen('\n')); }
 
+#ifdef _POSIX_VERSION
     // catch ctrl+c signal
     void ctrl_c_catcher(int sig)
     {
@@ -129,6 +130,7 @@ namespace OCL
 #endif
         ::signal(SIGINT, ctrl_c_catcher);
     }
+#endif
 
 #ifndef NO_GPL
     char *TaskBrowser::rl_gets ()
@@ -137,7 +139,22 @@ namespace OCL
            return the memory to the free pool. */
         if (line_read)
             {
+#ifdef _WIN32
+	      /**
+	       * If you don't have this function, download the readline5.2 port
+	       * from :
+	       http://gpsim.sourceforge.net/gpsimWin32/packages/readline-5.2-20061112-src.zip
+	       http://gpsim.sourceforge.net/gpsimWin32/packages/readline-5.2-20061112-lib.zip
+	       http://gpsim.sourceforge.net/gpsimWin32/packages/readline-5.2-20061112-bin.zip
+	       *
+	       * free(line_read) will cause crashes since the malloc has been
+	       * done in another DLL. You can emulate rl_free by adding this function
+	       * yourself to your readline library and let it free its argument.
+	       */
+	      free(line_read);
+#else
                 free (line_read);
+#endif
                 line_read = 0;
             }
 
@@ -148,9 +165,10 @@ namespace OCL
         } else {
             p = "> ";
         }
-
+#ifndef _WIN32  // does not work on win32
         if (rl_set_signals() != 0)
             cerr << "Error setting signals !" <<endl;
+#endif
         line_read = readline ( p.c_str() );
 
         /* If the line has any text in it,
@@ -169,7 +187,7 @@ namespace OCL
         char * rv;
         // must be C-style :
         rv = (char*) malloc( strlen( s ) + 1 );
-        strcpy( rv, s );
+        strncpy( rv, s, strlen(s) + 1 );
         return rv;
     }
 
@@ -579,7 +597,7 @@ namespace OCL
      */
     void TaskBrowser::loop()
     {
-
+#ifdef _POSIX_VERSION
         // Intercept Ctrl-C
         ::signal( SIGINT, ctrl_c_catcher );
 #ifndef NO_GPL
@@ -588,6 +606,7 @@ namespace OCL
             cerr << "Error: not catching signals !"<<endl;
         if (rl_set_signals() != 0)
             cerr << "Error setting signals !" <<endl;
+#endif
 #endif
         cout << nl<<
             coloron <<
@@ -646,8 +665,10 @@ namespace OCL
                 }
                 // Check port status:
                 checkPorts();
+#ifdef _POSIX_VERSION
                 // Call readline wrapper :
                 ::signal( SIGINT, ctrl_c_catcher ); // catch ctrl_c only when editting a line.
+#endif
 #ifndef NO_GPL
                 const char* const commandStr = rl_gets();
                 // quit on EOF (Ctrl-D)
@@ -660,7 +681,9 @@ namespace OCL
                     command = "quit";
 #endif
                 str_trim( command, ' ');
+#ifdef _POSIX_VERSION
                 ::signal( SIGINT, SIG_DFL );        // do not catch ctrl_c
+#endif
                 cout << coloroff;
                 if ( command == "quit" ) {
                     // Intercept no Ctrl-C
@@ -712,9 +735,9 @@ namespace OCL
 
     std::deque<TaskContext*> taskHistory;
     std::string TaskBrowser::prompt(" (type 'ls' for context info) :");
-    std::string TaskBrowser::coloron("\e[m\e[1;31m");
-    std::string TaskBrowser::underline("\e[4m");
-    std::string TaskBrowser::coloroff("\e[m");
+    std::string TaskBrowser::coloron("\\e[m\\e[1;31m");
+    std::string TaskBrowser::underline("\\e[4m");
+    std::string TaskBrowser::coloroff("\\e[m");
 
     void TaskBrowser::enterTask()
     {
@@ -821,8 +844,8 @@ namespace OCL
         const char* g = "32m";
         const char* b = "34m";
         const char* con = "31m";
-        const char* coff = "\e[m";
-        const char* und  = "\e[4m";
+        const char* coff = "\\e[m";
+        const char* und  = "\\e[4m";
 
         switch (t)
             {
