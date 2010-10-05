@@ -110,11 +110,13 @@ namespace OCL
  */
 #define ORO_CREATE_COMPONENT(CNAME) \
 extern "C" { \
-  OCL_EXPORT RTT::TaskContext* createComponent(std::string instance_name) \
+  OCL_EXPORT RTT::TaskContext* createComponent(std::string instance_name); \
+  RTT::TaskContext* createComponent(std::string instance_name) \
   { \
     return new CNAME(instance_name); \
   } \
-  OCL_EXPORT std::string getComponentType() \
+  OCL_EXPORT std::string getComponentType(); \
+  std::string getComponentType() \
   { \
     return ORO_LIST_COMPONENT_TYPE_str(CNAME); \
   } \
