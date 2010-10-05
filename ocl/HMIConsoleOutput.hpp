@@ -68,8 +68,6 @@ namespace OCL
               coloron("\033[1;34m"), coloroff("\033[0m"),
               _prompt("HMIConsoleOutput :\n")
         {
-            this->clear();
-
             this->methods()->addMethod( method( "display", &HMIConsoleOutput::display, this),
                                "Display a message on the console",
                                "message","The message to be displayed"
