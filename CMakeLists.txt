@@ -122,6 +122,9 @@ endif(OROCOS_TARGET STREQUAL "win32")
 #                                                 #
 ###################################################
 
+# Modules path (for searching FindXXX.cmake files)
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/config")
+
 #
 # This is the first in the include path.
 INCLUDE_DIRECTORIES( ${PROJ_SOURCE_DIR} ${PROJ_BINARY_DIR}/ocl )
