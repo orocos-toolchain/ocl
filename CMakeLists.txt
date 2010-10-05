@@ -181,11 +181,7 @@ CONFIGURE_FILE(
 ADD_CUSTOM_TARGET(uninstall
   "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake")
 
-if (MSVC)
-  OPTION( NO_GPL "Set to 'ON' to exclude all GPL'd code" ON)
-else()
-  OPTION( NO_GPL "Set to 'ON' to exclude all GPL'd code" OFF)
-endif()
+OPTION( NO_GPL "Set to 'ON' to exclude all GPL'd code" OFF)
 IF(NO_GPL)
   ADD_DEFINITIONS( -DNO_GPL )
 ENDIF(NO_GPL)
