@@ -23,7 +23,7 @@
   The RTT Lua bindings provide a slim but powerful interface to the
   RTT framework. It can be used for:
 
-  - for building Lua based domain specific languages in the RTT
+  - for building domain specific languages for the RTT
   - as a scriptable taskbrowser and deployer
   - for fast prototyping of components
 
@@ -186,7 +186,6 @@
    |----------------------------------+------+----------------------------------------------------------|
    | =string, variable collect()=     |      | collect results of send, may block. string is SendStatus |
    | =string, variable collectIfDone= |      | as above, non blocking version                           |
-   |                                  |      |                                                          |
 
 
 ** =Variable=
@@ -271,43 +270,58 @@
 
 *** =Service=
 
-   | Method                     | flag | description                          |
-   |----------------------------+------+--------------------------------------|
-   | =string getName()=         |      | return Name of Service               |
-   | =string doc()=             |      | return documentation of this service |
-   | =table getProviderNames()= |      | return table of subservice names     |
-   | getOperationNames          |      |                                      |
-   | getPortNames               |      |                                      |
-   | provides                   |      |                                      |
-   | getOperation               |      |                                      |
-   | getPort                    |      |                                      |
+   | Method                           | flag | description                                                    |
+   |----------------------------------+------+----------------------------------------------------------------|
+   | =string getName()=               |      | return Name of Service                                         |
+   | =string doc()=                   |      | return documentation of this service                           |
+   | =table getProviderNames()=       |      | return table of subservice names                               |
+   | =table getOperationNames()=      |      | return table of names of operations of this service            |
+   | =table getPortNames()=           |      | return table of names of ports of this service                 |
+   | =provides(string)=               |      | return subservice with name specified by given string          |
+   | =Operation getOperation(string)= |      | return operation specified by string name  of this service     |
+   | =Port getPort(string)=           |      | return port specified by the given string name of this service |
 
 *** =ServiceRequester=
 
-   | Method            | flag | description |
-   |-------------------+------+-------------|
-   | getRequestName    |      |             |
-   | getRequesterNames |      |             |
-   | ready             |      |             |
-   | disconnect        |      |             |
-   | requires          |      |             |
+   | Method                      | flag | description                                         |
+   |-----------------------------+------+-----------------------------------------------------|
+   | =string getRequestName()=   |      | return name of this service requester               |
+   | =table getRequesterNames()= |      | return table of names of required subservices       |
+   | =bool ready()=              |      | true if all operations are resolved                 |
+   | =void disconnect()=         |      | disconnect from remote Service                      |
+   | =requires(string)=          |      | return required subservice specified by string name |
 
 *** =Operation=
+    
+    This object is only returned by =Service:getOperation=. It can
+    also be called with the familiar =op(arg1, arg2)= syntax.
 
-   | Method | flag | description |
-   |--------+------+-------------|
-   | info   |      |             |
-   | call   |      |             |
-   | send   |      |             |
+   | Method                                 | flag | description                                                        |
+   |----------------------------------------+------+--------------------------------------------------------------------|
+   | =res_type, arity, desc, argtab info()= |      | returns result type, arity, description and table of parameters    |
+   | =Variable call(string, ...)=           |      | calls operation specified by string. additional args are passed on |
+   | =SendHandle send(string, ...)=         |      | same as above, but =send= Operation and return SendHandle          |
 
 
-** miscellaneous
+** Miscellaneous
+*** Logger
 
-*** =Logger=
+    The good old logger.
 
-*** =alloc=
+    | Method                 | flag | description                 |
+    |------------------------+------+-----------------------------|
+    | =setlevel(string)=     | F    | set the loglevel            |
+    | =string getloglevel()= | F    | return the current loglevel |
+    | =log(string, ...)=     | F    | log all (string) arguments  |
 
-* Real-Time
+*** Service/Typekits/Types information
+
+    | Method             | flag | description                                              |
+    |--------------------+------+----------------------------------------------------------|
+    | =table services()= | F    | returns a table of strings specifying the known services |
+    | =table typekits()= | F    | returns a table of strings specifying the known typekits |
+    | =table types()=    | F    | returns a table of strings specifying the known types    |
+
 
 * The =rttlib= convenience module
   This library adds some pretty printing functions to the standard

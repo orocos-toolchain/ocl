@@ -103,35 +103,34 @@ lang="en" xml:lang="en">
 <li><a href="#sec-4_7_3">4.7.3 <code>Operation</code> </a></li>
 </ul>
 </li>
-<li><a href="#sec-4_8">4.8 miscellaneous </a>
+<li><a href="#sec-4_8">4.8 Miscellaneous </a>
 <ul>
-<li><a href="#sec-4_8_1">4.8.1 <code>Logger</code> </a></li>
-<li><a href="#sec-4_8_2">4.8.2 <code>alloc</code> </a></li>
+<li><a href="#sec-4_8_1">4.8.1 Logger </a></li>
+<li><a href="#sec-4_8_2">4.8.2 Service/Typekits/Types information </a></li>
 </ul></li>
 </ul>
 </li>
-<li><a href="#sec-5">5 Real-Time </a></li>
-<li><a href="#sec-6">6 The <code>rttlib</code> convenience module </a>
+<li><a href="#sec-5">5 The <code>rttlib</code> convenience module </a>
 <ul>
-<li><a href="#sec-6_1">6.1 how to add a pretty printer for a custom type </a></li>
+<li><a href="#sec-5_1">5.1 how to add a pretty printer for a custom type </a></li>
 </ul>
 </li>
-<li><a href="#sec-7">7 Tips and tricks </a>
+<li><a href="#sec-6">6 Tips and tricks </a>
 <ul>
-<li><a href="#sec-7_1">7.1 Using functions instead of methods </a></li>
-<li><a href="#sec-7_2">7.2 rttlua init file <code>~/.rttlua</code> </a></li>
+<li><a href="#sec-6_1">6.1 rttlua init file <code>~/.rttlua</code> </a></li>
+<li><a href="#sec-6_2">6.2 Understanding functions vs. methods </a></li>
 </ul>
 </li>
-<li><a href="#sec-8">8 Known issues </a>
+<li><a href="#sec-7">7 Known issues </a>
 <ul>
-<li><a href="#sec-8_1">8.1 Assignment is not like RTT scripting </a></li>
-<li><a href="#sec-8_2">8.2 Not all types are garbage collected </a></li>
-<li><a href="#ComparisonIssue">8.3 Comparing Lua types and RTT Variables fails </a></li>
+<li><a href="#sec-7_1">7.1 Assignment is not like RTT scripting </a></li>
+<li><a href="#sec-7_2">7.2 Not all types are garbage collected </a></li>
+<li><a href="#ComparisonIssue">7.3 Comparing Lua types and RTT Variables fails </a></li>
 </ul>
 </li>
-<li><a href="#sec-9">9 Todo  </a></li>
-<li><a href="#sec-10">10 License </a></li>
-<li><a href="#sec-11">11 Links </a></li>
+<li><a href="#sec-8">8 Todo  </a></li>
+<li><a href="#sec-9">9 License </a></li>
+<li><a href="#sec-10">10 Links </a></li>
 </ul>
 </div>
 </div>
@@ -147,7 +146,7 @@ RTT framework. It can be used for:
 </p>
 <ul>
 <li>
-for building Lua based domain specific languages in the RTT
+for building domain specific languages for the RTT
 </li>
 <li>
 as a scriptable taskbrowser and deployer
@@ -197,7 +196,6 @@ Lua component.
 <div class="outline-text-2" id="text-2">
 
 
-
 </div>
 
 <div id="outline-container-2_1" class="outline-3">
@@ -209,6 +207,17 @@ Lua component.
 <li>
 requires Lua-5.1 (debian: <code>liblua5.1-0-dev</code>, <code>liblua5.1-0</code>, <code>lua5.1</code>)
 
+</li>
+<li>
+CMake options:
+<ul>
+<li>
+=
+</li>
+</ul>
+
+<p>-
+</p>
 </li>
 </ul>
 </div>
@@ -300,7 +309,6 @@ I can create the following component types:
 
 
 
-
 </div>
 
 </div>
@@ -352,8 +360,8 @@ are further subdivided as followed:
 </li>
 </ul>
 
-<p><b>Note</b>: the API consists of what was needed so far and what was
-easy. If something is missing which you need let us know. Chances
+<p><b>Note</b>: the API consists of what was needed so far and what was easy
+to do. If something is missing which you need let us know. Chances
 are high that it is easy to add.
 </p>
 <p>
@@ -383,7 +391,6 @@ function/method:
 </li>
 <li>
 'F' or 'M': only available as function or method
-
 
 </li>
 </ul>
@@ -587,7 +594,6 @@ OuputPort
 
 
 
-
 </div>
 
 </div>
@@ -595,6 +601,23 @@ OuputPort
 <div id="outline-container-4_6" class="outline-3">
 <h3 id="sec-4_6"><span class="section-number-3">4.6</span> <code>Property</code> </h3>
 <div class="outline-text-3" id="text-4_6">
+
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption></caption>
+<colgroup><col align="left" /><col align="left" /><col align="left" />
+</colgroup>
+<thead>
+<tr><th scope="col">Method</th><th scope="col">flag</th><th scope="col">description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>new(type)</code></td><td></td><td>create a new Property</td></tr>
+<tr><td><code>Variable get()</code></td><td></td><td>return the Variable contained in this Property</td></tr>
+<tr><td><code>bool set(Variable)</code></td><td></td><td>set the Property to the value in given Variable</td></tr>
+<tr><td><code>string getName()</code></td><td></td><td>return the name of the property</td></tr>
+<tr><td><code>string getDescription()</code></td><td></td><td>return the description of the property</td></tr>
+</tbody>
+</table>
 
 
 </div>
@@ -614,6 +637,26 @@ OuputPort
 <div class="outline-text-4" id="text-4_7_1">
 
 
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption></caption>
+<colgroup><col align="left" /><col align="left" /><col align="left" />
+</colgroup>
+<thead>
+<tr><th scope="col">Method</th><th scope="col">flag</th><th scope="col">description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>string getName()</code></td><td></td><td>return Name of Service</td></tr>
+<tr><td><code>string doc()</code></td><td></td><td>return documentation of this service</td></tr>
+<tr><td><code>table getProviderNames()</code></td><td></td><td>return table of subservice names</td></tr>
+<tr><td><code>table getOperationNames()</code></td><td></td><td>return table of names of operations of this service</td></tr>
+<tr><td><code>table getPortNames()</code></td><td></td><td>return table of names of ports of this service</td></tr>
+<tr><td><code>provides(string)</code></td><td></td><td>return subservice with name specified by given string</td></tr>
+<tr><td><code>Operation getOperation(string)</code></td><td></td><td>return operation specified by string name  of this service</td></tr>
+<tr><td><code>Port getPort(string)</code></td><td></td><td>return port specified by the given string name of this service</td></tr>
+</tbody>
+</table>
+
+
 </div>
 
 </div>
@@ -621,6 +664,23 @@ OuputPort
 <div id="outline-container-4_7_2" class="outline-4">
 <h4 id="sec-4_7_2"><span class="section-number-4">4.7.2</span> <code>ServiceRequester</code> </h4>
 <div class="outline-text-4" id="text-4_7_2">
+
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption></caption>
+<colgroup><col align="left" /><col align="left" /><col align="left" />
+</colgroup>
+<thead>
+<tr><th scope="col">Method</th><th scope="col">flag</th><th scope="col">description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>string getRequestName()</code></td><td></td><td>return name of this service requester</td></tr>
+<tr><td><code>table getRequesterNames()</code></td><td></td><td>return table of names of required subservices</td></tr>
+<tr><td><code>bool ready()</code></td><td></td><td>true if all operations are resolved</td></tr>
+<tr><td><code>void disconnect()</code></td><td></td><td>disconnect from remote Service</td></tr>
+<tr><td><code>requires(string)</code></td><td></td><td>return required subservice specified by string name</td></tr>
+</tbody>
+</table>
 
 
 </div>
@@ -632,22 +692,59 @@ OuputPort
 <div class="outline-text-4" id="text-4_7_3">
 
 
+<p>
+This object is only returned by <code>Service:getOperation</code>. It can
+also be called with the familiar <code>op(arg1, arg2)</code> syntax.
+</p>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption></caption>
+<colgroup><col align="left" /><col align="left" /><col align="left" />
+</colgroup>
+<thead>
+<tr><th scope="col">Method</th><th scope="col">flag</th><th scope="col">description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>res_type, arity, desc, argtab info()</code></td><td></td><td>returns result type, arity, description and table of parameters</td></tr>
+<tr><td><code>Variable call(string, ...)</code></td><td></td><td>calls operation specified by string. additional args are passed on</td></tr>
+<tr><td><code>SendHandle send(string, ...)</code></td><td></td><td>same as above, but <code>send</code> Operation and return SendHandle</td></tr>
+</tbody>
+</table>
+
+
+
 </div>
 </div>
 
 </div>
 
 <div id="outline-container-4_8" class="outline-3">
-<h3 id="sec-4_8"><span class="section-number-3">4.8</span> miscellaneous </h3>
+<h3 id="sec-4_8"><span class="section-number-3">4.8</span> Miscellaneous </h3>
 <div class="outline-text-3" id="text-4_8">
-
 
 
 </div>
 
 <div id="outline-container-4_8_1" class="outline-4">
-<h4 id="sec-4_8_1"><span class="section-number-4">4.8.1</span> <code>Logger</code> </h4>
+<h4 id="sec-4_8_1"><span class="section-number-4">4.8.1</span> Logger </h4>
 <div class="outline-text-4" id="text-4_8_1">
+
+
+<p>
+The good old logger.
+</p>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption></caption>
+<colgroup><col align="left" /><col align="left" /><col align="left" />
+</colgroup>
+<thead>
+<tr><th scope="col">Method</th><th scope="col">flag</th><th scope="col">description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>setlevel(string)</code></td><td>F</td><td>set the loglevel</td></tr>
+<tr><td><code>string getloglevel()</code></td><td>F</td><td>return the current loglevel</td></tr>
+<tr><td><code>log(string, ...)</code></td><td>F</td><td>log all (string) arguments</td></tr>
+</tbody>
+</table>
 
 
 </div>
@@ -655,8 +752,23 @@ OuputPort
 </div>
 
 <div id="outline-container-4_8_2" class="outline-4">
-<h4 id="sec-4_8_2"><span class="section-number-4">4.8.2</span> <code>alloc</code> </h4>
+<h4 id="sec-4_8_2"><span class="section-number-4">4.8.2</span> Service/Typekits/Types information </h4>
 <div class="outline-text-4" id="text-4_8_2">
+
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption></caption>
+<colgroup><col align="left" /><col align="left" /><col align="left" />
+</colgroup>
+<thead>
+<tr><th scope="col">Method</th><th scope="col">flag</th><th scope="col">description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>table services()</code></td><td>F</td><td>returns a table of strings specifying the known services</td></tr>
+<tr><td><code>table typekits()</code></td><td>F</td><td>returns a table of strings specifying the known typekits</td></tr>
+<tr><td><code>table types()</code></td><td>F</td><td>returns a table of strings specifying the known types</td></tr>
+</tbody>
+</table>
 
 
 
@@ -667,36 +779,29 @@ OuputPort
 </div>
 
 <div id="outline-container-5" class="outline-2">
-<h2 id="sec-5"><span class="section-number-2">5</span> Real-Time </h2>
+<h2 id="sec-5"><span class="section-number-2">5</span> The <code>rttlib</code> convenience module </h2>
 <div class="outline-text-2" id="text-5">
 
-
-
-</div>
-
-</div>
-
-<div id="outline-container-6" class="outline-2">
-<h2 id="sec-6"><span class="section-number-2">6</span> The <code>rttlib</code> convenience module </h2>
-<div class="outline-text-2" id="text-6">
-
 <p>This library adds some pretty printing functions to the standard
-objects.
+objects. It is recommended to load it for all applications by adding
+the following to scripts:
+</p>
+<p>
+<code>require("rttlib")</code>
 </p>
 
-
 </div>
 
-<div id="outline-container-6_1" class="outline-3">
-<h3 id="sec-6_1"><span class="section-number-3">6.1</span> how to add a pretty printer for a custom type </h3>
-<div class="outline-text-3" id="text-6_1">
+<div id="outline-container-5_1" class="outline-3">
+<h3 id="sec-5_1"><span class="section-number-3">5.1</span> how to add a pretty printer for a custom type </h3>
+<div class="outline-text-3" id="text-5_1">
 
 
 <p>
 In short: write a function which accepts a lua table representation
 of you data type and returns either a table or a string. Assign it
 to <code>rttlib.pp_var.mytype</code>, where mytype is the value returned by
-the <code>var:getType()</code> method. Thats should do it.
+the <code>var:getType()</code> method. That's all!
 </p>
 <p>
 <b>Quick example:</b> <code>ConnPolicy</code> type
@@ -772,25 +877,16 @@ desired fields:
 
 </div>
 
-<div id="outline-container-7" class="outline-2">
-<h2 id="sec-7"><span class="section-number-2">7</span> Tips and tricks </h2>
-<div class="outline-text-2" id="text-7">
+<div id="outline-container-6" class="outline-2">
+<h2 id="sec-6"><span class="section-number-2">6</span> Tips and tricks </h2>
+<div class="outline-text-2" id="text-6">
 
 
 </div>
 
-<div id="outline-container-7_1" class="outline-3">
-<h3 id="sec-7_1"><span class="section-number-3">7.1</span> Using functions instead of methods </h3>
-<div class="outline-text-3" id="text-7_1">
-
-
-</div>
-
-</div>
-
-<div id="outline-container-7_2" class="outline-3">
-<h3 id="sec-7_2"><span class="section-number-3">7.2</span> rttlua init file <code>~/.rttlua</code> </h3>
-<div class="outline-text-3" id="text-7_2">
+<div id="outline-container-6_1" class="outline-3">
+<h3 id="sec-6_1"><span class="section-number-3">6.1</span> rttlua init file <code>~/.rttlua</code> </h3>
+<div class="outline-text-3" id="text-6_1">
 
 
 <p>
@@ -799,21 +895,59 @@ if found execute it. It can be used for doing initalization
 (e.g. loading <code>rttlib</code> etc.)
 </p>
 </div>
+
+</div>
+
+<div id="outline-container-6_2" class="outline-3">
+<h3 id="sec-6_2"><span class="section-number-3">6.2</span> Understanding functions vs. methods </h3>
+<div class="outline-text-3" id="text-6_2">
+
+
+<p>
+Methods and functions are essentially the same in Lua. RTTLua most
+of the time supports both ways of calling.
+</p>
+<p>
+Calling the function <code>call</code> which is stored in the table
+<code>rtt.TaskContext</code>. The TaskContext object is the first parameter.
+</p>
+
+
+
+<pre class="example">&gt; return rtt.TaskContext.call(TC, "getPeriod")
+</pre>
+
+
+
+<p>
+Calling as a method can be done with the <code>:</code> syntax. Lua will
+automatically pass the entity before the colon as the first
+parameter:
+</p>
+
+
+
+<pre class="example">&gt; return TC:call("setPeriod", 1.1)
+</pre>
+
+
+
+</div>
 </div>
 
 </div>
 
-<div id="outline-container-8" class="outline-2">
-<h2 id="sec-8"><span class="section-number-2">8</span> Known issues </h2>
-<div class="outline-text-2" id="text-8">
+<div id="outline-container-7" class="outline-2">
+<h2 id="sec-7"><span class="section-number-2">7</span> Known issues </h2>
+<div class="outline-text-2" id="text-7">
 
 
 
 </div>
 
-<div id="outline-container-8_1" class="outline-3">
-<h3 id="sec-8_1"><span class="section-number-3">8.1</span> Assignment is not like RTT scripting </h3>
-<div class="outline-text-3" id="text-8_1">
+<div id="outline-container-7_1" class="outline-3">
+<h3 id="sec-7_1"><span class="section-number-3">7.1</span> Assignment is not like RTT scripting </h3>
+<div class="outline-text-3" id="text-7_1">
 
 
 <p>
@@ -846,17 +980,16 @@ stdin:1: in main chunk
 
 </div>
 
-<div id="outline-container-8_2" class="outline-3">
-<h3 id="sec-8_2"><span class="section-number-3">8.2</span> Not all types are garbage collected </h3>
-<div class="outline-text-3" id="text-8_2">
-
+<div id="outline-container-7_2" class="outline-3">
+<h3 id="sec-7_2"><span class="section-number-3">7.2</span> Not all types are garbage collected </h3>
+<div class="outline-text-3" id="text-7_2">
 
 </div>
 
 </div>
 
 <div id="outline-container-ComparisonIssue" class="outline-3">
-<h3 id="ComparisonIssue"><a name="sec-8_3" id="sec-8_3"></a><span class="section-number-3">8.3</span> Comparing Lua types and RTT Variables fails </h3>
+<h3 id="ComparisonIssue"><a name="sec-7_3" id="sec-7_3"></a><span class="section-number-3">7.3</span> Comparing Lua types and RTT Variables fails </h3>
 <div class="outline-text-3" id="text-ComparisonIssue">
 
 
@@ -886,36 +1019,36 @@ It is currently not possible to call or send a connected local
 required Operation.
 
 
-
 </li>
 </ul>
 </div>
+</div>
+
+</div>
+
+<div id="outline-container-8" class="outline-2">
+<h2 id="sec-8"><span class="section-number-2">8</span> Todo  </h2>
+<div class="outline-text-2" id="text-8">
+
+
+<ul>
+<li>
+Support for creating Operations from Lua (probably not soon)
+
+</li>
+<li>
+Calling a Connected Required Operation is not possible from Lua
+right now.
+
+</li>
+</ul>
 </div>
 
 </div>
 
 <div id="outline-container-9" class="outline-2">
-<h2 id="sec-9"><span class="section-number-2">9</span> Todo  </h2>
+<h2 id="sec-9"><span class="section-number-2">9</span> License </h2>
 <div class="outline-text-2" id="text-9">
-
-
-<ul>
-<li>
-reintegrate tlsf and real-time validation
-</li>
-<li>
-Support for creating Operations from Lua (probably not soon)
-
-
-</li>
-</ul>
-</div>
-
-</div>
-
-<div id="outline-container-10" class="outline-2">
-<h2 id="sec-10"><span class="section-number-2">10</span> License </h2>
-<div class="outline-text-2" id="text-10">
 
 
 <p>
@@ -925,9 +1058,9 @@ The Lua-RTT bindings are licensed under the LGPL.
 
 </div>
 
-<div id="outline-container-11" class="outline-2">
-<h2 id="sec-11"><span class="section-number-2">11</span> Links </h2>
-<div class="outline-text-2" id="text-11">
+<div id="outline-container-10" class="outline-2">
+<h2 id="sec-10"><span class="section-number-2">10</span> Links </h2>
+<div class="outline-text-2" id="text-10">
 
 <ul>
 <li>
