@@ -718,7 +718,7 @@
 	<para>
 	  The macros need some help to figure out if you are compiling
 	  a shared or static library. You need to define the
-	  <emphasis>OCL_DLL_EXPORT</emphasis> macro (see below) when
+	  <emphasis>RTT_COMPONENT</emphasis> macro (see below) when
 	  compiling for a shared library. If this macro is not
 	  defined, it is assumed that you are compiling for a static
 	  library.
@@ -728,7 +728,7 @@
 	  The compilation flag of a component for a shared library
 	  might look like:
 	</para>
-	<programlisting>  CFLAGS= -O2 -Wall -fPIC -DOCL_DLL_EXPORT
+	<programlisting>  CFLAGS= -O2 -Wall -fPIC -DRTT_COMPONENT
   LDFLAGS= -fPIC</programlisting>
 	<para>
 	  The compilation flag of a component for a static library
