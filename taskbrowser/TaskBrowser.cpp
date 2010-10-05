@@ -226,7 +226,7 @@ namespace OCL
     void TaskBrowser::find_completes() {
         std::string::size_type pos;
         std::string::size_type startpos;
-        std::string line( rl_line_buffer );
+        std::string line( rl_line_buffer, rl_point );
 
         // complete on 'cd' or 'ls' :
         if ( line.find(std::string("cd ")) == 0 || line.find(std::string("ls ")) == 0) {
