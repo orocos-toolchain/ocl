@@ -11,7 +11,7 @@ IF ( BUILD_DEPLOYMENT )
     SET( HPPS DeploymentComponent.hpp )
     SET( SRCS DeploymentComponent.cpp ComponentLoader.cpp comppath.cpp)
 
-    GLOBAL_ADD_COMPONENT( orocos-deployment ${SRCS} )
+    GLOBAL_ADD_COMPONENT( orocos-deployment ${SRCS} INSTALL lib)
     GLOBAL_ADD_INCLUDE( ocl ${HPPS})
 
     if ( NOT OROCOS_TARGET STREQUAL "win32" )
@@ -21,7 +21,7 @@ IF ( BUILD_DEPLOYMENT )
     COMPONENT_ADD_DEPS( orocos-deployment orocos-ocl-common)
     
     IF (CORBA_ENABLED)
-        GLOBAL_ADD_COMPONENT(orocos-deployment-corba CorbaDeploymentComponent.cpp)
+        GLOBAL_ADD_COMPONENT(orocos-deployment-corba CorbaDeploymentComponent.cpp INSTALL lib)
         GLOBAL_ADD_INCLUDE( ocl CorbaDeploymentComponent.hpp)
         COMPONENT_ADD_DEPS( orocos-deployment-corba orocos-deployment)
 	COMPONENT_ADD_LIBS( orocos-deployment-corba ${OROCOS_RTT_CORBA_LIBS})
