@@ -105,9 +105,9 @@ namespace OCL
     using namespace RTT;
     using namespace std;
 
-    string TaskBrowser::red("\\e[m\\e[1;31m");
-    string TaskBrowser::green("\\e[m\\e[1;32m");
-    string TaskBrowser::blue("\\e[m\\e[1;34m");
+    string TaskBrowser::red("\e[m\e[1;31m");
+    string TaskBrowser::green("\e[m\e[1;32m");
+    string TaskBrowser::blue("\e[m\e[1;34m");
 
     /**
      * Our own defined "\n"
@@ -735,9 +735,9 @@ namespace OCL
 
     std::deque<TaskContext*> taskHistory;
     std::string TaskBrowser::prompt(" (type 'ls' for context info) :");
-    std::string TaskBrowser::coloron("\\e[m\\e[1;31m");
-    std::string TaskBrowser::underline("\\e[4m");
-    std::string TaskBrowser::coloroff("\\e[m");
+    std::string TaskBrowser::coloron("\e[m\e[1;31m");
+    std::string TaskBrowser::underline("\e[4m");
+    std::string TaskBrowser::coloroff("\e[m");
 
     void TaskBrowser::enterTask()
     {
@@ -844,8 +844,8 @@ namespace OCL
         const char* g = "32m";
         const char* b = "34m";
         const char* con = "31m";
-        const char* coff = "\\e[m";
-        const char* und  = "\\e[4m";
+        const char* coff = "\e[m";
+        const char* und  = "\e[4m";
 
         switch (t)
             {
