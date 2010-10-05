@@ -1931,6 +1931,14 @@ static const struct luaL_Reg Logger_f [] = {
 
 /* misc stuff */
 
+static int getTC(lua_State *L)
+{
+	TaskContext *tc;
+	lua_pushstring(L, "this_TC");
+	lua_gettable(L, LUA_REGISTRYINDEX);
+	return 1;
+}
+
 static int rtt_services(lua_State *L)
 {
 	push_vect_str(L, PluginLoader::Instance()->listServices());
@@ -1950,6 +1958,7 @@ static int rtt_types(lua_State *L)
 }
 
 static const struct luaL_Reg rtt_f [] = {
+	{"getTC", getTC },
 	{"services", rtt_services },
 	{"typekits", rtt_typekits },
 	{"types", rtt_types },

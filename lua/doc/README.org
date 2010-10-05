@@ -64,7 +64,7 @@
 #+BEGIN_EXAMPLE
       $ export LUA_PATH=";;;/usr/share/lua/5.1/?.lua;\
 	      /usr/share/lua/5.1/?/init.lua;\
-	      /home/mk/src/git/orocos/ocl/lua/lua-modules/?.lua"
+	      /home/mk/src/git/orocos/ocl/lua/modules/?.lua"
 #+END_EXAMPLE
 
     - if using =rttlua= scripting: export correct =RTT_COMPONENT_PATH=
@@ -81,7 +81,9 @@
 #+BEGIN_EXAMPLE
   ./rttlua
   Orocos RTTLua 1.0-beta1 (gnulinux)
-  > -- print the TaskContext Lua is running in
+  > -- get a reference to our "this" TaskContext
+  > TC = rtt.getTC()
+  > -- print the TaskContext
   > print(TC)
   userdata: 0x1cba0b8
   > -- if we want nicer output we must load the rttlib module
@@ -105,8 +107,15 @@
      OCL::Testcomp
   >
 
-  -- todo
 #+END_EXAMPLE
+* Using the LuaComponent
+
+  see the simple producer comsumer example in
+  =scripts/producer_consumer=
+
+* Using the LuaService
+
+  -
 
 * Lua API
 
@@ -126,6 +135,9 @@
    - =Operation=
    - =Logger=
 
+  Probably the most important function is =rtt.getTC()= which returns
+  a reference to /our/ TaskContext.
+
   *Note*: the API consists of what was needed so far and what was easy
   to do. If something is missing which you need let us know. Chances
   are high that it is easy to add.
@@ -138,8 +150,9 @@
   For example the following two calls are equivalent:
 
 #+BEGIN_EXAMPLE
-  > print( rtt.TaskContext.getName(TC) )
-  > print( TC:getName() )
+  > tc = rtt.getTC()
+  > print( rtt.TaskContext.getName(tc) )
+  > print( tc:getName() )
 #+END_EXAMPLE
 
   The flag column describes additonal properties of the
@@ -292,7 +305,7 @@
    | =requires(string)=          |      | return required subservice specified by string name |
 
 *** =Operation=
-    
+
     This object is only returned by =Service:getOperation=. It can
     also be called with the familiar =op(arg1, arg2)= syntax.
 
@@ -391,28 +404,7 @@
    if found execute it. It can be used for doing initalization
    (e.g. loading =rttlib= etc.)
 
-** Understanding functions vs. methods
-
-   Methods and functions are essentially the same in Lua. RTTLua most
-   of the time supports both ways of calling.
-
-   Calling the function =call= which is stored in the table
-   =rtt.TaskContext=. The TaskContext object is the first parameter.
-
-#+BEGIN_EXAMPLE
-   > return rtt.TaskContext.call(TC, "getPeriod")
-#+END_EXAMPLE
-
-   Calling as a method can be done with the =:= syntax. Lua will
-   automatically pass the entity before the colon as the first
-   parameter:
-
-#+BEGIN_EXAMPLE
-   > return TC:call("setPeriod", 1.1)
-#+END_EXAMPLE
-
 * Known issues
-
 ** Assignment is not like RTT scripting
 
    Except for the Lua primitive types (string, number, boolean) Lua
@@ -459,7 +451,6 @@
 
    - It is currently not possible to call or send a connected local
      required Operation.
-
 
 * Todo
 

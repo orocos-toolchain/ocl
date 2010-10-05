@@ -1,7 +1,8 @@
 require("utils")
 require("ansicolors")
 
-local print, type, table, getmetatable, pairs, ipairs, tostring, assert = print, type, table, getmetatable, pairs, ipairs, tostring, assert
+local print, type, table, getmetatable, pairs, ipairs, tostring, assert, error = 
+   print, type, table, getmetatable, pairs, ipairs, tostring, assert, error
 local string = string
 local utils = utils
 local col = ansicolors
