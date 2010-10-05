@@ -67,8 +67,6 @@ namespace OCL
               coloron("\033[1;34m"), coloroff("\033[0m"),
               _prompt("HMIConsoleOutput :\n")
         {
-            this->clear();
-
             this->addOperation("display", &HMIConsoleOutput::display, this, RTT::ClientThread).doc("Display a message on the console").arg("message", "The message to be displayed");
             this->addOperation("displayBool", &HMIConsoleOutput::displayBool, this, RTT::ClientThread).doc("Display a boolean on the console").arg("boolean", "The Boolean to be displayed");
             this->addOperation("displayInt", &HMIConsoleOutput::displayInt, this, RTT::ClientThread).doc("Display a integer on the console").arg("integer", "The Integer to be displayed");
