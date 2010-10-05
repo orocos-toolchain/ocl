@@ -19,7 +19,7 @@ IF ( BUILD_REPORTING )
 
     GLOBAL_ADD_COMPONENT( orocos-reporting ${SRCS})
     GLOBAL_ADD_INCLUDE( ocl ${HPPS})
-    COMPONENT_ADD_DEPS( orocos-reporting orocos-ocl-common)
+    COMPONENT_ADD_DEPS( orocos-reporting )
 
     IF ( NETCDF_FOUND )
       SET( NETCDF_SRCS NetcdfReporting.cpp )
