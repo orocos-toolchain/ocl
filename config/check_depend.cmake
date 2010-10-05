@@ -102,7 +102,7 @@ ELSE ( BOOST )
     MESSAGE("-- Looking for Boost Ublas - not found")
 ENDIF ( BOOST )
 
-find_package(Boost COMPONENTS program_options)
+find_package(Boost COMPONENTS program_options filesystem system)
 INCLUDE_DIRECTORIES( ${Boost_INCLUDE_DIR} ${READLINE_INCLUDE_DIR} )
 
 # Look for ulapack

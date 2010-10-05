@@ -9,12 +9,16 @@ IF ( BUILD_DEPLOYMENT )
 
     # This gathers all the .cpp files into the variable 'SRCS'
     SET( HPPS DeploymentComponent.hpp )
-    SET( SRCS DeploymentComponent.cpp )
+    SET( SRCS DeploymentComponent.cpp ComponentLoader.cpp comppath.cpp)
 
     GLOBAL_ADD_COMPONENT( orocos-deployment ${SRCS} )
     GLOBAL_ADD_INCLUDE( ocl ${HPPS})
 
-    COMPONENT_ADD_LIBS( orocos-deployment "dl" )
+    if ( NOT OROCOS_TARGET STREQUAL "win32" )
+      COMPONENT_ADD_LIBS( orocos-deployment "dl" )
+    endif()
+    COMPONENT_ADD_LIBS( orocos-deployment ${Boost_FILESYSTEM_LIBRARIES} ${Boost_SYSTEM_LIBRARIES})
+    COMPONENT_ADD_DEPS( orocos-deployment orocos-ocl-common)
     
     IF (CORBA_ENABLED)
         GLOBAL_ADD_COMPONENT(orocos-deployment-corba CorbaDeploymentComponent.cpp)
@@ -24,6 +28,9 @@ IF ( BUILD_DEPLOYMENT )
     ENDIF(CORBA_ENABLED)
      
     ADD_SUBDIRECTORY( tests )
+
+    SET(DEFAULT_COMPONENT_PATH "${OROCOS_INSTALL}/lib/orocos" CACHE STRING "Default component lookup path when none given. (semi-)colon separated list.")
+    configure_file(comppath.cpp.in ${CMAKE_CURRENT_SOURCE_DIR}/comppath.cpp @ONLY)
 
     # This requires the orocos-rtt library to be carefully tagged
     # with the necessary 'export' attributes, or unresolved symbols

@@ -91,7 +91,7 @@ namespace OCL
          * It is the cumulation of all loadConfiguration() calls.
          */
         RTT::PropertyBag root;
-        RTT::Property<std::string> compPath;
+	RTT::Property<std::string> compPath;
         RTT::Property<bool> autoUnload;
         RTT::Attribute<bool> validConfig;
         RTT::Constant<int> sched_RT;
@@ -161,32 +161,7 @@ namespace OCL
         typedef std::map<std::string, ComponentData> CompList;
         CompList comps;
 
-        /**
-         * Keep a list of all loaded libraries such that double
-         * loads are avoided during import/loadLibrary.
-         */
-        class LoadedLib{
-	    public:
-            LoadedLib(std::string n, void* h)
-            {
-                name = n;
-                handle = h;
-            }
-            std::string name;
-            void* handle;
-            std::vector<std::string> components_type;
-        };
-
-        static std::vector< LoadedLib > loadedLibs;
-
-        /**
-         * Handle of last loaded library.
-         */
-        void* handle;
-        /**
-         * Name of last loaded library.
-         */
-        std::string libname;
+	static std::string default_comp_path;
 
         /**
          * This function imports available plugins from

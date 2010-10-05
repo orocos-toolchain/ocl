@@ -35,23 +35,14 @@
 #include <rtt/marsh/PropertyDemarshaller.hpp>
 
 #include <cstdio>
-#include <dlfcn.h>
 #include "ocl/ComponentLoader.hpp"
+#include "ComponentLoader.hpp"
 #include <rtt/PropertyLoader.hpp>
+#include <rtt/os/PluginLoader.hpp>
 
-#undef _POSIX_C_SOURCE
-#include <sys/types.h>
-#include <dirent.h>
 #include <iostream>
 #include <fstream>
 #include <set>
-
-// chose the file extension applicable to the O/S
-#ifdef  __APPLE__
-static const std::string SO_EXT(".dylib");
-#else
-static const std::string SO_EXT(".so");
-#endif
 
 using namespace Orocos;
 
@@ -59,8 +50,7 @@ namespace OCL
 {
     using namespace std;
     using namespace RTT;
-
-    std::vector< DeploymentComponent::LoadedLib > DeploymentComponent::loadedLibs;
+    using namespace RTT::OS;
 
     /**
      * I'm using a set to speed up lookups.
@@ -72,9 +62,7 @@ namespace OCL
 
     DeploymentComponent::DeploymentComponent(std::string name, std::string siteFile)
         : RTT::TaskContext(name, Stopped),
-          compPath("ComponentPath",
-                   "Location to look for components in addition to the local directory and system paths.",
-                   "/usr/lib"),
+	  compPath("RTT_COMPONENT_PATH", "Locations to look for components. Use a colon or semi-colon separated list of paths. Defaults to the environment variable with the same name."),
           autoUnload("AutoUnload",
                      "Stop, cleanup and unload all components loaded by the DeploymentComponent when it is destroyed.",
                      true),
@@ -253,15 +241,24 @@ namespace OCL
 
     bool DeploymentComponent::configureHook()
     {
-        string toolpath = compPath.get() + "/rtt/"+ target.get() +"/plugins";
-        DIR* res = opendir( toolpath.c_str() );
-        if (res) {
-            log(Info) << "Loading plugins from " + toolpath <<endlog();
-            import( toolpath );
-        } else {
-            log(Info) << "No plugins present in " + toolpath << endlog();
+      char* paths = getenv("RTT_COMPONENT_PATH");
+      if (compPath.value().empty() )
+        {
+	  if (paths) {
+	    compPath = string(paths);
+	  } else {
+	    log(Info) <<"No RTT_COMPONENT_PATH set. Using default." <<endlog();
+	    compPath = default_comp_path ;
+	  }
         }
-        return true;
+      log(Info) <<"RTT_COMPONENT_PATH was set to " << compPath << endlog();
+      log(Info) <<"Re-scanning for plugins and components..."<<endlog();
+      PluginLoader::Instance()->setPluginPath(compPath);
+      PluginLoader::Instance()->loadTypekits("");
+      PluginLoader::Instance()->loadPlugins("");
+      deployment::ComponentLoader::Instance()->setComponentPath(compPath);
+      deployment::ComponentLoader::Instance()->import("");
+	  return true;
     }
 
     bool DeploymentComponent::componentLoaded(TaskContext* c) { return true; }
@@ -1200,308 +1197,21 @@ namespace OCL
         deletePropertyBag( root );
     }
 
-#ifdef __APPLE__
-    int filter_so(struct dirent * d)
-#else // Only tested on gnulinux so far
-    int filter_so(const struct dirent * d)
-#endif
-    {
-        std::string so_name(d->d_name);
-        // return FALSE if string ends in .so:
-        if ( so_name.find("/.") != std::string::npos ||
-             so_name.rfind("~") == so_name.length() -1 ) {
-            log(Debug) << "Skipping " << so_name <<endlog();
-            return 0;
-        }
-        return 1;
-    }
+  bool DeploymentComponent::import(const std::string& path)
+  {
+    RTT::Logger::In in("DeploymentComponent::import");
+    log(Debug) << "Importing Components, plugins and typekits from " <<  path << endlog();
+    PluginLoader::Instance()->loadTypekits(path);
+    PluginLoader::Instance()->loadPlugins(path);
+    deployment::ComponentLoader::Instance()->import( path );
+    return true;
+  }
 
-    bool DeploymentComponent::import(const std::string& path)
-    {
-        Logger::In in("DeploymentComponent::import");
-        struct dirent **namelist;
-        int n;
-
-        log(Debug) << "Importing " <<  path << endlog();
-
-        // scan the directory for files.
-        n = scandir( path.c_str(), &namelist, &filter_so, &alphasort);
-        if (n < 0) {
-            // path not found or 1 library specified.
-            //perror("scandir");
-            return loadLibrary( path );
-        } else {
-            int i = 0;
-            while(i != n) {
-                std::string name = namelist[i]->d_name;
-                if (name != "." && name != ".." ) {
-                    if (namelist[i]->d_type == DT_DIR) { //ignoring symlinks and subdirs here.
-                        import( path +"/" +name );
-                    } else {
-                        // Import only accepts libraries ending in .so
-                        log(Debug) << "Scanning " << path +"/" +name <<endlog();
-                        if ( name.rfind(SO_EXT) == std::string::npos ||
-                             name.substr(name.rfind(SO_EXT)) != SO_EXT ) {
-                            log(Debug) << "Dropping " << name <<endlog();
-                        }
-                        else {
-                            log(Debug) << "Accepting " << name <<endlog();
-                            loadLibrary( path + "/" + name );
-                        }
-                    }
-                }
-                free(namelist[i]);
-                ++i;
-            }
-            free(namelist);
-        }
-        return true;
-    }
-
-    bool DeploymentComponent::loadLibrary(const std::string& name)
-    {
-        Logger::In in("DeploymentComponent::loadLibrary");
-        // Accepted abbreviated syntax:
-        // loadLibrary("liborocos-helloworld-gnulinux.so")
-        // loadLibrary("liborocos-helloworld-gnulinux")
-        // loadLibrary("liborocos-helloworld")
-        // loadLibrary("orocos-helloworld")
-        // With a path:
-        // loadLibrary("/usr/lib/liborocos-helloworld-gnulinux.so")
-        // loadLibrary("/usr/lib/liborocos-helloworld-gnulinux")
-        // loadLibrary("/usr/lib/liborocos-helloworld")
-
-        // Discover what 'name' is.
-        bool name_is_path = false;
-        bool name_is_so = false;
-        if ( name.find("/") != std::string::npos )
-            name_is_path = true;
-
-        std::string so_name(name);
-        if ( so_name.rfind(SO_EXT) == std::string::npos)
-            so_name += SO_EXT;
-        else
-            name_is_so = true;
-
-        // Extract the libname such that we avoid double loading (crashes in case of two # versions).
-        libname = name;
-        if ( name_is_path )
-            libname = libname.substr( so_name.rfind("/")+1 );
-        if ( libname.find("lib") == 0 ) {
-            libname = libname.substr(3);
-        }
-        // finally:
-        libname = libname.substr(0, libname.find(SO_EXT) );
-
-        // check if the library is already loaded
-        // NOTE if this library has been loaded, you can unload and reload it to apply changes (may be you have updated the dynamic library)
-        // anyway it is safe to do this only if thereisn't any istance whom type was loaded from this library
-
-        std::vector<LoadedLib>::iterator lib = loadedLibs.begin();
-        while (lib != loadedLibs.end()) {
-            // there is already a library with the same name
-            if ( lib->name == libname) {
-                log(Warning) <<"Library "<< libname <<".so already loaded. " ;
-
-                bool can_unload = true;
-                CompList::iterator cit;
-                for( std::vector<std::string>::iterator ctype = lib->components_type.begin();  ctype != lib->components_type.end() && can_unload; ++ctype) {
-                    for ( cit = comps.begin(); cit != comps.end(); ++cit) {
-                        if( (*ctype) == cit->second.type ) {
-                            // the type of an allocated component was loaded from this library. it might be unsafe to reload the library
-                            log(Warning) << "Can NOT reload because of the instance " << cit->second.type  <<"::"<<cit->second.instance->getName()  <<endlog();
-                            can_unload = false;
-                        }
-                    }
-                }
-                if( can_unload ) {
-                    log(Warning) << "Try to RELOAD"<<endlog();
-                    dlclose(lib->handle);
-                    // remove the library info from the vector
-                    std::vector<LoadedLib>::iterator lib_un = lib;
-                    loadedLibs.erase(lib_un);
-                    lib = loadedLibs.end();
-                }
-                else   return true;
-            }
-            else lib++;
-        }
-
-
-        std::vector<string> errors;
-        // try form "liborocos-helloworld-gnulinux.so"
-        handle = dlopen ( so_name.c_str(), RTLD_NOW | RTLD_GLOBAL );
-        // if no path is given:
-        if (!handle && !name_is_path ) {
-
-            // with target provided:
-            errors.push_back(string( dlerror() ));
-            //cout << so_name.substr(0,3) <<endl;
-            // try "orocos-helloworld-gnulinux.so"
-            if ( so_name.substr(0,3) != "lib") {
-                so_name = "lib" + so_name;
-                handle = dlopen ( so_name.c_str(), RTLD_NOW | RTLD_GLOBAL);
-                if (!handle)
-                    errors.push_back(string( dlerror() ));
-            }
-            // try "liborocos-helloworld-gnulinux.so" in compPath
-            if (!handle) {
-                handle = dlopen ( string(compPath.get() + "/" + so_name).c_str(), RTLD_NOW | RTLD_GLOBAL);
-            }
-
-            if ( !handle && !name_is_so ) {
-                // no so given, try to append target:
-                so_name = name + "-" + target.get() + SO_EXT;
-                errors.push_back(string( dlerror() ));
-                //cout << so_name.substr(0,3) <<endl;
-                // try "orocos-helloworld"
-                if ( so_name.substr(0,3) != "lib")
-                    so_name = "lib" + so_name;
-                handle = dlopen ( so_name.c_str(), RTLD_NOW | RTLD_GLOBAL);
-                if (!handle)
-                    errors.push_back(string( dlerror() ));
-            }
-            // try "liborocos-helloworld" in compPath
-            if (!handle) {
-                handle = dlopen ( string(compPath.get() + "/" + so_name).c_str(), RTLD_NOW | RTLD_GLOBAL);
-            }
-
-        }
-        // if a path is given:
-        if (!handle && name_is_path) {
-            // just append target.so or .so"
-            // with target provided:
-            errors.push_back(string( dlerror() ));
-            // try "/path/liborocos-helloworld-gnulinux.so" in compPath
-            if (!handle) {
-                handle = dlopen ( string(compPath.get() + "/" + so_name).c_str(), RTLD_NOW | RTLD_GLOBAL);
-            }
-
-            if ( !handle && !name_is_so ) {
-                // no so given, try to append target:
-                so_name = name + "-" + target.get() + SO_EXT;
-                errors.push_back(string( dlerror() ));
-                //cout << so_name.substr(0,3) <<endl;
-                // try "/path/liborocos-helloworld"
-                handle = dlopen ( so_name.c_str(), RTLD_NOW | RTLD_GLOBAL);
-                if (!handle)
-                    errors.push_back(string( dlerror() ));
-            }
-
-            // try "/path/liborocos-helloworld" in compPath
-            if (!handle) {
-                handle = dlopen ( string(compPath.get() + "/" + so_name).c_str(), RTLD_NOW | RTLD_GLOBAL);
-            }
-        }
-
-        if (!handle) {
-            errors.push_back(string( dlerror() ));
-            log(Error) << "Could not load library '"<< name <<"':"<<endlog();
-            for(vector<string>::iterator i=errors.begin(); i!= errors.end(); ++i)
-                log(Error) << *i << endlog();
-            return false;
-        }
-
-        //------------- if you get here, the library has been loaded -------------
-        log(Debug)<<"Succesfully loaded "<<libname<<endlog();
-        LoadedLib loading_lib(libname,handle);
-        dlerror();    /* Clear any existing error */
-
-        // Lookup Component factories:
-        FactoryMap* (*getfactory)(void) = 0;
-        FactoryMap* fmap = 0;
-        char* error = 0;
-        bool is_component = false;
-        getfactory = (FactoryMap*(*)(void))( dlsym(handle, "getComponentFactoryMap") );
-        if ((error = dlerror()) == NULL) {
-            // symbol found, register factories...
-            fmap = (*getfactory)();
-            ComponentFactories::Instance().insert( fmap->begin(), fmap->end() );
-            log(Info) << "Loaded multi component library '"<<so_name <<"'"<<endlog();
-            log(Debug) << "Components:";
-            for (FactoryMap::iterator it = fmap->begin(); it != fmap->end(); ++it)
-                log(Debug) <<" "<<it->first;
-            log(Debug) << endlog();
-            is_component = true;
-        } else {
-            log(Debug) << error << endlog();
-        }
-
-        // Lookup createComponent:
-        dlerror();    /* Clear any existing error */
-
-        TaskContext* (*factory)(std::string) = 0;
-        std::string(*tname)(void) = 0;
-        factory = (TaskContext*(*)(std::string))(dlsym(handle, "createComponent") );
-        if ((error = dlerror()) == NULL) {
-            // store factory.
-            if ( ComponentFactories::Instance().count(libname) == 1 ) {
-                log(Warning) << "Library name "<<libname<<" already used: overriding."<<endlog();
-            }
-            ComponentFactories::Instance()[libname] = factory;
-            tname = (std::string(*)(void))(dlsym(handle, "getComponentType") );
-            if ((error = dlerror()) == NULL) {
-                std::string cname = (*tname)();
-                if ( ComponentFactories::Instance().count(cname) == 1 ) {
-                    log(Warning) << "Component type name "<<cname<<" already used: overriding."<<endlog();
-                }
-                ComponentFactories::Instance()[ cname ] = factory;
-                log(Info) << "Loaded component type '"<< cname <<"'"<<endlog();
-                loading_lib.components_type.push_back( cname );
-
-            } else {
-                log(Info) << "Loaded single component library '"<< libname <<"'"<<endlog();
-                loading_lib.components_type.push_back( libname );
-            }
-            is_component = true;
-        } else {
-            log(Debug) << error << endlog();
-        }
-
-        // Lookup plugins:
-        dlerror();    /* Clear any existing error */
-
-        bool (*loadPlugin)(TaskContext*) = 0;
-        std::string(*pluginName)(void) = 0;
-        loadPlugin = (bool(*)(TaskContext*))(dlsym(handle, "loadRTTPlugin") );
-        if ((error = dlerror()) == NULL) {
-            string plugname;
-            pluginName = (std::string(*)(void))(dlsym(handle, "getRTTPluginName") );
-            if ((error = dlerror()) == NULL) {
-                plugname = (*pluginName)();
-            } else {
-                plugname  = libname;
-            }
-
-            // ok; try to load it.
-            bool success = false;
-            try {
-                success = (*loadPlugin)(this);
-            } catch(...) {
-                log(Error) << "Unexpected exception in loadRTTPlugin !"<<endlog();
-            }
-
-            if ( success )
-                log(Info) << "Loaded RTT Plugin '"<< plugname <<"'"<<endlog();
-            else {
-                log(Error) << "Failed to load RTT Plugin '" <<plugname<<"': plugin refused to load into this TaskContext." <<endlog();
-                return false;
-            }
-            return true;
-        } else {
-            log(Debug) << error << endlog();
-        }
-
-        loadedLibs.push_back( loading_lib );
-        log(Info) <<"Storing "<< loading_lib.name  <<endlog();
-        dlerror();    /* Clear any existing error */
-
-
-        // plain library
-        if (is_component == false)
-            log(Info) << "Loaded shared library '"<< so_name <<"'"<<endlog();
-        return true;
-    }
+  bool DeploymentComponent::loadLibrary(const std::string& name)
+  {
+    RTT::Logger::In in("DeploymentComponent::loadLibrary");
+    return deployment::ComponentLoader::Instance()->import(name, "");
+  }
 
     // or type is a shared library or it is a class type.
     bool DeploymentComponent::loadComponent(const std::string& name, const std::string& type)
@@ -1516,63 +1226,26 @@ namespace OCL
             return false;
         }
 
-        TaskContext* (*factory)(std::string name) = 0;
-        char *error;
 
-        // First: try loading from imported libraries. (see: import).
-        if ( ComponentFactories::Instance().count(type) == 1 ) {
-            factory = ComponentFactories::Instance()[ type ];
-            if (factory == 0 ) {
-                log(Error) <<"Found empty factory for Component type "<<type<<endlog();
-                return false;
-            }
+        TaskContext* instance = deployment::ComponentLoader::Instance()->loadComponent(name, type);
+
+        if (!instance) {
+	  return false;
         }
 
-        if ( factory ) {
-            log(Debug) <<"Found factory for Component type "<<type<<endlog();
-        } else {
-            // if a type was given, bail out immediately.
-            if ( type.find("::") != string::npos) {
-                log(Error) << "Unable to locate Orocos plugin '"<<type<<"': unknown component type." <<endlog();
-                return false;
-            }
-            // Second: try dynamic loading:
-            if ( loadLibrary(type) == false )
-                return false;
-
-            dlerror();    /* Clear any existing error */
-            factory = (TaskContext*(*)(std::string))(dlsym(handle, "createComponent"));
-            if ((error = dlerror()) != NULL) {
-                log(Error) << "Found plugin '"<< type <<"', but it can not create a single Orocos Component:";
-                log(Error) << error << endlog();
-                // leave it loaded.
-                return false;
-            }
-            log(Info) << "Found Orocos plugin '"<< type <<"'"<<endlog();
-        }
-
-        try {
-            comps[name].instance = (*factory)(name);
-        } catch(...) {
-            log(Error) <<"The constructor of component type "<<type<<" threw an exception!"<<endlog();
-        }
-
-        if ( comps[name].instance == 0 ) {
-            log(Error) <<"Failed to load component with name "<<name<<": refused to be created."<<endlog();
-            return false;
-        }
-
-        if (!this->componentLoaded( comps[name].instance ) ) {
-            log(Error) << "This deployer type refused to connect to "<< comps[name].instance->getName() << ": aborting !" << endlog(Error);
-            delete comps[name].instance;
-            return false;
+        if (!this->componentLoaded( instance ) ) {
+	  log(Error) << "This deployer type refused to connect to "<< instance->getName() << ": aborting !" << endlog(Error);
+	  deployment::ComponentLoader::Instance()->unloadComponent( instance );
+	  return false;
         }
 
         // unlikely that this fails (checked at entry)!
-        this->addPeer( comps[name].instance );
-        log(Info) << "Adding "<< comps[name].instance->getName() << " as new peer:  OK."<< endlog(Info);
+        this->addPeer( instance );
+        log(Info) << "Adding "<< instance->getName() << " as new peer:  OK."<< endlog(Info);
+
+        comps[name].instance = instance;
         comps[name].loaded = true;
-        comps[name].type = type;
+
         return true;
     }
 
@@ -1621,7 +1294,7 @@ namespace OCL
                 // Finally, delete the activity before the TC !
                 delete it->act;
                 it->act = 0;
-                delete it->instance;
+		deployment::ComponentLoader::Instance()->unloadComponent( it->instance );
                 it->instance = 0;
                 log(Info) << "Disconnected and destroyed "<< name <<endlog();
             } else {
