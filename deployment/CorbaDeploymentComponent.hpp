@@ -55,6 +55,12 @@ namespace OCL
          * Creates a ControlTask CORBA server for a given peer TaskContext.
          */
         bool createServer(const std::string& tc, bool use_naming);
+
+        /**
+         * Similar to loadComponent, but also creates a ControlTask CORBA server for the new component
+         * and registers it with the Naming Service.
+         */
+        bool corbaComponent(const std::string& name, const std::string& type);
     };
 
 }

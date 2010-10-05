@@ -89,12 +89,29 @@ CorbaDeploymentComponent::CorbaDeploymentComponent(const std::string& name, cons
                                    "Creates a CORBA ControlTask server for the given component",
                                    "tc", "Name of the TaskContext (must be a peer).",
                                    "UseNamingService","Set to true to use the naming service.");
+
+        this->methods()->addMethod(method("corbaComponent",&CorbaDeploymentComponent::corbaComponent,this),
+                                   "Similar to loadComponent, but also makes it a corba server with Naming Service registration.",
+                                   "Name", "Name of the new component.",
+                                   "Type","The component type (C++ 'namespace::classname'");
     }
 
     CorbaDeploymentComponent::~CorbaDeploymentComponent()
     {
         // removes our own server, before removing peer's.
         ::RTT::Corba::ControlTaskServer::CleanupServer(this);
+    }
+
+    bool CorbaDeploymentComponent::corbaComponent(const std::string& name, const std::string& type)
+    {
+        TaskContext* peer = this->getPeer(name);
+        if (peer) {
+            log(Error)<<"Peer already exists: "<< name << ". Use server(\""<< name <<"\", true) to make an existing peer a CORBA server." <<endlog();
+            return false;
+        }
+        comps[name].use_naming=true;
+        comps[name].server=true;
+        return loadComponent(name, type);
     }
 
     bool CorbaDeploymentComponent::createServer(const std::string& tc, bool use_naming)

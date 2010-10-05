@@ -10,7 +10,7 @@
   <articleinfo>
     <title>The Deployment Component</title>
     <copyright>
-      <year>2006,2007,2008,2009</year>
+      <year>2006,2007,2008,2009,2010</year>
       <holder>Peter Soetens, FMTC</holder>
     </copyright>
 
@@ -186,6 +186,10 @@
 	  </programlisting>
 	  As with the previous example, and also passes some options through to the
 	  CORBA layer.
+	  </para>
+	  <para> For more information about setting up components such
+	  that they can communicate with each other is explained
+	  at the end of this manual, in <xref linkend="corba-extensions" />.
 	  </para>
     </section>
   </section>
@@ -552,8 +556,21 @@
 	  includes a file from another directory.</para>
 	</note>
       </section>
-      <section>
-	<title>CORBA extensions</title>
+      <section id="corba-extensions">
+	<title>Talking to remote components: CORBA extensions</title>
+        <para>
+	  When you distribute components over multiple processes
+	  or hosts, you need a way to connect them again to each other.
+	  Orocos does this by creating 'proxy' components in processes
+	  which act as if they are the remote component. Whatever
+	  you do with the proxy also happens with the real component.
+	  In order to be able to create a proxy for a real component,
+	  the real component must be made a CORBA server.
+	</para>
+	<para>
+	  There are two ways to create CORBA proxies and servers:
+	  Using the XML syntax or using the scripting interface.
+	</para>
 	<para>
 	  The deployer XML format allows two CORBA specific boolean
 	  properties, which are optional: <option>Server</option>
@@ -594,28 +611,42 @@
 	  Which will create a CORBA server for the Reporter peer, after
 	  the Reporter was loaded with loadComponent().
 	</para>
+	<para>
+	  Or you can create a CORBA server immediately when creating
+	  the component by using the 
+	  <programlisting>  corbaComponent("Controller", "RobotControllerType")</programlisting>
+	  script method, which both creates a server and adds it to the
+	  CORBA naming service.
+	</para>
       </section>
       <section>
-	<title>Connecting to CORBA components</title>
+	<title>Accessing remote CORBA components</title>
 	<para>
-	  The corba enabled deployers allow to create a proxy for a
+	  The CORBA enabled deployers allow to create a proxy for a
 	  remote component using the name service, the IOR or the IOR file.
+	  As such, the remote component will appear as-if it had been
+	  loaded in the same process and you can use it like any other
+	  loaded component. For example, to start or stop it or to
+	  connects some of its ports.
 	</para>
 	<para>
 	  Say you have a remote Orocos component with the name
 	  'MyComponent'. It was created in one corba enabled deployer
-	  application with the <option>Server</option> property set to 1.
+	  application with the <option>Server</option> property set to 1,
+	  or created using the <function>corbaComponent()</function> function.
+	</para><para>
 	  You can connect to it from another deployer application by using the XML
 	  syntax:<programlisting>
-<![CDATA[ <!-- Uses Naming Service to lookup 'Mycomponent' -->
+<![CDATA[ 
+ <!-- Option 1: Uses Naming Service to lookup 'Mycomponent' -->
  <struct name="MyComponent" type="CORBA">
  </struct>
 
- <!-- Uses IOR file to lookup 'Mycomponent' -->
+ <!-- Option 2: Uses IOR file to lookup 'Mycomponent' -->
  <struct name="MyComponent.ior" type="IORFile">
  </struct>
 
- <!-- Uses literal IOR to lookup 'Mycomponent' -->
+ <!-- Option 3: Uses literal IOR to lookup 'Mycomponent' -->
  <struct name="IOR:...." type="IOR">
  </struct>
 ]]></programlisting>
@@ -623,13 +654,19 @@
           application, using the same name as the original.  This also
           works for the scripting deployer command 'loadComponent'.
 	  For example, you can type in the TaskBrowser:
-	  <programlisting>  loadComponent("MyComponent", "CORBA")
-  loadComponent("MyComponent.ior", "IORFile")
-  loadComponent("IOR:.....", "IOR")</programlisting>
+	  <programlisting>  // Option 1:
+  loadComponent("MyComponent", "CORBA")
 
+  // Option 2:
+  loadComponent("MyComponent.ior", "IORFile")
+
+  // Option 3:
+  loadComponent("IOR:.....", "IOR")</programlisting>
           which allows to quickly connect to a remote component once
           you can copy/paste the IOR into the console.
 	</para>
+	<note><para>See also the <function>corbaComponent()</function> function
+	of the CorbaDeploymentComponent (script) interface.</para></note>
       </section>
     </section>
     <section>
