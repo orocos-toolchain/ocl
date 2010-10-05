@@ -90,20 +90,6 @@ ELSE ( READLINE_H  )
     SET( READLINE 0 CACHE INTERNAL "libreadline" )
 ENDIF ( READLINE_H )
 
-# Check for ZLIB
-INCLUDE (${CMAKE_ROOT}/Modules/FindZLIB.cmake)
-SET( HAVE_ZLIB ${ZLIB} )
-
-# Look for boost
-FIND_PATH(BOOST boost/numeric/ublas/matrix.hpp  )
-IF ( BOOST )
-    MESSAGE("-- Looking for Boost Ublas - found")
-ELSE ( BOOST )
-    MESSAGE("-- Looking for Boost Ublas - not found")
-ENDIF ( BOOST )
-
 find_package(Boost COMPONENTS program_options filesystem system)
 INCLUDE_DIRECTORIES( ${Boost_INCLUDE_DIR} ${READLINE_INCLUDE_DIR} )
 
-# Look for ulapack
-FIND_PATH( ULAPACK ulapack/eig.hpp )

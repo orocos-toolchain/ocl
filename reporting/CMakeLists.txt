@@ -15,7 +15,7 @@ IF ( BUILD_REPORTING )
       set(HPPS ${HPPS} ${SOCKET_HPPS})
     endif()
 
-    INCLUDE_DIRECTORIES ( ${BOOST} ${BOOST_OPTIONS} )
+    INCLUDE_DIRECTORIES ( ${Boost_INCLUDE_DIR} )
 
     GLOBAL_ADD_COMPONENT( orocos-reporting ${SRCS})
     GLOBAL_ADD_INCLUDE( ocl ${HPPS})
