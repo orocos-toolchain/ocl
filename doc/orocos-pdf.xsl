@@ -62,7 +62,7 @@
   <xsl:attribute name="space-after.maximum">0.6em</xsl:attribute>
   <xsl:attribute name="wrap-option">wrap</xsl:attribute>
   <xsl:attribute name="hyphenation-character">\</xsl:attribute>
-  <xsl:attribute name="font-size">11pt</xsl:attribute>
+  <xsl:attribute name="font-size">9pt</xsl:attribute>
 </xsl:attribute-set>
 
   <xsl:param name="monospace.font.family" select="'Times'"/>

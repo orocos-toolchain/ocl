@@ -249,8 +249,9 @@
 	  component libraries in a given directory to be pre-loaded.
 	  It does not cause any component to be created, but
 	  allows the <classname>OCL::DeploymentComponent</classname> to know where the 
-	  component libraries are located. This function works recursively
-	  and may be called for multiple paths.
+	  component libraries are located. This function does not recurse
+	  but may be called with multiple paths or with a specific component
+	  library as argument.
 	</para>
 	<para>
 	  In XML, the import statement looks like:
@@ -259,18 +260,18 @@
 <properties>
   <!-- ....  -->
 
-  <simple name="Import" type="string"><value>/usr/local/lib</value></simple>
+  <simple name="Import" type="string"><value>/usr/local/lib/orocos</value></simple>
 
 </properties>]]></programlisting>
 	</para>
 	<para>
 	  The script method equivalent is:
-	  <programlisting>  import("/usr/local/lib")</programlisting>
+	  <programlisting>  import("/usr/local/lib/orocos")</programlisting>
 	</para>
 	<para>
-	  Each library found under the given location is pre-loaded. The
-	  import statement allows you to load non-Orocos libraries as
-	  well. If a library contains one or more Orocos components, 
+	  Each component library found under the given location is pre-loaded. The
+	  import statement unloads libraries that do not contain components.
+	  If a library contains one or more Orocos components, 
 	  the contained component types become available in the next step.
 	</para>
 	<para>
@@ -283,6 +284,7 @@
  = I can create the following component types:
    OCL::ConsoleReporting
    OCL::FileReporting
+   OCL::HelloWorld
 (void)</screen>
 	</para>
 	<para>
@@ -326,7 +328,7 @@
 <!DOCTYPE properties SYSTEM "cpf.dtd">
 <properties>
   <!-- ... import statements locate Orocos reporting library ...  -->
-  <simple name="Import" type="string"><value>/usr/local/lib</value></simple>
+  <simple name="Import" type="string"><value>/opt/lib/orocos</value></simple>
 
   <struct name="Reporter" type="OCL::FileReporting">
   </struct>
@@ -365,11 +367,11 @@
 	  <programlisting><![CDATA[<?xml version="1.0" encoding="UTF-8"?> 
 <!DOCTYPE properties SYSTEM "cpf.dtd">
 <properties>
-  <simple name="Import" type="string"><value>/usr/local/lib</value></simple>
+  <simple name="Import" type="string"><value>/opt/lib/orocos</value></simple>
 
   <struct name="Reporter" type="OCL::FileReporting">
 
-    <struct name="Activity" type="PeriodicActivity">
+    <struct name="Activity" type="Activity">
       <simple name="Period" type="double"><value>0.005</value></simple>
       <simple name="Priority" type="short"><value>0</value></simple>
       <simple name="Scheduler" type="string"><value>ORO_SCHED_OTHER</value></simple>
@@ -387,7 +389,7 @@
 
   <struct name="Controller" type="ControllerType">
 
-    <struct name="Activity" type="PeriodicActivity">
+    <struct name="Activity" type="Activity">
       <simple name="Period" type="double"><value>0.001</value></simple>
       <simple name="Priority" type="short"><value>99</value></simple>
       <simple name="Scheduler" type="string"><value>ORO_SCHED_RT</value></simple>
@@ -420,7 +422,7 @@
   </struct>
 
   <struct name="Plant" type="PlantType">
-    <struct name="Activity" type="NonPeriodicActivity">
+    <struct name="Activity" type="Activity">
       <simple name="Priority" type="short"><value>0</value></simple>
       <simple name="Scheduler" type="string"><value>ORO_SCHED_RT</value></simple>
     </struct>
@@ -434,75 +436,75 @@
 	<para>
 	  The first section of all three components sets up the active
 	  behaviour of the component in the <option>Activity</option>
-	  element. Both have periodic activities, which run with a
+	  element. 
+	</para><programlisting><![CDATA[
+    <struct name="Activity" type="Activity">
+      <simple name="Period" type="double"><value>0.005</value></simple>
+      <simple name="Priority" type="short"><value>0</value></simple>
+      <simple name="Scheduler" type="string"><value>ORO_SCHED_OTHER</value></simple>
+    </struct>
+	]]></programlisting>
+	<para>
+	  Both have periodic activities (indicated by the "Period" element), which run with a
 	  given period, priority and in a scheduler. The Controller
 	  and Plant run in a real-time scheduler, the Reporter
 	  doesn't. The activities are created and attached to each
 	  component during the
 	  <function>configureComponents()</function> step of the
 	  DeploymentComponent. Possible types of activities are
-	  <option>RTT::PeriodicActivity</option>, 
-	  <option>RTT::NonPeriodicActivity</option> and
-	  <option>RTT::SlaveActivity</option>. The latter allows a
+	  <itemizedlist>
+	    <listitem><para><option>PeriodicActivity</option> (use only in special cases), </para></listitem>
+	  <listitem><para><option>Activity</option> (the standard, recommended one), </para></listitem>
+	  <listitem><para><option>SequentialActivity</option> (use only in special cases)  and</para></listitem>
+	  <listitem><para><option>SlaveActivity</option> (use only in special cases).</para></listitem>
+	  </itemizedlist>
+	  The latter activity allows a
 	  component to be executed by a master component. You can
 	  specify a master component using the <option>Master</option>
 	  simple element in the <option>Activity</option> struct. The
 	  DeploymentComponent makes slaves automatically a peer of
-	  their master.
+	  their master, but the master is responsible for calling 'execute()'
+	  on its slave peers.
 	</para>
+	  </section>
+	  <section><title>Auto-Configuration and Auto-Starting components.</title>
 	<para>
 	  The next section of the Controller contains the <option>AutoConf</option> and <option>AutoStart</option>
-	  elements. If <option>AutoConf</option> is set to 1, the DeploymentComponent will call
+	  elements. 
+	</para>
+	    <programlisting><![CDATA[
+    <simple name="AutoConf" type="boolean"><value>1</value></simple>
+    <simple name="AutoStart" type="boolean"><value>1</value></simple>
+    ]]></programlisting>
+	<para>
+	If <option>AutoConf</option> is set to 1, the DeploymentComponent will call
 	  the component's configure() method during <function>configureComponents()</function>,
 	  after the properties are loaded. If <option>AutoStart</option> is set to 1, the component's start() 
 	  method will be called during <function>startComponents()</function>.
 	  By default <option>AutoConf</option> and <option>AutoStart</option> are 0 (off).
+	</para></section>
+	  <section><title>Connecting Data Ports</title>
+	<para>
+	  The <option>Ports</option> struct describes which ports of this component
+	  participate in which data flow connection. 
+	</para>
+	    <programlisting><![CDATA[
+    <struct name="Ports" type="PropertyBag">
+      <simple name="Position" type="string"><value>SensorValuesConnection</value></simple>
+      <simple name="Velocity" type="string"><value>DriveConnection</value></simple>
+    </struct>
+    ]]></programlisting>
+	<para>
+	So for each element in this
+	  struct, the name of the element is the port name, and the value is the
+	  name of the connection it belongs to. Ports with equal <emphasis>connection names</emphasis>
+	  are connected to each other. The port name itself is <emphasis>not used</emphasis>.
+	  If ports of different data types are being connected, the configuration phase
+	  will fail.
 	</para>
 	<para>
-	  The <option>AutoConnect</option> element indicates if the
-	  component's data ports should be automatically connected to
-	  peer ports which have the same name and type.  This flag is
-	  read during the <function>configureComponents()</function>
-	  step of the DeploymentComponent.  Both components must have
-	  the <option>AutoConnect</option> element set to 1 <emphasis>and
-	  one must be peer of the other</emphasis> in order
-	  to trigger automatic connection of ports. It is possible
-	  that a port is connected to one component using the Ports
-	  element and to another component using the
-	  <option>AutoConnect</option> flag. If an automatic port
-	  connection fails, the configuration procedure will not fail
-	  and just continue. An error message may be logged. By
-	  default, <option>AutoConnect</option> is 0 (off).
-	</para>
-	<para>
-	  The <option>Properties</option> struct allows to configure
-	  a component's properties from the main XML file. These values
-	  can be overridden by the listed property files.
-	</para>
-	<para>
-	  The <option>PropertyFile</option> element specifies from
-	  which XML file each component is configured and this file
-	  <emphasis>must</emphasis> contain values for all properties
-	  of the component. In case you only want to update part of
-	  the properties, use the <option>UpdateProperties</option>
-	  element. Finally, it is also possible to load and create
-	  new properties from a file using <option>LoadProperties</option>
-	  (the Reporting component requires this for example).
-	  You can use any number or combination of these elements.
-	  The order is respected. The properties are read during the
-	  <function>configureComponents()</function> step of the
-	  DeploymentComponent. When the <option>AutoSave</option>
-	  property is turned on, the listed property file will be
-	  saved again with the values of the Component, just before
-	  the Component is <function>cleanup()</function>.
-	</para>
-	<para>
-	  The last section of the Reporter component lists its
-	  peers. The Reporter has one peer, the Controller, with which
-	  it will be able to communicate and monitor its data
-	  ports. The Controller component has the Plant as peer, which
-	  means it can control it. It has two data ports listed as
-	  well (SensorValues and SteeringSignals), which are added to
+	  Looking at the Ports section of the Controller above, it has two data ports listed
+	  (SensorValues and SteeringSignals), which are added to
 	  two connection objects.  These connections show up in the
 	  Plant component's <option>Ports</option> section as well. And it shows that
 	  the SensorValues Port is connected to the Position Port and
@@ -511,14 +513,85 @@
 	  the same connection object, the ports are connected to each
 	  other by the DeploymentComponent during the
 	  <function>configureComponents()</function> step.
-	  The Component Builder's Manual goes into detail about
-	  the possible connection mechanisms.
+	</para>
+	</section>
+	  <section><title>Loading configuration files - Properties</title>
+	<para>
+	  The <option>Properties</option> struct allows to configure
+	  a component's properties from the main XML file. These values
+	  can be overridden by the listed property files:
+	</para>
+	    <programlisting><![CDATA[
+  <!-- You can repeat this struct for each connection below ... -->
+    <struct name="Properties" type="PropertyBag">
+      <simple name="K" type="double"><value>1.0</value></simple>
+    </struct>
+    ]]></programlisting>
+	<para>
+	  The <option>PropertyFile</option> element specifies from
+	  which XML file each component is configured and this file
+	  <emphasis>must</emphasis> contain values for all properties
+	  of the component.
+	</para>
+	<para>
+	  In case you only want to update part of
+	  the properties, use the <option>UpdateProperties</option>
+	  element. 
+	</para>
+        <programlisting><![CDATA[
+    <simple name="PropertyFile" type="string"><value>controller-main.cpf</value></simple>
+    <simple name="UpdateProperties" type="string"><value>controller-opts.cpf</value></simple>
+    ]]></programlisting>
+	<para>
+	  Finally, it is also possible to load and create
+	  new properties from a file using <option>LoadProperties</option>
+	  the Reporting component requires this for example:
+	</para>
+        <programlisting><![CDATA[
+    <!-- loads/overwrites existing properties in component: -->
+    <simple name="LoadProperties" type="string"><value>file-reporting.cpf</value></simple>
+
+    <!-- stores/overwrites properties in a file: -->
+    <simple name="StoreProperties" type="string"><value>file-reporting-dump.cpf</value></simple>
+    ]]></programlisting>
+	<para>	
+	  You can use any number or combination of these elements.
+	  The order is respected. The properties are read during the
+	  <function>configureComponents()</function> step of the
+	  DeploymentComponent. When the <option>AutoSave</option>
+	  property is turned on, the listed property file will be
+	  saved again with the values of the Component, just before
+	  the Component is <function>cleanup()</function>.
+	</para></section>
+	  <section><title>Setting up peer-to-peer relations</title>
+	<para>
+	  The last section of the Reporter component lists its
+	  peers. 
+	</para>
+        <programlisting><![CDATA[
+    <struct name="Peers" type="PropertyBag">
+      <simple type="string"><value>Controller</value></simple>
+    </struct>
+    ]]></programlisting>
+	<para>
+	The Reporter has one peer, the Controller, which allows
+	  the Reporter component to scan and use the interface of the Controller
+	  component. For example, it will discover which ports Controller
+	  exposes and be able to create connections to them, without the
+	  need of a supervisor to do so.
 	</para>
 	<para>
 	  The Controller has at the end two additional elements
 	  describing which script files must be loaded into that
 	  component: <option>ProgramScript</option> and
-	  <option>StateMachineScript</option>. Any number of scripts
+	  <option>StateMachineScript</option>. 
+	</para>
+        <programlisting><![CDATA[
+    <simple name="ProgramScript" type="string"><value>controller-program.ops</value></simple>
+    <simple name="StateMachineScript" type="string"><value>controller-states.ops</value></simple>
+    ]]></programlisting>
+	<para>
+	  Any number of scripts
 	  can be loaded and they are loaded in order.  Both Orocos
 	  program scripts and state machine scripts can be
 	  loaded. This is again done during the
@@ -557,7 +630,7 @@
 	</note>
       </section>
       <section id="corba-extensions">
-	<title>Talking to remote components: CORBA extensions</title>
+	<title>Setting up remote components: CORBA extensions</title>
         <para>
 	  When you distribute components over multiple processes
 	  or hosts, you need a way to connect them again to each other.
@@ -616,7 +689,8 @@
 	  the component by using the 
 	  <programlisting>  corbaComponent("Controller", "RobotControllerType")</programlisting>
 	  script method, which both creates a server and adds it to the
-	  CORBA naming service.
+	  CORBA naming service. You need that in order to access them
+	  as shown in the next section.
 	</para>
       </section>
       <section>
@@ -687,7 +761,7 @@
 	  following code is added to HelloWorld.cpp:
 	</para>
 	<programlisting>  #include "HelloWorld.hpp"
-  #include &lt;ocl/ComponentLoader.hpp&gt;
+  #include &lt;ocl/Component.hpp&gt;
 
   /* ... Hello World implementation file ... */
 
@@ -708,7 +782,7 @@
 	   <filename>ComponentX.cpp</filename>:
 	 </para>
 	<programlisting>  #include "ComponentX.hpp"
-  #include &lt;ocl/ComponentLoader.hpp&gt;
+  #include &lt;ocl/Component.hpp&gt;
 
   /* ... ComponentX implementation file ... */
   // <emphasis>once</emphasis>:
@@ -720,7 +794,7 @@
 	   ORO_CREATE_COMPONENT_TYPE macro:
 	 </para>
 	<programlisting>  #include "ComponentY.hpp"
-  #include &lt;ocl/ComponentLoader.hpp&gt;
+  #include &lt;ocl/Component.hpp&gt;
 
   /* ... ComponentY implementation file ... */
 
