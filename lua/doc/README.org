@@ -110,12 +110,20 @@
 #+END_EXAMPLE
 * Using the LuaComponent
 
-  see the simple producer comsumer example in
-  =scripts/producer_consumer=
+  see the simple producer comsumer example in the
+  =scripts/producer_consumer/= directory.
 
 * Using the LuaService
 
-  -
+  Here's an example which creates a Lua service in the deployer
+  component.
+
+#+BEGIN_EXAMPLE
+  ./rttlua
+  Orocos RTTLua 1.0-beta1 (gnulinux)
+  > todo
+
+#+END_EXAMPLE
 
 * Lua API
 
@@ -160,7 +168,7 @@
     - 'R': real-time safe
     - 'F' or 'M': only available as function or method
 
-** =TaskContext=
+** TaskContext
 
    | Method                                           | flag | description                                                         |
    |--------------------------------------------------+------+---------------------------------------------------------------------|
@@ -190,8 +198,7 @@
    | =void delete(TaskContext)=                       |      | explicit deletion of a TaskContext                                  |
 
 
-
-** =SendHandle=
+** SendHandle
 
    An object returned by a TaskContext send() operation.
 
@@ -200,8 +207,7 @@
    | =string, variable collect()=     |      | collect results of send, may block. string is SendStatus |
    | =string, variable collectIfDone= |      | as above, non blocking version                           |
 
-
-** =Variable=
+** Variable
 
    Variable are the types know to the RTT. They consist of basic types
    (numeric, =string=, =char=, =bool=) and user defined types. The
@@ -248,8 +254,7 @@
      4711
 #+END_EXAMPLE
 
-
-** =InputPort= and =OutputPort=
+** InputPort and OutputPort
 
    InputPort
 
@@ -268,8 +273,7 @@
    | =write(Variable)= |      | write Variable to port                                |
    | =table info()=    |      | return a table containing information about this port |
 
-
-** =Property=
+** Property
 
    | Method                    | flag | description                                     |
    |---------------------------+------+-------------------------------------------------|
@@ -281,7 +285,7 @@
 
 ** Service Interface
 
-*** =Service=
+*** Service
 
    | Method                           | flag | description                                                    |
    |----------------------------------+------+----------------------------------------------------------------|
@@ -294,7 +298,7 @@
    | =Operation getOperation(string)= |      | return operation specified by string name  of this service     |
    | =Port getPort(string)=           |      | return port specified by the given string name of this service |
 
-*** =ServiceRequester=
+*** ServiceRequester
 
    | Method                      | flag | description                                         |
    |-----------------------------+------+-----------------------------------------------------|
@@ -304,7 +308,7 @@
    | =void disconnect()=         |      | disconnect from remote Service                      |
    | =requires(string)=          |      | return required subservice specified by string name |
 
-*** =Operation=
+*** Operation
 
     This object is only returned by =Service:getOperation=. It can
     also be called with the familiar =op(arg1, arg2)= syntax.
@@ -336,10 +340,10 @@
     | =table types()=    | F    | returns a table of strings specifying the known types    |
 
 
-* The =rttlib= convenience module
-  This library adds some pretty printing functions to the standard
-  objects. It is recommended to load it for all applications by adding
-  the following to scripts:
+* The rttlib convenience module
+  This library adds some useful (mostly pretty printing) functions to
+  the standard objects. It is recommended to load it for all
+  applications by adding the following to scripts:
 
   =require("rttlib")=
 
