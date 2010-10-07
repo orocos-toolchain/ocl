@@ -1,0 +1,6 @@
+
+Trivial producer consumer example for demonstrating how to write Lua
+components. Start by executing the ./deploy.lua rttlua script
+
+Assumes you have the 'rttlua' in you PATH and the LuaComponent in your
+RTT_COMPONENT_PATH.
