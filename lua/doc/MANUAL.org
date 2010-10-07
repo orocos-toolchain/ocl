@@ -197,6 +197,7 @@
    | =SendHandle send(string, ...)=                   |      | as above but send. returns SendHandle                               |
    | =void delete(TaskContext)=                       |      | explicit deletion of a TaskContext                                  |
 
+ Note: =call= and =send= accept both 
 
 ** SendHandle
 
@@ -465,7 +466,8 @@
 
 * License
 
-  The Lua-RTT bindings are licensed under the LGPL.
+  The Lua-RTT bindings are licensed under the same license as the
+  [[http://orocos.org/orocos/license][OROCOS RTT]].
 
 * Links
   - [[http://www.lua.org/][The Lua website]]

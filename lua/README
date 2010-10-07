@@ -1,4 +1,8 @@
-see docs:
+This is the RTTLua plugin which allows to interact with the OROCOS
+Real-Time-Toolkit (RTT) using the Lua language.
+
+For further information see the manual:
+
     - doc/README.html or
     - doc/README.txt or
     - doc/README.org
