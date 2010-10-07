@@ -439,6 +439,17 @@
 #+END_EXAMPLE
 
 ** Not all types are garbage collected
+
+   The following types are not garbage collected and must be managed
+   manually (ie. removed from TaskContext Interface and the delete()
+   function called):
+     - Property
+     - InputPort, OutputPort
+     - TaskContext
+
+   (For completenes, these types _are_ collected: Variable, Service,
+   ServiceRequester, SendHandle, Operation)
+
 ** Comparing Lua types and RTT Variables fails
    :PROPERTIES:
    :CUSTOM_ID: ComparisonIssue
@@ -459,8 +470,15 @@
      false
      #+END_EXAMPLE
 
-** Support for creating Operations from Lua (probably not soon)
-** Calling a connected OperationCaller is not possible from Lua.
+** Calling a connected OperationCaller
+
+   It is not possible to call a connected OperationCaller from Lua.
+
+** Support for creating Operations from Lua
+
+   It is not possible to define new Operations from Lua.
+
+   
 
 * License
 
