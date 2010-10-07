@@ -127,11 +127,12 @@ lang="en" xml:lang="en">
 <li><a href="#sec-9_1">9.1 Assignment is not like RTT scripting </a></li>
 <li><a href="#sec-9_2">9.2 Not all types are garbage collected </a></li>
 <li><a href="#ComparisonIssue">9.3 Comparing Lua types and RTT Variables fails </a></li>
+<li><a href="#sec-9_4">9.4 Support for creating Operations from Lua (probably not soon) </a></li>
+<li><a href="#sec-9_5">9.5 Calling a connected OperationCaller is not possible from Lua. </a></li>
 </ul>
 </li>
-<li><a href="#sec-10">10 Todo  </a></li>
-<li><a href="#sec-11">11 License </a></li>
-<li><a href="#sec-12">12 Links </a></li>
+<li><a href="#sec-10">10 License </a></li>
+<li><a href="#sec-11">11 Links </a></li>
 </ul>
 </div>
 </div>
@@ -469,9 +470,11 @@ function/method:
 <tr><td><code>void addPort(port)</code></td><td></td><td>add a port to TaskContext</td></tr>
 <tr><td><code>void addEventPort(port)</code></td><td></td><td>add a port as an event driven port</td></tr>
 <tr><td><code>Port getPort(string)</code></td><td></td><td>get a port with given name</td></tr>
+<tr><td><code>void removePort(string)</code></td><td></td><td>remove port with given name from interface</td></tr>
 <tr><td><code>addProperty(Property)</code></td><td></td><td>add a property to TaskContext</td></tr>
 <tr><td><code>getProperty(string)</code></td><td></td><td>get a property with the given name</td></tr>
 <tr><td><code>table getProperties()</code></td><td></td><td>return all properties in a table</td></tr>
+<tr><td><code>void removeProperty(string)</code></td><td></td><td>remove property with given name from interface</td></tr>
 <tr><td><code>table getOps()</code></td><td></td><td>return a table of Operation names</td></tr>
 <tr><td><code>string, number string, table getOpInfo(string)</code></td><td></td><td>returns name, arity, description and table of argument descriptions</td></tr>
 <tr><td><code>Service provides(...)</code></td><td></td><td>return service (provides/0 default, provides/1 subservice)</td></tr>
@@ -482,7 +485,9 @@ function/method:
 </table>
 
 
-
+<p>
+Note: <code>call</code> and <code>send</code> accept both
+</p>
 </div>
 
 </div>
@@ -611,6 +616,7 @@ InputPort
 <tr><td><code>string, variable read()</code></td><td></td><td>read from Port, returns a FlowStatus string and if data available a Variable</td></tr>
 <tr><td><code>string read(variable)</code></td><td></td><td>read from Port and write result into Variable given. Returns FlowStatus</td></tr>
 <tr><td><code>table info()</code></td><td></td><td>return a table containing information about this port</td></tr>
+<tr><td><code>delete()</code></td><td></td><td>delete this port (remove it from any TaskContext before this)</td></tr>
 </tbody>
 </table>
 
@@ -629,6 +635,7 @@ OuputPort
 <tr><td><code>new(type)</code></td><td></td><td>create a new OutputPort of type</td></tr>
 <tr><td><code>write(Variable)</code></td><td></td><td>write Variable to port</td></tr>
 <tr><td><code>table info()</code></td><td></td><td>return a table containing information about this port</td></tr>
+<tr><td><code>delete()</code></td><td></td><td>delete this port (remove it from any TaskContext before this)</td></tr>
 </tbody>
 </table>
 
@@ -655,6 +662,7 @@ OuputPort
 <tr><td><code>bool set(Variable)</code></td><td></td><td>set the Property to the value in given Variable</td></tr>
 <tr><td><code>string getName()</code></td><td></td><td>return the name of the property</td></tr>
 <tr><td><code>string getDescription()</code></td><td></td><td>return the description of the property</td></tr>
+<tr><td><code>delete()</code></td><td></td><td>delete this property (remove it from any TaskContex before doing this!)</td></tr>
 </tbody>
 </table>
 
@@ -1013,41 +1021,31 @@ false
 
 
 
-<ul>
-<li>
-It is currently not possible to call or send a connected local
-required Operation.
+</div>
 
-</li>
-</ul>
+</div>
+
+<div id="outline-container-9_4" class="outline-3">
+<h3 id="sec-9_4"><span class="section-number-3">9.4</span> Support for creating Operations from Lua (probably not soon) </h3>
+<div class="outline-text-3" id="text-9_4">
+
+</div>
+
+</div>
+
+<div id="outline-container-9_5" class="outline-3">
+<h3 id="sec-9_5"><span class="section-number-3">9.5</span> Calling a connected OperationCaller is not possible from Lua. </h3>
+<div class="outline-text-3" id="text-9_5">
+
+
 </div>
 </div>
 
 </div>
 
 <div id="outline-container-10" class="outline-2">
-<h2 id="sec-10"><span class="section-number-2">10</span> Todo  </h2>
+<h2 id="sec-10"><span class="section-number-2">10</span> License </h2>
 <div class="outline-text-2" id="text-10">
-
-
-<ul>
-<li>
-Support for creating Operations from Lua (probably not soon)
-
-</li>
-<li>
-Calling a Connected Required Operation is not possible from Lua
-right now.
-
-</li>
-</ul>
-</div>
-
-</div>
-
-<div id="outline-container-11" class="outline-2">
-<h2 id="sec-11"><span class="section-number-2">11</span> License </h2>
-<div class="outline-text-2" id="text-11">
 
 
 <p>
@@ -1058,9 +1056,9 @@ The Lua-RTT bindings are licensed under the same license as the
 
 </div>
 
-<div id="outline-container-12" class="outline-2">
-<h2 id="sec-12"><span class="section-number-2">12</span> Links </h2>
-<div class="outline-text-2" id="text-12">
+<div id="outline-container-11" class="outline-2">
+<h2 id="sec-11"><span class="section-number-2">11</span> Links </h2>
+<div class="outline-text-2" id="text-11">
 
 <ul>
 <li>

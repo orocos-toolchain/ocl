@@ -37,9 +37,10 @@ Table of Contents
     9.1 Assignment is not like RTT scripting 
     9.2 Not all types are garbage collected 
     9.3 Comparing Lua types and RTT Variables fails 
-10 Todo  
-11 License 
-12 Links 
+    9.4 Support for creating Operations from Lua (probably not soon) 
+    9.5 Calling a connected OperationCaller is not possible from Lua. 
+10 License 
+11 Links 
 
 
 1 Overview 
@@ -216,9 +217,11 @@ Table of Contents
      =void addPort(port)=                                      add a port to TaskContext                                            
      =void addEventPort(port)=                                 add a port as an event driven port                                   
      =Port getPort(string)=                                    get a port with given name                                           
+     =void removePort(string)=                                 remove port with given name from interface                           
      =addProperty(Property)=                                   add a property to TaskContext                                        
      =getProperty(string)=                                     get a property with the given name                                   
      =table getProperties()=                                   return all properties in a table                                     
+     =void removeProperty(string)=                             remove property with given name from interface                       
      =table getOps()=                                          return a table of Operation names                                    
      =string, number string, table getOpInfo(string)=          returns name, arity, description and table of argument descriptions  
      =Service provides(...)=                                   return service (provides/0 default, provides/1 subservice)           
@@ -226,6 +229,7 @@ Table of Contents
      =SendHandle send(string, ...)=                            as above but send. returns SendHandle                                
      =void delete(TaskContext)=                                explicit deletion of a TaskContext                                   
 
+ Note: =call= and =send= accept both
 
 6.3 SendHandle 
 ===============
@@ -296,25 +300,28 @@ Table of Contents
      =string, variable read()=          read from Port, returns a FlowStatus string and if data available a Variable  
      =string read(variable)=            read from Port and write result into Variable given. Returns FlowStatus       
      =table info()=                     return a table containing information about this port                         
+     =delete()=                         delete this port (remove it from any TaskContext before this)                 
 
    OuputPort
 
-     Method              flag   description                                            
-    -------------------+------+-------------------------------------------------------
-     =new(type)=                create a new OutputPort of type                        
-     =write(Variable)=          write Variable to port                                 
-     =table info()=             return a table containing information about this port  
+     Method              flag   description                                                    
+    -------------------+------+---------------------------------------------------------------
+     =new(type)=                create a new OutputPort of type                                
+     =write(Variable)=          write Variable to port                                         
+     =table info()=             return a table containing information about this port          
+     =delete()=                 delete this port (remove it from any TaskContext before this)  
 
 6.6 Property 
 =============
 
-     Method                      flag   description                                      
-    ---------------------------+------+-------------------------------------------------
-     =new(type)=                        create a new Property                            
-     =Variable get()=                   return the Variable contained in this Property   
-     =bool set(Variable)=               set the Property to the value in given Variable  
-     =string getName()=                 return the name of the property                  
-     =string getDescription()=          return the description of the property           
+     Method                      flag   description                                                              
+    ---------------------------+------+-------------------------------------------------------------------------
+     =new(type)=                        create a new Property                                                    
+     =Variable get()=                   return the Variable contained in this Property                           
+     =bool set(Variable)=               set the Property to the value in given Variable                          
+     =string getName()=                 return the name of the property                                          
+     =string getDescription()=          return the description of the property                                   
+     =delete()=                         delete this property (remove it from any TaskContex before doing this!)  
 
 6.7 Service Interface 
 ======================
@@ -496,18 +503,13 @@ Table of Contents
   > return "just a string" == rtt.Variable.new("string", "just a string")
   false
 
-   - It is currently not possible to call or send a connected local
-     required Operation.
+9.4 Support for creating Operations from Lua (probably not soon) 
+=================================================================
 
-10 Todo  
-~~~~~~~~~
+9.5 Calling a connected OperationCaller is not possible from Lua. 
+==================================================================
 
-  - Support for creating Operations from Lua (probably not soon)
-
-  - Calling a Connected Required Operation is not possible from Lua
-    right now.
-
-11 License 
+10 License 
 ~~~~~~~~~~~
 
   The Lua-RTT bindings are licensed under the same license as the
@@ -516,7 +518,7 @@ Table of Contents
 
   [OROCOS RTT]: http://orocos.org/orocos/license
 
-12 Links 
+11 Links 
 ~~~~~~~~~
   - [The Lua website]
   - [Programming in Lua] book (older version, but the basics are mostly the same)

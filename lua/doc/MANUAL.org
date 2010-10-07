@@ -187,9 +187,11 @@
    | =void addPort(port)=                             |      | add a port to TaskContext                                           |
    | =void addEventPort(port)=                        |      | add a port as an event driven port                                  |
    | =Port getPort(string)=                           |      | get a port with given name                                          |
+   | =void removePort(string)=                        |      | remove port with given name from interface                          |
    | =addProperty(Property)=                          |      | add a property to TaskContext                                       |
    | =getProperty(string)=                            |      | get a property with the given name                                  |
    | =table getProperties()=                          |      | return all properties in a table                                    |
+   | =void removeProperty(string)=                    |      | remove property with given name from interface                      |
    | =table getOps()=                                 |      | return a table of Operation names                                   |
    | =string, number string, table getOpInfo(string)= |      | returns name, arity, description and table of argument descriptions |
    | =Service provides(...)=                          |      | return service (provides/0 default, provides/1 subservice)          |
@@ -197,7 +199,7 @@
    | =SendHandle send(string, ...)=                   |      | as above but send. returns SendHandle                               |
    | =void delete(TaskContext)=                       |      | explicit deletion of a TaskContext                                  |
 
- Note: =call= and =send= accept both 
+ Note: =call= and =send= accept both
 
 ** SendHandle
 
@@ -265,24 +267,27 @@
    | =string, variable read()= |      | read from Port, returns a FlowStatus string and if data available a Variable |
    | =string read(variable)=   |      | read from Port and write result into Variable given. Returns FlowStatus      |
    | =table info()=            |      | return a table containing information about this port                        |
+   | =delete()=                |      | delete this port (remove it from any TaskContext before this)          |
 
    OuputPort
 
-   | Method            | flag | description                                           |
-   |-------------------+------+-------------------------------------------------------|
-   | =new(type)=       |      | create a new OutputPort of type                       |
-   | =write(Variable)= |      | write Variable to port                                |
-   | =table info()=    |      | return a table containing information about this port |
+   | Method            | flag | description                                                   |
+   |-------------------+------+---------------------------------------------------------------|
+   | =new(type)=       |      | create a new OutputPort of type                               |
+   | =write(Variable)= |      | write Variable to port                                        |
+   | =table info()=    |      | return a table containing information about this port         |
+   | =delete()=        |      | delete this port (remove it from any TaskContext before this) |
 
 ** Property
 
-   | Method                    | flag | description                                     |
-   |---------------------------+------+-------------------------------------------------|
-   | =new(type)=               |      | create a new Property                           |
-   | =Variable get()=          |      | return the Variable contained in this Property  |
-   | =bool set(Variable)=      |      | set the Property to the value in given Variable |
-   | =string getName()=        |      | return the name of the property                 |
-   | =string getDescription()= |      | return the description of the property          |
+   | Method                    | flag | description                                                             |
+   |---------------------------+------+-------------------------------------------------------------------------|
+   | =new(type)=               |      | create a new Property                                                   |
+   | =Variable get()=          |      | return the Variable contained in this Property                          |
+   | =bool set(Variable)=      |      | set the Property to the value in given Variable                         |
+   | =string getName()=        |      | return the name of the property                                         |
+   | =string getDescription()= |      | return the description of the property                                  |
+   | =delete()=                |      | delete this property (remove it from any TaskContex before doing this!) |
 
 ** Service Interface
 
@@ -454,15 +459,8 @@
      false
      #+END_EXAMPLE
 
-   - It is currently not possible to call or send a connected local
-     required Operation.
-
-* Todo
-
-  - Support for creating Operations from Lua (probably not soon)
-
-  - Calling a Connected Required Operation is not possible from Lua
-    right now.
+** Support for creating Operations from Lua (probably not soon)
+** Calling a connected OperationCaller is not possible from Lua.
 
 * License
 

@@ -668,12 +668,25 @@ static int Property_gc(lua_State *L)
 	return 0;
 }
 
+/* only explicit destruction allowed */
+static int Property_del(lua_State *L)
+{
+	PropertyBase *pb = *(luaM_checkudata_mt_bx(L, 1, "Property", PropertyBase));
+	pb->~PropertyBase();
+
+	/* this prevents calling rtt methods which would cause a crash */
+	luaL_getmetatable(L, "__dead__");
+	lua_setmetatable(L, -2);
+	return 0;
+}
+
 static const struct luaL_Reg Property_f [] = {
 	{"new", Property_new },
 	{"get", Property_get },
 	{"set", Property_set },
 	{"getName", Property_getName },
 	{"getDescription", Property_getDescription },
+	{"delete", Property_del },
 	{NULL, NULL}
 };
 
@@ -683,6 +696,7 @@ static const struct luaL_Reg Property_m [] = {
 	{"getName", Property_getName },
 	{"getDescription", Property_getDescription },
 	// todo: shall we or not? s.o. {"__gc", Property_gc },
+	{"delete", Property_del },
 	{NULL, NULL}
 };
 
@@ -785,10 +799,23 @@ static int InputPort_gc(lua_State *L)
  	return 0;
 }
 
+/* only explicit destruction allowed */
+static int InputPort_del(lua_State *L)
+{
+	InputPortInterface *ip = *(luaM_checkudata_mt_bx(L, 1, "InputPort", InputPortInterface));
+	ip->~InputPortInterface();
+
+	/* this prevents calling rtt methods which would cause a crash */
+	luaL_getmetatable(L, "__dead__");
+	lua_setmetatable(L, -2);
+	return 0;
+}
+
 static const struct luaL_Reg InputPort_f [] = {
 	{"new", InputPort_new },
 	{"read", InputPort_read },
 	{"info", Port_info },
+	{"delete", InputPort_del },
 	{NULL, NULL}
 };
 
@@ -852,16 +879,30 @@ static int OutputPort_gc(lua_State *L)
 	return 0;
 }
 
+/* only explicit destruction allowed */
+static int OutputPort_del(lua_State *L)
+{
+	OutputPortInterface *op = *(luaM_checkudata_mt_bx(L, 1, "OutputPort", OutputPortInterface));
+	op->~OutputPortInterface();
+
+	/* this prevents calling rtt methods which would cause a crash */
+	luaL_getmetatable(L, "__dead__");
+	lua_setmetatable(L, -2);
+	return 0;
+}
+
 static const struct luaL_Reg OutputPort_f [] = {
 	{"new", OutputPort_new },
 	{"write", OutputPort_write },
 	{"info", Port_info },
+	{"delete", OutputPort_del },
 	{NULL, NULL}
 };
 
 static const struct luaL_Reg OutputPort_m [] = {
 	{"write", OutputPort_write },
 	{"info", Port_info },
+	{"delete", OutputPort_del },
 	/* {"__gc", OutputPort_gc }, */
 	{NULL, NULL}
 };
@@ -1495,6 +1536,14 @@ static int TaskContext_getPort(lua_State *L)
 	return 1;
 }
 
+static int TaskContext_removePort(lua_State *L)
+{
+	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
+	const char *port = luaL_checkstring(L, 1);
+	tc->ports()->removePort(port);
+	return 0;
+}
+
 static int TaskContext_addProperty(lua_State *L)
 {
 	int argc = lua_gettop(L);
@@ -1540,6 +1589,23 @@ static int TaskContext_getProperties(lua_State *L)
 	}
 
 	return 1;
+}
+
+static int TaskContext_removeProperty(lua_State *L)
+{
+	const char *name;
+	PropertyBase *prop;
+
+	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
+	name = luaL_checkstring(L, 2);
+
+	prop = tc->getProperty(name);
+
+	if(!prop)
+		luaL_error(L, "%s failed. No such property", __FILE__);
+
+	tc->properties()->remove(prop);
+	return 0;
 }
 
 
@@ -1863,9 +1929,11 @@ static const struct luaL_Reg TaskContext_f [] = {
 	{ "addPort", TaskContext_addPort },
 	{ "addEventPort", TaskContext_addEventPort },
 	{ "getPort", TaskContext_getPort },
+	{ "removePort", TaskContext_removePort },
 	{ "addProperty", TaskContext_addProperty },
 	{ "getProperty", TaskContext_getProperty },
 	{ "getProperties", TaskContext_getProperties },
+	{ "removeProperty", TaskContext_removeProperty },
 	{ "getOps", TaskContext_getOps },
 	{ "getOpInfo", TaskContext_getOpInfo },
 	{ "provides", TaskContext_provides },
@@ -1892,9 +1960,11 @@ static const struct luaL_Reg TaskContext_m [] = {
 	{ "addPort", TaskContext_addPort },
 	{ "addEventPort", TaskContext_addEventPort },
 	{ "getPort", TaskContext_getPort },
+	{ "removePort", TaskContext_removePort },
 	{ "addProperty", TaskContext_addProperty },
 	{ "getProperty", TaskContext_getProperty },
 	{ "getProperties", TaskContext_getProperties },
+	{ "removeProperty", TaskContext_removeProperty },
 	{ "getOps", TaskContext_getOps },
 	{ "getOpInfo", TaskContext_getOpInfo },
 	{ "provides", TaskContext_provides },
@@ -1902,6 +1972,7 @@ static const struct luaL_Reg TaskContext_m [] = {
 	{ "connectServices", TaskContext_connectServices },
 	{ "call", TaskContext_call },
 	{ "send", TaskContext_send },
+	{ "delete", TaskContext_del },
 	// { "__index", TaskContext_index },
 	/* we don't GC TaskContexts
 	 * { "__gc", GCMethod<TaskContext> }, */
