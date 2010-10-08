@@ -434,7 +434,7 @@ namespace OCL
         }
 
         // types:
-        comps = Types()->getTypes();
+        comps = Types()->getDottedTypes();
         for (std::vector<std::string>::iterator i = comps.begin(); i!= comps.end(); ++i ) {
             if ( i->find( component ) == 0  )
                 completes.push_back( peerpath + *i );
@@ -1190,7 +1190,7 @@ namespace OCL
             return;
         }
         if (instr == "types") {
-            vector<string> names = TypeInfoRepository::Instance()->getTypes();
+            vector<string> names = TypeInfoRepository::Instance()->getDottedTypes();
             cout << "Available data types: ";
             for (std::vector<std::string>::iterator it = names.begin(); it != names.end(); ++it) {
                 cout << " " << *it;
