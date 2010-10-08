@@ -281,7 +281,7 @@ variable, e.g.
 
 
 <p>
-Run the <code>rttlua</code> interpreter:
+Run the <code>rttlua</code> interpreter. <code>--</code> indicates a comment.
 </p>
 
 
@@ -312,9 +312,17 @@ state: PreOperational
 I can create the following component types:
    OCL::LuaComponent
    OCL::Testcomp
-&gt;
-
+&gt; -- create a property
+&gt; p = rtt.Property.new("string", "myprop")
+&gt; -- add it to our TaskContext
+&gt; TC:addProperty(p)
+&gt; -- check if its there
+&gt; =TC
+&gt; -- change it
+&gt; p:set("hello world")
+&gt; -- if you print TC it should have changed too.
 </pre>
+
 
 
 </div>
@@ -340,16 +348,31 @@ see the simple producer comsumer example in the
 
 
 <p>
-Here's an example which creates a Lua service in the deployer
-component.
+Here's an snip of Lua code which creates a Lua service in the
+deployer component, runs some Lua code in it which creates a
+property and then checks if the value was set correctly. It also
+shows how to correctly clean up a Property.
 </p>
 
 
 
-<pre class="example">./rttlua
-Orocos RTTLua 1.0-beta1 (gnulinux)
-&gt; todo
+<pre class="example">-- load lua service into deployer
+d:addPeer(d)
+d:call("loadService", "deployer", "Lua")
+local execstr_op = d:provides("Lua"):getOperation("exec_str")
+execstr_op([[
+                  require("rttlib")
+                  local tc=rtt.getTC()
+                  local p=rtt.Property.new("string", "service-testprop")
+                  tc:addProperty(p)
+                  p:set("hullo from the lua service!")
+            ]])
 
+ local p = d:getProperty("service-testprop")
+ assert(p:get() == var.new("string", "hullo from the lua service!"))
+ d:removeProperty("service-testprop")
+ p:delete()
+ d:removePeer("deployer")
 </pre>
 
 

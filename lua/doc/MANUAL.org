@@ -129,7 +129,7 @@
 * Using the LuaService
 
   Here's an snip of Lua code which creates a Lua service in the
-  deployer component, runs some Lua code it it which creates a
+  deployer component, runs some Lua code in it which creates a
   property and then checks if the value was set correctly. It also
   shows how to correctly clean up a Property.
 

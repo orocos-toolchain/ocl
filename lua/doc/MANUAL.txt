@@ -110,7 +110,7 @@ Table of Contents
 3 Quickstart 
 ~~~~~~~~~~~~~
 
-  Run the =rttlua= interpreter:
+  Run the =rttlua= interpreter. =--= indicates a comment.
 
 
   ./rttlua
@@ -139,7 +139,15 @@ Table of Contents
   I can create the following component types:
      OCL::LuaComponent
      OCL::Testcomp
-  >
+  > -- create a property
+  > p = rtt.Property.new("string", "myprop")
+  > -- add it to our TaskContext
+  > TC:addProperty(p)
+  > -- check if its there
+  > =TC
+  > -- change it
+  > p:set("hello world")
+  > -- if you print TC it should have changed too.
 
 4 Using the LuaComponent 
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -150,13 +158,29 @@ Table of Contents
 5 Using the LuaService 
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-  Here's an example which creates a Lua service in the deployer
-  component.
+  Here's an snip of Lua code which creates a Lua service in the
+  deployer component, runs some Lua code in it which creates a
+  property and then checks if the value was set correctly. It also
+  shows how to correctly clean up a Property.
 
 
-  ./rttlua
-  Orocos RTTLua 1.0-beta1 (gnulinux)
-  > todo
+  -- load lua service into deployer
+  d:addPeer(d)
+  d:call("loadService", "deployer", "Lua")
+  local execstr_op = d:provides("Lua"):getOperation("exec_str")
+  execstr_op([[
+                    require("rttlib")
+                    local tc=rtt.getTC()
+                    local p=rtt.Property.new("string", "service-testprop")
+                    tc:addProperty(p)
+                    p:set("hullo from the lua service!")
+              ]])
+  
+   local p = d:getProperty("service-testprop")
+   assert(p:get() == var.new("string", "hullo from the lua service!"))
+   d:removeProperty("service-testprop")
+   p:delete()
+   d:removePeer("deployer")
 
 6 Lua API 
 ~~~~~~~~~~
