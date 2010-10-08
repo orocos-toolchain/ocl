@@ -846,6 +846,7 @@ static const struct luaL_Reg InputPort_f [] = {
 static const struct luaL_Reg InputPort_m [] = {
 	{"read", InputPort_read },
 	{"info", Port_info },
+	{"delete", InputPort_del },
 	/* {"__gc", InputPort_gc }, */
 	{NULL, NULL}
 };
@@ -1563,7 +1564,7 @@ static int TaskContext_getPort(lua_State *L)
 static int TaskContext_removePort(lua_State *L)
 {
 	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
-	const char *port = luaL_checkstring(L, 1);
+	const char *port = luaL_checkstring(L, 2);
 	tc->ports()->removePort(port);
 	return 0;
 }

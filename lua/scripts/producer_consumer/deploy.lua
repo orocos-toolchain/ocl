@@ -36,6 +36,14 @@ function create_activities(deployer, spec)
    end
 end
 
+function kickout(deployer, ...)
+   local res
+   for i,comp in ipairs(arg) do
+      io.write("kicking out " .. comp .. "... ")
+      print(d:call("kickOutComponent", comp))
+   end
+end
+
 tc = rtt.getTC()
 d = tc:getPeer("deployer")
 
@@ -70,3 +78,12 @@ rtt.Logger.setlevel("Info")
 l.Consumer:start()
 l.Producer:start()
 
+os.execute("sleep 5")
+
+
+kickout(d, "Producer", "Consumer")
+
+l.Consumer:stop()
+l.Producer:stop()
+
+--os.exit(0)

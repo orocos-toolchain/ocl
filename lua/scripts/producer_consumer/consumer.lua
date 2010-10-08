@@ -20,6 +20,6 @@ function stopHook()
 end
 
 function cleanupHook()
-   -- remove port
-   -- destruct port
+   tc:removePort("inport")
+   inport:delete()
 end
