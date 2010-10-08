@@ -680,7 +680,8 @@ namespace OCL
                     char state = getTaskStatusChar(taskcontext);
 
                     // sets prompt for readline:
-                    prompt = green + taskcontext->getName() + coloroff + "[" + state + "]> ";
+//                    prompt = green + taskcontext->getName() + coloroff + "[" + state + "]> ";
+                    prompt = taskcontext->getName() + " [" + state + "]> ";
                     // This 'endl' is important because it flushes the whole output to screen of all
                     // processing that previously happened, which was using 'nl'.
                     cout.flush();
