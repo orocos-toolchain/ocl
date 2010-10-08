@@ -127,8 +127,8 @@ lang="en" xml:lang="en">
 <li><a href="#sec-9_1">9.1 Assignment is not like RTT scripting </a></li>
 <li><a href="#sec-9_2">9.2 Not all types are garbage collected </a></li>
 <li><a href="#ComparisonIssue">9.3 Comparing Lua types and RTT Variables fails </a></li>
-<li><a href="#sec-9_4">9.4 Support for creating Operations from Lua (probably not soon) </a></li>
-<li><a href="#sec-9_5">9.5 Calling a connected OperationCaller is not possible from Lua. </a></li>
+<li><a href="#sec-9_4">9.4 Calling a connected OperationCaller </a></li>
+<li><a href="#sec-9_5">9.5 Support for creating Operations from Lua </a></li>
 </ul>
 </li>
 <li><a href="#sec-10">10 License </a></li>
@@ -212,14 +212,20 @@ requires Lua-5.1 (debian: <code>liblua5.1-0-dev</code>, <code>liblua5.1-0</code>
 </li>
 <li>
 CMake options:
+
 <ul>
 <li>
-=
+<code>BUILD_LUA_RTT</code>: enable this to build the rttlua shell, the
+Lua component and the Lua plugin.
+
+</li>
+<li>
+<code>BUILD_LUA_RTT_DYNAMIC_MODULES</code>: (EXPERIMENTAL) build RTT and
+deployer as pure Lua plugins. Don't use unless you know what
+you are doing.
+
 </li>
 </ul>
-
-<p>-
-</p>
 </li>
 </ul>
 </div>
@@ -992,6 +998,27 @@ stdin:1: in main chunk
 <h3 id="sec-9_2"><span class="section-number-3">9.2</span> Not all types are garbage collected </h3>
 <div class="outline-text-3" id="text-9_2">
 
+
+<p>
+The following types are not garbage collected and must be managed
+manually (ie. removed from TaskContext Interface and the delete()
+function called):
+</p><ul>
+<li>
+Property
+</li>
+<li>
+InputPort, OutputPort
+</li>
+<li>
+TaskContext
+
+</li>
+</ul>
+
+<p>(For completenes, these types <span style="text-decoration:underline;">are</span> collected: Variable, Service,
+ServiceRequester, SendHandle, Operation)
+</p>
 </div>
 
 </div>
@@ -1026,16 +1053,25 @@ false
 </div>
 
 <div id="outline-container-9_4" class="outline-3">
-<h3 id="sec-9_4"><span class="section-number-3">9.4</span> Support for creating Operations from Lua (probably not soon) </h3>
+<h3 id="sec-9_4"><span class="section-number-3">9.4</span> Calling a connected OperationCaller </h3>
 <div class="outline-text-3" id="text-9_4">
 
+
+<p>
+It is not possible to call a connected OperationCaller from Lua.
+</p>
 </div>
 
 </div>
 
 <div id="outline-container-9_5" class="outline-3">
-<h3 id="sec-9_5"><span class="section-number-3">9.5</span> Calling a connected OperationCaller is not possible from Lua. </h3>
+<h3 id="sec-9_5"><span class="section-number-3">9.5</span> Support for creating Operations from Lua </h3>
 <div class="outline-text-3" id="text-9_5">
+
+
+<p>
+It is not possible to define new Operations from Lua.
+</p>
 
 
 </div>

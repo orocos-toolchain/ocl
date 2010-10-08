@@ -52,8 +52,13 @@
    - requires Lua-5.1 (debian: =liblua5.1-0-dev=, =liblua5.1-0=, =lua5.1=)
 
    - CMake options:
-     - =
-     -
+
+     - =BUILD_LUA_RTT=: enable this to build the rttlua shell, the
+       Lua component and the Lua plugin.
+
+     - =BUILD_LUA_RTT_DYNAMIC_MODULES=: (EXPERIMENTAL) build RTT and
+       deployer as pure Lua plugins. Don't use unless you know what
+       you are doing.
 
 ** Runtime
 

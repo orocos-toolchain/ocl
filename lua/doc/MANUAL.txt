@@ -37,8 +37,8 @@ Table of Contents
     9.1 Assignment is not like RTT scripting 
     9.2 Not all types are garbage collected 
     9.3 Comparing Lua types and RTT Variables fails 
-    9.4 Support for creating Operations from Lua (probably not soon) 
-    9.5 Calling a connected OperationCaller is not possible from Lua. 
+    9.4 Calling a connected OperationCaller 
+    9.5 Support for creating Operations from Lua 
 10 License 
 11 Links 
 
@@ -81,8 +81,13 @@ Table of Contents
    - requires Lua-5.1 (debian: =liblua5.1-0-dev=, =liblua5.1-0=, =lua5.1=)
 
    - CMake options:
-     - =
-     -
+
+     - =BUILD_LUA_RTT=: enable this to build the rttlua shell, the
+       Lua component and the Lua plugin.
+
+     - =BUILD_LUA_RTT_DYNAMIC_MODULES=: (EXPERIMENTAL) build RTT and
+       deployer as pure Lua plugins. Don't use unless you know what
+       you are doing.
 
 2.2 Runtime 
 ============
@@ -486,6 +491,16 @@ Table of Contents
 9.2 Not all types are garbage collected 
 ========================================
 
+   The following types are not garbage collected and must be managed
+   manually (ie. removed from TaskContext Interface and the delete()
+   function called):
+     - Property
+     - InputPort, OutputPort
+     - TaskContext
+
+   (For completenes, these types _are_ collected: Variable, Service,
+   ServiceRequester, SendHandle, Operation)
+
 9.3 Comparing Lua types and RTT Variables fails 
 ================================================
 
@@ -503,11 +518,17 @@ Table of Contents
   > return "just a string" == rtt.Variable.new("string", "just a string")
   false
 
-9.4 Support for creating Operations from Lua (probably not soon) 
-=================================================================
+9.4 Calling a connected OperationCaller 
+========================================
 
-9.5 Calling a connected OperationCaller is not possible from Lua. 
-==================================================================
+   It is not possible to call a connected OperationCaller from Lua.
+
+9.5 Support for creating Operations from Lua 
+=============================================
+
+   It is not possible to define new Operations from Lua.
+
+   
 
 10 License 
 ~~~~~~~~~~~
