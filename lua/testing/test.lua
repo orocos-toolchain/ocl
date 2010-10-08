@@ -185,8 +185,9 @@ function test_lua_service()
 
    local p = d:getProperty("service-testprop")
    local res =  p:get() == var.new("string", "hullo from the lua service!")
-   -- d:removePeer("service-testprop")
-   -- p:delete()
+   d:removeProperty("service-testprop")
+   p:delete()
+   d:removePeer("deployer")
    return res
 end
 
