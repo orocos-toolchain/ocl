@@ -1747,7 +1747,9 @@ static int __TaskContext_call(lua_State *L)
 	 */
 	if(orp->resultType() != "void") {
 		ti = types::TypeInfoRepository::Instance()->type(orp->resultType());
-		assert(ti);
+		if(!ti)
+			luaL_error(L, "TaskContext.call: failed to construct result type %s",
+				   orp->resultType().c_str());
 		ret2 = ti->buildValue();
 		ret2->update(ret.get());
 		luaM_pushobject_mt(L, "Variable", DataSourceBase::shared_ptr)(ret2);
