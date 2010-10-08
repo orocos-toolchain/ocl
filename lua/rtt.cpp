@@ -524,7 +524,6 @@ static int Variable_newindex(lua_State *L)
 
 	/* get dsb to be updated: we need its type before get-or-create'ing arg3 */
 	types::OperatorRepository::shared_ptr opreg = types::OperatorRepository::Instance();
-	// DataSourceBase *curval = opreg->applyDot(member, master.get());
 	DataSourceBase::shared_ptr curval = master->getMember(member);
 
 	if (curval == 0)
@@ -672,12 +671,42 @@ static int Property_gc(lua_State *L)
 static int Property_del(lua_State *L)
 {
 	PropertyBase *pb = *(luaM_checkudata_mt_bx(L, 1, "Property", PropertyBase));
-	pb->~PropertyBase();
+	delete pb;
 
 	/* this prevents calling rtt methods which would cause a crash */
 	luaL_getmetatable(L, "__dead__");
 	lua_setmetatable(L, -2);
 	return 0;
+}
+
+/* indexability of properties */
+/*
+ * this is a dispatcher which checks if the key is a method, otherwise
+ * calls get for looking up the field. Inspired by
+ * http://lua-users.org/wiki/ObjectProperties
+ */
+static int Property_index(lua_State *L)
+{
+	const char* key = luaL_checkstring(L, 2);
+
+	lua_getmetatable(L, 1);
+	lua_getfield(L, -1, key); /* this actually calls the method */
+
+	/* Either key is name of a method in the metatable */
+	if(!lua_isnil(L, -1))
+		return 1;
+
+	lua_settop(L, 2); 	/* reset stack */
+	Property_get(L);	/* pushes property var */
+	lua_replace(L, 1);	/* replace prop with var */
+	return Variable_index(L);
+}
+
+static int Property_newindex(lua_State *L)
+{
+	Property_get(L);
+	lua_replace(L, 1);
+	return Variable_newindex(L);
 }
 
 static const struct luaL_Reg Property_f [] = {
@@ -697,6 +726,8 @@ static const struct luaL_Reg Property_m [] = {
 	{"getDescription", Property_getDescription },
 	// todo: shall we or not? s.o. {"__gc", Property_gc },
 	{"delete", Property_del },
+	{"__index", Property_index },
+	{"__newindex", Property_newindex },
 	{NULL, NULL}
 };
 
@@ -803,7 +834,7 @@ static int InputPort_gc(lua_State *L)
 static int InputPort_del(lua_State *L)
 {
 	InputPortInterface *ip = *(luaM_checkudata_mt_bx(L, 1, "InputPort", InputPortInterface));
-	ip->~InputPortInterface();
+	delete ip;
 
 	/* this prevents calling rtt methods which would cause a crash */
 	luaL_getmetatable(L, "__dead__");
@@ -883,7 +914,7 @@ static int OutputPort_gc(lua_State *L)
 static int OutputPort_del(lua_State *L)
 {
 	OutputPortInterface *op = *(luaM_checkudata_mt_bx(L, 1, "OutputPort", OutputPortInterface));
-	op->~OutputPortInterface();
+	delete op;
 
 	/* this prevents calling rtt methods which would cause a crash */
 	luaL_getmetatable(L, "__dead__");
@@ -1871,7 +1902,7 @@ static int TaskContext_send(lua_State *L)
 static int TaskContext_del(lua_State *L)
 {
 	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
-	tc->~TaskContext();
+	delete tc;
 
 	/* this prevents calling rtt methods which would cause a crash */
 	luaL_getmetatable(L, "__dead__");
