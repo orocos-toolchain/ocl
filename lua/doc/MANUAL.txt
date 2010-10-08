@@ -13,34 +13,35 @@ Table of Contents
     2.1 Compilation 
     2.2 Runtime 
 3 Quickstart 
-4 Using the LuaComponent 
-5 Using the LuaService 
-6 Lua API 
-    6.1 Overview 
-    6.2 TaskContext 
-    6.3 SendHandle 
-    6.4 Variable 
-    6.5 InputPort and OutputPort 
-    6.6 Property 
-    6.7 Service Interface 
-        6.7.1 Service 
-        6.7.2 ServiceRequester 
-        6.7.3 Operation 
-    6.8 Miscellaneous 
-        6.8.1 Logger 
-        6.8.2 Service/Typekits/Types information 
-7 The rttlib convenience module 
-    7.1 how to add a pretty printer for a custom type 
-8 Tips and tricks 
-    8.1 rttlua init file =~/.rttlua= 
-9 Known issues 
-    9.1 Assignment is not like RTT scripting 
-    9.2 Not all types are garbage collected 
-    9.3 Comparing Lua types and RTT Variables fails 
-    9.4 Calling a connected OperationCaller 
-    9.5 Support for creating Operations from Lua 
-10 License 
-11 Links 
+    3.1 Using the RTT Lua interpreter 
+    3.2 Using the LuaComponent 
+    3.3 Using the LuaService 
+4 Lua API 
+    4.1 Overview 
+    4.2 TaskContext 
+    4.3 SendHandle 
+    4.4 Variable 
+    4.5 InputPort and OutputPort 
+    4.6 Property 
+    4.7 Service Interface 
+        4.7.1 Service 
+        4.7.2 ServiceRequester 
+        4.7.3 Operation 
+    4.8 Miscellaneous 
+        4.8.1 Logger 
+        4.8.2 Service/Typekits/Types information 
+5 The rttlib convenience module 
+    5.1 how to add a pretty printer for a custom type 
+6 Tips and tricks 
+    6.1 rttlua init file =~/.rttlua= 
+7 Known issues 
+    7.1 Assignment is not like RTT scripting 
+    7.2 Not all types are garbage collected 
+    7.3 Comparing Lua types and RTT Variables fails 
+    7.4 Calling a connected OperationCaller 
+    7.5 Support for creating Operations from Lua 
+8 License 
+9 Links 
 
 
 1 Overview 
@@ -127,7 +128,13 @@ Table of Contents
 3 Quickstart 
 ~~~~~~~~~~~~~
 
-  Run the =rttlua= interpreter. =--= indicates a comment.
+3.1 Using the RTT Lua interpreter 
+==================================
+
+  Run the =rttlua= interpreter. =--= indicates a comment. =rttlua=
+  always creates a deployer which is available as peer of the "this"
+  TaskContext in which we are running. The latter can be retrieved
+  using the =rtt.getTC()= function.
 
 
   ./rttlua
@@ -166,14 +173,14 @@ Table of Contents
   > p:set("hello world")
   > -- if you print TC it should have changed too.
 
-4 Using the LuaComponent 
-~~~~~~~~~~~~~~~~~~~~~~~~~
+3.2 Using the LuaComponent 
+===========================
 
-  see the simple producer comsumer example in the
-  =scripts/producer_consumer/= directory.
+   see the simple producer comsumer example in the
+   =scripts/producer_consumer/= directory.
 
-5 Using the LuaService 
-~~~~~~~~~~~~~~~~~~~~~~~
+3.3 Using the LuaService 
+=========================
 
   Here's an snip of Lua code which creates a Lua service in the
   deployer component, runs some Lua code in it which creates a
@@ -199,10 +206,10 @@ Table of Contents
    p:delete()
    d:removePeer("deployer")
 
-6 Lua API 
+4 Lua API 
 ~~~~~~~~~~
 
-6.1 Overview 
+4.1 Overview 
 =============
 
    The Lua API consists of objects and free functions. The API naming
@@ -243,7 +250,7 @@ Table of Contents
     - 'R': real-time safe
     - 'F' or 'M': only available as function or method
 
-6.2 TaskContext 
+4.2 TaskContext 
 ================
 
      Method                                             flag   description                                                          
@@ -277,7 +284,7 @@ Table of Contents
 
  Note: =call= and =send= accept both
 
-6.3 SendHandle 
+4.3 SendHandle 
 ===============
 
    An object returned by a TaskContext send() operation.
@@ -287,7 +294,7 @@ Table of Contents
      =string, variable collect()=              collect results of send, may block. string is SendStatus  
      =string, variable collectIfDone=          as above, non blocking version                            
 
-6.4 Variable 
+4.4 Variable 
 =============
 
    Variable are the types know to the RTT. They consist of basic types
@@ -335,7 +342,7 @@ Table of Contents
 
   [warning]: #ComparisonIssue
 
-6.5 InputPort and OutputPort 
+4.5 InputPort and OutputPort 
 =============================
 
    InputPort
@@ -357,7 +364,7 @@ Table of Contents
      =table info()=             return a table containing information about this port          
      =delete()=                 delete this port (remove it from any TaskContext before this)  
 
-6.6 Property 
+4.6 Property 
 =============
 
      Method                      flag   description                                                              
@@ -369,10 +376,10 @@ Table of Contents
      =string getDescription()=          return the description of the property                                   
      =delete()=                         delete this property (remove it from any TaskContex before doing this!)  
 
-6.7 Service Interface 
+4.7 Service Interface 
 ======================
 
-6.7.1 Service 
+4.7.1 Service 
 --------------
 
      Method                             flag   description                                                     
@@ -386,7 +393,7 @@ Table of Contents
      =Operation getOperation(string)=          return operation specified by string name  of this service      
      =Port getPort(string)=                    return port specified by the given string name of this service  
 
-6.7.2 ServiceRequester 
+4.7.2 ServiceRequester 
 -----------------------
 
      Method                        flag   description                                          
@@ -397,7 +404,7 @@ Table of Contents
      =void disconnect()=                  disconnect from remote Service                       
      =requires(string)=                   return required subservice specified by string name  
 
-6.7.3 Operation 
+4.7.3 Operation 
 ----------------
 
     This object is only returned by =Service:getOperation=. It can
@@ -410,10 +417,10 @@ Table of Contents
      =SendHandle send(string, ...)=                  same as above, but =send= Operation and return SendHandle           
 
 
-6.8 Miscellaneous 
+4.8 Miscellaneous 
 ==================
 
-6.8.1 Logger 
+4.8.1 Logger 
 -------------
 
     The good old logger.
@@ -424,7 +431,7 @@ Table of Contents
       =string getloglevel()=   F      return the current loglevel  
       =log(string, ...)=       F      log all (string) arguments   
 
-6.8.2 Service/Typekits/Types information 
+4.8.2 Service/Typekits/Types information 
 -----------------------------------------
 
       Method               flag   description                                               
@@ -434,7 +441,7 @@ Table of Contents
       =table types()=      F      returns a table of strings specifying the known types     
 
 
-7 The rttlib convenience module 
+5 The rttlib convenience module 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   This library adds some useful (mostly pretty printing) functions to
   the standard objects. It is recommended to load it for all
@@ -442,7 +449,7 @@ Table of Contents
 
   =require("rttlib")=
 
-7.1 how to add a pretty printer for a custom type 
+5.1 how to add a pretty printer for a custom type 
 ==================================================
 
    In short: write a function which accepts a lua table representation
@@ -493,20 +500,20 @@ Table of Contents
   {data_size=0,type="DATA",name_id="",init=false,pull=false,transport=0,lock_policy="LOCK_FREE",size=0}
   >
 
-8 Tips and tricks 
+6 Tips and tricks 
 ~~~~~~~~~~~~~~~~~~
 
-8.1 rttlua init file =~/.rttlua= 
+6.1 rttlua init file =~/.rttlua= 
 =================================
 
    =rttlua= will look for a file =.rttlua= in your home directory and
    if found execute it. It can be used for doing initalization
    (e.g. loading =rttlib= etc.)
 
-9 Known issues 
+7 Known issues 
 ~~~~~~~~~~~~~~~
 
-9.1 Assignment is not like RTT scripting 
+7.1 Assignment is not like RTT scripting 
 =========================================
 
    Except for the Lua primitive types (string, number, boolean) Lua
@@ -529,7 +536,7 @@ Table of Contents
   stack traceback:
   stdin:1: in main chunk
 
-9.2 Not all types are garbage collected 
+7.2 Not all types are garbage collected 
 ========================================
 
    The following types are not garbage collected and must be managed
@@ -542,7 +549,7 @@ Table of Contents
    (For completenes, these types _are_ collected: Variable, Service,
    ServiceRequester, SendHandle, Operation)
 
-9.3 Comparing Lua types and RTT Variables fails 
+7.3 Comparing Lua types and RTT Variables fails 
 ================================================
 
    Comparison of equivalent Lua and RTT Variable types is does *not*
@@ -559,20 +566,20 @@ Table of Contents
   > return "just a string" == rtt.Variable.new("string", "just a string")
   false
 
-9.4 Calling a connected OperationCaller 
+7.4 Calling a connected OperationCaller 
 ========================================
 
    It is not possible to call a connected OperationCaller from Lua.
 
-9.5 Support for creating Operations from Lua 
+7.5 Support for creating Operations from Lua 
 =============================================
 
    It is not possible to define new Operations from Lua.
 
    
 
-10 License 
-~~~~~~~~~~~
+8 License 
+~~~~~~~~~~
 
   The Lua-RTT bindings are licensed under the same license as the
   [OROCOS RTT].
@@ -580,8 +587,8 @@ Table of Contents
 
   [OROCOS RTT]: http://orocos.org/orocos/license
 
-11 Links 
-~~~~~~~~~
+9 Links 
+~~~~~~~~
   - [The Lua website]
   - [Programming in Lua] book (older version, but the basics are mostly the same)
   - [The Lua-5.1 Reference Manual]

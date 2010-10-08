@@ -87,52 +87,56 @@ lang="en" xml:lang="en">
 <li><a href="#sec-2_2">2.2 Runtime </a></li>
 </ul>
 </li>
-<li><a href="#sec-3">3 Quickstart </a></li>
-<li><a href="#sec-4">4 Using the LuaComponent </a></li>
-<li><a href="#sec-5">5 Using the LuaService </a></li>
-<li><a href="#sec-6">6 Lua API </a>
+<li><a href="#sec-3">3 Quickstart </a>
 <ul>
-<li><a href="#sec-6_1">6.1 Overview </a></li>
-<li><a href="#sec-6_2">6.2 TaskContext </a></li>
-<li><a href="#sec-6_3">6.3 SendHandle </a></li>
-<li><a href="#sec-6_4">6.4 Variable </a></li>
-<li><a href="#sec-6_5">6.5 InputPort and OutputPort </a></li>
-<li><a href="#sec-6_6">6.6 Property </a></li>
-<li><a href="#sec-6_7">6.7 Service Interface </a>
-<ul>
-<li><a href="#sec-6_7_1">6.7.1 Service </a></li>
-<li><a href="#sec-6_7_2">6.7.2 ServiceRequester </a></li>
-<li><a href="#sec-6_7_3">6.7.3 Operation </a></li>
+<li><a href="#sec-3_1">3.1 Using the RTT Lua interpreter </a></li>
+<li><a href="#sec-3_2">3.2 Using the LuaComponent </a></li>
+<li><a href="#sec-3_3">3.3 Using the LuaService </a></li>
 </ul>
 </li>
-<li><a href="#sec-6_8">6.8 Miscellaneous </a>
+<li><a href="#sec-4">4 Lua API </a>
 <ul>
-<li><a href="#sec-6_8_1">6.8.1 Logger </a></li>
-<li><a href="#sec-6_8_2">6.8.2 Service/Typekits/Types information </a></li>
+<li><a href="#sec-4_1">4.1 Overview </a></li>
+<li><a href="#sec-4_2">4.2 TaskContext </a></li>
+<li><a href="#sec-4_3">4.3 SendHandle </a></li>
+<li><a href="#sec-4_4">4.4 Variable </a></li>
+<li><a href="#sec-4_5">4.5 InputPort and OutputPort </a></li>
+<li><a href="#sec-4_6">4.6 Property </a></li>
+<li><a href="#sec-4_7">4.7 Service Interface </a>
+<ul>
+<li><a href="#sec-4_7_1">4.7.1 Service </a></li>
+<li><a href="#sec-4_7_2">4.7.2 ServiceRequester </a></li>
+<li><a href="#sec-4_7_3">4.7.3 Operation </a></li>
+</ul>
+</li>
+<li><a href="#sec-4_8">4.8 Miscellaneous </a>
+<ul>
+<li><a href="#sec-4_8_1">4.8.1 Logger </a></li>
+<li><a href="#sec-4_8_2">4.8.2 Service/Typekits/Types information </a></li>
 </ul></li>
 </ul>
 </li>
-<li><a href="#sec-7">7 The rttlib convenience module </a>
+<li><a href="#sec-5">5 The rttlib convenience module </a>
 <ul>
-<li><a href="#sec-7_1">7.1 how to add a pretty printer for a custom type </a></li>
+<li><a href="#sec-5_1">5.1 how to add a pretty printer for a custom type </a></li>
 </ul>
 </li>
-<li><a href="#sec-8">8 Tips and tricks </a>
+<li><a href="#sec-6">6 Tips and tricks </a>
 <ul>
-<li><a href="#sec-8_1">8.1 rttlua init file <code>~/.rttlua</code> </a></li>
+<li><a href="#sec-6_1">6.1 rttlua init file <code>~/.rttlua</code> </a></li>
 </ul>
 </li>
-<li><a href="#sec-9">9 Known issues </a>
+<li><a href="#sec-7">7 Known issues </a>
 <ul>
-<li><a href="#sec-9_1">9.1 Assignment is not like RTT scripting </a></li>
-<li><a href="#sec-9_2">9.2 Not all types are garbage collected </a></li>
-<li><a href="#ComparisonIssue">9.3 Comparing Lua types and RTT Variables fails </a></li>
-<li><a href="#sec-9_4">9.4 Calling a connected OperationCaller </a></li>
-<li><a href="#sec-9_5">9.5 Support for creating Operations from Lua </a></li>
+<li><a href="#sec-7_1">7.1 Assignment is not like RTT scripting </a></li>
+<li><a href="#sec-7_2">7.2 Not all types are garbage collected </a></li>
+<li><a href="#ComparisonIssue">7.3 Comparing Lua types and RTT Variables fails </a></li>
+<li><a href="#sec-7_4">7.4 Calling a connected OperationCaller </a></li>
+<li><a href="#sec-7_5">7.5 Support for creating Operations from Lua </a></li>
 </ul>
 </li>
-<li><a href="#sec-10">10 License </a></li>
-<li><a href="#sec-11">11 Links </a></li>
+<li><a href="#sec-8">8 License </a></li>
+<li><a href="#sec-9">9 Links </a></li>
 </ul>
 </div>
 </div>
@@ -303,8 +307,19 @@ export PATH
 <div class="outline-text-2" id="text-3">
 
 
+
+</div>
+
+<div id="outline-container-3_1" class="outline-3">
+<h3 id="sec-3_1"><span class="section-number-3">3.1</span> Using the RTT Lua interpreter </h3>
+<div class="outline-text-3" id="text-3_1">
+
+
 <p>
-Run the <code>rttlua</code> interpreter. <code>--</code> indicates a comment.
+Run the <code>rttlua</code> interpreter. <code>--</code> indicates a comment. <code>rttlua</code>
+always creates a deployer which is available as peer of the "this"
+TaskContext in which we are running. The latter can be retrieved
+using the <code>rtt.getTC()</code> function.
 </p>
 
 
@@ -352,9 +367,9 @@ I can create the following component types:
 
 </div>
 
-<div id="outline-container-4" class="outline-2">
-<h2 id="sec-4"><span class="section-number-2">4</span> Using the LuaComponent </h2>
-<div class="outline-text-2" id="text-4">
+<div id="outline-container-3_2" class="outline-3">
+<h3 id="sec-3_2"><span class="section-number-3">3.2</span> Using the LuaComponent </h3>
+<div class="outline-text-3" id="text-3_2">
 
 
 <p>
@@ -365,9 +380,9 @@ see the simple producer comsumer example in the
 
 </div>
 
-<div id="outline-container-5" class="outline-2">
-<h2 id="sec-5"><span class="section-number-2">5</span> Using the LuaService </h2>
-<div class="outline-text-2" id="text-5">
+<div id="outline-container-3_3" class="outline-3">
+<h3 id="sec-3_3"><span class="section-number-3">3.3</span> Using the LuaService </h3>
+<div class="outline-text-3" id="text-3_3">
 
 
 <p>
@@ -401,20 +416,21 @@ execstr_op([[
 
 
 </div>
+</div>
 
 </div>
 
-<div id="outline-container-6" class="outline-2">
-<h2 id="sec-6"><span class="section-number-2">6</span> Lua API </h2>
-<div class="outline-text-2" id="text-6">
+<div id="outline-container-4" class="outline-2">
+<h2 id="sec-4"><span class="section-number-2">4</span> Lua API </h2>
+<div class="outline-text-2" id="text-4">
 
 
 
 </div>
 
-<div id="outline-container-6_1" class="outline-3">
-<h3 id="sec-6_1"><span class="section-number-3">6.1</span> Overview </h3>
-<div class="outline-text-3" id="text-6_1">
+<div id="outline-container-4_1" class="outline-3">
+<h3 id="sec-4_1"><span class="section-number-3">4.1</span> Overview </h3>
+<div class="outline-text-3" id="text-4_1">
 
 
 <p>
@@ -494,9 +510,9 @@ function/method:
 
 </div>
 
-<div id="outline-container-6_2" class="outline-3">
-<h3 id="sec-6_2"><span class="section-number-3">6.2</span> TaskContext </h3>
-<div class="outline-text-3" id="text-6_2">
+<div id="outline-container-4_2" class="outline-3">
+<h3 id="sec-4_2"><span class="section-number-3">4.2</span> TaskContext </h3>
+<div class="outline-text-3" id="text-4_2">
 
 
 <table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
@@ -544,9 +560,9 @@ Note: <code>call</code> and <code>send</code> accept both
 
 </div>
 
-<div id="outline-container-6_3" class="outline-3">
-<h3 id="sec-6_3"><span class="section-number-3">6.3</span> SendHandle </h3>
-<div class="outline-text-3" id="text-6_3">
+<div id="outline-container-4_3" class="outline-3">
+<h3 id="sec-4_3"><span class="section-number-3">4.3</span> SendHandle </h3>
+<div class="outline-text-3" id="text-4_3">
 
 
 <p>
@@ -570,9 +586,9 @@ An object returned by a TaskContext send() operation.
 
 </div>
 
-<div id="outline-container-6_4" class="outline-3">
-<h3 id="sec-6_4"><span class="section-number-3">6.4</span> Variable </h3>
-<div class="outline-text-3" id="text-6_4">
+<div id="outline-container-4_4" class="outline-3">
+<h3 id="sec-4_4"><span class="section-number-3">4.4</span> Variable </h3>
+<div class="outline-text-3" id="text-4_4">
 
 
 <p>
@@ -648,9 +664,9 @@ following example:
 
 </div>
 
-<div id="outline-container-6_5" class="outline-3">
-<h3 id="sec-6_5"><span class="section-number-3">6.5</span> InputPort and OutputPort </h3>
-<div class="outline-text-3" id="text-6_5">
+<div id="outline-container-4_5" class="outline-3">
+<h3 id="sec-4_5"><span class="section-number-3">4.5</span> InputPort and OutputPort </h3>
+<div class="outline-text-3" id="text-4_5">
 
 
 <p>
@@ -696,9 +712,9 @@ OuputPort
 
 </div>
 
-<div id="outline-container-6_6" class="outline-3">
-<h3 id="sec-6_6"><span class="section-number-3">6.6</span> Property </h3>
-<div class="outline-text-3" id="text-6_6">
+<div id="outline-container-4_6" class="outline-3">
+<h3 id="sec-4_6"><span class="section-number-3">4.6</span> Property </h3>
+<div class="outline-text-3" id="text-4_6">
 
 
 <table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
@@ -723,17 +739,17 @@ OuputPort
 
 </div>
 
-<div id="outline-container-6_7" class="outline-3">
-<h3 id="sec-6_7"><span class="section-number-3">6.7</span> Service Interface </h3>
-<div class="outline-text-3" id="text-6_7">
+<div id="outline-container-4_7" class="outline-3">
+<h3 id="sec-4_7"><span class="section-number-3">4.7</span> Service Interface </h3>
+<div class="outline-text-3" id="text-4_7">
 
 
 
 </div>
 
-<div id="outline-container-6_7_1" class="outline-4">
-<h4 id="sec-6_7_1"><span class="section-number-4">6.7.1</span> Service </h4>
-<div class="outline-text-4" id="text-6_7_1">
+<div id="outline-container-4_7_1" class="outline-4">
+<h4 id="sec-4_7_1"><span class="section-number-4">4.7.1</span> Service </h4>
+<div class="outline-text-4" id="text-4_7_1">
 
 
 <table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
@@ -760,9 +776,9 @@ OuputPort
 
 </div>
 
-<div id="outline-container-6_7_2" class="outline-4">
-<h4 id="sec-6_7_2"><span class="section-number-4">6.7.2</span> ServiceRequester </h4>
-<div class="outline-text-4" id="text-6_7_2">
+<div id="outline-container-4_7_2" class="outline-4">
+<h4 id="sec-4_7_2"><span class="section-number-4">4.7.2</span> ServiceRequester </h4>
+<div class="outline-text-4" id="text-4_7_2">
 
 
 <table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
@@ -786,9 +802,9 @@ OuputPort
 
 </div>
 
-<div id="outline-container-6_7_3" class="outline-4">
-<h4 id="sec-6_7_3"><span class="section-number-4">6.7.3</span> Operation </h4>
-<div class="outline-text-4" id="text-6_7_3">
+<div id="outline-container-4_7_3" class="outline-4">
+<h4 id="sec-4_7_3"><span class="section-number-4">4.7.3</span> Operation </h4>
+<div class="outline-text-4" id="text-4_7_3">
 
 
 <p>
@@ -816,16 +832,16 @@ also be called with the familiar <code>op(arg1, arg2)</code> syntax.
 
 </div>
 
-<div id="outline-container-6_8" class="outline-3">
-<h3 id="sec-6_8"><span class="section-number-3">6.8</span> Miscellaneous </h3>
-<div class="outline-text-3" id="text-6_8">
+<div id="outline-container-4_8" class="outline-3">
+<h3 id="sec-4_8"><span class="section-number-3">4.8</span> Miscellaneous </h3>
+<div class="outline-text-3" id="text-4_8">
 
 
 </div>
 
-<div id="outline-container-6_8_1" class="outline-4">
-<h4 id="sec-6_8_1"><span class="section-number-4">6.8.1</span> Logger </h4>
-<div class="outline-text-4" id="text-6_8_1">
+<div id="outline-container-4_8_1" class="outline-4">
+<h4 id="sec-4_8_1"><span class="section-number-4">4.8.1</span> Logger </h4>
+<div class="outline-text-4" id="text-4_8_1">
 
 
 <p>
@@ -850,9 +866,9 @@ The good old logger.
 
 </div>
 
-<div id="outline-container-6_8_2" class="outline-4">
-<h4 id="sec-6_8_2"><span class="section-number-4">6.8.2</span> Service/Typekits/Types information </h4>
-<div class="outline-text-4" id="text-6_8_2">
+<div id="outline-container-4_8_2" class="outline-4">
+<h4 id="sec-4_8_2"><span class="section-number-4">4.8.2</span> Service/Typekits/Types information </h4>
+<div class="outline-text-4" id="text-4_8_2">
 
 
 <table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
@@ -877,9 +893,9 @@ The good old logger.
 
 </div>
 
-<div id="outline-container-7" class="outline-2">
-<h2 id="sec-7"><span class="section-number-2">7</span> The rttlib convenience module </h2>
-<div class="outline-text-2" id="text-7">
+<div id="outline-container-5" class="outline-2">
+<h2 id="sec-5"><span class="section-number-2">5</span> The rttlib convenience module </h2>
+<div class="outline-text-2" id="text-5">
 
 <p>This library adds some useful (mostly pretty printing) functions to
 the standard objects. It is recommended to load it for all
@@ -891,9 +907,9 @@ applications by adding the following to scripts:
 
 </div>
 
-<div id="outline-container-7_1" class="outline-3">
-<h3 id="sec-7_1"><span class="section-number-3">7.1</span> how to add a pretty printer for a custom type </h3>
-<div class="outline-text-3" id="text-7_1">
+<div id="outline-container-5_1" class="outline-3">
+<h3 id="sec-5_1"><span class="section-number-3">5.1</span> how to add a pretty printer for a custom type </h3>
+<div class="outline-text-3" id="text-5_1">
 
 
 <p>
@@ -976,16 +992,16 @@ desired fields:
 
 </div>
 
-<div id="outline-container-8" class="outline-2">
-<h2 id="sec-8"><span class="section-number-2">8</span> Tips and tricks </h2>
-<div class="outline-text-2" id="text-8">
+<div id="outline-container-6" class="outline-2">
+<h2 id="sec-6"><span class="section-number-2">6</span> Tips and tricks </h2>
+<div class="outline-text-2" id="text-6">
 
 
 </div>
 
-<div id="outline-container-8_1" class="outline-3">
-<h3 id="sec-8_1"><span class="section-number-3">8.1</span> rttlua init file <code>~/.rttlua</code> </h3>
-<div class="outline-text-3" id="text-8_1">
+<div id="outline-container-6_1" class="outline-3">
+<h3 id="sec-6_1"><span class="section-number-3">6.1</span> rttlua init file <code>~/.rttlua</code> </h3>
+<div class="outline-text-3" id="text-6_1">
 
 
 <p>
@@ -998,16 +1014,16 @@ if found execute it. It can be used for doing initalization
 
 </div>
 
-<div id="outline-container-9" class="outline-2">
-<h2 id="sec-9"><span class="section-number-2">9</span> Known issues </h2>
-<div class="outline-text-2" id="text-9">
+<div id="outline-container-7" class="outline-2">
+<h2 id="sec-7"><span class="section-number-2">7</span> Known issues </h2>
+<div class="outline-text-2" id="text-7">
 
 
 </div>
 
-<div id="outline-container-9_1" class="outline-3">
-<h3 id="sec-9_1"><span class="section-number-3">9.1</span> Assignment is not like RTT scripting </h3>
-<div class="outline-text-3" id="text-9_1">
+<div id="outline-container-7_1" class="outline-3">
+<h3 id="sec-7_1"><span class="section-number-3">7.1</span> Assignment is not like RTT scripting </h3>
+<div class="outline-text-3" id="text-7_1">
 
 
 <p>
@@ -1040,9 +1056,9 @@ stdin:1: in main chunk
 
 </div>
 
-<div id="outline-container-9_2" class="outline-3">
-<h3 id="sec-9_2"><span class="section-number-3">9.2</span> Not all types are garbage collected </h3>
-<div class="outline-text-3" id="text-9_2">
+<div id="outline-container-7_2" class="outline-3">
+<h3 id="sec-7_2"><span class="section-number-3">7.2</span> Not all types are garbage collected </h3>
+<div class="outline-text-3" id="text-7_2">
 
 
 <p>
@@ -1070,7 +1086,7 @@ ServiceRequester, SendHandle, Operation)
 </div>
 
 <div id="outline-container-ComparisonIssue" class="outline-3">
-<h3 id="ComparisonIssue"><a name="sec-9_3" id="sec-9_3"></a><span class="section-number-3">9.3</span> Comparing Lua types and RTT Variables fails </h3>
+<h3 id="ComparisonIssue"><a name="sec-7_3" id="sec-7_3"></a><span class="section-number-3">7.3</span> Comparing Lua types and RTT Variables fails </h3>
 <div class="outline-text-3" id="text-ComparisonIssue">
 
 
@@ -1098,9 +1114,9 @@ false
 
 </div>
 
-<div id="outline-container-9_4" class="outline-3">
-<h3 id="sec-9_4"><span class="section-number-3">9.4</span> Calling a connected OperationCaller </h3>
-<div class="outline-text-3" id="text-9_4">
+<div id="outline-container-7_4" class="outline-3">
+<h3 id="sec-7_4"><span class="section-number-3">7.4</span> Calling a connected OperationCaller </h3>
+<div class="outline-text-3" id="text-7_4">
 
 
 <p>
@@ -1110,9 +1126,9 @@ It is not possible to call a connected OperationCaller from Lua.
 
 </div>
 
-<div id="outline-container-9_5" class="outline-3">
-<h3 id="sec-9_5"><span class="section-number-3">9.5</span> Support for creating Operations from Lua </h3>
-<div class="outline-text-3" id="text-9_5">
+<div id="outline-container-7_5" class="outline-3">
+<h3 id="sec-7_5"><span class="section-number-3">7.5</span> Support for creating Operations from Lua </h3>
+<div class="outline-text-3" id="text-7_5">
 
 
 <p>
@@ -1125,9 +1141,9 @@ It is not possible to define new Operations from Lua.
 
 </div>
 
-<div id="outline-container-10" class="outline-2">
-<h2 id="sec-10"><span class="section-number-2">10</span> License </h2>
-<div class="outline-text-2" id="text-10">
+<div id="outline-container-8" class="outline-2">
+<h2 id="sec-8"><span class="section-number-2">8</span> License </h2>
+<div class="outline-text-2" id="text-8">
 
 
 <p>
@@ -1138,9 +1154,9 @@ The Lua-RTT bindings are licensed under the same license as the
 
 </div>
 
-<div id="outline-container-11" class="outline-2">
-<h2 id="sec-11"><span class="section-number-2">11</span> Links </h2>
-<div class="outline-text-2" id="text-11">
+<div id="outline-container-9" class="outline-2">
+<h2 id="sec-9"><span class="section-number-2">9</span> Links </h2>
+<div class="outline-text-2" id="text-9">
 
 <ul>
 <li>

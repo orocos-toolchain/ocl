@@ -96,7 +96,12 @@
 
 * Quickstart
 
-  Run the =rttlua= interpreter. =--= indicates a comment.
+** Using the RTT Lua interpreter
+
+  Run the =rttlua= interpreter. =--= indicates a comment. =rttlua=
+  always creates a deployer which is available as peer of the "this"
+  TaskContext in which we are running. The latter can be retrieved
+  using the =rtt.getTC()= function.
 
 #+BEGIN_EXAMPLE
   ./rttlua
@@ -136,12 +141,12 @@
   > -- if you print TC it should have changed too.
 #+END_EXAMPLE
 
-* Using the LuaComponent
+** Using the LuaComponent
 
-  see the simple producer comsumer example in the
-  =scripts/producer_consumer/= directory.
+   see the simple producer comsumer example in the
+   =scripts/producer_consumer/= directory.
 
-* Using the LuaService
+** Using the LuaService
 
   Here's an snip of Lua code which creates a Lua service in the
   deployer component, runs some Lua code in it which creates a
