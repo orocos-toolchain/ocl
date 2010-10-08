@@ -1,4 +1,5 @@
---
+#!/usr/bin/env rttlua
+
 -- Lua-RTT bindings
 --
 -- (C) Copyright 2010 Markus Klotzbuecher,
@@ -30,14 +31,16 @@
 -- License along with this library; if not, write to the Free Software
 -- Foundation, Inc., 59 Temple Place,
 -- Suite 330, Boston, MA  02111-1307  USA
---
 
-require("modules/rttlib")
-require("modules/uunit")
+
+require("rttlib")
+require("uunit")
 
 rtt.Logger.setlevel("Warning")
 var = rtt.Variable
+TC=rtt.getTC()
 d=TC:getPeer("deployer")
+
 
 function test_loadlib()
    return d:call("loadLibrary", var.new("string", "lua/testing/testcomp-gnulinux"))
@@ -167,6 +170,26 @@ function test_dataflow_lua()
    return res == "NewData" and val:tolua() == "hello_ports"
 end
 
+function test_lua_service()
+   -- load lua service into deployer
+   d:addPeer(d)
+   d:call("loadService", "deployer", "Lua")
+   local execstr_op = d:provides("Lua"):getOperation("exec_str")
+   execstr_op([[
+		    require("rttlib")
+		    local tc=rtt.getTC()
+		    local p=rtt.Property.new("string", "service-testprop")
+		    tc:addProperty(p)
+		    p:set("hullo from the lua service!")
+	      ]])
+
+   local p = d:getProperty("service-testprop")
+   local res =  p:get() == var.new("string", "hullo from the lua service!")
+   -- d:removePeer("service-testprop")
+   -- p:delete()
+   return res
+end
+
 local tests = {
    { tstr='return TC:getName() == "lua"' },
    { tstr='return TC:getState() == "PreOperational"' },
@@ -187,6 +210,7 @@ local tests = {
    { tfunc=test_coercion, descr="testing coercion of variables in call" },
    { tfunc=test_send_op2, descr="testing send for op_2" },
    { tfunc=test_dataflow_lua, descr="testing dataflow with conversion from/to basic lua types" },
+   { tfunc=test_lua_service, descr="test interaction with lua service" },
 }
 
 uunit.run_tests(tests, true)

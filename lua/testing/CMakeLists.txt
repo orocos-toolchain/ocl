@@ -1,4 +1,4 @@
-cmake_dependent_option( BUILD_LUA_TESTCOMP "Build test-component used for testing lua bindings" OFF "BUILD_LUA_COMPONENT" OFF )
+cmake_dependent_option( BUILD_LUA_TESTCOMP "Build test-component used for testing lua bindings" OFF "BUILD_LUA_RTT" OFF )
 
 if ( BUILD_LUA_TESTCOMP )
 
