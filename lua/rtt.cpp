@@ -34,13 +34,6 @@
 
 #include "rtt.hpp"
 
-#include <rtt/TaskContext.hpp>
-#include <rtt/Port.hpp>
-#include <rtt/types/Types.hpp>
-#include <rtt/base/DataSourceBase.hpp>
-#include <rtt/types/Operators.hpp>
-#include <rtt/Logger.hpp>
-
 using namespace std;
 using namespace RTT;
 using namespace RTT::detail;
@@ -2175,4 +2168,17 @@ int luaopen_rtt(lua_State *L)
 	luaL_register(L, "rtt", rtt_f);
 
 	return 1;
+}
+
+/* store the TC to be returned by getTC() in registry */
+int set_context_tc(TaskContext *tc, lua_State *L)
+{
+	TaskContext **new_tc;
+	lua_pushstring(L, "this_TC");
+	new_tc = (TaskContext**) lua_newuserdata(L, sizeof(TaskContext*));
+	*new_tc = (TaskContext*) tc;
+	luaL_getmetatable(L, "TaskContext");
+	lua_setmetatable(L, -2);
+	lua_settable(L, LUA_REGISTRYINDEX);
+	return 0;
 }

@@ -24,8 +24,8 @@ protected:
 	lua_State *L;
 
 public:
-	LuaService(RTT::TaskContext* c)
-		: RTT::Service("Lua", c)
+	LuaService(RTT::TaskContext* tc)
+		: RTT::Service("Lua", tc)
 	{
 		/* initialize lua */
 		L = lua_open();
@@ -42,12 +42,7 @@ public:
 		lua_pushcfunction(L, luaopen_rtt);
 		lua_call(L, 0, 0);
 
-		/* set global TC */
-		TaskContext** tc = (TaskContext**) lua_newuserdata(L, sizeof(TaskContext*));
-		*tc = (TaskContext*) this;
-		luaL_getmetatable(L, "TaskContext");
-		lua_setmetatable(L, -2);
-		lua_setglobal(L, "TC");
+		set_context_tc(tc, L);
 
 		this->addOperation("exec_file", &LuaService::exec_file, this);
 		this->addOperation("exec_str", &LuaService::exec_str, this);

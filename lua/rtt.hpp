@@ -34,6 +34,13 @@
 
 #define RTTLUA_VERSION	"1.0-beta1"
 
+#include <rtt/TaskContext.hpp>
+#include <rtt/Port.hpp>
+#include <rtt/types/Types.hpp>
+#include <rtt/base/DataSourceBase.hpp>
+#include <rtt/types/Operators.hpp>
+#include <rtt/Logger.hpp>
+
 extern "C" {
 #include <lua.h>
 #include <lauxlib.h>
@@ -42,3 +49,5 @@ extern "C" {
 }
 
 extern "C" int luaopen_rtt(lua_State *L);
+
+int set_context_tc(RTT::TaskContext*, lua_State*);

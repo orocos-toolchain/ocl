@@ -85,14 +85,7 @@ namespace OCL
 			lua_pushcfunction(L, luaopen_rtt);
 			lua_call(L, 0, 0);
 
-			/* store "this" TaskContext in registry */
-			lua_pushstring(L, "this_TC");
-			TaskContext** tc = (TaskContext**) lua_newuserdata(L, sizeof(TaskContext*));
-			*tc = (TaskContext*) this;
-			luaL_getmetatable(L, "TaskContext");
-			lua_setmetatable(L, -2);
-			// lua_setglobal(L, "TC");
-			lua_settable(L, LUA_REGISTRYINDEX);
+			set_context_tc(this, L);
 
 			this->addOperation("exec_file", &LuaComponent::exec_file, this, OwnThread)
 				.doc("load (and run) the given lua script")
