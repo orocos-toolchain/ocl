@@ -1270,7 +1270,8 @@ namespace OCL
                     this->printResult( ds.get(), false );
                     cout << sresult.str() << nl <<endl;
                     sresult.str("");
-                }
+                } else
+                    ds->evaluate();
                 return; // done here
             } else if (debug)
                 cerr << "returned zero !"<<nl;
@@ -1315,7 +1316,8 @@ namespace OCL
                     this->printResult( ds.get(), false );
                     cout << sresult.str() << nl <<endl;
                     sresult.str("");
-                }
+                } else
+                    ds->evaluate();
                 return; // done here
             } else if (debug)
                 cerr << "returned zero !"<<nl;
@@ -1358,7 +1360,8 @@ namespace OCL
                     this->printResult( ds.get(), true );
                     cout << sresult.str() << nl << endl;
                     sresult.str("");
-                }
+                } else
+                    ds->evaluate();
                 return; // done here
             } else if (debug)
                 cerr << "returned zero !"<<nl;
