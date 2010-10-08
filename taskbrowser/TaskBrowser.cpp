@@ -1426,7 +1426,7 @@ namespace OCL
                 // is a container/sequence:
                 DataSource<int>::shared_ptr seq_size = dynamic_pointer_cast<DataSource<int> >(dsb->getMember("size"));
                 if (seq_size) {
-                    ValueDataSource<int>::shared_ptr index = new ValueDataSource<int>(0);
+                    ValueDataSource<unsigned int>::shared_ptr index = new ValueDataSource<unsigned int>(0);
                     // print max 10 items of sequence:
                     sresult << " [";
                     for (int i=0; i != seq_size->get(); ++i) {
