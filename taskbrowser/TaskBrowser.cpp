@@ -774,7 +774,7 @@ namespace OCL
                     // shows the 'IP' again.
                     storedline = -1;
                 }
-                cout <<endl;
+                //cout <<endl;
             }
     }
 
@@ -1264,9 +1264,13 @@ namespace OCL
             base::DataSourceBase::shared_ptr ds = _parser.parseValueStatement( comm, context );
             // methods and DS'es are processed immediately.
             if ( ds.get() != 0 ) {
-                this->printResult( ds.get(), false );
-                cout << sresult.str() << nl;
-                sresult.str("");
+                // only print if no ';' was given.
+                assert( comm.size() != 0 );
+                if ( comm[ comm.size() - 1 ] != ';' ) {
+                    this->printResult( ds.get(), false );
+                    cout << sresult.str() << nl <<endl;
+                    sresult.str("");
+                }
                 return; // done here
             } else if (debug)
                 cerr << "returned zero !"<<nl;
@@ -1305,9 +1309,13 @@ namespace OCL
             base::DataSourceBase::shared_ptr ds = _parser.parseValueChange( comm, context );
             // methods and DS'es are processed immediately.
             if ( ds.get() != 0 ) {
-                this->printResult( ds.get(), false );
-                cout << sresult.str() << nl;
-                sresult.str("");
+                // only print if no ';' was given.
+                assert( comm.size() != 0 );
+                if ( comm[ comm.size() - 1 ] != ';' ) {
+                    this->printResult( ds.get(), false );
+                    cout << sresult.str() << nl <<endl;
+                    sresult.str("");
+                }
                 return; // done here
             } else if (debug)
                 cerr << "returned zero !"<<nl;
@@ -1344,9 +1352,13 @@ namespace OCL
             base::DataSourceBase::shared_ptr ds = _parser.parseExpression( comm, context );
             // methods and DS'es are processed immediately.
             if ( ds.get() != 0 ) {
-                this->printResult( ds.get(), true );
-                cout << sresult.str() << nl;
-                sresult.str("");
+                // only print if no ';' was given.
+                assert( comm.size() != 0 );
+                if ( comm[ comm.size() - 1 ] != ';' ) {
+                    this->printResult( ds.get(), true );
+                    cout << sresult.str() << nl << endl;
+                    sresult.str("");
+                }
                 return; // done here
             } else if (debug)
                 cerr << "returned zero !"<<nl;
