@@ -60,23 +60,38 @@
        deployer as pure Lua plugins. Don't use unless you know what
        you are doing.
 
+     - =BUILD_LUA_TESTCOMP=: builds a simple testcomponent which is
+       used for testing the bindings. Not required for normal
+       operation.
+
 ** Runtime
 
-    - setup =LUA_PATH= and =LUA_CPATH= so that the necessary modules
-      are found. The former is for lua modules (.lua) and the later is
-      for binary ones (.so). For example:
+    - setup =LUA_PATH= and =LUA_CPATH= so that the rtt lua extension
+      modules are found. The former is for lua modules (.lua) and the
+      later is for binary ones (.so). For example:
 
 #+BEGIN_EXAMPLE
-      $ export LUA_PATH=";;;/usr/share/lua/5.1/?.lua;\
-	      /usr/share/lua/5.1/?/init.lua;\
-	      /home/mk/src/git/orocos/ocl/lua/modules/?.lua"
+      $ export LUA_PATH=";;;/home/mk/src/git/orocos/ocl/lua/modules/?.lua"
+      $ export LUA_CPATH=";;;/home/mk/src/git/orocos/ocl/lua/modules/?.so"
 #+END_EXAMPLE
+
+      (The first two semicolons mean the default path and the third
+      separates our path. See the [[http://www.lua.org/manual/5.1/manual.html#5.3][Lua reference manual]] for more
+      information.)
 
     - if using =rttlua= scripting: export correct =RTT_COMPONENT_PATH=
       variable, e.g.
 
 #+BEGIN_EXAMPLE
       $ export RTT_COMPONENT_PATH=/home/mk/tmp/rtt-2.0/lib/orocos:home/mk/src/git/ocl/lua
+#+END_EXAMPLE
+
+      and (optionally) add the location of the =rttlua= binary to your
+      path, e.g.
+
+#+BEGIN_EXAMPLE
+      PATH=$PATH:/home/mk/tmp/rtt-2.0/lib/orocos:home/mk/src/git/ocl/lua
+      export PATH
 #+END_EXAMPLE
 
 * Quickstart
@@ -92,7 +107,7 @@
   > print(TC)
   userdata: 0x1cba0b8
   > -- if we want nicer output we must load the rttlib module
-  > require("modules/rttlib")
+  > require("rttlib")
   > print(TC)
   TaskContext: lua
   state: PreOperational
