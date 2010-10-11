@@ -1456,7 +1456,7 @@ namespace OCL
                 newact = new RTT::extras::PeriodicActivity(scheduler, priority, period);
             else
             if ( act_type == "NonPeriodicActivity" && period == 0.0)
-                newact = new RTT::Activity(scheduler, priority);
+                newact = new RTT::Activity(scheduler, priority, period);
             else
                 if ( act_type == "SlaveActivity" ) {
                     if ( master_act == 0 )

@@ -511,7 +511,7 @@
 	    DeploymentComponent) with '.services' and load a service
 	    from the TaskBrowser prompt <emphasis>in the current
 	    visited component</emphasis> with
-	    <programlisting>.provides &lt;servicename&gt;</programlisting>. 
+	    <programlisting>.provide &lt;servicename&gt;</programlisting>. 
 	    The Deployer has 
 	    the equivalent function which looks like this:
 	    <programlisting>
