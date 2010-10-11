@@ -24,7 +24,7 @@ else(NOT LUA51_FOUND)
     add_executable(rttlua rtt.cpp LuaComponent.cpp)
     set_target_properties(rttlua-${OROCOS_TARGET} PROPERTIES COMPILE_FLAGS "-DOCL_COMPONENT_ONLY")
     program_add_deps(rttlua orocos-deployment)
-
+    install(TARGETS rttlua RUNTIME DESTINATION bin)
     if(NOT CURSES AND NOT READLINE)
        message(STATUS "Building without readline/curses support. If you
 	 want support for this try someting like 'sudo aptitude install
