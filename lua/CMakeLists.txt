@@ -39,7 +39,7 @@ else(NOT LUA51_FOUND)
      endif(NOT CURSES AND NOT READLINE)
 
      target_link_libraries(rttlua lua-repl ${LUA_LIBRARIES} ${OROCOS_RTT_LIBS})
-     target_link_libraries(rttlua-${OROCOS_TARGET} ${LUA_LIBRARIES} ${OROCOS_RTT_LIBS})
+     target_link_libraries(rttlua-${OROCOS_TARGET} ${LUA_LIBRARIES} ${OROCOS_RTT_LIBS} lua-repl)
 
      add_subdirectory( plugins )
      add_subdirectory( testing )
