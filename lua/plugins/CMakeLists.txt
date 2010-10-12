@@ -7,5 +7,5 @@ set_target_properties(rttlua-${OROCOS_TARGET}_plugin PROPERTIES
   INSTALL_RPATH_USE_LINK_PATH 1
   )
 
-target_link_libraries(rttlua-${OROCOS_TARGET}_plugin)
+target_link_libraries(rttlua-${OROCOS_TARGET}_plugin ${LUA_LIBRARIES})
 install(TARGETS rttlua-${OROCOS_TARGET}_plugin LIBRARY DESTINATION lib/orocos/plugins)
