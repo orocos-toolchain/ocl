@@ -793,7 +793,7 @@ static int InputPort_read(lua_State *L)
 	InputPortInterface *ip = *(luaM_checkudata_mt_bx(L, 1, "InputPort", InputPortInterface));
 	DataSourceBase::shared_ptr dsb;
 	DataSourceBase::shared_ptr *dsbp;
-	enum FlowStatus fs;
+	FlowStatus fs;
 
 	/* if we get don't get a DS to store the result, create one */
 	if ((dsbp = luaM_testudata_mt(L, 2, "Variable", DataSourceBase::shared_ptr)) != NULL)
@@ -1379,7 +1379,7 @@ static int TaskContext_cleanup(lua_State *L)
 
 static int TaskContext_getState(lua_State *L)
 {
-	enum TaskCore::TaskState ts;
+	TaskCore::TaskState ts;
 	TaskContext **tc = (TaskContext**) luaM_checkudata_bx(L, 1, TaskContext);
 	ts = (*tc)->getTaskState();
 
@@ -1438,7 +1438,7 @@ static int TaskContext_getPeer(lua_State *L)
 	peer = self->getPeer(strpeer);
 
 	if(!peer) {
-		lua_pushnil(L);
+		luaL_error(L, "TaskContext.getPeer: no peer %s", strpeer.c_str());
 		goto out;
 	}
 

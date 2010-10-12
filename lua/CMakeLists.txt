@@ -1,6 +1,7 @@
 
-option(BUILD_LUA_RTT "Build Lua RTT bindings" OFF)
+option(BUILD_LUA_RTT "Build Lua RTT bindings" ON)
 cmake_dependent_option(BUILD_LUA_RTT_DYNAMIC_MODULES "Build dynamic loadable Lua plugins for rtt and deployer (experimental!)" OFF "BUILD_LUA_RTT" OFF)
+
 find_package(Lua51 REQUIRED)
 
 if(NOT LUA51_FOUND)
