@@ -1,5 +1,5 @@
 set( RTT_DEFINITIONS "${OROCOS-RTT_DEFINITIONS}" )
-add_library(rttlua-${OROCOS_TARGET}_plugin SHARED  lua_plugin.cpp)
+add_library(rttlua-${OROCOS_TARGET}_plugin SHARED  lua_plugin.cpp ../rtt.cpp)
 set_target_properties(rttlua-${OROCOS_TARGET}_plugin PROPERTIES 
   DEFINE_SYMBOL "OCL_DLL_EXPORT"
   VERSION ${OCL_VERSION}
