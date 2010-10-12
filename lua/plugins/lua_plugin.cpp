@@ -8,14 +8,6 @@
 
 #include "../rtt.hpp"
 
-extern "C" {
-#include "../lua-repl.h"
-void dotty (lua_State *L);
-void l_message (const char *pname, const char *msg);
-int dofile (lua_State *L, const char *name);
-int dostring (lua_State *L, const char *s, const char *name);
-}
-
 using namespace RTT;
 
 class LuaService : public Service
@@ -34,8 +26,9 @@ public:
 		lua_gc(L, LUA_GCRESTART, 0);
 
 		if (L == NULL) {
-			l_message("LuaService ctr", "cannot create state: not enough memory");
-			throw;
+		  Logger::In in("LuaService ctr");
+		  log(Error)<<"cannot create state: not enough memory"<<endlog();
+		  throw;
 		}
 
 		/* setup rtt bindings */
