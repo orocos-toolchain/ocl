@@ -382,7 +382,7 @@
     | Method                 | flag | description                 |
     |------------------------+------+-----------------------------|
     | =setlevel(string)=     | F    | set the loglevel            |
-    | =string getloglevel()= | F    | return the current loglevel |
+    | =string getlevel()=    | F    | return the current loglevel |
     | =log(string, ...)=     | F    | log all (string) arguments  |
 
 *** Service/Typekits/Types information
