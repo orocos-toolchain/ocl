@@ -1,0 +1,23 @@
+#!/bin/bash -x
+
+if [ x$1 = x ]; then
+    echo "Creates a new Orocos component package."
+    echo "Usage: $0 package_name"
+    exit 1
+fi
+
+pkgname=$1
+cappkgname=$pkgname
+allcappkgname=$pkgname
+
+#mkdir $pkgname || { echo "Directory already exists: $pkgname" ; exit 1; }
+
+templatedir=templates
+
+for i in $templatedir/*; do
+    tgtname=$(echo "$(basename $i)" | sed -e "s/pkgname/$pkgname/g;s/Pkgname/$cappkgname/g;")
+    cat $i | sed -e "s/@PKGNAME@/$allcappkgname/g;s/@pkgname@/$pkgname/g;s/@Pkgname@/$cappkgname/g;" > $pkgname/$tgtname
+done
+
+exit 0
+
