@@ -45,7 +45,7 @@ static const std::string default_delimiter(":");
 
 boost::shared_ptr<ComponentLoader> ComponentLoader::minstance;
 
-boost::shared_ptr<ComponentLoader> instance2;
+static boost::shared_ptr<ComponentLoader> instance2;
 
 namespace {
 
