@@ -63,6 +63,7 @@
 
 #include <rtt/scripting/TryCommand.hpp>
 #include <rtt/TaskContext.hpp>
+#include <rtt/plugin/PluginLoader.hpp>
 #include <rtt/scripting/parser-debug.hpp>
 #include <rtt/scripting/Parser.hpp>
 #include <rtt/scripting/parse_exception.hpp>
