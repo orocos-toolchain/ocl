@@ -32,6 +32,7 @@
  * Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifndef OCL_COMPONENT_ONLY
 extern "C" {
 #include "lua-repl.h"
 void dotty (lua_State *L);
@@ -44,6 +45,7 @@ int dostring (lua_State *L, const char *s, const char *name);
 #include <unistd.h>
 #include <wordexp.h>
 }
+#endif
 
 #include "rtt.hpp"
 
@@ -77,7 +79,7 @@ namespace OCL
 			lua_gc(L, LUA_GCRESTART, 0);
 
 			if (L == NULL) {
-				l_message("Class Lua ctr", "cannot create state: not enough memory");
+				Logger::log(Logger::Error) << "LuaComponent: failed to allocate memory for Lua state" << endlog();
 				throw;
 			}
 
@@ -119,11 +121,13 @@ namespace OCL
 			return true;
 		}
 
+#ifndef OCL_COMPONENT_ONLY
 		void lua_repl()
 		{
 			cout << "Orocos RTTLua " << RTTLUA_VERSION << " (" << OROCOS_TARGET_NAME << ")"  << endl;
 			dotty(L);
 		}
+#endif
 
 		bool configureHook()
 		{

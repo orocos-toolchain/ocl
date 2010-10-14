@@ -198,13 +198,13 @@ end
 --
 -- convert a method to a string
 --
-function __op2str(rettype, arity, descr, args)
+function __op2str(name, descr, rettype, arity, args)
    local str = ""
 
    if #args < 1  then
-      str = rettype .. " " .. cyan(op, false) .. "()"
+      str = rettype .. " " .. cyan(name, false) .. "()"
    else
-      str = rettype .. " " .. cyan(op, false) .. "("
+      str = rettype .. " " .. cyan(name, false) .. "("
 
       for i=1,#args-1 do
 	 str = str .. args[i]["type"] .. " " .. args[i]["name"] .. ", "

@@ -944,9 +944,10 @@ static int Operation_info(lua_State *L)
 	OperationInterfacePart *oip = *(luaM_checkudata_mt_bx(L, 1, "Operation", OperationInterfacePart));
 	std::vector<ArgumentDescription> args;
 
-	lua_pushstring(L, oip->resultType().c_str()); /* result type */
+	lua_pushstring(L, oip->getName().c_str());	/* name */
+	lua_pushstring(L, oip->description().c_str());	/* description */
+	lua_pushstring(L, oip->resultType().c_str());	/* result type */
 	lua_pushinteger(L, oip->arity());		/* arity */
-	lua_pushstring(L, oip->description().c_str()); /* description */
 
 	args = oip->getArgumentList();
 
@@ -960,7 +961,7 @@ static int Operation_info(lua_State *L)
 		lua_rawseti(L, -2, i++);
 	}
 
-	return 4;
+	return 5;
 }
 
 static int __Operation_call(lua_State *L)
