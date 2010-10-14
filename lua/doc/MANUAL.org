@@ -90,8 +90,7 @@
       path, e.g.
 
 #+BEGIN_EXAMPLE
-      PATH=$PATH:/home/mk/tmp/rtt-2.0/lib/orocos:home/mk/src/git/ocl/lua
-      export PATH
+      export PATH=$PATH:/home/mk/src/git/ocl/lua
 #+END_EXAMPLE
 
 * Quickstart
@@ -367,11 +366,11 @@
     This object is only returned by =Service:getOperation=. It can
     also be called with the familiar =op(arg1, arg2)= syntax.
 
-   | Method                                 | flag | description                                                        |
-   |----------------------------------------+------+--------------------------------------------------------------------|
-   | =res_type, arity, desc, argtab info()= |      | returns result type, arity, description and table of parameters    |
-   | =Variable call(string, ...)=           |      | calls operation specified by string. additional args are passed on |
-   | =SendHandle send(string, ...)=         |      | same as above, but =send= Operation and return SendHandle          |
+   | Method                                        | flag | description                                                        |
+   |-----------------------------------------------+------+--------------------------------------------------------------------|
+   | =name, descr, res_type, arity, argtab info()= |      | returns result type, arity, description and table of parameters    |
+   | =Variable call(string, ...)=                  |      | calls operation specified by string. additional args are passed on |
+   | =SendHandle send(string, ...)=                |      | same as above, but =send= Operation and return SendHandle          |
 
 
 ** Miscellaneous
@@ -524,7 +523,7 @@
 
 ** Support for creating Operations from Lua
 
-   It is not possible to define new Operations from Lua.
+   It is currently not possible to define new Operations from Lua.
 
    
 

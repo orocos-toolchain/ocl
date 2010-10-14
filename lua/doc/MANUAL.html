@@ -291,8 +291,7 @@ path, e.g.
 
 
 
-<pre class="example">PATH=$PATH:/home/mk/tmp/rtt-2.0/lib/orocos:home/mk/src/git/ocl/lua
-export PATH
+<pre class="example">export PATH=$PATH:/home/mk/src/git/ocl/lua
 </pre>
 
 
@@ -819,7 +818,7 @@ also be called with the familiar <code>op(arg1, arg2)</code> syntax.
 <tr><th scope="col">Method</th><th scope="col">flag</th><th scope="col">description</th></tr>
 </thead>
 <tbody>
-<tr><td><code>res_type, arity, desc, argtab info()</code></td><td></td><td>returns result type, arity, description and table of parameters</td></tr>
+<tr><td><code>name, descr, res_type, arity, argtab info()</code></td><td></td><td>returns result type, arity, description and table of parameters</td></tr>
 <tr><td><code>Variable call(string, ...)</code></td><td></td><td>calls operation specified by string. additional args are passed on</td></tr>
 <tr><td><code>SendHandle send(string, ...)</code></td><td></td><td>same as above, but <code>send</code> Operation and return SendHandle</td></tr>
 </tbody>
@@ -856,7 +855,7 @@ The good old logger.
 </thead>
 <tbody>
 <tr><td><code>setlevel(string)</code></td><td>F</td><td>set the loglevel</td></tr>
-<tr><td><code>string getloglevel()</code></td><td>F</td><td>return the current loglevel</td></tr>
+<tr><td><code>string getlevel()</code></td><td>F</td><td>return the current loglevel</td></tr>
 <tr><td><code>log(string, ...)</code></td><td>F</td><td>log all (string) arguments</td></tr>
 </tbody>
 </table>
@@ -1132,7 +1131,7 @@ It is not possible to call a connected OperationCaller from Lua.
 
 
 <p>
-It is not possible to define new Operations from Lua.
+It is currently not possible to define new Operations from Lua.
 </p>
 
 
