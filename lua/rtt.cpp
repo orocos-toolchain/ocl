@@ -2008,20 +2008,20 @@ static const struct luaL_Reg TaskContext_m [] = {
 };
 
 /*
- * Logger
+ * Logger and miscellaneous
  */
 static const char *const loglevels[] = {
 	"Never", "Fatal", "Critical", "Error", "Warning", "Info", "Debug", "RealTime", NULL
 };
 
-static int Logger_setlevel(lua_State *L)
+static int Logger_setLogLevel(lua_State *L)
 {
 	Logger::LogLevel ll = (Logger::LogLevel) luaL_checkoption(L, 1, NULL, loglevels);
 	log().setLogLevel(ll);
 	return 0;
 }
 
-static int Logger_getlevel(lua_State *L)
+static int Logger_getLogLevel(lua_State *L)
 {
 	Logger::LogLevel ll = log().getLogLevel();
 
@@ -2051,12 +2051,17 @@ static int Logger_log(lua_State *L)
 	return 0;
 }
 
-static const struct luaL_Reg Logger_f [] = {
-	{"setlevel", Logger_setlevel },
-	{"getlevel", Logger_getlevel },
-	{"log", Logger_log },
-	{NULL, NULL}
-};
+static int Logger_logl(lua_State *L)
+{
+	const char *mes;
+	Logger::LogLevel ll = (Logger::LogLevel) luaL_checkoption(L, 1, NULL, loglevels);
+	for(int i=2; i<=lua_gettop(L); i++) {
+		mes = luaL_checkstring(L, i);
+		Logger::log(ll) << mes;
+	}
+	Logger::log(ll) << endlog();
+	return 0;
+}
 
 /* misc stuff */
 
@@ -2091,6 +2096,10 @@ static const struct luaL_Reg rtt_f [] = {
 	{"services", rtt_services },
 	{"typekits", rtt_typekits },
 	{"types", rtt_types },
+	{"setLogLevel", Logger_setLogLevel },
+	{"getLogLevel", Logger_getLogLevel },
+	{"log", Logger_log },
+	{"logl", Logger_logl },
 	{NULL, NULL}
 };
 
@@ -2164,9 +2173,6 @@ int luaopen_rtt(lua_State *L)
 	lua_setfield(L, -2, "__index");
 	luaL_register(L, NULL, Property_m);
 	luaL_register(L, "rtt.Property", Property_f);
-
-	/* only functions */
-	luaL_register(L, "rtt.Logger", Logger_f);
 
 	/* misc toplevel functions */
 	luaL_register(L, "rtt", rtt_f);

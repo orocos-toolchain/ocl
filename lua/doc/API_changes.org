@@ -1,0 +1,32 @@
+#+TITLE:	Lua RTT API changes
+#+AUTHOR:	Markus Klotzbuecher
+#+EMAIL:	markus.klotzbuecher@mech.kuleuven.be
+#+DATE:		2010-09-13 Mon
+#+DESCRIPTION:
+#+KEYWORDS:
+#+LANGUAGE:	en
+#+OPTIONS:	H:3 num:t toc:nil \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
+#+OPTIONS:	TeX:t LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
+#+INFOJS_OPT:	view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
+#+EXPORT_SELECT_TAGS: export
+#+EXPORT_EXCLUDE_TAGS: noexport
+#+LINK_UP:
+#+LINK_HOME:
+#+XSLT:
+#+STYLE:	<link rel="stylesheet" type="text/css" href="css/stylesheet.css" />
+
+#+STARTUP:	showall
+#+STARTUP:	hidestars
+
+*API Changes in the Lua RTT bindings*
+
+ - [2010-10-15 Fri] renamed =getlevel= to =getLogLevel= and =setlevel=
+   to =setLogLevel=. Added =logl= function which logs with the
+   loglevel given as first (string) argument.
+
+ - [2010-10-15 Fri] moved =Logger= functions to toplevel, they are now
+   accessable directly in the rtt table, e.g.: =rtt.log("Hello
+   World")=
+
+ - [2010-10-14 Thu] =operation:info()= now returns 5 arguments:
+   =name, descr, res_type, arity, argtab=

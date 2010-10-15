@@ -215,6 +215,18 @@
     - 'R': real-time safe
     - 'F' or 'M': only available as function or method
 
+** Miscellaneous toplevel
+
+   | Method                        | flag | description                                              |
+   |-------------------------------+------+----------------------------------------------------------|
+   | =table services()=            | F    | returns a table of strings specifying the known services |
+   | =table typekits()=            | F    | returns a table of strings specifying the known typekits |
+   | =table types()=               | F    | returns a table of strings specifying the known types    |
+   | =setLogLevel(string)=         | F    | set the loglevel                                         |
+   | =string getLogLevel()=        | F    | return the current loglevel                              |
+   | =log(string, ...)=            | F    | log all (string) arguments                               |
+   | =logl(loglevel, string, ...)= | F    | log all (string) arguments with (string) loglevel        |
+
 ** TaskContext
 
    | Method                                           | flag | description                                                         |
@@ -371,26 +383,6 @@
    | =name, descr, res_type, arity, argtab info()= |      | returns result type, arity, description and table of parameters    |
    | =Variable call(string, ...)=                  |      | calls operation specified by string. additional args are passed on |
    | =SendHandle send(string, ...)=                |      | same as above, but =send= Operation and return SendHandle          |
-
-
-** Miscellaneous
-*** Logger
-
-    The good old logger.
-
-    | Method                 | flag | description                 |
-    |------------------------+------+-----------------------------|
-    | =setlevel(string)=     | F    | set the loglevel            |
-    | =string getlevel()=    | F    | return the current loglevel |
-    | =log(string, ...)=     | F    | log all (string) arguments  |
-
-*** Service/Typekits/Types information
-
-    | Method             | flag | description                                              |
-    |--------------------+------+----------------------------------------------------------|
-    | =table services()= | F    | returns a table of strings specifying the known services |
-    | =table typekits()= | F    | returns a table of strings specifying the known typekits |
-    | =table types()=    | F    | returns a table of strings specifying the known types    |
 
 
 * The rttlib convenience module
