@@ -63,7 +63,7 @@ std::map<std::string, RTT::Logger::LogLevel>	logMap =
 int deployerParseCmdLine(int                        argc,
                          char**                     argv,
                          std::string&               siteFile,
-                         std::string&               scriptFile,
+                         std::vector<std::string>&  scriptFiles,
                          std::string&               name,
                          bool&                      requireNameService,
                          po::variables_map&         vm,
@@ -77,7 +77,7 @@ int deployerParseCmdLine(int                        argc,
 		("help,h",
 		 "Show program usage")
 		("start,s",
-		 po::value<std::string>(&scriptFile),
+		 po::value< std::vector<std::string> >(&scriptFiles),
 		 "Deployment configuration file (eg 'config-file.xml')")
 		("site-file",
 		 po::value<std::string>(&siteFile),

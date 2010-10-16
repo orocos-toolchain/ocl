@@ -41,7 +41,7 @@ namespace OCL
 	\param argc Number of command line arguments
 	\param argv Command line arguments
 	\param siteFile Name of the site CPF/XML file for the deployer to load up front
-	\param scriptFile Name of the XML file for the deployer to load and run
+	\param scriptFiles Names of the XML files for the deployer to load and run
 	\param name Name of the deployer task
     \param requireNameService Whether to require the CORBA name service, or not
     \param vm The variables map into which the options are parsed.
@@ -53,7 +53,7 @@ extern int deployerParseCmdLine(
 	int                                             argc,
 	char**                                          argv,
 	std::string&                                    siteFile,
-	std::string&                                    scriptFile,
+	std::vector<std::string>&                       scriptFiles,
 	std::string&                                    name,
     bool&                                           requireNameService,
     boost::program_options::variables_map&          vm,
