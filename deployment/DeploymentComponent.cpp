@@ -79,7 +79,8 @@ namespace OCL
           highest_Priority("HighestPriority", RTT::os::HighestPriority ),
           target("Target",
                  "The Orocos Target component suffix. Will be used in import statements to find matching components. Only change this if you know what you are doing.",
-                 ORO_str(OROCOS_TARGET) )
+                 ORO_str(OROCOS_TARGET) ),
+          nextGroup(0)
     {
         this->addProperty( "RTT_COMPONENT_PATH", compPath ).doc("Locations to look for components. Use a colon or semi-colon separated list of paths. Defaults to the environment variable with the same name.");
         this->addProperty( autoUnload );
@@ -379,9 +380,11 @@ namespace OCL
 
     bool DeploymentComponent::kickStart(const std::string& configurationfile)
     {
-        if ( this->loadComponents(configurationfile) ) {
-            if (this->configureComponents() ) {
-                if ( this->startComponents() ) {
+        int thisGroup = nextGroup;
+        ++nextGroup;    // whether succeed or fail
+        if ( this->loadComponentsInGroup(configurationfile, thisGroup) ) {
+            if (this->configureComponentsGroup(thisGroup) ) {
+                if ( this->startComponentsGroup(thisGroup) ) {
                     log(Info) <<"Successfully loaded, configured and started components from "<< configurationfile <<endlog();
                     return true;
                 } else {
@@ -398,15 +401,26 @@ namespace OCL
 
     bool DeploymentComponent::kickOutAll()
     {
-        bool sret = this->stopComponents();
-        bool cret = this->cleanupComponents();
-        bool uret = this->unloadComponents();
+        bool    ok = true;
+        while (nextGroup > 0)
+        {
+            ok &= kickOutGroup(nextGroup - 1);
+            --nextGroup;
+        }
+        return ok;
+    }
+
+    bool DeploymentComponent::kickOutGroup(const int group)
+    {
+        bool sret = this->stopComponentsGroup(group);
+        bool cret = this->cleanupComponentsGroup(group);
+        bool uret = this->unloadComponentsGroup(group);
         if ( sret && cret && uret) {
-            log(Info) << "Kick-out successful."<<endlog();
+            log(Info) << "Kick-out of group " << group << " successful."<<endlog();
             return true;
         }
         // Diagnostics:
-        log(Critical) << "Kick-out failed: ";
+        log(Critical) << "Kick-out of group " << group << " failed: ";
         if (!sret)
             log(Critical) << " stopComponents() failed.";
         if (!cret)
@@ -424,10 +438,18 @@ namespace OCL
 
     bool DeploymentComponent::loadComponents(const std::string& configurationfile)
     {
+        bool valid = loadComponentsInGroup(configurationfile, nextGroup);
+        ++nextGroup;
+        return valid;
+    }
+
+    bool DeploymentComponent::loadComponentsInGroup(const std::string& configurationfile,
+                                                    const int group)
+    {
         RTT::Logger::In in("DeploymentComponent::loadComponents");
 
         RTT::PropertyBag from_file;
-        log(Info) << "Loading '" <<configurationfile<<"'."<< endlog();
+        log(Info) << "Loading '" <<configurationfile<<"' in group " << group << "."<< endlog();
         // demarshalling failures:
         bool failure = false;
         // semantic failures:
@@ -465,7 +487,7 @@ namespace OCL
                                 continue;
                             }
                             // recursively call this function.
-                            if ( this->loadComponents( includep.get() ) == false )
+                            if ( this->loadComponentsInGroup( includep.get(), group ) == false )
                                 valid = false;
                             continue;
                         }
@@ -794,6 +816,11 @@ namespace OCL
                             log(Error) << "Failed to store deployment properties for component " << comp.getName() <<endlog();
                             valid = false;
                         }
+                        else
+                        {
+                            log(Info) << "Added component " << (*it)->getName() << " to group " << group << endlog();
+                            comps[(*it)->getName()].group = group;
+                        }
                     }
 
                     deletePropertyBag( from_file );
@@ -815,6 +842,17 @@ namespace OCL
     bool DeploymentComponent::configureComponents()
     {
         RTT::Logger::In in("DeploymentComponent::configureComponents");
+        // do all groups
+        bool valid = true;
+        for (int group = nextGroup - 1; group > 0; --group) {
+            valid &= configureComponentsGroup(group);
+        }
+        return valid;
+    }
+
+    bool DeploymentComponent::configureComponentsGroup(const int group)
+    {
+        RTT::Logger::In in("DeploymentComponent::configureComponents");
         if ( root.empty() ) {
             RTT::Logger::log() << RTT::Logger::Error
                           << "No components loaded by DeploymentComponent !" <<endlog();
@@ -822,11 +860,17 @@ namespace OCL
         }
 
         bool valid = true;
+        log(Info) << "Configuring components in group " << group << endlog();
 
         // Connect peers
         for (RTT::PropertyBag::iterator it= root.begin(); it!=root.end();it++) {
 
             RTT::Property<RTT::PropertyBag> comp = *it;
+
+            // only components in this group
+            if (group != comps[ comp.getName() ].group) {
+                continue;
+            }
 
             RTT::TaskContext* peer = comps[ comp.getName() ].instance;
             if ( !peer ) {
@@ -931,6 +975,11 @@ namespace OCL
             if ( !comp.ready() )
                 continue;
 
+            // only components in this group
+            if (group != comps[ comp.getName() ].group) {
+                continue;
+            }
+
             RTT::TaskContext* peer = comps[ comp.getName() ].instance;
 
             // only autoconnect if AutoConnect == 1 and peer has AutoConnect == 1
@@ -952,6 +1001,12 @@ namespace OCL
         for (RTT::PropertyBag::iterator it= root.begin(); it!=root.end();it++) {
 
             RTT::Property<RTT::PropertyBag> comp = *it;
+
+            // only components in this group
+            if (group != comps[ comp.getName() ].group) {
+                continue;
+            }
+
             RTT::Property<string> dummy;
             RTT::TaskContext* peer = comps[ comp.getName() ].instance;
 
@@ -1045,14 +1100,14 @@ namespace OCL
         if (!valid) {
             for ( CompList::iterator cit = comps.begin(); cit != comps.end(); ++cit) {
                 ComponentData* cd = &(cit->second);
-                if ( cd->loaded && cd->autoconf &&
+                if ( group == cd->group && cd->loaded && cd->autoconf &&
                      (cd->instance->getTaskState() != TaskCore::Stopped) &&
                      (cd->instance->getTaskState() != TaskCore::Running))
                     log(Error) << "Failed to configure component "<< cd->instance->getName()
                                << ": state is " << cd->instance->getTaskState() <<endlog();
             }
         } else {
-            log(Info) << "Configuration successful." <<endlog();
+            log(Info) << "Configuration successful for group " << group << "." <<endlog();
         }
 
         validConfig.set(valid);
@@ -1061,13 +1116,28 @@ namespace OCL
 
     bool DeploymentComponent::startComponents()
     {
-        RTT::Logger::In in("DeploymentComponent::startComponents");
+        // do all groups
+        bool valid = true;
+        for (int group = nextGroup - 1; group > 0; --group) {
+            valid &= startComponentsGroup(group);
+        }
+        return valid;
+    }
+
+    bool DeploymentComponent::startComponentsGroup(const int group)
+    {
+        RTT::Logger::In in("DeploymentComponent::startComponentsGroup");
         if (validConfig.get() == false) {
             log(Error) << "Not starting components with invalid configuration." <<endlog();
             return false;
         }
         bool valid = true;
         for (RTT::PropertyBag::iterator it= root.begin(); it!=root.end();it++) {
+
+            // only components in this group
+            if (group != comps[ (*it)->getName() ].group) {
+                continue;
+            }
 
             TaskContext* peer = comps[ (*it)->getName() ].instance;
 
@@ -1087,6 +1157,12 @@ namespace OCL
         if (!valid) {
             for ( CompList::iterator cit = comps.begin(); cit != comps.end(); ++cit) {
                 ComponentData* it = &(cit->second);
+
+                // only components in this group
+                if (group != it->group) {
+                    continue;
+                }
+
                 if ( it->instance == 0 ) {
                     log(Error) << "Failed to start component "<< cit->first << ": not found." << endlog();
                     continue;
@@ -1095,19 +1171,30 @@ namespace OCL
                     log(Error) << "Failed to start component "<< it->instance->getName() <<endlog();
             }
         } else {
-            log(Info) << "Startup of 'AutoStart' components successful." <<endlog();
+                log(Info) << "Startup of 'AutoStart' components successful for group " << group << "." <<endlog();
         }
         return valid;
     }
 
     bool DeploymentComponent::stopComponents()
     {
-        RTT::Logger::In in("DeploymentComponent::stopComponents");
+        // do all groups
+        bool valid = true;
+        for (int group = nextGroup - 1; group > 0; --group) {
+            valid &= stopComponentsGroup(group);
+        }
+        return valid;
+    }
+
+    bool DeploymentComponent::stopComponentsGroup(const int group)
+    {
+        RTT::Logger::In in("DeploymentComponent::stopComponentsGroup");
+        log(Info) << "Stopping group " << group << endlog();
         bool valid = true;
         // 1. Stop all activities, give components chance to cleanup.
         for ( CompList::iterator cit = comps.begin(); cit != comps.end(); ++cit) {
             ComponentData* it = &(cit->second);
-            if ( it->instance && !it->proxy ) {
+            if ( (group == it->group) && it->instance && !it->proxy ) {
                 if ( !it->instance->isRunning() ||
                      it->instance->stop() ) {
                     log(Info) << "Stopped "<< it->instance->getName() <<endlog();
@@ -1122,11 +1209,28 @@ namespace OCL
 
     bool DeploymentComponent::cleanupComponents()
     {
-        RTT::Logger::In in("DeploymentComponent::cleanupComponents");
+        // do all groups
         bool valid = true;
+        for (int group = nextGroup - 1; group > 0; --group) {
+            valid &= cleanupComponentsGroup(group);
+        }
+        return valid;
+    }
+
+    bool DeploymentComponent::cleanupComponentsGroup(const int group)
+    {
+        RTT::Logger::In in("DeploymentComponent::cleanupComponentsGroup");
+        bool valid = true;
+        log(Info) << "Cleaning up group " << group << endlog();
         // 1. Cleanup all activities, give components chance to cleanup.
         for ( CompList::iterator cit = comps.begin(); cit != comps.end(); ++cit) {
             ComponentData* it = &(cit->second);
+
+            // only components in this group
+            if (group != it->group) {
+                continue;
+            }
+
             if (it->instance && !it->proxy) {
                 if ( it->instance->getTaskState() <= base::TaskCore::Stopped ) {
                     if ( it->autosave && !it->configfile.empty()) {
@@ -1138,19 +1242,17 @@ namespace OCL
                                 log(Error) << "Failed to save properties for component "<< it->instance->getName() <<endlog();
                                 valid = false;
                             } else {
-                                log(Info) << "Saved Properties of "<< it->instance->getName() << " to "<<file<<endlog();
+                                log(Info) << "Refusing to save property file that was not loaded for "<< it->instance->getName() <<endlog();
                             }
-                        } else {
-                            log(Info) << "Refusing to save property file that was not loaded for "<< it->instance->getName() <<endlog();
+                        } else if (it->autosave) {
+                            log(Error) << "AutoSave set but no property file specified. Specify one using the UpdateProperties simple element."<<endlog();
                         }
-                    } else if (it->autosave) {
-		      log(Error) << "AutoSave set but no property file specified. Specify one using the UpdateProperties simple element."<<endlog();
-		    }
-                    it->instance->cleanup();
-                    log(Info) << "Cleaned up "<< it->instance->getName() <<endlog();
-                } else {
-                    log(Error) << "Could not cleanup Component "<< it->instance->getName() << " (not Stopped)"<<endlog();
-                    valid = false;
+                        it->instance->cleanup();
+                        log(Info) << "Cleaned up "<< it->instance->getName() <<endlog();
+                    } else {
+                        log(Error) << "Could not cleanup Component "<< it->instance->getName() << " (not Stopped)"<<endlog();
+                        valid = false;
+                    }
                 }
             }
         }
@@ -1159,13 +1261,37 @@ namespace OCL
 
     bool DeploymentComponent::unloadComponents()
     {
-        // 2. Disconnect and destroy all components.
+        // do all groups
         bool valid = true;
-        while ( comps.size() > 0 && valid)
+        for (int group = nextGroup - 1; group > 0; --group) {
+            valid &= unloadComponentsGroup(group);
+        }
+        return valid;
+    }
+
+    bool DeploymentComponent::unloadComponentsGroup(const int group)
+    {
+        log(Info) << "Unloading group " << group << endlog();
+        // 2. Disconnect and destroy all components in group
+        bool valid = true;
+        CompList::iterator cit = comps.begin();
+        while ( valid && cit != comps.end())
             {
-                CompList::iterator cit = comps.begin();
-                valid &= this->unloadComponentImpl(cit);
+                ComponentData* it = &(cit->second);
+                if (group == it->group)
+                {
+                    // this call modifies comps
+                    valid &= this->unloadComponentImpl(cit);
+                    // so restart search
+                    cit = comps.begin();
+                }
+                else
+                {
+                    ++cit;
+                }
             }
+
+
         return valid;
     }
 
