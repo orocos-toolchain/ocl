@@ -76,3 +76,8 @@ orocos_install_headers( @pkgname@-component.hpp ) # ...you may add multiple head
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/orocos-@pkgname@.pc.in ${CMAKE_CURRENT_BINARY_DIR}/orocos-@pkgname@-${OROCOS_TARGET}.pc @ONLY)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/orocos-@pkgname@-${OROCOS_TARGET}.pc DESTINATION  lib/pkgconfig )
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/manifest.xml DESTINATION  lib/orocos/@pkgname@ )
+
+#
+# Provided 'uninstall' target
+#
+orocos_uninstall_target()

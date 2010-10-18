@@ -7,6 +7,6 @@ Description: Orocos @PkgName Component
 Requires: rtt
 Version: 1.0.0
 
-Libs: -L${libdir} -L${libdir}/orocos -l@pkgname@-@OROCOS_TARGET@
+Libs: -L${libdir} -L${libdir}/orocos -l${libdir}/orocos/lib@pkgname@-@OROCOS_TARGET@.so
 Libs.private:
 Cflags: -I${includedir}
