@@ -973,6 +973,7 @@ static int __Operation_call(lua_State *L)
 	types::TypeInfo *ti;
 
 	unsigned int argc = lua_gettop(L);
+	TaskContext *this_tc = __getTC(L);
 	OperationInterfacePart *oip = *(luaM_checkudata_mt_bx(L, 1, "Operation", OperationInterfacePart));
 
 	if(oip->arity() != argc-1)
@@ -990,7 +991,7 @@ static int __Operation_call(lua_State *L)
 		args.push_back(dsb);
 	}
 
-	ret = oip->produce(args, NULL);
+	ret = oip->produce(args, this_tc->engine());
 
 	/* not so nice: construct a ValueDataSource for the return Value
 	 * todo: at least avoid the type conversion to string.
@@ -1027,10 +1028,10 @@ static int __Operation_send(lua_State *L)
 	DataSourceBase::shared_ptr dsb, *dsbp;
 
 	unsigned int argc = lua_gettop(L);
+	TaskContext *this_tc = __getTC(L);
 	OperationInterfacePart *oip = *(luaM_checkudata_mt_bx(L, 1, "Operation", OperationInterfacePart));
 
-	/* todo: extend OperationInterfacePart with getName method */
-	OperationCallerC *occ = new OperationCallerC(oip, "FordPrefect", NULL); // todo: alloc on stack?
+	OperationCallerC *occ = new OperationCallerC(oip, oip->getName(), this_tc->engine()); // todo: alloc on stack?
 
 	if(oip->arity() != argc-1)
 		luaL_error(L, "Operation.send: wrong number of args. expected %d, got %d",
@@ -1745,6 +1746,7 @@ static int __TaskContext_call(lua_State *L)
 	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
 	const char *op = luaL_checkstring(L, 2);
 
+	TaskContext *this_tc = __getTC(L);
 	std::vector<base::DataSourceBase::shared_ptr> args;
 	DataSourceBase::shared_ptr dsb;
 	DataSourceBase::shared_ptr *dsbp;
@@ -1771,7 +1773,7 @@ static int __TaskContext_call(lua_State *L)
 		args.push_back(dsb);
 	}
 
-	ret = tc->operations()->produce(op, args, NULL);
+	ret = tc->operations()->produce(op, args, this_tc->engine());
 
 	/* not so nice: construct a ValueDataSource for the return Value
 	 * todo: at least avoid the type conversion to string.
@@ -1881,10 +1883,11 @@ static int __TaskContext_send(lua_State *L)
 {
 	unsigned int argc = lua_gettop(L);
 	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
+	TaskContext *this_tc = __getTC(L);
 	const char *op = luaL_checkstring(L, 2);
 
 	OperationInterfacePart *orp = tc->operations()->getPart(op);
-	OperationCallerC *occ = new OperationCallerC(orp, op, NULL); // todo: alloc on stack?
+	OperationCallerC *occ = new OperationCallerC(orp, op, this_tc->engine()); // todo: alloc on stack?
 	DataSourceBase::shared_ptr dsb;
 	DataSourceBase::shared_ptr *dsbp;
 	SendHandleC *shc;
