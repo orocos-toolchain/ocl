@@ -20,6 +20,9 @@
 
 *API Changes in the Lua RTT bindings*
 
+ - [2010-10-18 Mon] =startHook= and =configureHook= return values are
+   now really returned by the C++ hook.
+
  - [2010-10-15 Fri] renamed =getlevel= to =getLogLevel= and =setlevel=
    to =setLogLevel=. Added =logl= function which logs with the
    loglevel given as first (string) argument.
