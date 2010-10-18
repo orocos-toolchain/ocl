@@ -36,7 +36,7 @@
 require("rttlib")
 require("uunit")
 
-rtt.Logger.setlevel("Warning")
+rtt.setLogLevel("Warning")
 var = rtt.Variable
 TC=rtt.getTC()
 d=TC:getPeer("deployer")

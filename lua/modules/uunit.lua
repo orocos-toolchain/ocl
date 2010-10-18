@@ -44,6 +44,7 @@ local col=ansicolors
 local string=string
 local loadstring=loadstring
 local tostring=tostring
+local pcall=pcall
 
 local error = utils.stderr
 local out = utils.stdout
@@ -88,14 +89,16 @@ local function run_test(t)
 	 return nil
       end
    else func = t.tfunc end
-   return func()
+   return pcall(func)
 end
 
 -- execute all tests, 'verb' is boolean verbose flag
 function run_tests(tests, verb)
+   local err
    for i = 1,#tests do
       local t = tests[i]
-      t.result = run_test(t)
+      t.result, err = run_test(t)
+      if not t.result and err then out(err) end
       if verb then
 	 out(cyan(rpad(tostring(i) .. '.', 4)) .. "Tested " ..
 	  rpad(cyan(t.tstr or t.descr), 75, ' ') , t.result and green("OK", true) or red("FAILED", true))
