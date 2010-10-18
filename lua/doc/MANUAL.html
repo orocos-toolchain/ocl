@@ -587,11 +587,11 @@ function/method:
 <tr><td><code>void removePeer(string)</code></td><td></td><td>remove a peer</td></tr>
 <tr><td><code>TaskContext getPeer(string)</code></td><td></td><td>get a peer</td></tr>
 <tr><td><code>table getPortNames()</code></td><td></td><td>return a table of port names</td></tr>
-<tr><td><code>void addPort(port)</code></td><td></td><td>add a port to TaskContext</td></tr>
-<tr><td><code>void addEventPort(port)</code></td><td></td><td>add a port as an event driven port</td></tr>
+<tr><td><code>void addPort(port, name, desc)</code></td><td></td><td>add a port to TaskContext with name (optional) and description (optional)</td></tr>
+<tr><td><code>void addEventPort(port, name, desc)</code></td><td></td><td>as above but add as EventPort</td></tr>
 <tr><td><code>Port getPort(string)</code></td><td></td><td>get a port with given name</td></tr>
 <tr><td><code>void removePort(string)</code></td><td></td><td>remove port with given name from interface</td></tr>
-<tr><td><code>addProperty(Property)</code></td><td></td><td>add a property to TaskContext</td></tr>
+<tr><td><code>addProperty(Property, name, desc)</code></td><td></td><td>add a property with name (optional) and description (optional)</td></tr>
 <tr><td><code>getProperty(string)</code></td><td></td><td>get a property with the given name</td></tr>
 <tr><td><code>table getProperties()</code></td><td></td><td>return all properties in a table</td></tr>
 <tr><td><code>void removeProperty(string)</code></td><td></td><td>remove property with given name from interface</td></tr>
@@ -692,7 +692,7 @@ corresponding Lua types.
 indexing and assigment
 
 <p>
-Variables with members can be index and assigned. See the
+Variables with members can be indexed and assigned. See the
 following example:
 </p>
 
@@ -732,7 +732,7 @@ InputPort
 <tr><th scope="col">Method</th><th scope="col">flag</th><th scope="col">description</th></tr>
 </thead>
 <tbody>
-<tr><td><code>new(type)</code></td><td></td><td>create a new InputPort of type</td></tr>
+<tr><td><code>new(type, name, desc)</code></td><td></td><td>create a new InputPort of type  with name (optional) and description (optional)</td></tr>
 <tr><td><code>string, variable read()</code></td><td></td><td>read from Port, returns a FlowStatus string and if data available a Variable</td></tr>
 <tr><td><code>string read(variable)</code></td><td></td><td>read from Port and write result into Variable given. Returns FlowStatus</td></tr>
 <tr><td><code>table info()</code></td><td></td><td>return a table containing information about this port</td></tr>
@@ -752,7 +752,7 @@ OuputPort
 <tr><th scope="col">Method</th><th scope="col">flag</th><th scope="col">description</th></tr>
 </thead>
 <tbody>
-<tr><td><code>new(type)</code></td><td></td><td>create a new OutputPort of type</td></tr>
+<tr><td><code>new(type, name, desc)</code></td><td></td><td>create a new OutputPort of type with name (optional) and description (optional)</td></tr>
 <tr><td><code>write(Variable)</code></td><td></td><td>write Variable to port</td></tr>
 <tr><td><code>table info()</code></td><td></td><td>return a table containing information about this port</td></tr>
 <tr><td><code>delete()</code></td><td></td><td>delete this port (remove it from any TaskContext before this)</td></tr>
@@ -777,7 +777,7 @@ OuputPort
 <tr><th scope="col">Method</th><th scope="col">flag</th><th scope="col">description</th></tr>
 </thead>
 <tbody>
-<tr><td><code>new(type)</code></td><td></td><td>create a new Property</td></tr>
+<tr><td><code>new(type, name, desc)</code></td><td></td><td>create a new Property of type  with name (optional) and description (optional)</td></tr>
 <tr><td><code>Variable get()</code></td><td></td><td>return the Variable contained in this Property</td></tr>
 <tr><td><code>bool set(Variable)</code></td><td></td><td>set the Property to the value in given Variable</td></tr>
 <tr><td><code>string getName()</code></td><td></td><td>return the name of the property</td></tr>
@@ -788,7 +788,7 @@ OuputPort
 
 
 <p>
-Properties which contain complex types can also be index with <code>.</code>
+Properties which contain complex types can also be indexed with <code>.</code>
 just like Variables.
 </p>
 </div>

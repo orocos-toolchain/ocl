@@ -20,6 +20,11 @@
 
 *API Changes in the Lua RTT bindings*
 
+ - [2010-10-18 Mon] changes to Port/Property constructors / TC
+   "adders". E.g. =rtt.Property.new(type, name, desc)= where name and
+   desc are optional. The TaskContext add function now also accepts
+   optional name and description: =tc:addPort(port, name, desc)=.
+
  - [2010-10-18 Mon] =startHook= and =configureHook= return values are
    now really returned by the C++ hook.
 

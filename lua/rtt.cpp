@@ -591,22 +591,21 @@ gen_push_bxptr(Property_push, "Property", PropertyBase)
 static int Property_new(lua_State *L)
 {
 	const char *type, *name, *desc;
-	PropertyBase **pb;
+	PropertyBase *pb;
+	int argc = lua_gettop(L);
 	type = luaL_checkstring(L, 1);
-	name = luaL_checkstring(L, 2);
 
-	/* make description optional */
-	if(lua_gettop(L) == 3)
-		desc = luaL_checkstring(L, 3);
-	else
-		desc = "";
+	/* name and description are optional */
+	name = (argc > 1) ? luaL_checkstring(L, 2) : "";
+	desc = (argc > 2) ? luaL_checkstring(L, 3) : "";
 
 	types::TypeInfo *ti = types::TypeInfoRepository::Instance()->type(type);
 
 	if(!ti)
 		luaL_error(L, "Property.new: unknown type %s", type);
 
-	Property_push(L, ti->buildProperty(name, desc));
+	pb =  ti->buildProperty(name, desc);
+	Property_push(L, pb);
 	return 1;
 }
 
@@ -768,14 +767,13 @@ static int InputPort_new(lua_State *L)
 {
 	const char *type, *name, *desc;
 	InputPortInterface* ipi;
-	type = luaL_checkstring(L, 1);
-	name = luaL_checkstring(L, 2);
+	int argc = lua_gettop(L);
 
-	/* make description optional */
-	if(lua_gettop(L) == 3)
-		desc = luaL_checkstring(L, 3);
-	else
-		desc = "";
+	type = luaL_checkstring(L, 1);
+
+	/* name and description are optional */
+	name = (argc > 1) ? luaL_checkstring(L, 2) : "";
+	desc = (argc > 2) ? luaL_checkstring(L, 3) : "";
 
 	types::TypeInfo *ti = types::TypeInfoRepository::Instance()->type(type);
 	if(ti==0)
@@ -855,20 +853,21 @@ static const struct luaL_Reg InputPort_m [] = {
 
 gen_push_bxptr(OutputPort_push, "OutputPort", OutputPortInterface)
 
+
 static int OutputPort_new(lua_State *L)
 {
 	const char *type, *name, *desc;
 	OutputPortInterface* opi;
-	type = luaL_checkstring(L, 1);
-	name = luaL_checkstring(L, 2);
+	int argc = lua_gettop(L);
 
-	/* make description optional */
-	if(lua_gettop(L) == 3)
-		desc = luaL_checkstring(L, 3);
-	else
-		desc = "";
+	type = luaL_checkstring(L, 1);
+
+	/* name and description are optional */
+	name = (argc > 1) ? luaL_checkstring(L, 2) : "";
+	desc = (argc > 2) ? luaL_checkstring(L, 3) : "";
 
 	types::TypeInfo *ti = types::TypeInfoRepository::Instance()->type(type);
+
 	if(ti==0)
 		luaL_error(L, "OutputPort.new: unknown type %s", type);
 
@@ -1503,36 +1502,55 @@ static int __tc_addport(lua_State *L, TaskContext *tc, int tcind,
 
 static int TaskContext_addPort(lua_State *L)
 {
+	const char* name, *desc;
 	PortInterface **pi;
 	int argc = lua_gettop(L);
 	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
-	for(int i = 2; i<=argc; i++) {
-		if((pi = (PortInterface**) luaL_testudata(L, i, "InputPort")) != NULL) {
-			tc->ports()->addPort(**pi);
-			// __tc_addport(L, tc, 1, *pi, i);
-		} else if ((pi = (PortInterface**) luaL_testudata(L, i, "OutputPort")) != NULL) {
-			tc->ports()->addPort(**pi);
-			// __tc_addport(L, tc, 1, *pi, i);
-		} else {
-			luaL_error(L, "addPort: invalid argument, not a Port");
-		}
+
+	pi = (PortInterface**) luaL_testudata(L, 2, "InputPort");
+	if(pi) goto check_name;
+
+	pi = (PortInterface**) luaL_testudata(L, 2, "OutputPort");
+	if(pi) goto check_name;
+
+	return luaL_error(L, "addPort: invalid argument, not a Port");
+
+ check_name:
+	if(argc > 2) {
+		name = luaL_checkstring(L, 3);
+		(*pi)->setName(name);
 	}
+
+	if(argc > 3) {
+		desc = luaL_checkstring(L, 4);
+		(*pi)->doc(desc);
+	}
+
+	tc->ports()->addPort(**pi);
  	return 0;
 }
 
 static int TaskContext_addEventPort(lua_State *L)
 {
+	const char* name, *desc;
 	InputPortInterface **ipi;
 	int argc = lua_gettop(L);
 	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
 
-	for(int i = 2; i<=argc; i++) {
-		if((ipi = (InputPortInterface**) luaL_testudata(L, i, "InputPort")) != NULL)
-			tc->ports()->addEventPort(**ipi);
-		else
-			luaL_error(L, "addEventPort: invalid argument, not an InputPort");
+	if((ipi = (InputPortInterface**) luaL_testudata(L, 2, "InputPort")) == NULL)
+		return luaL_error(L, "addEventPort: invalid argument, not an InputPort");
+
+	if(argc > 2) {
+		name = luaL_checkstring(L, 3);
+		(*ipi)->setName(name);
 	}
 
+	if(argc > 3) {
+		desc = luaL_checkstring(L, 4);
+		(*ipi)->doc(desc);
+	}
+
+	tc->ports()->addEventPort(**ipi);
  	return 0;
 }
 
@@ -1572,15 +1590,26 @@ static int TaskContext_removePort(lua_State *L)
 
 static int TaskContext_addProperty(lua_State *L)
 {
+	const char *name, *desc;
 	int argc = lua_gettop(L);
 	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
+	PropertyBase *pb = *(luaM_checkudata_mt_bx(L, 2, "Property", PropertyBase));
 
-	for(int i = 2; i<=argc; i++) {
-		PropertyBase *pb = *(luaM_checkudata_mt_bx(L, i, "Property", PropertyBase));
-		if(!tc->addProperty(*pb))
-			luaL_error(L, "TaskContext.addProperty: failed to add property %s.",
-				   pb->getName().c_str());
+	if(argc > 2) {
+		name = luaL_checkstring(L, 3);
+		pb->setName(name);
 	}
+
+	if(argc > 3) {
+		desc = luaL_checkstring(L, 4);
+		pb->setDescription(desc);
+	}
+
+
+	if(!tc->addProperty(*pb))
+		luaL_error(L, "TaskContext.addProperty: failed to add property %s.",
+			   pb->getName().c_str());
+
 	return 0;
 }
 

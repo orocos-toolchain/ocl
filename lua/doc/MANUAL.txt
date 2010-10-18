@@ -285,34 +285,34 @@ Table of Contents
 4.3 TaskContext 
 ================
 
-     Method                                             flag   description                                                          
-    --------------------------------------------------+------+---------------------------------------------------------------------
-     =string getName()=                                        returns TaskContext name                                             
-     =bool start()=                                            start TaskContext                                                    
-     =bool stop()=                                             stop TaskContext                                                     
-     =bool configure()=                                        configure TaskContext                                                
-     =bool activate()=                                         activate TaskContext                                                 
-     =bool cleanup()=                                          cleanup TaskContext                                                  
-     =string getState()=                                       return string describing current state                               
-     =table getPeers()=                                        return a table of all peers                                          
-     =void addPeer(TaskContext)=                               add a TaskContext as a peer                                          
-     =void removePeer(string)=                                 remove a peer                                                        
-     =TaskContext getPeer(string)=                             get a peer                                                           
-     =table getPortNames()=                                    return a table of port names                                         
-     =void addPort(port)=                                      add a port to TaskContext                                            
-     =void addEventPort(port)=                                 add a port as an event driven port                                   
-     =Port getPort(string)=                                    get a port with given name                                           
-     =void removePort(string)=                                 remove port with given name from interface                           
-     =addProperty(Property)=                                   add a property to TaskContext                                        
-     =getProperty(string)=                                     get a property with the given name                                   
-     =table getProperties()=                                   return all properties in a table                                     
-     =void removeProperty(string)=                             remove property with given name from interface                       
-     =table getOps()=                                          return a table of Operation names                                    
-     =string, number string, table getOpInfo(string)=          returns name, arity, description and table of argument descriptions  
-     =Service provides(...)=                                   return service (provides/0 default, provides/1 subservice)           
-     =Variable call(string, ...)=                              call operation with name specified by string and right arguments     
-     =SendHandle send(string, ...)=                            as above but send. returns SendHandle                                
-     =void delete(TaskContext)=                                explicit deletion of a TaskContext                                   
+     Method                                             flag   description                                                                
+    --------------------------------------------------+------+---------------------------------------------------------------------------
+     =string getName()=                                        returns TaskContext name                                                   
+     =bool start()=                                            start TaskContext                                                          
+     =bool stop()=                                             stop TaskContext                                                           
+     =bool configure()=                                        configure TaskContext                                                      
+     =bool activate()=                                         activate TaskContext                                                       
+     =bool cleanup()=                                          cleanup TaskContext                                                        
+     =string getState()=                                       return string describing current state                                     
+     =table getPeers()=                                        return a table of all peers                                                
+     =void addPeer(TaskContext)=                               add a TaskContext as a peer                                                
+     =void removePeer(string)=                                 remove a peer                                                              
+     =TaskContext getPeer(string)=                             get a peer                                                                 
+     =table getPortNames()=                                    return a table of port names                                               
+     =void addPort(port, name, desc)=                          add a port to TaskContext with name (optional) and description (optional)  
+     =void addEventPort(port, name, desc)=                     as above but add as EventPort                                              
+     =Port getPort(string)=                                    get a port with given name                                                 
+     =void removePort(string)=                                 remove port with given name from interface                                 
+     =addProperty(Property, name, desc)=                       add a property with name (optional) and description (optional)             
+     =getProperty(string)=                                     get a property with the given name                                         
+     =table getProperties()=                                   return all properties in a table                                           
+     =void removeProperty(string)=                             remove property with given name from interface                             
+     =table getOps()=                                          return a table of Operation names                                          
+     =string, number string, table getOpInfo(string)=          returns name, arity, description and table of argument descriptions        
+     =Service provides(...)=                                   return service (provides/0 default, provides/1 subservice)                 
+     =Variable call(string, ...)=                              call operation with name specified by string and right arguments           
+     =SendHandle send(string, ...)=                            as above but send. returns SendHandle                                      
+     =void delete(TaskContext)=                                explicit deletion of a TaskContext                                         
 
  Note: =call= and =send= accept both
 
@@ -358,7 +358,7 @@ Table of Contents
 
    - indexing and assigment
 
-     Variables with members can be index and assigned. See the
+     Variables with members can be indexed and assigned. See the
      following example:
 
 
@@ -379,36 +379,36 @@ Table of Contents
 
    InputPort
 
-     Method                      flag   description                                                                   
-    ---------------------------+------+------------------------------------------------------------------------------
-     =new(type)=                        create a new InputPort of type                                                
-     =string, variable read()=          read from Port, returns a FlowStatus string and if data available a Variable  
-     =string read(variable)=            read from Port and write result into Variable given. Returns FlowStatus       
-     =table info()=                     return a table containing information about this port                         
-     =delete()=                         delete this port (remove it from any TaskContext before this)                 
+     Method                      flag   description                                                                      
+    ---------------------------+------+---------------------------------------------------------------------------------
+     =new(type, name, desc)=            create a new InputPort of type  with name (optional) and description (optional)  
+     =string, variable read()=          read from Port, returns a FlowStatus string and if data available a Variable     
+     =string read(variable)=            read from Port and write result into Variable given. Returns FlowStatus          
+     =table info()=                     return a table containing information about this port                            
+     =delete()=                         delete this port (remove it from any TaskContext before this)                    
 
    OuputPort
 
-     Method              flag   description                                                    
-    -------------------+------+---------------------------------------------------------------
-     =new(type)=                create a new OutputPort of type                                
-     =write(Variable)=          write Variable to port                                         
-     =table info()=             return a table containing information about this port          
-     =delete()=                 delete this port (remove it from any TaskContext before this)  
+     Method                    flag   description                                                                      
+    -------------------------+------+---------------------------------------------------------------------------------
+     =new(type, name, desc)=          create a new OutputPort of type with name (optional) and description (optional)  
+     =write(Variable)=                write Variable to port                                                           
+     =table info()=                   return a table containing information about this port                            
+     =delete()=                       delete this port (remove it from any TaskContext before this)                    
 
 4.7 Property 
 =============
 
-     Method                      flag   description                                                              
-    ---------------------------+------+-------------------------------------------------------------------------
-     =new(type)=                        create a new Property                                                    
-     =Variable get()=                   return the Variable contained in this Property                           
-     =bool set(Variable)=               set the Property to the value in given Variable                          
-     =string getName()=                 return the name of the property                                          
-     =string getDescription()=          return the description of the property                                   
-     =delete()=                         delete this property (remove it from any TaskContex before doing this!)  
+     Method                      flag   description                                                                     
+    ---------------------------+------+--------------------------------------------------------------------------------
+     =new(type, name, desc)=            create a new Property of type  with name (optional) and description (optional)  
+     =Variable get()=                   return the Variable contained in this Property                                  
+     =bool set(Variable)=               set the Property to the value in given Variable                                 
+     =string getName()=                 return the name of the property                                                 
+     =string getDescription()=          return the description of the property                                          
+     =delete()=                         delete this property (remove it from any TaskContex before doing this!)         
 
-   Properties which contain complex types can also be index with =.=
+   Properties which contain complex types can also be indexed with =.=
    just like Variables.
 
 4.8 Service Interface 
