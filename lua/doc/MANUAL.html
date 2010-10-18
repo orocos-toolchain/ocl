@@ -108,6 +108,7 @@ lang="en" xml:lang="en">
 <li><a href="#sec-4_8_1">4.8.1 Service </a></li>
 <li><a href="#sec-4_8_2">4.8.2 ServiceRequester </a></li>
 <li><a href="#sec-4_8_3">4.8.3 Operation </a></li>
+<li><a href="#sec-4_8_4">4.8.4 EEHook </a></li>
 </ul></li>
 </ul>
 </li>
@@ -487,6 +488,9 @@ are further subdivided as followed:
 </li>
 <li>
 <code>Logger</code>
+</li>
+<li>
+<code>EEHook</code>
 
 </li>
 </ul>
@@ -884,6 +888,37 @@ also be called with the familiar <code>op(arg1, arg2)</code> syntax.
 
 
 </div>
+
+</div>
+
+<div id="outline-container-4_8_4" class="outline-4">
+<h4 id="sec-4_8_4"><span class="section-number-4">4.8.4</span> EEHook </h4>
+<div class="outline-text-4" id="text-4_8_4">
+
+
+<p>
+EEHook provides a way to register callbacks in the TaskContexts
+Execution engine. This is especially useful for the Lua plugin
+which can use this mechanism to get triggered on every update
+hook.
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption></caption>
+<colgroup><col align="left" /><col align="left" /><col align="left" />
+</colgroup>
+<thead>
+<tr><th scope="col">Method</th><th scope="col">flag</th><th scope="col">description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>new(name)</code></td><td></td><td>create a new hook tied to the lua function with the given (string) name</td></tr>
+<tr><td><code>enable()</code></td><td></td><td>enable the hook so the lua function will be executed on trigger()</td></tr>
+<tr><td><code>disable()</code></td><td></td><td>disable the hook</td></tr>
+</tbody>
+</table>
+
+
+</div>
 </div>
 </div>
 
@@ -1075,7 +1110,7 @@ TaskContext
 </ul>
 
 <p>(For completenes, these types <span style="text-decoration:underline;">are</span> collected: Variable, Service,
-ServiceRequester, SendHandle, Operation)
+ServiceRequester, SendHandle, Operation, EEHook)
 </p>
 </div>
 

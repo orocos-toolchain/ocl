@@ -40,6 +40,7 @@ using namespace RTT::detail;
 using namespace RTT::base;
 using namespace RTT::internal;
 
+static TaskContext* __getTC(lua_State*);
 
 #define DEBUG
 
@@ -2037,6 +2038,67 @@ static const struct luaL_Reg TaskContext_m [] = {
 };
 
 /*
+ * Execution engine hook registration
+ */
+
+/* executable IF */
+class EEHook : public base::ExecutableInterface
+{
+protected:
+	std::string func;
+	lua_State *L;
+public:
+	EEHook(lua_State *_L, std::string _func) { L = _L; func = _func; }
+	bool execute() { return call_func(L, func.c_str()); }
+};
+
+static int EEHook_new(lua_State *L)
+{
+	const char *func;
+	int argc = lua_gettop(L);
+	func = luaL_checkstring(L, 1);
+	luaM_pushobject(L, EEHook)(L, func);
+	return 1;
+}
+
+static int EEHook_enable(lua_State *L)
+{
+	EEHook *eeh = luaM_checkudata(L, 1, EEHook);
+	TaskContext *tc = __getTC(L);
+	lua_pushboolean(L, tc->engine()->runFunction(eeh));
+	return 1;
+}
+
+static int EEHook_disable(lua_State *L)
+{	EEHook *eeh = luaM_checkudata(L, 1, EEHook);
+	TaskContext *tc = __getTC(L);
+	lua_pushboolean(L, tc->engine()->removeFunction(eeh));
+	return 1;
+}
+
+static int EEHook_gc(lua_State *L)
+{
+	EEHook_disable(L);
+	lua_settop(L, 1);
+	reinterpret_cast<EEHook*>(lua_touserdata(L, 1))->~EEHook();
+	return 0;
+}
+
+static const struct luaL_Reg EEHook_f [] = {
+	{ "new", EEHook_new },
+	{ "enable", EEHook_enable },
+	{ "disable", EEHook_disable },
+};
+
+
+static const struct luaL_Reg EEHook_m [] = {
+	{ "enable", EEHook_enable },
+	{ "disable", EEHook_disable },
+	{ "__gc", EEHook_gc },
+};
+
+
+/*
  * Logger and miscellaneous
  */
 static const char *const loglevels[] = {
@@ -2100,6 +2162,14 @@ static int getTC(lua_State *L)
 	lua_pushstring(L, "this_TC");
 	lua_gettable(L, LUA_REGISTRYINDEX);
 	return 1;
+}
+
+static TaskContext* __getTC(lua_State *L)
+{
+	TaskContext *tc;
+	getTC(L);
+	tc = *(luaM_checkudata_bx(L, -1, TaskContext));
+	return tc;
 }
 
 static int rtt_services(lua_State *L)
@@ -2203,6 +2273,12 @@ int luaopen_rtt(lua_State *L)
 	luaL_register(L, NULL, Property_m);
 	luaL_register(L, "rtt.Property", Property_f);
 
+	luaL_newmetatable(L, "EEHook");
+	lua_pushvalue(L, -1); /* duplicates metatable */
+	lua_setfield(L, -2, "__index");
+	luaL_register(L, NULL, EEHook_m);
+	luaL_register(L, "rtt.EEHook", EEHook_f);
+
 	/* misc toplevel functions */
 	luaL_register(L, "rtt", rtt_f);
 
@@ -2220,4 +2296,32 @@ int set_context_tc(TaskContext *tc, lua_State *L)
 	lua_setmetatable(L, -2);
 	lua_settable(L, LUA_REGISTRYINDEX);
 	return 0;
+}
+
+
+/* call a zero arity function with a boolean return value 
+ * used to call various hooks */
+bool call_func(lua_State *L, const std::string &name)
+{
+	bool ret;
+	lua_getglobal(L, name.c_str());
+
+	if (lua_pcall(L, 0, 1, NULL) != 0) {
+		Logger::log(Logger::Error) << "LuaComponent: error calling function "
+					   << name << ": " << lua_tostring(L, -1) << endlog();
+		ret = false;
+		goto out;
+	}
+	if (!lua_isboolean(L, -1)) {
+		Logger::log(Logger::Error) << "LuaComponent: " << name 
+					   << " must return a bool but returned a" 
+					   << lua_typename(L, lua_type(L, -1)) << endlog();
+		ret = false;
+		goto out;
+	}
+
+	ret = lua_toboolean(L, -1);
+
+ out:
+	return ret;
 }

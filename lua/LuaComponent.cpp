@@ -132,33 +132,6 @@ namespace OCL
 			dotty(L);
 		}
 #endif
-
-
-		bool call_func(const std::string name)
-		{
-			bool ret;
-			lua_getglobal(L, name.c_str());
-
-			if (lua_pcall(L, 0, 1, NULL) != 0) {
-				Logger::log(Logger::Error) << "LuaComponent: error calling function "
-							   << name << ": " << lua_tostring(L, -1) << endlog();
-				ret = false;
-				goto out;
-			}
-			if (!lua_isboolean(L, -1)) {
-				Logger::log(Logger::Error) << "LuaComponent: " << name 
-							   << " must return a bool but returned a" 
-							   << lua_typename(L, lua_type(L, -1)) << endlog();
-				ret = false;
-				goto out;
-			}
-
-			ret = lua_toboolean(L, -1);
-
-		out:
-			return ret;
-		}
-
 		bool configureHook()
 		{
 			if(!lua_string.empty())
@@ -167,27 +140,27 @@ namespace OCL
 			if(!lua_file.empty())
 				exec_file(lua_file)
 ;
-			return call_func("configureHook");  // exec_str("configureHook()");
+			return call_func(L, "configureHook");  // exec_str("configureHook()");
 		}
 
 		bool startHook()
 		{
-			return call_func("startHook");
+			return call_func(L, "startHook");
 		}
 
 		void updateHook()
 		{
-			call_func("updateHook");
+			call_func(L, "updateHook");
 		}
 
 		void stopHook()
 		{
-			call_func("stopHook");
+			call_func(L, "stopHook");
 		}
 
 		void cleanupHook()
 		{
-			call_func("cleanupHook");
+			call_func(L, "cleanupHook");
 		}
 	};
 }

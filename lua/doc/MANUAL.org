@@ -212,6 +212,7 @@
    - =Service=
    - =Operation=
    - =Logger=
+   - =EEHook=
 
   Probably the most important function is =rtt.getTC()= which returns
   a reference to /our/ TaskContext.
@@ -411,6 +412,20 @@
    | =SendHandle send(string, ...)=                |      | same as above, but =send= Operation and return SendHandle          |
 
 
+*** EEHook
+
+    EEHook provides a way to register callbacks in the TaskContexts
+    Execution engine. This is especially useful for the Lua plugin
+    which can use this mechanism to get triggered on every update
+    hook.
+
+
+   | Method      | flag | description                                                             |
+   |-------------+------+-------------------------------------------------------------------------|
+   | =new(name)= |      | create a new hook tied to the lua function with the given (string) name |
+   | =enable()=  |      | enable the hook so the lua function will be executed on trigger()       |
+   | =disable()= |      | disable the hook                                                        |
+
 * The rttlib convenience module
   This library adds some useful (mostly pretty printing) functions to
   the standard objects. It is recommended to load it for all
@@ -513,7 +528,7 @@
      - TaskContext
 
    (For completenes, these types _are_ collected: Variable, Service,
-   ServiceRequester, SendHandle, Operation)
+   ServiceRequester, SendHandle, Operation, EEHook)
 
 ** Comparing Lua types and RTT Variables fails
    :PROPERTIES:

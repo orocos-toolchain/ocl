@@ -28,6 +28,7 @@ Table of Contents
         4.8.1 Service 
         4.8.2 ServiceRequester 
         4.8.3 Operation 
+        4.8.4 EEHook 
 5 The rttlib convenience module 
     5.1 how to add a pretty printer for a custom type 
 6 Tips and tricks 
@@ -244,6 +245,7 @@ Table of Contents
    - =Service=
    - =Operation=
    - =Logger=
+   - =EEHook=
 
   Probably the most important function is =rtt.getTC()= which returns
   a reference to /our/ TaskContext.
@@ -452,6 +454,21 @@ Table of Contents
      =SendHandle send(string, ...)=                         same as above, but =send= Operation and return SendHandle           
 
 
+4.8.4 EEHook 
+-------------
+
+    EEHook provides a way to register callbacks in the TaskContexts
+    Execution engine. This is especially useful for the Lua plugin
+    which can use this mechanism to get triggered on every update
+    hook.
+
+
+     Method        flag   description                                                              
+    -------------+------+-------------------------------------------------------------------------
+     =new(name)=          create a new hook tied to the lua function with the given (string) name  
+     =enable()=           enable the hook so the lua function will be executed on trigger()        
+     =disable()=          disable the hook                                                         
+
 5 The rttlib convenience module 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   This library adds some useful (mostly pretty printing) functions to
@@ -558,7 +575,7 @@ Table of Contents
      - TaskContext
 
    (For completenes, these types _are_ collected: Variable, Service,
-   ServiceRequester, SendHandle, Operation)
+   ServiceRequester, SendHandle, Operation, EEHook)
 
 7.3 Comparing Lua types and RTT Variables fails 
 ================================================
