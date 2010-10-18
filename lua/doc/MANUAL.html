@@ -97,22 +97,17 @@ lang="en" xml:lang="en">
 <li><a href="#sec-4">4 Lua API </a>
 <ul>
 <li><a href="#sec-4_1">4.1 Overview </a></li>
-<li><a href="#sec-4_2">4.2 TaskContext </a></li>
-<li><a href="#sec-4_3">4.3 SendHandle </a></li>
-<li><a href="#sec-4_4">4.4 Variable </a></li>
-<li><a href="#sec-4_5">4.5 InputPort and OutputPort </a></li>
-<li><a href="#sec-4_6">4.6 Property </a></li>
-<li><a href="#sec-4_7">4.7 Service Interface </a>
+<li><a href="#sec-4_2">4.2 Miscellaneous toplevel </a></li>
+<li><a href="#sec-4_3">4.3 TaskContext </a></li>
+<li><a href="#sec-4_4">4.4 SendHandle </a></li>
+<li><a href="#sec-4_5">4.5 Variable </a></li>
+<li><a href="#sec-4_6">4.6 InputPort and OutputPort </a></li>
+<li><a href="#sec-4_7">4.7 Property </a></li>
+<li><a href="#sec-4_8">4.8 Service Interface </a>
 <ul>
-<li><a href="#sec-4_7_1">4.7.1 Service </a></li>
-<li><a href="#sec-4_7_2">4.7.2 ServiceRequester </a></li>
-<li><a href="#sec-4_7_3">4.7.3 Operation </a></li>
-</ul>
-</li>
-<li><a href="#sec-4_8">4.8 Miscellaneous </a>
-<ul>
-<li><a href="#sec-4_8_1">4.8.1 Logger </a></li>
-<li><a href="#sec-4_8_2">4.8.2 Service/Typekits/Types information </a></li>
+<li><a href="#sec-4_8_1">4.8.1 Service </a></li>
+<li><a href="#sec-4_8_2">4.8.2 ServiceRequester </a></li>
+<li><a href="#sec-4_8_3">4.8.3 Operation </a></li>
 </ul></li>
 </ul>
 </li>
@@ -375,6 +370,36 @@ I can create the following component types:
 see the simple producer comsumer example in the
 <code>scripts/producer_consumer/</code> directory.
 </p>
+<p>
+The LuaComponent has two <code>string</code> properties called <code>lua_string</code>
+and <code>lua_file</code>. The code in this string/file will be executed
+during <code>configureHook</code> <span style="text-decoration:underline;">before</span> the Lua configureHook() is
+executed. E.g:
+</p>
+
+
+
+<pre class="example">rttlua
+Orocos RTTLua 1.0-beta1 (gnulinux)
+&gt; tc=getTC()
+&gt; tc:getProperty("lua_string"):set("print('hello property')")
+&gt; =tc:configure()
+hello property
+85.295 [ ERROR  ][./rttlua::main()] [string "configureHook()"]:1: attempt to call global 'configureHook' (a nil value)
+false
+</pre>
+
+
+
+<p>
+(The error occurs because we have not define a <code>configureHook</code> lua
+function.)
+</p>
+<p>
+The idea of course is to be able to use the standard deployer to
+setup Lua components. If the properties are not initialized nothing
+happens.
+</p>
 </div>
 
 </div>
@@ -510,8 +535,36 @@ function/method:
 </div>
 
 <div id="outline-container-4_2" class="outline-3">
-<h3 id="sec-4_2"><span class="section-number-3">4.2</span> TaskContext </h3>
+<h3 id="sec-4_2"><span class="section-number-3">4.2</span> Miscellaneous toplevel </h3>
 <div class="outline-text-3" id="text-4_2">
+
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption></caption>
+<colgroup><col align="left" /><col align="left" /><col align="left" />
+</colgroup>
+<thead>
+<tr><th scope="col">Method</th><th scope="col">flag</th><th scope="col">description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>table services()</code></td><td>F</td><td>returns a table of strings specifying the known services</td></tr>
+<tr><td><code>table typekits()</code></td><td>F</td><td>returns a table of strings specifying the known typekits</td></tr>
+<tr><td><code>table types()</code></td><td>F</td><td>returns a table of strings specifying the known types</td></tr>
+<tr><td><code>setLogLevel(string)</code></td><td>F</td><td>set the loglevel</td></tr>
+<tr><td><code>string getLogLevel()</code></td><td>F</td><td>return the current loglevel</td></tr>
+<tr><td><code>log(string, ...)</code></td><td>F</td><td>log all (string) arguments</td></tr>
+<tr><td><code>logl(loglevel, string, ...)</code></td><td>F</td><td>log all (string) arguments with (string) loglevel</td></tr>
+</tbody>
+</table>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-4_3" class="outline-3">
+<h3 id="sec-4_3"><span class="section-number-3">4.3</span> TaskContext </h3>
+<div class="outline-text-3" id="text-4_3">
 
 
 <table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
@@ -559,9 +612,9 @@ Note: <code>call</code> and <code>send</code> accept both
 
 </div>
 
-<div id="outline-container-4_3" class="outline-3">
-<h3 id="sec-4_3"><span class="section-number-3">4.3</span> SendHandle </h3>
-<div class="outline-text-3" id="text-4_3">
+<div id="outline-container-4_4" class="outline-3">
+<h3 id="sec-4_4"><span class="section-number-3">4.4</span> SendHandle </h3>
+<div class="outline-text-3" id="text-4_4">
 
 
 <p>
@@ -585,9 +638,9 @@ An object returned by a TaskContext send() operation.
 
 </div>
 
-<div id="outline-container-4_4" class="outline-3">
-<h3 id="sec-4_4"><span class="section-number-3">4.4</span> Variable </h3>
-<div class="outline-text-3" id="text-4_4">
+<div id="outline-container-4_5" class="outline-3">
+<h3 id="sec-4_5"><span class="section-number-3">4.5</span> Variable </h3>
+<div class="outline-text-3" id="text-4_5">
 
 
 <p>
@@ -663,9 +716,9 @@ following example:
 
 </div>
 
-<div id="outline-container-4_5" class="outline-3">
-<h3 id="sec-4_5"><span class="section-number-3">4.5</span> InputPort and OutputPort </h3>
-<div class="outline-text-3" id="text-4_5">
+<div id="outline-container-4_6" class="outline-3">
+<h3 id="sec-4_6"><span class="section-number-3">4.6</span> InputPort and OutputPort </h3>
+<div class="outline-text-3" id="text-4_6">
 
 
 <p>
@@ -711,9 +764,9 @@ OuputPort
 
 </div>
 
-<div id="outline-container-4_6" class="outline-3">
-<h3 id="sec-4_6"><span class="section-number-3">4.6</span> Property </h3>
-<div class="outline-text-3" id="text-4_6">
+<div id="outline-container-4_7" class="outline-3">
+<h3 id="sec-4_7"><span class="section-number-3">4.7</span> Property </h3>
+<div class="outline-text-3" id="text-4_7">
 
 
 <table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
@@ -734,21 +787,25 @@ OuputPort
 </table>
 
 
+<p>
+Properties which contain complex types can also be index with <code>.</code>
+just like Variables.
+</p>
 </div>
 
 </div>
 
-<div id="outline-container-4_7" class="outline-3">
-<h3 id="sec-4_7"><span class="section-number-3">4.7</span> Service Interface </h3>
-<div class="outline-text-3" id="text-4_7">
+<div id="outline-container-4_8" class="outline-3">
+<h3 id="sec-4_8"><span class="section-number-3">4.8</span> Service Interface </h3>
+<div class="outline-text-3" id="text-4_8">
 
 
 
 </div>
 
-<div id="outline-container-4_7_1" class="outline-4">
-<h4 id="sec-4_7_1"><span class="section-number-4">4.7.1</span> Service </h4>
-<div class="outline-text-4" id="text-4_7_1">
+<div id="outline-container-4_8_1" class="outline-4">
+<h4 id="sec-4_8_1"><span class="section-number-4">4.8.1</span> Service </h4>
+<div class="outline-text-4" id="text-4_8_1">
 
 
 <table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
@@ -775,9 +832,9 @@ OuputPort
 
 </div>
 
-<div id="outline-container-4_7_2" class="outline-4">
-<h4 id="sec-4_7_2"><span class="section-number-4">4.7.2</span> ServiceRequester </h4>
-<div class="outline-text-4" id="text-4_7_2">
+<div id="outline-container-4_8_2" class="outline-4">
+<h4 id="sec-4_8_2"><span class="section-number-4">4.8.2</span> ServiceRequester </h4>
+<div class="outline-text-4" id="text-4_8_2">
 
 
 <table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
@@ -801,9 +858,9 @@ OuputPort
 
 </div>
 
-<div id="outline-container-4_7_3" class="outline-4">
-<h4 id="sec-4_7_3"><span class="section-number-4">4.7.3</span> Operation </h4>
-<div class="outline-text-4" id="text-4_7_3">
+<div id="outline-container-4_8_3" class="outline-4">
+<h4 id="sec-4_8_3"><span class="section-number-4">4.8.3</span> Operation </h4>
+<div class="outline-text-4" id="text-4_8_3">
 
 
 <p>
@@ -821,66 +878,6 @@ also be called with the familiar <code>op(arg1, arg2)</code> syntax.
 <tr><td><code>name, descr, res_type, arity, argtab info()</code></td><td></td><td>returns result type, arity, description and table of parameters</td></tr>
 <tr><td><code>Variable call(string, ...)</code></td><td></td><td>calls operation specified by string. additional args are passed on</td></tr>
 <tr><td><code>SendHandle send(string, ...)</code></td><td></td><td>same as above, but <code>send</code> Operation and return SendHandle</td></tr>
-</tbody>
-</table>
-
-
-
-</div>
-</div>
-
-</div>
-
-<div id="outline-container-4_8" class="outline-3">
-<h3 id="sec-4_8"><span class="section-number-3">4.8</span> Miscellaneous </h3>
-<div class="outline-text-3" id="text-4_8">
-
-
-</div>
-
-<div id="outline-container-4_8_1" class="outline-4">
-<h4 id="sec-4_8_1"><span class="section-number-4">4.8.1</span> Logger </h4>
-<div class="outline-text-4" id="text-4_8_1">
-
-
-<p>
-The good old logger.
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-<caption></caption>
-<colgroup><col align="left" /><col align="left" /><col align="left" />
-</colgroup>
-<thead>
-<tr><th scope="col">Method</th><th scope="col">flag</th><th scope="col">description</th></tr>
-</thead>
-<tbody>
-<tr><td><code>setlevel(string)</code></td><td>F</td><td>set the loglevel</td></tr>
-<tr><td><code>string getlevel()</code></td><td>F</td><td>return the current loglevel</td></tr>
-<tr><td><code>log(string, ...)</code></td><td>F</td><td>log all (string) arguments</td></tr>
-</tbody>
-</table>
-
-
-</div>
-
-</div>
-
-<div id="outline-container-4_8_2" class="outline-4">
-<h4 id="sec-4_8_2"><span class="section-number-4">4.8.2</span> Service/Typekits/Types information </h4>
-<div class="outline-text-4" id="text-4_8_2">
-
-
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-<caption></caption>
-<colgroup><col align="left" /><col align="left" /><col align="left" />
-</colgroup>
-<thead>
-<tr><th scope="col">Method</th><th scope="col">flag</th><th scope="col">description</th></tr>
-</thead>
-<tbody>
-<tr><td><code>table services()</code></td><td>F</td><td>returns a table of strings specifying the known services</td></tr>
-<tr><td><code>table typekits()</code></td><td>F</td><td>returns a table of strings specifying the known typekits</td></tr>
-<tr><td><code>table types()</code></td><td>F</td><td>returns a table of strings specifying the known types</td></tr>
 </tbody>
 </table>
 

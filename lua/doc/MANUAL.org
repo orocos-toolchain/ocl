@@ -145,6 +145,29 @@
    see the simple producer comsumer example in the
    =scripts/producer_consumer/= directory.
 
+   The LuaComponent has two =string= properties called =lua_string=
+   and =lua_file=. The code in this string/file will be executed
+   during =configureHook= _before_ the Lua configureHook() is
+   executed. E.g:
+
+#+BEGIN_EXAMPLE
+   rttlua
+   Orocos RTTLua 1.0-beta1 (gnulinux)
+   > tc=getTC()
+   > tc:getProperty("lua_string"):set("print('hello property')")
+   > =tc:configure()
+   hello property
+   85.295 [ ERROR  ][./rttlua::main()] [string "configureHook()"]:1: attempt to call global 'configureHook' (a nil value)
+   false
+#+END_EXAMPLE
+
+   (The error occurs because we have not define a =configureHook= lua
+   function.)
+
+   The idea of course is to be able to use the standard deployer to
+   setup Lua components. If the properties are not initialized nothing
+   happens.
+
 ** Using the LuaService
 
   Here's an snip of Lua code which creates a Lua service in the
@@ -347,6 +370,9 @@
    | =string getName()=        |      | return the name of the property                                         |
    | =string getDescription()= |      | return the description of the property                                  |
    | =delete()=                |      | delete this property (remove it from any TaskContex before doing this!) |
+
+   Properties which contain complex types can also be index with =.=
+   just like Variables.
 
 ** Service Interface
 

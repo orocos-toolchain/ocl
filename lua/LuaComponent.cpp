@@ -66,13 +66,14 @@ namespace OCL
 	class LuaComponent : public TaskContext
 	{
 	protected:
+		std::string lua_string;
+		std::string lua_file;
 		lua_State *L;
 
 	public:
 		LuaComponent(std::string name)
 			: TaskContext(name, PreOperational)
 		{
-
 			L = lua_open();
 			lua_gc(L, LUA_GCSTOP, 0);
 			luaL_openlibs(L);
@@ -88,6 +89,9 @@ namespace OCL
 			lua_call(L, 0, 0);
 
 			set_context_tc(this, L);
+
+			this->addProperty("lua_string", lua_string).doc("string of lua code to be executed during configureHook");
+			this->addProperty("lua_file", lua_file).doc("file with lua program to be executed during configuration");
 
 			this->addOperation("exec_file", &LuaComponent::exec_file, this, OwnThread)
 				.doc("load (and run) the given lua script")
@@ -131,6 +135,12 @@ namespace OCL
 
 		bool configureHook()
 		{
+			if(!lua_string.empty())
+				exec_str(lua_string);
+
+			if(!lua_file.empty())
+				exec_file(lua_file)
+;
 			return exec_str("configureHook()");
 		}
 

@@ -18,18 +18,16 @@ Table of Contents
     3.3 Using the LuaService 
 4 Lua API 
     4.1 Overview 
-    4.2 TaskContext 
-    4.3 SendHandle 
-    4.4 Variable 
-    4.5 InputPort and OutputPort 
-    4.6 Property 
-    4.7 Service Interface 
-        4.7.1 Service 
-        4.7.2 ServiceRequester 
-        4.7.3 Operation 
-    4.8 Miscellaneous 
-        4.8.1 Logger 
-        4.8.2 Service/Typekits/Types information 
+    4.2 Miscellaneous toplevel 
+    4.3 TaskContext 
+    4.4 SendHandle 
+    4.5 Variable 
+    4.6 InputPort and OutputPort 
+    4.7 Property 
+    4.8 Service Interface 
+        4.8.1 Service 
+        4.8.2 ServiceRequester 
+        4.8.3 Operation 
 5 The rttlib convenience module 
     5.1 how to add a pretty printer for a custom type 
 6 Tips and tricks 
@@ -119,8 +117,7 @@ Table of Contents
       path, e.g.
 
 
-  PATH=$PATH:/home/mk/tmp/rtt-2.0/lib/orocos:home/mk/src/git/ocl/lua
-  export PATH
+  export PATH=$PATH:/home/mk/src/git/ocl/lua
 
 
   [Lua reference manual]: http://www.lua.org/manual/5.1/manual.html#5.3
@@ -178,6 +175,28 @@ Table of Contents
 
    see the simple producer comsumer example in the
    =scripts/producer_consumer/= directory.
+
+   The LuaComponent has two =string= properties called =lua_string=
+   and =lua_file=. The code in this string/file will be executed
+   during =configureHook= _before_ the Lua configureHook() is
+   executed. E.g:
+
+
+  rttlua
+  Orocos RTTLua 1.0-beta1 (gnulinux)
+  > tc=getTC()
+  > tc:getProperty("lua_string"):set("print('hello property')")
+  > =tc:configure()
+  hello property
+  85.295 [ ERROR  ][./rttlua::main()] [string "configureHook()"]:1: attempt to call global 'configureHook' (a nil value)
+  false
+
+   (The error occurs because we have not define a =configureHook= lua
+   function.)
+
+   The idea of course is to be able to use the standard deployer to
+   setup Lua components. If the properties are not initialized nothing
+   happens.
 
 3.3 Using the LuaService 
 =========================
@@ -250,7 +269,20 @@ Table of Contents
     - 'R': real-time safe
     - 'F' or 'M': only available as function or method
 
-4.2 TaskContext 
+4.2 Miscellaneous toplevel 
+===========================
+
+     Method                          flag   description                                               
+    -------------------------------+------+----------------------------------------------------------
+     =table services()=              F      returns a table of strings specifying the known services  
+     =table typekits()=              F      returns a table of strings specifying the known typekits  
+     =table types()=                 F      returns a table of strings specifying the known types     
+     =setLogLevel(string)=           F      set the loglevel                                          
+     =string getLogLevel()=          F      return the current loglevel                               
+     =log(string, ...)=              F      log all (string) arguments                                
+     =logl(loglevel, string, ...)=   F      log all (string) arguments with (string) loglevel         
+
+4.3 TaskContext 
 ================
 
      Method                                             flag   description                                                          
@@ -284,7 +316,7 @@ Table of Contents
 
  Note: =call= and =send= accept both
 
-4.3 SendHandle 
+4.4 SendHandle 
 ===============
 
    An object returned by a TaskContext send() operation.
@@ -294,7 +326,7 @@ Table of Contents
      =string, variable collect()=              collect results of send, may block. string is SendStatus  
      =string, variable collectIfDone=          as above, non blocking version                            
 
-4.4 Variable 
+4.5 Variable 
 =============
 
    Variable are the types know to the RTT. They consist of basic types
@@ -342,7 +374,7 @@ Table of Contents
 
   [warning]: #ComparisonIssue
 
-4.5 InputPort and OutputPort 
+4.6 InputPort and OutputPort 
 =============================
 
    InputPort
@@ -364,7 +396,7 @@ Table of Contents
      =table info()=             return a table containing information about this port          
      =delete()=                 delete this port (remove it from any TaskContext before this)  
 
-4.6 Property 
+4.7 Property 
 =============
 
      Method                      flag   description                                                              
@@ -376,10 +408,13 @@ Table of Contents
      =string getDescription()=          return the description of the property                                   
      =delete()=                         delete this property (remove it from any TaskContex before doing this!)  
 
-4.7 Service Interface 
+   Properties which contain complex types can also be index with =.=
+   just like Variables.
+
+4.8 Service Interface 
 ======================
 
-4.7.1 Service 
+4.8.1 Service 
 --------------
 
      Method                             flag   description                                                     
@@ -393,7 +428,7 @@ Table of Contents
      =Operation getOperation(string)=          return operation specified by string name  of this service      
      =Port getPort(string)=                    return port specified by the given string name of this service  
 
-4.7.2 ServiceRequester 
+4.8.2 ServiceRequester 
 -----------------------
 
      Method                        flag   description                                          
@@ -404,41 +439,17 @@ Table of Contents
      =void disconnect()=                  disconnect from remote Service                       
      =requires(string)=                   return required subservice specified by string name  
 
-4.7.3 Operation 
+4.8.3 Operation 
 ----------------
 
     This object is only returned by =Service:getOperation=. It can
     also be called with the familiar =op(arg1, arg2)= syntax.
 
-     Method                                   flag   description                                                         
-    ----------------------------------------+------+--------------------------------------------------------------------
-     =res_type, arity, desc, argtab info()=          returns result type, arity, description and table of parameters     
-     =Variable call(string, ...)=                    calls operation specified by string. additional args are passed on  
-     =SendHandle send(string, ...)=                  same as above, but =send= Operation and return SendHandle           
-
-
-4.8 Miscellaneous 
-==================
-
-4.8.1 Logger 
--------------
-
-    The good old logger.
-
-      Method                   flag   description                  
-     ------------------------+------+-----------------------------
-      =setlevel(string)=       F      set the loglevel             
-      =string getloglevel()=   F      return the current loglevel  
-      =log(string, ...)=       F      log all (string) arguments   
-
-4.8.2 Service/Typekits/Types information 
------------------------------------------
-
-      Method               flag   description                                               
-     --------------------+------+----------------------------------------------------------
-      =table services()=   F      returns a table of strings specifying the known services  
-      =table typekits()=   F      returns a table of strings specifying the known typekits  
-      =table types()=      F      returns a table of strings specifying the known types     
+     Method                                          flag   description                                                         
+    -----------------------------------------------+------+--------------------------------------------------------------------
+     =name, descr, res_type, arity, argtab info()=          returns result type, arity, description and table of parameters     
+     =Variable call(string, ...)=                           calls operation specified by string. additional args are passed on  
+     =SendHandle send(string, ...)=                         same as above, but =send= Operation and return SendHandle           
 
 
 5 The rttlib convenience module 
@@ -574,7 +585,7 @@ Table of Contents
 7.5 Support for creating Operations from Lua 
 =============================================
 
-   It is not possible to define new Operations from Lua.
+   It is currently not possible to define new Operations from Lua.
 
    
 
