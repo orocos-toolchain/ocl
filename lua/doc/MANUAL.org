@@ -325,7 +325,7 @@
 
    - indexing and assigment
 
-     Variables with members can be index and assigned. See the
+     Variables with members can be indexed and assigned. See the
      following example:
 
 #+BEGIN_EXAMPLE
@@ -371,7 +371,7 @@
    | =string getDescription()= |      | return the description of the property                                  |
    | =delete()=                |      | delete this property (remove it from any TaskContex before doing this!) |
 
-   Properties which contain complex types can also be index with =.=
+   Properties which contain complex types can also be indexed with =.=
    just like Variables.
 
 ** Service Interface
