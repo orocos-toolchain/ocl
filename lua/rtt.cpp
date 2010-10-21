@@ -1804,6 +1804,20 @@ static int TaskContext_call(lua_State *L)
 	return ret;
 }
 
+static int TaskContext_getOperation(lua_State *L)
+{
+	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
+	Service::shared_ptr srv = tc->provides();
+
+	if(srv == 0)
+		luaL_error(L, "TaskContext.getOperation: no default service");
+
+	/* forward to Serivce.getOperation */
+	luaM_pushobject_mt(L, "Service", Service::shared_ptr)(srv);
+	lua_replace(L, 1);
+	return Service_getOperation(L);
+}
+
 /*
  * SendHandle (required for send)
  */
@@ -2000,6 +2014,7 @@ static const struct luaL_Reg TaskContext_f [] = {
 	{ "provides", TaskContext_provides },
 	{ "connectServices", TaskContext_connectServices },
 	{ "call", TaskContext_call },
+	{ "getOperation", TaskContext_getOperation },
 	{ "send", TaskContext_send },
 	{ "delete", TaskContext_del },
 	{ NULL, NULL}
@@ -2032,6 +2047,7 @@ static const struct luaL_Reg TaskContext_m [] = {
 	{ "requires", TaskContext_requires },
 	{ "connectServices", TaskContext_connectServices },
 	{ "call", TaskContext_call },
+	{ "getOperation", TaskContext_getOperation },
 	{ "send", TaskContext_send },
 	{ "delete", TaskContext_del },
 	// { "__index", TaskContext_index },

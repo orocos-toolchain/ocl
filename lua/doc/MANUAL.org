@@ -238,6 +238,7 @@
   function/method:
     - 'R': real-time safe
     - 'F' or 'M': only available as function or method
+    - 'D': deprecated
 
 ** Miscellaneous toplevel
 
@@ -278,7 +279,8 @@
    | =table getOps()=                                 |      | return a table of Operation names                                         |
    | =string, number string, table getOpInfo(string)= |      | returns name, arity, description and table of argument descriptions       |
    | =Service provides(...)=                          |      | return service (provides/0 default, provides/1 subservice)                |
-   | =Variable call(string, ...)=                     |      | call operation with name specified by string and right arguments          |
+   | =Variable call(string, ...)=                     | D    | call operation with name specified by string and right arguments          |
+   | =Operation getOperation(name)=                   |      | get an Operation by string name                                           |
    | =SendHandle send(string, ...)=                   |      | as above but send. returns SendHandle                                     |
    | =void delete(TaskContext)=                       |      | explicit deletion of a TaskContext                                        |
 
