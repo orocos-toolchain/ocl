@@ -40,6 +40,7 @@
 #include <rtt/base/DataSourceBase.hpp>
 #include <rtt/types/Operators.hpp>
 #include <rtt/Logger.hpp>
+#include <rtt/plugin/PluginLoader.hpp>
 
 extern "C" {
 #include <lua.h>

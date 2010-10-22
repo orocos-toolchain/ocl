@@ -68,6 +68,7 @@
 #include <rtt/scripting/parse_exception.hpp>
 #include <rtt/scripting/PeerParser.hpp>
 #include <rtt/scripting/Scripting.hpp>
+#include <rtt/plugin/PluginLoader.hpp>
 
 #include <iostream>
 #include <fstream>
