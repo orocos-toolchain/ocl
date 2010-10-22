@@ -1,0 +1,1216 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+               "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+lang="en" xml:lang="en">
+<head>
+<title>Lua RTT bindings (beta1)</title>
+<meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
+<meta name="generator" content="Org-mode"/>
+<meta name="generated" content="2010-09-13 Mon"/>
+<meta name="author" content="Markus Klotzbuecher"/>
+<meta name="description" content=""/>
+<meta name="keywords" content=""/>
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  html { font-family: Times, serif; font-size: 12pt; }
+  .title  { text-align: center; }
+  .todo   { color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #add8e6; font-weight:normal }
+  .target { }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  p.verse { margin-left: 3% }
+  pre {
+	border: 1pt solid #AEBDCC;
+	background-color: #F3F5F7;
+	padding: 5pt;
+	font-family: courier, monospace;
+        font-size: 90%;
+        overflow:auto;
+  }
+  table { border-collapse: collapse; }
+  td, th { vertical-align: top; }
+  dt { font-weight: bold; }
+  div.figure { padding: 0.5em; }
+  div.figure p { text-align: center; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size:smaller }
+  .code-highlighted {background-color:#ffff00;}
+  .org-info-js_info-navigation { border-style:none; }
+  #org-info-js_console-label { font-size:10px; font-weight:bold;
+                               white-space:nowrap; }
+  .org-info-js_search-highlight {background-color:#ffff00; color:#000000;
+                                 font-weight:bold; }
+  /*]]>*/-->
+</style>
+<link rel="stylesheet" type="text/css" href="css/stylesheet.css" />
+<script type="text/javascript">
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+
+<h1 class="title">Lua RTT bindings (beta1)</h1>
+
+
+
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">1 Overview </a></li>
+<li><a href="#sec-2">2 Setup </a>
+<ul>
+<li><a href="#sec-2_1">2.1 Compilation </a></li>
+<li><a href="#sec-2_2">2.2 Runtime </a></li>
+</ul>
+</li>
+<li><a href="#sec-3">3 Quickstart </a>
+<ul>
+<li><a href="#sec-3_1">3.1 Using the RTT Lua interpreter </a></li>
+<li><a href="#sec-3_2">3.2 Using the LuaComponent </a></li>
+<li><a href="#sec-3_3">3.3 Using the LuaService </a></li>
+</ul>
+</li>
+<li><a href="#sec-4">4 Lua API </a>
+<ul>
+<li><a href="#sec-4_1">4.1 Overview </a></li>
+<li><a href="#sec-4_2">4.2 Miscellaneous toplevel </a></li>
+<li><a href="#sec-4_3">4.3 TaskContext </a></li>
+<li><a href="#sec-4_4">4.4 SendHandle </a></li>
+<li><a href="#sec-4_5">4.5 Variable </a></li>
+<li><a href="#sec-4_6">4.6 InputPort and OutputPort </a></li>
+<li><a href="#sec-4_7">4.7 Property </a></li>
+<li><a href="#sec-4_8">4.8 Service Interface </a>
+<ul>
+<li><a href="#sec-4_8_1">4.8.1 Service </a></li>
+<li><a href="#sec-4_8_2">4.8.2 ServiceRequester </a></li>
+<li><a href="#sec-4_8_3">4.8.3 Operation </a></li>
+<li><a href="#sec-4_8_4">4.8.4 EEHook </a></li>
+</ul></li>
+</ul>
+</li>
+<li><a href="#sec-5">5 The rttlib convenience module </a>
+<ul>
+<li><a href="#sec-5_1">5.1 how to add a pretty printer for a custom type </a></li>
+</ul>
+</li>
+<li><a href="#sec-6">6 Tips and tricks </a>
+<ul>
+<li><a href="#sec-6_1">6.1 rttlua init file <code>~/.rttlua</code> </a></li>
+</ul>
+</li>
+<li><a href="#sec-7">7 Known issues </a>
+<ul>
+<li><a href="#sec-7_1">7.1 Assignment is not like RTT scripting </a></li>
+<li><a href="#sec-7_2">7.2 Not all types are garbage collected </a></li>
+<li><a href="#ComparisonIssue">7.3 Comparing Lua types and RTT Variables fails </a></li>
+<li><a href="#sec-7_4">7.4 Calling a connected OperationCaller </a></li>
+<li><a href="#sec-7_5">7.5 Support for creating Operations from Lua </a></li>
+</ul>
+</li>
+<li><a href="#sec-8">8 License </a></li>
+<li><a href="#sec-9">9 Links </a></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-1" class="outline-2">
+<h2 id="sec-1"><span class="section-number-2">1</span> Overview </h2>
+<div class="outline-text-2" id="text-1">
+
+
+<p>
+The RTT Lua bindings provide a slim but powerful interface to the
+RTT framework. It can be used for:
+</p>
+<ul>
+<li>
+for building domain specific languages for the RTT
+</li>
+<li>
+as a scriptable taskbrowser and deployer
+</li>
+<li>
+for fast prototyping of components
+
+</li>
+</ul>
+
+<p>These bindings can be used in three different ways:
+</p>
+<ol>
+<li>
+As a <b>RTT enabled Lua interpreter</b>
+
+<p>
+This is the easiest way to test a script and see if it works or
+for use as a scriptable deployer.
+</p>
+</li>
+<li>
+As a <b>Lua component</b>
+
+<p>
+A Lua component which offers two operations. The first for
+executing a given lua script and the second for executing a
+string with lua code.
+</p>
+</li>
+<li>
+As a <b>RTT plugin</b>
+
+<p>
+A <i>Lua Service</i> can be loaded into a component and used e.g. for
+<i>intra-component</i> coordination. It offers the same API as the
+Lua component.
+</p>
+</li>
+</ol>
+</div>
+
+</div>
+
+<div id="outline-container-2" class="outline-2">
+<h2 id="sec-2"><span class="section-number-2">2</span> Setup </h2>
+<div class="outline-text-2" id="text-2">
+
+
+</div>
+
+<div id="outline-container-2_1" class="outline-3">
+<h3 id="sec-2_1"><span class="section-number-3">2.1</span> Compilation </h3>
+<div class="outline-text-3" id="text-2_1">
+
+
+<ul>
+<li>
+requires Lua-5.1 (debian: <code>liblua5.1-0-dev</code>, <code>liblua5.1-0</code>, <code>lua5.1</code>)
+
+</li>
+<li>
+CMake options:
+
+<ul>
+<li>
+<code>BUILD_LUA_RTT</code>: enable this to build the rttlua shell, the
+Lua component and the Lua plugin.
+
+</li>
+<li>
+<code>BUILD_LUA_RTT_DYNAMIC_MODULES</code>: (EXPERIMENTAL) build RTT and
+deployer as pure Lua plugins. Don't use unless you know what
+you are doing.
+
+</li>
+<li>
+<code>BUILD_LUA_TESTCOMP</code>: builds a simple testcomponent which is
+used for testing the bindings. Not required for normal
+operation.
+
+</li>
+</ul>
+</li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-2_2" class="outline-3">
+<h3 id="sec-2_2"><span class="section-number-3">2.2</span> Runtime </h3>
+<div class="outline-text-3" id="text-2_2">
+
+
+<ul>
+<li>
+setup <code>LUA_PATH</code> and <code>LUA_CPATH</code> so that the rtt lua extension
+modules are found. The former is for lua modules (.lua) and the
+later is for binary ones (.so). For example:
+
+
+</li>
+</ul>
+
+
+<pre class="example">$ export LUA_PATH=";;;/home/mk/src/git/orocos/ocl/lua/modules/?.lua"
+$ export LUA_CPATH=";;;/home/mk/src/git/orocos/ocl/lua/modules/?.so"
+</pre>
+
+
+
+<p>
+(The first two semicolons mean the default path and the third
+separates our path. See the <a href="http://www.lua.org/manual/5.1/manual.html#5.3">Lua reference manual</a> for more
+information.)
+</p>
+<ul>
+<li>
+if using <code>rttlua</code> scripting: export correct <code>RTT_COMPONENT_PATH</code>
+variable, e.g.
+
+
+</li>
+</ul>
+
+
+<pre class="example">$ export RTT_COMPONENT_PATH=/home/mk/tmp/rtt-2.0/lib/orocos:home/mk/src/git/ocl/lua
+</pre>
+
+
+
+<p>
+and (optionally) add the location of the <code>rttlua</code> binary to your
+path, e.g.
+</p>
+
+
+
+<pre class="example">export PATH=$PATH:/home/mk/src/git/ocl/lua
+</pre>
+
+
+
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-3" class="outline-2">
+<h2 id="sec-3"><span class="section-number-2">3</span> Quickstart </h2>
+<div class="outline-text-2" id="text-3">
+
+
+
+</div>
+
+<div id="outline-container-3_1" class="outline-3">
+<h3 id="sec-3_1"><span class="section-number-3">3.1</span> Using the RTT Lua interpreter </h3>
+<div class="outline-text-3" id="text-3_1">
+
+
+<p>
+Run the <code>rttlua</code> interpreter. <code>--</code> indicates a comment. <code>rttlua</code>
+always creates a deployer which is available as peer of the "this"
+TaskContext in which we are running. The latter can be retrieved
+using the <code>rtt.getTC()</code> function.
+</p>
+
+
+
+<pre class="example">./rttlua
+Orocos RTTLua 1.0-beta1 (gnulinux)
+&gt; -- get a reference to our "this" TaskContext
+&gt; TC = rtt.getTC()
+&gt; -- print the TaskContext
+&gt; print(TC)
+userdata: 0x1cba0b8
+&gt; -- if we want nicer output we must load the rttlib module
+&gt; require("rttlib")
+&gt; print(TC)
+TaskContext: lua
+state: PreOperational
+[...]
+&gt; -- enable colors
+&gt; rttlib.color=true
+&gt; print(TC)
+&gt; -- get deployer peer. Lua methods are called with ':' notation
+&gt; d = TC:getPeer("deployer")
+&gt; print(d)
+&gt; instead of print you can just type '='
+&gt; =d
+&gt; -- call an operation
+&gt; d:call("displayComponentTypes")
+I can create the following component types:
+   OCL::LuaComponent
+   OCL::Testcomp
+&gt; -- create a property
+&gt; p = rtt.Property.new("string", "myprop")
+&gt; -- add it to our TaskContext
+&gt; TC:addProperty(p)
+&gt; -- check if its there
+&gt; =TC
+&gt; -- change it
+&gt; p:set("hello world")
+&gt; -- if you print TC it should have changed too.
+</pre>
+
+
+
+</div>
+
+</div>
+
+<div id="outline-container-3_2" class="outline-3">
+<h3 id="sec-3_2"><span class="section-number-3">3.2</span> Using the LuaComponent </h3>
+<div class="outline-text-3" id="text-3_2">
+
+
+<p>
+see the simple producer comsumer example in the
+<code>scripts/producer_consumer/</code> directory.
+</p>
+<p>
+The LuaComponent has two <code>string</code> properties called <code>lua_string</code>
+and <code>lua_file</code>. The code in this string/file will be executed
+during <code>configureHook</code> <span style="text-decoration:underline;">before</span> the Lua configureHook() is
+executed. E.g:
+</p>
+
+
+
+<pre class="example">rttlua
+Orocos RTTLua 1.0-beta1 (gnulinux)
+&gt; tc=getTC()
+&gt; tc:getProperty("lua_string"):set("print('hello property')")
+&gt; =tc:configure()
+hello property
+85.295 [ ERROR  ][./rttlua::main()] [string "configureHook()"]:1: attempt to call global 'configureHook' (a nil value)
+false
+</pre>
+
+
+
+<p>
+(The error occurs because we have not define a <code>configureHook</code> lua
+function.)
+</p>
+<p>
+The idea of course is to be able to use the standard deployer to
+setup Lua components. If the properties are not initialized nothing
+happens.
+</p>
+</div>
+
+</div>
+
+<div id="outline-container-3_3" class="outline-3">
+<h3 id="sec-3_3"><span class="section-number-3">3.3</span> Using the LuaService </h3>
+<div class="outline-text-3" id="text-3_3">
+
+
+<p>
+Here's an snip of Lua code which creates a Lua service in the
+deployer component, runs some Lua code in it which creates a
+property and then checks if the value was set correctly. It also
+shows how to correctly clean up a Property.
+</p>
+
+
+
+<pre class="example">-- load lua service into deployer
+d:addPeer(d)
+d:call("loadService", "deployer", "Lua")
+local execstr_op = d:provides("Lua"):getOperation("exec_str")
+execstr_op([[
+                  require("rttlib")
+                  local tc=rtt.getTC()
+                  local p=rtt.Property.new("string", "service-testprop")
+                  tc:addProperty(p)
+                  p:set("hullo from the lua service!")
+            ]])
+
+ local p = d:getProperty("service-testprop")
+ assert(p:get() == var.new("string", "hullo from the lua service!"))
+ d:removeProperty("service-testprop")
+ p:delete()
+ d:removePeer("deployer")
+</pre>
+
+
+
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-4" class="outline-2">
+<h2 id="sec-4"><span class="section-number-2">4</span> Lua API </h2>
+<div class="outline-text-2" id="text-4">
+
+
+
+</div>
+
+<div id="outline-container-4_1" class="outline-3">
+<h3 id="sec-4_1"><span class="section-number-3">4.1</span> Overview </h3>
+<div class="outline-text-3" id="text-4_1">
+
+
+<p>
+The Lua API consists of objects and free functions. The API naming
+mostly follows that RTT while simplifying where possible. All rtt
+related functions are stored in a global table called <code>rtt</code>. They
+are further subdivided as followed:
+</p>
+<ul>
+<li>
+<code>TaskContext</code>
+</li>
+<li>
+<code>SendHandle</code>
+</li>
+<li>
+<code>Variable</code>
+</li>
+<li>
+<code>InputPort</code> and <code>OutputPort</code>
+</li>
+<li>
+<code>Property</code>
+</li>
+<li>
+<code>Service</code>
+</li>
+<li>
+<code>Operation</code>
+</li>
+<li>
+<code>Logger</code>
+</li>
+<li>
+<code>EEHook</code>
+
+</li>
+</ul>
+
+<p>Probably the most important function is <code>rtt.getTC()</code> which returns
+a reference to <i>our</i> TaskContext.
+</p>
+<p>
+<b>Note</b>: the API consists of what was needed so far and what was easy
+to do. If something is missing which you need let us know. Chances
+are high that it is easy to add.
+</p>
+<p>
+Most of the API can be used in two ways: as functions and
+objects. The first uses the dot '.' syntax and takes the object as
+the first parameter. The second uses the ':' and will internally
+pass the object as a first parameter.
+</p>
+<p>
+For example the following two calls are equivalent:
+</p>
+
+
+
+<pre class="example">&gt; tc = rtt.getTC()
+&gt; print( rtt.TaskContext.getName(tc) )
+&gt; print( tc:getName() )
+</pre>
+
+
+
+<p>
+The flag column describes additonal properties of the
+function/method:
+</p><ul>
+<li>
+'R': real-time safe
+</li>
+<li>
+'F' or 'M': only available as function or method
+
+</li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-4_2" class="outline-3">
+<h3 id="sec-4_2"><span class="section-number-3">4.2</span> Miscellaneous toplevel </h3>
+<div class="outline-text-3" id="text-4_2">
+
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption></caption>
+<colgroup><col align="left" /><col align="left" /><col align="left" />
+</colgroup>
+<thead>
+<tr><th scope="col">Method</th><th scope="col">flag</th><th scope="col">description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>table services()</code></td><td>F</td><td>returns a table of strings specifying the known services</td></tr>
+<tr><td><code>table typekits()</code></td><td>F</td><td>returns a table of strings specifying the known typekits</td></tr>
+<tr><td><code>table types()</code></td><td>F</td><td>returns a table of strings specifying the known types</td></tr>
+<tr><td><code>setLogLevel(string)</code></td><td>F</td><td>set the loglevel</td></tr>
+<tr><td><code>string getLogLevel()</code></td><td>F</td><td>return the current loglevel</td></tr>
+<tr><td><code>log(string, ...)</code></td><td>F</td><td>log all (string) arguments</td></tr>
+<tr><td><code>logl(loglevel, string, ...)</code></td><td>F</td><td>log all (string) arguments with (string) loglevel</td></tr>
+</tbody>
+</table>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-4_3" class="outline-3">
+<h3 id="sec-4_3"><span class="section-number-3">4.3</span> TaskContext </h3>
+<div class="outline-text-3" id="text-4_3">
+
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption></caption>
+<colgroup><col align="left" /><col align="left" /><col align="left" />
+</colgroup>
+<thead>
+<tr><th scope="col">Method</th><th scope="col">flag</th><th scope="col">description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>string getName()</code></td><td></td><td>returns TaskContext name</td></tr>
+<tr><td><code>bool start()</code></td><td></td><td>start TaskContext</td></tr>
+<tr><td><code>bool stop()</code></td><td></td><td>stop TaskContext</td></tr>
+<tr><td><code>bool configure()</code></td><td></td><td>configure TaskContext</td></tr>
+<tr><td><code>bool activate()</code></td><td></td><td>activate TaskContext</td></tr>
+<tr><td><code>bool cleanup()</code></td><td></td><td>cleanup TaskContext</td></tr>
+<tr><td><code>string getState()</code></td><td></td><td>return string describing current state</td></tr>
+<tr><td><code>table getPeers()</code></td><td></td><td>return a table of all peers</td></tr>
+<tr><td><code>void addPeer(TaskContext)</code></td><td></td><td>add a TaskContext as a peer</td></tr>
+<tr><td><code>void removePeer(string)</code></td><td></td><td>remove a peer</td></tr>
+<tr><td><code>TaskContext getPeer(string)</code></td><td></td><td>get a peer</td></tr>
+<tr><td><code>table getPortNames()</code></td><td></td><td>return a table of port names</td></tr>
+<tr><td><code>void addPort(port, name, desc)</code></td><td></td><td>add a port to TaskContext with name (optional) and description (optional)</td></tr>
+<tr><td><code>void addEventPort(port, name, desc)</code></td><td></td><td>as above but add as EventPort</td></tr>
+<tr><td><code>Port getPort(string)</code></td><td></td><td>get a port with given name</td></tr>
+<tr><td><code>void removePort(string)</code></td><td></td><td>remove port with given name from interface</td></tr>
+<tr><td><code>addProperty(Property, name, desc)</code></td><td></td><td>add a property with name (optional) and description (optional)</td></tr>
+<tr><td><code>getProperty(string)</code></td><td></td><td>get a property with the given name</td></tr>
+<tr><td><code>table getProperties()</code></td><td></td><td>return all properties in a table</td></tr>
+<tr><td><code>void removeProperty(string)</code></td><td></td><td>remove property with given name from interface</td></tr>
+<tr><td><code>table getOps()</code></td><td></td><td>return a table of Operation names</td></tr>
+<tr><td><code>string, number string, table getOpInfo(string)</code></td><td></td><td>returns name, arity, description and table of argument descriptions</td></tr>
+<tr><td><code>Service provides(...)</code></td><td></td><td>return service (provides/0 default, provides/1 subservice)</td></tr>
+<tr><td><code>Variable call(string, ...)</code></td><td></td><td>call operation with name specified by string and right arguments</td></tr>
+<tr><td><code>SendHandle send(string, ...)</code></td><td></td><td>as above but send. returns SendHandle</td></tr>
+<tr><td><code>void delete(TaskContext)</code></td><td></td><td>explicit deletion of a TaskContext</td></tr>
+</tbody>
+</table>
+
+
+<p>
+Note: <code>call</code> and <code>send</code> accept both
+</p>
+</div>
+
+</div>
+
+<div id="outline-container-4_4" class="outline-3">
+<h3 id="sec-4_4"><span class="section-number-3">4.4</span> SendHandle </h3>
+<div class="outline-text-3" id="text-4_4">
+
+
+<p>
+An object returned by a TaskContext send() operation.
+</p>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption></caption>
+<colgroup><col align="left" /><col align="left" /><col align="left" />
+</colgroup>
+<thead>
+<tr><th scope="col">Method</th><th scope="col">flag</th><th scope="col">description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>string, variable collect()</code></td><td></td><td>collect results of send, may block. string is SendStatus</td></tr>
+<tr><td><code>string, variable collectIfDone</code></td><td></td><td>as above, non blocking version</td></tr>
+</tbody>
+</table>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-4_5" class="outline-3">
+<h3 id="sec-4_5"><span class="section-number-3">4.5</span> Variable </h3>
+<div class="outline-text-3" id="text-4_5">
+
+
+<p>
+Variable are the types know to the RTT. They consist of basic types
+(numeric, <code>string</code>, <code>char</code>, <code>bool</code>) and user defined types. The
+function <code>rtt.Variable.getTypes()</code> returns a table of these types:
+</p>
+
+
+
+<pre class="example">&gt; print(table.concat(rtt.Variable.getTypes(), ', '))
+ConnPolicy, FlowStatus, PropertyBag, SendHandle, SendStatus, array, bool, char, double, float, int, rt_string, string, uint, void
+</pre>
+
+
+
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption></caption>
+<colgroup><col align="left" /><col align="left" /><col align="left" />
+</colgroup>
+<thead>
+<tr><th scope="col">Method</th><th scope="col">flag</th><th scope="col">description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>variable new(type)</code></td><td>F</td><td>create a new Variable of type</td></tr>
+<tr><td><code>variable new(type, ival)</code></td><td>F</td><td>create new Variable of type and initialize with ival (only for basic types)</td></tr>
+<tr><td><code>luaval tolua()</code></td><td></td><td>convert to lua value (only for basic types)</td></tr>
+<tr><td><code>table getTypes()</code></td><td>F</td><td>return a list of types know to the RTT</td></tr>
+<tr><td><code>string getType()</code></td><td></td><td>return the RTT type name in human readable format</td></tr>
+<tr><td><code>string getTypeName()</code></td><td></td><td>return the RTT type name</td></tr>
+<tr><td><code>table getMemberNames()</code></td><td></td><td>return a table of the names of subtypes of this variable</td></tr>
+<tr><td><code>variable getMember(name)</code></td><td></td><td>return variable which is a member with name</td></tr>
+<tr><td><code>opBinary(string_op, var1, var2)</code></td><td>F</td><td>execute: var1 string<sub>op</sub> var2</td></tr>
+<tr><td><code>bool assign(value)</code></td><td></td><td>assign value which can be a lua type or a Variable</td></tr>
+</tbody>
+</table>
+
+
+<ul>
+<li>
+the unary operator <code>-</code> and the binary operators <code>+</code>, <code>-</code>, <code>*</code>,
+<code>/</code> <code>%</code>, <code>^</code>, and the comparison operators '==', '&lt;=', '&gt;=' are
+supported. See the <a href="#ComparisonIssue">warning</a> on comparing Variables with
+corresponding Lua types.
+
+</li>
+<li>
+indexing and assigment
+
+<p>
+Variables with members can be indexed and assigned. See the
+following example:
+</p>
+
+</li>
+</ul>
+
+
+<pre class="example">&gt; cp = rtt.Variable.new("ConnPolicy")
+&gt; print(cp)
+{data_size=0,type=0,name_id="",init=false,pull=false,transport=0,lock_policy=2,size=0}
+&gt; print(cp.data_size)
+0
+&gt; cp.data_size = 4711
+&gt; print(cp.data_size)
+4711
+</pre>
+
+
+
+</div>
+
+</div>
+
+<div id="outline-container-4_6" class="outline-3">
+<h3 id="sec-4_6"><span class="section-number-3">4.6</span> InputPort and OutputPort </h3>
+<div class="outline-text-3" id="text-4_6">
+
+
+<p>
+InputPort
+</p>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption></caption>
+<colgroup><col align="left" /><col align="left" /><col align="left" />
+</colgroup>
+<thead>
+<tr><th scope="col">Method</th><th scope="col">flag</th><th scope="col">description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>new(type, name, desc)</code></td><td></td><td>create a new InputPort of type  with name (optional) and description (optional)</td></tr>
+<tr><td><code>string, variable read()</code></td><td></td><td>read from Port, returns a FlowStatus string and if data available a Variable</td></tr>
+<tr><td><code>string read(variable)</code></td><td></td><td>read from Port and write result into Variable given. Returns FlowStatus</td></tr>
+<tr><td><code>table info()</code></td><td></td><td>return a table containing information about this port</td></tr>
+<tr><td><code>delete()</code></td><td></td><td>delete this port (remove it from any TaskContext before this)</td></tr>
+</tbody>
+</table>
+
+
+<p>
+OuputPort
+</p>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption></caption>
+<colgroup><col align="left" /><col align="left" /><col align="left" />
+</colgroup>
+<thead>
+<tr><th scope="col">Method</th><th scope="col">flag</th><th scope="col">description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>new(type, name, desc)</code></td><td></td><td>create a new OutputPort of type with name (optional) and description (optional)</td></tr>
+<tr><td><code>write(Variable)</code></td><td></td><td>write Variable to port</td></tr>
+<tr><td><code>table info()</code></td><td></td><td>return a table containing information about this port</td></tr>
+<tr><td><code>delete()</code></td><td></td><td>delete this port (remove it from any TaskContext before this)</td></tr>
+</tbody>
+</table>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-4_7" class="outline-3">
+<h3 id="sec-4_7"><span class="section-number-3">4.7</span> Property </h3>
+<div class="outline-text-3" id="text-4_7">
+
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption></caption>
+<colgroup><col align="left" /><col align="left" /><col align="left" />
+</colgroup>
+<thead>
+<tr><th scope="col">Method</th><th scope="col">flag</th><th scope="col">description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>new(type, name, desc)</code></td><td></td><td>create a new Property of type  with name (optional) and description (optional)</td></tr>
+<tr><td><code>Variable get()</code></td><td></td><td>return the Variable contained in this Property</td></tr>
+<tr><td><code>bool set(Variable)</code></td><td></td><td>set the Property to the value in given Variable</td></tr>
+<tr><td><code>string getName()</code></td><td></td><td>return the name of the property</td></tr>
+<tr><td><code>string getDescription()</code></td><td></td><td>return the description of the property</td></tr>
+<tr><td><code>delete()</code></td><td></td><td>delete this property (remove it from any TaskContex before doing this!)</td></tr>
+</tbody>
+</table>
+
+
+<p>
+Properties which contain complex types can also be indexed with <code>.</code>
+just like Variables.
+</p>
+</div>
+
+</div>
+
+<div id="outline-container-4_8" class="outline-3">
+<h3 id="sec-4_8"><span class="section-number-3">4.8</span> Service Interface </h3>
+<div class="outline-text-3" id="text-4_8">
+
+
+
+</div>
+
+<div id="outline-container-4_8_1" class="outline-4">
+<h4 id="sec-4_8_1"><span class="section-number-4">4.8.1</span> Service </h4>
+<div class="outline-text-4" id="text-4_8_1">
+
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption></caption>
+<colgroup><col align="left" /><col align="left" /><col align="left" />
+</colgroup>
+<thead>
+<tr><th scope="col">Method</th><th scope="col">flag</th><th scope="col">description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>string getName()</code></td><td></td><td>return Name of Service</td></tr>
+<tr><td><code>string doc()</code></td><td></td><td>return documentation of this service</td></tr>
+<tr><td><code>table getProviderNames()</code></td><td></td><td>return table of subservice names</td></tr>
+<tr><td><code>table getOperationNames()</code></td><td></td><td>return table of names of operations of this service</td></tr>
+<tr><td><code>table getPortNames()</code></td><td></td><td>return table of names of ports of this service</td></tr>
+<tr><td><code>provides(string)</code></td><td></td><td>return subservice with name specified by given string</td></tr>
+<tr><td><code>Operation getOperation(string)</code></td><td></td><td>return operation specified by string name  of this service</td></tr>
+<tr><td><code>Port getPort(string)</code></td><td></td><td>return port specified by the given string name of this service</td></tr>
+</tbody>
+</table>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-4_8_2" class="outline-4">
+<h4 id="sec-4_8_2"><span class="section-number-4">4.8.2</span> ServiceRequester </h4>
+<div class="outline-text-4" id="text-4_8_2">
+
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption></caption>
+<colgroup><col align="left" /><col align="left" /><col align="left" />
+</colgroup>
+<thead>
+<tr><th scope="col">Method</th><th scope="col">flag</th><th scope="col">description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>string getRequestName()</code></td><td></td><td>return name of this service requester</td></tr>
+<tr><td><code>table getRequesterNames()</code></td><td></td><td>return table of names of required subservices</td></tr>
+<tr><td><code>bool ready()</code></td><td></td><td>true if all operations are resolved</td></tr>
+<tr><td><code>void disconnect()</code></td><td></td><td>disconnect from remote Service</td></tr>
+<tr><td><code>requires(string)</code></td><td></td><td>return required subservice specified by string name</td></tr>
+</tbody>
+</table>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-4_8_3" class="outline-4">
+<h4 id="sec-4_8_3"><span class="section-number-4">4.8.3</span> Operation </h4>
+<div class="outline-text-4" id="text-4_8_3">
+
+
+<p>
+This object is only returned by <code>Service:getOperation</code>. It can
+also be called with the familiar <code>op(arg1, arg2)</code> syntax.
+</p>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption></caption>
+<colgroup><col align="left" /><col align="left" /><col align="left" />
+</colgroup>
+<thead>
+<tr><th scope="col">Method</th><th scope="col">flag</th><th scope="col">description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>name, descr, res_type, arity, argtab info()</code></td><td></td><td>returns result type, arity, description and table of parameters</td></tr>
+<tr><td><code>Variable call(string, ...)</code></td><td></td><td>calls operation specified by string. additional args are passed on</td></tr>
+<tr><td><code>SendHandle send(string, ...)</code></td><td></td><td>same as above, but <code>send</code> Operation and return SendHandle</td></tr>
+</tbody>
+</table>
+
+
+
+</div>
+
+</div>
+
+<div id="outline-container-4_8_4" class="outline-4">
+<h4 id="sec-4_8_4"><span class="section-number-4">4.8.4</span> EEHook </h4>
+<div class="outline-text-4" id="text-4_8_4">
+
+
+<p>
+EEHook provides a way to register callbacks in the TaskContexts
+Execution engine. This is especially useful for the Lua plugin
+which can use this mechanism to get triggered on every update
+hook.
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption></caption>
+<colgroup><col align="left" /><col align="left" /><col align="left" />
+</colgroup>
+<thead>
+<tr><th scope="col">Method</th><th scope="col">flag</th><th scope="col">description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>new(name)</code></td><td></td><td>create a new hook tied to the lua function with the given (string) name</td></tr>
+<tr><td><code>enable()</code></td><td></td><td>enable the hook so the lua function will be executed on trigger()</td></tr>
+<tr><td><code>disable()</code></td><td></td><td>disable the hook</td></tr>
+</tbody>
+</table>
+
+
+</div>
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-5" class="outline-2">
+<h2 id="sec-5"><span class="section-number-2">5</span> The rttlib convenience module </h2>
+<div class="outline-text-2" id="text-5">
+
+<p>This library adds some useful (mostly pretty printing) functions to
+the standard objects. It is recommended to load it for all
+applications by adding the following to scripts:
+</p>
+<p>
+<code>require("rttlib")</code>
+</p>
+
+</div>
+
+<div id="outline-container-5_1" class="outline-3">
+<h3 id="sec-5_1"><span class="section-number-3">5.1</span> how to add a pretty printer for a custom type </h3>
+<div class="outline-text-3" id="text-5_1">
+
+
+<p>
+In short: write a function which accepts a lua table representation
+of you data type and returns either a table or a string. Assign it
+to <code>rttlib.pp_var.mytype</code>, where mytype is the value returned by
+the <code>var:getType()</code> method. That's all!
+</p>
+<p>
+<b>Quick example:</b> <code>ConnPolicy</code> type
+</p>
+<p>
+(This is just an example. It has been done for this type already).
+</p>
+<p>
+If you run it without loading <code>rttlib</code> printing a <code>ConnPolicy</code> will
+look like this:
+</p>
+
+
+
+<pre class="example">./rttlua
+Orocos RTTLua 1.0-beta1 (gnulinux)
+&gt; return var.new("ConnPolicy")
+{data_size=0,type=0,name_id="",init=false,pull=false,transport=0,lock_policy=2,size=0}
+</pre>
+
+
+
+<p>
+This not too bad, but we would like to display the string
+representation of the C++ enums <code>type</code> and <code>lock_policy</code>. So we
+write a function&hellip;
+</p>
+
+
+
+<pre class="example">function ConnPolicy2tab(cp)
+    if cp.type == 0 then cp.type = "DATA"
+    elseif cp.type == 1 then cp.type = "BUFFER"
+    else cp.type = tostring(cp.type) .. " (invalid!)" end
+
+    if cp.lock_policy == 0 then cp.lock_policy = "UNSYNC"
+    elseif cp.lock_policy == 1 then cp.lock_policy = "LOCKED"
+    elseif cp.lock_policy == 2 then cp.lock_policy = "LOCK_FREE"
+    else cp.lock_policy = tostring(cp.lock_policy) .. " (invalid!)" end
+    return cp
+end
+</pre>
+
+
+
+<p>
+and add it to the <code>rttlib.var_pp</code> table of Variable formatters:
+</p>
+
+
+
+<pre class="example">rttlib.var_pp.ConnPolicy = ConnPolicy2tab
+</pre>
+
+
+
+<p>
+now printing a <code>ConnPolicy</code> again calls our function and prints the
+desired fields:
+</p>
+
+
+
+<pre class="example">&gt; return var.new("ConnPolicy")
+{data_size=0,type="DATA",name_id="",init=false,pull=false,transport=0,lock_policy="LOCK_FREE",size=0}
+&gt;
+</pre>
+
+
+
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-6" class="outline-2">
+<h2 id="sec-6"><span class="section-number-2">6</span> Tips and tricks </h2>
+<div class="outline-text-2" id="text-6">
+
+
+</div>
+
+<div id="outline-container-6_1" class="outline-3">
+<h3 id="sec-6_1"><span class="section-number-3">6.1</span> rttlua init file <code>~/.rttlua</code> </h3>
+<div class="outline-text-3" id="text-6_1">
+
+
+<p>
+<code>rttlua</code> will look for a file <code>.rttlua</code> in your home directory and
+if found execute it. It can be used for doing initalization
+(e.g. loading <code>rttlib</code> etc.)
+</p>
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-7" class="outline-2">
+<h2 id="sec-7"><span class="section-number-2">7</span> Known issues </h2>
+<div class="outline-text-2" id="text-7">
+
+
+</div>
+
+<div id="outline-container-7_1" class="outline-3">
+<h3 id="sec-7_1"><span class="section-number-3">7.1</span> Assignment is not like RTT scripting </h3>
+<div class="outline-text-3" id="text-7_1">
+
+
+<p>
+Except for the Lua primitive types (string, number, boolean) Lua
+works with references. So assignment between RTT Variables and Lua
+types might not do what you expect:
+</p>
+
+
+
+<pre class="example">&gt; s=rtt.Variable.new("string", "hello world")
+&gt; print(s)
+hello world
+&gt; =type(s)
+userdata
+&gt; =s:getType()
+string
+&gt; s = "a new string" -- carful! now its a Lua string, the former Variable will be garbage collected.
+&gt; =type(s)
+string
+&gt; s:getType()
+stdin:1: attempt to call method 'getType' (a nil value)
+stack traceback:
+stdin:1: in main chunk
+</pre>
+
+
+
+</div>
+
+</div>
+
+<div id="outline-container-7_2" class="outline-3">
+<h3 id="sec-7_2"><span class="section-number-3">7.2</span> Not all types are garbage collected </h3>
+<div class="outline-text-3" id="text-7_2">
+
+
+<p>
+The following types are not garbage collected and must be managed
+manually (ie. removed from TaskContext Interface and the delete()
+function called):
+</p><ul>
+<li>
+Property
+</li>
+<li>
+InputPort, OutputPort
+</li>
+<li>
+TaskContext
+
+</li>
+</ul>
+
+<p>(For completenes, these types <span style="text-decoration:underline;">are</span> collected: Variable, Service,
+ServiceRequester, SendHandle, Operation, EEHook)
+</p>
+</div>
+
+</div>
+
+<div id="outline-container-ComparisonIssue" class="outline-3">
+<h3 id="ComparisonIssue"><a name="sec-7_3" id="sec-7_3"></a><span class="section-number-3">7.3</span> Comparing Lua types and RTT Variables fails </h3>
+<div class="outline-text-3" id="text-ComparisonIssue">
+
+
+<p>
+Comparison of equivalent Lua and RTT Variable types is does <b>not</b>
+work. You can only compare entities of the <span style="text-decoration:underline;">same</span> type:
+</p>
+
+
+
+<pre class="example">-- lua with lua works:
+&gt; ="just a string" == "just a string"
+true
+-- and rtt.Variable with rtt.Variable too...
+&gt; return rtt.Variable.new("string", "just a string") == rtt.Variable.new("string", "just a string")
+true
+-- but unfortunately not a mixture of both:
+&gt; return "just a string" == rtt.Variable.new("string", "just a string")
+false
+</pre>
+
+
+
+</div>
+
+</div>
+
+<div id="outline-container-7_4" class="outline-3">
+<h3 id="sec-7_4"><span class="section-number-3">7.4</span> Calling a connected OperationCaller </h3>
+<div class="outline-text-3" id="text-7_4">
+
+
+<p>
+It is not possible to call a connected OperationCaller from Lua.
+</p>
+</div>
+
+</div>
+
+<div id="outline-container-7_5" class="outline-3">
+<h3 id="sec-7_5"><span class="section-number-3">7.5</span> Support for creating Operations from Lua </h3>
+<div class="outline-text-3" id="text-7_5">
+
+
+<p>
+It is currently not possible to define new Operations from Lua.
+</p>
+
+
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-8" class="outline-2">
+<h2 id="sec-8"><span class="section-number-2">8</span> License </h2>
+<div class="outline-text-2" id="text-8">
+
+
+<p>
+The Lua-RTT bindings are licensed under the same license as the
+<a href="http://orocos.org/orocos/license">OROCOS RTT</a>.
+</p>
+</div>
+
+</div>
+
+<div id="outline-container-9" class="outline-2">
+<h2 id="sec-9"><span class="section-number-2">9</span> Links </h2>
+<div class="outline-text-2" id="text-9">
+
+<ul>
+<li>
+<a href="http://www.lua.org/">The Lua website</a>
+</li>
+<li>
+<a href="http://www.lua.org/pil/">Programming in Lua</a> book (older version, but the basics are mostly the same)
+</li>
+<li>
+<a href="http://www.lua.org/manual/5.1/">The Lua-5.1 Reference Manual</a>
+</li>
+<li>
+<a href="http://thomaslauer.com/download/luarefv51.pdf">Lua Cheatsheet</a>
+</li>
+</ul>
+</div>
+</div>
+<div id="postamble">
+<p class="author"> Author: Markus Klotzbuecher
+</p>
+<p class="date"> Date: 2010-09-13 Mon</p>
+<p class="creator">HTML generated by org-mode TAG=7.01g in emacs 23</p>
+</div>
+</div>
+</body>
+</html>
