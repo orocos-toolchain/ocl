@@ -295,7 +295,7 @@ namespace OCL
             log(Error) << one <<" does not have a port "<<one_port<< endlog();
             return false;
         }
-        if ( !b ) {
+        if ( !bp ) {
             log(Error) << other <<" does not have a port "<<other_port<< endlog();
             return false;
         }
