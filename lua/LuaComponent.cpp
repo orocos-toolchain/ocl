@@ -51,6 +51,8 @@ int dostring (lua_State *L, const char *s, const char *name);
 
 #include <string>
 #include <rtt/os/main.h>
+#include <rtt/os/Mutex.hpp>
+#include <rtt/os/MutexLock.hpp>
 #include <rtt/TaskContext.hpp>
 #include <ocl/OCL.hpp>
 #include <deployment/DeploymentComponent.hpp>
@@ -69,11 +71,13 @@ namespace OCL
 		std::string lua_string;
 		std::string lua_file;
 		lua_State *L;
+		os::Mutex m;
 
 	public:
 		LuaComponent(std::string name)
 			: TaskContext(name, PreOperational)
 		{
+			os::MutexLock lock(m);
 			L = lua_open();
 			lua_gc(L, LUA_GCSTOP, 0);
 			luaL_openlibs(L);
@@ -104,11 +108,13 @@ namespace OCL
 
 		~LuaComponent()
 		{
+			os::MutexLock lock(m);
 			lua_close(L);
 		}
 
 		bool exec_file(const std::string &file)
 		{
+			os::MutexLock lock(m);
 			if (luaL_dofile(L, file.c_str())) {
 				Logger::log(Logger::Error) << lua_tostring(L, -1) << endlog();
 				return false;
@@ -118,6 +124,7 @@ namespace OCL
 
 		bool exec_str(const std::string &str)
 		{
+			os::MutexLock lock(m);
 			if (luaL_dostring(L, str.c_str())) {
 				Logger::log(Logger::Error) << lua_tostring(L, -1) << endlog();
 				return false;
@@ -128,12 +135,14 @@ namespace OCL
 #ifndef OCL_COMPONENT_ONLY
 		void lua_repl()
 		{
+			os::MutexLock lock(m);
 			cout << "Orocos RTTLua " << RTTLUA_VERSION << " (" << OROCOS_TARGET_NAME << ")"  << endl;
 			dotty(L);
 		}
 #endif
 		bool configureHook()
 		{
+			os::MutexLock lock(m);
 			if(!lua_string.empty())
 				exec_str(lua_string);
 
@@ -145,21 +154,25 @@ namespace OCL
 
 		bool startHook()
 		{
+			os::MutexLock lock(m);
 			return call_func(L, "startHook");
 		}
 
 		void updateHook()
 		{
+			os::MutexLock lock(m);
 			call_func(L, "updateHook");
 		}
 
 		void stopHook()
 		{
+			os::MutexLock lock(m);
 			call_func(L, "stopHook");
 		}
 
 		void cleanupHook()
 		{
+			os::MutexLock lock(m);
 			call_func(L, "cleanupHook");
 		}
 	};
