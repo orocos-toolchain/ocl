@@ -5,10 +5,12 @@
 #include <rtt/TaskContext.hpp>
 #include <rtt/Logger.hpp>
 #include <boost/filesystem.hpp>
+#include <rtt/plugin/PluginLoader.hpp>
 
 #include <dlfcn.h>
 
 using namespace RTT;
+using namespace RTT::detail;
 using namespace std;
 using namespace boost::filesystem;
 
@@ -42,6 +44,8 @@ static const std::string default_delimiter(":");
 # endif
 
 boost::shared_ptr<ComponentLoader> ComponentLoader::minstance;
+
+static boost::shared_ptr<ComponentLoader> instance2;
 
 namespace {
 
@@ -88,13 +92,13 @@ string makeShortFilename(string const& str) {
 }
 
 boost::shared_ptr<ComponentLoader> ComponentLoader::Instance() {
-    if (!minstance)
-        minstance.reset( new ComponentLoader() );
-    return minstance;
+    if (!instance2)
+        instance2.reset( new ComponentLoader() );
+    return instance2;
 }
 
 void ComponentLoader::Release() {
-    minstance.reset();
+    instance2.reset();
 }
 
 void ComponentLoader::import( std::string const& path_list )
@@ -109,9 +113,9 @@ void ComponentLoader::import( std::string const& path_list )
     // search:
     vector<string> paths;
     if (path_list.empty())
-    	paths = splitPaths( component_path);
+    	paths = splitPaths( component_path); // import RTT_COMPONENT_PATH
     else
-    	paths = splitPaths( path_list );
+    	paths = splitPaths( path_list ); // import package or path list.
 
     for (vector<string>::iterator it = paths.begin(); it != paths.end(); ++it)
     {
@@ -132,9 +136,16 @@ void ComponentLoader::import( std::string const& path_list )
                         log(Debug) << "not a " + SO_EXT + " library: ignored."<<endlog();
                 }
             }
+            log(Info) << "Importing plugins and typekits from directory " << p.string() << " ..."<<endlog();
+            PluginLoader::Instance()->loadTypekits( p.string() );
+            PluginLoader::Instance()->loadPlugins( p.string() );
         }
-        else
+        else {
             log(Debug) << "No such directory: " << p << endlog();
+            if ( !p.is_complete() ) {
+                import(p.string(), "");
+            }
+        }
 
         // Repeat for path/OROCOS_TARGET:
         p = path(*it) / OROCOS_TARGET_NAME;
@@ -153,9 +164,14 @@ void ComponentLoader::import( std::string const& path_list )
                         log(Debug) << "not a " + SO_EXT + " library: ignored."<<endlog();
                 }
             }
+            log(Info) << "Importing plugins and typekits from directory " << p.string() << " ..."<<endlog();
+            PluginLoader::Instance()->loadTypekits( p.string() );
+            PluginLoader::Instance()->loadPlugins( p.string() );
         }
-        else
+        else {
             log(Debug) << "No such directory: " << p << endlog();
+            // we don't re-call import(p.string(),"") because foo/targetname isn't a packagename.
+        }
     }
 }
 
@@ -174,7 +190,7 @@ bool ComponentLoader::import( std::string const& package, std::string const& pat
         log(Info) <<"Component package '"<< package <<"' already imported." <<endlog();
         return true;
     } else {
-        log(Info) << "Component package '"<< package <<"' not seen before." <<endlog();
+        //log(Info) << "Component package '"<< package <<"' not seen before." <<endlog();
     }
 
     path arg( package );
@@ -204,6 +220,13 @@ bool ComponentLoader::import( std::string const& package, std::string const& pat
         tryouts.push_back( p.string() );
         if (is_regular_file( p ) && loadInProcess( p.string(), package, true ) )
             return true;
+        // check if it was a directory:
+        p = path(*it) / file;
+        tryouts.push_back( p.string() );
+        if ( is_directory( p )  ){
+            import( p.string() ); // import also checks for OROCOS_TARGET_NAME subdirs
+            return true;
+        }
     }
     log(Error) << "No such package found in path: " << package << ". Tried:"<< endlog();
     for(vector<string>::iterator it=tryouts.begin(); it != tryouts.end(); ++it)

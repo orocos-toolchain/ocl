@@ -50,11 +50,7 @@
     <para>
       This library contains user contributed software components of
       the <emphasis><ulink url="http://www.orocos.org">Open Robot
-      Control Software</ulink></emphasis> project. They are built
-      using the Real-Time Toolkit and some of them use other libraries
-      such as OpenCV, readline, Comedi, the Kinematics and Dynamics Library, the
-      Bayesian Filtering Library and so on. Components for interfacing
-      hardware devices are available as well.
+      Control Software</ulink></emphasis> project.
     </para>
   </section>
   <section id="audience">

@@ -205,8 +205,6 @@ namespace OCL
         log(Info) <<"RTT_COMPONENT_PATH was set to " << compPath << endlog();
         log(Info) <<"Re-scanning for plugins and components..."<<endlog();
         PluginLoader::Instance()->setPluginPath(compPath);
-        PluginLoader::Instance()->loadTypekits("");
-        PluginLoader::Instance()->loadPlugins("");
         ComponentLoader::Instance()->setComponentPath(compPath);
         ComponentLoader::Instance()->import("");
         return true;
@@ -222,6 +220,7 @@ namespace OCL
       if ( autoUnload.get() ) {
           kickOutAll();
       }
+      ComponentLoader::Release();
     }
 
     bool DeploymentComponent::connectPeers(const std::string& one, const std::string& other)
@@ -1180,8 +1179,6 @@ namespace OCL
     {
         RTT::Logger::In in("DeploymentComponent::import");
         log(Debug) << "Importing Components, plugins and typekits from " <<  path << endlog();
-        PluginLoader::Instance()->loadTypekits(path);
-        PluginLoader::Instance()->loadPlugins(path);
         ComponentLoader::Instance()->import( path );
         return true;
     }
