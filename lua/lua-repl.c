@@ -43,7 +43,6 @@ static void laction (int i) {
   lua_sethook(globalL, lstop, LUA_MASKCALL | LUA_MASKRET | LUA_MASKCOUNT, 1);
 }
 
-#if 0
 static void print_usage (void) {
   fprintf(stderr,
   "usage: %s [options] [script [args]].\n"
@@ -58,7 +57,6 @@ static void print_usage (void) {
   progname);
   fflush(stderr);
 }
-#endif
 
 void l_message (const char *pname, const char *msg) {
   if (pname) fprintf(stderr, "%s: ", pname);
@@ -112,7 +110,6 @@ static int docall (lua_State *L, int narg, int clear) {
   return status;
 }
 
-#if 0
 static void print_version (void) {
   l_message(NULL, LUA_RELEASE "  " LUA_COPYRIGHT);
 }
@@ -134,7 +131,7 @@ static int getargs (lua_State *L, char **argv, int n) {
   }
   return narg;
 }
-#endif
+
 
 int dofile (lua_State *L, const char *name) {
   int status = luaL_loadfile(L, name) || docall(L, 0, 1);
@@ -147,13 +144,11 @@ int dostring (lua_State *L, const char *s, const char *name) {
   return report(L, status);
 }
 
-#if 0
 static int dolibrary (lua_State *L, const char *name) {
   lua_getglobal(L, "require");
   lua_pushstring(L, name);
   return report(L, docall(L, 1, 1));
 }
-#endif
 
 static const char *get_prompt (lua_State *L, int firstline) {
   const char *p;
@@ -240,7 +235,6 @@ void dotty (lua_State *L) {
   progname = oldprogname;
 }
 
-#if 0
 
 static int handle_script (lua_State *L, char **argv, int n) {
   int status;
@@ -379,7 +373,7 @@ static int pmain (lua_State *L) {
   return 0;
 }
 
-
+#if 0
 int main (int argc, char **argv) {
   int status;
   struct Smain s;
@@ -395,5 +389,15 @@ int main (int argc, char **argv) {
   lua_close(L);
   return (status || s.status) ? EXIT_FAILURE : EXIT_SUCCESS;
 }
-
 #endif
+
+int main_args (lua_State *L, int argc, char **argv) {
+  int status;
+  struct Smain s;
+
+  s.argc = argc;
+  s.argv = argv;
+  status = lua_cpcall(L, &pmain, &s);
+  report(L, status);
+  return (status || s.status) ? EXIT_FAILURE : EXIT_SUCCESS;
+}

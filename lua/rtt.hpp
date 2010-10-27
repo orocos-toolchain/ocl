@@ -47,9 +47,10 @@ extern "C" {
 #include <lauxlib.h>
 #include <lualib.h>
 #include <string.h>
-}
 
-extern "C" int luaopen_rtt(lua_State *L);
-
+int luaopen_rtt(lua_State *L);
 int set_context_tc(RTT::TaskContext*, lua_State*);
 bool call_func(lua_State*, const std::string&);
+}
+
+

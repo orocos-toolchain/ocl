@@ -39,6 +39,7 @@ void dotty (lua_State *L);
 void l_message (const char *pname, const char *msg);
 int dofile (lua_State *L, const char *name);
 int dostring (lua_State *L, const char *s, const char *name);
+int main_args(lua_State *L, int argc, char **argv);
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -139,6 +140,13 @@ namespace OCL
 			cout << "Orocos RTTLua " << RTTLUA_VERSION << " (" << OROCOS_TARGET_NAME << ")"  << endl;
 			dotty(L);
 		}
+
+		int lua_repl(int argc, char **argv)
+		{
+			os::MutexLock lock(m);
+			cout << "Orocos RTTLua " << RTTLUA_VERSION << " (" << OROCOS_TARGET_NAME << ")"  << endl;
+			return main_args(L, argc, argv);
+		}
 #endif
 		bool configureHook()
 		{
@@ -147,9 +155,8 @@ namespace OCL
 				exec_str(lua_string);
 
 			if(!lua_file.empty())
-				exec_file(lua_file)
-;
-			return call_func(L, "configureHook");  // exec_str("configureHook()");
+				exec_file(lua_file);
+			return call_func(L, "configureHook");
 		}
 
 		bool startHook()
@@ -186,8 +193,6 @@ int ORO_main(int argc, char** argv)
 	struct stat stb;
 	wordexp_t init_exp;
 
-  	// log().setLogLevel( Logger::Warning );
-
 	LuaComponent lua("lua");
 	DeploymentComponent dc("deployer");
 	lua.connectPeers(&dc);
@@ -202,11 +207,7 @@ int ORO_main(int argc, char** argv)
 	}
 	wordfree(&init_exp);
 
-	if(argc>1) {
-		Logger::log(Logger::Info) << "executing script: " << argv[1] << endlog();
-		lua.exec_file(argv[1]);
-	}
-	lua.lua_repl();
+	lua.lua_repl(argc, argv);
 	return 0;
 }
 
