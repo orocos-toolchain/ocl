@@ -641,32 +641,33 @@ namespace OCL
                         }
 
                         // set PropFile name if present
-                        if ( comp.get().getProperty("PropFile") )  // PropFile is deprecated
-                            comp.get().getProperty("PropFile")->setName("PropertyFile");
+                        if ( comp.value().getProperty("PropFile") )  // PropFile is deprecated
+                            comp.value().getProperty("PropFile")->setName("PropertyFile");
 
                         // connect ports 'Ports' tag is optional.
-                        RTT::Property<RTT::PropertyBag>* ports = comp.get().getPropertyType<PropertyBag>("Ports");
+                        RTT::Property<RTT::PropertyBag>* ports = comp.value().getPropertyType<PropertyBag>("Ports");
                         if ( ports != 0 ) {
-                            RTT::PropertyBag::Names pnams = ports->get().list();
-                            for (RTT::PropertyBag::Names::iterator pit= pnams.begin(); pit !=pnams.end(); pit++) {
-                                base::PortInterface* p = c->ports()->getPort(*pit);
-                                if ( !p ) {
-                                    log(Error)<< "Component '"<< c->getName() <<"' does not have a Port '"<<*pit<<"'." << endlog();
+                            for (RTT::PropertyBag::iterator pit = ports->value().begin(); pit != ports->value().end(); pit++) {
+                                Property<string> portcon = *pit;
+                                if ( !portcon.ready() ) {
+                                    log(Error)<< "RTT::Property '"<< (*pit)->getName() <<"' is not of type 'string'." << endlog();
                                     valid = false;
+                                    continue;
                                 }
-                                if ( ports->get().getProperty(*pit) == 0) {
-                                    log(Error)<< "RTT::Property '"<< *pit <<"' is not of type 'string'." << endlog();
+                                base::PortInterface* p = c->ports()->getPort( portcon.getName() );
+                                if ( !p ) {
+                                    log(Error)<< "Component '"<< c->getName() <<"' does not have a Port '"<< portcon.getName()<<"'." << endlog();
                                     valid = false;
                                 }
                                 // store the port
                                 if (valid){
-                                    string port_name = ports->get().getPropertyType<string>(*pit)->get();
+                                    string conn_name = portcon.value(); // reads field of property
                                     bool to_add = true;
                                     // go through the vector to avoid duplicate items.
-                                    // NOTE the sizes conmap[port_name].ports.size() and conmap[port_name].owners.size() are supposed to be equal
-                                    for(unsigned int a=0; a < conmap[port_name].ports.size(); a++)
+                                    // NOTE the sizes conmap[conn_name].ports.size() and conmap[conn_name].owners.size() are supposed to be equal
+                                    for(unsigned int a=0; a < conmap[conn_name].ports.size(); a++)
                                         {
-                                            if(  conmap[port_name].ports.at(a) == p && conmap[port_name].owners.at(a) == c)
+                                            if(  conmap[conn_name].ports.at(a) == p && conmap[conn_name].owners.at(a) == c)
                                                 {
                                                     to_add = false;
                                                     continue;
@@ -675,10 +676,10 @@ namespace OCL
 
                                     if(to_add)
                                         {
-                                            log(Debug)<<"storing Port: "<<c->getName()<<"."<<p->getName();
-                                            log(Debug)<<" in " << port_name <<endlog();
-                                            conmap[port_name].ports.push_back( p );
-                                            conmap[port_name].owners.push_back( c );
+                                            log(Debug)<<"storing Port: "<<c->getName()<<"."<< portcon.getName();
+                                            log(Debug)<<" in " << conn_name <<endlog();
+                                            conmap[conn_name].ports.push_back( p );
+                                            conmap[conn_name].owners.push_back( c );
                                         }
                                 }
                             }
