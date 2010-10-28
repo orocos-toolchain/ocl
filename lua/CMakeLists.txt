@@ -2,18 +2,19 @@
 option(BUILD_LUA_RTT "Build Lua RTT bindings" ON)
 cmake_dependent_option(BUILD_LUA_RTT_DYNAMIC_MODULES "Build dynamic loadable Lua plugins for rtt and deployer (experimental!)" OFF "BUILD_LUA_RTT" OFF)
 
-find_package(Lua51 REQUIRED)
+if(BUILD_LUA_RTT)
 
-if(NOT LUA51_FOUND)
+  find_package(Lua51 REQUIRED)
+
+  if(NOT LUA51_FOUND)
 
   message(FATAL_ERROR "Can not build LuaComponent without lua
       libraries. On debian-like system you might want to try something
       like 'sudo apt-get install liblua5.1-0-dev' or disable 
       Lua-RTT completely.")
 
-else(NOT LUA51_FOUND)
+  else(NOT LUA51_FOUND)
 
-  if(BUILD_LUA_RTT)
     # compiling lua component and rttlua interpreter
     include_directories(${LUA_INCLUDE_DIR})
 
@@ -44,8 +45,6 @@ else(NOT LUA51_FOUND)
      add_subdirectory( plugins )
      add_subdirectory( testing )
 
-  endif(BUILD_LUA_RTT)
-
   if(BUILD_LUA_RTT_DYNAMIC_MODULES)
 
     #  compiling rtt / deployer as lua modules
@@ -60,5 +59,8 @@ else(NOT LUA51_FOUND)
     set_target_properties(rtt PROPERTIES PREFIX "")
 
   endif(BUILD_LUA_RTT_DYNAMIC_MODULES)
-
+  
 endif(NOT LUA51_FOUND)
+
+endif(BUILD_LUA_RTT)
+
