@@ -226,8 +226,8 @@ namespace OCL
     bool DeploymentComponent::connectPeers(const std::string& one, const std::string& other)
     {
         RTT::Logger::In in("DeploymentComponent::connectPeers");
-        RTT::TaskContext* t1 = this->getPeer(one);
-        RTT::TaskContext* t2 = this->getPeer(other);
+        RTT::TaskContext* t1 = one == this->getName() ? this : this->getPeer(one);
+        RTT::TaskContext* t2 = other == this->getName() ? this : this->getPeer(other);
         if (!t1) {
             log(Error)<< "No such peer: "<<one<<endlog();
             return false;
@@ -242,8 +242,8 @@ namespace OCL
     bool DeploymentComponent::addPeer(const std::string& from, const std::string& to)
     {
         RTT::Logger::In in("DeploymentComponent::addPeer");
-        RTT::TaskContext* t1 = this->getPeer(from);
-        RTT::TaskContext* t2 = this->getPeer(to);
+        RTT::TaskContext* t1 = from == this->getName() ? this : this->getPeer(from);
+        RTT::TaskContext* t2 = to == this->getName() ? this : this->getPeer(to);
         if (!t1) {
             log(Error)<< "No such peer: "<<from<<endlog();
             return false;
