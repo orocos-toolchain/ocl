@@ -10,19 +10,28 @@ IF ( BUILD_DEPLOYMENT )
     SET( HPPS DeploymentComponent.hpp )
     SET( SRCS DeploymentComponent.cpp ComponentLoader.cpp comppath.cpp)
 
-    GLOBAL_ADD_COMPONENT( orocos-deployment ${SRCS} INSTALL lib)
+    orocos_library( orocos-deployment ${SRCS})
     GLOBAL_ADD_INCLUDE( ocl ${HPPS})
 
-    COMPONENT_ADD_LIBS( orocos-deployment "dl" )
-    COMPONENT_ADD_LIBS( orocos-deployment ${RTT_PLUGIN_rtt-marshalling_LIBRARIES} ${RTT_PLUGIN_rtt-scripting_LIBRARIES})
-    COMPONENT_ADD_LIBS( orocos-deployment ${Boost_FILESYSTEM_LIBRARIES} ${Boost_SYSTEM_LIBRARIES})
+    TARGET_LINK_LIBRARIES( orocos-deployment "dl" )
+    TARGET_LINK_LIBRARIES( orocos-deployment ${RTT_PLUGIN_rtt-marshalling_LIBRARIES} ${RTT_PLUGIN_rtt-scripting_LIBRARIES})
+    TARGET_LINK_LIBRARIES( orocos-deployment ${Boost_FILESYSTEM_LIBRARIES} ${Boost_SYSTEM_LIBRARIES})
     
     IF (OROCOS-RTT_CORBA_FOUND)
-        GLOBAL_ADD_COMPONENT(orocos-deployment-corba CorbaDeploymentComponent.cpp INSTALL lib)
+        orocos_library(orocos-deployment-corba CorbaDeploymentComponent.cpp )
         GLOBAL_ADD_INCLUDE( ocl CorbaDeploymentComponent.hpp)
-        COMPONENT_ADD_DEPS( orocos-deployment-corba orocos-deployment)
-	COMPONENT_ADD_LIBS( orocos-deployment-corba ${OROCOS-RTT_CORBA_LIBRARIES})
+        TARGET_LINK_LIBRARIES( orocos-deployment-corba orocos-deployment)
+	    TARGET_LINK_LIBRARIES( orocos-deployment-corba ${OROCOS-RTT_CORBA_LIBRARIES})
     ENDIF(OROCOS-RTT_CORBA_FOUND)
+    
+    # rospack support
+    IF ( ROS_ROOT )
+        rosbuild_find_ros_package( roslib )
+        include_directories( ${roslib_PACKAGE_PATH}/include )
+        find_library(ROS_LIB roslib ${roslib_PACKAGE_PATH}/lib )
+        TARGET_LINK_LIBRARIES( orocos-deployment ${ROS_LIB} )
+        ADD_DEFINITIONS( -DHAS_ROSLIB )
+    ENDIF( ROS_ROOT )
      
     ADD_SUBDIRECTORY( tests )
 

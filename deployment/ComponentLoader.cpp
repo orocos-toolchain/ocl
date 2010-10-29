@@ -7,6 +7,10 @@
 #include <boost/filesystem.hpp>
 #include <rtt/plugin/PluginLoader.hpp>
 
+#ifdef HAS_ROSLIB
+#include <ros/package.h>
+#endif
+
 #include <dlfcn.h>
 
 using namespace RTT;
@@ -110,12 +114,38 @@ void ComponentLoader::import( std::string const& path_list )
 	    return;
     }
 
-    // search:
+    // ros may fill this vector in based on rospack:
     vector<string> paths;
-    if (path_list.empty())
-    	paths = splitPaths( component_path); // import RTT_COMPONENT_PATH
-    else
-    	paths = splitPaths( path_list ); // import package or path list.
+    // check for rospack
+#ifdef HAS_ROSLIB
+    using namespace ros::package;
+    try {
+        string ppath = getPath( path_list );
+        if ( !ppath.empty() ) {
+            path rospath = path(ppath) / "lib" / "orocos";
+            paths.push_back( rospath.string() );
+            // + add all dependencies to paths:
+            V_string rospackresult;
+            command("depends " + path_list, rospackresult);
+            for(V_string::iterator it = rospackresult.begin(); it != rospackresult.end(); ++it) {
+                ppath = getPath( *it );
+                path deppath = path(ppath) / "lib" / "orocos";
+                if ( is_directory( deppath ) )
+                    paths.push_back( deppath.string() );
+            }
+        }
+    } catch(...) {
+        log(Debug) << "Not a ros package: " << path_list << endlog();
+    }
+#endif
+
+    // search:
+    if ( paths.empty() ) {
+        if (path_list.empty() )
+            paths = splitPaths( component_path); // import RTT_COMPONENT_PATH
+        else
+            paths = splitPaths( path_list ); // import package or path list.
+    }
 
     for (vector<string>::iterator it = paths.begin(); it != paths.end(); ++it)
     {

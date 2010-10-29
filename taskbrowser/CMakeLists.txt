@@ -18,7 +18,7 @@ IF ( BUILD_TASKBROWSER )
     FILE( GLOB HPPS [^.]*.hpp )
     FILE( GLOB SRCS [^.]*.cpp )
 
-    GLOBAL_ADD_COMPONENT( orocos-taskbrowser ${SRCS} INSTALL lib)
+    orocos_library( orocos-taskbrowser ${SRCS} )
     GLOBAL_ADD_INCLUDE( ocl ${HPPS})
 
     # Readline support:
@@ -34,16 +34,16 @@ IF ( BUILD_TASKBROWSER )
       if (UNIX)
         OROCOS_PKGCONFIG_LIBS(ncurses readline)
         INCLUDE_DIRECTORIES( ${READLINE_INCLUDE_DIR} ${CURSES_INCLUDE_DIR} )
-        COMPONENT_ADD_LIBS( orocos-taskbrowser ${READLINE_LIBRARY} ${CURSES_LIBRARY} )
+        TARGET_LINK_LIBRARIES( orocos-taskbrowser ${READLINE_LIBRARY} ${CURSES_LIBRARY} )
       else(UNIX)
         OROCOS_PKGCONFIG_LIBS(readline)
         INCLUDE_DIRECTORIES( ${READLINE_INCLUDE_DIR} )
-        COMPONENT_ADD_LIBS( orocos-taskbrowser ${READLINE_LIBRARY} )
+        TARGET_LINK_LIBRARIES( orocos-taskbrowser ${READLINE_LIBRARY} )
       endif(UNIX)
 
     ENDIF (READLINE AND NOT NO_GPL)
 
-    COMPONENT_ADD_LIBS( orocos-taskbrowser ${RTT_PLUGIN_rtt-scripting_LIBRARIES} )
+    TARGET_LINK_LIBRARIES( orocos-taskbrowser ${RTT_PLUGIN_rtt-scripting_LIBRARIES} )
 
     ADD_SUBDIRECTORY( tests )
 

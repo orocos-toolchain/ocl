@@ -116,8 +116,22 @@ SET( ENV{OROCOS_COMPONENTS_REQUIRES} "")
 INCLUDE(${PROJ_SOURCE_DIR}/config/component_rules.cmake)
 INCLUDE(${PROJ_SOURCE_DIR}/config/TestUsesFile.cmake)
 
+## Check if we're in a ros build environment
+set (ROS_ROOT $ENV{ROS_ROOT} )
+if (ROS_ROOT)
+  include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
+  rosbuild_init()
+  rosbuild_find_ros_package( rtt )
+  set( RTT_HINTS HINTS ${rtt_PACKAGE_PATH}/install )
+  
+  # reset default output directories                                                                                                                                                                                                           
+  set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
+  #set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
+  set(COMPONENT_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib/orocos)
+endif()
+
 ## Find Orocos RTT.
-find_package(OROCOS-RTT 2.0.0)
+find_package(OROCOS-RTT 2.0.0 ${RTT_HINTS})
 if (NOT OROCOS-RTT_FOUND)
   message(FATAL_ERROR "\n   RTT not found. Is the version correct? Use the CMAKE_PREFIX_PATH cmake or environment variable to point to the installation directory of RTT.")
 else()
