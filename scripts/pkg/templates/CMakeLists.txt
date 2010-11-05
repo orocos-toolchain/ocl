@@ -14,7 +14,23 @@ cmake_minimum_required(VERSION 2.6.3)
 #
 project(@pkgname@)
 
-find_package(Orocos-RTT)
+#
+# Do setup in case of ros package, If ROS_ROOT is set, it is
+# recommended to use RTT/OCL through the ros packages.
+#
+set (ROS_ROOT $ENV{ROS_ROOT} )
+if (ROS_ROOT)
+  include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
+  rosbuild_init()
+  rosbuild_find_ros_package( rtt )
+  rosbuild_find_ros_package( ocl )
+  set( RTT_HINTS HINTS ${rtt_PACKAGE_PATH}/install )
+  set( OCL_HINTS HINTS ${ocl_PACKAGE_PATH}/install )
+endif()
+
+# Set the CMAKE_PREFIX_PATH in case you're not using Orocos through ROS
+# for helping these find commands find RTT.
+find_package(Orocos-RTT REQUIRED ${RTT_HINTS})
 
 # Defines the orocos_* cmake macros. See that file for additional
 # documentation.
@@ -55,8 +71,11 @@ orocos_typekit(@pkgname@-types.hpp) # ...you may add multiple header files
 # Creates a plugin library lib@pkgname@-service-<target>.so or lib@pkgname@-plugin-<target>.so
 # and installs in the directory lib/orocos/@pkgname@/plugins/
 #
-#orocos_plugin(@pkgname@-service @pkgname@-service.cpp) # ...you may add multiple source files
-#orocos_plugin(@pkgname@-plugin @pkgname@-plugin.cpp) # ...you may add multiple source files
+# Be aware that a plugin may only have the loadRTTPlugin() function once defined in a .cpp file.
+# This function is defined by the plugin and service CPP macros.
+#
+#orocos_service(@pkgname@-service @pkgname@-service.cpp) # ...only one service per library !
+#orocos_plugin(@pkgname@-plugin @pkgname@-plugin.cpp) # ...only one plugin function per library !
 #
 # You may add multiple orocos_plugin statements.
 

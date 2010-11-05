@@ -1263,7 +1263,8 @@ namespace OCL
             return;
         }
 
-        scripting::Parser _parser;
+	// Set caller=this to have correct call/send semantics:
+        scripting::Parser _parser(this);
 
         if (debug)
             cerr << "Trying ValueStatement..."<<nl;

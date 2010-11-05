@@ -226,8 +226,8 @@ namespace OCL
     bool DeploymentComponent::connectPeers(const std::string& one, const std::string& other)
     {
         RTT::Logger::In in("DeploymentComponent::connectPeers");
-        RTT::TaskContext* t1 = this->getPeer(one);
-        RTT::TaskContext* t2 = this->getPeer(other);
+        RTT::TaskContext* t1 = one == this->getName() ? this : this->getPeer(one);
+        RTT::TaskContext* t2 = other == this->getName() ? this : this->getPeer(other);
         if (!t1) {
             log(Error)<< "No such peer: "<<one<<endlog();
             return false;
@@ -242,8 +242,8 @@ namespace OCL
     bool DeploymentComponent::addPeer(const std::string& from, const std::string& to)
     {
         RTT::Logger::In in("DeploymentComponent::addPeer");
-        RTT::TaskContext* t1 = this->getPeer(from);
-        RTT::TaskContext* t2 = this->getPeer(to);
+        RTT::TaskContext* t1 = from == this->getName() ? this : this->getPeer(from);
+        RTT::TaskContext* t2 = to == this->getName() ? this : this->getPeer(to);
         if (!t1) {
             log(Error)<< "No such peer: "<<from<<endlog();
             return false;
@@ -295,7 +295,7 @@ namespace OCL
             log(Error) << one <<" does not have a port "<<one_port<< endlog();
             return false;
         }
-        if ( !b ) {
+        if ( !bp ) {
             log(Error) << other <<" does not have a port "<<other_port<< endlog();
             return false;
         }
@@ -1032,7 +1032,8 @@ namespace OCL
                 {
                     if( !peer->isRunning() )
                         {
-                            if ( peer->configure() == false)
+			    OperationCaller<bool(void)> peerconfigure = peer->getOperation("configure");
+                            if ( peerconfigure() == false)
                                 valid = false;
                         }
                     else
@@ -1079,8 +1080,9 @@ namespace OCL
             }
 
             // AutoStart
+	    OperationCaller<bool(void)> peerstart = peer->getOperation("start");
             if (comps[(*it)->getName()].autostart )
-                if ( !peer || ( !peer->isRunning() && peer->start() == false) )
+                if ( !peer || ( !peer->isRunning() && peerstart() == false) )
                     valid = false;
         }
         // Finally, report success/failure:
@@ -1108,8 +1110,9 @@ namespace OCL
         for ( CompList::iterator cit = comps.begin(); cit != comps.end(); ++cit) {
             ComponentData* it = &(cit->second);
             if ( it->instance && !it->proxy ) {
+		OperationCaller<bool(void)> instancestop = it->instance->getOperation("stop");
                 if ( !it->instance->isRunning() ||
-                     it->instance->stop() ) {
+                     instancestop() ) {
                     log(Info) << "Stopped "<< it->instance->getName() <<endlog();
                 } else {
                     log(Error) << "Could not stop loaded Component "<< it->instance->getName() <<endlog();
@@ -1146,7 +1149,8 @@ namespace OCL
                     } else if (it->autosave) {
 		      log(Error) << "AutoSave set but no property file specified. Specify one using the UpdateProperties simple element."<<endlog();
 		    }
-                    it->instance->cleanup();
+		    OperationCaller<bool(void)> instancecleanup = it->instance->getOperation("cleanup");
+                    instancecleanup();
                     log(Info) << "Cleaned up "<< it->instance->getName() <<endlog();
                 } else {
                     log(Error) << "Could not cleanup Component "<< it->instance->getName() << " (not Stopped)"<<endlog();
@@ -1552,7 +1556,8 @@ namespace OCL
         // 1. Cleanup a single activities, give components chance to cleanup.
         if (instance) {
             if ( instance->getTaskState() <= base::TaskCore::Stopped ) {
-                instance->cleanup();
+		OperationCaller<bool(void)> instancecleanup = instance->getOperation("cleanup");
+		instancecleanup();
                 log(Info) << "Cleaned up "<< instance->getName() <<endlog();
             } else {
                 log(Error) << "Could not cleanup Component "<< instance->getName() << " (not Stopped)"<<endlog();
@@ -1568,8 +1573,9 @@ namespace OCL
         bool valid = true;
 
         if ( instance ) {
+	    OperationCaller<bool(void)> instancestop = instance->getOperation("stop");
             if ( !instance->isRunning() ||
-                 instance->stop() ) {
+                 instancestop() ) {
                 log(Info) << "Stopped "<< instance->getName() <<endlog();
             }
             else {
