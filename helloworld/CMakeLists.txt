@@ -11,6 +11,6 @@ IF ( BUILD_HELLOWORLD )
     SET_TARGET_PROPERTIES( orocos-helloworld
       PROPERTIES COMPILE_FLAGS "-DOCL_COMPONENT_ONLY" )
 
-    TARGET_LINK_LIBRARIES( helloworld ${OROCOS_RTT_LIBS} orocos-taskbrowser)
+    TARGET_LINK_LIBRARIES( helloworld ${OROCOS-RTT_LIBRARIES} orocos-taskbrowser)
     
 ENDIF ( BUILD_HELLOWORLD )
