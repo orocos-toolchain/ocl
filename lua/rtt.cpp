@@ -2066,9 +2066,11 @@ class EEHook : public base::ExecutableInterface
 protected:
 	std::string func;
 	lua_State *L;
+	TaskContext *tc; /* remember this to be able to print TC name
+			    in error messages */
 public:
-	EEHook(lua_State *_L, std::string _func) { L = _L; func = _func; }
-	bool execute() { return call_func(L, func.c_str()); }
+	EEHook(lua_State *_L, std::string _func) { L = _L; func = _func; tc = __getTC(L); }
+	bool execute() { return call_func(L, func.c_str(), tc); }
 };
 
 static int EEHook_new(lua_State *L)
@@ -2188,6 +2190,7 @@ static TaskContext* __getTC(lua_State *L)
 	TaskContext *tc;
 	getTC(L);
 	tc = *(luaM_checkudata_bx(L, -1, TaskContext));
+	lua_pop(L, 1);
 	return tc;
 }
 

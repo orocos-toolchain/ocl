@@ -531,6 +531,9 @@ function/method:
 </li>
 <li>
 'F' or 'M': only available as function or method
+</li>
+<li>
+'D': deprecated
 
 </li>
 </ul>
@@ -602,7 +605,8 @@ function/method:
 <tr><td><code>table getOps()</code></td><td></td><td>return a table of Operation names</td></tr>
 <tr><td><code>string, number string, table getOpInfo(string)</code></td><td></td><td>returns name, arity, description and table of argument descriptions</td></tr>
 <tr><td><code>Service provides(...)</code></td><td></td><td>return service (provides/0 default, provides/1 subservice)</td></tr>
-<tr><td><code>Variable call(string, ...)</code></td><td></td><td>call operation with name specified by string and right arguments</td></tr>
+<tr><td><code>Variable call(string, ...)</code></td><td>D</td><td>call operation with name specified by string and right arguments</td></tr>
+<tr><td><code>Operation getOperation(name)</code></td><td></td><td>get an Operation by string name</td></tr>
 <tr><td><code>SendHandle send(string, ...)</code></td><td></td><td>as above but send. returns SendHandle</td></tr>
 <tr><td><code>void delete(TaskContext)</code></td><td></td><td>explicit deletion of a TaskContext</td></tr>
 </tbody>
@@ -912,8 +916,8 @@ hook.
 </thead>
 <tbody>
 <tr><td><code>new(name)</code></td><td></td><td>create a new hook tied to the lua function with the given (string) name</td></tr>
-<tr><td><code>enable()</code></td><td></td><td>enable the hook so the lua function will be executed on trigger()</td></tr>
-<tr><td><code>disable()</code></td><td></td><td>disable the hook</td></tr>
+<tr><td><code>bool enable()</code></td><td></td><td>enable the hook so the lua function will be executed on trigger()</td></tr>
+<tr><td><code>bool disable()</code></td><td></td><td>disable the hook</td></tr>
 </tbody>
 </table>
 

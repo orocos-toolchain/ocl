@@ -84,12 +84,15 @@ local function run_test(t)
    local func, err
    if t.tstr then
       func, err = loadstring(t.tstr)
-      if func == nil then
-	 error("loadstring failed: ", err)
-	 return nil
-      end
-   else func = t.tfunc end
-   return pcall(func)
+      if func == nil then return false, err end
+   else
+      func = t.tfunc
+   end
+
+   local call_stat, res = pcall(func)
+   if call_stat == true then return res
+   else return false, res end
+   return false, "no test to run found"
 end
 
 -- execute all tests, 'verb' is boolean verbose flag
