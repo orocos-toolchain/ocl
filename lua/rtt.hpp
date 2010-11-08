@@ -32,7 +32,7 @@
  * Suite 330, Boston, MA  02111-1307  USA
  */
 
-#define RTTLUA_VERSION	"1.0-beta1"
+#define RTTLUA_VERSION	"1.0-beta2"
 
 #include <rtt/TaskContext.hpp>
 #include <rtt/Port.hpp>
