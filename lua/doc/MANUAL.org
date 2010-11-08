@@ -422,11 +422,11 @@
     hook.
 
 
-   | Method      | flag | description                                                             |
-   |-------------+------+-------------------------------------------------------------------------|
-   | =new(name)= |      | create a new hook tied to the lua function with the given (string) name |
-   | =enable()=  |      | enable the hook so the lua function will be executed on trigger()       |
-   | =disable()= |      | disable the hook                                                        |
+   | Method           | flag | description                                                             |
+   |------------------+------+-------------------------------------------------------------------------|
+   | =new(name)=      |      | create a new hook tied to the lua function with the given (string) name |
+   | =bool enable()=  |      | enable the hook so the lua function will be executed on trigger()       |
+   | =bool disable()= |      | disable the hook                                                        |
 
 * The rttlib convenience module
   This library adds some useful (mostly pretty printing) functions to

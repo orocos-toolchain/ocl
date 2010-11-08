@@ -368,3 +368,9 @@ if type(debug) == 'table' then
 else
    print("no debug library, if required pretty printing must be enabled manually")
 end
+
+function info()
+   print("services: ", table.concat(rtt.services(), ', '))
+   print("typekits: ", table.concat(rtt.typekits(), ', '))
+   print("types:    ", table.concat(rtt.types(), ', '))
+end

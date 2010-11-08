@@ -39,6 +39,7 @@ void dotty (lua_State *L);
 void l_message (const char *pname, const char *msg);
 int dofile (lua_State *L, const char *name);
 int dostring (lua_State *L, const char *s, const char *name);
+int main_args(lua_State *L, int argc, char **argv);
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -51,6 +52,8 @@ int dostring (lua_State *L, const char *s, const char *name);
 
 #include <string>
 #include <rtt/os/main.h>
+#include <rtt/os/Mutex.hpp>
+#include <rtt/os/MutexLock.hpp>
 #include <rtt/TaskContext.hpp>
 #include <ocl/OCL.hpp>
 #include <deployment/DeploymentComponent.hpp>
@@ -69,18 +72,20 @@ namespace OCL
 		std::string lua_string;
 		std::string lua_file;
 		lua_State *L;
+		os::Mutex m;
 
 	public:
 		LuaComponent(std::string name)
 			: TaskContext(name, PreOperational)
 		{
+			os::MutexLock lock(m);
 			L = lua_open();
 			lua_gc(L, LUA_GCSTOP, 0);
 			luaL_openlibs(L);
 			lua_gc(L, LUA_GCRESTART, 0);
 
 			if (L == NULL) {
-				Logger::log(Logger::Error) << "LuaComponent: failed to allocate memory for Lua state" << endlog();
+				Logger::log(Logger::Error) << "LuaComponent '" << name <<"': failed to allocate memory for Lua state" << endlog();
 				throw;
 			}
 
@@ -104,13 +109,15 @@ namespace OCL
 
 		~LuaComponent()
 		{
+			os::MutexLock lock(m);
 			lua_close(L);
 		}
 
 		bool exec_file(const std::string &file)
 		{
+			os::MutexLock lock(m);
 			if (luaL_dofile(L, file.c_str())) {
-				Logger::log(Logger::Error) << lua_tostring(L, -1) << endlog();
+				Logger::log(Logger::Error) << "LuaComponent '" << this->getName() << "': " << lua_tostring(L, -1) << endlog();
 				return false;
 			}
 			return true;
@@ -118,49 +125,67 @@ namespace OCL
 
 		bool exec_str(const std::string &str)
 		{
+			os::MutexLock lock(m);
 			if (luaL_dostring(L, str.c_str())) {
-				Logger::log(Logger::Error) << lua_tostring(L, -1) << endlog();
+				Logger::log(Logger::Error) << "LuaComponent '" << this->getName() << "': " << lua_tostring(L, -1) << endlog();
 				return false;
 			}
 			return true;
 		}
 
 #ifndef OCL_COMPONENT_ONLY
+		void boiler()
+		{
+			cout << "OROCOS RTTLua " << RTTLUA_VERSION << " / " << LUA_VERSION << " (" << OROCOS_TARGET_NAME << ")"  << endl;
+		}
+
 		void lua_repl()
 		{
-			cout << "Orocos RTTLua " << RTTLUA_VERSION << " (" << OROCOS_TARGET_NAME << ")"  << endl;
+			os::MutexLock lock(m);
+			boiler();
 			dotty(L);
+		}
+
+		int lua_repl(int argc, char **argv)
+		{
+			os::MutexLock lock(m);
+			boiler();
+			return main_args(L, argc, argv);
 		}
 #endif
 		bool configureHook()
 		{
+			os::MutexLock lock(m);
 			if(!lua_string.empty())
 				exec_str(lua_string);
 
 			if(!lua_file.empty())
-				exec_file(lua_file)
-;
-			return call_func(L, "configureHook");  // exec_str("configureHook()");
+				exec_file(lua_file);
+			return call_func(L, "configureHook", this);
 		}
 
 		bool startHook()
 		{
-			return call_func(L, "startHook");
+			os::MutexLock lock(m);
+			return call_func(L, "startHook", this);
 		}
 
 		void updateHook()
 		{
-			call_func(L, "updateHook");
+			os::MutexLock lock(m);
+			call_func(L, "updateHook", this);
 		}
 
 		void stopHook()
 		{
-			call_func(L, "stopHook");
+			os::MutexLock lock(m);
+			call_func(L, "stopHook", this);
 		}
 
 		void cleanupHook()
 		{
-			call_func(L, "cleanupHook");
+			os::MutexLock lock(m);
+			call_func(L, "cleanupHook", this);
 		}
 	};
 }
@@ -172,8 +197,6 @@ int ORO_main(int argc, char** argv)
 {
 	struct stat stb;
 	wordexp_t init_exp;
-
-  	// log().setLogLevel( Logger::Warning );
 
 	LuaComponent lua("lua");
 	DeploymentComponent dc("deployer");
@@ -189,11 +212,7 @@ int ORO_main(int argc, char** argv)
 	}
 	wordfree(&init_exp);
 
-	if(argc>1) {
-		Logger::log(Logger::Info) << "executing script: " << argv[1] << endlog();
-		lua.exec_file(argv[1]);
-	}
-	lua.lua_repl();
+	lua.lua_repl(argc, argv);
 	return 0;
 }
 

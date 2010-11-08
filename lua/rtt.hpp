@@ -32,7 +32,7 @@
  * Suite 330, Boston, MA  02111-1307  USA
  */
 
-#define RTTLUA_VERSION	"1.0-beta1"
+#define RTTLUA_VERSION	"1.0-beta2"
 
 #include <rtt/TaskContext.hpp>
 #include <rtt/Port.hpp>
@@ -47,9 +47,10 @@ extern "C" {
 #include <lauxlib.h>
 #include <lualib.h>
 #include <string.h>
+
+int luaopen_rtt(lua_State *L);
+int set_context_tc(RTT::TaskContext*, lua_State*);
+bool call_func(lua_State*, const std::string&, RTT::TaskContext*);
 }
 
-extern "C" int luaopen_rtt(lua_State *L);
 
-int set_context_tc(RTT::TaskContext*, lua_State*);
-bool call_func(lua_State*, const std::string&);

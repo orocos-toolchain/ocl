@@ -270,6 +270,7 @@ Table of Contents
   function/method:
     - 'R': real-time safe
     - 'F' or 'M': only available as function or method
+    - 'D': deprecated
 
 4.2 Miscellaneous toplevel 
 ===========================
@@ -312,7 +313,8 @@ Table of Contents
      =table getOps()=                                          return a table of Operation names                                          
      =string, number string, table getOpInfo(string)=          returns name, arity, description and table of argument descriptions        
      =Service provides(...)=                                   return service (provides/0 default, provides/1 subservice)                 
-     =Variable call(string, ...)=                              call operation with name specified by string and right arguments           
+     =Variable call(string, ...)=                       D      call operation with name specified by string and right arguments           
+     =Operation getOperation(name)=                            get an Operation by string name                                            
      =SendHandle send(string, ...)=                            as above but send. returns SendHandle                                      
      =void delete(TaskContext)=                                explicit deletion of a TaskContext                                         
 
@@ -463,11 +465,11 @@ Table of Contents
     hook.
 
 
-     Method        flag   description                                                              
-    -------------+------+-------------------------------------------------------------------------
-     =new(name)=          create a new hook tied to the lua function with the given (string) name  
-     =enable()=           enable the hook so the lua function will be executed on trigger()        
-     =disable()=          disable the hook                                                         
+     Method             flag   description                                                              
+    ------------------+------+-------------------------------------------------------------------------
+     =new(name)=               create a new hook tied to the lua function with the given (string) name  
+     =bool enable()=           enable the hook so the lua function will be executed on trigger()        
+     =bool disable()=          disable the hook                                                         
 
 5 The rttlib convenience module 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -41,6 +41,9 @@ var = rtt.Variable
 TC=rtt.getTC()
 d=TC:getPeer("deployer")
 
+function fails()
+   return false
+end
 
 function test_loadlib()
    return d:call("loadLibrary", var.new("string", "lua/testing/testcomp-gnulinux"))
@@ -191,11 +194,64 @@ function test_lua_service()
    return res
 end
 
+--
+-- create a LuaComponent and load a Lua Service into it. The lua
+-- service then creates registers an EEHook in which in increments a
+-- variable. When reaching the number 17 it disables the hook and
+-- writes the value 17 to the result property, which then is checked
+-- by this testscript to see if everything went ok.
+--
+function test_lua_eehook()
+   d:call('loadComponent', "c_eehook", "OCL::LuaComponent")
+   d:call("loadService", "c_eehook", "Lua")
+   c_eehook = d:getPeer("c_eehook")
+
+   c_eehook:call("exec_str", 'function configureHook() return true end')
+   c_eehook:call("exec_str", 'function startHook() return true end')
+   c_eehook:call("exec_str", 'function updateHook() return true end')
+   c_eehook:call("exec_str", 'function stopHook() return true end')
+   c_eehook:call("exec_str", 'function cleanupHook() return true end')
+   c_eehook:configure()
+
+   d:call("setActivity", "c_eehook", 0.01, 0, 0)
+
+   local execstr_op = c_eehook:provides("Lua"):getOperation("exec_str")
+   execstr_op([[
+		    require("rttlib")
+		    local tc=rtt.getTC()
+		    counter = 0
+		    local p=rtt.Property.new("int", "result")
+		    tc:addProperty(p)
+		    eeh = rtt.EEHook.new("foobar")
+
+		    function foobar ()
+		       counter = counter + 1
+		       if counter >= 17 then
+			  p:set(counter)
+			  return false
+			  -- print("disabling hook", eeh:disable())
+		       end
+		       return true
+		    end
+
+		    eeh:enable()
+
+	      ]])
+
+   c_eehook:start()
+   os.execute("sleep 0.5")
+   -- check result
+   res_prop = c_eehook:getProperty("result")
+   res = res_prop:get() == var.new("int", 17)
+   return res
+end
+
 local tests = {
+   { tfunc=fails, descr="this one _must_ fail!" },
    { tstr='return TC:getName() == "lua"' },
    { tstr='return TC:getState() == "PreOperational"' },
    { tstr='return TC:getPeer("deployer") ~= nil' },
-   { tstr='return TC:getPeer("gargoyle22") == nil' },
+   -- { tstr='return TC:getPeer("gargoyle22") == nil' },
    { tstr='return (TC:getPeer("deployer")):getName() == "deployer"' },
    { tfunc=test_loadlib, descr="trying to load library testcomp-gnulinux" },
    { tfunc=test_create_testcomp, descr="trying to instantiate testcomp" },
@@ -211,7 +267,8 @@ local tests = {
    { tfunc=test_coercion, descr="testing coercion of variables in call" },
    { tfunc=test_send_op2, descr="testing send for op_2" },
    { tfunc=test_dataflow_lua, descr="testing dataflow with conversion from/to basic lua types" },
-   { tfunc=test_lua_service, descr="test interaction with lua service" },
+   { tfunc=test_lua_service, descr="testing interaction with lua service" },
+   { tfunc=test_lua_eehook, descr="testing EEHook" },
 }
 
 uunit.run_tests(tests, true)
