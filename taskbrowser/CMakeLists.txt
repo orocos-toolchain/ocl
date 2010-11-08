@@ -44,6 +44,7 @@ IF ( BUILD_TASKBROWSER )
     ENDIF (READLINE AND NOT NO_GPL)
 
     TARGET_LINK_LIBRARIES( orocos-taskbrowser ${RTT_PLUGIN_rtt-scripting_LIBRARIES} )
+    target_link_libraries( orocos-taskbrowser LINK_INTERFACE_LIBRARIES )
 
     ADD_SUBDIRECTORY( tests )
 
