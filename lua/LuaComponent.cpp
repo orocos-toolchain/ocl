@@ -85,7 +85,7 @@ namespace OCL
 			lua_gc(L, LUA_GCRESTART, 0);
 
 			if (L == NULL) {
-				Logger::log(Logger::Error) << "LuaComponent: failed to allocate memory for Lua state" << endlog();
+				Logger::log(Logger::Error) << "LuaComponent '" << name <<"': failed to allocate memory for Lua state" << endlog();
 				throw;
 			}
 
@@ -117,7 +117,7 @@ namespace OCL
 		{
 			os::MutexLock lock(m);
 			if (luaL_dofile(L, file.c_str())) {
-				Logger::log(Logger::Error) << lua_tostring(L, -1) << endlog();
+				Logger::log(Logger::Error) << "LuaComponent '" << this->getName() << "': " << lua_tostring(L, -1) << endlog();
 				return false;
 			}
 			return true;
@@ -127,7 +127,7 @@ namespace OCL
 		{
 			os::MutexLock lock(m);
 			if (luaL_dostring(L, str.c_str())) {
-				Logger::log(Logger::Error) << lua_tostring(L, -1) << endlog();
+				Logger::log(Logger::Error) << "LuaComponent '" << this->getName() << "': " << lua_tostring(L, -1) << endlog();
 				return false;
 			}
 			return true;
@@ -136,7 +136,7 @@ namespace OCL
 #ifndef OCL_COMPONENT_ONLY
 		void boiler()
 		{
-			cout << "OROCOS RTTLua " << RTTLUA_VERSION <<"/" << LUA_VERSION << " (" << OROCOS_TARGET_NAME << ")"  << endl;
+			cout << "OROCOS RTTLua " << RTTLUA_VERSION << " / " << LUA_VERSION << " (" << OROCOS_TARGET_NAME << ")"  << endl;
 		}
 
 		void lua_repl()
@@ -161,31 +161,31 @@ namespace OCL
 
 			if(!lua_file.empty())
 				exec_file(lua_file);
-			return call_func(L, "configureHook");
+			return call_func(L, "configureHook", this);
 		}
 
 		bool startHook()
 		{
 			os::MutexLock lock(m);
-			return call_func(L, "startHook");
+			return call_func(L, "startHook", this);
 		}
 
 		void updateHook()
 		{
 			os::MutexLock lock(m);
-			call_func(L, "updateHook");
+			call_func(L, "updateHook", this);
 		}
 
 		void stopHook()
 		{
 			os::MutexLock lock(m);
-			call_func(L, "stopHook");
+			call_func(L, "stopHook", this);
 		}
 
 		void cleanupHook()
 		{
 			os::MutexLock lock(m);
-			call_func(L, "cleanupHook");
+			call_func(L, "cleanupHook", this);
 		}
 	};
 }

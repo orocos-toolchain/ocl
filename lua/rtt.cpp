@@ -2318,22 +2318,23 @@ int set_context_tc(TaskContext *tc, lua_State *L)
 }
 
 
-/* call a zero arity function with a boolean return value 
+/* call a zero arity function with a boolean return value
  * used to call various hooks */
-bool call_func(lua_State *L, const std::string &name)
+bool call_func(lua_State *L, const std::string &fname, TaskContext *tc)
 {
 	bool ret;
-	lua_getglobal(L, name.c_str());
+
+	lua_getglobal(L, fname.c_str());
 
 	if (lua_pcall(L, 0, 1, NULL) != 0) {
-		Logger::log(Logger::Error) << "LuaComponent: error calling function "
-					   << name << ": " << lua_tostring(L, -1) << endlog();
+		Logger::log(Logger::Error) << "LuaComponent '"<< tc->getName()  <<"': error calling function "
+					   << fname << ": " << lua_tostring(L, -1) << endlog();
 		ret = false;
 		goto out;
 	}
 	if (!lua_isboolean(L, -1)) {
-		Logger::log(Logger::Error) << "LuaComponent: " << name 
-					   << " must return a bool but returned a" 
+		Logger::log(Logger::Error) << "LuaComponent '" << tc->getName() << "': " << fname
+					   << " must return a bool but returned a"
 					   << lua_typename(L, lua_type(L, -1)) << endlog();
 		ret = false;
 		goto out;

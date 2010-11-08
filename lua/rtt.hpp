@@ -50,7 +50,7 @@ extern "C" {
 
 int luaopen_rtt(lua_State *L);
 int set_context_tc(RTT::TaskContext*, lua_State*);
-bool call_func(lua_State*, const std::string&);
+bool call_func(lua_State*, const std::string&, RTT::TaskContext*);
 }
 
 

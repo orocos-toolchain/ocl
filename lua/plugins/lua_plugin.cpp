@@ -29,9 +29,9 @@ public:
 		lua_gc(L, LUA_GCRESTART, 0);
 
 		if (L == NULL) {
-		  Logger::In in("LuaService ctr");
-		  log(Error)<<"cannot create state: not enough memory"<<endlog();
-		  throw;
+			Logger::log(Logger::Error) << "LuaService ctr '" << this->getOwner()->getName() << "': "
+						   << "cannot create state: not enough memory" << endlog();
+			throw;
 		}
 
 		/* setup rtt bindings */
@@ -48,7 +48,8 @@ public:
 	{
 		os::MutexLock lock(m);
 		if (luaL_dofile(L, file.c_str())) {
-			Logger::log(Logger::Error) << lua_tostring(L, -1) << endlog();
+			Logger::log(Logger::Error) << "LuaService '" << this->getOwner()->getName()
+						   << "': " << lua_tostring(L, -1) << endlog();
 			return false;
 		}
 		return true;
@@ -58,7 +59,8 @@ public:
 	{
 		os::MutexLock lock(m);
 		if (luaL_dostring(L, str.c_str())) {
-			Logger::log(Logger::Error) << lua_tostring(L, -1) << endlog();
+			Logger::log(Logger::Error) << "LuaService '" << this->getOwner()->getName()
+						   << "': " << lua_tostring(L, -1) << endlog();
 			return false;
 		}
 		return true;
