@@ -206,7 +206,7 @@ namespace OCL
         log(Info) <<"Re-scanning for plugins and components..."<<endlog();
         PluginLoader::Instance()->setPluginPath(compPath);
         ComponentLoader::Instance()->setComponentPath(compPath);
-        ComponentLoader::Instance()->import("");
+        ComponentLoader::Instance()->import(compPath);
         return true;
     }
 
@@ -1183,7 +1183,6 @@ namespace OCL
     bool DeploymentComponent::import(const std::string& path)
     {
         RTT::Logger::In in("DeploymentComponent::import");
-        log(Debug) << "Importing Components, plugins and typekits from " <<  path << endlog();
         ComponentLoader::Instance()->import( path );
         return true;
     }

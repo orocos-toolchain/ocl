@@ -2,6 +2,18 @@
     <description brief="Orocos component library">
         This package contains standard components for the Orocos Toolchain
     </description>
-    <depend package="rtt" />
+		<license>LGPL v2</license>
+		<author>OCL Development Team</author>
+
+		<review status="unreviewed" notes=""/>
+		<url>http://www.orocos.org/ocl</url>
+
+		<rosdep name="libreadline"/>
+		<depend package="rtt" />
+
+		<export>
+			<cpp cflags="-I${prefix} -DRTT_COMPONENT" lflags="-L${prefix}/lib"/>
+		</export>
+
 </package>
 

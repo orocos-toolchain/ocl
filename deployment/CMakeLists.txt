@@ -32,12 +32,14 @@ IF ( BUILD_DEPLOYMENT )
         find_library(ROS_LIB roslib ${roslib_PACKAGE_PATH}/lib )
         TARGET_LINK_LIBRARIES( orocos-deployment ${ROS_LIB} )
         ADD_DEFINITIONS( -DHAS_ROSLIB )
+        SET(DEFAULT_COMPONENT_PATH "${PROJECT_SOURCE_DIR}/lib/orocos" CACHE STRING "Default component lookup path when none given. (semi-)colon separated list." FORCE)
+    ELSE( ROS_ROOT)
+	SET(DEFAULT_COMPONENT_PATH "${OROCOS-RTT_PATH}/lib/orocos" CACHE STRING "Default component lookup path when none given. (semi-)colon separated list." )
     ENDIF( ROS_ROOT )
-     
-    ADD_SUBDIRECTORY( tests )
 
-    SET(DEFAULT_COMPONENT_PATH "${OROCOS-RTT_PATH}/lib/orocos" CACHE STRING "Default component lookup path when none given. (semi-)colon separated list.")
     configure_file(comppath.cpp.in ${CMAKE_CURRENT_SOURCE_DIR}/comppath.cpp @ONLY)
+
+    ADD_SUBDIRECTORY( tests )
 
     # This requires the orocos-rtt library to be carefully tagged
     # with the necessary 'export' attributes, or unresolved symbols

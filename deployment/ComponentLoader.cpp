@@ -110,10 +110,14 @@ void ComponentLoader::import( std::string const& path_list )
 	// check first for exact match:
     path arg( path_list );
     if (is_regular_file(arg)) {
-	    loadInProcess(arg.string(), makeShortFilename(path_list), true);
+	    loadInProcess(arg.string(), makeShortFilename( arg.filename() ), true);
 	    return;
     }
 
+    if ( isImported(path_list) ) {
+        log(Info) <<"Component package '"<< path_list <<"' already imported." <<endlog();
+        return;
+    }
     // ros may fill this vector in based on rospack:
     vector<string> paths;
     // check for rospack
@@ -124,25 +128,32 @@ void ComponentLoader::import( std::string const& path_list )
         if ( !ppath.empty() ) {
             path rospath = path(ppath) / "lib" / "orocos";
             paths.push_back( rospath.string() );
+            loadedPackages.push_back( path_list );
             // + add all dependencies to paths:
             V_string rospackresult;
             command("depends " + path_list, rospackresult);
             for(V_string::iterator it = rospackresult.begin(); it != rospackresult.end(); ++it) {
+                if ( isImported(*it) ) {
+                    log(Info) <<"Component package '"<< *it <<"' already imported." <<endlog();
+                    continue;
+                }
+                loadedPackages.push_back( *it );
                 ppath = getPath( *it );
                 path deppath = path(ppath) / "lib" / "orocos";
                 if ( is_directory( deppath ) )
                     paths.push_back( deppath.string() );
             }
-        }
+        } else
+            log(Info) << "Not a ros package: " << path_list << endlog();
     } catch(...) {
-        log(Debug) << "Not a ros package: " << path_list << endlog();
+        log(Info) << "Not a ros package: " << path_list << endlog();
     }
 #endif
 
     // search:
     if ( paths.empty() ) {
         if (path_list.empty() )
-            paths = splitPaths( component_path); // import RTT_COMPONENT_PATH
+            return;
         else
             paths = splitPaths( path_list ); // import package or path list.
     }
@@ -171,9 +182,10 @@ void ComponentLoader::import( std::string const& path_list )
             PluginLoader::Instance()->loadPlugins( p.string() );
         }
         else {
-            log(Debug) << "No such directory: " << p << endlog();
+            // If the path is not complete (not absolute), look it up in the search directories:
+            log(Debug) << "No such directory: " << p<< endlog();
             if ( !p.is_complete() ) {
-                import(p.string(), "");
+                import(p.string(), ""); // use default component_path
             }
         }
 
@@ -207,15 +219,6 @@ void ComponentLoader::import( std::string const& path_list )
 
 bool ComponentLoader::import( std::string const& package, std::string const& path_list )
 {
-    vector<string> paths;
-    if (path_list.empty())
-    	paths = splitPaths( component_path);
-    else
-    	paths = splitPaths( path_list );
-
-    vector<string> tryouts( paths.size() * 4 );
-    tryouts.clear();
-
     if ( isImported(package) ) {
         log(Info) <<"Component package '"<< package <<"' already imported." <<endlog();
         return true;
@@ -223,51 +226,66 @@ bool ComponentLoader::import( std::string const& package, std::string const& pat
         //log(Info) << "Component package '"<< package <<"' not seen before." <<endlog();
     }
 
-    path arg( package );
-    path dir = arg.parent_path();
-    string file = arg.filename();
-
     // if path exists don't try to be smart
+    path arg( package );
     if (is_regular_file(arg)) {
+        string file = arg.filename();
 	    return loadInProcess(arg.string(), makeShortFilename(file), true);
     }
 
-    for (vector<string>::iterator it = paths.begin(); it != paths.end(); ++it)
-    {
-        path p = path(*it) / dir / (file + SO_EXT);
-        tryouts.push_back( p.string() );
-        if (is_regular_file( p ) && loadInProcess( p.string(), package, true ) )
-            return true;
-        p = path(*it) / dir / ("lib" + file + SO_EXT);
-        tryouts.push_back( p.string() );
-        if (is_regular_file( p ) && loadInProcess( p.string(), package, true ) )
-            return true;
-        p = path(*it) / dir / OROCOS_TARGET_NAME / (file + SO_EXT);
-        tryouts.push_back( p.string() );
-        if (is_regular_file( p ) && loadInProcess( p.string(), package, true ) )
-            return true;
-        p = path(*it) / dir / OROCOS_TARGET_NAME / ("lib" + file + SO_EXT);
-        tryouts.push_back( p.string() );
-        if (is_regular_file( p ) && loadInProcess( p.string(), package, true ) )
-            return true;
-        // check if it was a directory:
-        p = path(*it) / file;
-        tryouts.push_back( p.string() );
-        if ( is_directory( p )  ){
-            import( p.string() ); // import also checks for OROCOS_TARGET_NAME subdirs
-            return true;
+    string paths = path_list;
+    if (paths.empty())
+        paths = component_path;
+    else
+        paths = component_path + default_delimiter + path_list;
+
+    // search in '.' if really no paths are given.
+    if (paths.empty())
+        paths = ".";
+
+    // append '/package' to each plugin path in order to search all of them:
+    vector<string> vpaths = splitPaths(paths);
+    string trypaths = paths; // store for error reporting below.
+    paths.clear();
+    bool path_found = false;
+    for(vector<string>::iterator it = vpaths.begin(); it != vpaths.end(); ++it) {
+        path p(*it);
+        p = p / package;
+        // we only search in existing directories:
+        if (is_directory( p )) {
+            path_found = true;
+            paths += p.string() + default_delimiter;
         }
     }
-    log(Error) << "No such package found in path: " << package << ". Tried:"<< endlog();
-    for(vector<string>::iterator it=tryouts.begin(); it != tryouts.end(); ++it)
-        log(Error) << *it << " ";
-    log(Error)<< endlog();
+
+    // when at least one directory exists:
+    if (path_found) {
+        loadedPackages.push_back( package );
+        paths.erase( paths.size() - 1 ); // remove trailing delimiter ';'
+        import(paths);
+        return true;
+    }
+    log(Error) << "No such package directory found in search path: " << package << ". Search path is: "<< endlog();
+    log(Error) << trypaths << endlog();
     return false;
+
 }
 
 bool ComponentLoader::isImported(string type_name)
 {
-    return ComponentFactories::Instance().find(type_name) != ComponentFactories::Instance().end();
+    if (ComponentFactories::Instance().find(type_name) != ComponentFactories::Instance().end() )
+        return true;
+    if (find(loadedPackages.begin(), loadedPackages.end(), type_name) != loadedPackages.end())
+        return true;
+#ifdef HAS_ROSLIB
+    // hack: since ros works with package names, and ocl is imported by default (in configureHook())
+    // we claim that the 'ocl' package is always imported."
+    if ( type_name == "ocl") {
+        log(Info) <<"OCL should be loaded by default in ROS package trees. No need to import it." <<endlog();
+        return true;
+    }
+#endif
+    return false;
 }
 
 // loads a single component in the current process.

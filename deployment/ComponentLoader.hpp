@@ -70,6 +70,8 @@ namespace OCL {
 
             std::vector< LoadedLib > loadedLibs;
 
+            std::vector< string > loadedPackages;
+
             /**
              * Path to look for if all else fails.
              */
@@ -109,10 +111,12 @@ namespace OCL {
             void import(std::string const& path_list);
 
             /**
-             * Checks if a given Component type or filename has been imported.
+             * Checks if a given Component type, filename or package name has been imported.
              * This function accepts full filenames ('libthe_Component.so.1.99.0'), short names
-             * ('the_Component') or the name provided by the Component Factory ('App::Component').
-             * @param type_name name of a file or the Component type.
+             * ('the_Component'), the name provided by the Component Factory ('App::Component'),
+             * or a package name ('myrobot')
+             *
+             * @param type_name name of a file, package directory or the Component type.
              * @return true if so.
              */
             bool isImported(std::string type_name);

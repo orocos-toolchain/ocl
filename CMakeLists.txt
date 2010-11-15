@@ -131,7 +131,7 @@ if (ROS_ROOT)
 endif()
 
 ## Find Orocos RTT.
-find_package(OROCOS-RTT 2.0.0 ${RTT_HINTS})
+find_package(OROCOS-RTT 2.0.0 COMPONENTS rtt-scripting rtt-marshalling ${RTT_HINTS})
 if (NOT OROCOS-RTT_FOUND)
   message(FATAL_ERROR "\n   RTT not found. Is the version correct? Use the CMAKE_PREFIX_PATH cmake or environment variable to point to the installation directory of RTT.")
 else()
@@ -186,10 +186,10 @@ SET(OROCOS_COMPONENTS_LINKFLAGS "$ENV{OROCOS_COMPONENTS_LINKFLAGS}")
 SET(OROCOS_COMPONENTS_CFLAGS "$ENV{OROCOS_COMPONENTS_CFLAGS}")
 SET(OROCOS_COMPONENTS_REQUIRES "$ENV{OROCOS_COMPONENTS_REQUIRES}")
 
-CONFIGURE_FILE( ${PROJ_SOURCE_DIR}/ocl/ocl-config.h.in ${PROJ_BINARY_DIR}/ocl/ocl-config.h @ONLY)
+CONFIGURE_FILE( ${PROJ_SOURCE_DIR}/ocl/ocl-config.h.in ${PROJ_SOURCE_DIR}/ocl/ocl-config.h @ONLY)
 CONFIGURE_FILE( ${PROJ_SOURCE_DIR}/orocos-ocl.pc.in ${PROJ_BINARY_DIR}/orocos-ocl-${OROCOS_TARGET}.pc @ONLY)
 INSTALL_FILES( /lib/pkgconfig FILES orocos-ocl-${OROCOS_TARGET}.pc)
-INSTALL_FILES( /include/ocl FILES ocl/ocl-config.h)
+INSTALL_FILES( /include/ocl FILES ${PROJ_SOURCE_DIR}/ocl/ocl-config.h)
 
 #MESSAGE("Selected dirs: $ENV{SELECTED_DIRS}")
 #SET(SELECTED_DIRS $ENV{SELECTED_DIRS})
