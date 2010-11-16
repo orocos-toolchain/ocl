@@ -1,7 +1,7 @@
 Source: orocos-ocl
 Priority: extra
 Maintainer: Peter Soetens <peter.soetens@fmtc.be>
-Build-Depends: debhelper (>= 5), cmake (>=2.6.2), libboost-program-options-dev |  libboost-program-options1.35-dev | libboost-program-options1.36-dev | libboost-program-options1.37-dev, pkg-config, libncurses5-dev ( >= 5.0 ), libreadline5-dev ( >= 5.0 ), libnetcdf-dev | netcdfg-dev , linux-libc-dev @BUILD_DEPS@
+Build-Depends: debhelper (>= 5), cmake (>=2.6.2), libboost-program-options-dev |  libboost-program-options1.35-dev | libboost-program-options1.36-dev | libboost-program-options1.37-dev, pkg-config, libncurses5-dev ( >= 5.0 ) | libncurses6-dev ( >= 5.0 ), libreadline5-dev ( >= 5.0 ) | libreadline6-dev ( >= 6.0 ), libnetcdf-dev | netcdfg-dev , linux-libc-dev @BUILD_DEPS@
 Standards-Version: 3.7.2
 Section: libs
 
