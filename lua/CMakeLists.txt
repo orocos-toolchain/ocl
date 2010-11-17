@@ -21,7 +21,7 @@ if(BUILD_LUA_RTT)
     add_library(lua-repl STATIC lua-repl.c)
     target_link_libraries(lua-repl "ncurses" "readline" "dl" "history" ${LUA_LIBRARIES})
 
-    orocos_component(orocos-lua rtt.cpp LuaComponent.cpp)
+    orocos_component(orocos-lua rtt.cpp LuaComponent.cpp INSTALL lib/orocos)
     add_executable(rttlua rtt.cpp LuaComponent.cpp)
     set_target_properties(orocos-lua PROPERTIES COMPILE_FLAGS "-DOCL_COMPONENT_ONLY")
     target_link_libraries(rttlua orocos-deployment)

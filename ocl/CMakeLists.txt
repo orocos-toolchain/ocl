@@ -5,6 +5,6 @@ FILE( GLOB SRCS [^.]*.cpp )
 
 INCLUDE_DIRECTORIES ( ${Boost_INCLUDE_DIR} )
 
-orocos_component( orocos-ocl-common ${SRCS} )
+orocos_component( orocos-ocl-common ${SRCS} INSTALL lib/orocos)
 GLOBAL_ADD_INCLUDE( ocl ${HPPS})
      

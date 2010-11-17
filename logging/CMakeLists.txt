@@ -11,7 +11,7 @@ IF ( BUILD_LOGGING )
   INCLUDE_DIRECTORIES( "${LOG4CPP_INCLUDE_DIRS}" )
   LINK_DIRECTORIES( "${LOG4CPP_LIBRARY_DIRS}" )
 
-  orocos_component( orocos-logging ${CPPS} )
+  orocos_component( orocos-logging ${CPPS} INSTALL lib/orocos)
   GLOBAL_ADD_INCLUDE( ocl ${HPPS})
   target_link_libraries( orocos-logging "${LOG4CPP_LIBRARIES}")
 

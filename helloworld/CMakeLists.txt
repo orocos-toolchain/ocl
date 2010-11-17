@@ -7,7 +7,7 @@ IF ( BUILD_HELLOWORLD )
     FILE( GLOB HPPS [^.]*.hpp )
 
     ADD_EXECUTABLE( helloworld ${SRCS} )
-    orocos_component( orocos-helloworld ${SRCS} )
+    orocos_component( orocos-helloworld ${SRCS} INSTALL lib/orocos)
     SET_TARGET_PROPERTIES( orocos-helloworld
       PROPERTIES COMPILE_FLAGS "-DOCL_COMPONENT_ONLY" )
 
