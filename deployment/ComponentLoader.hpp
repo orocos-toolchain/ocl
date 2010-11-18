@@ -122,10 +122,11 @@ namespace OCL {
             bool isImported(std::string type_name);
 
             /**
-             * Imports a Component type found in each path in path_list in the current process.
-             * @param name The name of the Component to import, must match the library name (without lib/dll/so pre-/suffixes).
+             * Imports a package found in each path in path_list in the current process.
+             * @param name The name of the (package) directory to import
              * @param path_list A colon or semi-colon seperated list of paths
-             * to look for Components. May be the empty string.
+             * to look for Components. May be the empty string. In that case, the
+	     * default component search path is used.
              */
             bool import(std::string const& name, std::string const& path_list);
 

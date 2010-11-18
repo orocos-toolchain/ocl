@@ -41,10 +41,10 @@ static const std::string SO_EXT(".so");
 // choose how the PATH looks like
 # ifdef _WIN32
 static const std::string delimiters(";");
-static const std::string default_delimiter(";");
+static const char default_delimiter(';');
 # else
 static const std::string delimiters(":;");
-static const std::string default_delimiter(":");
+static const char default_delimiter(':');
 # endif
 
 boost::shared_ptr<ComponentLoader> ComponentLoader::minstance;
@@ -107,56 +107,13 @@ void ComponentLoader::Release() {
 
 void ComponentLoader::import( std::string const& path_list )
 {
-	// check first for exact match:
-    path arg( path_list );
-    if (is_regular_file(arg)) {
-	    loadInProcess(arg.string(), makeShortFilename( arg.filename() ), true);
-	    return;
+    if (path_list.empty() ) {
+	log(Error) << "import paths: No paths were given for loading ( path_list = '' )."<<endlog();
+	return;
     }
 
-    if ( isImported(path_list) ) {
-        log(Info) <<"Component package '"<< path_list <<"' already imported." <<endlog();
-        return;
-    }
-    // ros may fill this vector in based on rospack:
     vector<string> paths;
-    // check for rospack
-#ifdef HAS_ROSLIB
-    using namespace ros::package;
-    try {
-        string ppath = getPath( path_list );
-        if ( !ppath.empty() ) {
-            path rospath = path(ppath) / "lib" / "orocos";
-            paths.push_back( rospath.string() );
-            loadedPackages.push_back( path_list );
-            // + add all dependencies to paths:
-            V_string rospackresult;
-            command("depends " + path_list, rospackresult);
-            for(V_string::iterator it = rospackresult.begin(); it != rospackresult.end(); ++it) {
-                if ( isImported(*it) ) {
-                    log(Info) <<"Component package '"<< *it <<"' already imported." <<endlog();
-                    continue;
-                }
-                loadedPackages.push_back( *it );
-                ppath = getPath( *it );
-                path deppath = path(ppath) / "lib" / "orocos";
-                if ( is_directory( deppath ) )
-                    paths.push_back( deppath.string() );
-            }
-        } else
-            log(Info) << "Not a ros package: " << path_list << endlog();
-    } catch(...) {
-        log(Info) << "Not a ros package: " << path_list << endlog();
-    }
-#endif
-
-    // search:
-    if ( paths.empty() ) {
-        if (path_list.empty() )
-            return;
-        else
-            paths = splitPaths( path_list ); // import package or path list.
-    }
+    paths = splitPaths( path_list ); // import package or path list.
 
     for (vector<string>::iterator it = paths.begin(); it != paths.end(); ++it)
     {
@@ -219,21 +176,57 @@ void ComponentLoader::import( std::string const& path_list )
 
 bool ComponentLoader::import( std::string const& package, std::string const& path_list )
 {
+    // check first for exact match:
+    path arg( package );
+    if (is_regular_file(arg)) {
+	    loadInProcess(arg.string(), makeShortFilename( arg.filename() ), true);
+	    return true;
+    }
+
     if ( isImported(package) ) {
         log(Info) <<"Component package '"<< package <<"' already imported." <<endlog();
         return true;
-    } else {
-        //log(Info) << "Component package '"<< package <<"' not seen before." <<endlog();
     }
 
-    // if path exists don't try to be smart
-    path arg( package );
-    if (is_regular_file(arg)) {
-        string file = arg.filename();
-	    return loadInProcess(arg.string(), makeShortFilename(file), true);
+    // from here on: it's a package name or a path list.
+    // package names must be found to return true. 
+    // paths will be scanned and will always return true, but will warn when invalid.
+    // a package name 
+
+    // ros may fill this vector in based on rospack:
+    vector<string> vpaths;
+    // check for rospack
+#ifdef HAS_ROSLIB
+    using namespace ros::package;
+    try {
+        string ppath = getPath( package );
+        if ( !ppath.empty() ) {
+            path rospath = path(ppath) / "lib" / "orocos";
+            vpaths.push_back( rospath.string() );
+            loadedPackages.push_back( package );
+            // + add all dependencies to paths:
+            V_string rospackresult;
+            command("depends " + package, rospackresult);
+            for(V_string::iterator it = rospackresult.begin(); it != rospackresult.end(); ++it) {
+                if ( isImported(*it) ) {
+                    log(Info) <<"Component package '"<< *it <<"' already imported." <<endlog();
+                    continue;
+                }
+                loadedPackages.push_back( *it );
+                ppath = getPath( *it );
+                path deppath = path(ppath) / "lib" / "orocos";
+                if ( is_directory( deppath ) )
+                    vpaths.push_back( deppath.string() );
+            }
+        } else
+            log(Info) << "Not a ros package: " << package << endlog();
+    } catch(...) {
+        log(Info) << "Not a ros package: " << package << endlog();
     }
+#endif
 
     string paths = path_list;
+    string trypaths;
     if (paths.empty())
         paths = component_path;
     else
@@ -243,30 +236,47 @@ bool ComponentLoader::import( std::string const& package, std::string const& pat
     if (paths.empty())
         paths = ".";
 
-    // append '/package' to each plugin path in order to search all of them:
-    vector<string> vpaths = splitPaths(paths);
-    string trypaths = paths; // store for error reporting below.
-    paths.clear();
     bool path_found = false;
-    for(vector<string>::iterator it = vpaths.begin(); it != vpaths.end(); ++it) {
-        path p(*it);
-        p = p / package;
-        // we only search in existing directories:
-        if (is_directory( p )) {
-            path_found = true;
-            paths += p.string() + default_delimiter;
+
+    // if ros did not find anything, split the paths above.
+    if ( vpaths.empty() ) {
+        // set vpaths from (default) search paths.
+        vpaths = splitPaths(paths);
+        trypaths = paths; // store for error reporting below.
+        paths.clear();
+        // append '/package' to each plugin path in order to search all of them:
+        for(vector<string>::iterator it = vpaths.begin(); it != vpaths.end(); ++it) {
+            path p(*it);
+            p = p / package;
+            // we only search in existing directories:
+            if (is_directory( p )) {
+                path_found = true;
+                paths += p.string() + default_delimiter;
+            }
         }
+        if ( path_found )
+            paths.erase( paths.size() - 1 ); // remove trailing delimiter ';'
+    } else {
+        // ROS did find a package already, so put it backin paths
+        path_found = true;
+        paths.clear();
+        for(vector<string>::iterator it = vpaths.begin(); it != vpaths.end(); ++it) {
+            paths += *it + default_delimiter;
+        }
+        paths.erase( paths.size() - 1 ); // remove trailing delimiter ';'
     }
 
     // when at least one directory exists:
     if (path_found) {
         loadedPackages.push_back( package );
-        paths.erase( paths.size() - 1 ); // remove trailing delimiter ';'
         import(paths);
         return true;
     }
-    log(Error) << "No such package directory found in search path: " << package << ". Search path is: "<< endlog();
+    log(Error) << "No such package or directory found in search path: " << package << ". Search path is: "<< endlog();
     log(Error) << trypaths << endlog();
+#ifdef HAS_ROSLIB
+    log(Error) << "Package also not found in ROS_PACKAGE path." <<endlog();
+#endif
     return false;
 
 }
@@ -281,7 +291,7 @@ bool ComponentLoader::isImported(string type_name)
     // hack: since ros works with package names, and ocl is imported by default (in configureHook())
     // we claim that the 'ocl' package is always imported."
     if ( type_name == "ocl") {
-        log(Info) <<"OCL should be loaded by default in ROS package trees. No need to import it." <<endlog();
+        log(Debug) <<"OCL should be loaded by default in ROS package trees. No need to import it." <<endlog();
         return true;
     }
 #endif
@@ -410,7 +420,11 @@ std::vector<std::string> ComponentLoader::listComponentTypes() const {
 }
 
 std::string ComponentLoader::getComponentPath() const {
-    return component_path;
+    string ret = component_path;
+    // append default delimiter if not present. such that it can be combined with a new path.
+    if ( ret.length() && ret[ ret.length() -1 ] != default_delimiter )
+	ret += default_delimiter;
+    return ret;
 }
 
 void ComponentLoader::setComponentPath( std::string const& newpath ) {

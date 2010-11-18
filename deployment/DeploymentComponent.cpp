@@ -92,9 +92,9 @@ namespace OCL
         this->addAttribute( highest_Priority );
 
 
-        this->addOperation("loadLibrary", &DeploymentComponent::loadLibrary, this, ClientThread).doc("Load a new library into memory.").arg("Name", "The name of the to be loaded library.");
-        this->addOperation("import", &DeploymentComponent::import, this, ClientThread).doc("Load all libraries in Path into memory.").arg("Path", "The name of the directory where libraries are located.");
-
+        this->addOperation("loadLibrary", &DeploymentComponent::loadLibrary, this, ClientThread).doc("(DEPRECATED use 'import') Load a new library into memory.").arg("Name", "The name of the to be loaded library.");
+        this->addOperation("import", &DeploymentComponent::import, this, ClientThread).doc("Import all components, plugins and typekits from a given package or directory in the search path.").arg("Package", "The name of a directory or package.");
+        this->addOperation("path", &DeploymentComponent::path, this, ClientThread).doc("Add additional directories to the component search path.").arg("Paths", "A colon or semi-colon separated list of paths to search for packages.");
 
         this->addOperation("loadComponent", &DeploymentComponent::loadComponent, this, ClientThread).doc("Load a new component instance from a library.").arg("Name", "The name of the to be created component").arg("Type", "The component type, used to lookup the library.");
         this->addOperation("loadService", &DeploymentComponent::loadService, this, ClientThread).doc("Load a discovered service or plugin in an existing component.").arg("Name", "The name of the component which will receive the service").arg("Service", "The name of the service or plugin.");
@@ -456,6 +456,16 @@ namespace OCL
                                 valid = false;
                             continue;
                         }
+                        if ( (*it)->getName() == "Path" ) {
+                            RTT::Property<std::string> pathp = *it;
+                            if ( !pathp.ready() ) {
+                                log(Error)<< "Found 'Path' statement, but it is not of type='string'."<<endlog();
+                                valid = false;
+                                continue;
+                            }
+                            this->path( pathp.get() );
+                            continue;
+                        }
                         if ( (*it)->getName() == "Include" ) {
                             RTT::Property<std::string> includep = *it;
                             if ( !includep.ready() ) {
@@ -471,7 +481,7 @@ namespace OCL
                         // Check if it is a propertybag.
                         RTT::Property<RTT::PropertyBag> comp = *it;
                         if ( !comp.ready() ) {
-                            log(Error)<< "RTT::Property '"<< *it <<"' should be a struct, Include or Import statement." << endlog();
+                            log(Error)<< "RTT::Property '"<< *it <<"' should be a struct, Include, Path or Import statement." << endlog();
                             valid = false;
                             continue;
                         }
@@ -1180,11 +1190,17 @@ namespace OCL
         deletePropertyBag( root );
     }
 
-    bool DeploymentComponent::import(const std::string& path)
+    bool DeploymentComponent::import(const std::string& package)
     {
         RTT::Logger::In in("DeploymentComponent::import");
-        ComponentLoader::Instance()->import( path );
-        return true;
+        return ComponentLoader::Instance()->import( package, "" ); // search in existing search paths
+    }
+
+    void DeploymentComponent::path(const std::string& path)
+    {
+        RTT::Logger::In in("DeploymentComponent::path");
+        ComponentLoader::Instance()->setComponentPath( ComponentLoader::Instance()->getComponentPath() + path );
+	ComponentLoader::Instance()->import( path ); // load default components from paths.
     }
 
     bool DeploymentComponent::loadLibrary(const std::string& name)
