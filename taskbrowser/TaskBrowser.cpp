@@ -70,6 +70,8 @@
 #include <rtt/scripting/PeerParser.hpp>
 #include <rtt/scripting/Scripting.hpp>
 #include <rtt/plugin/PluginLoader.hpp>
+#include <rtt/internal/GlobalService.hpp>
+#include <rtt/types/GlobalsRepository.hpp>
 
 #include <iostream>
 #include <fstream>
@@ -443,8 +445,24 @@ namespace OCL
         // types:
         comps = Types()->getDottedTypes();
         for (std::vector<std::string>::iterator i = comps.begin(); i!= comps.end(); ++i ) {
-            if ( i->find( component ) == 0  )
-                completes.push_back( peerpath + *i );
+            if ( peerpath.empty() && i->find( component ) == 0  )
+                completes.push_back( *i );
+        }
+
+        // Global Attributes:
+        comps = GlobalsRepository::Instance()->getAttributeNames();
+        for (std::vector<std::string>::iterator i = comps.begin(); i!= comps.end(); ++i ) {
+            if ( peerpath.empty() && i->find( component ) == 0  )
+                completes.push_back( *i );
+        }
+
+        // Global methods:
+        if ( taskobject == peer->provides() && peer == context) {
+            comps = GlobalService::Instance()->getNames();
+            for (std::vector<std::string>::iterator i = comps.begin(); i!= comps.end(); ++i ) {
+                if ( i->find( component ) == 0  )
+                    completes.push_back( peerpath + *i );
+            }
         }
 
         // complete on types:
@@ -511,6 +529,9 @@ namespace OCL
                         peer = peer->getPeer( item );
                         taskobject = peer->provides();
                         itemfound = true;
+                    } else if ( GlobalService::Instance()->hasService(item) ) {
+                        taskobject = GlobalService::Instance()->provides(item);
+                        itemfound = true;
                     }
                 if ( itemfound ) { // if "." found and correct path
                     peerpath += to_parse.substr(startpos, endpos) + ".";
@@ -559,6 +580,18 @@ namespace OCL
                 if ( *i != "this" ) // "this." confuses our parsing lateron
                     completes.push_back( peerpath + *i + "." );
                 //cerr << "added " << peerpath+*i+"."<<endl;
+            }
+        }
+        // add global service completes:
+        if ( peer == context && taskobject == peer->provides() ) {
+            v = GlobalService::Instance()->getProviderNames();
+            for (RTT::TaskContext::PeerList::iterator i = v.begin(); i != v.end(); ++i) {
+                if ( i->find( component ) == 0 ) { // only add if match
+                    completes.push_back( peerpath + *i );
+                    if ( *i != "this" ) // "this." confuses our parsing lateron
+                        completes.push_back( peerpath + *i + "." );
+                    //cerr << "added " << peerpath+*i+"."<<endl;
+                }
             }
         }
         return;
@@ -1219,9 +1252,12 @@ namespace OCL
         Service::shared_ptr ops;
         ServiceRequester* sr = 0;
 
-        if ( context->provides()->hasService( name ) ) // only object name was typed
+        if ( context->provides()->hasService( name ) || GlobalService::Instance()->hasService( name ) ) // only object name was typed
             {
-                ops = context->provides(name);
+                if ( context->provides()->hasService( name ) )
+                    ops = context->provides(name);
+                else
+                    ops = GlobalService::Instance()->provides(name);
                 sresult << nl << "Printing Interface of '"<< coloron << ops->getName() <<coloroff <<"' :"<<nl<<nl;
                 vector<string> methods = ops->getNames();
                 std::for_each( methods.begin(), methods.end(), boost::bind(&TaskBrowser::printOperation, this, _1, ops) );
