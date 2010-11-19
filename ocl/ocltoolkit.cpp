@@ -18,50 +18,41 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-#include <rtt/os/StartStopManager.hpp>
-#include <rtt/types/TemplateTypeInfo.hpp>
-#include <rtt/types/TemplateConstructor.hpp>
-#include <rtt/types/Operators.hpp>
-#include <rtt/types/OperatorTypes.hpp>
 #include <rtt/types/TypekitPlugin.hpp>
+#include <rtt/types/SequenceTypeInfo.hpp>
 
-#include <rtt/types/VectorTemplateComposition.hpp>
+#include <string>
+#include <vector>
 
 namespace OCL
 {
     using namespace RTT;
     using namespace RTT::detail;
+    using namespace std;
 
-    int loadOCL()
+    class OCLTypekit : public TypekitPlugin
     {
-        //RTT::types::TypeInfoRepository::Instance()->addType( new types::StdVectorTemplateTypeInfo<std::string>("stringList") );
-        RTT::types::TypeInfoRepository::Instance()->addType( new types::StdVectorTemplateTypeInfo<std::string,true>("strings") );
-        RTT::types::TypeInfoRepository::Instance()->type("strings")->addConstructor(newConstructor(types::stdvector_ctor<std::string>() ) );
-        RTT::types::TypeInfoRepository::Instance()->type("strings")->addConstructor(newConstructor(types::stdvector_ctor2<std::string>() ) );
-        RTT::types::TypeInfoRepository::Instance()->type("strings")->addConstructor(new types::StdVectorBuilder<std::string>() );
+    public:
+        bool loadTypes() {
+            RTT::types::TypeInfoRepository::Instance()->addType( new types::SequenceTypeInfo<vector<std::string> >("strings") );
 
-       RTT::types::TypeInfoRepository::Instance()->addType( new types::StdVectorTemplateTypeInfo<bool,true>("bools") );
-       RTT::types::TypeInfoRepository::Instance()->type("bools")->addConstructor(newConstructor(types::stdvector_ctor<bool>() ) );
-       RTT::types::TypeInfoRepository::Instance()->type("bools")->addConstructor(newConstructor(types::stdvector_ctor2<bool>() ) );
-       RTT::types::TypeInfoRepository::Instance()->type("bools")->addConstructor(new types::StdVectorBuilder<bool>() );
-//        RTT::types::OperatorRepository::Instance()->add( newBinaryOperator( "[]", types::stdvector_index<bool>() ) );
-//        RTT::types::OperatorRepository::Instance()->add( newDotOperator( "size", types::get_size<const std::vector<bool>&>() ) );
+            RTT::types::TypeInfoRepository::Instance()->addType( new types::SequenceTypeInfo<vector<bool> >("bools") );
 
-//        RTT::types::TypeInfoRepository::Instance()->addType( new types::StdVectorTemplateTypeInfo<double,true>("doubles") );
-//        RTT::types::TypeInfoRepository::Instance()->type("doubles")->addConstructor(newConstructor(types::stdvector_ctor<double>() ) );
-//        RTT::types::TypeInfoRepository::Instance()->type("doubles")->addConstructor(newConstructor(types::stdvector_ctor2<double>() ) );
-//        RTT::types::TypeInfoRepository::Instance()->type("doubles")->addConstructor(new types::StdVectorBuilder<double>() );
-//        RTT::types::OperatorRepository::Instance()->add( newBinaryOperator( "[]", types::stdvector_index<double>() ) );
+            RTT::types::TypeInfoRepository::Instance()->addType( new types::SequenceTypeInfo<vector<double> >("doubles") );
 
-        RTT::types::TypeInfoRepository::Instance()->addType( new types::StdVectorTemplateTypeInfo<int,true>("ints") );
-        RTT::types::TypeInfoRepository::Instance()->type("ints")->addConstructor(newConstructor(types::stdvector_ctor<int>() ) );
-        RTT::types::TypeInfoRepository::Instance()->type("ints")->addConstructor(newConstructor(types::stdvector_ctor2<int>() ) );
-        RTT::types::TypeInfoRepository::Instance()->type("ints")->addConstructor(new types::StdVectorBuilder<int>() );
+            RTT::types::TypeInfoRepository::Instance()->addType( new types::SequenceTypeInfo<vector<int> >("ints") );
 
-        return 0;
-    }
+            return true;
+        }
 
-    os::InitFunction OCLLoader(&loadOCL);
+        bool loadOperators() { return true; }
+        bool loadConstructors() { return true; }
+
+        std::string getName() {
+             return "OCLTypekit";
+        }
+    };
 }
 
+ORO_TYPEKIT_PLUGIN( OCL::OCLTypekit )
 

@@ -5,6 +5,8 @@ FILE( GLOB SRCS [^.]*.cpp )
 
 INCLUDE_DIRECTORIES ( ${Boost_INCLUDE_DIR} )
 
-orocos_component( orocos-ocl-common ${SRCS} INSTALL lib/orocos)
+orocos_component( orocos-ocl-common HMIConsoleOutput.cpp EmptyTaskContext.cpp INSTALL lib/orocos)
+orocos_typekit( ocl ocltoolkit.cpp )
+
 GLOBAL_ADD_INCLUDE( ocl ${HPPS})
      
