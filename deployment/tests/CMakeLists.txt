@@ -7,8 +7,7 @@ IF ( BUILD_DEPLOYMENT_TEST )
     FILE( GLOB SRCS [^.]*.cpp )
 
     GLOBAL_ADD_TEST( deploy ${SRCS} )
-    # Use  TARGET_LINK_LIBRARIES( report libs... ) to add library deps.
-    PROGRAM_ADD_DEPS( deploy orocos-taskbrowser orocos-deployment )
+    target_link_libraries( deploy orocos-taskbrowser orocos-deployment )
 
     # Copy this file to build dir.
     TEST_USES_FILE( ComponentA.cpf )
