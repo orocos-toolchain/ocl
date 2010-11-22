@@ -22,6 +22,7 @@ class TestStateMachine
     Handle h;
 	// log a message
 	RTT::Operation<void(std::string)>					log_mtd;
+    InputPort<os::Timer::TimerId> receiver;
 
 public:
     TestStateMachine(std::string name) :
@@ -29,6 +30,7 @@ public:
             log_mtd("log", &TestStateMachine::doLog, this)
     {
         addOperation( log_mtd ).doc("Log a message").arg("message", "Message to log");
+        addEventPort("TimerIn", receiver);
     }
 
     bool startHook()
@@ -83,22 +85,25 @@ int ORO_main( int argc, char** argv)
     }
 
     HMIConsoleOutput hmi("hmi");
-    hmi.setActivity( new Activity(ORO_SCHED_RT, os::HighestPriority) );
+    hmi.setActivity( new Activity(ORO_SCHED_RT, os::HighestPriority, 0.1) );
 
     TimerComponent tcomp("Timer");
-    Activity act(ORO_SCHED_RT, os::HighestPriority, tcomp.engine() );
+    tcomp.setActivity( new Activity(ORO_SCHED_RT, os::HighestPriority ) );
 
     TestStateMachine peer("testWithStateMachine");  // match filename
-    Activity p_act(ORO_SCHED_RT, os::HighestPriority, 0.1, peer.engine() );
+    peer.setActivity( new Activity(ORO_SCHED_RT, os::HighestPriority, 0.1 ) );
 
     peer.addPeer(&tcomp);
     peer.addPeer(&hmi);
+
+    peer.ports()->getPort("TimerIn")->connectTo( tcomp.ports()->getPort("timeout"));
 
     std::string name = "testWithStateMachine.osd";
     assert (peer.getProvider<Scripting>("scripting"));
 	if ( !peer.getProvider<Scripting>("scripting")->loadStateMachines(name) )
     {
         log(Error) << "Unable to load state machine: '" << name << "'" << endlog();
+        tcomp.getActivity()->stop();
         return -1;
     }
 
