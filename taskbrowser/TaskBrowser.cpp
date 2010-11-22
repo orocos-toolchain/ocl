@@ -1688,6 +1688,7 @@ namespace OCL
 
     	if ( findPeer( helpstring ) ) {
     		try {
+    		    // findPeer resolved the taskobject holding 'helpstring'.
     			sresult << nl;
     			if (helpstring.rfind('.') != string::npos )
     				printOperation( helpstring.substr(helpstring.rfind('.')+1 ), taskobject );
@@ -1698,7 +1699,7 @@ namespace OCL
         		cerr<< "  help: No such operation known: '"<< helpstring << "'"<<nl;
     		}
     	} else {
-    		cerr<< "  help: No such operation known: '"<< helpstring << "'"<<nl;
+    		cerr<< "  help: No such operation known (peer not found): '"<< helpstring << "'"<<nl;
     	}
         sresult.str("");
     }
@@ -1998,10 +1999,17 @@ namespace OCL
         sresult.str("");
     }
 
-    void TaskBrowser::printOperation( const std::string m, Service::shared_ptr ops )
+    void TaskBrowser::printOperation( const std::string m, Service::shared_ptr the_ops )
     {
         std::vector<ArgumentDescription> args;
-        args = ops->getArgumentList( m );
+        Service::shared_ptr ops;
+        try {
+            args = the_ops->getArgumentList( m ); // may throw !
+            ops = the_ops;
+        } catch(...) {
+            args = GlobalService::Instance()->getArgumentList( m ); // may throw !
+            ops = GlobalService::Instance();
+        }
         sresult <<" " << coloron << m << coloroff<< "( ";
         for (std::vector<ArgumentDescription>::iterator it = args.begin(); it != args.end(); ++it) {
             sresult << it->type <<" ";
