@@ -321,6 +321,7 @@ namespace OCL
     	}
     	if (!serv) {
     		log(Error) <<"No such service: '"<< strs.front() <<"' while looking for port '"<< names<<"'"<<endlog();
+    		return 0;
     	}
     	ret = serv->getPort(strs.front());
     	if (!ret) {
@@ -424,7 +425,7 @@ namespace OCL
             return true;
         } else {
             log(Error)<< "Failed to connect Port " << one << " to  "<< other <<"." << endlog();
-            return true;
+            return false;
         }
     }
 
