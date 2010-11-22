@@ -182,6 +182,7 @@ namespace OCL
         valid_names.insert("Service");
         valid_names.insert("Plugin"); // equivalent to Service.
         valid_names.insert("Provides"); // equivalent to Service.
+        valid_names.insert("RunScript"); // runs a program script in a component.
 
         // Check for 'Deployer-site.cpf' XML file.
         if (siteFile.empty())
@@ -700,7 +701,16 @@ namespace OCL
                                 }
                                 continue;
                             }
+                            if ( (*optit)->getName() == "RunScript" ) {
+                                base::PropertyBase* ps = comp.rvalue().getProperty("RunScript");
+                                if (!ps) {
+                                    log(Error) << "RunScript must be of type <string>" << endlog();
+                                    valid = false;
+                                }
+                                continue;
+                            }
                             if ( (*optit)->getName() == "ProgramScript" ) {
+                                log(Warning) << "ProgramScript tag is deprecated. Rename it to 'RunScript'." <<endlog();
                                 base::PropertyBase* ps = comp.rvalue().getProperty("ProgramScript");
                                 if (!ps) {
                                     log(Error) << "ProgramScript must be of type <string>" << endlog();
@@ -709,6 +719,7 @@ namespace OCL
                                 continue;
                             }
                             if ( (*optit)->getName() == "StateMachineScript" ) {
+                                log(Warning) << "StateMachineScript tag is deprecated. Rename it to 'RunScript'." <<endlog();
                                 base::PropertyBase* ps = comp.rvalue().getProperty("StateMachineScript");
                                 if (!ps) {
                                     log(Error) << "StateMachineScript must be of type <string>" << endlog();
@@ -1120,6 +1131,13 @@ namespace OCL
 
             // Load scripts in order of appearance
             for (RTT::PropertyBag::const_iterator ps = comp.rvalue().begin(); ps!= comp.rvalue().end(); ++ps) {
+                RTT::Property<string> script;
+                if ( (*ps)->getName() == "RunScript" )
+                    script = *ps;
+                if ( script.ready() ) {
+                    valid = valid && peer->getProvider<Scripting>("scripting")->runScript( script.get() );
+                }
+                // deprecated:
                 RTT::Property<string> pscript;
                 if ( (*ps)->getName() == "ProgramScript" )
                     pscript = *ps;

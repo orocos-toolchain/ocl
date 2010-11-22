@@ -242,12 +242,59 @@
       <section>
 	<title>Where to look for component libraries</title>
 	<para>
-	  The <function>import</function> statement causes all
-	  component libraries in a given directory to be pre-loaded.
-	  It does not cause any component to be created, but
+	  The <function>path</function> and <function>import</function> statements are the
+		two ways to specify where components can be found, and which component libraries to import.
+	</para>
+	<para>
+		Imagine that you have this directory structure:
+    <screen>
+ /opt/robot                    : your orocos install path (lib, include, etc)
+ /opt/robot/lib/orocos/        : orocos installed components
+                      /plugins : services and other plugins
+                      /types   : typekits and transports
+  </screen>
+	  And that you have a project 'robot-13' which is installed there as well, but in
+		a subdirectory of the <filename>/opt/robot/lib/orocos</filename> directory:
+    <screen>
+ /opt/robot/lib/orocos/robot-13         : robot-13 components
+                      /robot-13/plugins : robot-13 services and other plugins
+                      /robot-13/types   : robot-13 typekits and transports
+  </screen>
+	  The RTT Plugins manual describes this typical directory structure more in detail.
+	</para>
+	<para>
+		The <function>path</function> function extends the default search path 
+		with new directories to look for components. Even more it causes all
+	  component libraries in these directories to be pre-loaded, but without creating
+		specific component intances. So it does not cause any component to be created, but
 	  allows the <classname>OCL::DeploymentComponent</classname> to know where the 
 	  component libraries are located. This function <emphasis>does not work recursively</emphasis>
-	  and may be called for multiple paths.
+	  and may be called for multiple paths, or provide them in a colon or semi-colon separated list.
+	</para>
+	<para>
+	  In XML, the path statement looks like:
+	  <programlisting><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "cpf.dtd">
+<properties>
+  <!-- ....  -->
+
+  <simple name="Path" type="string"><value>/opt/robot/lib/orocos</value></simple>
+
+</properties>]]></programlisting>
+	</para>
+	<para>
+	  The script method equivalent is:
+	  <programlisting>  path("/opt/robot/lib/orocos")</programlisting>
+	</para>
+	<para>
+	  Each component library (.so, .dll,...) in the directory
+	  <filename>/opt/robot/lib/orocos</filename> is pre-loaded.  If this directory contains a
+	  <filename>plugins</filename> or <filename>types</filename> subdirectory, the libraries in these
+	  directories are loaded as well. Once you installed multiple component libraries in
+	  subdirectories of your path, you must use the <function>import</function> statement to load
+	  these. In addition, when you use the ROS packaging system, you can use <function>import</function>
+	  in order to load the components from a ros package's <filename>lib/orocos</filename> directory,
+	  and all its dependencies. In that case, only the ROS_PACKAGE_PATH environment variable needs to be set.
 	</para>
 	<para>
 	  In XML, the import statement looks like:
@@ -256,21 +303,26 @@
 <properties>
   <!-- ....  -->
 
-  <simple name="Import" type="string"><value>/usr/local/lib/orocos</value></simple>
+  <simple name="Import" type="string"><value>robot-13</value></simple>
 
 </properties>]]></programlisting>
 	</para>
 	<para>
 	  The script method equivalent is:
-	  <programlisting>  import("/usr/local/lib/orocos")</programlisting>
+	  <programlisting>  import("robot-13")</programlisting>
 	</para>
 	<para>
-	  Each component library found under the given location is pre-loaded. The
-	  import statement <emphasis>only allows you to load Orocos plugin or component libraries</emphasis>.
-	  See the Plugin manual for creating such a library.
-	  Regular libraries (like libfoo.so or win32.dll,...) can not be loaded.
-	  If a library contains one or more Orocos components, 
-	  the contained component types become available in the next step.
+		All component libraries found in <function>&lt;path&gt;/robot-13</function> (or the ROS package 'robot-13') and their plugins/types are
+		loaded because of this statement.  The import and path statements <emphasis>only allow you to
+		load Orocos plugin or component libraries</emphasis>.  In case the import statement
+		contains a path to an existing library file, that file will be loaded directly instead of looking it up 
+		in the search paths.
+	</para>
+	<para>
+		See the Plugin manual for creating plugin libraries or the end of this manual for
+		creating component libraries.  Regular libraries (like libfoo.so or
+		win32.dll,...) can not be loaded.  If a library contains one or more Orocos components, the
+		contained component types become available in the next step.
 	</para>
 	<para>
 	  To see the effects of the import function, the available
@@ -280,10 +332,25 @@
  (type 'ls' for context info) :displayComponentTypes()
       Got :displayComponentTypes()
  = I can create the following component types:
+   TaskContext
    OCL::ConsoleReporting
    OCL::FileReporting
+   OCL::HelloWorld
+   Robot13::Controller
+   Robot13::Diagnostics
 (void)</screen>
 	</para>
+	<para>
+		 Summarized: 
+		 <itemizedlist>
+			 <listitem><para> <function>path</function> pre-loads component libraries and sets the search path for subdirectories</para></listitem>
+			 <listitem><para> <function>import</function> loads component libraries from subdirectories in the search path OR a specific file directly</para></listitem>
+			 <listitem><para> <function>displayComponentTypes</function> shows which components have been found.</para></listitem>
+		 </itemizedlist>
+	</para>
+      </section>
+      <section>
+	<title>Including other XML files</title>
 	<para>
 	  In order to manage your XML files, one XML file can include
 	  another with the 'Include' directive. The include directive
@@ -294,7 +361,9 @@
 	<warning>
 	  <para>
 	    This option is new and experimental and may change in
-	    meaning and/or name in the future.
+	    meaning and/or name in the future. When using the Xerces XML
+			parser in Orocos, you may also want to use the standard XML way for
+			including external documents, as documented on the Orocos Wiki.
 	  </para>
 	</warning>
 	<para>
@@ -378,7 +447,7 @@
 
   <struct name="Reporter" type="OCL::FileReporting">
 
-    <struct name="Activity" type="PeriodicActivity">
+    <struct name="Activity" type="Activity">
       <simple name="Period" type="double"><value>0.005</value></simple>
       <simple name="Priority" type="short"><value>0</value></simple>
       <simple name="Scheduler" type="string"><value>ORO_SCHED_OTHER</value></simple>
@@ -396,7 +465,7 @@
 
   <struct name="Controller" type="ControllerType">
 
-    <struct name="Activity" type="PeriodicActivity">
+    <struct name="Activity" type="Activity">
       <simple name="Period" type="double"><value>0.001</value></simple>
       <simple name="Priority" type="short"><value>99</value></simple>
       <simple name="Scheduler" type="string"><value>ORO_SCHED_RT</value></simple>
@@ -432,12 +501,12 @@
       <simple type="string"><value>Plant</value></simple>
     </struct>
 
-    <simple name="ProgramScript" type="string"><value>controller-program.ops</value></simple>
-    <simple name="StateMachineScript" type="string"><value>controller-states.ops</value></simple>
+    <simple name="RunScript" type="string"><value>controller-program.ops</value></simple>
+    <simple name="RunScript" type="string"><value>controller-states.ops</value></simple>
   </struct>
 
   <struct name="Plant" type="PlantType">
-    <struct name="Activity" type="NonPeriodicActivity">
+    <struct name="Activity" type="Activity">
       <simple name="Priority" type="short"><value>0</value></simple>
       <simple name="Scheduler" type="string"><value>ORO_SCHED_RT</value></simple>
     </struct>
@@ -454,7 +523,7 @@
 	  behaviour of the component in the <option>Activity</option>
 	  element. 
 	</para><programlisting><![CDATA[
-    <struct name="Activity" type="PeriodicActivity">
+    <struct name="Activity" type="Activity">
       <simple name="Period" type="double"><value>0.005</value></simple>
       <simple name="Priority" type="short"><value>0</value></simple>
       <simple name="Scheduler" type="string"><value>ORO_SCHED_OTHER</value></simple>
@@ -490,30 +559,35 @@
 	    interface, but this is optional.  
 	    </para>
 	    <programlisting><![CDATA[
-    <!-- loads the 'scripting' service (aka plugin) in this component -->
+    <!-- loads the 'scripting' service in this component -->
     <simple name="Service" type="string"><value>scripting</value></simple>
+
+    <!-- loads the 'trajectory' plugin in this component -->
+    <simple name="Plugin" type="string"><value>trajectory</value></simple>
     ]]></programlisting>
 	  <para>
 	    The
-	    <option>Service</option> (or <option>Plugin</option> or
-	    <option>Provides</option>, they are all equivalent)
+	    <option>Service</option> or <option>Plugin</option>
 	    element may occur any number of times in the component
-	    struct to list a specific service that must be loaded in
+	    struct to list a specific service or plugin that must be loaded in
 	    that component.
 	    For example, in order to execute a script in your
 	    component, you may load the 'scripting' service. Or in
 	    order to serialize its properties to XML, you'll need the
 	    'marshalling' service. These services add new functions to
-	    your component which provide that functionality.
+	    your component which provide that functionality. 
+		</para>
+		<para>
+			A service promisses that it is available as a <classname>RTT::Service</classname> object in
+			the component's interface. A plugin doesn't have this obligation, and can
+			have any desired effect on your component.
 	  </para>
 	  <para>
-	    You can check the available services (ie discovered by the
-	    DeploymentComponent) with '.services' and load a service
-	    from the TaskBrowser prompt <emphasis>in the current
-	    visited component</emphasis> with
-	    <programlisting>.provide &lt;servicename&gt;</programlisting>. 
-	    The Deployer has 
-	    the equivalent function which looks like this:
+	    You can check the available services or plugins (ie discovered by the DeploymentComponent)
+	    with '.services' or '.plugins' and load a service from the TaskBrowser prompt
+	    <emphasis>in the current visited component</emphasis> with <programlisting>.provide
+	    &lt;servicename&gt;</programlisting>.  The Deployer has the equivalent function which looks
+	    like this:
 	    <programlisting>
   loadService("Reporter","scripting")
 	    </programlisting> Where Reporter must be a peer of the
@@ -549,14 +623,16 @@
     </struct>
     ]]></programlisting>
 	<para>
-	So for each element in this
+		So for each element in this
 	  struct, the name of the element is the port name, and the value is the
 	  name of the connection it belongs to. Ports with equal <emphasis>connection names</emphasis>
-	  are connected to each other. The port name itself is <emphasis>not used</emphasis>.
+	  are connected to each other. Ports which are not listed will not be connected to anything.
+
 	  If ports of different data types are being connected, the configuration phase
 	  will fail.
 	  You can tune each connection using a struct of type <option>ConnPolicy</option> with the
-	  name of the connection. 
+	  name of the connection. The allowed fields in this struct are the same as in the C++
+		API, see <classname>RTT::ConnPolicy</classname>.
 	</para>
 	    <programlisting><![CDATA[
   <!-- You can set per data flow connection policies -->
@@ -569,7 +645,7 @@
   <!-- You can repeat this struct for each connection below ... -->
     ]]></programlisting>
 	<para>
-	In this example,
+		In this example,
 	  the SensorValuesConnection is configured, which is used to connect
 	  the Controller's SensorValues port with the Plant's Position port.
 	</para>
@@ -673,24 +749,62 @@
 	  services, start and stop it etc.
 	</para>
 	  </section>
-	  <section><title>Loading scripts</title>
+	  <section><title>Loading and Running Orocos Program Scripts</title>
 	<para>
-	  The Controller has at the end two additional elements
-	  describing which script files must be loaded into that
-	  component: <option>ProgramScript</option> and
-	  <option>StateMachineScript</option>. 
+	  The Controller has at the end two additional <option>RunScript</option> elements
+	  describing which script files must be loaded and executed into that
+	  component.
 	</para>
         <programlisting><![CDATA[
-    <simple name="ProgramScript" type="string"><value>controller-program.ops</value></simple>
-    <simple name="StateMachineScript" type="string"><value>controller-states.ops</value></simple>
+    <simple name="RunScript" type="string"><value>controller-program.ops</value></simple>
+    <simple name="RunScript" type="string"><value>controller-states.ops</value></simple>
     ]]></programlisting>
 	<para>
-	  Any number of scripts
-	  can be loaded and they are loaded in order.  Both Orocos
-	  program scripts and state machine scripts can be
-	  loaded. This is again done during the
+	  Any number of scripts can be loaded and they are loaded in the order of the XML
+		file. Each script may contain any number of statements, functions, program scripts
+		or state machines. Running these scripts is again done during the
 	  <function>configureComponents()</function> step.
 	</para>
+	<para>
+		If you want to have a program or statemachine started you need to do so
+		at the end of the script file itself, by adding <screen>
+  programname.start()
+  statemachine_instance.activate()
+  statemachine_instance.start()</screen>
+	  statements. Be aware that this is done during the configuration phase of your
+		components, so before updateHook() is executed. You are however allowed to start
+		your component from the script by merely calling <screen>
+  start()</screen>
+	  at the right place of your script.
+	</para>
+	<para>
+		You may choose to implement the whole deployment scenario in such a script, instead
+		of the XML file presented in this manual. In that case, you need to load this script
+		in the Deployer itself using the <option>-s filename.ops</option> command line option, or
+		using a small XML file that only contains this code:
+	</para>
+	  <programlisting><![CDATA[<?xml version="1.0" encoding="UTF-8"?> 
+<!DOCTYPE properties SYSTEM "cpf.dtd">
+<properties>
+  <struct name="Deployer" type="PropertyBag">
+
+    <!-- set a period -->
+    <struct name="Activity" type="Activity">
+      <simple name="Period" type="double"><value>0.01</value></simple>
+    </struct>
+
+    <!-- run a script -->
+    <simple name="RunScript" type="string"><value>scriptfile.ops</value></simple>
+  </struct>
+</properties>
+	]]></programlisting>
+		<para>
+			It is advised to set a period for the activity of a component executing scripts,
+			since scripts need periodic execution in case they have to wait for an operation
+			to complete. Alternatively, you can set the period at the top of your script
+			file by adding the statement: <programlisting>
+  setPeriod(0.01)</programlisting> instead of specifying it in the XML file.
+		</para>
 	  </section>
       </section>
       <section>
@@ -779,6 +893,12 @@
 	This section explains how to prepare a component library
 	for deployment. It is demonstrated with an example.
       </para>
+			<note>
+				<para>The <filename>orocreate-pkg</filename> script of OCL does
+				all the setup work for you. This section is given for reference
+				use only.
+			  </para>
+			</note>
       <section>
 	<title>Additional Code</title>
 	<para>
