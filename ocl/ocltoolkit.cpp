@@ -38,7 +38,7 @@ namespace OCL
 
             RTT::types::TypeInfoRepository::Instance()->addType( new types::SequenceTypeInfo<vector<bool> >("bools") );
 
-            RTT::types::TypeInfoRepository::Instance()->addType( new types::SequenceTypeInfo<vector<double> >("doubles") );
+            //RTT::types::TypeInfoRepository::Instance()->addType( new types::SequenceTypeInfo<vector<double> >("doubles") );
 
             RTT::types::TypeInfoRepository::Instance()->addType( new types::SequenceTypeInfo<vector<int> >("ints") );
 

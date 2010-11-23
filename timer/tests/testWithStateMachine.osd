@@ -59,9 +59,9 @@ StateMachine testWithStateMachine_SM
 	    {
 	      do log("Waiting for timeout ...");
 	    }
-	  transition Timer.timeout(timerID)
+	  transition TimerIn(timerID)
 	    if timerID == ID_EXTRA then select TEST_4
-			    }
+	}
 
 	//**************************************************************************
 	state TEST_4
@@ -74,7 +74,7 @@ StateMachine testWithStateMachine_SM
 	    {
 	      do log("Waiting for timeout ...");
 	    }
-	  transition Timer.timeout(timerID)
+	  transition TimerIn(timerID)
 	    if timerID == ID_TIMEOUT then select DONE
 	      else { do log("wrong timeout !"); do hmi.logInt(timerID); } select ERROR
 		     }

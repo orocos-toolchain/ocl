@@ -61,6 +61,7 @@ int ORO_main( int argc, char** argv)
 
     gtc.configure();
     gtc.start();
+    gtc.addPeer( &tcomp );
     tcomp.configure();
     tcomp.start();
 

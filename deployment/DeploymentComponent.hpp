@@ -197,6 +197,24 @@ namespace OCL
          */
         virtual void componentUnloaded(RTT::TaskContext* c);
 
+        /**
+         * Converts a dot-separated path to a service to a Service
+         * object.
+         * @param name a dot-separated path name to a service. The first
+         * part of the name must be the component name. For example 'Controller.arm'.
+         * @return null if the service could not be found, the service
+         * otherwise
+         */
+        Service::shared_ptr stringToService(string const& names);
+        /**
+         * Converts a dot-separated path to a service to a Port
+         * object.
+         * @param name a dot-separated path name to a port. The first
+         * part of the name must be the component name. Example: "Controller.arm.input".
+         * @return null if the port could not be found, the port
+         * otherwise
+         */
+        base::PortInterface* stringToPort(string const& names);
     public:
         /**
          * Constructs and configures this component.
@@ -230,22 +248,30 @@ namespace OCL
         RTT::TaskContext* myGetPeer(std::string name) {return comps[ name ].instance; }
 
         /**
-         * Establish a bidirectional connection between two tasks.
+         * Make two components peers in both directions, such that both can
+         * use each other's services.
          *
-         * @param one The first task to connect
-         * @param other The second task to connect
+         * @param one The component that must 'see' \a other.
+         * @param other The component that must 'see' \a one.
          *
-         * @return true if both tasks are peers of this component and
+         * @return true if both components are peers of this deployment component and
          * could be connected.
          */
         bool connectPeers(const std::string& one, const std::string& other);
 
         /**
          * Establish a data flow connection between two tasks. The direction
-         * of the connection is determined by the read/write port types.3B
+         * of the connection is determined by the read/write port types.
          *
-         * @param one The first task to connect
-         * @param other The second task to connect
+         * @note Using this function is not advised, since it relies on equal
+         * port names on both components. Use the alternative form of
+         * connectPorts() which specify component/service and
+         * port name.
+         *
+         * @deprecated by connect()
+         *
+         * @param one The first component
+         * @param other The second component
          *
          * @return true if both tasks are peers of this component and
          * data ports could be connected.
@@ -256,35 +282,66 @@ namespace OCL
          * Connect two named ports of components. The direction
          * of the connection is determined by the read/write port types.
          *
-         * @param one Name of the first component
+         * @param one Name of the first component or a dot-separated path to its service
          * @param one_port Name of the port of the first component to connect to
          * \a other_port
-         * @param other Name of the second component
+         * @param other Name of the second component or a dot-separated path to its service
          * @param other_port Name of the port of the second component to connect
          * to \a one_port
+         *
+         * @deprecated by connect()
          *
          * @return true if the ports are present and could be connected, false otherwise.
          */
         bool connectPorts(const std::string& one, const std::string& one_port,
                           const std::string& other, const std::string& other_port);
 
+        /**
+         * Connect two named ports of components. The direction
+         * of the connection is determined by the read/write port types.
+         *
+         * @param one A dot-separated path to a port in a service
+         * @param other A dot-separated path to a port in a service
+         * @param policy The connection policy of the new connetion.
+         *
+         * @return true if the ports are present and could be connected, false otherwise.
+         */
+        bool connect(const std::string& one, const std::string& other, ConnPolicy policy);
+
+        /**
+         * Creates a stream from a given port of a component.
+         * @param port The dot-separated path to an input or output port of \a component or service.
+         * @param policy The connection policy that instructs how to set up the stream.
+         * The policy.transport field is mandatory, the policy.name_id field is highly recommended.
+         * @return true if the stream could be setup.
+         */
+        bool stream(const std::string& port, ConnPolicy policy);
+
+        /**
+         * @deprecated by stream()
+         */
         bool createStream(const std::string& component, const std::string& port, ConnPolicy policy);
         /**
          * Connects the required services of one component to the provided services
          * of another and vice versa.
+         * @param one The name of a provided service or a dot-separated path to a Service
+         * @param one The name of a required service or a dot-separated path to a ServiceRequester
+         * @note One of the parameters must be a Service and the other a ServiceRequester,
+         * or vice versa.
          */
         bool connectServices(const std::string& one, const std::string& other);
 
         /**
-         * Establish a uni directional connection form one task to another
+         * Make one component a peer of the other, in one direction, such
+         * that one can use the services of the other.
          *
-         * @param from The component where the connection starts.
-         * @param to The component where the connection ends.
+         * @param from The component that must 'see' \a target and use its services.
+         * @param target The component that is 'seen' and used by \a from.
          *
-         * @return true if both tasks are peers of this component and
-         * a connection could be created.
+         * @return true if both components are peers of this deployment component and
+         * target became a peer of from.
          */
-        bool addPeer(const std::string& from, const std::string& to);
+        bool addPeer(const std::string& from, const std::string& target);
 
         using RTT::TaskContext::addPeer;
         using RTT::TaskContext::connectPeers;
