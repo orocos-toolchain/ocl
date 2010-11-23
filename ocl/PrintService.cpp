@@ -12,7 +12,7 @@ namespace OCL
 {
 
     /**
-     * A service that provides basic printing to std::cout and std::cerr.
+     * A service that provides basic printing to std::cout, std::cerr and the RTT::Logger.
      * Can be loaded in scripts by writing 'requires("print")' on top of the file.
      */
     class PrintService: public RTT::Service
@@ -21,6 +21,7 @@ namespace OCL
         PrintService(TaskContext* parent) :
             RTT::Service("print", parent)
         {
+            doc("A service that provides basic printing to std::cout, std::cerr and the RTT::Logger.");
             // add the operations
             addOperation("ln", &PrintService::println, this).doc(
                     "Prints a line to standard output.").arg("line",
