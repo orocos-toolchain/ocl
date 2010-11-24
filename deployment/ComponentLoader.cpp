@@ -105,13 +105,15 @@ void ComponentLoader::Release() {
     instance2.reset();
 }
 
-void ComponentLoader::import( std::string const& path_list )
+bool ComponentLoader::import( std::string const& path_list )
 {
     if (path_list.empty() ) {
-	log(Error) << "import paths: No paths were given for loading ( path_list = '' )."<<endlog();
-	return;
+        log(Error) << "import paths: No paths were given for loading ( path_list = '' )."<<endlog();
+        return false;
     }
 
+    // we return false if nothing was found here, or an error happened during loading of a library.
+    bool all_good = true, found = false;
     vector<string> paths;
     paths = splitPaths( path_list ); // import package or path list.
 
@@ -125,9 +127,10 @@ void ComponentLoader::import( std::string const& path_list )
             for (directory_iterator itr(p); itr != directory_iterator(); ++itr)
             {
                 log(Debug) << "Scanning file " << itr->path().string() << " ...";
-                if (is_regular_file(itr->status()) && itr->path().extension() == SO_EXT )
-                        loadInProcess( itr->path().string(), makeShortFilename(itr->path().filename() ),  true);
-                else {
+                if (is_regular_file(itr->status()) && itr->path().extension() == SO_EXT ) {
+                    found = true;
+                    all_good = loadInProcess( itr->path().string(), makeShortFilename(itr->path().filename() ),  true) && all_good;
+                } else {
                     if (!is_regular_file(itr->status()))
                         log(Debug) << "not a regular file: ignored."<<endlog();
                     else
@@ -135,14 +138,14 @@ void ComponentLoader::import( std::string const& path_list )
                 }
             }
             log(Info) << "Importing plugins and typekits from directory " << p.string() << " ..."<<endlog();
-            PluginLoader::Instance()->loadTypekits( p.string() );
-            PluginLoader::Instance()->loadPlugins( p.string() );
+            found = PluginLoader::Instance()->loadTypekits( p.string() ) || found;
+            found = PluginLoader::Instance()->loadPlugins( p.string() ) || found;
         }
         else {
             // If the path is not complete (not absolute), look it up in the search directories:
             log(Debug) << "No such directory: " << p<< endlog();
             if ( !p.is_complete() ) {
-                import(p.string(), ""); // use default component_path
+                all_good = import(p.string(), "") && all_good; // use default component_path
             }
         }
 
@@ -154,9 +157,10 @@ void ComponentLoader::import( std::string const& path_list )
             for (directory_iterator itr(p); itr != directory_iterator(); ++itr)
             {
                 log(Debug) << "Scanning file " << itr->path().string() << " ...";
-                if (is_regular_file(itr->status()) && itr->path().extension() == SO_EXT )
-                        loadInProcess( itr->path().string(), makeShortFilename(itr->path().filename() ),  true);
-                else {
+                if (is_regular_file(itr->status()) && itr->path().extension() == SO_EXT ) {
+                    found = true;
+                    all_good = loadInProcess( itr->path().string(), makeShortFilename(itr->path().filename() ),  true) && all_good;
+                }else {
                     if (!is_regular_file(itr->status()))
                         log(Debug) << "not a regular file: ignored."<<endlog();
                     else
@@ -164,14 +168,15 @@ void ComponentLoader::import( std::string const& path_list )
                 }
             }
             log(Info) << "Importing plugins and typekits from directory " << p.string() << " ..."<<endlog();
-            PluginLoader::Instance()->loadTypekits( p.string() );
-            PluginLoader::Instance()->loadPlugins( p.string() );
+            found = PluginLoader::Instance()->loadTypekits( p.string() ) || found;
+            found = PluginLoader::Instance()->loadPlugins( p.string() ) || found;
         }
         else {
             log(Debug) << "No such directory: " << p << endlog();
             // we don't re-call import(p.string(),"") because foo/targetname isn't a packagename.
         }
     }
+    return found && all_good;
 }
 
 bool ComponentLoader::import( std::string const& package, std::string const& path_list )
@@ -179,8 +184,7 @@ bool ComponentLoader::import( std::string const& package, std::string const& pat
     // check first for exact match:
     path arg( package );
     if (is_regular_file(arg)) {
-	    loadInProcess(arg.string(), makeShortFilename( arg.filename() ), true);
-	    return true;
+	    return loadInProcess(arg.string(), makeShortFilename( arg.filename() ), true);
     }
 
     if ( isImported(package) ) {
@@ -193,17 +197,14 @@ bool ComponentLoader::import( std::string const& package, std::string const& pat
     // paths will be scanned and will always return true, but will warn when invalid.
     // a package name 
 
-    // ros may fill this vector in based on rospack:
-    vector<string> vpaths;
     // check for rospack
 #ifdef HAS_ROSLIB
     using namespace ros::package;
     try {
+        bool all_good = true, found = false;
         string ppath = getPath( package );
         if ( !ppath.empty() ) {
             path rospath = path(ppath) / "lib" / "orocos";
-            vpaths.push_back( rospath.string() );
-            loadedPackages.push_back( package );
             // + add all dependencies to paths:
             V_string rospackresult;
             command("depends " + package, rospackresult);
@@ -212,12 +213,30 @@ bool ComponentLoader::import( std::string const& package, std::string const& pat
                     log(Info) <<"Component package '"<< *it <<"' already imported." <<endlog();
                     continue;
                 }
-                loadedPackages.push_back( *it );
                 ppath = getPath( *it );
                 path deppath = path(ppath) / "lib" / "orocos";
-                if ( is_directory( deppath ) )
-                    vpaths.push_back( deppath.string() );
+                // if orocos directory exists and we could import it, mark it as loaded.
+                if ( is_directory( deppath ) ) {
+                    found = true;
+                    if ( import( deppath.string() ) ) {
+                        loadedPackages.push_back( *it );
+                    } else
+                        all_good = false;
+                }
             }
+            // now that all deps are done, import the package itself:
+            if ( is_directory( rospath ) ) {
+                found = true;
+                if ( import( rospath.string() ) ) {
+                    loadedPackages.push_back( package );
+                } else
+                    all_good = false;
+            }
+            // since it was a ROS package, we exit here.
+            if (!found) {
+                log(Error) <<"The ROS package '"<< package <<"' in '"<< ppath << "' nor its dependencies contained a lib/orocos directory."<<endlog();
+            }
+            return all_good && found;
         } else
             log(Info) << "Not a ros package: " << package << endlog();
     } catch(...) {
@@ -239,38 +258,30 @@ bool ComponentLoader::import( std::string const& package, std::string const& pat
     bool path_found = false;
 
     // if ros did not find anything, split the paths above.
-    if ( vpaths.empty() ) {
-        // set vpaths from (default) search paths.
-        vpaths = splitPaths(paths);
-        trypaths = paths; // store for error reporting below.
-        paths.clear();
-        // append '/package' to each plugin path in order to search all of them:
-        for(vector<string>::iterator it = vpaths.begin(); it != vpaths.end(); ++it) {
-            path p(*it);
-            p = p / package;
-            // we only search in existing directories:
-            if (is_directory( p )) {
-                path_found = true;
-                paths += p.string() + default_delimiter;
-            }
+    // set vpaths from (default) search paths.
+    vector<string> vpaths;
+    vpaths = splitPaths(paths);
+    trypaths = paths; // store for error reporting below.
+    paths.clear();
+    // append '/package' to each plugin path in order to search all of them:
+    for(vector<string>::iterator it = vpaths.begin(); it != vpaths.end(); ++it) {
+        path p(*it);
+        p = p / package;
+        // we only search in existing directories:
+        if (is_directory( p )) {
+            path_found = true;
+            paths += p.string() + default_delimiter;
         }
-        if ( path_found )
-            paths.erase( paths.size() - 1 ); // remove trailing delimiter ';'
-    } else {
-        // ROS did find a package already, so put it backin paths
-        path_found = true;
-        paths.clear();
-        for(vector<string>::iterator it = vpaths.begin(); it != vpaths.end(); ++it) {
-            paths += *it + default_delimiter;
-        }
-        paths.erase( paths.size() - 1 ); // remove trailing delimiter ';'
     }
+    if ( path_found )
+        paths.erase( paths.size() - 1 ); // remove trailing delimiter ';'
 
     // when at least one directory exists:
     if (path_found) {
-        loadedPackages.push_back( package );
-        import(paths);
-        return true;
+        if ( import(paths) ) {
+            loadedPackages.push_back( package );
+            return true;
+        }
     }
     log(Error) << "No such package or directory found in search path: " << package << ". Search path is: "<< endlog();
     log(Error) << trypaths << endlog();

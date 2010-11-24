@@ -103,12 +103,12 @@ namespace OCL {
 
             /**
              * Imports any Component library found in each path in path_list in the current process.
-             * This is a best effort function, ie it will silently ignore wrong paths or paths without any
-             * Components.
              * @param path_list A colon or semi-colon seperated list of paths
              * to look for Components. May be the empty string.
+             * @return true if all paths were valid and contained components. If at least one path
+             * did not exist or did not contain any components or plugins, returns false.
              */
-            void import(std::string const& path_list);
+            bool import(std::string const& path_list);
 
             /**
              * Checks if a given Component type, filename or package name has been imported.

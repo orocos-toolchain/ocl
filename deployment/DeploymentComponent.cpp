@@ -1449,7 +1449,7 @@ namespace OCL
     {
         RTT::Logger::In in("DeploymentComponent::path");
         ComponentLoader::Instance()->setComponentPath( ComponentLoader::Instance()->getComponentPath() + path );
-	ComponentLoader::Instance()->import( path ); // load default components from paths.
+        ComponentLoader::Instance()->import( path ); // load default components from paths.
     }
 
     bool DeploymentComponent::loadLibrary(const std::string& name)
