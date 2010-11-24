@@ -1,0 +1,7 @@
+// Orocos script that loads and starts the hello world component
+
+import("ocl")
+loadComponent("HelloWorld","OCL::HelloWorld")
+
+HelloWorld.start()
+
