@@ -15,13 +15,13 @@ IF ( BUILD_REPORTING_TEST )
     # Copy this file to build dir.
     TEST_USES_FILE( reporter.cpf )
 
-  IF ( NETCDF_FOUND )
+  IF ( BUILD_REPORTING_NETCDF AND NETCDF_FOUND )
 
     GLOBAL_ADD_TEST( ncreport ncmain.cpp )
     # Use  TARGET_LINK_LIBRARIES( report libs... ) to add library deps.
     PROGRAM_ADD_DEPS( ncreport orocos-taskbrowser orocos-reporting-netcdf )
 
-  ENDIF( NETCDF_FOUND )
+  ENDIF( BUILD_REPORTING_NETCDF AND NETCDF_FOUND )
 
 ENDIF ( BUILD_REPORTING_TEST )
 
