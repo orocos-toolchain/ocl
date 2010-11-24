@@ -138,8 +138,13 @@ bool ComponentLoader::import( std::string const& path_list )
                 }
             }
             log(Info) << "Importing plugins and typekits from directory " << p.string() << " ..."<<endlog();
-            found = PluginLoader::Instance()->loadTypekits( p.string() ) || found;
-            found = PluginLoader::Instance()->loadPlugins( p.string() ) || found;
+            try {
+                found = PluginLoader::Instance()->loadTypekits( p.string() ) || found;
+                found = PluginLoader::Instance()->loadPlugins( p.string() ) || found;
+            } catch (std::exception& e) {
+                all_good = false;
+                log(Error) << e.what() <<endlog();
+            }
         }
         else {
             // If the path is not complete (not absolute), look it up in the search directories:
@@ -168,8 +173,13 @@ bool ComponentLoader::import( std::string const& path_list )
                 }
             }
             log(Info) << "Importing plugins and typekits from directory " << p.string() << " ..."<<endlog();
-            found = PluginLoader::Instance()->loadTypekits( p.string() ) || found;
-            found = PluginLoader::Instance()->loadPlugins( p.string() ) || found;
+            try {
+                found = PluginLoader::Instance()->loadTypekits( p.string() ) || found;
+                found = PluginLoader::Instance()->loadPlugins( p.string() ) || found;
+            } catch (std::exception& e) {
+                all_good = false;
+                log(Error) << e.what() <<endlog();
+            }
         }
         else {
             log(Debug) << "No such directory: " << p << endlog();
@@ -210,7 +220,7 @@ bool ComponentLoader::import( std::string const& package, std::string const& pat
             command("depends " + package, rospackresult);
             for(V_string::iterator it = rospackresult.begin(); it != rospackresult.end(); ++it) {
                 if ( isImported(*it) ) {
-                    log(Info) <<"Component package '"<< *it <<"' already imported." <<endlog();
+                    log(Debug) <<"Package dependency '"<< *it <<"' already imported." <<endlog();
                     continue;
                 }
                 ppath = getPath( *it );
