@@ -53,16 +53,16 @@ namespace po = boost::program_options;
 
 int main(int argc, char** argv)
 {
-	std::string             siteFile;      // "" means use default in DeploymentComponent.cpp
-	std::string             scriptFile;
-	std::string             name("Deployer");
-    bool                    requireNameService = false;         // not used
-    po::variables_map       vm;
-	po::options_description otherOptions;
+	std::string                 siteFile;      // "" means use default in DeploymentComponent.cpp
+    std::vector<std::string>    scriptFiles;
+	std::string                 name("Deployer");
+    bool                        requireNameService = false;         // not used
+    po::variables_map           vm;
+	po::options_description     otherOptions;
 
 #ifdef  ORO_BUILD_RTALLOC
-    OCL::memorySize         rtallocMemorySize   = ORO_DEFAULT_RTALLOC_SIZE;
-	po::options_description rtallocOptions      = OCL::deployerRtallocOptions(rtallocMemorySize);
+    OCL::memorySize             rtallocMemorySize   = ORO_DEFAULT_RTALLOC_SIZE;
+	po::options_description     rtallocOptions      = OCL::deployerRtallocOptions(rtallocMemorySize);
 	otherOptions.add(rtallocOptions);
 #endif
 
@@ -74,7 +74,7 @@ int main(int argc, char** argv)
 #endif
 
 	int rc = OCL::deployerParseCmdLine(argc, argv,
-                                       siteFile, scriptFile, name, requireNameService,
+                                       siteFile, scriptFiles, name, requireNameService,
                                        vm, &otherOptions);
 	if (0 != rc)
 	{
@@ -123,9 +123,14 @@ int main(int argc, char** argv)
         {
             OCL::DeploymentComponent dc( name, siteFile );
 
-            if ( !scriptFile.empty() )
+            for (std::vector<std::string>::const_iterator iter=scriptFiles.begin();
+                 iter!=scriptFiles.end();
+                 ++iter)
             {
-                dc.kickStart( scriptFile );
+                if ( !(*iter).empty() )
+                {
+                    dc.kickStart( (*iter) );
+                }
             }
 
             OCL::TaskBrowser tb( &dc );

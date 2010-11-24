@@ -100,6 +100,8 @@ namespace OCL
         RTT::Constant<int> lowest_Priority;
         RTT::Constant<int> highest_Priority;
         RTT::Property<std::string> target;
+        /// Next group number
+        int nextGroup;
 
         /**
          * Each configured component is stored in a struct like this.
@@ -113,7 +115,8 @@ namespace OCL
                   autoconnect(false),  autosave(false),
                   proxy(false), server(false),
                   use_naming(true),
-                  configfile("")
+                  configfile(""),
+                  group(0)
             {}
             /**
              * The component instance. This is always a valid pointer.
@@ -139,6 +142,8 @@ namespace OCL
             bool proxy, server, use_naming;
             std::string configfile;
             vector<string> plugins;
+            /// Group number this component belongs to
+            int group;
         };
 
         /**
@@ -515,7 +520,9 @@ namespace OCL
          * component configuration is yet applied. One can load
          * multiple configurations and call configureComponents() once
          * to apply all settings. In case of duplicate information is
-         * the latest loaded configuration option used.
+         * the latest loaded configuration option used. The components
+         * are loaded into the next group number, and the next group
+         * number is incremented.
          *
          * @see configureComponents to configure the components with
          * the loaded configuration and startComponents to start them.
@@ -523,6 +530,21 @@ namespace OCL
          * @return true if the configuration could be read and was valid.
          */
         bool loadComponents(const std::string& config_file);
+        /** 
+         * Load a (partial) application XML configuration from disk into a 
+         * specific group.
+         *
+         * If the group already exists, then adds to that group. Does not
+         * affect existing members of the group.
+         *
+         * @see loadComponents for general details
+         * @param config_file A file on local disk containing the XML configuration.
+         * @param group The group number to load into
+         * @pre 0 <= group
+         * @return true if the configuration could be read and was valid.
+         */
+        bool loadComponentsInGroup(const std::string& config_file,
+                                   const int group);
 
         /**
          * Configure the components with loaded configuration(s). This
@@ -553,11 +575,26 @@ namespace OCL
         bool configureComponents();
 
         /**
+         * Configure the components in group \a group.
+         *
+         * @see configureComponents()
+         *
+         * @return true if all the group's components could be succesfully configured.
+         */
+        bool configureComponentsGroup(const int group);
+
+        /**
          * Start all components in the current configuration which have AutoStart
          * set to true.
          * @return true if all components could be succesfully started.
          */
         bool startComponents();
+        /**
+         * Start all components in group \a group which have AutoStart
+         * set to true.
+         * @return true if all the group's components could be succesfully started.
+         */
+        bool startComponentsGroup(const int group);
 
         /**
          * Clear all loaded configuration options.
@@ -569,16 +606,34 @@ namespace OCL
          * Stop all loaded and running components.
          */
         bool stopComponents();
+        /**
+         * Stop all loaded and running components in group \a group.
+         *
+         * @param group The group number to stop
+         */
+        bool stopComponentsGroup(const int group);
 
         /**
          * Cleanup all loaded and not running components.
          */
         bool cleanupComponents();
+        /**
+         * Cleanup all loaded and not running components.
+         *
+         * @param group The group number to cleanup
+         */
+        bool cleanupComponentsGroup(const int group);        
 
         /**
          * Unload all loaded and not running components.
          */
         bool unloadComponents();
+        /**
+         * Unload all loaded and not running components in group \a group
+         *
+         * @param group The group number to unload
+         */
+        bool unloadComponentsGroup(const int group);
 
         /**
          * This function runs loadComponents, configureComponents and startComponents
@@ -601,8 +656,15 @@ namespace OCL
 
         /**
          * Stop, cleanup and unload all components loaded by the DeploymentComponent.
+         *
+         * @post 0 == nextGroup
          */
         bool kickOutAll();
+        /**
+         *
+         * Stop, cleanup and unload all components in group \a group.
+         */
+        bool kickOutGroup(const int group);
 
 
         using base::TaskCore::configure;
