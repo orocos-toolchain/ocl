@@ -775,9 +775,9 @@ namespace OCL
 
                         // load plugins/services:
                         vector<string>& services = comps[(*it)->getName()].plugins;
-                        for (vector<string>::iterator it = services.begin(); it != services.end(); ++it) {
-                            if ( c->provides()->hasService( *it ) == false) {
-                                PluginLoader::Instance()->loadService(*it, c);
+                        for (vector<string>::iterator svit = services.begin(); svit != services.end(); ++svit) {
+                            if ( c->provides()->hasService( *svit ) == false) {
+                                PluginLoader::Instance()->loadService(*svit, c);
                             }
                         }
 
