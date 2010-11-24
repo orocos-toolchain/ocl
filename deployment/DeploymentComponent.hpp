@@ -666,6 +666,11 @@ namespace OCL
          */
         bool kickOutGroup(const int group);
 
+        /**
+         * Scripting-alternative to kickStart: runs this script in the Orocos
+         * scripting service.
+         */
+        bool runScript(const std::string& file_name);
 
         using base::TaskCore::configure;
 

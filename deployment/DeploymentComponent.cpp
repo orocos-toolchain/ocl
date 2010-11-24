@@ -476,6 +476,11 @@ namespace OCL
         return this->loadConfiguration( tmpfile );
     }
 
+    bool DeploymentComponent::runScript(const std::string& file_name)
+    {
+        return this->getProvider<Scripting>("scripting")->runScript( file_name );
+    }
+
     bool DeploymentComponent::kickStart(const std::string& configurationfile)
     {
         int thisGroup = nextGroup;

@@ -78,10 +78,10 @@ int deployerParseCmdLine(int                        argc,
 		 "Show program usage")
 		("start,s",
 		 po::value< std::vector<std::string> >(&scriptFiles),
-		 "Deployment configuration file (eg 'config-file.xml')")
+		 "Deployment XML or script file (eg 'config-file.xml' or 'script.ops')")
 		("site-file",
 		 po::value<std::string>(&siteFile),
-		 "Site deployment file (eg 'Deployer-site.cpf' or 'Deployer-site.xml')")
+		 "Site deployment XML file (eg 'Deployer-site.cpf' or 'Deployer-site.xml')")
 		("log-level,l",
 		 po::value<std::string>(&logLevel),
 		 "Level at which to log from RTT (case-insensitive) Never,Fatal,Critical,Error,Warning,Info,Debug,Realtime")

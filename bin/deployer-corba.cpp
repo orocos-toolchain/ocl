@@ -170,7 +170,14 @@ int main(int argc, char** argv)
             {
                 if ( !(*iter).empty() )
                 {
-                    dc.kickStart( (*iter) );
+                    if ( (*iter).rfind(".xml",string::npos) == (*iter).length() - 4 || (*iter).rfind(".cpf",string::npos) == (*iter).length() - 4) {
+                        dc.kickStart( (*iter) );
+                        continue;
+                    } if ( (*iter).rfind(".ops",string::npos) == (*iter).length() - 4 || (*iter).rfind(".osd",string::npos) == (*iter).length() - 4) {
+                        dc.runScript( (*iter) );
+                        continue;
+                    }
+                    log(Error) << "Unknown extension of file: '"<< (*iter) <<"'. Must be xml, cpf for XML files or, ops or osd for script files."<<endlog();
                 }
             }
             
