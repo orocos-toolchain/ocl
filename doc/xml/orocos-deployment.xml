@@ -66,7 +66,7 @@
 	</imageobject>
 	<caption><para>Components are located on your disk using the 'import' statement,
 	loaded using 'loadComponents' and configured using 'configureComponents'.
-	These three steps can be described in an XML file format or using the command
+	These three steps can be described in an XML file format, a script or using the command
 	prompt.
 	</para></caption>
       </mediaobject>
@@ -88,13 +88,14 @@
 	the components (and the application as a whole) can be started
 	with <function>startComponents()</function>. In order to do
 	these steps at once, you can just write
-	<function>kickStart("file.xml")</function>.
+	<function>kickStart("file.xml")</function> or in case of a script,
+	<function>runScript("file.ops")</function> 
       </para>
       <para>
-	The configuration does not need to be stored in XML format.
-	One can apply the same configuration by using the scripting
-	methods of the DeploymentComponent at the console prompt,
-	or by listing them in an Orocos script.
+				The configuration does not need to be stored in XML format.
+				One can apply the same configuration by using the scripting
+				methods of the DeploymentComponent at the console prompt,
+				or by listing them in an Orocos script.
       </para>
     </section>
     <section>
@@ -111,9 +112,9 @@
 	Operating System target (OROCOS_TARGET) for which you want to
 	load components, for example
 	<command>deployer-gnulinux</command>.  The program can take an
-	optional argument <option>--start filename.xml</option> which
+	optional argument <option>--start &lt;filename&gt;</option> which
 	describes the components to load and is used to kick-start the
-	application. The XML specification is described below. When the
+	application. The XML and script specifications are described below. When the
 	application is started, the TaskBrowser is presented to the
 	user for receiving interactive commands. The name of the DeploymentComponent
 	is by default 'Deployer'. In order to change this name, use for example
@@ -147,10 +148,12 @@
 	The complete list of options for the deployer, cdeployer and 
 	deployer-corba programs are:
 	<itemizedlist>
-	  <listitem><para><command>--help</command>Show program usage</para>
+	  <listitem><para><command>--help</command> Show program usage</para>
 	  </listitem>
-	  <listitem><para><command>--start xml-file</command> (also -s) Deploy the
-	  <emphasis>xml-file</emphasis>.</para></listitem>
+	  <listitem><para><command>--start xml-or-script-file</command> (also -s) Deploy from an
+	  <emphasis>xml-file (.xml or .cpf)</emphasis> or <emphasis>script-file (.ops or .osd)</emphasis>. 
+		This option may be given multiple times, in which case the xml and script files
+		will be processed in the same order as on the command line.</para></listitem>
 	  <listitem><para><command>--log-level level</command> (also -l) Sets the 
 		  Orocos log level to <emphasis>level</emphasis>. The level parameter 
 		  should be one of: Never, Fatal, Critical, Error, Warning, Info, 
@@ -610,7 +613,16 @@
 	  after the properties are loaded. If <option>AutoStart</option> is set to 1, the component's start() 
 	  method will be called during <function>startComponents()</function>.
 	  By default <option>AutoConf</option> and <option>AutoStart</option> are 0 (off).
-	</para></section>
+	</para>
+	<para>
+		There is no literal alternative for AutoConf in scripting. Just use the
+		<function>configure()</function> operation of your component in order to 
+		configure it:
+		<programlisting>  Controller.configure()
+  Controller.start()
+		</programlisting>
+	</para>
+		</section>
 	  <section><title>Connecting Data Ports</title>
 	<para>
 	  The <option>Ports</option> struct describes which ports of this component
@@ -681,7 +693,21 @@
 	    use the explicit 'Ports' connection method to connect different
 	    named ports to each other !</para>
 	  </note>
-	</para></section>
+	</para>
+	<para>
+		In scripting, you can use the <function>ConnPolicy</function> struct
+		for connecting ports. For example:
+		<programlisting>  var ConnPolicy cp
+  cp.type = BUFFER
+  cp.size = 10 // buffer of size 10
+  connect("Plant.Position", "Controller.SensorValues", cp )
+</programlisting>
+    You may re-use the 'cp' object multiple times for different connections.
+    Streams can be created likewise, with the <function>stream</function>
+		operation of the deployer, which only takes a port and a connection
+		policy as argument.
+	</para>
+	</section>
 	  <section><title>Setting Properties (component parameters)</title>
 	<para>
 	  The <option>Properties</option> struct allows to configure
@@ -725,7 +751,19 @@
 	  property is turned on, the listed property file will be
 	  saved again with the values of the Component, just before
 	  the Component is <function>cleanup()</function>.
-	</para></section>
+	</para>
+	<para>
+		In scripting, you can use the <function>marshalling</function> service
+		in order to do the property loading for you. For example:
+		<programlisting>  loadService("MyComponent","marshalling")
+  MyComponent.marshalling.readProperties("file.cpf")
+</programlisting>
+    Every component that needs to read/write properties from a file needs the
+		marshalling service. You can't use the marshalling service of the 
+		Deployment Component, since that service would read/write the properties
+		of the Deployment Component itself.
+	</para>
+		</section>
 	  <section><title>Setting up peer-to-peer relations</title>
 	<para>
 	  The last section of the Reporter component lists its
@@ -750,11 +788,18 @@
 	</para>
 	  </section>
 	  <section><title>Loading and Running Orocos Program Scripts</title>
-	<para>
-	  The Controller has at the end two additional <option>RunScript</option> elements
-	  describing which script files must be loaded and executed into that
-	  component.
-	</para>
+		<note>
+		<para>
+			This section is for starting scripts from the XML file. In case you want to
+			use a script directly (or after an XML file), you can use the -s option
+			of the deployer to let it execute that script.
+		</para>
+		</note>
+		<para>
+			The Controller has at the end two additional <option>RunScript</option> elements
+			describing which script files must be loaded and executed into that
+			component.
+		</para>
         <programlisting><![CDATA[
     <simple name="RunScript" type="string"><value>controller-program.ops</value></simple>
     <simple name="RunScript" type="string"><value>controller-states.ops</value></simple>
