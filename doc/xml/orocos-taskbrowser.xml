@@ -37,13 +37,13 @@
     <para>
       This document describes the <classname>OCL::TaskBrowser</classname> Orocos component for
       user interaction with other components. It can visit any
-      component in a given network, query it, send it commands,
+      component in a given network, query it, use its services,
       run programs etc.
     </para>
     <section><title>Principle</title>
     <para>
       Each Orocos component has a standard interface of properties,
-      events, commands etc. It is possible to query and use this interface
+      ports and operations. It is possible to query and use this interface
       generically. The TaskBrowser is connected to one component only
       at a time. It can however be used to 'browse' the network of
       peer components and visit any component in an application.
@@ -85,9 +85,9 @@
   <section>
     <title>TaskBrowser Setup</title>
     <para>
-      Consult the <ulink url="http://www.orocos.org/rtt">Component
+      Consult the <ulink url="http://www.orocos.org/toolchain">Component
       Builder's Manual</ulink> for instructions on how to setup and
-      use the TaskBrowser
+      use the TaskBrowser. Typically, you will start the 'deployer' application.
     </para>
   </section>
   <section>
@@ -130,10 +130,27 @@
 	    <entry>Change to the previously visited peer.</entry>
 	  </row>
 	  <row>
-	    <entry><emphasis>&lt;objectname&gt;</emphasis></entry>
+	    <entry><emphasis>help &lt;servicename&gt;</emphasis></entry>
 	    <entry>-</entry>
-	    <entry>Display the interface of an object of the current component. Use <emphasis>this</emphasis>
-	    to display the interface of the current component itself.</entry>
+	    <entry>Display the interface of a service  of the current component. Use <emphasis>this</emphasis>
+	    to display the interface of the current component itself. To see only one operation, use
+			<emphasis>help &lt;servicename.operationname&gt;</emphasis> or just
+			<emphasis>help &lt;operationname&gt;</emphasis>.	</entry>
+	  </row>
+	  <row>
+	    <entry>.types</entry>
+	    <entry>-</entry>
+	    <entry>Lists all types known to this process.</entry>
+	  </row>
+	  <row>
+	    <entry>.services</entry>
+	    <entry>-</entry>
+	    <entry>Lists all services known to this process.</entry>
+	  </row>
+	  <row>
+	    <entry>.plugins</entry>
+	    <entry>-</entry>
+	    <entry>Lists all plugins known to this process.</entry>
 	  </row>
 	  <row>
 	    <entry>enter</entry>
