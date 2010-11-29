@@ -3,5 +3,6 @@
         This package contains standard components for the Orocos Toolchain
     </description>
     <depend package="rtt" />
+    <rosdep name="readline" />
 </package>
 
