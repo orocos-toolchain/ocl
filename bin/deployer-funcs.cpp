@@ -44,6 +44,7 @@
 namespace po = boost::program_options;
 
 using namespace RTT;
+using namespace std;
 
 namespace OCL
 {
@@ -144,6 +145,13 @@ int deployerParseCmdLine(int                        argc,
 						  << options << std::endl;
 				return -1;
 			}
+		}
+		if (vm.count("DeployerName")) {
+		    if (name.find_last_of(".xml") != string::npos ||
+		            name.find_last_of(".cpf") != string::npos ||
+		            name.find_last_of(".osd") != string::npos ||
+		            name.find_last_of(".ops") != string::npos )
+		        log(Warning) <<"The given Deployer name "<<name <<" resembles a filename. Did you forget to use '-s' ?"<<endlog();
 		}
 	}
 	catch (std::logic_error e)
