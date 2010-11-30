@@ -489,7 +489,13 @@ namespace OCL
                 if ( decompose.get() && typeDecomposition( clone, subbag->value() ) )
                     report.add( subbag );
                 else {
-                    report.add( clone->getTypeInfo()->buildProperty(it->get<0>(), "", clone) );
+                    base::DataSourceBase::shared_ptr converted = clone->getTypeInfo()->decomposeType(clone);
+                    if ( converted && converted != clone ) {
+                        // converted contains another type, or a property bag.
+                        report.add( converted->getTypeInfo()->buildProperty(it->get<0>(), "", converted) );
+                    } else
+                        // use the original clone.
+                        report.add( clone->getTypeInfo()->buildProperty(it->get<0>(), "", clone) );
                     delete subbag;
                 }
                 it->get<5>() = false;
