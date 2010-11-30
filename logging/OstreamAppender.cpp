@@ -24,8 +24,6 @@ bool OstreamAppender::configureHook()
 
 void OstreamAppender::updateHook()
 {
-    // \todo use v2.0 data flow to trigger this when new data is available
-
     if (!log_port.connected()) return;      // no category connected to us
 
     OCL::logging::LoggingEvent   event;

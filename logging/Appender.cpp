@@ -11,12 +11,11 @@ namespace logging {
 
 Appender::Appender(std::string name) :
 		RTT::TaskContext(name), 
-        log_port("LogPort"),
         appender(0),
         layoutName_prop("LayoutName", "Layout name (e.g. 'simple', 'pattern')"),
         layoutPattern_prop("LayoutPattern", "Layout conversion pattern (for those layouts that use a pattern)")
 {
-    ports()->addPort( log_port );
+    ports()->addEventPort("LogPort", log_port );
 
     properties()->addProperty(layoutName_prop);
     properties()->addProperty(layoutPattern_prop);

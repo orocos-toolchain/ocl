@@ -44,8 +44,6 @@ bool FileAppender::configureHook()
 
 void FileAppender::updateHook()
 {
-    // \todo use v2.0 data flow to trigger this when new data is available
-
     if (!log_port.connected()) return;      // no category connected to us
 
     /* Consume waiting events until
