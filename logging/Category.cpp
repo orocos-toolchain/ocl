@@ -8,13 +8,11 @@ using namespace RTT;
 namespace OCL {
 namespace logging {
 
-static const int BUFFER_SIZE = 20;  // \todo
-
 Category::Category(const std::string& name,
                    log4cpp::Category* parent,
                    log4cpp::Priority::Value priority) :
         log4cpp::Category(name, parent, priority),
-        log_port(convertName(name), BUFFER_SIZE)
+        log_port( convertName(name) )
 {
 }
 

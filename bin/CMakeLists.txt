@@ -21,7 +21,7 @@ ENDIF ( BUILD_LOGGING )
 IF ( BUILD_TASKBROWSER AND BUILD_DEPLOYMENT)
 
     ADD_EXECUTABLE( deployer-${OROCOS_TARGET} deployer.cpp deployer-funcs.cpp )
-    PROGRAM_ADD_DEPS( deployer-${OROCOS_TARGET} ${EXTRA_DEPS} )
+    target_link_libraries( deployer-${OROCOS_TARGET} ${EXTRA_DEPS} )
     TARGET_LINK_LIBRARIES( deployer-${OROCOS_TARGET} ${OROCOS-RTT_LIBRARIES} orocos-taskbrowser orocos-deployment ${Boost_PROGRAM_OPTIONS_LIBRARY} ${EXTRA_LIBRARIES})
     INSTALL( TARGETS deployer-${OROCOS_TARGET} RUNTIME DESTINATION bin)
 
@@ -31,7 +31,7 @@ ENDIF ( BUILD_TASKBROWSER AND BUILD_DEPLOYMENT)
 IF ( BUILD_TASKBROWSER AND OROCOS-RTT_CORBA_FOUND)
 
     ADD_EXECUTABLE( ctaskbrowser-${OROCOS_TARGET} ctaskbrowser.cpp )
-    PROGRAM_ADD_DEPS( ctaskbrowser-${OROCOS_TARGET} ${EXTRA_DEPS} )
+    target_link_libraries( ctaskbrowser-${OROCOS_TARGET} ${EXTRA_DEPS} )
     TARGET_LINK_LIBRARIES( ctaskbrowser-${OROCOS_TARGET} ${OROCOS-RTT_LIBRARIES} orocos-taskbrowser ${OROCOS-RTT_CORBA_LIBRARIES} ${EXTRA_LIBRARIES} )
     INSTALL( TARGETS ctaskbrowser-${OROCOS_TARGET} RUNTIME DESTINATION bin)
 
@@ -41,12 +41,12 @@ ENDIF ( BUILD_TASKBROWSER AND OROCOS-RTT_CORBA_FOUND)
 IF ( BUILD_DEPLOYMENT AND OROCOS-RTT_CORBA_FOUND)
 
     ADD_EXECUTABLE( cdeployer-${OROCOS_TARGET} cdeployer.cpp deployer-funcs.cpp )
-    PROGRAM_ADD_DEPS( cdeployer-${OROCOS_TARGET} ${EXTRA_DEPS} )
+    target_link_libraries( cdeployer-${OROCOS_TARGET} ${EXTRA_DEPS} )
     TARGET_LINK_LIBRARIES( cdeployer-${OROCOS_TARGET} ${OROCOS-RTT_LIBRARIES} ${OROCOS-RTT_CORBA_LIBRARIES} orocos-deployment-corba ${Boost_PROGRAM_OPTIONS_LIBRARY} ${EXTRA_LIBRARIES})
     INSTALL( TARGETS cdeployer-${OROCOS_TARGET} RUNTIME DESTINATION bin)
 
     ADD_EXECUTABLE( deployer-corba-${OROCOS_TARGET} deployer-corba.cpp deployer-funcs.cpp )
-    PROGRAM_ADD_DEPS( deployer-corba-${OROCOS_TARGET} ${EXTRA_DEPS} )
+    target_link_libraries( deployer-corba-${OROCOS_TARGET} ${EXTRA_DEPS} )
     TARGET_LINK_LIBRARIES( deployer-corba-${OROCOS_TARGET} ${OROCOS-RTT_LIBRARIES} ${OROCOS-RTT_CORBA_LIBRARIES} orocos-deployment-corba orocos-taskbrowser ${Boost_PROGRAM_OPTIONS_LIBRARY} ${EXTRA_LIBRARIES})
     INSTALL( TARGETS deployer-corba-${OROCOS_TARGET} RUNTIME DESTINATION bin)
 

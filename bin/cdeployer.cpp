@@ -42,7 +42,7 @@
 #include "deployer-funcs.hpp"
 
 #ifdef  ORO_BUILD_LOGGING
-#   ifndef ORO_BUILD_RTALLOC
+#   ifndef OS_RT_MALLOC
 #   warning Logging needs rtalloc!
 #   endif
 #include <log4cpp/HierarchyMaintainer.hh>
