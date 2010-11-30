@@ -1,5 +1,5 @@
 #include "logging/tests/TestLoggingAvailability.hpp"
-#include <rtt/rt_string.hpp"
+#include <rtt/rt_string.hpp>
 #include "logging/Category.hpp"
 
 #include <rtt/Logger.hpp>
