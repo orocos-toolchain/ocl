@@ -51,7 +51,7 @@ if(BUILD_LUA_RTT)
     add_library(deployer SHARED deployer.cpp)
     add_library(rtt SHARED rtt.cpp)
 
-    target_link_libraries(deployer ${LUA_LIBRARIES} ${OROCOS-RTT_LIBRARIES} orocos-deployment-${OROCOS_TARGET})
+    target_link_libraries(deployer ${LUA_LIBRARIES} ${OROCOS-RTT_LIBRARIES} orocos-deployment)
     target_link_libraries(rtt ${LUA_LIBRARIES} ${OROCOS-RTT_LIBRARIES})
 
     # need next line?

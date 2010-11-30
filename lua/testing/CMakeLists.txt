@@ -5,7 +5,7 @@ if ( BUILD_LUA_TESTCOMP )
     file( GLOB SRCS [^.]*.cpp )
     file( GLOB HPPS [^.]*.hpp )
 
-    global_add_component( testcomp ${SRCS} )
+    create_component( testcomp ${SRCS} )
     target_link_libraries( testcomp ${OROCOS_RTT_LIBS} )
     
 endif ( BUILD_LUA_TESTCOMP )
