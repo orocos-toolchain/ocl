@@ -131,8 +131,9 @@ bool LoggingService::configureHook()
                 appenderPort	= appender->ports()->getPort("LogPort");
                 if (appenderPort)
                 {
-                    // \todo connect in which direction?
-                    if ( appenderPort->connectTo( &(category->log_port) ) )
+                    // \todo make connection policy configurable (from xml).
+                    ConnPolicy cp = ConnPolicy::buffer(100,ConnPolicy::LOCK_FREE,false,false);
+                    if ( appenderPort->connectTo( &(category->log_port), cp) )
                     {
                         std::stringstream   str;
                         str << "Category '" << categoryName
