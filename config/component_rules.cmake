@@ -43,55 +43,11 @@ MACRO( GLOBAL_ADD_INCLUDE COMPONENT_LOCATION )
   INSTALL( FILES ${ARGN} DESTINATION include/${COMPONENT_LOCATION} )
 ENDMACRO( GLOBAL_ADD_INCLUDE COMPONENT_LOCATION )
 
-# Link a component library with an external library (qt3, gl, readline,....)
-# Usage: COMPONENT_ADD_LIBS( orocos-taskbrowser readline ncurses )
-#
-# Explicitly deal with library lists of the form "optimized;xxx;debug;xxx-d"
-# These lists can be chained e.g. "optimized;xxx;debug;xxx-d;optimized;yyy;debug;yyy-d"
-#
-MACRO( COMPONENT_ADD_LIBS COMPONENT_NAME  )
-    TARGET_LINK_LIBRARIES( ${COMPONENT_NAME}-${OROCOS_TARGET} ${ARGN} )
-ENDMACRO( COMPONENT_ADD_LIBS COMPONENT_NAME )
-
-# Link a component library with a list of external libraries (qt3, gl, readline,....)
-# Usage: COMPONENT_ADD_LIBS( orocos-taskbrowser ${Boost_FILESYSTEM_LIBRARIES} )
-MACRO( COMPONENT_ADD_LIB_LIST COMPONENT_NAME  )
-  MESSAGE("ADD_LIB_LIST '${ARGN}'")
-  TARGET_LINK_LIBRARIES( ${COMPONENT_NAME}-${OROCOS_TARGET} ${ARGN} )
-ENDMACRO( COMPONENT_ADD_LIB_LIST COMPONENT_NAME )
-
-# Link a component library with another component library
-# Usage: COMPONENT_ADD_DEPS( orocos-taskbrowser orocos-reporting )
-MACRO( COMPONENT_ADD_DEPS COMPONENT_NAME )
-  foreach( lib ${ARGN} )
-    TARGET_LINK_LIBRARIES( ${COMPONENT_NAME}-${OROCOS_TARGET} ${lib}-${OROCOS_TARGET} )
-  endforeach( lib ${ARGN} )
-ENDMACRO( COMPONENT_ADD_DEPS COMPONENT_NAME )
-
-# Link a program with a component library
-# Usage: PROGRAM_ADD_DEPS( taskbrowser-test orocos-reporting )
-MACRO( PROGRAM_ADD_DEPS PROGRAM_NAME )
-  foreach( lib ${ARGN} )
-    TARGET_LINK_LIBRARIES( ${PROGRAM_NAME} ${lib}-${OROCOS_TARGET} )
-  endforeach( lib ${ARGN} )
-  SET_TARGET_PROPERTIES( ${PROGRAM_NAME} PROPERTIES 
-    INSTALL_RPATH_USE_LINK_PATH 1
-    INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/orocos;${CMAKE_INSTALL_PREFIX}/lib")
-ENDMACRO( PROGRAM_ADD_DEPS PROGRAM_NAME )
-
-# Link a program with an external library (qt3, gl, readline,....)
-# Usage: PROGRAM_ADD_LIBS( taskbrowser-test readline ncurses )
-MACRO( PROGRAM_ADD_LIBS PROGRAM_NAME )
-  foreach( lib ${ARGN} )
-    TARGET_LINK_LIBRARIES( ${PROGRAM_NAME} ${lib} )
-  endforeach( lib ${ARGN} )
-ENDMACRO( PROGRAM_ADD_LIBS PROGRAM_NAME )
-
-
 #
 # Components should add themselves by calling 'CREATE_COMPONENT'
 # instead of 'ADD_LIBRARY' in CMakeLists.txt. This macro will _NOT_
-# install this library, as opposed to GLOBAL_ADD_COMPONENT which does.
+# install this library, as opposed to orocos_component which does.
+#
 # This macro is meant for test libraries built as part of OCL.
 #
 #
@@ -100,102 +56,21 @@ ENDMACRO( PROGRAM_ADD_LIBS PROGRAM_NAME )
 MACRO( CREATE_COMPONENT COMPONENT_NAME )
 
   SET( LIB_NAME "${COMPONENT_NAME}-${OROCOS_TARGET}")
+  SET( TARGET_NAME "${COMPONENT_NAME}")
 
-  IF(GLOBAL_LIBRARY)
-    MESSAGE( ERROR "BROKEN: Adding ${COMPONENT_NAME} to global sources:[ ${GLOBAL_LIBRARY_SRCS} ]" )
-    SET (GLOBAL_LIBRARY_SRCS "${GLOBAL_LIBRARY_SRCS} ${ARGN}" )
-  ENDIF(GLOBAL_LIBRARY)
-
-  IF(LOCAL_LIBRARY)
-    IF (OROCOS_RTT_1.4)
-      MESSAGE( "Building Shared library for ${COMPONENT_NAME}" )
-      ADD_LIBRARY( ${LIB_NAME} SHARED ${ARGN} )
-      SET_TARGET_PROPERTIES( ${LIB_NAME} PROPERTIES
+    MESSAGE( "Building Shared library for ${COMPONENT_NAME}" )
+      ADD_LIBRARY( ${TARGET_NAME} SHARED ${ARGN} )
+      SET_TARGET_PROPERTIES( ${TARGET_NAME} PROPERTIES
 		DEFINE_SYMBOL OCL_DLL_EXPORT
 		VERSION ${OCL_VERSION}
 		SOVERSION ${OCL_VERSION_MAJOR}.${OCL_VERSION_MINOR}
 		LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+		OUTPUT_NAME ${LIB_NAME}
 		)
-      foreach(lib ${OROCOS-RTT_LIBRARIES})
-		TARGET_LINK_LIBRARIES( ${LIB_NAME} ${lib} )
-      endforeach(lib in ${OROCOS-RTT_LIBRARIES})
-
-    ELSE (OROCOS_RTT_1.4)
-
-      IF (OROCOS_RTT_1.2)
-		MESSAGE( "Building Shared library for ${COMPONENT_NAME}" )
-		ADD_LIBRARY( ${LIB_NAME} SHARED ${ARGN} )
-		SET_TARGET_PROPERTIES( ${LIB_NAME} PROPERTIES
-		  DEFINE_SYMBOL OCL_DLL_EXPORT
-		  VERSION ${OCL_VERSION}
-		  SOVERSION ${OCL_VERSION_MAJOR}.${OCL_VERSION_MINOR}
-		  )
-		TARGET_LINK_LIBRARIES( ${LIB_NAME} orocos-rtt )
-      ELSE (OROCOS_RTT_1.2)
-		MESSAGE( "Building Static library for ${COMPONENT_NAME}" )
-		ADD_LIBRARY( ${LIB_NAME} STATIC ${ARGN} )
-      ENDIF (OROCOS_RTT_1.2)
-
-    ENDIF (OROCOS_RTT_1.4)
-
+      target_link_libraries(${TARGET_NAME} ${OROCOS-RTT_LIBRARIES})
     LINK_DIRECTORIES( ${CMAKE_CURRENT_BINARY_DIR} )
 
-  ENDIF(LOCAL_LIBRARY)
-
 ENDMACRO( CREATE_COMPONENT COMPONENT_NAME )
-
-
-#
-# Components should add themselves by calling 'GLOBAL_ADD_COMPONENT' 
-# instead of 'ADD_LIBRARY' in CMakeLists.txt.
-#
-# This gives a centralised location where all components are registered
-# and lets us add various things to all components in just one place.
-#
-#
-# Usage: GLOBAL_ADD_COMPONENT( COMPONENT_NAME src1 src2 src3 [INSTALL lib/orocos] )
-#
-MACRO( GLOBAL_ADD_COMPONENT )
-  
-  PARSE_ARGUMENTS(ADD_COMPONENT
-    "INSTALL"
-    ""
-    ${ARGN}
-    )
-  list(GET ADD_COMPONENT_DEFAULT_ARGS 0 COMPONENT_NAME)
-  list(REMOVE_AT ADD_COMPONENT_DEFAULT_ARGS 0)
-  SET( SOURCES ${ADD_COMPONENT_DEFAULT_ARGS} )
-  SET( LIB_NAME "${COMPONENT_NAME}-${OROCOS_TARGET}")
-  if ( ADD_COMPONENT_INSTALL )
-    set(AC_INSTALL_DIR ${ADD_COMPONENT_INSTALL})
-    set(AC_INSTALL_RT_DIR bin)
-  else()
-    set(AC_INSTALL_DIR lib/orocos)
-    set(AC_INSTALL_RT_DIR lib/orocos)
-  endif()
-  
-  MESSAGE( "Building Shared library for ${COMPONENT_NAME}" )
-  ADD_LIBRARY( ${LIB_NAME} SHARED ${SOURCES} )
-  SET_TARGET_PROPERTIES( ${LIB_NAME} PROPERTIES 
-    DEFINE_SYMBOL "OCL_DLL_EXPORT"
-    VERSION ${OCL_VERSION}
-    SOVERSION ${OCL_VERSION_MAJOR}.${OCL_VERSION_MINOR}
-    INSTALL_RPATH_USE_LINK_PATH 1
-    LIBRARY_OUTPUT_DIRECTORY ${COMPONENT_OUTPUT_DIRECTORY}
-    )
-  TARGET_LINK_LIBRARIES( ${LIB_NAME} ${OROCOS-RTT_LIBRARIES} )
-
-
-  INSTALL(TARGETS ${LIB_NAME} LIBRARY DESTINATION ${AC_INSTALL_DIR} ARCHIVE DESTINATION lib RUNTIME DESTINATION ${AC_INSTALL_RT_DIR})
-  #The later a component is added, the earlier it apears in the -l list.
-  SET (ENV{SELECTED_LIBS} "-l${LIB_NAME} $ENV{SELECTED_LIBS} ")
-  #This is an ugly work around
-  #FILE(APPEND ${PROJ_BINARY_DIR}/bibs.txt "-l${LIB_NAME} ")
-
-  LINK_DIRECTORIES( ${CMAKE_CURRENT_BINARY_DIR} )
-  SET (ENV{SELECTED_DIRS} "$ENV{SELECTED_DIRS} ${CMAKE_CURRENT_SOURCE_DIR}")
-
-ENDMACRO( GLOBAL_ADD_COMPONENT COMPONENT_NAME )
 
 #
 # Components should add tests by calling 'GLOBAL_ADD_TEST' 
