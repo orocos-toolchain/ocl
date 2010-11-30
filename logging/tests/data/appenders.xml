@@ -7,11 +7,6 @@
 	   ################################################################# -->
 
   <struct name="AppenderA" type="OCL::logging::FileAppender">
-    <struct name="Activity" type="PeriodicActivity">
-      <simple name="Period" type="double"><value>0.5</value></simple>
-      <simple name="Priority" type="short"><value>0</value></simple>
-      <simple name="Scheduler" type="string"><value>ORO_SCHED_OTHER</value></simple>
-    </struct>
     <simple name="AutoConf" type="boolean"><value>1</value></simple>
     <simple name="AutoStart" type="boolean"><value>1</value></simple>
 	<struct name="Properties" type="PropertyBag">
@@ -22,11 +17,6 @@
   </struct>
 
   <struct name="AppenderB" type="OCL::logging::OstreamAppender">
-    <struct name="Activity" type="PeriodicActivity">
-      <simple name="Period" type="double"><value>0.5</value></simple>
-      <simple name="Priority" type="short"><value>0</value></simple>
-      <simple name="Scheduler" type="string"><value>ORO_SCHED_OTHER</value></simple>
-    </struct>
     <simple name="AutoConf" type="boolean"><value>1</value></simple>
     <simple name="AutoStart" type="boolean"><value>1</value></simple>
 	<struct name="Properties" type="PropertyBag">
@@ -36,11 +26,6 @@
   </struct>
 
   <struct name="AppenderC" type="OCL::logging::FileAppender">
-    <struct name="Activity" type="PeriodicActivity">
-      <simple name="Period" type="double"><value>0.5</value></simple>
-      <simple name="Priority" type="short"><value>0</value></simple>
-      <simple name="Scheduler" type="string"><value>ORO_SCHED_OTHER</value></simple>
-    </struct>
     <simple name="AutoConf" type="boolean"><value>1</value></simple>
     <simple name="AutoStart" type="boolean"><value>1</value></simple>
 	<struct name="Properties" type="PropertyBag">

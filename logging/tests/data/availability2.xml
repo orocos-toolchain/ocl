@@ -8,11 +8,11 @@
 
 <properties>
 
-  <simple name="Import" type="string">
-	<value>../liborocos-logging</value>
+  <simple name="Path" type="string">
+	<value>..</value>
   </simple>
-  <simple name="Import" type="string">
-	<value>liborocos-logging-tests</value>
+  <simple name="Path" type="string">
+	<value>.</value>
   </simple>
 
   <!-- #################################################################
