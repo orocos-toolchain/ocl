@@ -1944,7 +1944,7 @@ namespace OCL
             sresult <<nl<< " Requires Operations :";
             if ( !objlist.empty() ) {
                 for(vector<string>::iterator it = objlist.begin(); it != objlist.end(); ++it)
-                    sresult <<coloron<< "  " << *it <<coloroff << '[' << (peer->requires()->getOperationCaller(*it).ready() ? "R]" : "!]");
+                    sresult <<coloron<< "  " << *it <<coloroff << '[' << (peer->requires()->getOperationCaller(*it)->ready() ? "R]" : "!]");
                 sresult << nl;
             } else {
                 sresult <<coloron<< "  (none)" <<coloroff <<nl;
