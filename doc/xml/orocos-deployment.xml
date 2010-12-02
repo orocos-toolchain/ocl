@@ -266,13 +266,12 @@
 	  The RTT Plugins manual describes this typical directory structure more in detail.
 	</para>
 	<para>
-		The <function>path</function> function extends the default search path 
-		with new directories to look for components. Even more it causes all
-	  component libraries in these directories to be pre-loaded, but without creating
-		specific component intances. So it does not cause any component to be created, but
-	  allows the <classname>OCL::DeploymentComponent</classname> to know where the 
-	  component libraries are located. This function <emphasis>does not work recursively</emphasis>
-	  and may be called for multiple paths, or provide them in a colon or semi-colon separated list.
+		The <function>path</function> function extends the default search path with new directories to
+		look for components. In addition, it imports every component library found in that directory,
+		but <emphasis>without recursing into sub directories</emphasis>.  It does not cause any
+		component to be created, but allows the <classname>OCL::DeploymentComponent</classname> to know
+		where the component libraries are located. This function may be called for multiple paths, or
+		provide them in a colon or semi-colon separated list.
 	</para>
 	<para>
 	  In XML, the path statement looks like:
@@ -281,21 +280,23 @@
 <properties>
   <!-- ....  -->
 
+  <!-- Note: capital 'P': -->
   <simple name="Path" type="string"><value>/opt/robot/lib/orocos</value></simple>
 
 </properties>]]></programlisting>
 	</para>
 	<para>
 	  The script method equivalent is:
-	  <programlisting>  path("/opt/robot/lib/orocos")</programlisting>
+	  <programlisting>  // note: small 'p':
+  path("/opt/robot/lib/orocos")</programlisting>
 	</para>
 	<para>
 	  Each component library (.so, .dll,...) in the directory
-	  <filename>/opt/robot/lib/orocos</filename> is pre-loaded.  If this directory contains a
+	  <filename>/opt/robot/lib/orocos</filename> is imported.  If this directory contains a
 	  <filename>plugins</filename> or <filename>types</filename> subdirectory, the libraries in these
-	  directories are loaded as well. Once you installed multiple component libraries in
-	  subdirectories of your path, you must use the <function>import</function> statement to load
-	  these. In addition, when you use the ROS packaging system, you can use <function>import</function>
+	  directories are imported as well. Once you installed multiple component libraries in
+	  subdirectories of your path, you must use the <function>Import</function> statement to load
+	  these. In addition, when you use the ROS packaging system, you can use <function>Import</function>
 	  in order to load the components from a ros package's <filename>lib/orocos</filename> directory,
 	  and all its dependencies. In that case, only the ROS_PACKAGE_PATH environment variable needs to be set.
 	</para>
@@ -306,13 +307,15 @@
 <properties>
   <!-- ....  -->
 
+  <!-- Note: capital 'I': -->
   <simple name="Import" type="string"><value>robot-13</value></simple>
 
 </properties>]]></programlisting>
 	</para>
 	<para>
 	  The script method equivalent is:
-	  <programlisting>  import("robot-13")</programlisting>
+	  <programlisting>  // note: small 'i':
+  import("robot-13")</programlisting>
 	</para>
 	<para>
 		All component libraries found in <function>&lt;path&gt;/robot-13</function> (or the ROS package 'robot-13') and their plugins/types are
