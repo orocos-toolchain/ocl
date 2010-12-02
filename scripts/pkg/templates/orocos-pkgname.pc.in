@@ -3,7 +3,7 @@ libdir=${prefix}/lib
 includedir=${prefix}/include
 
 Name: orocos-@pkgname@
-Description: Orocos @PkgName Component
+Description: Orocos @PkgName@ Component
 Requires: rtt
 Version: 1.0.0
 
