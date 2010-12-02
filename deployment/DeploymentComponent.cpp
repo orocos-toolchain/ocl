@@ -103,6 +103,7 @@ namespace OCL
         this->addOperation("loadService", &DeploymentComponent::loadService, this, ClientThread).doc("Load a discovered service or plugin in an existing component.").arg("Name", "The name of the component which will receive the service").arg("Service", "The name of the service or plugin.");
         this->addOperation("unloadComponent", &DeploymentComponent::unloadComponent, this, ClientThread).doc("Unload a loaded component instance.").arg("Name", "The name of the to be created component");
         this->addOperation("displayComponentTypes", &DeploymentComponent::displayComponentTypes, this, ClientThread).doc("Print out a list of all component types this component can create.");
+        this->addOperation("getComponentTypes", &DeploymentComponent::getComponentTypes, this, ClientThread).doc("return a vector of all component types this component can create.");
 
         this->addOperation("loadConfiguration", &DeploymentComponent::loadConfiguration, this, ClientThread).doc("Load a new XML configuration from a file (identical to loadComponents).").arg("File", "The file which contains the new configuration.");
         this->addOperation("loadConfigurationString", &DeploymentComponent::loadConfigurationString, this, ClientThread).doc("Load a new XML configuration from a string.").arg("Text", "The string which contains the new configuration.");
@@ -1597,6 +1598,16 @@ namespace OCL
         }
         if ( OCL::ComponentFactories::Instance().size() == 0 )
             cout << "   (none)"<<endl;
+    }
+
+    std::string DeploymentComponent::getComponentTypes() const
+    {
+        std::string s;
+        OCL::FactoryMap::iterator it;
+        for(it = OCL::ComponentFactories::Instance().begin(); it != OCL::ComponentFactories::Instance().end(); ++it)
+            s+=it->first + ';';
+
+        return s;
     }
 
     bool DeploymentComponent::setActivity(const std::string& comp_name,

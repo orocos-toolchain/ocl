@@ -434,6 +434,13 @@ namespace OCL
         void displayComponentTypes() const;
 
         /**
+         * This function returns the component types this DeploymentComponent
+         * can create in a comma separated list.
+         * @see loadComponent()
+         */
+        std::string getComponentTypes() const;
+
+        /**
          * (Re-)set the activity of a component with a periodic activity.
          *
          * @param comp_name The name of the component to change.
