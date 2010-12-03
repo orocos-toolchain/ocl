@@ -116,6 +116,7 @@ namespace OCL
         this->addOperation("cleanupComponents", &DeploymentComponent::cleanupComponents, this, ClientThread).doc("Cleanup all the configured components (with or without AutoConf).");
         this->addOperation("unloadComponents", &DeploymentComponent::unloadComponents, this, ClientThread).doc("Unload all the previously loaded components.");
 
+        this->addOperation("runScript", &DeploymentComponent::runScript, this, ClientThread).doc("Runs a script.").arg("File", "An Orocos program script.");
         this->addOperation("kickStart", &DeploymentComponent::kickStart, this, ClientThread).doc("Calls loadComponents, configureComponents and startComponents in a row.").arg("File", "The file which contains the XML configuration to use.");
         this->addOperation("kickOutAll", &DeploymentComponent::kickOutAll, this, ClientThread).doc("Calls stopComponents, cleanupComponents and unloadComponents in a row.");
 
