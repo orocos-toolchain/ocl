@@ -20,6 +20,8 @@
 
 *API Changes in the Lua RTT bindings*
 
+ - [2010-12-06 Mon] add Variable:resize(size) operation
+
  - [2010-10-21 Thu] add TaskContext:getOperation("name")
 
  - [2010-10-18 Mon] add =EEHook= execution engine mechanism

@@ -319,7 +319,7 @@
    | =variable getMember(name)=        |      | return variable which is a member with name                                 |
    | =opBinary(string_op, var1, var2)= | F    | execute: var1 string_op var2                                                |
    | =bool assign(value)=              |      | assign value which can be a lua type or a Variable                          |
-   |                                   |      |                                                                             |
+   | =bool resize(size)=               |      | resize type (only for array types)                                          |
 
    - the unary operator =-= and the binary operators =+=, =-=, =*=,
      =/= =%=, =^=, and the comparison operators '==', '<=', '>=' are

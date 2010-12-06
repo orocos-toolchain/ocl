@@ -417,6 +417,17 @@ static int Variable_getTypeName(lua_State *L)
 	return 1;
 }
 
+static int Variable_resize(lua_State *L)
+{
+	int size;
+	DataSourceBase::shared_ptr *dsbp = luaM_checkudata_mt(L, 1, "Variable", DataSourceBase::shared_ptr);
+	size = luaL_checknumber(L, 2);
+	const TypeInfo *ti = (*dsbp)->getTypeInfo();
+	lua_pushboolean(L, ti->resize(*dsbp, size));
+	return 1;
+}
+
+
 /*
  * Operators
  */
@@ -541,6 +552,7 @@ static const struct luaL_Reg Variable_f [] = {
 	{ "getTypeName", Variable_getTypeName },
 	{ "getMemberNames", Variable_getMemberNames },
 	{ "getMember", Variable_getMember },
+	{ "resize", Variable_resize },
 	{ "opBinary", Variable_opBinary },
 	{ "assign", Variable_update }, /* assign seems a better name than update */
 	{ "unm", Variable_unm },
@@ -563,6 +575,7 @@ static const struct luaL_Reg Variable_m [] = {
 	{ "getTypeName", Variable_getTypeName },
 	{ "getMemberNames", Variable_getMemberNames },
 	{ "getMember", Variable_getMember },
+	{ "resize", Variable_resize },
 	{ "opBinary", Variable_opBinary },
 	{ "assign", Variable_update }, /* assign seems a better name than update */
 	{ "__unm", Variable_unm },
