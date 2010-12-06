@@ -259,7 +259,7 @@ bool ComponentLoader::import( std::string const& package, std::string const& pat
     if (paths.empty())
         paths = component_path;
     else
-        paths = component_path + default_delimiter + path_list;
+        paths = path_list;
 
     // search in '.' if really no paths are given.
     if (paths.empty())
@@ -273,9 +273,19 @@ bool ComponentLoader::import( std::string const& package, std::string const& pat
     vpaths = splitPaths(paths);
     trypaths = paths; // store for error reporting below.
     paths.clear();
+    // Detect absolute/relative import:
+    path p( package );
+    if (is_directory( p )) {
+        path_found = true;
+        paths += p.string() + default_delimiter;
+        if ( p.is_complete() ) {
+            log(Warning) << "You supplied an absolute directory to the import directive. Use 'path' to set absolute directories and 'import' only for packages (sub directories)."<<endlog();
+            log(Warning) << "Please modify your XML file or script. I'm importing it now for the sake of backwards compatibility."<<endlog();
+        } // else: we allow to import a subdirectory of '.'.
+    }
     // append '/package' to each plugin path in order to search all of them:
     for(vector<string>::iterator it = vpaths.begin(); it != vpaths.end(); ++it) {
-        path p(*it);
+        p = *it;
         p = p / package;
         // we only search in existing directories:
         if (is_directory( p )) {
@@ -291,6 +301,10 @@ bool ComponentLoader::import( std::string const& package, std::string const& pat
         if ( import(paths) ) {
             loadedPackages.push_back( package );
             return true;
+        } else {
+            log(Error) << "Failed to import package or directory '"<< package <<"' found in:"<< endlog();
+            log(Error) << paths << endlog();
+            return false;
         }
     }
     log(Error) << "No such package or directory found in search path: " << package << ". Search path is: "<< endlog();
