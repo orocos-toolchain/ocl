@@ -10,6 +10,7 @@
 
 		<rosdep name="libreadline"/>
 		<depend package="rtt" />
+		<depend package="log4cpp" />
 
 		<export>
 			<cpp cflags="-I${prefix} -DRTT_COMPONENT" lflags="-L${prefix}/lib"/>
