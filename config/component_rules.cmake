@@ -212,3 +212,11 @@ MACRO( TARGET_USE_LIB TARGET_NAME SUBDIRECTORY LIBNAME )
     INCLUDE_DIRECTORIES( ${PROJECT_SOURCE_DIR}/${SUBDIRECTORY} )
     INCLUDE_DIRECTORIES( ${PROJECT_SOURCE_DIR}/${SUBDIRECTORY}/dev )
 ENDMACRO( TARGET_USE_LIB DIRECTORY LIBNAME )
+
+# Link a program with a component library                                                                                                                                                                                                   # Usage: PROGRAM_ADD_DEPS( taskbrowser-test orocos-reporting )                                                                                                                                                                             M
+MACRO( PROGRAM_ADD_DEPS PROGRAM_NAME )
+  TARGET_LINK_LIBRARIES( ${PROGRAM_NAME} ${ARGN} )
+  SET_TARGET_PROPERTIES( ${PROGRAM_NAME} PROPERTIES
+    INSTALL_RPATH_USE_LINK_PATH 1
+    INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/orocos;${CMAKE_INSTALL_PREFIX}/lib")
+ENDMACRO( PROGRAM_ADD_DEPS PROGRAM_NAME )
