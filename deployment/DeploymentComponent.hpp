@@ -438,7 +438,7 @@ namespace OCL
          * can create in a comma separated list.
          * @see loadComponent()
          */
-        std::string getComponentTypes() const;
+        std::vector<std::string> getComponentTypes() const;
 
         /**
          * (Re-)set the activity of a component with a periodic activity.

@@ -1601,12 +1601,12 @@ namespace OCL
             cout << "   (none)"<<endl;
     }
 
-    std::string DeploymentComponent::getComponentTypes() const
+    std::vector<std::string> DeploymentComponent::getComponentTypes() const
     {
-        std::string s;
+        std::vector<std::string> s;
         OCL::FactoryMap::iterator it;
         for(it = OCL::ComponentFactories::Instance().begin(); it != OCL::ComponentFactories::Instance().end(); ++it)
-            s+=it->first + ';';
+            s.push_back(it->first);
 
         return s;
     }
