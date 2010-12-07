@@ -20,6 +20,7 @@ if(BUILD_LUA_RTT)
 
     add_library(lua-repl STATIC lua-repl.c)
     target_link_libraries(lua-repl "ncurses" "readline" "dl" "history" ${LUA_LIBRARIES})
+    set_target_properties(lua-repl PROPERTIES COMPILE_FLAGS "-DOROCOS_TARGET=${OROCOS_TARGET}")
 
     orocos_component(orocos-lua rtt.cpp LuaComponent.cpp INSTALL lib/orocos)
     add_executable(rttlua rtt.cpp LuaComponent.cpp)

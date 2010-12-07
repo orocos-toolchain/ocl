@@ -134,22 +134,15 @@ namespace OCL
 		}
 
 #ifndef OCL_COMPONENT_ONLY
-		void boiler()
-		{
-			cout << "OROCOS RTTLua " << RTTLUA_VERSION << " / " << LUA_VERSION << " (" << OROCOS_TARGET_NAME << ")"  << endl;
-		}
-
 		void lua_repl()
 		{
 			os::MutexLock lock(m);
-			boiler();
 			dotty(L);
 		}
 
 		int lua_repl(int argc, char **argv)
 		{
 			os::MutexLock lock(m);
-			boiler();
 			return main_args(L, argc, argv);
 		}
 #endif

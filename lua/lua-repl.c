@@ -22,7 +22,10 @@
 #include "lauxlib.h"
 #include "lualib.h"
 
-
+#define RTTLUA_BOILER  "OROCOS RTTLua"
+#define RTTLUA_VERSION "1.0-beta2"
+#define XSTR(x) STR(x)
+#define STR(x)	#x
 
 static lua_State *globalL = NULL;
 
@@ -111,7 +114,7 @@ static int docall (lua_State *L, int narg, int clear) {
 }
 
 static void print_version (void) {
-  /* l_message(NULL, LUA_RELEASE "  " LUA_COPYRIGHT); */
+  l_message(NULL, RTTLUA_BOILER " " RTTLUA_VERSION " / " LUA_RELEASE " (" XSTR(OROCOS_TARGET) ")" );
 }
 
 
