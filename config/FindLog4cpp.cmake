@@ -13,9 +13,24 @@
 
 include(FindPackageHandleStandardArgs)
 
+# See if LOG4CPP_ROOT is not already set in CMake
+IF (NOT LOG4CPP_ROOT)
+    # See if LOG4CPP_ROOT is set in process environment
+    IF ( NOT $ENV{LOG4CPP_ROOT} STREQUAL "" )
+        SET (LOG4CPP_ROOT "$ENV{LOG4CPP_ROOT}")
+	MESSAGE(STATUS "Detected LOG4CPP_ROOT set to '${LOG4CPP_ROOT}'")
+    ENDIF ()
+ENDIF ()
+
+# If LOG4CPP_ROOT is available, set up our hints
+IF (LOG4CPP_ROOT)
+    SET (LOG4CPP_INCLUDE_HINTS HINTS "${LOG4CPP_ROOT}/include" "${LOG4CPP_ROOT}")
+    SET (LOG4CPP_LIBRARY_HINTS HINTS "${LOG4CPP_ROOT}/lib")
+ENDIF ()
+
 # Find headers and libraries
-find_path(LOG4CPP_INCLUDE_DIR NAMES log4cpp/Category.hh)
-find_library(LOG4CPP_LIBRARY NAMES log4cpp)
+find_path(LOG4CPP_INCLUDE_DIR NAMES log4cpp/Category.hh ${LOG4CPP_INCLUDE_HINTS})
+find_library(LOG4CPP_LIBRARY NAMES log4cpp ${LOG4CPP_LIBRARY_HINTS})
 
 # Set LOG4CPP_FOUND honoring the QUIET and REQUIRED arguments
 find_package_handle_standard_args(LOG4CPP DEFAULT_MSG LOG4CPP_LIBRARY LOG4CPP_INCLUDE_DIR)

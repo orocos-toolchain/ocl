@@ -47,9 +47,19 @@ ELSE ( READLINE_H  )
     SET( READLINE 0 CACHE INTERNAL "libreadline" )
 ENDIF ( READLINE_H )
 
-# Look for Log4cpp (if needed
+# Look for Log4cpp (if needed)
 IF ( BUILD_LOGGING )
-  FIND_PACKAGE( Log4cpp REQUIRED )
+# Since in ros-builds, log4cpp will be installed in log4cpp/install,
+# we look there too.
+if (ROS_ROOT)
+  rosbuild_find_ros_package( log4cpp )
+  set(LOG4CPP_ROOT ${log4cpp_PACKAGE_PATH}/install)
+    message("ROS log4cpp in ${LOG4CPP_ROOT}")
+endif(ROS_ROOT)
+  find_package( Log4cpp REQUIRED )
+  if(LOG4CPP_FOUND)
+    message("Found log4cpp in ${LOG4CPP_INCLUDE_DIRS}")
+  endif(LOG4CPP_FOUND)
 ENDIF ( BUILD_LOGGING )
 
 find_package(Boost COMPONENTS program_options filesystem system)
