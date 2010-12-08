@@ -3,7 +3,7 @@ configure-gnulinux: configure-stamp-gnulinux
 configure-stamp-gnulinux:
 	mkdir -p dbuild.gnulinux
 	cd  dbuild.gnulinux; \
-	CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="-Wl,-z,defs" cmake -DCMAKE_INSTALL_PREFIX=/usr -DOROCOS_TARGET:STRING=gnulinux  ..
+	CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="-Wl,-z,defs" cmake $(CMAKE_OPTIONS) -DOROCOS_TARGET:STRING=gnulinux  ..
 	touch configure-stamp-gnulinux
 
 build-gnulinux: build-stamp-gnulinux
