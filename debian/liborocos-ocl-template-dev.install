@@ -1,7 +1,12 @@
-usr/lib/liborocos-ocl-common-@TARGET@.so
 usr/lib/liborocos-deployment-@TARGET@.so
 usr/lib/liborocos-taskbrowser-@TARGET@.so
-usr/lib/liborocos-reporting-@TARGET@.so
-usr/lib/liborocos-timer-@TARGET@.so
-usr/lib/liborocos-helloworld-@TARGET@.so
-usr/lib/liborocos-reporting-netcdf-@TARGET@.so
+usr/lib/orocos/liborocos-ocl-common-@TARGET@.so
+usr/lib/orocos/liborocos-reporting-@TARGET@.so
+usr/lib/orocos/liborocos-reporting-netcdf-@TARGET@.so
+usr/lib/orocos/liborocos-timer-@TARGET@.so
+usr/lib/orocos/liborocos-helloworld-@TARGET@.so
+usr/lib/orocos/liborocos-lua-@TARGET@.so
+usr/lib/orocos/plugins/libos-@TARGET@.so
+usr/lib/orocos/plugins/libprint-@TARGET@.so
+usr/lib/orocos/plugins/librttlua-plugin-@TARGET@.so
+usr/lib/orocos/types/libocl-@TARGET@.so
