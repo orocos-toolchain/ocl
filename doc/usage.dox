@@ -62,5 +62,21 @@
 *   <li>OCL::CorbaDeploymentComponent
 *   </ul>
 *                                                               
+* \subsection logging Logging Compnent:
+* 	Component for capturing real-time logging and two components for 
+*       creating log files: one to a file and one to standard output.
+*   <ul>
+*   <li>OCL::LoggingService
+*   <li>OCL::FileAppender
+*   <li>OCL::ConsoleAppender
+*   </ul>
+*
+* \subsection lua Lua Compnent:
+* 	Component for running Lua scripts. Often, the rttlua program
+*       is used instead which is able to load and start the whole
+*       application.
+*   <ul>
+*   <li>OCL::LuaComponent
+*   </ul>
 *
 */
