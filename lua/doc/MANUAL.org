@@ -439,7 +439,7 @@
 
    In short: write a function which accepts a lua table representation
    of you data type and returns either a table or a string. Assign it
-   to =rttlib.pp_var.mytype=, where mytype is the value returned by
+   to =rttlib.var_pp.mytype=, where mytype is the value returned by
    the =var:getType()= method. That's all!
 
    *Quick example:* =ConnPolicy= type
