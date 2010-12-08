@@ -25,7 +25,7 @@ for t in $targets; do
 	bd="orocos-ocl-$t$major-bin (= \${binary:Version})"
 	if test x$bindeps = x; then bindeps="$bd"; else bindeps="$bindeps, $bd"; fi
 	builddeps=", liborocos-rtt-corba-$t$major-dev ( >= $major ) $builddeps"
-    if test $t = xenomai; then tdev=", xenomai-dev | libxenomai-dev"; builddeps=", $tdev $builddeps"; fi
+    if test $t = xenomai; then tdev=", xenomai-dev | libxenomai-dev"; builddeps="$tdev $builddeps"; fi
     if test $t = lxrt; then tdev=", librtai-dev"; builddeps=", $tdev $builddeps"; fi
     cat control-template.in | sed -e"s/@TARGET@/$t/g;s/@TARGET-DEV@/$tdev/g;s/@LIBVER@/$major/g" >> control.targets
     cat control-$t.in >> control.targets

@@ -4,7 +4,7 @@ Package: liborocos-ocl-@TARGET@@LIBVER@-dev
 Section: libdevel
 Architecture: any
 Depends: liborocos-ocl-@TARGET@@LIBVER@ (= ${Source-Version}), liborocos-rtt-@TARGET@@LIBVER@-dev ( >= @LIBVER@ ),
-     liborocos-ocl@LIBVER@-dev, libncurses5-dev, libreadline5-dev, libnetcdf-dev | netcdfg-dev, linux-libc-dev
+     liborocos-ocl@LIBVER@-dev, libncurses-dev, libreadline-dev, libnetcdf-dev | netcdfg-dev, linux-libc-dev
 Conflicts: liborocos-ocl-@TARGET@-dev
 Replaces: liborocos-ocl-@TARGET@-dev
 Provides: liborocos-ocl-@TARGET@-dev
@@ -62,9 +62,7 @@ Description: Orocos Component Library  - Binaries for @TARGET@
 Package: orocos-ocl-@TARGET@@LIBVER@-dev
 Section: libdevel
 Architecture: any
-Depends: liborocos-ocl-@TARGET@@LIBVER@-dev, liborocos-ocl-corba-@TARGET@@LIBVER@-dev,
-      liborocos-ocl-io-@TARGET@@LIBVER@-dev, liborocos-ocl-can-@TARGET@@LIBVER@-dev, liborocos-ocl-comedi-@TARGET@@LIBVER@-dev,
-      liborocos-ocl-axes-@TARGET@@LIBVER@-dev
+Depends: liborocos-ocl-@TARGET@@LIBVER@-dev, liborocos-ocl-corba-@TARGET@@LIBVER@-dev
 Conflicts: orocos-ocl-@TARGET@-dev
 Replaces: orocos-ocl-@TARGET@-dev
 Provides: orocos-ocl-@TARGET@-dev
@@ -76,9 +74,7 @@ Description: Orocos Component Library  - All library development packages for @T
 Package: orocos-ocl-@TARGET@@LIBVER@
 Section: libdevel
 Architecture: any
-Depends: liborocos-ocl-@TARGET@@LIBVER@ (= ${Source-Version}),
-      liborocos-ocl-io-@TARGET@@LIBVER@, liborocos-ocl-can-@TARGET@@LIBVER@, liborocos-ocl-comedi-@TARGET@@LIBVER@,
-      liborocos-ocl-axes-@TARGET@@LIBVER@
+Depends: liborocos-ocl-@TARGET@@LIBVER@ (= ${Source-Version})
 Description: Orocos Component Library  - All library packages for @TARGET@
  A super package for Orocos Component Library 
  .
