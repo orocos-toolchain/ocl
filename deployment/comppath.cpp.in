@@ -3,4 +3,4 @@
 
 #include "DeploymentComponent.hpp"
 
-std::string OCL::DeploymentComponent::default_comp_path = "@DEFAULT_COMPONENT_PATH@";
+std::string OCL::DeploymentComponent::default_comp_path = "@DEFAULT_COMPONENT_PATH@@OROCOS_SUFFIX@";

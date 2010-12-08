@@ -76,6 +76,11 @@ SET( COMPONENTS_LIBRARY_DEPS "" CACHE STRING "Dependencies of the resulting libr
 # Make compilation verbose by default
 SET(CMAKE_VERBOSE_MAKEFILE FALSE)
 
+# suffix for orocos/ install dir.
+if (NOT OROCOS_SUFFIX)
+  set(OROCOS_SUFFIX)
+endif(NOT OROCOS_SUFFIX)
+
 ###################################################
 #                                                 #
 #       End project customization section         #
