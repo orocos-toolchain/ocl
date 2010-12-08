@@ -1,7 +1,6 @@
 usr/include/ocl/ocl-config.h
 usr/include/ocl/OCL.hpp
-usr/include/ocl/VectorTemplateComposition.hpp
-usr/include/ocl/ComponentLoader.hpp
+usr/include/ocl/Component.hpp
 usr/include/ocl/DeploymentComponent.hpp
 usr/include/ocl/TaskBrowser.hpp
 usr/include/ocl/ReportingComponent.hpp
