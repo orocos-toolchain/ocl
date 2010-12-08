@@ -1,6 +1,6 @@
 
 // WARNING: This is an auto-generated file by the build system. Do not modify it. //
 
-#include "DeploymentComponent.hpp"
+#include "deployment/DeploymentComponent.hpp"
 
 std::string OCL::DeploymentComponent::default_comp_path = "@DEFAULT_COMPONENT_PATH@@OROCOS_SUFFIX@";

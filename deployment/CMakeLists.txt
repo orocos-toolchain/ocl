@@ -8,7 +8,7 @@ IF ( BUILD_DEPLOYMENT )
 
     # This gathers all the .cpp files into the variable 'SRCS'
     SET( HPPS DeploymentComponent.hpp )
-    SET( SRCS DeploymentComponent.cpp ComponentLoader.cpp comppath.cpp)
+    SET( SRCS DeploymentComponent.cpp ComponentLoader.cpp ${CMAKE_CURRENT_BINARY_DIR}/comppath.cpp)
 
     orocos_library( orocos-deployment ${SRCS})
     GLOBAL_ADD_INCLUDE( ocl ${HPPS})
@@ -37,7 +37,7 @@ IF ( BUILD_DEPLOYMENT )
 	SET(DEFAULT_COMPONENT_PATH "${OROCOS-RTT_PATH}/lib/orocos" CACHE STRING "Default component lookup path when none given. (semi-)colon separated list." )
     ENDIF( ROS_ROOT )
 
-    configure_file(comppath.cpp.in ${CMAKE_CURRENT_SOURCE_DIR}/comppath.cpp @ONLY)
+    configure_file(comppath.cpp.in ${CMAKE_CURRENT_BINARY_DIR}/comppath.cpp @ONLY)
 
     ADD_SUBDIRECTORY( tests )
 
