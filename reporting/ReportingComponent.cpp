@@ -35,6 +35,7 @@
 #include <iostream>
 #include <fstream>
 #include <exception>
+#include <boost/algorithm/string.hpp>
 
 #include "ocl/Component.hpp"
 #include <rtt/types/PropertyDecomposition.hpp>
@@ -261,10 +262,23 @@ namespace OCL
             log(Error) << "Could not report Component " << component <<" : no such peer."<<endlog();
             return false;
         }
-        base::PortInterface* porti   = comp->ports()->getPort(port);
+        std::vector<std::string> strs;
+        boost::split(strs, port, boost::is_any_of("."));
+        Service::shared_ptr service=comp->provides();
+        while ( strs.size() != 1 && service) {
+            service = service->getService( strs.front() );
+            if (service)
+                strs.erase( strs.begin() );
+        }
+        if (!service) {
+            log(Error) <<"No such service: '"<< strs.front() <<"' while looking for port '"<< port<<"'"<<endlog();
+            return 0;
+        }
+        base::PortInterface* porti = 0;
+        porti = service->getPort(strs.front());
         if ( !porti ) {
             log(Error) << "Could not report Port " << port
-                          <<" : no such port on Component "<<component<<"."<<endlog();
+                       <<" : no such port on Component "<<component<<"."<<endlog();
             return false;
         }
 
