@@ -1,3 +1,4 @@
+#include <rtt/RTT.hpp>
 #include <rtt/plugin/Plugin.hpp>
 #include <iostream>
 

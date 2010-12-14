@@ -1,5 +1,8 @@
+#include <rtt/RTT.hpp>
 #include <rtt/plugin/ServicePlugin.hpp>
 
+using namespace RTT;
+using namespace std;
 
 /**
  * An example service which can be loaded in a component.
@@ -9,7 +12,7 @@ public:
     MyService(TaskContext* owner) 
         : Service("myservice", owner) 
     {
-        provides()->addOperation("getOwnerName", &MyService::getOwnerName, this).doc("Returns the name of the owner of this object.")
+        provides()->addOperation("getOwnerName", &MyService::getOwnerName, this).doc("Returns the name of the owner of this object.");
     }
 
     string getOwnerName() {
