@@ -1,4 +1,4 @@
-OPTION( BUILD_LOGGING "Build realtime Logging service" OFF)
+OPTION( BUILD_LOGGING "Build realtime Logging service" ON)
 
 IF ( BUILD_LOGGING )
   if(NOT LOG4CPP_FOUND)
