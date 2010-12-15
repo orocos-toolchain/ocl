@@ -73,10 +73,27 @@ int main(int argc, char** argv)
     otherOptions.add(rttLog4cppOptions);
 #endif
 
-	int rc = OCL::deployerParseCmdLine(argc, argv,
+    // were we given non-deployer options? ie find "--"
+    int     optIndex    = 0;
+    bool    found       = false;
+
+    while(!found && optIndex<argc)
+    {
+        found = (0 == strcmp("--", argv[optIndex]));
+        if(!found) optIndex++;
+    }
+
+    if (found) {
+        argv[optIndex] = argv[0];
+    }
+
+    // if extra options not found then process all command line options,
+    // otherwise process all options up to but not including "--"
+    int rc = OCL::deployerParseCmdLine(!found ? argc : optIndex, argv,
                                        siteFile, scriptFiles, name, requireNameService,
                                        vm, &otherOptions);
-	if (0 != rc)
+
+    if (0 != rc)
 	{
 		return rc;
 	}
@@ -117,7 +134,7 @@ int main(int argc, char** argv)
 #endif
 
     // start Orocos _AFTER_ setting up log4cpp
-	if (0 == __os_init(argc, argv))
+	if (0 == __os_init(argc - optIndex, &argv[optIndex]))
     {
         // scope to force dc destruction prior to memory free
         {

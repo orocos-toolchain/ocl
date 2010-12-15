@@ -142,7 +142,7 @@ int main(int argc, char** argv)
 #endif
 
     // start Orocos _AFTER_ setting up log4cpp
-	if (0 == __os_init(argc, argv))
+	if (0 == __os_init(argc - taoIndex, &argv[taoIndex]))
     {
         // scope to force dc destruction prior to memory free
         {
