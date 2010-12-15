@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
 lang="en" xml:lang="en">
 <head>
-<title>Lua RTT bindings (beta1)</title>
+<title>Lua RTT bindings (beta2)</title>
 <meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
 <meta name="generator" content="Org-mode"/>
 <meta name="generated" content="2010-09-13 Mon"/>
@@ -72,7 +72,7 @@ lang="en" xml:lang="en">
 <body>
 <div id="content">
 
-<h1 class="title">Lua RTT bindings (beta1)</h1>
+<h1 class="title">Lua RTT bindings (beta2)</h1>
 
 
 
@@ -684,6 +684,7 @@ ConnPolicy, FlowStatus, PropertyBag, SendHandle, SendStatus, array, bool, char, 
 <tr><td><code>variable getMember(name)</code></td><td></td><td>return variable which is a member with name</td></tr>
 <tr><td><code>opBinary(string_op, var1, var2)</code></td><td>F</td><td>execute: var1 string<sub>op</sub> var2</td></tr>
 <tr><td><code>bool assign(value)</code></td><td></td><td>assign value which can be a lua type or a Variable</td></tr>
+<tr><td><code>bool resize(size)</code></td><td></td><td>resize type (only for array types)</td></tr>
 </tbody>
 </table>
 
@@ -950,7 +951,7 @@ applications by adding the following to scripts:
 <p>
 In short: write a function which accepts a lua table representation
 of you data type and returns either a table or a string. Assign it
-to <code>rttlib.pp_var.mytype</code>, where mytype is the value returned by
+to <code>rttlib.var_pp.mytype</code>, where mytype is the value returned by
 the <code>var:getType()</code> method. That's all!
 </p>
 <p>

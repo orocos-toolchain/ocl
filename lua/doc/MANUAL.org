@@ -1,4 +1,4 @@
-#+TITLE:	Lua RTT bindings (beta1)
+#+TITLE:	Lua RTT bindings (beta2)
 #+AUTHOR:	Markus Klotzbuecher
 #+EMAIL:	markus.klotzbuecher@mech.kuleuven.be
 #+DATE:		2010-09-13 Mon
@@ -319,7 +319,7 @@
    | =variable getMember(name)=        |      | return variable which is a member with name                                 |
    | =opBinary(string_op, var1, var2)= | F    | execute: var1 string_op var2                                                |
    | =bool assign(value)=              |      | assign value which can be a lua type or a Variable                          |
-   |                                   |      |                                                                             |
+   | =bool resize(size)=               |      | resize type (only for array types)                                          |
 
    - the unary operator =-= and the binary operators =+=, =-=, =*=,
      =/= =%=, =^=, and the comparison operators '==', '<=', '>=' are
@@ -439,7 +439,7 @@
 
    In short: write a function which accepts a lua table representation
    of you data type and returns either a table or a string. Assign it
-   to =rttlib.pp_var.mytype=, where mytype is the value returned by
+   to =rttlib.var_pp.mytype=, where mytype is the value returned by
    the =var:getType()= method. That's all!
 
    *Quick example:* =ConnPolicy= type

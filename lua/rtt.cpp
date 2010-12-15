@@ -417,6 +417,17 @@ static int Variable_getTypeName(lua_State *L)
 	return 1;
 }
 
+static int Variable_resize(lua_State *L)
+{
+	int size;
+	DataSourceBase::shared_ptr *dsbp = luaM_checkudata_mt(L, 1, "Variable", DataSourceBase::shared_ptr);
+	size = luaL_checknumber(L, 2);
+	const TypeInfo *ti = (*dsbp)->getTypeInfo();
+	lua_pushboolean(L, ti->resize(*dsbp, size));
+	return 1;
+}
+
+
 /*
  * Operators
  */
@@ -541,6 +552,7 @@ static const struct luaL_Reg Variable_f [] = {
 	{ "getTypeName", Variable_getTypeName },
 	{ "getMemberNames", Variable_getMemberNames },
 	{ "getMember", Variable_getMember },
+	{ "resize", Variable_resize },
 	{ "opBinary", Variable_opBinary },
 	{ "assign", Variable_update }, /* assign seems a better name than update */
 	{ "unm", Variable_unm },
@@ -563,6 +575,7 @@ static const struct luaL_Reg Variable_m [] = {
 	{ "getTypeName", Variable_getTypeName },
 	{ "getMemberNames", Variable_getMemberNames },
 	{ "getMember", Variable_getMember },
+	{ "resize", Variable_resize },
 	{ "opBinary", Variable_opBinary },
 	{ "assign", Variable_update }, /* assign seems a better name than update */
 	{ "__unm", Variable_unm },
@@ -647,7 +660,7 @@ static int Property_getDescription(lua_State *L)
 	return 1;
 }
 
-
+#if NOT_USED_YET
 /*
  * Race condition if we collect properties: if we add this property to
  * a TC and our life ends before that of the TC, the property will be
@@ -659,6 +672,7 @@ static int Property_gc(lua_State *L)
 	delete pb;
 	return 0;
 }
+#endif
 
 /* only explicit destruction allowed */
 static int Property_del(lua_State *L)
@@ -732,9 +746,9 @@ static const struct luaL_Reg Property_m [] = {
 static int Port_info(lua_State *L)
 {
 	int arg_type;
-	const char* port_type;
+	const char* port_type = NULL;
 	PortInterface **pip;
-	PortInterface *pi;
+	PortInterface *pi = NULL;
 
 	if((pip = (PortInterface**) luaL_testudata(L, 1, "InputPort")) != NULL) {
 		pi = *pip;
@@ -815,12 +829,14 @@ static int InputPort_read(lua_State *L)
 	return ret;
 }
 
+#ifdef NOT_USED_YET
 static int InputPort_gc(lua_State *L)
 {
 	InputPortInterface *ip = *(luaM_checkudata_mt_bx(L, 1, "InputPort", InputPortInterface));
 	delete ip;
  	return 0;
 }
+#endif
 
 /* only explicit destruction allowed */
 static int InputPort_del(lua_State *L)
@@ -897,12 +913,14 @@ static int OutputPort_write(lua_State *L)
 	return 0;
 }
 
+#ifdef NOT_USED_YET
 static int OutputPort_gc(lua_State *L)
 {
 	OutputPortInterface *op = *(luaM_checkudata_mt_bx(L, 1, "OutputPort", OutputPortInterface));
 	delete op;
 	return 0;
 }
+#endif
 
 /* only explicit destruction allowed */
 static int OutputPort_del(lua_State *L)
@@ -1024,7 +1042,6 @@ static int Operation_call(lua_State *L)
 
 static int __Operation_send(lua_State *L)
 {
-	SendHandleC *shc;
 	DataSourceBase::shared_ptr dsb, *dsbp;
 
 	unsigned int argc = lua_gettop(L);
@@ -1163,7 +1180,6 @@ static int Service_provides(lua_State *L)
 
 static int Service_getOperation(lua_State *L)
 {
-	int i, argc;
 	const char *op_str;
 	OperationInterfacePart *oip;
 	Service::shared_ptr srv;
@@ -1240,7 +1256,6 @@ gen_push_bxptr(ServiceRequester_push, "ServiceRequester", ServiceRequester)
 
 static int ServiceRequester_getRequestName(lua_State *L)
 {
-	const char* name;
 	ServiceRequester *sr;
 
 	sr = *(luaM_checkudata_bx(L, 1, ServiceRequester));
@@ -1434,7 +1449,6 @@ static int TaskContext_getPeer(lua_State *L)
 {
 	std::string strpeer;
 	TaskContext *peer;
-	TaskContext **tc; /* boxed TC */
 	TaskContext *self = *(luaM_checkudata_bx(L, 1, TaskContext));
 	strpeer = luaL_checkstring(L, 2);
 	peer = self->getPeer(strpeer);
@@ -1634,7 +1648,6 @@ static int TaskContext_getProperty(lua_State *L)
 
 static int TaskContext_getProperties(lua_State *L)
 {
-	PropertyBase **pb;
 	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
 	vector<PropertyBase*> props = tc->properties()->getProperties();
 
@@ -1703,7 +1716,6 @@ static int TaskContext_getOpInfo(lua_State *L)
 
 static int TaskContext_provides(lua_State *L)
 {
-	const char* subsrv;
 	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
 	Service::shared_ptr srv = tc->provides();
 
@@ -1848,7 +1860,7 @@ static int __SendHandle_collect(lua_State *L, bool block)
 	coll_argc = orp->collectArity();
 
 	/* create appropriate datasources */
-	for(unsigned int i=1; i <= coll_argc; i++) {
+	for(int i=1; i <= coll_argc; i++) {
 		ti = orp->getCollectType(i);
 		tmpdsb = ti->buildValue();
 		coll_args.push_back(tmpdsb);
@@ -1861,7 +1873,7 @@ static int __SendHandle_collect(lua_State *L, bool block)
 	SendStatus_push(L, ss);
 
 	/* store all DSB in coll_args to luabind::object */
-	for (unsigned int i=0; i<coll_argc; i++) {
+	for (int i=0; i<coll_argc; i++) {
 		luaM_pushobject_mt(L, "Variable", DataSourceBase::shared_ptr)(coll_args[i]);
 	}
 	/* SendStatus + collect args */
@@ -1904,7 +1916,6 @@ static int __TaskContext_send(lua_State *L)
 	OperationCallerC *occ = new OperationCallerC(orp, op, this_tc->engine()); // todo: alloc on stack?
 	DataSourceBase::shared_ptr dsb;
 	DataSourceBase::shared_ptr *dsbp;
-	SendHandleC *shc;
 
 	if(!orp)
 		luaL_error(L, "TaskContext.send: no operation %s for TaskContext %s",
@@ -2076,7 +2087,6 @@ public:
 static int EEHook_new(lua_State *L)
 {
 	const char *func;
-	int argc = lua_gettop(L);
 	func = luaL_checkstring(L, 1);
 	luaM_pushobject(L, EEHook)(L, func);
 	return 1;
@@ -2179,7 +2189,6 @@ static int Logger_logl(lua_State *L)
 
 static int getTC(lua_State *L)
 {
-	TaskContext *tc;
 	lua_pushstring(L, "this_TC");
 	lua_gettable(L, LUA_REGISTRYINDEX);
 	return 1;

@@ -374,3 +374,27 @@ function info()
    print("typekits: ", table.concat(rtt.typekits(), ', '))
    print("types:    ", table.concat(rtt.types(), ', '))
 end
+
+function portval2str(port, comp)
+   local inf = port:info()
+   local res = white(inf.name) .. ' (' .. inf.type .. ')  ='
+
+   if inf.type == 'unknown_t' then
+      res = res .. " ?"
+   elseif inf.porttype == 'in' then
+      local fs, data = port:read()
+
+      if fs == 'NoData' then res = res .. ' NoData'
+      elseif fs == 'NewData' then res = res .. green(var2str(data))
+      else res = res .. ' ' .. yellow(var2str(data)) end
+   else
+      res = res .. ' ' .. cyan(var2str(comp:provides(inf.name):getOperation("last")()))
+   end
+   return res
+end
+
+function portstats(comp)
+   for i,p in ipairs(comp:getPortNames(p)) do
+      print(portval2str(comp:getPort(p), comp))
+   end
+end
