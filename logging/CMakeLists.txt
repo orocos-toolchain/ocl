@@ -1,9 +1,10 @@
 OPTION( BUILD_LOGGING "Build realtime Logging service" ON)
 
-IF ( BUILD_LOGGING )
-  if(NOT LOG4CPP_FOUND)
-    message(SEND_ERROR "Can't build real-time logging service since log4cpp was not found.")
-  endif()
+if(BUILD_LOGGING AND NOT LOG4CPP_FOUND)
+  message(SEND_ERROR "Can't build real-time logging service since log4cpp was not found.")
+endif(BUILD_LOGGING AND NOT LOG4CPP_FOUND)
+
+IF ( BUILD_LOGGING AND LOG4CPP_FOUND )
 
   FILE( GLOB HPPS [^.]*.hpp )
 
@@ -22,5 +23,5 @@ IF ( BUILD_LOGGING )
 
   ADD_SUBDIRECTORY( tests )
 
-ENDIF ( BUILD_LOGGING )
+ENDIF ( BUILD_LOGGING  AND LOG4CPP_FOUND )
 
