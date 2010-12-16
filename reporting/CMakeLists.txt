@@ -22,7 +22,7 @@ IF ( BUILD_REPORTING )
     INCLUDE_DIRECTORIES ( ${Boost_INCLUDE_DIR} )
 
     orocos_component( orocos-reporting ${SRCS} INSTALL lib/orocos)
-    GLOBAL_ADD_INCLUDE( ocl ${HPPS})
+    orocos_install_headers( ${HPPS} INSTALL include/orocos/reporting )
 
     IF ( BUILD_REPORTING_NETCDF AND NETCDF_FOUND )
       SET( NETCDF_SRCS NetcdfReporting.cpp )

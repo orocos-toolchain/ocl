@@ -11,7 +11,7 @@ IF ( BUILD_DEPLOYMENT )
     SET( SRCS DeploymentComponent.cpp ComponentLoader.cpp ${CMAKE_CURRENT_BINARY_DIR}/comppath.cpp)
 
     orocos_library( orocos-deployment ${SRCS})
-    GLOBAL_ADD_INCLUDE( ocl ${HPPS})
+    orocos_install_headers( ${HPPS} INSTALL include/orocos/deployment )
 
     TARGET_LINK_LIBRARIES( orocos-deployment "dl" )
     TARGET_LINK_LIBRARIES( orocos-deployment ${RTT_PLUGIN_rtt-marshalling_LIBRARIES} ${RTT_PLUGIN_rtt-scripting_LIBRARIES})

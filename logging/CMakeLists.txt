@@ -17,7 +17,7 @@ IF ( BUILD_LOGGING AND LOG4CPP_FOUND )
   orocos_component( orocos-logging ${LOGCOMP_CPPS} INSTALL lib/orocos)
   orocos_library( orocos-log4cpp ${LOGLIB_CPPS} )
 
-  GLOBAL_ADD_INCLUDE( ocl ${HPPS})
+  orocos_install_headers( ${HPPS} INSTALL include/orocos/logging )
   target_link_libraries( orocos-log4cpp "${LOG4CPP_LIBRARIES}")
   target_link_libraries( orocos-logging "${LOG4CPP_LIBRARIES}" orocos-log4cpp)
 
