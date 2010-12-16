@@ -1289,6 +1289,8 @@ namespace OCL
         // statement after this one would return and not give the expr parser
         // time to evaluate 'comm'.
         if ( context->provides()->getValue( comm ) ) {
+            if (debug)
+                cerr << "Found value..."<<nl;
                 this->printResult( context->provides()->getValue( comm )->getDataSource().get(), true );
                 cout << sresult.str()<<nl;
                 sresult.str("");
@@ -1312,7 +1314,7 @@ namespace OCL
                 // only print if no ';' was given.
                 assert( comm.size() != 0 );
                 if ( comm[ comm.size() - 1 ] != ';' ) {
-                    this->printResult( ds.get(), false );
+                    this->printResult( ds.get(), true );
                     cout << sresult.str() << nl <<endl;
                     sresult.str("");
                 } else
@@ -1358,7 +1360,7 @@ namespace OCL
                 // only print if no ';' was given.
                 assert( comm.size() != 0 );
                 if ( comm[ comm.size() - 1 ] != ';' ) {
-                    this->printResult( ds.get(), false );
+                    this->printResult( ds.get(), true );
                     cout << sresult.str() << nl <<endl;
                     sresult.str("");
                 } else
@@ -1449,11 +1451,14 @@ namespace OCL
     }
 
     void TaskBrowser::doPrint( base::DataSourceBase::shared_ptr ds, bool recurse) {
+        if (!ds) {
+            sresult << "(null)";
+            return;
+        }
+
         // this is needed for ds's that rely on initialision.
         // e.g. eval true once or time measurements.
-        // becomes only really handy for 'watches' (todo).
-        if (!ds)
-            return;
+        // becomes only really handy for 'watches' (to deprecate).
         ds->reset();
 
         DataSource<RTT::PropertyBag>* dspbag = DataSource<RTT::PropertyBag>::narrow(ds.get());
@@ -1482,9 +1487,10 @@ namespace OCL
         // Print the members of the type:
         base::DataSourceBase::shared_ptr dsb(ds);
         dsb->evaluate();
-        if (dsb->getMemberNames().empty() || dsb->getTypeName() == "string")
+        if (dsb->getMemberNames().empty() || dsb->getTypeName() == "string") {
+            if (debug) cerr << "terminal item " << dsb->getTypeName() << nl;
             sresult << dsb;
-        else {
+        } else {
             sresult << setw(0);
             sresult << "{";
             vector<string> names = dsb->getMemberNames();
