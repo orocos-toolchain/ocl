@@ -34,6 +34,8 @@ IF ( BUILD_REPORTING )
     ENDIF ( BUILD_REPORTING_NETCDF AND NETCDF_FOUND )
     
     target_link_libraries( orocos-reporting ${RTT_PLUGIN_rtt-marshalling_LIBRARIES} )
+
+    orocos_generate_package()
     
     ADD_SUBDIRECTORY( tests )
 ENDIF ( BUILD_REPORTING )

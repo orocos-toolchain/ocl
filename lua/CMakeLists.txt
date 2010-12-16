@@ -22,10 +22,10 @@ if(BUILD_LUA_RTT)
     target_link_libraries(lua-repl "ncurses" "readline" "dl" "history" ${LUA_LIBRARIES})
     set_target_properties(lua-repl PROPERTIES COMPILE_FLAGS "-DOROCOS_TARGET=${OROCOS_TARGET}")
 
-    orocos_component(orocos-lua rtt.cpp LuaComponent.cpp INSTALL lib/orocos)
+    orocos_component(orocos-ocl-lua rtt.cpp LuaComponent.cpp INSTALL lib/orocos)
     add_executable(rttlua rtt.cpp LuaComponent.cpp)
-    set_target_properties(orocos-lua PROPERTIES COMPILE_FLAGS "-DOCL_COMPONENT_ONLY")
-    program_add_deps(rttlua orocos-deployment)
+    set_target_properties(orocos-ocl-lua PROPERTIES COMPILE_FLAGS "-DOCL_COMPONENT_ONLY")
+    program_add_deps(rttlua orocos-ocl-deployment)
     install(TARGETS rttlua RUNTIME DESTINATION bin)
     if(NOT CURSES AND NOT READLINE)
        message(STATUS "Building without readline/curses support. If you
@@ -41,10 +41,12 @@ if(BUILD_LUA_RTT)
      endif(NOT CURSES AND NOT READLINE)
 
      program_add_deps(rttlua lua-repl ${LUA_LIBRARIES} ${OROCOS-RTT_LIBRARIES})
-     target_link_libraries(orocos-lua ${LUA_LIBRARIES} ${OROCOS-RTT_LIBRARIES})
+     target_link_libraries(orocos-ocl-lua ${LUA_LIBRARIES} ${OROCOS-RTT_LIBRARIES})
 
      add_subdirectory( plugins )
      add_subdirectory( testing )
+
+     orocos_generate_package()
 
   if(BUILD_LUA_RTT_DYNAMIC_MODULES)
 
@@ -52,7 +54,7 @@ if(BUILD_LUA_RTT)
     add_library(deployer SHARED deployer.cpp)
     add_library(rtt SHARED rtt.cpp)
 
-    target_link_libraries(deployer ${LUA_LIBRARIES} ${OROCOS-RTT_LIBRARIES} orocos-deployment)
+    target_link_libraries(deployer ${LUA_LIBRARIES} ${OROCOS-RTT_LIBRARIES} orocos-ocl-deployment)
     target_link_libraries(rtt ${LUA_LIBRARIES} ${OROCOS-RTT_LIBRARIES})
 
     # need next line?

@@ -10,5 +10,6 @@ orocos_typekit( ocl ocltoolkit.cpp INSTALL lib/orocos${OROCOS_SUFFIX}/types )
 orocos_service( print PrintService.cpp INSTALL lib/orocos${OROCOS_SUFFIX}/plugins )
 orocos_service( os OSService.cpp INSTALL lib/orocos${OROCOS_SUFFIX}/plugins )
 orocos_install_headers( ${HPPS} INSTALL include/orocos/ocl )
+orocos_generate_package(orocos-ocl)
 
      

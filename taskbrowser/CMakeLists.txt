@@ -36,8 +36,8 @@ IF ( BUILD_TASKBROWSER )
     FILE( GLOB SRCS [^.]*.cpp )
 
     find_package(RTTPlugin REQUIRED rtt-scripting)      
-    orocos_library( orocos-taskbrowser ${SRCS} )
-    orocos_install_headers( ${HPPS} include/orocos/taskbrowser )
+    orocos_library( orocos-ocl-taskbrowser ${SRCS} )
+    orocos_install_headers( ${HPPS} INSTALL include/orocos/taskbrowser )
 
     # Readline support:
     IF (READLINE AND NOT NO_GPL)
@@ -52,11 +52,11 @@ IF ( BUILD_TASKBROWSER )
       if (UNIX)
         OROCOS_PKGCONFIG_LIBS(ncurses readline)
         INCLUDE_DIRECTORIES( ${READLINE_INCLUDE_DIR} ${CURSES_INCLUDE_DIR} )
-        TARGET_LINK_LIBRARIES( orocos-taskbrowser ${READLINE_LIBRARY} ${CURSES_LIBRARY} )
+        TARGET_LINK_LIBRARIES( orocos-ocl-taskbrowser ${READLINE_LIBRARY} ${CURSES_LIBRARY} )
       else(UNIX)
         OROCOS_PKGCONFIG_LIBS(readline)
         INCLUDE_DIRECTORIES( ${READLINE_INCLUDE_DIR} )
-        TARGET_LINK_LIBRARIES( orocos-taskbrowser ${READLINE_LIBRARY} )
+        TARGET_LINK_LIBRARIES( orocos-ocl-taskbrowser ${READLINE_LIBRARY} )
       endif(UNIX)
 
     ENDIF (READLINE AND NOT NO_GPL)
@@ -74,8 +74,10 @@ IF ( BUILD_TASKBROWSER )
       endif(UNIX)
     endif (USE_EDITLINE)
 
-    TARGET_LINK_LIBRARIES( orocos-taskbrowser ${RTT_PLUGIN_rtt-scripting_LIBRARIES} )
-    target_link_libraries( orocos-taskbrowser LINK_INTERFACE_LIBRARIES )
+    TARGET_LINK_LIBRARIES( orocos-ocl-taskbrowser ${RTT_PLUGIN_rtt-scripting_LIBRARIES} )
+    target_link_libraries( orocos-ocl-taskbrowser LINK_INTERFACE_LIBRARIES )
+
+    orocos_generate_package()
 
     ADD_SUBDIRECTORY( tests )
 
