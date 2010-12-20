@@ -326,13 +326,9 @@ bool ComponentLoader::loadInProcess(string file, string libname, bool log_error)
         return true;
     }
 
-    log(Error) <<"Unloading "<< loading_lib.filename  <<": not a valid component library:" <<endlog();
-    if (!create_error.empty())
-        log(Error) << "   " << create_error << endlog();
-    if (!gettype_error.empty())
-        log(Error) << "   " << gettype_error << endlog();
-    dlclose(handle);
-    return false;
+    log(Info) <<"Loaded regular library "<< loading_lib.filename  <<"." <<endlog();
+    log(Info) <<"NOTE: loading regular libraries is unavailable in RTT 2.x." <<endlog();
+    return true;
 }
 
 std::vector<std::string> ComponentLoader::listComponentTypes() const {
