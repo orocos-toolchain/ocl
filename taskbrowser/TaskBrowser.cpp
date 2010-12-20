@@ -635,7 +635,7 @@ namespace OCL
         if (rl_set_signals() != 0)
             cerr << "Error setting signals !" <<endl;
         // readline signal catching + xenomai don't play nicely together.
-#ifdef OROCOS_TARGET_XENOMAI
+#if defined(OROCOS_TARGET_XENOMAI) && CONFIG_XENO_VERSION_MAJOR == 2 && CONFIG_XENO_VERSION_MINOR == 5
         // necessary to avoid crash when using Xenomai.
         xeno_sigshadow_install();
 #endif
