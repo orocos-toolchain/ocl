@@ -4,7 +4,7 @@ Package: liborocos-ocl-@TARGET@@LIBVER@-dev
 Section: libdevel
 Architecture: any
 Depends: liborocos-ocl-@TARGET@@LIBVER@ (= ${Source-Version}), liborocos-rtt-@TARGET@@LIBVER@-dev ( >= @LIBVER@ ),
-     liborocos-ocl@LIBVER@-dev, libncurses5-dev, libreadline5-dev, libnetcdf-dev | netcdfg-dev, linux-libc-dev
+     liborocos-ocl@LIBVER@-dev, libncurses5-dev, libreadline-dev, libnetcdf-dev | netcdfg-dev, linux-libc-dev
 Conflicts: liborocos-ocl-@TARGET@-dev
 Replaces: liborocos-ocl-@TARGET@-dev
 Provides: liborocos-ocl-@TARGET@-dev

@@ -1,1 +1,1 @@
-usr/lib/liborocos-cartesian-@TARGET@.so
+usr/lib/orocos/@TARGET@/liborocos-cartesian-@TARGET@.so

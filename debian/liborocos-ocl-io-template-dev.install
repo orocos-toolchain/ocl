@@ -1,1 +1,1 @@
-usr/lib/liborocos-io-@TARGET@.so
+usr/lib/orocos/@TARGET@/liborocos-io-@TARGET@.so

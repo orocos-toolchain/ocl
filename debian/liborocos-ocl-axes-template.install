@@ -1,1 +1,1 @@
-usr/lib/liborocos-axes-@TARGET@.so.*
+usr/lib/orocos/@TARGET@/liborocos-axes-@TARGET@.so.*
