@@ -99,7 +99,7 @@ namespace OCL
         RTT::Constant<int> sched_OTHER;
         RTT::Constant<int> lowest_Priority;
         RTT::Constant<int> highest_Priority;
-        RTT::Property<std::string> target;
+        RTT::Attribute<std::string> target;
         /// Next group number
         int nextGroup;
 
