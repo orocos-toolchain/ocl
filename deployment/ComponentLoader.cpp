@@ -125,14 +125,22 @@ void ComponentLoader::Release() {
     minstance.reset();
 }
 
-void ComponentLoader::import( std::string const& path_list )
+void ComponentLoader::import( std::string const& package )
 {
-    vector<string> paths = splitPaths(path_list + default_delimiter + component_path);
+    vector<string> paths = splitPaths(component_path);
+
+    // subdir must be a directory.
+    path subdir;
+    if (package.empty() ) {
+        subdir = path(".");
+    } else {
+        subdir = package;
+    }
 
     for (vector<string>::iterator it = paths.begin(); it != paths.end(); ++it)
     {
         // Scan path/* (non recursive) for components
-        path p = path(*it);
+        path p = path(*it) / subdir;
         if (is_directory(p))
         {
             log(Info) << "Importing component libraries from directory " << p.string() << " ..."<<endlog();
@@ -153,7 +161,7 @@ void ComponentLoader::import( std::string const& path_list )
             log(Debug) << "No such directory: " << p << endlog();
 
         // Repeat for path/OROCOS_TARGET:
-        p = path(*it) / OROCOS_TARGET_NAME;
+        p = path(*it) / OROCOS_TARGET_NAME / subdir;
         if (is_directory(p))
         {
             log(Info) << "Importing component libraries from directory " << p.string() << " ..."<<endlog();
@@ -181,6 +189,12 @@ bool ComponentLoader::import( std::string const& package, std::string const& pat
     vector<string> tryouts( paths.size() * 4 );
     tryouts.clear();
 
+    // check first for exact match:
+    path arg( package );
+    if (is_regular_file(arg)) {
+        return loadInProcess(arg.string(), makeShortFilename( arg.filename() ), true);
+    }
+
     if ( isImported(package) ) {
         log(Info) <<"Component package '"<< package <<"' already imported." <<endlog();
         return true;
@@ -188,7 +202,6 @@ bool ComponentLoader::import( std::string const& package, std::string const& pat
         log(Info) << "Component package '"<< package <<"' not seen before." <<endlog();
     }
 
-    path arg( package );
     path dir = arg.parent_path();
     string file = arg.filename();
 

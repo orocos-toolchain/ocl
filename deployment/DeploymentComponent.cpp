@@ -86,10 +86,10 @@ namespace OCL
 
 
         this->methods()->addMethod( RTT::method("loadLibrary", &DeploymentComponent::loadLibrary, this),
-                                    "Load a new library into memory.",
-                                    "Name", "The name of the to be loaded library.");
+                                    "Load a new library into memory. This may be an absolute filename or of the form subdirs/foo where libfoo.so must be loaded in the RTT_COMPONENT_PATH.",
+                                    "Name", "The (relative) filename of the to be loaded library.");
         this->methods()->addMethod( RTT::method("import", &DeploymentComponent::import, this),
-                                    "Load all libraries in Path into memory.",
+                                    "Load all libraries in Path into memory. The Path is relative to the RTT_COMPONENT_PATH.",
                                     "Path", "The name of the directory where libraries are located.");
 
 
@@ -468,6 +468,17 @@ namespace OCL
                                 continue;
                             }
                             if ( this->import( importp.get() ) == false )
+                                valid = false;
+                            continue;
+                        }
+                        if ( (*it)->getName() == "LoadLibrary" ) {
+                            Property<std::string> importp = *it;
+                            if ( !importp.ready() ) {
+                                log(Error)<< "Found 'LoadLibrary' statement, but it is not of type='string'."<<endlog();
+                                valid = false;
+                                continue;
+                            }
+                            if ( this->loadLibrary( importp.get() ) == false )
                                 valid = false;
                             continue;
                         }
@@ -1209,7 +1220,7 @@ namespace OCL
   bool DeploymentComponent::loadLibrary(const std::string& name)
   {
     RTT::Logger::In in("DeploymentComponent::loadLibrary");
-    return deployment::ComponentLoader::Instance()->import(name, "");
+    return PluginLoader::Instance()->loadTypekit(name,"") || PluginLoader::Instance()->loadPlugin(name,"") || deployment::ComponentLoader::Instance()->import(name, "");
   }
 
     // or type is a shared library or it is a class type.
@@ -1548,6 +1559,7 @@ namespace OCL
             if ( demarshaller.deserialize( from_file ) ){
                 for (PropertyBag::iterator it= from_file.begin(); it!=from_file.end();it++) {
                     if ( (*it)->getName() == "Import" ) continue;
+                    if ( (*it)->getName() == "LoadLibrary" ) continue;
                     if ( (*it)->getName() == "Include" ) continue;
 
                     kickOutComponent(  (*it)->getName() );

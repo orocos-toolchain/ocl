@@ -246,12 +246,12 @@
 	<title>Where to look for component libraries</title>
 	<para>
 	  The <function>import</function> statement causes all
-	  component libraries in a given directory to be pre-loaded.
+	  component libraries in a given <emphasis>directory</emphasis> to be pre-loaded.
 	  It does not cause any component to be created, but
 	  allows the <classname>OCL::DeploymentComponent</classname> to know where the 
 	  component libraries are located. This function does not recurse
-	  but may be called with multiple paths or with a specific component
-	  library as argument.
+		and takes an absolute directory or a
+		relative directory path to the RTT_COMPONENT_PATH as argument.
 	</para>
 	<para>
 	  In XML, the import statement looks like:
@@ -260,18 +260,52 @@
 <properties>
   <!-- ....  -->
 
-  <simple name="Import" type="string"><value>/usr/local/lib/orocos</value></simple>
+  <!-- Absolute path: -->
+  <simple name="Import" type="string"><value>/opt/orocos/lib/orocos/gnulinux/myrobot</value></simple>
+
+  <!-- Botha are relative path to RTT_COMPONENT_PATH: -->
+  <simple name="Import" type="string"><value>myrobot</value></simple>
+
+  <simple name="Import" type="string"><value>myrobot/drivers</value></simple>
 
 </properties>]]></programlisting>
 	</para>
 	<para>
 	  The script method equivalent is:
-	  <programlisting>  import("/usr/local/lib/orocos")</programlisting>
+	  <programlisting>  import("myrobot")</programlisting>
 	</para>
 	<para>
 	  Each component library found under the given location is pre-loaded. The
-	  import statement unloads libraries that do not contain components.
-	  If a library contains one or more Orocos components, 
+	  import statement will also load libraries that are not components, but this
+		practice is not advised for migration towards RTT 2.x. You can explicitly
+		load a library using the <function>loadLibrary</function> function. It takes
+		an absolute path to a library or a relative path to a library in your
+		RTT_COMPONENT_PATH. So <function>import</function> takes a <emphasis>path or directory</emphasis> as argument
+		while <function>loadLibrary</function> takes a <emphasis>library name</emphasis> as argument. The
+		loadLibrary call does not require you to write the 'lib' and '.so'/'.dll' suffixes so you can
+		write 'foo' when you mean 'libfoo.so' or 'subdir/foo' when you mean 'subdir/libfoo.so'.
+	</para>
+	<para>
+	  In XML, the loadLibrary statement looks like:
+	  <programlisting><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "cpf.dtd">
+<properties>
+  <!-- ....  -->
+
+  <!-- Absolute path: -->
+  <simple name="LoadLibrary" type="string"><value>/opt/orocos/lib/orocos/gnulinux/libmyrobot-vision.so</value></simple>
+
+  <!-- Both are relative path to RTT_COMPONENT_PATH: -->
+  <!-- Loads rtt_component_path/libmyrobot-vision.so : -->
+  <simple name="LoadLibrary" type="string"><value>myrobot-vision</value></simple>
+
+  <!-- Loads rtt_component_path/drivers/libmyrobot-arm.so : -->
+  <simple name="LoadLibrary" type="string"><value>drivers/myrobot-arm</value></simple>
+
+</properties>]]></programlisting>
+	</para>
+	<para>
+	  If a loaded library or imported directory contains one or more Orocos components, 
 	  the contained component types become available in the next step.
 	</para>
 	<para>
