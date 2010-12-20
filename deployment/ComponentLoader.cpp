@@ -202,11 +202,11 @@ bool ComponentLoader::import( std::string const& package, std::string const& pat
         tryouts.push_back( p.string() );
         if (is_regular_file( p ) && loadInProcess( p.string(), package, true ) )
             return true;
-        p = path(*it) / dir / OROCOS_TARGET_NAME / (file + SO_EXT);
+        p = path(*it) / OROCOS_TARGET_NAME / dir / (file + SO_EXT);
         tryouts.push_back( p.string() );
         if (is_regular_file( p ) && loadInProcess( p.string(), package, true ) )
             return true;
-        p = path(*it) / dir / OROCOS_TARGET_NAME / ("lib" + file + SO_EXT);
+        p = path(*it) / OROCOS_TARGET_NAME / dir /("lib" + file + SO_EXT);
         tryouts.push_back( p.string() );
         if (is_regular_file( p ) && loadInProcess( p.string(), package, true ) )
             return true;
