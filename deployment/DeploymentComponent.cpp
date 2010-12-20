@@ -72,12 +72,11 @@ namespace OCL
           lowest_Priority("LowestPriority", RTT::OS::LowestPriority ),
           highest_Priority("HighestPriority", RTT::OS::HighestPriority ),
           target("Target",
-                 "The Orocos Target component suffix. Will be used in import statements to find matching components. Only change this if you know what you are doing.",
                  ORO_str(OROCOS_TARGET) )
     {
         this->properties()->addProperty( &compPath );
         this->properties()->addProperty( &autoUnload );
-        this->properties()->addProperty( &target );
+        this->properties()->addAttribute( &target );
 
         this->attributes()->addAttribute( &validConfig );
         this->attributes()->addAttribute( &sched_RT );
