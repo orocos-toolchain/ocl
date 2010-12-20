@@ -628,7 +628,7 @@ namespace OCL
 #ifdef _POSIX_VERSION
         // Intercept Ctrl-C
         ::signal( SIGINT, ctrl_c_catcher );
-#if !defined(USE_EDITLINE)
+#if defined(USE_READLINE) && !defined(USE_EDITLINE)
         // Let readline intercept relevant signals
         if(rl_catch_signals == 0)
             cerr << "Error: not catching signals !"<<endl;
