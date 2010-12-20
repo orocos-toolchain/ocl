@@ -109,7 +109,7 @@ namespace OCL
         PTrace ptraces;
         PTrace straces;
 
-#ifndef NO_GPL
+#if defined(HAS_READLINE) || defined(HAS_EDITLINE)
         /* Read a string, and return a pointer to it.
            Returns NULL on EOF. */
         char *rl_gets ();

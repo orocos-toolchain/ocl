@@ -47,6 +47,16 @@ ELSE ( READLINE_H  )
     SET( READLINE 0 CACHE INTERNAL "libreadline" )
 ENDIF ( READLINE_H )
 
+FIND_PATH( EDITLINE_H editline/readline.h )
+IF ( EDITLINE_H )
+    MESSAGE("-- Looking for editline/readline.h - found")
+    FIND_LIBRARY(EDITLINE_LIBRARY edit )
+    SET( EDITLINE 1 CACHE INTERNAL "libedit" )
+ELSE ( EDITLINE_H  )
+    MESSAGE("-- Looking for editline/readline.h - not found")
+    SET( EDITLINE 0 CACHE INTERNAL "libedit" )
+ENDIF ( EDITLINE_H )
+
 # Since in ros-builds, log4cpp will be installed in log4cpp/install,
 # we look there too.
 if (ROS_ROOT)

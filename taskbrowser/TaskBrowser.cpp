@@ -84,10 +84,20 @@
 #if defined(HAS_READLINE) && !defined(NO_GPL)
 #define USE_READLINE
 #endif
+#if defined(HAS_EDITLINE)
+// we use the readline bc wrapper:
+#define USE_READLINE
+#define USE_EDITLINE
+#endif
 
 #ifdef USE_READLINE
-#include <readline/readline.h>
-#include <readline/history.h>
+# ifdef USE_EDITLINE
+#  include <editline/readline.h>
+#  include <editline/history.h>
+# else
+#  include <readline/readline.h>
+#  include <readline/history.h>
+# endif
 #endif
 #include <boost/bind.hpp>
 #include <boost/lambda/lambda.hpp>
@@ -141,7 +151,7 @@ namespace OCL
     void ctrl_c_catcher(int sig)
     {
         ::signal(sig, SIG_IGN);
-#ifdef USE_READLINE
+#if defined( USE_READLINE ) && !defined(USE_EDITLINE)
 //        cerr <<nl<<"TaskBrowser intercepted Ctrl-C. Type 'quit' to exit."<<endl;
 //         rl_delete_text(0, rl_end);
 //         //cerr << "deleted " <<deleted <<endl;
@@ -186,8 +196,11 @@ namespace OCL
             p = "> ";
         }
 #ifndef _WIN32  // does not work on win32
+#if !defined(USE_EDITLINE)
+
         if (rl_set_signals() != 0)
             cerr << "Error setting signals !" <<endl;
+#endif
 #endif
         line_read = readline ( p.c_str() );
 
@@ -691,7 +704,7 @@ namespace OCL
 #ifdef _POSIX_VERSION
         // Intercept Ctrl-C
         ::signal( SIGINT, ctrl_c_catcher );
-#ifdef USE_READLINE
+#if defined(USE_READLINE) && !defined(USE_EDITLINE)
         // Let readline intercept relevant signals
         if(rl_catch_signals == 0)
             cerr << "Error: not catching signals !"<<endl;
