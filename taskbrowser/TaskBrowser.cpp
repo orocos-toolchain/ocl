@@ -697,6 +697,10 @@ namespace OCL
             cerr << "Error: not catching signals !"<<endl;
         if (rl_set_signals() != 0)
             cerr << "Error setting signals !" <<endl;
+#ifdef OROCOS_TARGET_XENOMAI
+        // necessary to avoid crash when using Xenomai.
+        xeno_sigshadow_install();
+#endif
 #endif
 #endif
         cout << nl<<
