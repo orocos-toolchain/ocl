@@ -76,8 +76,8 @@ namespace OCL
     {
         this->properties()->addProperty( &compPath );
         this->properties()->addProperty( &autoUnload );
-        this->properties()->addAttribute( &target );
 
+        this->attributes()->addAttribute( &target );
         this->attributes()->addAttribute( &validConfig );
         this->attributes()->addAttribute( &sched_RT );
         this->attributes()->addAttribute( &sched_OTHER );
