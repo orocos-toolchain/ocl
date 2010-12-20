@@ -137,6 +137,15 @@ void ComponentLoader::import( std::string const& package )
         subdir = package;
     }
 
+    // user provided absolute dir: extend search path.
+    path pdir = package;
+    if ( pdir.is_complete() ) {
+        component_path += default_delimiter + package;
+        // but only search this one for now:
+        paths = splitPaths(package);
+        subdir = path(".");
+    }
+
     for (vector<string>::iterator it = paths.begin(); it != paths.end(); ++it)
     {
         // Scan path/* (non recursive) for components
