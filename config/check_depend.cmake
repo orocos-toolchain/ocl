@@ -90,6 +90,16 @@ ELSE ( READLINE_H  )
     SET( READLINE 0 CACHE INTERNAL "libreadline" )
 ENDIF ( READLINE_H )
 
+FIND_PATH( EDITLINE_H editline/readline.h )
+IF ( EDITLINE_H )
+    MESSAGE("-- Looking for editline/readline.h - found")
+    FIND_LIBRARY(EDITLINE_LIBRARY edit )
+    SET( EDITLINE 1 CACHE INTERNAL "libedit" )
+ELSE ( EDITLINE_H  )
+    MESSAGE("-- Looking for editline/readline.h - not found")
+    SET( EDITLINE 0 CACHE INTERNAL "libedit" )
+ENDIF ( EDITLINE_H )
+
 find_package(Boost COMPONENTS program_options filesystem system)
 INCLUDE_DIRECTORIES( ${Boost_INCLUDE_DIR} ${READLINE_INCLUDE_DIR} )
 
