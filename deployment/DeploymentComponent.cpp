@@ -1220,7 +1220,7 @@ namespace OCL
   bool DeploymentComponent::loadLibrary(const std::string& name)
   {
     RTT::Logger::In in("DeploymentComponent::loadLibrary");
-    return PluginLoader::Instance()->loadTypekit(name,"") || PluginLoader::Instance()->loadPlugin(name,"") || deployment::ComponentLoader::Instance()->import(name, "");
+    return PluginLoader::Instance()->loadTypekit(name,".") || PluginLoader::Instance()->loadPlugin(name,".") || deployment::ComponentLoader::Instance()->import(name, ".");
   }
 
     // or type is a shared library or it is a class type.

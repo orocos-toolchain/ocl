@@ -127,12 +127,15 @@ void ComponentLoader::Release() {
 
 void ComponentLoader::import( std::string const& package )
 {
-    vector<string> paths = splitPaths(component_path);
+    // look in component path + current directory
+    vector<string> paths = splitPaths("." + default_delimiter + component_path);
 
     // subdir must be a directory.
     path subdir;
     if (package.empty() ) {
+        // special case: empty package: re-scan the component_path only
         subdir = path(".");
+        paths = splitPaths( component_path );
     } else {
         subdir = package;
     }
