@@ -1,3 +1,25 @@
+         Orocos Components Library (OCL) v1.12.1
+
+This bugfix release of the Orocos Components Library is aimed at the
+Real-Time Toolkit v1.12.1.
+
+These are the major highlights:
+ * Support for Debian packages
+ * Improved component/plugin loading in mixed target installs.
+   - OCL installs its components in lib/orocos/<target> instead of lib/orocos
+     in order to avoid loading libaries of another target.
+ * improved import() and loadLibrary() functions:
+   - When given a relative path, it is relative to RTT_COMPONENT_PATH
+   - When given an absolute path, this path is directly scanned and added
+     to the RTT_COMPONENT_PATH for later importing of its subdirectories.
+
+An overview of the documented components is available here:
+  <http://www.orocos.org/stable/documentation/ocl/v1.12.x/doc-xml/ocl-overview.html>
+
+This release can be downloaded here:
+  <http://www.orocos.org/stable/ocl/v1.12.1/orocos-ocl-1.12.1-src.tar.bz2>
+
+------------------------------------------------------------------------
          Orocos Components Library (OCL) v1.12.0
 
 This major release of the Orocos Components Library is aimed at the
