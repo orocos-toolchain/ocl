@@ -69,18 +69,18 @@ namespace OCL
            FIXME:  Make this more flexible if comedi driver supports
            this.
         */
-#if OROCOS_TARGET_GNULINUX
-        const char* bn = comedi_get_board_name(_myCard->getDevice()->it);
-        if ( strncmp(bn, "PCI-6602",8) == 0 )
-            nchan = 8;
-        if ( strncmp(bn, "PCI-6601",8) == 0 )
-            nchan = 4;
-#else
-        // not get_board_name not supported in LXRT.
+#if OROCOS_TARGET_LXRT    
+         // not get_board_name not supported in LXRT.
         int sdevs = comedi_get_n_subdevices(_myCard->getDevice()->it);
         if ( sdevs == 10 )
             nchan = 8;
         if ( sdevs == 6 )
+            nchan = 4;   
+#else
+        const char* bn = comedi_get_board_name(_myCard->getDevice()->it);
+        if ( strncmp(bn, "PCI-6602",8) == 0 )
+            nchan = 8;
+        if ( strncmp(bn, "PCI-6601",8) == 0 )
             nchan = 4;
 #endif
 
