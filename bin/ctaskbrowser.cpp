@@ -61,8 +61,6 @@ int ORO_main(int argc, char** argv)
         return -1;
     }
 
-    // we're not exposing it, just using it to load plugins.
-    OCL::DeploymentComponent dc("Deployer");
     OCL::TaskBrowser tb( proxy );
     tb.loop();
 
