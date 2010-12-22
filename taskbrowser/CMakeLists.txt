@@ -37,7 +37,7 @@ IF ( BUILD_TASKBROWSER )
 
     find_package(RTTPlugin REQUIRED rtt-scripting)      
     orocos_library( orocos-ocl-taskbrowser ${SRCS} )
-    orocos_install_headers( ${HPPS} INSTALL include/orocos/taskbrowser )
+    orocos_install_headers( ${HPPS} INSTALL include/orocos/ocl )
 
     # Readline support:
     IF (READLINE AND NOT NO_GPL)

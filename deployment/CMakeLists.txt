@@ -11,7 +11,7 @@ IF ( BUILD_DEPLOYMENT )
     SET( SRCS DeploymentComponent.cpp ComponentLoader.cpp ${CMAKE_CURRENT_BINARY_DIR}/comppath.cpp)
 
     orocos_library( orocos-ocl-deployment ${SRCS})
-    orocos_install_headers( ${HPPS} INSTALL include/orocos/deployment )
+    orocos_install_headers( ${HPPS} INSTALL include/orocos/ocl )
 
     TARGET_LINK_LIBRARIES( orocos-ocl-deployment "dl" )
     TARGET_LINK_LIBRARIES( orocos-ocl-deployment ${RTT_PLUGIN_rtt-marshalling_LIBRARIES} ${RTT_PLUGIN_rtt-scripting_LIBRARIES})
@@ -20,9 +20,9 @@ IF ( BUILD_DEPLOYMENT )
     
     IF (OROCOS-RTT_CORBA_FOUND)
         orocos_library(orocos-ocl-deployment-corba CorbaDeploymentComponent.cpp )
-        GLOBAL_ADD_INCLUDE( ocl CorbaDeploymentComponent.hpp)
+        orocos_install_headers( CorbaDeploymentComponent.hpp INSTALL include/orocos/ocl )
         TARGET_LINK_LIBRARIES( orocos-ocl-deployment-corba orocos-ocl-deployment)
-	    TARGET_LINK_LIBRARIES( orocos-ocl-deployment-corba ${OROCOS-RTT_CORBA_LIBRARIES})
+        TARGET_LINK_LIBRARIES( orocos-ocl-deployment-corba ${OROCOS-RTT_CORBA_LIBRARIES})
     ENDIF(OROCOS-RTT_CORBA_FOUND)
     
     # rospack support
