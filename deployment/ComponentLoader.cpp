@@ -105,6 +105,8 @@ void ComponentLoader::Release() {
     instance2.reset();
 }
 
+// This is the dumb import function that takes an existing directory and
+// imports components and plugins from it.
 bool ComponentLoader::import( std::string const& path_list )
 {
     if (path_list.empty() ) {
@@ -123,7 +125,7 @@ bool ComponentLoader::import( std::string const& path_list )
         path p = path(*it);
         if (is_directory(p))
         {
-            log(Info) << "Importing component libraries from directory " << p.string() << " ..."<<endlog();
+            log(Info) << "Importing directory " << p.string() << " ..."<<endlog();
             for (directory_iterator itr(p); itr != directory_iterator(); ++itr)
             {
                 log(Debug) << "Scanning file " << itr->path().string() << " ...";
@@ -137,7 +139,7 @@ bool ComponentLoader::import( std::string const& path_list )
                         log(Debug) << "not a " + SO_EXT + " library: ignored."<<endlog();
                 }
             }
-            log(Info) << "Importing plugins and typekits from directory " << p.string() << " ..."<<endlog();
+            log(Debug) << "Looking for plugins or typekits in directory " << p.string() << " ..."<<endlog();
             try {
                 found = PluginLoader::Instance()->loadTypekits( p.string() ) || found;
                 found = PluginLoader::Instance()->loadPlugins( p.string() ) || found;
@@ -149,12 +151,10 @@ bool ComponentLoader::import( std::string const& path_list )
         else {
             // If the path is not complete (not absolute), look it up in the search directories:
             log(Debug) << "No such directory: " << p<< endlog();
-            if ( !p.is_complete() ) {
-                all_good = import(p.string(), "") && all_good; // use default component_path
-            }
+            all_good = false;
         }
-
-        // Repeat for path/OROCOS_TARGET:
+#if 0
+        // Repeat for path/OROCOS_TARGET: (already done in other import function)
         p = path(*it) / OROCOS_TARGET_NAME;
         if (is_directory(p))
         {
@@ -181,20 +181,34 @@ bool ComponentLoader::import( std::string const& path_list )
                 log(Error) << e.what() <<endlog();
             }
         }
-        else {
-            log(Debug) << "No such directory: " << p << endlog();
-            // we don't re-call import(p.string(),"") because foo/targetname isn't a packagename.
-        }
+#endif
     }
     return found && all_good;
 }
 
+// this is the smart import function that tries to guess where 'package' lives in path_list or
+// the search path.
 bool ComponentLoader::import( std::string const& package, std::string const& path_list )
 {
-    // check first for exact match:
+    // check first for exact match to *file*:
     path arg( package );
     if (is_regular_file(arg)) {
 	    return loadInProcess(arg.string(), makeShortFilename( arg.filename() ), true);
+    }
+
+    // check for absolute path:
+    if ( arg.is_complete() ) {
+        // plain import
+        bool ret = import(package);
+        // if not yet given, test for target subdir:
+        if ( arg.parent_path().leaf() != OROCOS_TARGET_NAME )
+            ret = import( (arg / OROCOS_TARGET_NAME).string() ) || ret;
+        // if something found, return true:
+        if (ret)
+            return true;
+        // both failed:
+        log(Error) << "Could not import absolute path '"<<package << "': nothing found."<<endlog();
+        return false;
     }
 
     if ( isImported(package) ) {
@@ -202,9 +216,9 @@ bool ComponentLoader::import( std::string const& package, std::string const& pat
         return true;
     }
 
-    // from here on: it's a package name or a path list.
+    // from here on: it's a package name or a path.
     // package names must be found to return true. 
-    // paths will be scanned and will always return true, but will warn when invalid.
+    // path will be scanned and will always return true, but will warn when invalid.
     // a package name 
 
     // check for rospack
@@ -254,16 +268,13 @@ bool ComponentLoader::import( std::string const& package, std::string const& pat
     }
 #endif
 
-    string paths = path_list;
+    string paths;
     string trypaths;
-    if (paths.empty())
-        paths = component_path;
+    vector<string> tryouts;
+    if (path_list.empty())
+        paths = component_path + default_delimiter + ".";
     else
         paths = path_list;
-
-    // search in '.' if really no paths are given.
-    if (paths.empty())
-        paths = ".";
 
     bool path_found = false;
 
@@ -277,21 +288,32 @@ bool ComponentLoader::import( std::string const& package, std::string const& pat
     path p( package );
     if (is_directory( p )) {
         path_found = true;
-        paths += p.string() + default_delimiter;
+        // search in dir + dir/TARGET
+        paths += p.string() + default_delimiter + (p / OROCOS_TARGET_NAME).string() + default_delimiter;
         if ( p.is_complete() ) {
-            log(Warning) << "You supplied an absolute directory to the import directive. Use 'path' to set absolute directories and 'import' only for packages (sub directories)."<<endlog();
-            log(Warning) << "Please modify your XML file or script. I'm importing it now for the sake of backwards compatibility."<<endlog();
+            // 2.2.x: path may be absolute or relative to search path.
+            //log(Warning) << "You supplied an absolute directory to the import directive. Use 'path' to set absolute directories and 'import' only for packages (sub directories)."<<endlog();
+            //log(Warning) << "Please modify your XML file or script. I'm importing it now for the sake of backwards compatibility."<<endlog();
         } // else: we allow to import a subdirectory of '.'.
     }
-    // append '/package' to each plugin path in order to search all of them:
+    // append '/package' or 'target/package' to each plugin path in order to search all of them:
     for(vector<string>::iterator it = vpaths.begin(); it != vpaths.end(); ++it) {
         p = *it;
         p = p / package;
         // we only search in existing directories:
         if (is_directory( p )) {
             path_found = true;
-            paths += p.string() + default_delimiter;
-        }
+            paths += p.string() + default_delimiter ;
+        } else
+            tryouts.push_back( p.string() );
+        p = *it;
+        p = p / OROCOS_TARGET_NAME / package;
+        // we only search in existing directories:
+        if (is_directory( p )) {
+            path_found = true;
+            paths += p.string() + default_delimiter ;
+        } else
+            tryouts.push_back( p.string() );
     }
     if ( path_found )
         paths.erase( paths.size() - 1 ); // remove trailing delimiter ';'
@@ -302,18 +324,63 @@ bool ComponentLoader::import( std::string const& package, std::string const& pat
             loadedPackages.push_back( package );
             return true;
         } else {
-            log(Error) << "Failed to import package or directory '"<< package <<"' found in:"<< endlog();
+            log(Error) << "Failed to import components, types or plugins from package or directory '"<< package <<"' found in:"<< endlog();
             log(Error) << paths << endlog();
             return false;
         }
     }
     log(Error) << "No such package or directory found in search path: " << package << ". Search path is: "<< endlog();
     log(Error) << trypaths << endlog();
+    for(vector<string>::iterator it=tryouts.begin(); it != tryouts.end(); ++it)
+        log(Error) << *it << endlog();
+
 #ifdef HAS_ROSLIB
-    log(Error) << "Package also not found in ROS_PACKAGE path." <<endlog();
+    log(Error) << "Package also not found in ROS_PACKAGE_PATH paths." <<endlog();
 #endif
     return false;
 
+}
+
+bool ComponentLoader::loadLibrary( std::string const& name )
+{
+    path arg = name;
+    // check for direct match:
+    if (is_regular_file( arg ) && loadInProcess( arg.string(), makeShortFilename( arg.filename() ), true ) )
+        return true;
+    // bail out if absolute path
+    if ( arg.is_complete() )
+        return false;
+
+    // search for relative match
+    vector<string> paths = splitPaths( component_path );
+    vector<string> tryouts( paths.size() * 4 );
+    tryouts.clear();
+    path dir = arg.parent_path();
+    string file = arg.filename();
+
+    for (vector<string>::iterator it = paths.begin(); it != paths.end(); ++it)
+    {
+        path p = path(*it) / dir / (file + SO_EXT);
+        tryouts.push_back( p.string() );
+        if (is_regular_file( p ) && loadInProcess( p.string(), makeShortFilename(file), true ) )
+            return true;
+        p = path(*it) / dir / ("lib" + file + SO_EXT);
+        tryouts.push_back( p.string() );
+        if (is_regular_file( p ) && loadInProcess( p.string(), makeShortFilename(file), true ) )
+            return true;
+        p = path(*it) / OROCOS_TARGET_NAME / dir / (file + SO_EXT);
+        tryouts.push_back( p.string() );
+        if (is_regular_file( p ) && loadInProcess( p.string(), makeShortFilename(file), true ) )
+            return true;
+        p = path(*it) / OROCOS_TARGET_NAME / dir / ("lib" + file + SO_EXT);
+        tryouts.push_back( p.string() );
+        if (is_regular_file( p ) && loadInProcess( p.string(), makeShortFilename(file), true ) )
+            return true;
+    }
+    log(Debug) << "No such library found in path: " << name << ". Tried:"<< endlog();
+    for(vector<string>::iterator it=tryouts.begin(); it != tryouts.end(); ++it)
+        log(Debug) << *it << endlog();
+    return false;
 }
 
 bool ComponentLoader::isImported(string type_name)

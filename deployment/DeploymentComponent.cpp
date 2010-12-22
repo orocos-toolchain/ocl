@@ -95,9 +95,9 @@ namespace OCL
         this->addAttribute( highest_Priority );
 
 
-        this->addOperation("loadLibrary", &DeploymentComponent::loadLibrary, this, ClientThread).doc("(DEPRECATED use 'import') Load a new library into memory.").arg("Name", "The name of the to be loaded library.");
-        this->addOperation("import", &DeploymentComponent::import, this, ClientThread).doc("Import all components, plugins and typekits from a given package or directory in the search path.").arg("Package", "The name of a directory or package.");
-        this->addOperation("path", &DeploymentComponent::path, this, ClientThread).doc("Add additional directories to the component search path.").arg("Paths", "A colon or semi-colon separated list of paths to search for packages.");
+        this->addOperation("loadLibrary", &DeploymentComponent::loadLibrary, this, ClientThread).doc("Load a new library (component, plugin or typekit) into memory.").arg("Name", "The absolute or relative name of the to be loaded library.");
+        this->addOperation("import", &DeploymentComponent::import, this, ClientThread).doc("Import all components, plugins and typekits from a given package or directory in the search path.").arg("Package", "The name absolute or relative name of a directory or package.");
+        this->addOperation("path", &DeploymentComponent::path, this, ClientThread).doc("Add additional directories to the component search path without importing them.").arg("Paths", "A colon or semi-colon separated list of paths to search for packages.");
 
         this->addOperation("loadComponent", &DeploymentComponent::loadComponent, this, ClientThread).doc("Load a new component instance from a library.").arg("Name", "The name of the to be created component").arg("Type", "The component type, used to lookup the library.");
         this->addOperation("loadService", &DeploymentComponent::loadService, this, ClientThread).doc("Load a discovered service or plugin in an existing component.").arg("Name", "The name of the component which will receive the service").arg("Service", "The name of the service or plugin.");
@@ -581,6 +581,17 @@ namespace OCL
                                 continue;
                             }
                             if ( this->import( importp.get() ) == false )
+                                valid = false;
+                            continue;
+                        }
+                        if ( (*it)->getName() == "LoadLibrary" ) {
+                            RTT::Property<std::string> importp = *it;
+                            if ( !importp.ready() ) {
+                                log(Error)<< "Found 'LoadLibrary' statement, but it is not of type='string'."<<endlog();
+                                valid = false;
+                                continue;
+                            }
+                            if ( this->loadLibrary( importp.get() ) == false )
                                 valid = false;
                             continue;
                         }
@@ -1451,13 +1462,13 @@ namespace OCL
     {
         RTT::Logger::In in("DeploymentComponent::path");
         ComponentLoader::Instance()->setComponentPath( ComponentLoader::Instance()->getComponentPath() + path );
-        ComponentLoader::Instance()->import( path ); // load default components from paths.
+        PluginLoader::Instance()->setPluginPath( PluginLoader::Instance()->getPluginPath() + path );
     }
 
     bool DeploymentComponent::loadLibrary(const std::string& name)
     {
         RTT::Logger::In in("DeploymentComponent::loadLibrary");
-        return ComponentLoader::Instance()->import(name, "");
+        return PluginLoader::Instance()->loadLibrary(name) || ComponentLoader::Instance()->loadLibrary(name);
     }
 
     bool DeploymentComponent::loadService(const std::string& name, const std::string& type) {
