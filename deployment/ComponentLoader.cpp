@@ -74,6 +74,7 @@ namespace OCL {
 namespace deployment {
 
 boost::shared_ptr<ComponentLoader> ComponentLoader::minstance;
+static boost::shared_ptr<ComponentLoader> minstance2;
 
     // copied from RTT::PluginLoader
 vector<string> splitPaths(string const& str)
@@ -116,13 +117,13 @@ string makeShortFilename(string const& str) {
 }
 
 boost::shared_ptr<ComponentLoader> ComponentLoader::Instance() {
-    if (!minstance)
-        minstance.reset( new ComponentLoader() );
-    return minstance;
+    if (!minstance2)
+        minstance2.reset( new ComponentLoader() );
+    return minstance2;
 }
 
 void ComponentLoader::Release() {
-    minstance.reset();
+    minstance2.reset();
 }
 
 void ComponentLoader::import( std::string const& package )

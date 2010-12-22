@@ -270,6 +270,7 @@ namespace OCL
       if ( autoUnload.get() ) {
           kickOutAll();
       }
+      deployment::ComponentLoader::Release();
     }
 
     bool DeploymentComponent::connectPeers(const std::string& one, const std::string& other)
