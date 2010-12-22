@@ -51,7 +51,7 @@ orocos_component(@pkgname@ @pkgname@-component.cpp) # ...you may add multiple so
 #
 orocos_typegen_headers(@pkgname@-types.hpp) # ...you may add multiple header files
 #
-# You may only have *ONE* orocos_typekit statement !
+# You may only have *ONE* orocos_typegen_headers statement !
 
 
 #
@@ -90,13 +90,7 @@ orocos_install_headers( @pkgname@-component.hpp ) # ...you may add multiple head
 # You may add multiple orocos_install_headers statements.
 
 #
-# Generates and installs our orocos-@pkgname@-<target>.pc and manifest.xml file
+# Generates and installs our package. Must be the last statement such
+# that it can pick up all above settings.
 #
-configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/orocos-@pkgname@.pc.in ${CMAKE_CURRENT_BINARY_DIR}/orocos-@pkgname@-${OROCOS_TARGET}.pc @ONLY)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/orocos-@pkgname@-${OROCOS_TARGET}.pc DESTINATION  lib/pkgconfig )
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/manifest.xml DESTINATION  lib/orocos/@pkgname@ )
-
-#
-# Provided 'uninstall' target
-#
-orocos_uninstall_target()
+orocos_generate_package()
