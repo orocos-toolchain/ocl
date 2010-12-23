@@ -1,2 +1,2 @@
-usr/lib/orocos/@TARGET@/liborocos-can-@TARGET@.so.*
-usr/lib/orocos/@TARGET@/liborocos-*socket-can-@TARGET@.so.*
+usr/lib/liborocos-can-@TARGET@.so.*
+usr/lib/liborocos-*socket-can-@TARGET@.so.*

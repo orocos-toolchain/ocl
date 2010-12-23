@@ -1,1 +1,1 @@
-usr/lib/orocos/@TARGET@/liborocos-comedi-@TARGET@.so.*
+usr/lib/liborocos-comedi-@TARGET@.so.*
