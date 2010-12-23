@@ -12,7 +12,7 @@ IF ( BUILD_COMEDI )
     FILE( GLOB DEVSRCS dev/[^.]*.cpp dev/[^.]*.c )
     FILE( GLOB DEVHPPS dev/[^.]*.hpp )
 
-    GLOBAL_ADD_COMPONENT( orocos-comedi ${DEVSRCS} )
+    GLOBAL_ADD_COMPONENT( orocos-comedi ${DEVSRCS} INSTALL lib)
     GLOBAL_ADD_INCLUDE( ocl/dev ${DEVHPPS} )
 
 ENDIF ( BUILD_COMEDI )
