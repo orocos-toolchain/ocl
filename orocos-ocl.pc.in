@@ -6,7 +6,7 @@ Name: orocos-ocl
 Description: Orocos Component Library
 Requires: @OROCOS_COMPONENTS_REQUIRES@
 Version: @OCL_VERSION@
-Libs: -L${libdir} -L${libdir}/orocos \
+Libs: -L${libdir} -L${libdir}/orocos/@OROCOS_TARGET@ \
       @SELECTED_LIBS@ 
 Libs.private: @OROCOS_COMPONENTS_LINKFLAGS@
 Cflags: -I${includedir} @OROCOS_COMPONENTS_CFLAGS@
