@@ -80,13 +80,12 @@ namespace OCL
           lowest_Priority("LowestPriority", RTT::os::LowestPriority ),
           highest_Priority("HighestPriority", RTT::os::HighestPriority ),
           target("Target",
-                 "The Orocos Target component suffix. Will be used in import statements to find matching components. Only change this if you know what you are doing.",
                  ORO_str(OROCOS_TARGET) ),
           nextGroup(0)
     {
         this->addProperty( "RTT_COMPONENT_PATH", compPath ).doc("Locations to look for components. Use a colon or semi-colon separated list of paths. Defaults to the environment variable with the same name.");
         this->addProperty( autoUnload );
-        this->addProperty( target );
+        this->addAttribute( target );
 
         this->addAttribute( validConfig );
         this->addAttribute( sched_RT );
