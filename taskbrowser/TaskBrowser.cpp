@@ -104,6 +104,11 @@
 
 #include <signal.h>
 
+// we need to declare it since Xenomai does not declare it in any header
+#if defined(OROCOS_TARGET_XENOMAI) && CONFIG_XENO_VERSION_MAJOR == 2 && CONFIG_XENO_VERSION_MINOR >= 5
+extern "C"
+int xeno_sigwinch_handler(int sig, siginfo_t *si, void *ctxt);
+#endif
 namespace OCL
 {
     using namespace boost;
@@ -160,9 +165,16 @@ namespace OCL
 #endif
         ::signal(SIGINT, ctrl_c_catcher);
     }
-#endif
 
 #ifdef USE_READLINE
+    void TaskBrowser::rl_sigwinch_handler(int sig, siginfo_t *si, void *ctxt) {
+#if defined(OROCOS_TARGET_XENOMAI) && CONFIG_XENO_VERSION_MAJOR == 2 && CONFIG_XENO_VERSION_MINOR >= 5
+        if (xeno_sigwinch_handler(sig, si, ctxt) == 0)
+#endif
+            rl_resize_terminal();
+    }
+#endif
+#endif
     char *TaskBrowser::rl_gets ()
     {
         /* If the buffer has already been allocated,
@@ -632,12 +644,20 @@ namespace OCL
         context = tb;
         this->switchTaskContext(_c);
 #ifdef USE_READLINE
+        // we always catch sigwinch ourselves, in order to pass it on to Xenomai if necessary.
+        rl_catch_sigwinch = 0;
         rl_completion_append_character = '\0'; // avoid adding spaces
         rl_attempted_completion_function = &TaskBrowser::orocos_hmi_completion;
 
         if ( read_history(".tb_history") != 0 ) {
             read_history("~/.tb_history");
         }
+#ifdef _POSIX_VERSION
+        struct sigaction sa;
+        sa.sa_sigaction = &TaskBrowser::rl_sigwinch_handler;
+        sa.sa_flags = SA_SIGINFO;
+        sigaction(SIGWINCH, &sa, 0);
+#endif
 #endif
 
         this->setColorTheme( darkbg );
@@ -710,10 +730,6 @@ namespace OCL
             cerr << "Error: not catching signals !"<<endl;
         if (rl_set_signals() != 0)
             cerr << "Error setting signals !" <<endl;
-#ifdef OROCOS_TARGET_XENOMAI
-        // necessary to avoid crash when using Xenomai.
-        xeno_sigshadow_install();
-#endif
 #endif
 #endif
         cout << nl<<
