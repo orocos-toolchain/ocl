@@ -458,7 +458,7 @@
 
    This not too bad, but we would like to display the string
    representation of the C++ enums =type= and =lock_policy=. So we
-   write a function...
+   write a function must return a table...
 
    #+BEGIN_EXAMPLE
    function ConnPolicy2tab(cp)
