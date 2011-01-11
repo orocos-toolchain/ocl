@@ -647,7 +647,9 @@ namespace OCL
         this->switchTaskContext(_c);
 #ifdef USE_READLINE
         // we always catch sigwinch ourselves, in order to pass it on to Xenomai if necessary.
+#ifdef USE_SIGNALS
         rl_catch_sigwinch = 0;
+#endif
         rl_completion_append_character = '\0'; // avoid adding spaces
         rl_attempted_completion_function = &TaskBrowser::orocos_hmi_completion;
 
@@ -657,7 +659,8 @@ namespace OCL
 #ifdef USE_SIGNALS
         struct sigaction sa;
         sa.sa_sigaction = &TaskBrowser::rl_sigwinch_handler;
-        sa.sa_flags = SA_SIGINFO;
+        sa.sa_flags = SA_SIGINFO | SA_RESTART;
+        sigemptyset( &sa.sa_mask );
         sigaction(SIGWINCH, &sa, 0);
 #endif // USE_SIGNALS
 #endif // USE_READLINE
