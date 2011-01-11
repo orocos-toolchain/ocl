@@ -133,18 +133,23 @@ function var2tab(var)
       local res
       if var_is_basic(var) then
 	 res = var:tolua()
-      else
+      else -- non basic type
 	 local parts = var:getMemberNames()
 	 res = {}
-	 -- detect arrays
-	 if #parts == 2 and
+	 if #parts == 2 and -- catch arrays
 	    utils.table_has(parts, "size") and utils.table_has(parts, "capacity") then
+	    res = {}
 	    for i=0,var.size:tolua()-1 do
 	       res[i+1] = __var2tab(var[i])
 	    end
-	 else
-	    for i,p in pairs(parts) do
-	       res[p] = __var2tab(var:getMember(p))
+	 else -- not basic, not array
+	    if #parts == 0 then -- no member names -> probably an unrecognized basic type
+	       res = var:toString()
+	    else -- not basic but with member names
+	       res = {}
+	       for i,p in pairs(parts) do
+		  res[p] = __var2tab(var:getMember(p))
+	       end
 	    end
 	 end
       end
