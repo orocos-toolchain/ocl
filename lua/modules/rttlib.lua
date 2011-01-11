@@ -136,8 +136,16 @@ function var2tab(var)
       else
 	 local parts = var:getMemberNames()
 	 res = {}
-	 for i,p in pairs(parts) do
-	    res[p] = __var2tab(var:getMember(p))
+	 -- detect arrays
+	 if #parts == 2 and
+	    utils.table_has(parts, "size") and utils.table_has(parts, "capacity") then
+	    for i=0,var.size:tolua()-1 do
+	       res[i+1] = __var2tab(var[i])
+	    end
+	 else
+	    for i,p in pairs(parts) do
+	       res[p] = __var2tab(var:getMember(p))
+	    end
 	 end
       end
       return res
