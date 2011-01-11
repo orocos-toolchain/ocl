@@ -65,6 +65,9 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#if defined(HAS_READLINE) && !defined(HAS_EDITLINE) && defined(_POSIX_VERSION)
+#include <signal.h>
+#endif
 
 #include <ocl/OCL.hpp>
 

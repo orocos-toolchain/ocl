@@ -82,13 +82,18 @@
 #include <algorithm>
 
 #if defined(HAS_READLINE) && !defined(NO_GPL)
-#define USE_READLINE
+# define USE_READLINE
 #endif
 #if defined(HAS_EDITLINE)
 // we use the readline bc wrapper:
-#define USE_READLINE
-#define USE_EDITLINE
+# define USE_READLINE
+# define USE_EDITLINE
 #endif
+// only use signals if posix, and pure readline
+# if defined(_POSIX_VERSION) && defined(HAS_READLINE) && !defined(HAS_EDITLINE)
+#   define USE_SIGNALS 1
+# endif
+
 
 #ifdef USE_READLINE
 # ifdef USE_EDITLINE
@@ -102,10 +107,12 @@
 #include <boost/bind.hpp>
 #include <boost/lambda/lambda.hpp>
 
+#ifdef USE_SIGNALS
 #include <signal.h>
+#endif
 
 // we need to declare it since Xenomai does not declare it in any header
-#if defined(OROCOS_TARGET_XENOMAI) && CONFIG_XENO_VERSION_MAJOR == 2 && CONFIG_XENO_VERSION_MINOR >= 5
+#if defined(USE_SIGNALS) && defined(OROCOS_TARGET_XENOMAI) && CONFIG_XENO_VERSION_MAJOR == 2 && CONFIG_XENO_VERSION_MINOR >= 5
 extern "C"
 int xeno_sigwinch_handler(int sig, siginfo_t *si, void *ctxt);
 #endif
@@ -151,30 +158,27 @@ namespace OCL
     nl(std::ostream& __os)
     { return __os.put(__os.widen('\n')); }
 
-#ifdef _POSIX_VERSION
+    // All readline specific functions
+#if defined(USE_READLINE)
+
+    // Signal code only on Posix:
+#if defined(USE_SIGNALS)
     // catch ctrl+c signal
     void ctrl_c_catcher(int sig)
     {
         ::signal(sig, SIG_IGN);
-#if defined( USE_READLINE ) && !defined(USE_EDITLINE)
-//        cerr <<nl<<"TaskBrowser intercepted Ctrl-C. Type 'quit' to exit."<<endl;
-//         rl_delete_text(0, rl_end);
-//         //cerr << "deleted " <<deleted <<endl;
         rl_free_line_state();
-//         rl_cleanup_after_signal();
-#endif
         ::signal(SIGINT, ctrl_c_catcher);
     }
 
-#ifdef USE_READLINE
     void TaskBrowser::rl_sigwinch_handler(int sig, siginfo_t *si, void *ctxt) {
 #if defined(OROCOS_TARGET_XENOMAI) && CONFIG_XENO_VERSION_MAJOR == 2 && CONFIG_XENO_VERSION_MINOR >= 5
         if (xeno_sigwinch_handler(sig, si, ctxt) == 0)
 #endif
             rl_resize_terminal();
     }
-#endif
-#endif
+#endif // USE_SIGNALS
+
     char *TaskBrowser::rl_gets ()
     {
         /* If the buffer has already been allocated,
@@ -207,12 +211,10 @@ namespace OCL
         } else {
             p = "> ";
         }
-#ifndef _WIN32  // does not work on win32
-#if !defined(USE_EDITLINE)
+#if defined(USE_SIGNALS)
 
         if (rl_set_signals() != 0)
             cerr << "Error setting signals !" <<endl;
-#endif
 #endif
         line_read = readline ( p.c_str() );
 
@@ -652,13 +654,13 @@ namespace OCL
         if ( read_history(".tb_history") != 0 ) {
             read_history("~/.tb_history");
         }
-#ifdef _POSIX_VERSION
+#ifdef USE_SIGNALS
         struct sigaction sa;
         sa.sa_sigaction = &TaskBrowser::rl_sigwinch_handler;
         sa.sa_flags = SA_SIGINFO;
         sigaction(SIGWINCH, &sa, 0);
-#endif
-#endif
+#endif // USE_SIGNALS
+#endif // USE_READLINE
 
         this->setColorTheme( darkbg );
         this->enterTask();
@@ -721,16 +723,14 @@ namespace OCL
      */
     void TaskBrowser::loop()
     {
-#ifdef _POSIX_VERSION
+#ifdef USE_SIGNALS
         // Intercept Ctrl-C
         ::signal( SIGINT, ctrl_c_catcher );
-#if defined(USE_READLINE) && !defined(USE_EDITLINE)
         // Let readline intercept relevant signals
         if(rl_catch_signals == 0)
             cerr << "Error: not catching signals !"<<endl;
         if (rl_set_signals() != 0)
             cerr << "Error setting signals !" <<endl;
-#endif
 #endif
         cout << nl<<
             coloron <<
@@ -780,7 +780,7 @@ namespace OCL
                 }
                 // Check port status:
                 checkPorts();
-#ifdef _POSIX_VERSION
+#ifdef USE_SIGNALS
                 // Call readline wrapper :
                 ::signal( SIGINT, ctrl_c_catcher ); // catch ctrl_c only when editting a line.
 #endif
@@ -796,7 +796,7 @@ namespace OCL
                     command = "quit";
 #endif
                 str_trim( command, ' ');
-#ifdef _POSIX_VERSION
+#ifdef USE_SIGNALS
                 ::signal( SIGINT, SIG_DFL );        // do not catch ctrl_c
 #endif
                 cout << coloroff;
