@@ -135,10 +135,10 @@ function var2tab(var)
 	 res = var:tolua()
       else -- non basic type
 	 local parts = var:getMemberNames()
-	 res = {}
 	 if #parts == 2 and -- catch arrays
 	    utils.table_has(parts, "size") and utils.table_has(parts, "capacity") then
 	    res = {}
+	    if not var.size then return end -- todo: how is this possible?
 	    for i=0,var.size:tolua()-1 do
 	       res[i+1] = __var2tab(var[i])
 	    end
