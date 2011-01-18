@@ -1337,27 +1337,29 @@ namespace OCL
             return;
         }
 
-	// Set caller=this to have correct call/send semantics:
-        scripting::Parser _parser(this);
+	    // Set caller=0 to have correct call/send semantics.
+        // we're outside the updateHook(). Passing 'this' would
+        // trigger the EE of the TB, but not our own function.
+        scripting::Parser _parser( 0 );
 
         if (debug)
             cerr << "Trying ValueStatement..."<<nl;
         try {
             // Check if it was a method or datasource :
-            base::DataSourceBase::shared_ptr ds = _parser.parseValueStatement( comm, context );
+            last_expr = _parser.parseValueStatement( comm, context );
             // methods and DS'es are processed immediately.
-            if ( ds.get() != 0 ) {
+            if ( last_expr ) {
                 // only print if no ';' was given.
                 assert( comm.size() != 0 );
                 if ( comm[ comm.size() - 1 ] != ';' ) {
-                    this->printResult( ds.get(), true );
+                    this->printResult( last_expr.get(), true );
                     cout << sresult.str() << nl <<endl;
                     sresult.str("");
                 } else
-                    ds->evaluate();
+                    last_expr->evaluate();
                 return; // done here
             } else if (debug)
-                cerr << "returned zero !"<<nl;
+                cerr << "returned (null) !"<<nl;
             //cout << "    (ok)" <<nl;
             //return; //
         } catch ( fatal_semantic_parse_exception& pe ) { // incorr args, ...
@@ -1387,67 +1389,23 @@ namespace OCL
             return;
         }
         if (debug)
-            cerr << "Trying ValueChange..."<<nl;
-        try {
-            // Check if it was a method or datasource :
-            base::DataSourceBase::shared_ptr ds = _parser.parseValueChange( comm, context );
-            // methods and DS'es are processed immediately.
-            if ( ds.get() != 0 ) {
-                // only print if no ';' was given.
-                assert( comm.size() != 0 );
-                if ( comm[ comm.size() - 1 ] != ';' ) {
-                    this->printResult( ds.get(), true );
-                    cout << sresult.str() << nl <<endl;
-                    sresult.str("");
-                } else
-                    ds->evaluate();
-                return; // done here
-            } else if (debug)
-                cerr << "returned zero !"<<nl;
-        } catch ( fatal_semantic_parse_exception& pe ) { // incorr args, ...
-            // way to fatal,  must be reported immediately
-            if (debug)
-                cerr << "fatal_semantic_parse_exception: ";
-            cerr << pe.what() <<nl;
-            return;
-        } catch ( syntactic_parse_exception& pe ) { // wrong content after = sign etc..
-            // syntactic errors must be reported immediately
-            if (debug)
-                cerr << "syntactic_parse_exception: ";
-            cerr << pe.what() <<nl;
-            return;
-        } catch ( parse_exception_parser_fail &pe )
-            {
-                // ignore, try next parser
-                if (debug) {
-                    cerr << "Ignoring ValueChange exception :"<<nl;
-                    cerr << pe.what() <<nl;
-                }
-        } catch ( parse_exception& pe ) {
-            // syntactic errors must be reported immediately
-            if (debug)
-                cerr << "parse_exception :";
-            cerr << pe.what() <<nl;
-            return;
-        }
-        if (debug)
             cerr << "Trying Expression..."<<nl;
         try {
             // Check if it was a method or datasource :
-            base::DataSourceBase::shared_ptr ds = _parser.parseExpression( comm, context );
+            last_expr = _parser.parseExpression( comm, context );
             // methods and DS'es are processed immediately.
-            if ( ds.get() != 0 ) {
+            if ( last_expr ) {
                 // only print if no ';' was given.
                 assert( comm.size() != 0 );
                 if ( comm[ comm.size() - 1 ] != ';' ) {
-                    this->printResult( ds.get(), true );
+                    this->printResult( last_expr.get(), true );
                     cout << sresult.str() << nl << endl;
                     sresult.str("");
                 } else
-                    ds->evaluate();
+                    last_expr->evaluate();
                 return; // done here
             } else if (debug)
-                cerr << "returned zero !"<<nl;
+                cerr << "returned (null) !"<<nl;
         } catch ( syntactic_parse_exception& pe ) { // missing brace etc
             // syntactic errors must be reported immediately
             if (debug)
