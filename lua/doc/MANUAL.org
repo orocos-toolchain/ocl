@@ -352,6 +352,7 @@
    | =string, variable read()= |      | read from Port, returns a FlowStatus string and if data available a Variable    |
    | =string read(variable)=   |      | read from Port and write result into Variable given. Returns FlowStatus         |
    | =table info()=            |      | return a table containing information about this port                           |
+   | =bool connect(port)=      |      | connect this port to the given one                                              |
    | =delete()=                |      | delete this port (remove it from any TaskContext before this)                   |
 
    OuputPort
@@ -361,6 +362,7 @@
    | =new(type, name, desc)= |      | create a new OutputPort of type with name (optional) and description (optional) |
    | =write(Variable)=       |      | write Variable to port                                                          |
    | =table info()=          |      | return a table containing information about this port                           |
+   | =bool connect(port)=    |      | connect this port to the given one                                              |
    | =delete()=              |      | delete this port (remove it from any TaskContext before this)                   |
 
 ** Property

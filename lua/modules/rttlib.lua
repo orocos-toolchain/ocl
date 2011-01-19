@@ -383,9 +383,9 @@ else
 end
 
 function info()
-   print("services: ", table.concat(rtt.services(), ', '))
-   print("typekits: ", table.concat(rtt.typekits(), ', '))
-   print("types:    ", table.concat(rtt.types(), ', '))
+   print("services:   ", table.concat(rtt.services(), ', '))
+   print("typekits:   ", table.concat(rtt.typekits(), ', '))
+   print("types:      ", table.concat(rtt.types(), ', '))
 end
 
 function portval2str(port, comp)
@@ -410,4 +410,31 @@ function portstats(comp)
    for i,p in ipairs(comp:getPortNames(p)) do
       print(portval2str(comp:getPort(p), comp))
    end
+end
+
+-- created set of mirrored, connected ports
+-- comp: taskcontext to mirror
+-- tab: table of port names to mirror, if nil will mirror all
+-- suffix: suffix
+-- a table of { port, name, desc } tables
+function mirror(comp, suffix, tab)
+   local function port_clone(p)
+      local inf = p:info()
+      if inf.porttype == 'in' then return rtt.OutputPort.new(inf.type)
+      elseif inf.porttype == 'out' then return rtt.OutputPort.new(inf.type)
+      else error("unkown port type: " .. utils.tab2str(inf)) end
+   end
+
+   local tab = tab or comp:getPortNames()
+   local suf = suffix or "_clone"
+   local comp_name = comp:getName()
+   local res = {}
+
+   for _,pn in ipairs(tab) do
+      local p = comp:getPort(pn)
+      local cl = port_clone(p)
+      p:connect(cl)
+      res[#res+1] = { cl, pn .. '_' .. suf, "Inverse port of " .. comp_name .. "." .. pn }
+   end
+   return res
 end

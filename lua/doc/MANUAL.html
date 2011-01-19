@@ -745,6 +745,7 @@ InputPort
 <tr><td><code>string, variable read()</code></td><td></td><td>read from Port, returns a FlowStatus string and if data available a Variable</td></tr>
 <tr><td><code>string read(variable)</code></td><td></td><td>read from Port and write result into Variable given. Returns FlowStatus</td></tr>
 <tr><td><code>table info()</code></td><td></td><td>return a table containing information about this port</td></tr>
+<tr><td><code>bool connect(port)</code></td><td></td><td>connect this port to the given one</td></tr>
 <tr><td><code>delete()</code></td><td></td><td>delete this port (remove it from any TaskContext before this)</td></tr>
 </tbody>
 </table>
@@ -764,6 +765,7 @@ OuputPort
 <tr><td><code>new(type, name, desc)</code></td><td></td><td>create a new OutputPort of type with name (optional) and description (optional)</td></tr>
 <tr><td><code>write(Variable)</code></td><td></td><td>write Variable to port</td></tr>
 <tr><td><code>table info()</code></td><td></td><td>return a table containing information about this port</td></tr>
+<tr><td><code>bool connect(port)</code></td><td></td><td>connect this port to the given one</td></tr>
 <tr><td><code>delete()</code></td><td></td><td>delete this port (remove it from any TaskContext before this)</td></tr>
 </tbody>
 </table>
@@ -978,7 +980,7 @@ Orocos RTTLua 1.0-beta1 (gnulinux)
 <p>
 This not too bad, but we would like to display the string
 representation of the C++ enums <code>type</code> and <code>lock_policy</code>. So we
-write a function&hellip;
+write a function must return a table&hellip;
 </p>
 
 

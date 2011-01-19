@@ -390,6 +390,7 @@ Table of Contents
      =string, variable read()=          read from Port, returns a FlowStatus string and if data available a Variable     
      =string read(variable)=            read from Port and write result into Variable given. Returns FlowStatus          
      =table info()=                     return a table containing information about this port                            
+     =bool connect(port)=               connect this port to the given one                                               
      =delete()=                         delete this port (remove it from any TaskContext before this)                    
 
    OuputPort
@@ -399,6 +400,7 @@ Table of Contents
      =new(type, name, desc)=          create a new OutputPort of type with name (optional) and description (optional)  
      =write(Variable)=                write Variable to port                                                           
      =table info()=                   return a table containing information about this port                            
+     =bool connect(port)=             connect this port to the given one                                               
      =delete()=                       delete this port (remove it from any TaskContext before this)                    
 
 4.7 Property 
@@ -503,7 +505,7 @@ Table of Contents
 
    This not too bad, but we would like to display the string
    representation of the C++ enums =type= and =lock_policy=. So we
-   write a function...
+   write a function must return a table...
 
 
   function ConnPolicy2tab(cp)

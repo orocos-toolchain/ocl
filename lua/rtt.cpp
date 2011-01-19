@@ -774,6 +774,42 @@ static int Port_info(lua_State *L)
 	return 1;
 }
 
+static int Port_connect(lua_State *L)
+{
+	int arg_type, ret;
+	PortInterface **pip1, **pip2;
+	PortInterface *pi1 = NULL;
+	PortInterface *pi2 = NULL;
+
+	if((pip1 = (PortInterface**) luaL_testudata(L, 1, "InputPort")) != NULL) {
+		pi1= *pip1;
+	} else if((pip1 = (PortInterface**) luaL_testudata(L, 1, "OutputPort")) != NULL) {
+		pi1= *pip1;
+	}
+	else {
+		arg_type = lua_type(L, 1);
+		luaL_error(L, "Port.info: invalid argument 1, expected Port, got %s",
+			   lua_typename(L, arg_type));
+	}
+	if((pip2 = (PortInterface**) luaL_testudata(L, 2, "InputPort")) != NULL) {
+		pi2= *pip2;
+	} else if((pip2 = (PortInterface**) luaL_testudata(L, 2, "OutputPort")) != NULL) {
+		pi2= *pip2;
+	}
+	else {
+		arg_type = lua_type(L, 2);
+		luaL_error(L, "Port.connect: invalid argument 2, expected Port, got %s",
+			   lua_typename(L, arg_type));
+	}
+
+	ret = pi1->connectTo(pi2);
+	lua_pushboolean(L, ret);
+
+	return 1;
+}
+
+
+
 /* InputPort (boxed) */
 
 gen_push_bxptr(InputPort_push, "InputPort", InputPortInterface)
@@ -854,6 +890,7 @@ static const struct luaL_Reg InputPort_f [] = {
 	{"new", InputPort_new },
 	{"read", InputPort_read },
 	{"info", Port_info },
+	{"connect", Port_connect },
 	{"delete", InputPort_del },
 	{NULL, NULL}
 };
@@ -862,6 +899,7 @@ static const struct luaL_Reg InputPort_m [] = {
 	{"read", InputPort_read },
 	{"info", Port_info },
 	{"delete", InputPort_del },
+	{"connect", Port_connect },
 	/* {"__gc", InputPort_gc }, */
 	{NULL, NULL}
 };
@@ -938,6 +976,7 @@ static const struct luaL_Reg OutputPort_f [] = {
 	{"new", OutputPort_new },
 	{"write", OutputPort_write },
 	{"info", Port_info },
+	{"connect", Port_connect },
 	{"delete", OutputPort_del },
 	{NULL, NULL}
 };
@@ -945,6 +984,7 @@ static const struct luaL_Reg OutputPort_f [] = {
 static const struct luaL_Reg OutputPort_m [] = {
 	{"write", OutputPort_write },
 	{"info", Port_info },
+	{"connect", Port_connect },
 	{"delete", OutputPort_del },
 	/* {"__gc", OutputPort_gc }, */
 	{NULL, NULL}
