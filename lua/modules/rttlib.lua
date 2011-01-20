@@ -416,7 +416,7 @@ end
 -- cname is optional component name used in description
 function port_clone_conn(p, suffix, cname)
    local cname = cname or ""
-   local suf = suffix or "_inv"
+   local suf = suffix or ""
    local inf = p:info()
    local cl
    if inf.porttype == 'in' then
@@ -426,7 +426,9 @@ function port_clone_conn(p, suffix, cname)
    else
       error("unkown port type: " .. utils.tab2str(inf))
    end
-   assert(p:connect(cl),"ERROR: failed to connect " .. inf.name .. " to its inverse")
+   if not p:connect(cl) then
+      error("ERROR: failed to connect \n\t" .. tostring(p) .. " to its inverse\n\t" .. tostring(cl))
+   end
    return cl
 end
 
@@ -440,7 +442,7 @@ function mirror(comp, suffix, tab)
    local res = {}
    for _,pn in ipairs(tab) do
       local p = comp:getPort(pn)
-      local cl = port_clone_conn(p)
+      local cl = port_clone_conn(p, "_inv", comp:getName())
       res[pn] = cl
    end
    return res
