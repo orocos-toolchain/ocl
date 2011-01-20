@@ -412,29 +412,36 @@ function portstats(comp)
    end
 end
 
+-- clone a port, with same name + suffix and connect both
+-- cname is optional component name used in description
+function port_clone_conn(p, suffix, cname)
+   local cname = cname or ""
+   local suf = suffix or "_inv"
+   local inf = p:info()
+   local cl
+   if inf.porttype == 'in' then
+      cl = rtt.OutputPort.new(inf.type, inf.name .. suf, "Inverse port of " .. cname .. "." .. inf.name)
+   elseif inf.porttype == 'out' then
+      cl = rtt.InputPort.new(inf.type, inf.name .. suf, "Inverse port of " .. cname .. "." .. inf.name)
+   else
+      error("unkown port type: " .. utils.tab2str(inf))
+   end
+   assert(p:connect(cl),"ERROR: failed to connect " .. inf.name .. " to its inverse")
+   return cl
+end
+
 -- created set of mirrored, connected ports
 -- comp: taskcontext to mirror
 -- tab: table of port names to mirror, if nil will mirror all
 -- suffix: suffix
 -- a table of { port, name, desc } tables
 function mirror(comp, suffix, tab)
-   local function port_clone(p)
-      local inf = p:info()
-      if inf.porttype == 'in' then return rtt.OutputPort.new(inf.type)
-      elseif inf.porttype == 'out' then return rtt.OutputPort.new(inf.type)
-      else error("unkown port type: " .. utils.tab2str(inf)) end
-   end
-
    local tab = tab or comp:getPortNames()
-   local suf = suffix or "_clone"
-   local comp_name = comp:getName()
    local res = {}
-
    for _,pn in ipairs(tab) do
       local p = comp:getPort(pn)
-      local cl = port_clone(p)
-      p:connect(cl)
-      res[#res+1] = { cl, pn .. '_' .. suf, "Inverse port of " .. comp_name .. "." .. pn }
+      local cl = port_clone_conn(p)
+      res[pn] = cl
    end
    return res
 end
