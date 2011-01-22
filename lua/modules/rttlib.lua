@@ -35,8 +35,9 @@
 require("utils")
 require("ansicolors")
 
-local print, type, table, getmetatable, pairs, ipairs, tostring, assert, error =
-   print, type, table, getmetatable, pairs, ipairs, tostring, assert, error
+local print, type, table, getmetatable, setmetatable, pairs, ipairs, tostring, assert, error, unpack =
+   print, type, table, getmetatable, setmetatable, pairs, ipairs, tostring, assert, error, unpack
+
 local string = string
 local utils = utils
 local col = ansicolors
@@ -322,6 +323,31 @@ function port2str(p)
    return table.concat(ret, '')
 end
 
+-- port contents
+function portval2str(port, comp)
+   local inf = port:info()
+   local res = white(inf.name) .. ' (' .. inf.type .. ')  ='
+
+   if inf.type == 'unknown_t' then
+      res = res .. " ?"
+   elseif inf.porttype == 'in' then
+      local fs, data = port:read()
+
+      if fs == 'NoData' then res = res .. ' NoData'
+      elseif fs == 'NewData' then res = res .. green(var2str(data))
+      else res = res .. ' ' .. yellow(var2str(data)) end
+   else
+      res = res .. ' ' .. cyan(var2str(comp:provides(inf.name):getOperation("last")()))
+   end
+   return res
+end
+
+function portstats(comp)
+   for i,p in ipairs(comp:getPortNames(p)) do
+      print(portval2str(comp:getPort(p), comp))
+   end
+end
+
 local function tc_colorstate(state)
    if state == "Init" then return yellow(state, false)
    elseif state == "PreOperational" then return yellow(state, false)
@@ -365,51 +391,10 @@ function pptc(tc)
    print(tc2str(tc))
 end
 
--- enable pretty printing
-if type(debug) == 'table' then
-   reg = debug.getregistry()
-   reg.TaskContext.__tostring=tc2str
-   reg.Variable.__tostring=var2str
-   reg.Variable.fromtab=varfromtab
-   reg.Variable.var2tab=var2tab
-   reg.Property.__tostring=prop2str
-   reg.Service.__tostring=service2str
-   reg.ServiceRequester.__tostring=service_req2str
-   reg.Operation.__tostring=op2str
-   reg.InputPort.__tostring=port2str
-   reg.OutputPort.__tostring=port2str
-else
-   print("no debug library, if required pretty printing must be enabled manually")
-end
-
 function info()
    print("services:   ", table.concat(rtt.services(), ', '))
    print("typekits:   ", table.concat(rtt.typekits(), ', '))
    print("types:      ", table.concat(rtt.types(), ', '))
-end
-
-function portval2str(port, comp)
-   local inf = port:info()
-   local res = white(inf.name) .. ' (' .. inf.type .. ')  ='
-
-   if inf.type == 'unknown_t' then
-      res = res .. " ?"
-   elseif inf.porttype == 'in' then
-      local fs, data = port:read()
-
-      if fs == 'NoData' then res = res .. ' NoData'
-      elseif fs == 'NewData' then res = res .. green(var2str(data))
-      else res = res .. ' ' .. yellow(var2str(data)) end
-   else
-      res = res .. ' ' .. cyan(var2str(comp:provides(inf.name):getOperation("last")()))
-   end
-   return res
-end
-
-function portstats(comp)
-   for i,p in ipairs(comp:getPortNames(p)) do
-      print(portval2str(comp:getPort(p), comp))
-   end
 end
 
 -- clone a port, with same name + suffix and connect both
@@ -447,3 +432,36 @@ function mirror(comp, suffix, tab)
    end
    return res
 end
+
+-- TaskContext metatable __index replacement for allowing operations
+-- to be called like methods. This is pretty slow, use getOperation to
+-- cache local op when speed matters.
+function tc_index(tc, key)
+   local reg = debug.getregistry()
+   local ops = rtt.TaskContext.getOps(tc)
+   if utils.table_has(ops, key) then
+      return function (tc, ...) return rtt.TaskContext.call(tc, key, ...) end
+   else -- pass on to standard metatable
+      return reg.TaskContext[key]
+   end
+end
+
+-- enable pretty printing
+if type(debug) == 'table' then
+   reg = debug.getregistry()
+   reg.TaskContext.__tostring=tc2str
+   reg.TaskContext.stat=portstats
+   reg.TaskContext.__index=tc_index -- enable operations as methods
+   reg.Variable.__tostring=var2str
+   reg.Variable.fromtab=varfromtab
+   reg.Variable.var2tab=var2tab
+   reg.Property.__tostring=prop2str
+   reg.Service.__tostring=service2str
+   reg.ServiceRequester.__tostring=service_req2str
+   reg.Operation.__tostring=op2str
+   reg.InputPort.__tostring=port2str
+   reg.OutputPort.__tostring=port2str
+else
+   print("no debug library, if required pretty printing must be enabled manually")
+end
+
