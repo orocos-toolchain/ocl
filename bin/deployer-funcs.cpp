@@ -21,9 +21,7 @@
 
 #include "deployer-funcs.hpp"
 #include <rtt/Logger.hpp>
-#ifdef  OS_RT_MALLOC
-#include <stdio.h>
-#endif
+#include <cstdio>
 #include <iostream>
 #include <sstream>
 #include <string>
