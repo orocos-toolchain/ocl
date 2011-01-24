@@ -24,7 +24,7 @@ endif()
 
 # Set the CMAKE_PREFIX_PATH in case you're not using Orocos through ROS
 # for helping these find commands find RTT.
-find_package(Orocos-RTT REQUIRED ${RTT_HINTS})
+find_package(OROCOS-RTT REQUIRED ${RTT_HINTS})
 
 # Defines the orocos_* cmake macros. See that file for additional
 # documentation.
