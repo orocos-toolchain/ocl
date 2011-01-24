@@ -438,8 +438,7 @@ end
 -- cache local op when speed matters.
 function tc_index(tc, key)
    local reg = debug.getregistry()
-   local ops = rtt.TaskContext.getOps(tc)
-   if utils.table_has(ops, key) then
+   if rtt.TaskContext.hasOperation(tc, key) then
       return function (tc, ...) return rtt.TaskContext.call(tc, key, ...) end
    else -- pass on to standard metatable
       return reg.TaskContext[key]
