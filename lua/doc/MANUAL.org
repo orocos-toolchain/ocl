@@ -281,6 +281,7 @@
    | =Service provides(...)=                          |      | return service (provides/0 default, provides/1 subservice)                |
    | =Variable call(string, ...)=                     | D    | call operation with name specified by string and right arguments          |
    | =Operation getOperation(name)=                   |      | get an Operation by string name                                           |
+   | =bool hasOperation(string)=                      |      | return true if operation exists in this TaskContext                       |
    | =SendHandle send(string, ...)=                   |      | as above but send. returns SendHandle                                     |
    | =void delete(TaskContext)=                       |      | explicit deletion of a TaskContext                                        |
 
@@ -392,6 +393,7 @@
    | =table getPortNames()=           |      | return table of names of ports of this service                 |
    | =provides(string)=               |      | return subservice with name specified by given string          |
    | =Operation getOperation(string)= |      | return operation specified by string name  of this service     |
+   | =bool hasOperation(string)=      |      | return true if operation exists in this service                |
    | =Port getPort(string)=           |      | return port specified by the given string name of this service |
 
 *** ServiceRequester

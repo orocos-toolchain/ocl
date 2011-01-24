@@ -1180,6 +1180,16 @@ static int Service_getOperationNames(lua_State *L)
 	return 1;
 }
 
+static int Service_hasOperation(lua_State *L)
+{
+	int ret;
+	Service::shared_ptr srv = *(luaM_checkudata_mt(L, 1, "Service", Service::shared_ptr));
+	const char* op = luaL_checkstring(L, 2);
+	ret = srv->hasOperation(op);
+	lua_pushboolean(L, ret);
+	return 1;
+}
+
 static int Service_getPortNames(lua_State *L)
 {
 	Service::shared_ptr srv = *(luaM_checkudata_mt(L, 1, "Service", Service::shared_ptr));
@@ -1268,6 +1278,7 @@ static const struct luaL_Reg Service_f [] = {
 	{ "doc", Service_doc },
 	{ "getProviderNames", Service_getProviderNames },
 	{ "getOperationNames", Service_getOperationNames },
+	{ "hasOperation", Service_hasOperation },
 	{ "getPortNames", Service_getPortNames },
 	{ "provides", Service_provides },
 	{ "getOperation", Service_getOperation },
@@ -1280,6 +1291,7 @@ static const struct luaL_Reg Service_m [] = {
 	{ "doc", Service_doc },
 	{ "getProviderNames", Service_getProviderNames },
 	{ "getOperationNames", Service_getOperationNames },
+	{ "hasOperation", Service_hasOperation },
 	{ "getPortNames", Service_getPortNames },
 	{ "provides", Service_provides },
 	{ "getOperation", Service_getOperation },
@@ -1735,6 +1747,9 @@ static int TaskContext_getOpInfo(lua_State *L)
 	const char *op = luaL_checkstring(L, 2);
 	std::vector<ArgumentDescription> args;
 
+	if(!tc->operations()->hasMember(op))
+		luaL_error(L, "TaskContext.getOpInfo failed: no such operation");
+
 	lua_pushstring(L, tc->operations()->getResultType(op).c_str()); /* result type */
 	lua_pushinteger(L, tc->operations()->getArity(op));		/* arity */
 	lua_pushstring(L, tc->operations()->getDescription(op).c_str()); /* description */
@@ -1855,6 +1870,22 @@ static int TaskContext_call(lua_State *L)
 	}
 	return ret;
 }
+
+
+static int TaskContext_hasOperation(lua_State *L)
+{
+	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
+	Service::shared_ptr srv = tc->provides();
+
+	if(srv == 0)
+		luaL_error(L, "TaskContext.provides: no default service");
+
+	/* forward to Serivce.hasOperation */
+	luaM_pushobject_mt(L, "Service", Service::shared_ptr)(srv);
+	lua_replace(L, 1);
+	return Service_hasOperation(L);
+}
+
 
 static int TaskContext_getOperation(lua_State *L)
 {
@@ -2062,6 +2093,7 @@ static const struct luaL_Reg TaskContext_f [] = {
 	{ "removeProperty", TaskContext_removeProperty },
 	{ "getOps", TaskContext_getOps },
 	{ "getOpInfo", TaskContext_getOpInfo },
+	{ "hasOperation", TaskContext_hasOperation },
 	{ "provides", TaskContext_provides },
 	{ "connectServices", TaskContext_connectServices },
 	{ "call", TaskContext_call },
@@ -2094,6 +2126,7 @@ static const struct luaL_Reg TaskContext_m [] = {
 	{ "removeProperty", TaskContext_removeProperty },
 	{ "getOps", TaskContext_getOps },
 	{ "getOpInfo", TaskContext_getOpInfo },
+	{ "hasOperation", TaskContext_hasOperation },
 	{ "provides", TaskContext_provides },
 	{ "requires", TaskContext_requires },
 	{ "connectServices", TaskContext_connectServices },
