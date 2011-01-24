@@ -125,7 +125,7 @@
   > instead of print you can just type '='
   > =d
   > -- call an operation
-  > d:call("displayComponentTypes")
+  > d:displayComponentTypes()
   I can create the following component types:
      OCL::LuaComponent
      OCL::Testcomp
@@ -178,7 +178,7 @@
 #+BEGIN_EXAMPLE
   -- load lua service into deployer
   d:addPeer(d)
-  d:call("loadService", "deployer", "Lua")
+  d:loadService("deployer", "Lua")
   local execstr_op = d:provides("Lua"):getOperation("exec_str")
   execstr_op([[
 		    require("rttlib")
@@ -285,7 +285,7 @@
    | =SendHandle send(string, ...)=                   |      | as above but send. returns SendHandle                                     |
    | =void delete(TaskContext)=                       |      | explicit deletion of a TaskContext                                        |
 
- Note: =call= and =send= accept both
+   Note: =call= and =send= accept both Variables and Lua types.
 
 ** SendHandle
 

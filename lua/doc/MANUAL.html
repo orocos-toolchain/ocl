@@ -341,7 +341,7 @@ state: PreOperational
 &gt; instead of print you can just type '='
 &gt; =d
 &gt; -- call an operation
-&gt; d:call("displayComponentTypes")
+&gt; d:displayComponentTypes()
 I can create the following component types:
    OCL::LuaComponent
    OCL::Testcomp
@@ -421,7 +421,7 @@ shows how to correctly clean up a Property.
 
 <pre class="example">-- load lua service into deployer
 d:addPeer(d)
-d:call("loadService", "deployer", "Lua")
+d:loadService("deployer", "Lua")
 local execstr_op = d:provides("Lua"):getOperation("exec_str")
 execstr_op([[
                   require("rttlib")
@@ -607,6 +607,7 @@ function/method:
 <tr><td><code>Service provides(...)</code></td><td></td><td>return service (provides/0 default, provides/1 subservice)</td></tr>
 <tr><td><code>Variable call(string, ...)</code></td><td>D</td><td>call operation with name specified by string and right arguments</td></tr>
 <tr><td><code>Operation getOperation(name)</code></td><td></td><td>get an Operation by string name</td></tr>
+<tr><td><code>bool hasOperation(string)</code></td><td></td><td>return true if operation exists in this TaskContext</td></tr>
 <tr><td><code>SendHandle send(string, ...)</code></td><td></td><td>as above but send. returns SendHandle</td></tr>
 <tr><td><code>void delete(TaskContext)</code></td><td></td><td>explicit deletion of a TaskContext</td></tr>
 </tbody>
@@ -614,7 +615,7 @@ function/method:
 
 
 <p>
-Note: <code>call</code> and <code>send</code> accept both
+Note: <code>call</code> and <code>send</code> accept both Variables and Lua types.
 </p>
 </div>
 
@@ -834,6 +835,7 @@ just like Variables.
 <tr><td><code>table getPortNames()</code></td><td></td><td>return table of names of ports of this service</td></tr>
 <tr><td><code>provides(string)</code></td><td></td><td>return subservice with name specified by given string</td></tr>
 <tr><td><code>Operation getOperation(string)</code></td><td></td><td>return operation specified by string name  of this service</td></tr>
+<tr><td><code>bool hasOperation(string)</code></td><td></td><td>return true if operation exists in this service</td></tr>
 <tr><td><code>Port getPort(string)</code></td><td></td><td>return port specified by the given string name of this service</td></tr>
 </tbody>
 </table>

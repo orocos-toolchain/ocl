@@ -157,7 +157,7 @@ Table of Contents
   > instead of print you can just type '='
   > =d
   > -- call an operation
-  > d:call("displayComponentTypes")
+  > d:displayComponentTypes()
   I can create the following component types:
      OCL::LuaComponent
      OCL::Testcomp
@@ -210,7 +210,7 @@ Table of Contents
 
   -- load lua service into deployer
   d:addPeer(d)
-  d:call("loadService", "deployer", "Lua")
+  d:loadService("deployer", "Lua")
   local execstr_op = d:provides("Lua"):getOperation("exec_str")
   execstr_op([[
                     require("rttlib")
@@ -315,10 +315,11 @@ Table of Contents
      =Service provides(...)=                                   return service (provides/0 default, provides/1 subservice)                 
      =Variable call(string, ...)=                       D      call operation with name specified by string and right arguments           
      =Operation getOperation(name)=                            get an Operation by string name                                            
+     =bool hasOperation(string)=                               return true if operation exists in this TaskContext                        
      =SendHandle send(string, ...)=                            as above but send. returns SendHandle                                      
      =void delete(TaskContext)=                                explicit deletion of a TaskContext                                         
 
- Note: =call= and =send= accept both
+   Note: =call= and =send= accept both Variables and Lua types.
 
 4.4 SendHandle 
 ===============
@@ -433,6 +434,7 @@ Table of Contents
      =table getPortNames()=                    return table of names of ports of this service                  
      =provides(string)=                        return subservice with name specified by given string           
      =Operation getOperation(string)=          return operation specified by string name  of this service      
+     =bool hasOperation(string)=               return true if operation exists in this service                 
      =Port getPort(string)=                    return port specified by the given string name of this service  
 
 4.8.2 ServiceRequester 
