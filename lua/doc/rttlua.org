@@ -1,7 +1,7 @@
 #+TITLE:	Lua RTT bindings (beta2)
 #+AUTHOR:	Markus Klotzbuecher
 #+EMAIL:	markus.klotzbuecher@mech.kuleuven.be
-#+DATE:		2010-09-13 Mon
+#+DATE:		2011-01-25 Tue
 #+DESCRIPTION:
 #+KEYWORDS:
 #+LANGUAGE:	en
