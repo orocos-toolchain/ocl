@@ -132,7 +132,9 @@ end
 function var2tab(var)
    local function __var2tab(var)
       local res
-      if var_is_basic(var) then
+      if type(var) ~= 'userdata' then
+	 res=var
+      elseif var_is_basic(var) then
 	 res = var:tolua()
       else -- non basic type
 	 local parts = var:getMemberNames()
@@ -140,7 +142,7 @@ function var2tab(var)
 	    utils.table_has(parts, "size") and utils.table_has(parts, "capacity") then
 	    res = {}
 	    if not var.size then return end -- todo: how is this possible?
-	    for i=0,var.size:tolua()-1 do
+	    for i=0,var.size-1 do
 	       res[i+1] = __var2tab(var[i])
 	    end
 	 else -- not basic, not array
@@ -166,6 +168,8 @@ var_pp = {}
 var_pp.ConnPolicy = ConnPolicy2tab
 
 function var2str(var)
+   if type(var) ~= 'userdata' then return tostring(var) end
+
    local res = var2tab(var)
 
    -- post-beautification:
@@ -206,7 +210,8 @@ end
 -- pretty print properties
 --
 function prop2str(p)
-   return white(p:getName()) .. ' (' .. p:get():getType() .. ')' .. " = " .. yellow(var2str(p:get())) .. red(" // " .. p:getDescription()) .. ""
+   local info = p:info()
+   return white(info.name) .. ' (' .. info.type .. ')' .. " = " .. yellow(var2str(p:get())) .. red(" // " .. info.desc) .. ""
 end
 
 --
@@ -334,7 +339,7 @@ function portval2str(port, comp)
       local fs, data = port:read()
 
       if fs == 'NoData' then res = res .. ' NoData'
-      elseif fs == 'NewData' then res = res .. green(var2str(data))
+      elseif fs == 'NewData' then res = res .. ' ' .. green(var2str(data))
       else res = res .. ' ' .. yellow(var2str(data)) end
    else
       res = res .. ' ' .. cyan(var2str(comp:provides(inf.name):getOperation("last")()))
@@ -463,4 +468,3 @@ if type(debug) == 'table' then
 else
    print("no debug library, if required pretty printing must be enabled manually")
 end
-
