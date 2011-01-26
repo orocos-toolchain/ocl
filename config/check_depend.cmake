@@ -73,7 +73,8 @@ if (ROS_ROOT)
   set(LOG4CPP_ROOT ${log4cpp_PACKAGE_PATH}/install)
   message("ROS log4cpp in ${LOG4CPP_ROOT}")
 endif(ROS_ROOT)
-find_package( Log4cpp REQUIRED )
+# Uses LOG4CPP_ROOT from above in ROS builds:
+find_package( Log4cpp 6.0) # 6.0 is the Orocos extended API of log4cpp
 if(LOG4CPP_FOUND)
   message("Found log4cpp in ${LOG4CPP_INCLUDE_DIRS}")
 endif(LOG4CPP_FOUND)

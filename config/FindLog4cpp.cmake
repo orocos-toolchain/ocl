@@ -32,6 +32,13 @@ ENDIF ()
 find_path(LOG4CPP_INCLUDE_DIR NAMES log4cpp/Category.hh ${LOG4CPP_INCLUDE_HINTS})
 find_library(LOG4CPP_LIBRARY NAMES log4cpp ${LOG4CPP_LIBRARY_HINTS})
 
+set(LOG4CPP_VERSION 6.0.0)
+message("Log4cpp version to look for: ${LOG4CPP_VERSION} (hard-coded in FindLog4cpp.cmake).")
+if (LOG4CPP_LIBRARY AND NOT EXISTS ${LOG4CPP_LIBRARY}.${LOG4CPP_VERSION} )
+  message("File  ${LOG4CPP_LIBRARY}.${LOG4CPP_VERSION} does not exist. Are you using the Orocos' version of log4cpp ?")
+  message("  Use CMAKE_PREFIX_PATH to point to the install directory of the Orocos maintained log4cpp library.")
+endif()
+
 # Set LOG4CPP_FOUND honoring the QUIET and REQUIRED arguments
 find_package_handle_standard_args(LOG4CPP DEFAULT_MSG LOG4CPP_LIBRARY LOG4CPP_INCLUDE_DIR)
 
