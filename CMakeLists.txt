@@ -134,6 +134,12 @@ if (ROS_ROOT)
   set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
   #set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
   set(COMPONENT_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib/orocos)
+
+  # We force it in case of ROS builds because the UseOrocos.cmake scripts will always look
+  # in this path, also during an autoproj/bootstrap build.
+  SET(CMAKE_INSTALL_PREFIX
+    ${PROJECT_SOURCE_DIR}/install CACHE PATH "Orocos install prefix for ROS builds" FORCE
+    )
 endif()
 
 ## Find Orocos RTT.
