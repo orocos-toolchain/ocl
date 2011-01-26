@@ -65,6 +65,9 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#if defined(HAS_READLINE) && !defined(HAS_EDITLINE) && defined(_POSIX_VERSION)
+#include <signal.h>
+#endif
 
 #include <ocl/OCL.hpp>
 
@@ -109,7 +112,13 @@ namespace OCL
         PTrace ptraces;
         PTrace straces;
 
+        //! We store the last parsed expression in order to keep
+        //! it a little longer in memory, for example, when it's an 'send()' operation call.
+        base::DataSourceBase::shared_ptr last_expr;
 #if defined(HAS_READLINE) || defined(HAS_EDITLINE)
+#if defined(_POSIX_VERSION) && !defined(HAS_EDITLINE)
+        static void rl_sigwinch_handler(int sig, siginfo_t *si, void *ctxt);
+#endif
         /* Read a string, and return a pointer to it.
            Returns NULL on EOF. */
         char *rl_gets ();

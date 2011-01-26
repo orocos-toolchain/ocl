@@ -8,10 +8,6 @@ cmake_minimum_required(VERSION 2.6.3)
 # This creates a standard cmake project. You may extend this file with
 # any cmake macro you see fit.
 #
-# The CMake 'target' names are identical to the first argument of the
-# macro, except for orocos_typekit, where the target is fully
-# controlled by generated code of 'typegen'.
-#
 project(@pkgname@)
 
 #
@@ -23,18 +19,25 @@ if (ROS_ROOT)
   include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
   rosbuild_init()
   rosbuild_find_ros_package( rtt )
-  rosbuild_find_ros_package( ocl )
   set( RTT_HINTS HINTS ${rtt_PACKAGE_PATH}/install )
-  set( OCL_HINTS HINTS ${ocl_PACKAGE_PATH}/install )
 endif()
 
 # Set the CMAKE_PREFIX_PATH in case you're not using Orocos through ROS
 # for helping these find commands find RTT.
-find_package(Orocos-RTT REQUIRED ${RTT_HINTS})
+find_package(OROCOS-RTT REQUIRED ${RTT_HINTS})
 
 # Defines the orocos_* cmake macros. See that file for additional
 # documentation.
 include(${OROCOS-RTT_USE_FILE_PATH}/UseOROCOS-RTT.cmake)
+
+#
+# Components, types and plugins.
+#
+# The CMake 'target' names are identical to the first argument of the
+# macros below, except for orocos_typegen_headers, where the target is fully
+# controlled by generated code of 'typegen'.
+#
+
 
 # Creates a component library lib@pkgname@-<target>.so
 # and installs in the directory lib/orocos/@pkgname@/
@@ -77,7 +80,7 @@ orocos_typegen_headers(@pkgname@-types.hpp) # ...you may add multiple header fil
 #orocos_service(@pkgname@-service @pkgname@-service.cpp) # ...only one service per library !
 #orocos_plugin(@pkgname@-plugin @pkgname@-plugin.cpp) # ...only one plugin function per library !
 #
-# You may add multiple orocos_plugin statements.
+# You may add multiple orocos_plugin/orocos_service statements.
 
 
 #

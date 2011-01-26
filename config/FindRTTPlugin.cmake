@@ -4,7 +4,7 @@
 # If the optional RTT_COMPONENT_PATH environment variable exists, header files and
 # libraries will be searched in the RTT_COMPONENT_PATH/include and RTT_COMPONENT_PATH/lib/orocos/plugins
 # directories, respectively. Otherwise the default CMake search process will be
-# used.
+# used. Use the RTT_HINTS variable to hint the location of the orocos-rtt installation directory.
 #
 # Usage: find_package( RTTPlugin COMPONENTS rtt-scripting )
 #
@@ -17,7 +17,7 @@
 
 include(LibFindMacros)
 
-find_package(OROCOS-RTT)
+find_package(Orocos-RTT REQUIRED ${RTT_HINTS})
 
 FOREACH(COMPONENT ${RTTPlugin_FIND_COMPONENTS})
     # We search for both 'given name' and 'given name + -target'

@@ -82,13 +82,18 @@
 #include <algorithm>
 
 #if defined(HAS_READLINE) && !defined(NO_GPL)
-#define USE_READLINE
+# define USE_READLINE
 #endif
 #if defined(HAS_EDITLINE)
 // we use the readline bc wrapper:
-#define USE_READLINE
-#define USE_EDITLINE
+# define USE_READLINE
+# define USE_EDITLINE
 #endif
+// only use signals if posix, and pure readline
+# if defined(_POSIX_VERSION) && defined(HAS_READLINE) && !defined(HAS_EDITLINE)
+#   define USE_SIGNALS 1
+# endif
+
 
 #ifdef USE_READLINE
 # ifdef USE_EDITLINE
@@ -102,8 +107,15 @@
 #include <boost/bind.hpp>
 #include <boost/lambda/lambda.hpp>
 
+#ifdef USE_SIGNALS
 #include <signal.h>
+#endif
 
+// we need to declare it since Xenomai does not declare it in any header
+#if defined(USE_SIGNALS) && defined(OROCOS_TARGET_XENOMAI) && CONFIG_XENO_VERSION_MAJOR == 2 && CONFIG_XENO_VERSION_MINOR >= 5
+extern "C"
+int xeno_sigwinch_handler(int sig, siginfo_t *si, void *ctxt);
+#endif
 namespace OCL
 {
     using namespace boost;
@@ -146,23 +158,27 @@ namespace OCL
     nl(std::ostream& __os)
     { return __os.put(__os.widen('\n')); }
 
-#ifdef _POSIX_VERSION
+    // All readline specific functions
+#if defined(USE_READLINE)
+
+    // Signal code only on Posix:
+#if defined(USE_SIGNALS)
     // catch ctrl+c signal
     void ctrl_c_catcher(int sig)
     {
         ::signal(sig, SIG_IGN);
-#if defined( USE_READLINE ) && !defined(USE_EDITLINE)
-//        cerr <<nl<<"TaskBrowser intercepted Ctrl-C. Type 'quit' to exit."<<endl;
-//         rl_delete_text(0, rl_end);
-//         //cerr << "deleted " <<deleted <<endl;
         rl_free_line_state();
-//         rl_cleanup_after_signal();
-#endif
         ::signal(SIGINT, ctrl_c_catcher);
     }
-#endif
 
-#ifdef USE_READLINE
+    void TaskBrowser::rl_sigwinch_handler(int sig, siginfo_t *si, void *ctxt) {
+#if defined(OROCOS_TARGET_XENOMAI) && CONFIG_XENO_VERSION_MAJOR == 2 && CONFIG_XENO_VERSION_MINOR >= 5
+        if (xeno_sigwinch_handler(sig, si, ctxt) == 0)
+#endif
+            rl_resize_terminal();
+    }
+#endif // USE_SIGNALS
+
     char *TaskBrowser::rl_gets ()
     {
         /* If the buffer has already been allocated,
@@ -195,12 +211,10 @@ namespace OCL
         } else {
             p = "> ";
         }
-#ifndef _WIN32  // does not work on win32
-#if !defined(USE_EDITLINE)
+#if defined(USE_SIGNALS)
 
         if (rl_set_signals() != 0)
             cerr << "Error setting signals !" <<endl;
-#endif
 #endif
         line_read = readline ( p.c_str() );
 
@@ -632,13 +646,24 @@ namespace OCL
         context = tb;
         this->switchTaskContext(_c);
 #ifdef USE_READLINE
+        // we always catch sigwinch ourselves, in order to pass it on to Xenomai if necessary.
+#ifdef USE_SIGNALS
+        rl_catch_sigwinch = 0;
+#endif
         rl_completion_append_character = '\0'; // avoid adding spaces
         rl_attempted_completion_function = &TaskBrowser::orocos_hmi_completion;
 
         if ( read_history(".tb_history") != 0 ) {
             read_history("~/.tb_history");
         }
-#endif
+#ifdef USE_SIGNALS
+        struct sigaction sa;
+        sa.sa_sigaction = &TaskBrowser::rl_sigwinch_handler;
+        sa.sa_flags = SA_SIGINFO | SA_RESTART;
+        sigemptyset( &sa.sa_mask );
+        sigaction(SIGWINCH, &sa, 0);
+#endif // USE_SIGNALS
+#endif // USE_READLINE
 
         this->setColorTheme( darkbg );
         this->enterTask();
@@ -701,20 +726,14 @@ namespace OCL
      */
     void TaskBrowser::loop()
     {
-#ifdef _POSIX_VERSION
+#ifdef USE_SIGNALS
         // Intercept Ctrl-C
         ::signal( SIGINT, ctrl_c_catcher );
-#if defined(USE_READLINE) && !defined(USE_EDITLINE)
         // Let readline intercept relevant signals
         if(rl_catch_signals == 0)
             cerr << "Error: not catching signals !"<<endl;
         if (rl_set_signals() != 0)
             cerr << "Error setting signals !" <<endl;
-#ifdef OROCOS_TARGET_XENOMAI
-        // necessary to avoid crash when using Xenomai.
-        xeno_sigshadow_install();
-#endif
-#endif
 #endif
         cout << nl<<
             coloron <<
@@ -764,7 +783,7 @@ namespace OCL
                 }
                 // Check port status:
                 checkPorts();
-#ifdef _POSIX_VERSION
+#ifdef USE_SIGNALS
                 // Call readline wrapper :
                 ::signal( SIGINT, ctrl_c_catcher ); // catch ctrl_c only when editting a line.
 #endif
@@ -780,7 +799,7 @@ namespace OCL
                     command = "quit";
 #endif
                 str_trim( command, ' ');
-#ifdef _POSIX_VERSION
+#ifdef USE_SIGNALS
                 ::signal( SIGINT, SIG_DFL );        // do not catch ctrl_c
 #endif
                 cout << coloroff;
@@ -1318,27 +1337,29 @@ namespace OCL
             return;
         }
 
-	// Set caller=this to have correct call/send semantics:
-        scripting::Parser _parser(this);
+	    // Set caller=0 to have correct call/send semantics.
+        // we're outside the updateHook(). Passing 'this' would
+        // trigger the EE of the TB, but not our own function.
+        scripting::Parser _parser( 0 );
 
         if (debug)
             cerr << "Trying ValueStatement..."<<nl;
         try {
             // Check if it was a method or datasource :
-            base::DataSourceBase::shared_ptr ds = _parser.parseValueStatement( comm, context );
+            last_expr = _parser.parseValueStatement( comm, context );
             // methods and DS'es are processed immediately.
-            if ( ds.get() != 0 ) {
+            if ( last_expr ) {
                 // only print if no ';' was given.
                 assert( comm.size() != 0 );
                 if ( comm[ comm.size() - 1 ] != ';' ) {
-                    this->printResult( ds.get(), true );
+                    this->printResult( last_expr.get(), true );
                     cout << sresult.str() << nl <<endl;
                     sresult.str("");
                 } else
-                    ds->evaluate();
+                    last_expr->evaluate();
                 return; // done here
             } else if (debug)
-                cerr << "returned zero !"<<nl;
+                cerr << "returned (null) !"<<nl;
             //cout << "    (ok)" <<nl;
             //return; //
         } catch ( fatal_semantic_parse_exception& pe ) { // incorr args, ...
@@ -1368,67 +1389,23 @@ namespace OCL
             return;
         }
         if (debug)
-            cerr << "Trying ValueChange..."<<nl;
-        try {
-            // Check if it was a method or datasource :
-            base::DataSourceBase::shared_ptr ds = _parser.parseValueChange( comm, context );
-            // methods and DS'es are processed immediately.
-            if ( ds.get() != 0 ) {
-                // only print if no ';' was given.
-                assert( comm.size() != 0 );
-                if ( comm[ comm.size() - 1 ] != ';' ) {
-                    this->printResult( ds.get(), true );
-                    cout << sresult.str() << nl <<endl;
-                    sresult.str("");
-                } else
-                    ds->evaluate();
-                return; // done here
-            } else if (debug)
-                cerr << "returned zero !"<<nl;
-        } catch ( fatal_semantic_parse_exception& pe ) { // incorr args, ...
-            // way to fatal,  must be reported immediately
-            if (debug)
-                cerr << "fatal_semantic_parse_exception: ";
-            cerr << pe.what() <<nl;
-            return;
-        } catch ( syntactic_parse_exception& pe ) { // wrong content after = sign etc..
-            // syntactic errors must be reported immediately
-            if (debug)
-                cerr << "syntactic_parse_exception: ";
-            cerr << pe.what() <<nl;
-            return;
-        } catch ( parse_exception_parser_fail &pe )
-            {
-                // ignore, try next parser
-                if (debug) {
-                    cerr << "Ignoring ValueChange exception :"<<nl;
-                    cerr << pe.what() <<nl;
-                }
-        } catch ( parse_exception& pe ) {
-            // syntactic errors must be reported immediately
-            if (debug)
-                cerr << "parse_exception :";
-            cerr << pe.what() <<nl;
-            return;
-        }
-        if (debug)
             cerr << "Trying Expression..."<<nl;
         try {
             // Check if it was a method or datasource :
-            base::DataSourceBase::shared_ptr ds = _parser.parseExpression( comm, context );
+            last_expr = _parser.parseExpression( comm, context );
             // methods and DS'es are processed immediately.
-            if ( ds.get() != 0 ) {
+            if ( last_expr ) {
                 // only print if no ';' was given.
                 assert( comm.size() != 0 );
                 if ( comm[ comm.size() - 1 ] != ';' ) {
-                    this->printResult( ds.get(), true );
+                    this->printResult( last_expr.get(), true );
                     cout << sresult.str() << nl << endl;
                     sresult.str("");
                 } else
-                    ds->evaluate();
+                    last_expr->evaluate();
                 return; // done here
             } else if (debug)
-                cerr << "returned zero !"<<nl;
+                cerr << "returned (null) !"<<nl;
         } catch ( syntactic_parse_exception& pe ) { // missing brace etc
             // syntactic errors must be reported immediately
             if (debug)

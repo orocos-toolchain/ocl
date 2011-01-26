@@ -50,7 +50,7 @@ IF ( BUILD_TASKBROWSER )
 
       # readline only depends on curses on unixes, not on mingw/msvc
       if (UNIX)
-        OROCOS_PKGCONFIG_LIBS(ncurses readline)
+        OROCOS_PKGCONFIG_LIBS(readline ${CURSES_IMPL})
         INCLUDE_DIRECTORIES( ${READLINE_INCLUDE_DIR} ${CURSES_INCLUDE_DIR} )
         TARGET_LINK_LIBRARIES( orocos-taskbrowser ${READLINE_LIBRARY} ${CURSES_LIBRARY} )
       else(UNIX)

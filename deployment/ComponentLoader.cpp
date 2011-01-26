@@ -6,6 +6,7 @@
 #include <rtt/Logger.hpp>
 #include <boost/filesystem.hpp>
 #include <rtt/plugin/PluginLoader.hpp>
+#include <rtt/types/TypekitRepository.hpp>
 
 #ifdef HAS_ROSLIB
 #include <ros/package.h>
@@ -322,14 +323,11 @@ bool ComponentLoader::isImported(string type_name)
         return true;
     if (find(loadedPackages.begin(), loadedPackages.end(), type_name) != loadedPackages.end())
         return true;
-#ifdef HAS_ROSLIB
-    // hack: since ros works with package names, and ocl is imported by default (in configureHook())
-    // we claim that the 'ocl' package is always imported."
-    if ( type_name == "ocl") {
-        log(Debug) <<"OCL should be loaded by default in ROS package trees. No need to import it." <<endlog();
+    // hack: in current versions, ocl is loaded most of the times by default because it does not reside in a package subdir
+    // once ocl is in the 'ocl' package directory, this code becomes obsolete:
+    if ( type_name == "ocl" && TypekitRepository::hasTypekit("OCLTypekit")) {
         return true;
     }
-#endif
     return false;
 }
 
