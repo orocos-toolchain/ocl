@@ -385,6 +385,10 @@ static DataSourceBase::shared_ptr Variable_fromlua(lua_State *L, const char* typ
 
 		dsb = new ValueDataSource<std::string>(x);
 
+	} else if (luatype == LUA_TNUMBER) { /* last resort, try conversion via double */
+		TypeInfo* ti = Types()->type(type);
+		DataSourceBase::shared_ptr double_dsb = Variable_fromlua(L, "double", valind);
+		dsb = ti->convert(double_dsb);
 	} else {
 		goto out_conv_err;
 	}
