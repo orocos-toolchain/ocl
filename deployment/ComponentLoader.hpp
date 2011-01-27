@@ -126,9 +126,16 @@ namespace OCL {
              * @param name The name of the (package) directory to import
              * @param path_list A colon or semi-colon seperated list of paths
              * to look for Components. May be the empty string. In that case, the
-	     * default component search path is used.
+             * default component search path is used.
              */
             bool import(std::string const& name, std::string const& path_list);
+
+            /**
+             * Loads a library as component library.
+             * @param path an absolute or relative path to a library.
+             * Relative paths are interpreted with regard to the plugin path.
+             */
+            bool loadLibrary(std::string const& path);
 
             /**
              * Creates a new component an earlier discovered component type.
