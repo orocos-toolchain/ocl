@@ -10,19 +10,19 @@ IF ( BUILD_DEPLOYMENT )
     SET( HPPS DeploymentComponent.hpp )
     SET( SRCS DeploymentComponent.cpp ComponentLoader.cpp ${CMAKE_CURRENT_BINARY_DIR}/comppath.cpp)
 
-    orocos_library( orocos-deployment ${SRCS})
-    GLOBAL_ADD_INCLUDE( ocl ${HPPS})
+    orocos_library( orocos-ocl-deployment ${SRCS})
+    orocos_install_headers( ${HPPS} INSTALL include/orocos/ocl )
 
-    TARGET_LINK_LIBRARIES( orocos-deployment "dl" )
-    TARGET_LINK_LIBRARIES( orocos-deployment ${RTT_PLUGIN_rtt-marshalling_LIBRARIES} ${RTT_PLUGIN_rtt-scripting_LIBRARIES})
-    TARGET_LINK_LIBRARIES( orocos-deployment ${Boost_FILESYSTEM_LIBRARIES} ${Boost_SYSTEM_LIBRARIES})
-    target_link_libraries( orocos-deployment LINK_INTERFACE_LIBRARIES )
+    TARGET_LINK_LIBRARIES( orocos-ocl-deployment "dl" )
+    TARGET_LINK_LIBRARIES( orocos-ocl-deployment ${RTT_PLUGIN_rtt-marshalling_LIBRARIES} ${RTT_PLUGIN_rtt-scripting_LIBRARIES})
+    TARGET_LINK_LIBRARIES( orocos-ocl-deployment ${Boost_FILESYSTEM_LIBRARIES} ${Boost_SYSTEM_LIBRARIES})
+    target_link_libraries( orocos-ocl-deployment LINK_INTERFACE_LIBRARIES )
     
     IF (OROCOS-RTT_CORBA_FOUND)
-        orocos_library(orocos-deployment-corba CorbaDeploymentComponent.cpp )
-        GLOBAL_ADD_INCLUDE( ocl CorbaDeploymentComponent.hpp)
-        TARGET_LINK_LIBRARIES( orocos-deployment-corba orocos-deployment)
-	    TARGET_LINK_LIBRARIES( orocos-deployment-corba ${OROCOS-RTT_CORBA_LIBRARIES})
+        orocos_library(orocos-ocl-deployment-corba CorbaDeploymentComponent.cpp )
+        orocos_install_headers( CorbaDeploymentComponent.hpp INSTALL include/orocos/ocl )
+        TARGET_LINK_LIBRARIES( orocos-ocl-deployment-corba orocos-ocl-deployment)
+        TARGET_LINK_LIBRARIES( orocos-ocl-deployment-corba ${OROCOS-RTT_CORBA_LIBRARIES})
     ENDIF(OROCOS-RTT_CORBA_FOUND)
     
     # rospack support
@@ -30,7 +30,7 @@ IF ( BUILD_DEPLOYMENT )
         rosbuild_find_ros_package( roslib )
         include_directories( ${roslib_PACKAGE_PATH}/include )
         find_library(ROS_LIB roslib ${roslib_PACKAGE_PATH}/lib )
-        TARGET_LINK_LIBRARIES( orocos-deployment ${ROS_LIB} )
+        TARGET_LINK_LIBRARIES( orocos-ocl-deployment ${ROS_LIB} )
         ADD_DEFINITIONS( -DHAS_ROSLIB )
         SET(DEFAULT_COMPONENT_PATH "${PROJECT_SOURCE_DIR}/lib/orocos" CACHE STRING "Default component lookup path when none given. (semi-)colon separated list." FORCE)
     ELSE( ROS_ROOT)
@@ -38,6 +38,8 @@ IF ( BUILD_DEPLOYMENT )
     ENDIF( ROS_ROOT )
 
     configure_file(comppath.cpp.in ${CMAKE_CURRENT_BINARY_DIR}/comppath.cpp @ONLY)
+
+    orocos_generate_package()
 
     ADD_SUBDIRECTORY( tests )
 

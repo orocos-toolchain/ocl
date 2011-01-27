@@ -7,10 +7,10 @@ IF ( BUILD_HELLOWORLD )
     FILE( GLOB HPPS [^.]*.hpp )
 
     ADD_EXECUTABLE( helloworld ${SRCS} )
-    orocos_component( orocos-helloworld ${SRCS} INSTALL lib/orocos)
-    SET_TARGET_PROPERTIES( orocos-helloworld
+    orocos_component( orocos-ocl-helloworld ${SRCS} INSTALL lib/orocos)
+    SET_TARGET_PROPERTIES( orocos-ocl-helloworld
       PROPERTIES COMPILE_FLAGS "-DOCL_COMPONENT_ONLY" )
 
-    TARGET_LINK_LIBRARIES( helloworld ${OROCOS-RTT_LIBRARIES} orocos-taskbrowser)
+    TARGET_LINK_LIBRARIES( helloworld ${OROCOS-RTT_LIBRARIES} orocos-ocl-taskbrowser)
     
 ENDIF ( BUILD_HELLOWORLD )

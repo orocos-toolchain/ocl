@@ -14,13 +14,14 @@ IF ( BUILD_LOGGING AND LOG4CPP_FOUND )
   INCLUDE_DIRECTORIES( "${LOG4CPP_INCLUDE_DIRS}" )
   LINK_DIRECTORIES( "${LOG4CPP_LIBRARY_DIRS}" )
 
-  orocos_component( orocos-logging ${LOGCOMP_CPPS} INSTALL lib/orocos)
-  orocos_library( orocos-log4cpp ${LOGLIB_CPPS} )
+  orocos_component( orocos-ocl-logging ${LOGCOMP_CPPS} INSTALL lib/orocos)
+  orocos_library( orocos-ocl-log4cpp ${LOGLIB_CPPS} )
 
-  GLOBAL_ADD_INCLUDE( ocl ${HPPS})
-  target_link_libraries( orocos-log4cpp "${LOG4CPP_LIBRARIES}")
-  target_link_libraries( orocos-logging "${LOG4CPP_LIBRARIES}" orocos-log4cpp)
+  orocos_install_headers( ${HPPS} INSTALL include/orocos/ocl )
+  target_link_libraries( orocos-ocl-log4cpp "${LOG4CPP_LIBRARIES}")
+  target_link_libraries( orocos-ocl-logging "${LOG4CPP_LIBRARIES}" orocos-ocl-log4cpp)
 
+  orocos_generate_package()
   ADD_SUBDIRECTORY( tests )
 
 ENDIF ( BUILD_LOGGING  AND LOG4CPP_FOUND )
