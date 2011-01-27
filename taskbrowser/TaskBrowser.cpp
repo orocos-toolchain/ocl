@@ -1481,7 +1481,7 @@ namespace OCL
         // Print the members of the type:
         base::DataSourceBase::shared_ptr dsb(ds);
         dsb->evaluate();
-        if (dsb->getMemberNames().empty() || dsb->getTypeName() == "string") {
+        if (dsb->getMemberNames().empty() || dsb->getTypeInfo()->isStreamable() ) {
             if (debug) cerr << "terminal item " << dsb->getTypeName() << nl;
             sresult << dsb;
         } else {
