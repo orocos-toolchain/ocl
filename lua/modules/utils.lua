@@ -10,7 +10,7 @@ module('utils')
 
 -- increment major on API breaks
 -- increment minor on non breaking changes
-VERSION=0.2
+VERSION=0.4
 
 function append(car, ...)
    assert(type(car) == 'table')
@@ -123,6 +123,7 @@ function car(tab)
 end
 
 function cdr(tab)
+   local new_array = {}
    for i = 2, table.getn(tab) do
       table.insert(new_array, tab[i])
    end
@@ -217,4 +218,36 @@ end
 
 function eval(str)
    return assert(loadstring(str))()
+end
+
+-- compare two tables
+function table_cmp(t1, t2)
+   local function __cmp(t1, t2)
+      -- t1 _and_ t2 are not tables
+      if not (type(t1) == 'table' and type(t2) == 'table') then
+	 if t1 == t2 then return true
+	 else return false end
+      elseif type(t1) == 'table' and type(t2) == 'table' then
+	 if #t1 ~= #t2 then return false
+	 else
+	    -- iterate over all keys and compare against k's keys
+	    for k,v in pairs(t1) do
+	       if not __cmp(t1[k], t2[k]) then
+		  return false
+	       end
+	    end
+	    return true
+	 end
+      else -- t1 and t2 are not of the same type
+	 return false
+      end
+   end
+   return __cmp(t1,t2) and __cmp(t2,t1)
+end
+
+function table_has(t, x)
+   for _,e in ipairs(t) do
+      if e==x then return true end
+   end
+   return false
 end

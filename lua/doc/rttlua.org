@@ -1,7 +1,7 @@
 #+TITLE:	Lua RTT bindings (beta2)
 #+AUTHOR:	Markus Klotzbuecher
 #+EMAIL:	markus.klotzbuecher@mech.kuleuven.be
-#+DATE:		2010-09-13 Mon
+#+DATE:		2011-01-25 Tue
 #+DESCRIPTION:
 #+KEYWORDS:
 #+LANGUAGE:	en
@@ -125,7 +125,7 @@
   > instead of print you can just type '='
   > =d
   > -- call an operation
-  > d:call("displayComponentTypes")
+  > d:displayComponentTypes()
   I can create the following component types:
      OCL::LuaComponent
      OCL::Testcomp
@@ -178,7 +178,7 @@
 #+BEGIN_EXAMPLE
   -- load lua service into deployer
   d:addPeer(d)
-  d:call("loadService", "deployer", "Lua")
+  d:loadService("deployer", "Lua")
   local execstr_op = d:provides("Lua"):getOperation("exec_str")
   execstr_op([[
 		    require("rttlib")
@@ -281,10 +281,11 @@
    | =Service provides(...)=                          |      | return service (provides/0 default, provides/1 subservice)                |
    | =Variable call(string, ...)=                     | D    | call operation with name specified by string and right arguments          |
    | =Operation getOperation(name)=                   |      | get an Operation by string name                                           |
+   | =bool hasOperation(string)=                      |      | return true if operation exists in this TaskContext                       |
    | =SendHandle send(string, ...)=                   |      | as above but send. returns SendHandle                                     |
    | =void delete(TaskContext)=                       |      | explicit deletion of a TaskContext                                        |
 
- Note: =call= and =send= accept both
+   Note: =call= and =send= accept both Variables and Lua types.
 
 ** SendHandle
 
@@ -352,6 +353,7 @@
    | =string, variable read()= |      | read from Port, returns a FlowStatus string and if data available a Variable    |
    | =string read(variable)=   |      | read from Port and write result into Variable given. Returns FlowStatus         |
    | =table info()=            |      | return a table containing information about this port                           |
+   | =bool connect(port)=      |      | connect this port to the given one                                              |
    | =delete()=                |      | delete this port (remove it from any TaskContext before this)                   |
 
    OuputPort
@@ -361,6 +363,7 @@
    | =new(type, name, desc)= |      | create a new OutputPort of type with name (optional) and description (optional) |
    | =write(Variable)=       |      | write Variable to port                                                          |
    | =table info()=          |      | return a table containing information about this port                           |
+   | =bool connect(port)=    |      | connect this port to the given one                                              |
    | =delete()=              |      | delete this port (remove it from any TaskContext before this)                   |
 
 ** Property
@@ -390,6 +393,7 @@
    | =table getPortNames()=           |      | return table of names of ports of this service                 |
    | =provides(string)=               |      | return subservice with name specified by given string          |
    | =Operation getOperation(string)= |      | return operation specified by string name  of this service     |
+   | =bool hasOperation(string)=      |      | return true if operation exists in this service                |
    | =Port getPort(string)=           |      | return port specified by the given string name of this service |
 
 *** ServiceRequester
@@ -458,7 +462,7 @@
 
    This not too bad, but we would like to display the string
    representation of the C++ enums =type= and =lock_policy=. So we
-   write a function...
+   write a function must return a table...
 
    #+BEGIN_EXAMPLE
    function ConnPolicy2tab(cp)

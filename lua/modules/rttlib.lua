@@ -35,8 +35,9 @@
 require("utils")
 require("ansicolors")
 
-local print, type, table, getmetatable, pairs, ipairs, tostring, assert, error =
-   print, type, table, getmetatable, pairs, ipairs, tostring, assert, error
+local print, type, table, getmetatable, setmetatable, pairs, ipairs, tostring, assert, error, unpack =
+   print, type, table, getmetatable, setmetatable, pairs, ipairs, tostring, assert, error, unpack
+
 local string = string
 local utils = utils
 local col = ansicolors
@@ -131,13 +132,28 @@ end
 function var2tab(var)
    local function __var2tab(var)
       local res
-      if var_is_basic(var) then
+      if type(var) ~= 'userdata' then
+	 res=var
+      elseif var_is_basic(var) then
 	 res = var:tolua()
-      else
+      else -- non basic type
 	 local parts = var:getMemberNames()
-	 res = {}
-	 for i,p in pairs(parts) do
-	    res[p] = __var2tab(var:getMember(p))
+	 if #parts == 2 and -- catch arrays
+	    utils.table_has(parts, "size") and utils.table_has(parts, "capacity") then
+	    res = {}
+	    if not var.size then return end -- todo: how is this possible?
+	    for i=0,var.size-1 do
+	       res[i+1] = __var2tab(var[i])
+	    end
+	 else -- not basic, not array
+	    if #parts == 0 then -- no member names -> probably an unrecognized basic type
+	       res = var:toString()
+	    else -- not basic but with member names
+	       res = {}
+	       for i,p in pairs(parts) do
+		  res[p] = __var2tab(var:getMember(p))
+	       end
+	    end
 	 end
       end
       return res
@@ -152,6 +168,8 @@ var_pp = {}
 var_pp.ConnPolicy = ConnPolicy2tab
 
 function var2str(var)
+   if type(var) ~= 'userdata' then return tostring(var) end
+
    local res = var2tab(var)
 
    -- post-beautification:
@@ -192,7 +210,8 @@ end
 -- pretty print properties
 --
 function prop2str(p)
-   return white(p:getName()) .. ' (' .. p:get():getType() .. ')' .. " = " .. yellow(var2str(p:get())) .. red(" // " .. p:getDescription()) .. ""
+   local info = p:info()
+   return white(info.name) .. ' (' .. info.type .. ')' .. " = " .. yellow(var2str(p:get())) .. red(" // " .. info.desc) .. ""
 end
 
 --
@@ -309,6 +328,31 @@ function port2str(p)
    return table.concat(ret, '')
 end
 
+-- port contents
+function portval2str(port, comp)
+   local inf = port:info()
+   local res = white(inf.name) .. ' (' .. inf.type .. ')  ='
+
+   if inf.type == 'unknown_t' then
+      res = res .. " ?"
+   elseif inf.porttype == 'in' then
+      local fs, data = port:read()
+
+      if fs == 'NoData' then res = res .. ' NoData'
+      elseif fs == 'NewData' then res = res .. ' ' .. green(var2str(data))
+      else res = res .. ' ' .. yellow(var2str(data)) end
+   else
+      res = res .. ' ' .. cyan(var2str(comp:provides(inf.name):getOperation("last")()))
+   end
+   return res
+end
+
+function portstats(comp)
+   for i,p in ipairs(comp:getPortNames(p)) do
+      print(portval2str(comp:getPort(p), comp))
+   end
+end
+
 local function tc_colorstate(state)
    if state == "Init" then return yellow(state, false)
    elseif state == "PreOperational" then return yellow(state, false)
@@ -352,10 +396,66 @@ function pptc(tc)
    print(tc2str(tc))
 end
 
+function info()
+   print("services:   ", table.concat(rtt.services(), ', '))
+   print("typekits:   ", table.concat(rtt.typekits(), ', '))
+   print("types:      ", table.concat(rtt.types(), ', '))
+end
+
+-- clone a port, with same name + suffix and connect both
+-- cname is optional component name used in description
+function port_clone_conn(p, suffix, cname)
+   local cname = cname or ""
+   local suf = suffix or ""
+   local inf = p:info()
+   local cl
+   if inf.porttype == 'in' then
+      cl = rtt.OutputPort.new(inf.type, inf.name .. suf, "Inverse port of " .. cname .. "." .. inf.name)
+   elseif inf.porttype == 'out' then
+      cl = rtt.InputPort.new(inf.type, inf.name .. suf, "Inverse port of " .. cname .. "." .. inf.name)
+   else
+      error("unkown port type: " .. utils.tab2str(inf))
+   end
+   if not p:connect(cl) then
+      error("ERROR: failed to connect \n\t" .. tostring(p) .. " to its inverse\n\t" .. tostring(cl))
+   end
+   return cl
+end
+
+-- created set of mirrored, connected ports
+-- comp: taskcontext to mirror
+-- tab: table of port names to mirror, if nil will mirror all
+-- suffix: suffix
+-- a table of { port, name, desc } tables
+function mirror(comp, suffix, tab)
+   local tab = tab or comp:getPortNames()
+   local res = {}
+   for _,pn in ipairs(tab) do
+      local p = comp:getPort(pn)
+      local cl = port_clone_conn(p, "_inv", comp:getName())
+      res[pn] = cl
+   end
+   return res
+end
+
+-- TaskContext metatable __index replacement for allowing operations
+-- to be called like methods. This is pretty slow, use getOperation to
+-- cache local op when speed matters.
+function tc_index(tc, key)
+   local reg = debug.getregistry()
+   if rtt.TaskContext.hasOperation(tc, key) then
+      return function (tc, ...) return rtt.TaskContext.call(tc, key, ...) end
+   else -- pass on to standard metatable
+      return reg.TaskContext[key]
+   end
+end
+
 -- enable pretty printing
 if type(debug) == 'table' then
    reg = debug.getregistry()
    reg.TaskContext.__tostring=tc2str
+   reg.TaskContext.stat=portstats
+   reg.TaskContext.__index=tc_index -- enable operations as methods
    reg.Variable.__tostring=var2str
    reg.Variable.fromtab=varfromtab
    reg.Variable.var2tab=var2tab
@@ -367,34 +467,4 @@ if type(debug) == 'table' then
    reg.OutputPort.__tostring=port2str
 else
    print("no debug library, if required pretty printing must be enabled manually")
-end
-
-function info()
-   print("services: ", table.concat(rtt.services(), ', '))
-   print("typekits: ", table.concat(rtt.typekits(), ', '))
-   print("types:    ", table.concat(rtt.types(), ', '))
-end
-
-function portval2str(port, comp)
-   local inf = port:info()
-   local res = white(inf.name) .. ' (' .. inf.type .. ')  ='
-
-   if inf.type == 'unknown_t' then
-      res = res .. " ?"
-   elseif inf.porttype == 'in' then
-      local fs, data = port:read()
-
-      if fs == 'NoData' then res = res .. ' NoData'
-      elseif fs == 'NewData' then res = res .. green(var2str(data))
-      else res = res .. ' ' .. yellow(var2str(data)) end
-   else
-      res = res .. ' ' .. cyan(var2str(comp:provides(inf.name):getOperation("last")()))
-   end
-   return res
-end
-
-function portstats(comp)
-   for i,p in ipairs(comp:getPortNames(p)) do
-      print(portval2str(comp:getPort(p), comp))
-   end
 end

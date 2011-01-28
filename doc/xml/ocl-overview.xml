@@ -89,6 +89,12 @@
 	  configure components in the same process.
 	</para>
       </listitem>
+      <listitem>
+	<para>
+	  <ulink url="rttlua.html">Lua RTT Manual:</ulink> Use Lua to
+	  script deployments, components and services.
+	</para>
+      </listitem>
     </itemizedlist>
   </section>
 </article>

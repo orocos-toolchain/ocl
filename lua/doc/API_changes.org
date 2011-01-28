@@ -20,6 +20,21 @@
 
 *API Changes in the Lua RTT bindings*
 
+ - [2011-01-24 Mon] RTT operations are now called just like methods
+   with =tc:operation()= syntax. If there exists a C++ method _and_ a
+   RTT Operation with the same name, the operation will be called.
+
+ - [2011-01-24 Mon] added Service.hasOperation and
+   TaskContext.hasOperation.
+
+ - [2011-01-19 Wed] added rttlib.mirror(TaskContext, table) which
+   creates connected inverse ports of all ports given in table or all
+   ports of the TC if that is nil.
+
+ - [2011-01-19 Wed] added port:connect(port)
+
+ - [2010-12-12 Sun] rttlib adds =tc:stat()= operation to print port values
+
  - [2010-12-06 Mon] add Variable:resize(size) operation
 
  - [2010-10-21 Thu] add TaskContext:getOperation("name")

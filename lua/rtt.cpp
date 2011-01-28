@@ -158,50 +158,17 @@ static DataSourceBase::shared_ptr Variable_fromlua(lua_State *L, const char* typ
  * Variable (DataSourceBase)
  ***************************************************************/
 
-static int Variable_getTypes(lua_State *L)
+/* helper, check if a variable is basic, that is _tolua will succeed */
+static bool __Variable_isbasic(DataSourceBase::shared_ptr dsb)
 {
-	push_vect_str(L, Types()->getTypes());
-	return 1;
-}
-
-static int Variable_getMemberNames(lua_State *L)
-{
-	DataSourceBase::shared_ptr *dsbp = luaM_checkudata_mt(L, 1, "Variable", DataSourceBase::shared_ptr);
-	push_vect_str(L, (*dsbp)->getMemberNames());
-	return 1;
-}
-
-static int Variable_getMember(lua_State *L)
-{
-	DataSourceBase::shared_ptr *dsbp = luaM_checkudata_mt(L, 1, "Variable", DataSourceBase::shared_ptr);
-	DataSourceBase::shared_ptr memdsb;
-	const char *mem = luaL_checkstring(L, 2);
-
-	memdsb = (*dsbp)->getMember(mem);
-
-	if(memdsb == 0)
-		lua_pushnil(L);
+	const std::string type = dsb->getTypeName();
+	if(type == "bool" || type == "float" || type == "double" || type == "uint" ||
+	   type == "int" || type == "char" || type == "string" || type == "void" )
+		return true;
 	else
-		luaM_pushobject_mt(L, "Variable", DataSourceBase::shared_ptr)(memdsb);
-	return 1;
+		return false;
 }
 
-static int Variable_update(lua_State *L)
-{
-	int ret;
-	DataSourceBase::shared_ptr dsb;
-	DataSourceBase::shared_ptr *dsbp;
-	DataSourceBase::shared_ptr self = *(luaM_checkudata_mt(L, 1, "Variable", DataSourceBase::shared_ptr));
-
-	if ((dsbp = luaM_testudata_mt(L, 2, "Variable", DataSourceBase::shared_ptr)) != NULL)
-		dsb = *dsbp;
-	else
-		dsb = Variable_fromlua(L, self->getType().c_str(), 2);
-
-	ret = self->update(dsb.get());
-	lua_pushboolean(L, ret);
-	return 1;
-}
 
 /*
  * converts a DataSourceBase to the corresponding Lua value and pushes
@@ -266,6 +233,64 @@ static int Variable_tolua(lua_State *L)
 {
 	DataSourceBase::shared_ptr dsb = *(luaM_checkudata_mt(L, 1, "Variable", DataSourceBase::shared_ptr));
 	return __Variable_tolua(L, dsb);
+}
+
+/*
+ * this function takes a dsb and either pushes it as a Lua type if the
+ * dsb is basic or otherwise as at Variable
+ */
+static void Variable_push_coerce(lua_State *L, DataSourceBase::shared_ptr dsb)
+{
+	if (__Variable_isbasic(dsb))
+		__Variable_tolua(L, dsb);
+	else
+		luaM_pushobject_mt(L, "Variable", DataSourceBase::shared_ptr)(dsb);
+
+}
+
+static int Variable_getTypes(lua_State *L)
+{
+	push_vect_str(L, Types()->getTypes());
+	return 1;
+}
+
+static int Variable_getMemberNames(lua_State *L)
+{
+	DataSourceBase::shared_ptr *dsbp = luaM_checkudata_mt(L, 1, "Variable", DataSourceBase::shared_ptr);
+	push_vect_str(L, (*dsbp)->getMemberNames());
+	return 1;
+}
+
+static int Variable_getMember(lua_State *L)
+{
+	DataSourceBase::shared_ptr *dsbp = luaM_checkudata_mt(L, 1, "Variable", DataSourceBase::shared_ptr);
+	DataSourceBase::shared_ptr memdsb;
+	const char *mem = luaL_checkstring(L, 2);
+
+	memdsb = (*dsbp)->getMember(mem);
+
+	if(memdsb == 0)
+		lua_pushnil(L);
+	else
+		Variable_push_coerce(L, memdsb);
+	return 1;
+}
+
+static int Variable_update(lua_State *L)
+{
+	int ret;
+	DataSourceBase::shared_ptr dsb;
+	DataSourceBase::shared_ptr *dsbp;
+	DataSourceBase::shared_ptr self = *(luaM_checkudata_mt(L, 1, "Variable", DataSourceBase::shared_ptr));
+
+	if ((dsbp = luaM_testudata_mt(L, 2, "Variable", DataSourceBase::shared_ptr)) != NULL)
+		dsb = *dsbp;
+	else
+		dsb = Variable_fromlua(L, self->getType().c_str(), 2);
+
+	ret = self->update(dsb.get());
+	lua_pushboolean(L, ret);
+	return 1;
 }
 
 /* create variable */
@@ -360,6 +385,10 @@ static DataSourceBase::shared_ptr Variable_fromlua(lua_State *L, const char* typ
 
 		dsb = new ValueDataSource<std::string>(x);
 
+	} else if (luatype == LUA_TNUMBER) { /* last resort, try conversion via double */
+		TypeInfo* ti = Types()->type(type);
+		DataSourceBase::shared_ptr double_dsb = Variable_fromlua(L, "double", valind);
+		dsb = ti->convert(double_dsb);
 	} else {
 		goto out_conv_err;
 	}
@@ -626,7 +655,7 @@ static int Property_new(lua_State *L)
 static int Property_get(lua_State *L)
 {
 	PropertyBase *pb = *(luaM_checkudata_mt_bx(L, 1, "Property", PropertyBase));
-	luaM_pushobject_mt(L, "Variable", DataSourceBase::shared_ptr)(pb->getDataSource());
+	Variable_push_coerce(L, pb->getDataSource());
 	return 1;
 }
 
@@ -646,17 +675,13 @@ static int Property_set(lua_State *L)
 	return 1;
 }
 
-static int Property_getName(lua_State *L)
+static int Property_info(lua_State *L)
 {
 	PropertyBase *pb = *(luaM_checkudata_mt_bx(L, 1, "Property", PropertyBase));
-	lua_pushstring(L, pb->getName().c_str());
-	return 1;
-}
-
-static int Property_getDescription(lua_State *L)
-{
-	PropertyBase *pb = *(luaM_checkudata_mt_bx(L, 1, "Property", PropertyBase));
-	lua_pushstring(L, pb->getDescription().c_str());
+	lua_newtable(L);
+	lua_pushstring(L, "name"); lua_pushstring(L, pb->getName().c_str()); lua_rawset(L, -3);
+	lua_pushstring(L, "desc"); lua_pushstring(L, pb->getDescription().c_str()); lua_rawset(L, -3);
+	lua_pushstring(L, "type"); lua_pushstring(L, pb->getType().c_str()); lua_rawset(L, -3);
 	return 1;
 }
 
@@ -720,8 +745,7 @@ static const struct luaL_Reg Property_f [] = {
 	{"new", Property_new },
 	{"get", Property_get },
 	{"set", Property_set },
-	{"getName", Property_getName },
-	{"getDescription", Property_getDescription },
+	{"info", Property_info },
 	{"delete", Property_del },
 	{NULL, NULL}
 };
@@ -729,8 +753,7 @@ static const struct luaL_Reg Property_f [] = {
 static const struct luaL_Reg Property_m [] = {
 	{"get", Property_get },
 	{"set", Property_set },
-	{"getName", Property_getName },
-	{"getDescription", Property_getDescription },
+	{"info", Property_info },
 	// todo: shall we or not? s.o. {"__gc", Property_gc },
 	{"delete", Property_del },
 	{"__index", Property_index },
@@ -773,6 +796,42 @@ static int Port_info(lua_State *L)
 
 	return 1;
 }
+
+static int Port_connect(lua_State *L)
+{
+	int arg_type, ret;
+	PortInterface **pip1, **pip2;
+	PortInterface *pi1 = NULL;
+	PortInterface *pi2 = NULL;
+
+	if((pip1 = (PortInterface**) luaL_testudata(L, 1, "InputPort")) != NULL) {
+		pi1= *pip1;
+	} else if((pip1 = (PortInterface**) luaL_testudata(L, 1, "OutputPort")) != NULL) {
+		pi1= *pip1;
+	}
+	else {
+		arg_type = lua_type(L, 1);
+		luaL_error(L, "Port.info: invalid argument 1, expected Port, got %s",
+			   lua_typename(L, arg_type));
+	}
+	if((pip2 = (PortInterface**) luaL_testudata(L, 2, "InputPort")) != NULL) {
+		pi2= *pip2;
+	} else if((pip2 = (PortInterface**) luaL_testudata(L, 2, "OutputPort")) != NULL) {
+		pi2= *pip2;
+	}
+	else {
+		arg_type = lua_type(L, 2);
+		luaL_error(L, "Port.connect: invalid argument 2, expected Port, got %s",
+			   lua_typename(L, arg_type));
+	}
+
+	ret = pi1->connectTo(pi2);
+	lua_pushboolean(L, ret);
+
+	return 1;
+}
+
+
 
 /* InputPort (boxed) */
 
@@ -824,7 +883,7 @@ static int InputPort_read(lua_State *L)
 	else luaL_error(L, "InputPort.read: unknown FlowStatus returned");
 
 	if(ret>1)
-		luaM_pushobject_mt(L, "Variable", DataSourceBase::shared_ptr)(dsb);
+		Variable_push_coerce(L, dsb);
 
 	return ret;
 }
@@ -854,6 +913,7 @@ static const struct luaL_Reg InputPort_f [] = {
 	{"new", InputPort_new },
 	{"read", InputPort_read },
 	{"info", Port_info },
+	{"connect", Port_connect },
 	{"delete", InputPort_del },
 	{NULL, NULL}
 };
@@ -862,6 +922,7 @@ static const struct luaL_Reg InputPort_m [] = {
 	{"read", InputPort_read },
 	{"info", Port_info },
 	{"delete", InputPort_del },
+	{"connect", Port_connect },
 	/* {"__gc", InputPort_gc }, */
 	{NULL, NULL}
 };
@@ -938,6 +999,7 @@ static const struct luaL_Reg OutputPort_f [] = {
 	{"new", OutputPort_new },
 	{"write", OutputPort_write },
 	{"info", Port_info },
+	{"connect", Port_connect },
 	{"delete", OutputPort_del },
 	{NULL, NULL}
 };
@@ -945,6 +1007,7 @@ static const struct luaL_Reg OutputPort_f [] = {
 static const struct luaL_Reg OutputPort_m [] = {
 	{"write", OutputPort_write },
 	{"info", Port_info },
+	{"connect", Port_connect },
 	{"delete", OutputPort_del },
 	/* {"__gc", OutputPort_gc }, */
 	{NULL, NULL}
@@ -1021,7 +1084,7 @@ static int __Operation_call(lua_State *L)
 				   oip->resultType().c_str());
 		ret2 = ti->buildValue();
 		ret2->update(ret.get());
-		luaM_pushobject_mt(L, "Variable", DataSourceBase::shared_ptr)(ret2);
+		Variable_push_coerce(L, ret2);
 	} else {
 		ret->evaluate();
 		lua_pushnil(L);
@@ -1140,6 +1203,16 @@ static int Service_getOperationNames(lua_State *L)
 	return 1;
 }
 
+static int Service_hasOperation(lua_State *L)
+{
+	int ret;
+	Service::shared_ptr srv = *(luaM_checkudata_mt(L, 1, "Service", Service::shared_ptr));
+	const char* op = luaL_checkstring(L, 2);
+	ret = srv->hasOperation(op);
+	lua_pushboolean(L, ret);
+	return 1;
+}
+
 static int Service_getPortNames(lua_State *L)
 {
 	Service::shared_ptr srv = *(luaM_checkudata_mt(L, 1, "Service", Service::shared_ptr));
@@ -1228,6 +1301,7 @@ static const struct luaL_Reg Service_f [] = {
 	{ "doc", Service_doc },
 	{ "getProviderNames", Service_getProviderNames },
 	{ "getOperationNames", Service_getOperationNames },
+	{ "hasOperation", Service_hasOperation },
 	{ "getPortNames", Service_getPortNames },
 	{ "provides", Service_provides },
 	{ "getOperation", Service_getOperation },
@@ -1240,6 +1314,7 @@ static const struct luaL_Reg Service_m [] = {
 	{ "doc", Service_doc },
 	{ "getProviderNames", Service_getProviderNames },
 	{ "getOperationNames", Service_getOperationNames },
+	{ "hasOperation", Service_hasOperation },
 	{ "getPortNames", Service_getPortNames },
 	{ "provides", Service_provides },
 	{ "getOperation", Service_getOperation },
@@ -1695,6 +1770,9 @@ static int TaskContext_getOpInfo(lua_State *L)
 	const char *op = luaL_checkstring(L, 2);
 	std::vector<ArgumentDescription> args;
 
+	if(!tc->operations()->hasMember(op))
+		luaL_error(L, "TaskContext.getOpInfo failed: no such operation");
+
 	lua_pushstring(L, tc->operations()->getResultType(op).c_str()); /* result type */
 	lua_pushinteger(L, tc->operations()->getArity(op));		/* arity */
 	lua_pushstring(L, tc->operations()->getDescription(op).c_str()); /* description */
@@ -1797,7 +1875,7 @@ static int __TaskContext_call(lua_State *L)
 				   orp->resultType().c_str());
 		ret2 = ti->buildValue();
 		ret2->update(ret.get());
-		luaM_pushobject_mt(L, "Variable", DataSourceBase::shared_ptr)(ret2);
+		Variable_push_coerce(L, ret2);
 	} else {
 		ret->evaluate();
 		lua_pushnil(L);
@@ -1815,6 +1893,22 @@ static int TaskContext_call(lua_State *L)
 	}
 	return ret;
 }
+
+
+static int TaskContext_hasOperation(lua_State *L)
+{
+	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
+	Service::shared_ptr srv = tc->provides();
+
+	if(srv == 0)
+		luaL_error(L, "TaskContext.provides: no default service");
+
+	/* forward to Serivce.hasOperation */
+	luaM_pushobject_mt(L, "Service", Service::shared_ptr)(srv);
+	lua_replace(L, 1);
+	return Service_hasOperation(L);
+}
+
 
 static int TaskContext_getOperation(lua_State *L)
 {
@@ -1874,7 +1968,7 @@ static int __SendHandle_collect(lua_State *L, bool block)
 
 	/* store all DSB in coll_args to luabind::object */
 	for (int i=0; i<coll_argc; i++) {
-		luaM_pushobject_mt(L, "Variable", DataSourceBase::shared_ptr)(coll_args[i]);
+		Variable_push_coerce(L, coll_args[i]);
 	}
 	/* SendStatus + collect args */
 	return coll_argc + 1;
@@ -2022,6 +2116,7 @@ static const struct luaL_Reg TaskContext_f [] = {
 	{ "removeProperty", TaskContext_removeProperty },
 	{ "getOps", TaskContext_getOps },
 	{ "getOpInfo", TaskContext_getOpInfo },
+	{ "hasOperation", TaskContext_hasOperation },
 	{ "provides", TaskContext_provides },
 	{ "connectServices", TaskContext_connectServices },
 	{ "call", TaskContext_call },
@@ -2054,6 +2149,7 @@ static const struct luaL_Reg TaskContext_m [] = {
 	{ "removeProperty", TaskContext_removeProperty },
 	{ "getOps", TaskContext_getOps },
 	{ "getOpInfo", TaskContext_getOpInfo },
+	{ "hasOperation", TaskContext_hasOperation },
 	{ "provides", TaskContext_provides },
 	{ "requires", TaskContext_requires },
 	{ "connectServices", TaskContext_connectServices },
