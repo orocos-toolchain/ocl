@@ -150,58 +150,7 @@ CategoryStream Category::getRTStream(log4cpp::Priority::Value priority)
     return CategoryStream(this, isPriorityEnabled(priority) ? 
                           priority : log4cpp::Priority::NOTSET);
 }
-/*
-CategoryStream Category::debugStream()
-{
-    return getRTStream(log4cpp::Priority::DEBUG);
-}
 
-CategoryStream Category::infoRTStream()
-{
-    return getRTStream(log4cpp::Priority::INFO);
-}
-
-CategoryStream Category::noticeRTStream()
-{
-    return getRTStream(log4cpp::Priority::NOTICE);
-}
-
-CategoryStream Category::warnRTStream()
-{
-    return getRTStream(log4cpp::Priority::WARN);
-}
-
-CategoryStream Category::errorRTStream()
-{
-    return getRTStream(log4cpp::Priority::ERROR);
-}
-
-CategoryStream Category::critRTStream()
-{
-    return getRTStream(log4cpp::Priority::CRIT);
-}
-
-CategoryStream Category::alertRTStream()
-{
-    return getRTStream(log4cpp::Priority::ALERT);
-}
-
-CategoryStream Category::emergRTStream()
-{
-    return getRTStream(log4cpp::Priority::EMERG);
-}
-
-CategoryStream Category::fatalRTStream()
-{
-    return getRTStream(log4cpp::Priority::FATAL);
-}
-*/
-/*
-CategoryStream Category::operator<<(log4cpp::Priority::Value priority)
-{
-    return getStream(priority);
-}
-*/
 // namespaces
 }
 }
