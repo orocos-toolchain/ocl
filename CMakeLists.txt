@@ -16,7 +16,7 @@ ENDIF(${CMAKE_MAJOR_VERSION} EQUAL 2 AND ${CMAKE_MINOR_VERSION} GREATER 4)
 #                                                 #
 ###################################################
 
-PROJECT(orocos-ocl)
+PROJECT(ocl)
 
 SET( OCL_VERSION 2.2.0 )
 STRING( REGEX MATCHALL "[0-9]+" OCL_VERSIONS ${OCL_VERSION} )
@@ -26,8 +26,8 @@ LIST( GET OCL_VERSIONS 2 OCL_VERSION_PATCH)
 SET( COMPONENT_VERSION 2.2.0 ) # Necessary for UseOrocos macros.
 MESSAGE( "Orocos Component Library version ${VERSION} (${OCL_VERSION_MAJOR}.${OCL_VERSION_MINOR}.${OCL_VERSION_PATCH})" )
 
-SET( PROJ_SOURCE_DIR ${orocos-ocl_SOURCE_DIR} )
-SET( PROJ_BINARY_DIR ${orocos-ocl_BINARY_DIR} )
+SET( PROJ_SOURCE_DIR ${ocl_SOURCE_DIR} )
+SET( PROJ_BINARY_DIR ${ocl_BINARY_DIR} )
 
 # Load the optional orocos-ocl.cmake file.
 INCLUDE(${PROJ_SOURCE_DIR}/orocos-ocl.cmake OPTIONAL)
@@ -193,8 +193,6 @@ SET(OROCOS_COMPONENTS_CFLAGS "$ENV{OROCOS_COMPONENTS_CFLAGS}")
 SET(OROCOS_COMPONENTS_REQUIRES "$ENV{OROCOS_COMPONENTS_REQUIRES}")
 
 CONFIGURE_FILE( ${PROJ_SOURCE_DIR}/ocl/ocl-config.h.in ${PROJ_SOURCE_DIR}/ocl/ocl-config.h @ONLY)
-CONFIGURE_FILE( ${PROJ_SOURCE_DIR}/orocos-ocl.pc.in ${PROJ_BINARY_DIR}/orocos-ocl-${OROCOS_TARGET}.pc @ONLY)
-INSTALL( FILES ${PROJ_BINARY_DIR}/orocos-ocl-${OROCOS_TARGET}.pc DESTINATION lib/pkgconfig)
 INSTALL( FILES ${PROJ_SOURCE_DIR}/ocl/ocl-config.h DESTINATION include/orocos/ocl )
 
 #MESSAGE("Selected dirs: $ENV{SELECTED_DIRS}")

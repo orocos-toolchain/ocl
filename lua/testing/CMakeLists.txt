@@ -5,7 +5,7 @@ if ( BUILD_LUA_TESTCOMP )
     file( GLOB SRCS [^.]*.cpp )
     file( GLOB HPPS [^.]*.hpp )
 
-    orocos_component(orocos-lua-testcomp ${SRCS} INSTALL lib/orocos)
+    orocos_component(orocos-lua-testcomp ${SRCS} )
     target_link_libraries( orocos-lua-testcomp ${OROCOS_RTT_LIBS} )
     
 endif ( BUILD_LUA_TESTCOMP )

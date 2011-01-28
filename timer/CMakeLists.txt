@@ -6,7 +6,7 @@ IF ( BUILD_TIMER )
     FILE( GLOB HPPS [^.]*.hpp )
     FILE( GLOB SRCS [^.]*.cpp )
 
-    orocos_component( orocos-ocl-timer ${SRCS} INSTALL lib/orocos )
+    orocos_component( orocos-ocl-timer ${SRCS} )
     orocos_install_headers( ${HPPS} INSTALL include/orocos/ocl )
     orocos_generate_package()
      
