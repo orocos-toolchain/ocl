@@ -11,5 +11,6 @@ orocos_service( print PrintService.cpp )
 orocos_service( os OSService.cpp )
 orocos_install_headers( ${HPPS} INSTALL include/orocos/ocl )
 orocos_generate_package( orocos-ocl-${OROCOS_TARGET} )
+orocos_generate_package( ocl-${OROCOS_TARGET} )
 
      
