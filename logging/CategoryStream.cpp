@@ -5,8 +5,8 @@ namespace OCL {
 namespace logging {
 
 CategoryStream::CategoryStream(Category* rt_category, log4cpp::Priority::Value priority) :
-    _priority(priority),
-    _category(rt_category)
+    _category(rt_category),
+    _priority(priority)
 {
 
 }
