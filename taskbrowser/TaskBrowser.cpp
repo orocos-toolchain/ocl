@@ -1889,6 +1889,19 @@ namespace OCL
 					sresult << "(C) " << setw(11)<<right<< port->getTypeInfo()->getTypeName();
 				sresult << " "
 					 << coloron <<setw( 14 )<<left<< *it << coloroff;
+
+                InputPortInterface* iport = dynamic_cast<InputPortInterface*>(port);
+                if (iport) {
+                    sresult << " <= ( use '"<< iport->getName() << ".read(sample)' to read a sample from this port)";
+                }
+                OutputPortInterface* oport = dynamic_cast<OutputPortInterface*>(port);
+                if (oport) {
+                    if ( oport->keepsLastWrittenValue())
+                        sresult << " => " << oport->getDataSource();
+                    else
+                        sresult << " => (keepsLastWrittenValue() == false. Enable it for this port in order to see it in the TaskBrowser.)";
+                }
+#if 0
 				// only show if we're connected to it
 				if (peer == taskcontext && peer->provides() == taskobject) {
 					// Lookup if we have an input with that name and
@@ -1919,6 +1932,7 @@ namespace OCL
 				} else {
 					sresult << "(TaskBrowser not connected to this port)";
 				}
+#endif
 				// Port description (see Service)
 //                     if ( peer->provides(*it) )
 //                         sresult << " ( "<< taskobject->provides(*it)->getDescription() << " ) ";
