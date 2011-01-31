@@ -3,7 +3,7 @@
 
 #include <rtt/TaskContext.hpp>
 #include <rtt/Port.hpp>
-#include "logging/LoggingEvent.hpp"
+#include "LoggingEvent.hpp"
 
 // forward declare
 namespace log4cpp {

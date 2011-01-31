@@ -3,6 +3,7 @@
 
 #include <log4cpp/Category.hh>
 #include "LoggingEvent.hpp"
+#include "CategoryStream.hpp"
 #include <rtt/Port.hpp>
 
 namespace OCL {
@@ -34,6 +35,8 @@ public:
     void alert(const RTT::rt_string& message) throw();
     void emerg(const RTT::rt_string& message) throw();
     void fatal(const RTT::rt_string& message) throw();
+
+    CategoryStream getRTStream(log4cpp::Priority::Value priority);
 
 protected:
     void _logUnconditionally2(log4cpp::Priority::Value priority, 
@@ -142,6 +145,7 @@ public:
     static log4cpp::Category* createOCLCategory(const std::string& name, 
                                                 log4cpp::Category* parent, 
                                                 log4cpp::Priority::Value priority);
+
 
 protected:
 //protected:

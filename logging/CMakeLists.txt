@@ -8,7 +8,7 @@ IF ( BUILD_LOGGING AND LOG4CPP_FOUND )
 
   FILE( GLOB HPPS [^.]*.hpp )
 
-  set(LOGLIB_CPPS Category.cpp LoggingEvent.cpp)
+  set(LOGLIB_CPPS Category.cpp LoggingEvent.cpp CategoryStream.cpp)
   set(LOGCOMP_CPPS Appender.cpp FileAppender.cpp OstreamAppender.cpp LoggingService.cpp)
 
   INCLUDE_DIRECTORIES( "${LOG4CPP_INCLUDE_DIRS}" )

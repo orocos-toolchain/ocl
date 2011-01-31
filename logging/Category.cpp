@@ -145,6 +145,12 @@ log4cpp::Category* Category::createOCLCategory(const std::string& name,
     return c;
 }
 
+CategoryStream Category::getRTStream(log4cpp::Priority::Value priority)
+{
+    return CategoryStream(this, isPriorityEnabled(priority) ? 
+                          priority : log4cpp::Priority::NOTSET);
+}
+
 // namespaces
 }
 }

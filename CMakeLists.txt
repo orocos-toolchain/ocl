@@ -18,7 +18,7 @@ ENDIF(${CMAKE_MAJOR_VERSION} EQUAL 2 AND ${CMAKE_MINOR_VERSION} GREATER 4)
 
 PROJECT(ocl)
 
-SET( OCL_VERSION 2.2.0 )
+SET( OCL_VERSION 2.2.1 )
 STRING( REGEX MATCHALL "[0-9]+" OCL_VERSIONS ${OCL_VERSION} )
 LIST( GET OCL_VERSIONS 0 OCL_VERSION_MAJOR)
 LIST( GET OCL_VERSIONS 1 OCL_VERSION_MINOR)
@@ -134,6 +134,12 @@ if (ROS_ROOT)
   set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
   #set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
   set(COMPONENT_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib/orocos)
+
+  # We force it in case of ROS builds because the UseOrocos.cmake scripts will always look
+  # in this path, also during an autoproj/bootstrap build.
+  SET(CMAKE_INSTALL_PREFIX
+    ${PROJECT_SOURCE_DIR}/install CACHE PATH "Orocos install prefix for ROS builds" FORCE
+    )
 endif()
 
 ## Find Orocos RTT.
