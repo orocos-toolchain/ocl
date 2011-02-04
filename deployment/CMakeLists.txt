@@ -12,8 +12,10 @@ IF ( BUILD_DEPLOYMENT )
 
     orocos_library( orocos-ocl-deployment ${SRCS})
     orocos_install_headers( ${HPPS} INSTALL include/orocos/ocl )
-
-    TARGET_LINK_LIBRARIES( orocos-ocl-deployment "dl" )
+    
+    IF(NOT WIN32)
+      TARGET_LINK_LIBRARIES( orocos-ocl-deployment "dl" )
+    ENDIF()
     TARGET_LINK_LIBRARIES( orocos-ocl-deployment ${RTT_PLUGIN_rtt-marshalling_LIBRARIES} ${RTT_PLUGIN_rtt-scripting_LIBRARIES})
     TARGET_LINK_LIBRARIES( orocos-ocl-deployment ${Boost_FILESYSTEM_LIBRARIES} ${Boost_SYSTEM_LIBRARIES})
     target_link_libraries( orocos-ocl-deployment LINK_INTERFACE_LIBRARIES )

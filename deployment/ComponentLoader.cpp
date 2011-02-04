@@ -12,7 +12,9 @@
 #include <ros/package.h>
 #endif
 
-#include <dlfcn.h>
+#ifndef _WIN32
+# include <dlfcn.h>
+#endif
 
 using namespace RTT;
 using namespace RTT::detail;
