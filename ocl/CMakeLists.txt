@@ -6,6 +6,8 @@ FILE( GLOB SRCS [^.]*.cpp )
 INCLUDE_DIRECTORIES ( ${Boost_INCLUDE_DIR} )
 
 orocos_component( orocos-ocl-common HMIConsoleOutput.cpp EmptyTaskContext.cpp )
+SET_TARGET_PROPERTIES( orocos-ocl-common PROPERTIES
+    DEFINE_SYMBOL OCL_DLL_EXPORT)
 orocos_typekit( ocl ocltoolkit.cpp )
 orocos_service( print PrintService.cpp )
 orocos_service( os OSService.cpp )

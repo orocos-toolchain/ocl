@@ -11,6 +11,8 @@ IF ( BUILD_DEPLOYMENT )
     SET( SRCS DeploymentComponent.cpp ComponentLoader.cpp ${CMAKE_CURRENT_BINARY_DIR}/comppath.cpp)
 
     orocos_library( orocos-ocl-deployment ${SRCS})
+    SET_TARGET_PROPERTIES( orocos-ocl-deployment PROPERTIES
+      DEFINE_SYMBOL OCL_DLL_EXPORT)
     orocos_install_headers( ${HPPS} INSTALL include/orocos/ocl )
     
     IF(NOT WIN32)
@@ -22,6 +24,8 @@ IF ( BUILD_DEPLOYMENT )
     
     IF (OROCOS-RTT_CORBA_FOUND)
         orocos_library(orocos-ocl-deployment-corba CorbaDeploymentComponent.cpp )
+        SET_TARGET_PROPERTIES( orocos-ocl-deployment-corba PROPERTIES
+          DEFINE_SYMBOL OCL_DLL_EXPORT)
         orocos_install_headers( CorbaDeploymentComponent.hpp INSTALL include/orocos/ocl )
         TARGET_LINK_LIBRARIES( orocos-ocl-deployment-corba orocos-ocl-deployment)
         TARGET_LINK_LIBRARIES( orocos-ocl-deployment-corba ${OROCOS-RTT_CORBA_LIBRARIES})

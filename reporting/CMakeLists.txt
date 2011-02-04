@@ -22,6 +22,9 @@ IF ( BUILD_REPORTING )
     INCLUDE_DIRECTORIES ( ${Boost_INCLUDE_DIR} )
 
     orocos_component( orocos-ocl-reporting ${SRCS} )
+    SET_TARGET_PROPERTIES( orocos-ocl-reporting PROPERTIES
+      DEFINE_SYMBOL OCL_DLL_EXPORT)
+
     orocos_install_headers( ${HPPS} INSTALL include/orocos/ocl )
 
     IF ( BUILD_REPORTING_NETCDF AND NETCDF_FOUND )
@@ -29,6 +32,8 @@ IF ( BUILD_REPORTING )
       SET( NETCDF_HPPS NetcdfReporting.hpp NetcdfMarshaller.hpp NetcdfHeaderMarshaller.hpp )
 
       orocos_component( orocos-ocl-reporting-netcdf ${NETCDF_SRCS} )
+      SET_TARGET_PROPERTIES( orocos-ocl-reporting-netcdf PROPERTIES
+        DEFINE_SYMBOL OCL_DLL_EXPORT)
       GLOBAL_ADD_INCLUDE ( ocl ${NETCDF_HPPS} )
       target_link_libraries( orocos-ocl-reporting-netcdf ${NETCDF_LIBS} orocos-ocl-reporting )
     ENDIF ( BUILD_REPORTING_NETCDF AND NETCDF_FOUND )

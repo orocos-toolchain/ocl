@@ -7,6 +7,8 @@ IF ( BUILD_TIMER )
     FILE( GLOB SRCS [^.]*.cpp )
 
     orocos_component( orocos-ocl-timer ${SRCS} )
+    SET_TARGET_PROPERTIES( orocos-ocl-timer PROPERTIES
+      DEFINE_SYMBOL OCL_DLL_EXPORT)
     orocos_install_headers( ${HPPS} INSTALL include/orocos/ocl )
     orocos_generate_package()
      

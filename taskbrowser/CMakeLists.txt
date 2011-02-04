@@ -37,6 +37,8 @@ IF ( BUILD_TASKBROWSER )
 
     find_package(RTTPlugin REQUIRED rtt-scripting)      
     orocos_library( orocos-ocl-taskbrowser ${SRCS} )
+    SET_TARGET_PROPERTIES( orocos-ocl-taskbrowser PROPERTIES
+      DEFINE_SYMBOL OCL_DLL_EXPORT)
     orocos_install_headers( ${HPPS} INSTALL include/orocos/ocl )
 
     # Readline support:
