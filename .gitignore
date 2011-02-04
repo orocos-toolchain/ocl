@@ -1,7 +1,13 @@
 build*
+install
 .cproject
 .project
 .settings
+.tb_history
 *patch
 *~
 orocos-ocl.cmake
+bin
+lib
+**pc
+ocl/ocl-config.h
