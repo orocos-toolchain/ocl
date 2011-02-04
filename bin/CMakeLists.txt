@@ -1,6 +1,12 @@
 SET(EXTRA_LIBRARIES)
 SET(EXTRA_DEPS)
 OPTION( BUILD_RTALLOC "Build with rt-malloc support (requires rt-malloc in RTT to be enabled)." TRUE)
+
+# RTALLOC is forced to off on win32
+IF(WIN32)
+  SET(BUILD_RTALLOC OFF CACHE BOOL "docstring" FORCE)
+ENDIF()
+
 IF ( BUILD_RTALLOC )
   # default to 20 kilobytes - see minimum size warning in deployer-funcs.cpp
   SET(ORO_DEFAULT_RTALLOC_SIZE 20480 CACHE STRING "Real-time memory pool size (bytes)")
