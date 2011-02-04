@@ -11,7 +11,7 @@
 std::string getEnvString(const char *name)
 {
     char c[32767];
-    if (GetEnvironmentVariable(name, &c, sizeof (c)) > 0) {
+    if (GetEnvironmentVariable(name, c, sizeof (c)) > 0) {
         return string(c);
     }
     return 0;
