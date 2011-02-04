@@ -84,5 +84,13 @@ if(LOG4CPP_FOUND)
 endif(LOG4CPP_FOUND)
 
 find_package(Boost COMPONENTS program_options filesystem system)
+
+# On win32, dynamically linking with boost_program_options requires
+# BOOST_PROGRAM_OPTIONS_DYN_LINK. Otherwise, there is a linking error.
+# See: https://svn.boost.org/trac/boost/ticket/2506
+if(NOT Boost_USE_STATIC_LIBS)
+    add_definitions(-DBOOST_PROGRAM_OPTIONS_DYN_LINK)
+endif()
+
 INCLUDE_DIRECTORIES( ${Boost_INCLUDE_DIR} ${READLINE_INCLUDE_DIR} ${CURSES_INCLUDE_DIR} )
 
