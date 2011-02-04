@@ -27,7 +27,11 @@ OPTION( BUILD_TESTS "Turn me off to disable compilation of all tests" OFF )
 #                                                         #
 ###########################################################
 
-find_package( Curses )
+# Curse is not a readline dependency on win32 platform
+if(NOT WIN32)
+  find_package( Curses )
+endif()
+
 IF ( CURSES_INCLUDE_DIR )
     MESSAGE("-- Looking for curses implementation - found libncurses")
     SET( CURSES 1 CACHE INTERNAL "libncurses" )
