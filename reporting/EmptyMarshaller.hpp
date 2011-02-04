@@ -46,7 +46,7 @@ namespace RTT
     /**
      * @brief A Dummy Empty MarshallInterface.
      */
-    class RTT_API EmptyMarshaller
+    class EmptyMarshaller
         : public marsh::MarshallInterface
     {
     public:
