@@ -264,6 +264,7 @@ namespace OCL
          */
         bool connectPeers(const std::string& one, const std::string& other);
 
+        using TaskContext::connectPorts;
         /**
          * Establish a data flow connection between two tasks. The direction
          * of the connection is determined by the read/write port types.
@@ -326,6 +327,8 @@ namespace OCL
          * @deprecated by stream()
          */
         bool createStream(const std::string& component, const std::string& port, ConnPolicy policy);
+
+        using TaskContext::connectServices;
         /**
          * Connects the required services of one component to the provided services
          * of another and vice versa.

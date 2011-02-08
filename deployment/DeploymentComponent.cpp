@@ -151,7 +151,7 @@ namespace OCL
                 .arg("port", "The port to create a stream from or to. Use a dot-separated-path.")
                 .arg("policy", "The connection policy which serves to describe the stream to be created. Use 'ConnPolicy()' to use the default.");
 
-        this->addOperation("connectServices", &DeploymentComponent::connectServices, this, ClientThread).doc("Connect the matching provides/requires services of two Components known to this Component.").arg("One", "The first component.").arg("Two", "The second component.");
+        this->addOperation("connectServices", (bool(DeploymentComponent::*)(const std::string&, const std::string&))&DeploymentComponent::connectServices, this, ClientThread).doc("Connect the matching provides/requires services of two Components known to this Component.").arg("One", "The first component.").arg("Two", "The second component.");
 
         this->addOperation("addPeer", cp, this, ClientThread).doc("Add a peer to a Component.").arg("From", "The first component.").arg("To", "The other component.");
         typedef void(DeploymentComponent::*RPFun)(const std::string&);
