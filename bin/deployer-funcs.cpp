@@ -44,6 +44,9 @@ namespace po = boost::program_options;
 using namespace RTT;
 using namespace std;
 
+#define ORO_xstr(s) ORO_str(s)
+#define ORO_str(s) #s
+
 namespace OCL
 {
 
@@ -75,6 +78,8 @@ int deployerParseCmdLine(int                        argc,
 	allowed.add_options()
 		("help,h",
 		 "Show program usage")
+		("version",
+		 "Show program version")
 		("start,s",
 		 po::value< std::vector<std::string> >(&scriptFiles),
 		 "Deployment XML or script file (eg 'config-file.xml' or 'script.ops')")
@@ -112,6 +117,26 @@ int deployerParseCmdLine(int                        argc,
 		if (vm.count("help"))
 		{
 			std::cout << options << std::endl;
+			return 1;
+		}
+
+        // version info
+		if (vm.count("version"))
+		{
+            std::cout<< " OROCOS Toolchain version '" ORO_xstr(RTT_VERSION) "'";
+#ifdef __GNUC__
+            std::cout << " ( GCC " ORO_xstr(__GNUC__) "." ORO_xstr(__GNUC_MINOR__) "." ORO_xstr(__GNUC_PATCHLEVEL__) " )";
+#endif
+#ifdef OROPKG_OS_LXRT
+            std::cout<<" -- LXRT/RTAI.";
+#endif
+#ifdef OROPKG_OS_GNULINUX
+            std::cout<<" -- GNU/Linux.";
+#endif
+#ifdef OROPKG_OS_XENOMAI
+            std::cout<<" -- Xenomai.";
+#endif
+			std::cout << endl;
 			return 1;
 		}
 
