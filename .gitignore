@@ -7,7 +7,6 @@ install
 *patch
 *~
 orocos-ocl.cmake
-bin
 lib
 **pc
 ocl/ocl-config.h
