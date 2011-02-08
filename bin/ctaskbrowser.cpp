@@ -37,6 +37,25 @@ using namespace RTT::corba;
 
 int ORO_main(int argc, char** argv)
 {
+    
+    if ( argc == 2 && strncmp(argv[1],"--version",9) == 0) {
+        std::cout<< " OROCOS Toolchain version '" ORO_xstr(RTT_VERSION) "'";
+#ifdef __GNUC__
+        std::cout << " ( GCC " ORO_xstr(__GNUC__) "." ORO_xstr(__GNUC_MINOR__) "." ORO_xstr(__GNUC_PATCHLEVEL__) " )";
+#endif
+#ifdef OROPKG_OS_LXRT
+        std::cout<<" -- LXRT/RTAI.";
+#endif
+#ifdef OROPKG_OS_GNULINUX
+        std::cout<<" -- GNU/Linux.";
+#endif
+#ifdef OROPKG_OS_XENOMAI
+        std::cout<<" -- Xenomai.";
+#endif
+        std::cout << endl;
+        return 0;
+    }
+
     if ( argc == 1 || (argc == 2 && strncmp(argv[1],"--help",6) == 0)) {
         std::cerr << "Please specify the CORBA TaskContext name or IOR to connect to." << std::endl;
         std::cerr << "  " << argv[0] << " [ComponentName | IOR]" << std::endl;
