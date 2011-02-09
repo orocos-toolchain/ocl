@@ -35,6 +35,9 @@
 using namespace RTT;
 using namespace RTT::corba;
 
+#define ORO_xstr(s) ORO_str(s)
+#define ORO_str(s) #s
+
 int ORO_main(int argc, char** argv)
 {
     
