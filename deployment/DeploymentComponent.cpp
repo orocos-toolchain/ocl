@@ -193,11 +193,14 @@ namespace OCL
         if ( !hassite ) {
             // if not, just configure
             this->configure();
-            log(Debug) << "Not using site file." << endlog();
+
+            // Backwards compatibility with < 2.3: import OCL by default
+            log(Info) << "No site file was found. Importing 'ocl' by default." <<endlog();
+            import("ocl");
             return;
         }
 
-        // OK: kick-start it. Need to set AutoConf to configure self.
+        // OK: kick-start it. Need to do import("ocl") and set AutoConf to configure self.
         log(Info) << "Using site file '" << siteFile << "'." << endlog();
         this->kickStart( siteFile );
 
