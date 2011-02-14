@@ -6,6 +6,5 @@
 		<license>BSD</license>
 		<author>Unknown Author</author>
     <depend package="rtt" />
-    <depend package="ocl" />
 </package>
 
