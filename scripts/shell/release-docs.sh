@@ -76,7 +76,7 @@ if test x$VERSION = xmaster -o x$DOCHECKOUT = xyes; then
   cd orocos-toolchain-$VERSION/ocl
   mkdir build
   cd build
-  cmake ..
+  cmake .. -DDOC_ONLY=TRUE
 fi
 cd $topdir/build
 
@@ -90,7 +90,7 @@ cd orocos-toolchain-$VERSION/ocl
 # Doxygen
 mkdir -p build
 cd build
-  cmake ..
+  cmake ..  -DDOC_ONLY=TRUE
   make docapi
   cd doc
   tar -cjf orocos-ocl-$VERSION-api.tar.bz2 api
