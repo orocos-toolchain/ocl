@@ -61,11 +61,6 @@ IF(NOT CMAKE_INSTALL_PREFIX)
   MESSAGE( "Setting installation directory to ${CMAKE_INSTALL_PREFIX}" )
 ENDIF(NOT CMAKE_INSTALL_PREFIX)
 
-# Used by Doxygen.in !
-IF(NOT RTT_VVERSION)
-  SET( RTT_VVERSION "v${OCL_VERSION_MAJOR}.${OCL_VERSION_MINOR}.x" )
-ENDIF(NOT RTT_VVERSION)
-
 IF(NOT NETCDF_INSTALL)
   SET( NETCDF_INSTALL ${CMAKE_INSTALL_PREFIX} CACHE PATH "The NETCDF installation directory.")
 ENDIF(NOT NETCDF_INSTALL)
@@ -142,13 +137,33 @@ if (ROS_ROOT)
     )
 endif()
 
-## Find Orocos RTT.
-find_package(OROCOS-RTT 2.0.0 COMPONENTS rtt-scripting rtt-marshalling ${RTT_HINTS})
+#############################
+#			    #
+# Building Documentation    #
+#                           #
+#############################
+
+# Used by Doxygen.in !
+IF(NOT RTT_VVERSION)
+  SET( RTT_VVERSION "v${OCL_VERSION_MAJOR}.${OCL_VERSION_MINOR}.x" )
+ENDIF(NOT RTT_VVERSION)
+
+CONFIGURE_FILE(Doxyfile.in Doxyfile @ONLY)
+ADD_CUSTOM_TARGET(docapi "doxygen" "Doxyfile")
+ADD_SUBDIRECTORY( doc )
+
+if (DOC_ONLY)
+  return()
+endif()
+
+## Find Orocos RTT with same version as OCL
+find_package(OROCOS-RTT ${OCL_VERSION} COMPONENTS rtt-scripting rtt-marshalling ${RTT_HINTS})
 if (NOT OROCOS-RTT_FOUND)
   message(FATAL_ERROR "\n   RTT not found. Is the version correct? Use the CMAKE_PREFIX_PATH cmake or environment variable to point to the installation directory of RTT.")
 else()
   include(${OROCOS-RTT_USE_FILE_PATH}/UseOROCOS-RTT.cmake)
   add_definitions( -DRTT_COMPONENT )
+  configure_file(Doxyfile.in Doxyfile @ONLY) # Again, now with OROCOS-RTT_PATH set.
 endif()
 
 ## Find Netcdf
@@ -180,7 +195,6 @@ INCLUDE(${PROJ_SOURCE_DIR}/config/check_depend.cmake)
 #First unset the LOCAL_LIBRARIES
 SET(ENV{SELECTED_LIBS} "")
 SET(ENV{SELECTED_DIRS} "")
-ADD_SUBDIRECTORY( doc )
 ADD_SUBDIRECTORY( ocl )
 ADD_SUBDIRECTORY( taskbrowser )
 ADD_SUBDIRECTORY( timer )
@@ -203,16 +217,6 @@ INSTALL( FILES ${PROJ_SOURCE_DIR}/ocl/ocl-config.h DESTINATION include/orocos/oc
 
 #MESSAGE("Selected dirs: $ENV{SELECTED_DIRS}")
 #SET(SELECTED_DIRS $ENV{SELECTED_DIRS})
-
-CONFIGURE_FILE(Doxyfile.in Doxyfile @ONLY)
-
-#############################
-#			    #
-# Building Doxygen documents#
-#                           #
-#############################
-
-ADD_CUSTOM_TARGET(docapi "doxygen" "Doxyfile")
 
 ## Debugging
 OPTION( DISPLAY_FLAGS "Display cmake variables at end of configure step." OFF)
