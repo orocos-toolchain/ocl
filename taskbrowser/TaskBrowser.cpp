@@ -223,8 +223,11 @@ namespace OCL
         if (line_read && *line_read) {
             // do not store "quit"
             string s = line_read;
-            if (s != "quit")
+            if (s != "quit" && ! ( history_get( where_history() ) && s == string(history_get( where_history() )->line) ) ) {
+//                cout << "Where: " << where_history() << " history_get: " << ( history_get( where_history() ) ? history_get( where_history() )->line : "(null)") << endl;
+//                cout << "History: " << (current_history()  ? (const char*) current_history()->line : "(null)") << endl;
                 add_history (line_read);
+            }
         }
         return (line_read);
     }
