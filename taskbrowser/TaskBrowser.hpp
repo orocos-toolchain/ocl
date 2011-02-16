@@ -166,6 +166,7 @@ namespace OCL
         void endMacro();
 
         void checkPorts();
+        Service::shared_ptr stringToService(string const& names);
     public:
 
         /**

@@ -72,6 +72,7 @@
 #include <rtt/plugin/PluginLoader.hpp>
 #include <rtt/internal/GlobalService.hpp>
 #include <rtt/types/GlobalsRepository.hpp>
+#include <boost/algorithm/string.hpp>
 
 #include <iostream>
 #include <fstream>
@@ -1283,16 +1284,43 @@ namespace OCL
         this->evalCommand(comm);
     }
 
+    Service::shared_ptr TaskBrowser::stringToService(string const& names) {
+        Service::shared_ptr serv;
+        std::vector<std::string> strs;
+        boost::split(strs, names, boost::is_any_of("."));
+
+        string component = strs.front();
+        if (! context->hasPeer(component) && !context->provides()->hasService(component) ) {
+            return serv;
+        }
+        // We only support help for peer or subservice:
+        if ( context->hasPeer(component) )
+            serv = context->getPeer(component)->provides();
+        else if (context->provides()->hasService(component))
+            serv = context->provides(component);
+
+        // remove component name:
+        strs.erase( strs.begin() );
+
+        // iterate over remainders:
+        while ( !strs.empty() && serv) {
+            serv = serv->getService( strs.front() );
+            if (serv)
+                strs.erase( strs.begin() );
+        }
+        return serv;
+    }
+
+
+
     bool TaskBrowser::printService( string name ) {
     	bool result = false;
-        Service::shared_ptr ops;
+        Service::shared_ptr ops = stringToService(name);
         ServiceRequester* sr = 0;
 
-        if ( context->provides()->hasService( name ) || GlobalService::Instance()->hasService( name ) ) // only object name was typed
+        if ( ops || GlobalService::Instance()->hasService( name ) ) // only object name was typed
             {
-                if ( context->provides()->hasService( name ) )
-                    ops = context->provides(name);
-                else
+                if ( !ops )
                     ops = GlobalService::Instance()->provides(name);
                 sresult << nl << "Printing Interface of '"<< coloron << ops->getName() <<coloroff <<"' :"<<nl<<nl;
                 vector<string> methods = ops->getNames();
