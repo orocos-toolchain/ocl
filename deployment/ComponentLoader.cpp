@@ -232,6 +232,7 @@ bool ComponentLoader::import( std::string const& package, std::string const& pat
         string ppath = getPath( package );
         if ( !ppath.empty() ) {
             path rospath = path(ppath) / "lib" / "orocos";
+            path rospath_target = rospath / OROCOS_TARGET_NAME;
             // + add all dependencies to paths:
             V_string rospackresult;
             command("depends " + package, rospackresult);
@@ -252,7 +253,14 @@ bool ComponentLoader::import( std::string const& package, std::string const& pat
                 }
             }
             // now that all deps are done, import the package itself:
-            if ( is_directory( rospath ) ) {
+            if ( is_directory( rospath_target ) ) {
+                log(Debug) << "Ignoring files under " << rospath.string() << " since " << rospath_target.string() << " was found."<<endlog();
+                found = true;
+                if ( import( rospath_target.string() ) ) {
+                    loadedPackages.push_back( package );
+                } else
+                    all_good = false;
+            } else if ( is_directory( rospath ) ) {
                 found = true;
                 if ( import( rospath.string() ) ) {
                     loadedPackages.push_back( package );
