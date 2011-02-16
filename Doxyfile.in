@@ -463,12 +463,11 @@ INPUT                  = @PROJ_SOURCE_DIR@/doc/usage.dox \
 	@PROJ_SOURCE_DIR@/ocl \
 	@PROJ_SOURCE_DIR@/taskbrowser \
 	@PROJ_SOURCE_DIR@/timer \
-	@PROJ_SOURCE_DIR@/hardware \
+	@PROJ_SOURCE_DIR@/logging \
 	@PROJ_SOURCE_DIR@/deployment \
 	@PROJ_SOURCE_DIR@/reporting \
-	@PROJ_SOURCE_DIR@/motion_control \
-	@PROJ_SOURCE_DIR@/helloworld \
-	@PROJ_SOURCE_DIR@/viewer
+	@PROJ_SOURCE_DIR@/lua \
+	@PROJ_SOURCE_DIR@/helloworld
 
 # If the value of the INPUT tag contains directories, you can use the 
 # FILE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp 
