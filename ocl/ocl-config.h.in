@@ -35,7 +35,7 @@
 #   define OCL_HIDE   
 #  else
 #   define OCL_API	 __declspec(dllimport)
-#   define OCL_EXPORT __declspec(dllimport)
+#   define OCL_EXPORT __declspec(dllexport)
 #   define OCL_HIDE 
 #  endif
 # else
