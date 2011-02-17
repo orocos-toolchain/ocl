@@ -29,15 +29,22 @@ FOREACH(COMPONENT ${RTTPlugin_FIND_COMPONENTS})
     if(OROCOS-RTT_PLUGIN_PATH)
         # Use location specified by environment variable
         find_library(RTT_PLUGIN_${COMPONENT}_LIBRARY        NAMES ${PLUGIN_NAME} PATHS ${OROCOS-RTT_PLUGIN_PATH} PATH_SUFFIXES ${OROCOS_TARGET}  NO_DEFAULT_PATH)
+        find_library(RTT_PLUGIN_${COMPONENT}D_LIBRARY       NAMES ${PLUGIN_NAME}${CMAKE_DEBUG_POSTFIX} PATHS ${OROCOS-RTT_PLUGIN_PATH} PATH_SUFFIXES ${OROCOS_TARGET}  NO_DEFAULT_PATH)
     else()
         # Use default CMake search process
         find_library(RTT_PLUGIN_${COMPONENT}_LIBRARY        NAMES ${PLUGIN_NAME} PATHS ${OROCOS-RTT_PLUGIN_PATH} PATH_SUFFIXES ${OROCOS_TARGET})
+        find_library(RTT_PLUGIN_${COMPONENT}D_LIBRARY       NAMES ${PLUGIN_NAME}${CMAKE_DEBUG_POSTFIX} PATHS ${OROCOS-RTT_PLUGIN_PATH} PATH_SUFFIXES ${OROCOS_TARGET})
     endif()
 
     # Set the include dir variables and the libraries and let libfind_process do the rest.
     # NOTE: Singular variables for this library, plural for libraries this this lib depends on.
     set(RTT_PLUGIN_${COMPONENT}_PROCESS_INCLUDES RTT_PLUGIN_${COMPONENT}_INCLUDE_DIR )
-    set(RTT_PLUGIN_${COMPONENT}_PROCESS_LIBS     RTT_PLUGIN_${COMPONENT}_LIBRARY )
+    if ( RTT_PLUGIN_${COMPONENT}D_LIBRARY )
+      list(APPEND RTT_PLUGIN_${COMPONENT}_PROCESS_LIBS   RTT_PLUGIN_${COMPONENT}D_LIBRARY)
+    endif()
+    if ( RTT_PLUGIN_${COMPONENT}_LIBRARY )
+      list(APPEND RTT_PLUGIN_${COMPONENT}_PROCESS_LIBS   RTT_PLUGIN_${COMPONENT}_LIBRARY)
+    endif()
 
     libfind_process( RTT_PLUGIN_${COMPONENT} )
     
