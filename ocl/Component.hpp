@@ -105,6 +105,11 @@ namespace OCL
 // ORO_CREATE_COMPONENT and ORO_CREATE_COMPONENT_LIBRARY are only used in shared libraries.
 #if defined(OCL_DLL_EXPORT) || defined (RTT_COMPONENT)
 
+// Disable foo() has C-linkage specified, but returns UDT 'bar' which is incompatible with C                                                                                                                                                                                  
+#ifdef _MSC_VER                                                                                                                                                                                                                                                               
+#pragma warning (disable:4190)                                                                                                                                                                                                                                                
+#endif
+
 /**
  * Use this macro to register a single component in a shared library (plug-in).
  * You can only use this macro \b once in a .cpp file for the whole shared library \b and
@@ -124,12 +129,12 @@ namespace OCL
 #define ORO_CREATE_COMPONENT(CNAME) \
 extern "C" { \
   OCL_EXPORT RTT::TaskContext* createComponent(std::string instance_name); \
-  RTT::TaskContext* createComponent(std::string instance_name) \
+  OCL_EXPORT RTT::TaskContext* createComponent(std::string instance_name) \
   { \
     return new CNAME(instance_name); \
   } \
   OCL_EXPORT std::string getComponentType(); \
-  std::string getComponentType() \
+  OCL_EXPORT std::string getComponentType() \
   { \
     return ORO_LIST_COMPONENT_TYPE_str(CNAME); \
   } \
@@ -200,7 +205,7 @@ extern "C" { \
 /**
  * Backwards compatibility macro which is now replaced by ORO_CREATE_COMPONENT_LIBRARY( Classname )
  */
-#define ORO_CREATE_COMPONENT_TYPE(CLASS_NAME) ORO_CREATE_COMPONENT_LIBRARY(CLASS_NAME)
+#define ORO_CREATE_COMPONENT_TYPE() ORO_CREATE_COMPONENT_LIBRARY()
 
 #endif
 
