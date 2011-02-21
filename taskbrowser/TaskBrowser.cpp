@@ -751,8 +751,8 @@ namespace OCL
         cout << "    TAB completion and history is NOT available (LGPL-version)" <<coloroff<<nl<<nl;
 #endif
 
-        while (1)
-            {
+        while (1) {
+            try {
                 if (!macrorecording) {
                     if ( context == tb )
                         cout << green << " Watching " <<coloroff;
@@ -791,10 +791,14 @@ namespace OCL
                 // Call readline wrapper :
                 ::signal( SIGINT, ctrl_c_catcher ); // catch ctrl_c only when editting a line.
 #endif
+                std::string command;
+                // When using rxvt on windows, the process will receive signals when the arrow keys are used
+                // during input. We compile with /EHa to catch these signals and don't print anything.
+                try {
 #ifdef USE_READLINE
                 const char* const commandStr = rl_gets();
                 // quit on EOF (Ctrl-D)
-                std::string command( commandStr ? commandStr : "quit" ); // copy over to string
+                command = commandStr ? commandStr : "quit"; // copy over to string
 #else
                 std::string command;
                 cout << prompt;
@@ -802,6 +806,11 @@ namespace OCL
                 if (!cin) // Ctrl-D
                     command = "quit";
 #endif
+                } catch(std::exception& e) {
+                    cerr << "The command line reader throwed a std::exception: '"<< e.what()<<"'."<<endl;
+                } catch (...) {
+                    cerr << "The command line reader throwed an exception." <<endlog();
+                }
                 str_trim( command, ' ');
 #ifdef USE_SIGNALS
                 ::signal( SIGINT, SIG_DFL );        // do not catch ctrl_c
@@ -856,7 +865,12 @@ namespace OCL
                     storedline = -1;
                 }
                 //cout <<endl;
+            } catch(std::exception& e) {
+                cerr << "Warning: The command caused a std::exception: '"<< e.what()<<"' in the TaskBrowser's loop() function."<<endl;
+            } catch(...) {
+                cerr << "Warning: The command caused an exception in the TaskBrowser's loop() function." << endl;
             }
+         }
     }
 
     void TaskBrowser::enterTask()
