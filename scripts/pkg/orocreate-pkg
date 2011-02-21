@@ -6,7 +6,7 @@ if [ x$1 = x ]; then
     exit 1
 fi
 
-cwd=$(pwd)
+cwd="$(pwd)"
 abspath=$(dirname "$(cd "${0%/*}" 2>/dev/null; echo "$PWD"/"${0##*/}")")
 
 pkgname=$1
@@ -15,25 +15,25 @@ cappkgname=$(echo $allcappkgname | cut -c1)$(echo $pkgname | cut -c2-)
 
 # Locate the template directory. First look in orocos/ros roots
 # Default location:
-templatedir=$abspath/../share/orocos-ocl/templates
+templatedir="$abspath/../share/orocos-ocl/templates"
 
-if [ x$OROCOS_ROOT != x ]; then
-    templatedir=$OROCOS_ROOT/ocl/scripts/pkg/templates
+if [ "x$OROCOS_ROOT" != x ]; then
+    templatedir="$OROCOS_ROOT/ocl/scripts/pkg/templates"
 else
-    if [ x$ROS_ROOT != x ]; then
-	templatedir=$(rospack find ocl)/scripts/pkg/templates
+    if [ "x$ROS_ROOT" != x ]; then
+	templatedir="$(rospack find ocl)/scripts/pkg/templates"
     fi
 fi
 
 # If not found, look in $abspath or installed paths.
-if [ ! -d $templatedir ]; then
-    if [ -d $abspath/templates ]; then
-	templatedir=$abspath/templates
+if [ ! -d "$templatedir" ]; then
+    if [ -d "$abspath/templates" ]; then
+	templatedir="$abspath/templates"
     fi
 fi
 
 # final check:
-if [ ! -d $templatedir ]; then
+if [ ! -d "$templatedir" ]; then
     echo "Could not find templates at $templatedir !"
     exit 1
 else
@@ -42,9 +42,9 @@ fi
 
 mkdir $pkgname || { echo "Directory already exists: $pkgname" ; exit 1; }
 
-for i in $templatedir/*; do
-    tgtname=$(echo "$(basename $i)" | sed -e "s/pkgname/$pkgname/g;s/Pkgname/$cappkgname/g;")
-    cat $i | sed -e "s/@PKGNAME@/$allcappkgname/g;s/@pkgname@/$pkgname/g;s/@Pkgname@/$cappkgname/g;" > $pkgname/$tgtname
+for i in "$templatedir"/*; do
+    tgtname=$(echo $(basename "$i") | sed -e "s/pkgname/$pkgname/g;s/Pkgname/$cappkgname/g;")
+    cat "$i" | sed -e "s/@PKGNAME@/$allcappkgname/g;s/@pkgname@/$pkgname/g;s/@Pkgname@/$cappkgname/g;" > $pkgname/$tgtname
 done
 
 echo "Package $pkgname created in directory $cwd/$pkgname"
