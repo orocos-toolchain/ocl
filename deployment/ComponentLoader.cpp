@@ -243,8 +243,17 @@ bool ComponentLoader::import( std::string const& package, std::string const& pat
                 }
                 ppath = getPath( *it );
                 path deppath = path(ppath) / "lib" / "orocos";
+                path deppath_target = path(deppath) / OROCOS_TARGET_NAME;
                 // if orocos directory exists and we could import it, mark it as loaded.
-                if ( is_directory( deppath ) ) {
+                if ( is_directory( deppath_target ) ) {
+                    log(Debug) << "Ignoring files under " << rospath.string() << " since " << rospath_target.string() << " was found."<<endlog();
+                    found = true;
+                    if ( import( deppath_target.string() ) ) {
+                        loadedPackages.push_back( *it );
+                    } else
+                        all_good = false;
+                }
+                else if ( is_directory( deppath ) ) {
                     found = true;
                     if ( import( deppath.string() ) ) {
                         loadedPackages.push_back( *it );
