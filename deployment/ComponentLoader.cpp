@@ -336,6 +336,7 @@ bool ComponentLoader::loadInProcess(string file, string libname, bool log_error)
     path p(file);
     char* error;
     void* handle;
+    bool success=false;
 
     // check if the library is already loaded
     // NOTE if this library has been loaded, you can unload and reload it to apply changes (may be you have updated the dynamic library)
@@ -406,7 +407,7 @@ bool ComponentLoader::loadInProcess(string file, string libname, bool log_error)
             log(Debug) << endlog();
         }
         loadedLibs.push_back(loading_lib);
-        return true;
+        success = true;
     }
 
     // Lookup createComponent (single component case):
@@ -431,8 +432,10 @@ bool ComponentLoader::loadInProcess(string file, string libname, bool log_error)
         log(Info) << "Loaded component type '"<< cname <<"'"<<endlog();
         loading_lib.components_type.push_back( cname );
         loadedLibs.push_back(loading_lib);
-        return true;
+        success = true;
     }
+
+    if (success) return true;
 
     log(Error) <<"Unloading "<< loading_lib.filename  <<": not a valid component library:" <<endlog();
     if (!create_error.empty())
