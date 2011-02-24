@@ -1,5 +1,5 @@
 #include "@pkgname@-component.hpp"
-#include <ocl/Component.hpp>
+#include <rtt/Component.hpp>
 
 /*
  * Using this macro, only one component may live

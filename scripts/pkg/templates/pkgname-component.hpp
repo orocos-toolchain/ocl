@@ -1,7 +1,7 @@
 #ifndef OROCOS_@PKGNAME@_COMPONENT_HPP
 #define OROCOS_@PKGNAME@_COMPONENT_HPP
 
-#include <rtt/TaskContext.hpp>
+#include <rtt/RTT.hpp>
 #include <iostream>
 
 class @Pkgname@
