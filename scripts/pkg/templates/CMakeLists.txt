@@ -42,7 +42,7 @@ include(${OROCOS-RTT_USE_FILE_PATH}/UseOROCOS-RTT.cmake)
 # Creates a component library lib@pkgname@-<target>.so
 # and installs in the directory lib/orocos/@pkgname@/
 #
-orocos_component(@pkgname@ @pkgname@-component.cpp) # ...you may add multiple source files
+orocos_component(@pkgname@ @pkgname@-component.hpp @pkgname@-component.cpp) # ...you may add multiple source files
 #
 # You may add multiple orocos_component statements.
 
@@ -52,7 +52,7 @@ orocos_component(@pkgname@ @pkgname@-component.cpp) # ...you may add multiple so
 # Creates a typekit library lib@pkgname@-types-<target>.so
 # and installs in the directory lib/orocos/@pkgname@/types/
 #
-orocos_typegen_headers(@pkgname@-types.hpp) # ...you may add multiple header files
+#orocos_typegen_headers(@pkgname@-types.hpp) # ...you may add multiple header files
 #
 # You may only have *ONE* orocos_typekit statement !
 
