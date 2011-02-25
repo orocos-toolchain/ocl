@@ -12,7 +12,7 @@ public:
     MyService(TaskContext* owner) 
         : Service("myservice", owner) 
     {
-        provides()->addOperation("getOwnerName", &MyService::getOwnerName, this).doc("Returns the name of the owner of this object.");
+        this->addOperation("getOwnerName", &MyService::getOwnerName, this).doc("Returns the name of the owner of this object.");
     }
 
     string getOwnerName() {
