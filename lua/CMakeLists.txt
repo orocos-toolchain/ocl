@@ -23,7 +23,7 @@ if(BUILD_LUA_RTT)
     set_target_properties(lua-repl PROPERTIES COMPILE_FLAGS "-DOROCOS_TARGET=${OROCOS_TARGET}")
 
     orocos_component(orocos-ocl-lua rtt.cpp LuaComponent.cpp )
-    add_executable(rttlua rtt.cpp LuaComponent.cpp)
+    orocos_executable(rttlua rtt.cpp LuaComponent.cpp)
     set_target_properties(orocos-ocl-lua PROPERTIES COMPILE_FLAGS "-DOCL_COMPONENT_ONLY")
     program_add_deps(rttlua orocos-ocl-deployment)
     install(TARGETS rttlua RUNTIME DESTINATION bin)
