@@ -938,8 +938,8 @@
     <section>
       <title>Setting up a deployable component library</title>
       <para>
-	This section explains how to prepare a component library
-	for deployment. It is demonstrated with an example.
+				This section explains how to prepare a component library
+				for deployment. It is demonstrated with an example.
       </para>
 			<note>
 				<para>The <filename>orocreate-pkg</filename> script of OCL does
@@ -984,7 +984,7 @@
 
   /* ... ComponentX implementation file ... */
   // <emphasis>once</emphasis>:
-  ORO_CREATE_COMPONENT_TYPE()
+  ORO_CREATE_COMPONENT_LIBRARY()
   // <emphasis>For the ComponentX type</emphasis>:
   ORO_LIST_COMPONENT_TYPE( NS::ComponentX )</programlisting>
          <para>
@@ -1006,10 +1006,16 @@
 	 </para>
 	 <note>
 	   <para>
-	     You may not mix ORO_CREATE_COMPONENT and
-	     ORO_CREATE_COMPONENT_TYPE/ORO_LIST_COMPONENT_TYPE macros
-	     in one library. You must stick to one system, even
-	     if you link libraries.
+	     You may not link multiple libraries that use ORO_CREATE_COMPONENT,
+			 since only one of the component types will be found.
+	   </para>
+	 </note>
+	 <note>
+	   <para>
+			 ORO_CREATE_COMPONENT_LIBRARY() replaces the pre-2.3.0
+			 ORO_CREATE_COMPONENT_TYPE() macro. The old macro is still
+			 kept for backwards compatibility, both versions have the
+			 exact same result.
 	   </para>
 	 </note>
       </section>
