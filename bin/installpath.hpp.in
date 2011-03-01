@@ -1,0 +1,3 @@
+
+// WARNING: This is an auto-generated file by the build system. Do not modify it. //
+const char* ocl_install_path = "@DEFAULT_COMPONENT_PATH@@OROCOS_SUFFIX@";

@@ -26,11 +26,14 @@
  ***************************************************************************/
 
 #include <rtt/os/main.h>
+#include <rtt/plugin/PluginLoader.hpp>
 #include <rtt/transports/corba/TaskContextProxy.hpp>
 #include <rtt/transports/corba/TaskContextServer.hpp>
 #include <taskbrowser/TaskBrowser.hpp>
 #include <iostream>
 #include <string>
+
+#include "installpath.hpp"
 
 using namespace RTT;
 using namespace RTT::corba;
@@ -65,6 +68,8 @@ int ORO_main(int argc, char** argv)
         return -1;
     }
     std::string name = argv[1];
+
+    RTT::plugin::PluginLoader::Instance()->loadTypekits(ocl_install_path);
 
     TaskContextServer::InitOrb( argc, argv);
 

@@ -23,6 +23,9 @@ IF ( BUILD_LOGGING )
   ADD_DEFINITIONS("-DORO_BUILD_LOGGING")
 ENDIF ( BUILD_LOGGING )
 
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+configure_file(installpath.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/installpath.hpp @ONLY)
+
 # Local Deployer application
 IF ( BUILD_TASKBROWSER AND BUILD_DEPLOYMENT)
 
