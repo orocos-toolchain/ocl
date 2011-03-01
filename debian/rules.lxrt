@@ -3,7 +3,7 @@ configure-lxrt: configure-stamp-lxrt
 configure-stamp-lxrt:
 	mkdir -p dbuild.lxrt
 	cd  dbuild.lxrt; \
-	CFLAGS="$(CFLAGS)" LDFLAGS="-Wl,-z,defs" cmake $(CMAKE_OPTIONS) -DOROCOS_TARGET=lxrt -DOROCOS_SUFFIX=-lxrt ..
+	CFLAGS="$(CFLAGS)" LDFLAGS="-Wl,-z,defs" cmake $(CMAKE_OPTIONS) -DOROCOS_TARGET=lxrt ..
 	touch configure-stamp-lxrt
 
 build-lxrt: build-stamp-lxrt

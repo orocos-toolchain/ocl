@@ -1,2 +1,2 @@
-usr/lib/liborocos-deployment-corba-@TARGET@.so.*
+usr/lib/liborocos-ocl-deployment-corba-@TARGET@.so.*
 
