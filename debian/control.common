@@ -33,3 +33,12 @@ Description: Orocos Component Library Headers - CORBA extensions
  .
  Header files.
 
+Package: orocos-ocl-common-bin
+Section: libdevel
+Architecture: any
+Depends: liborocos-ocl-gnulinux@LIBVER@-dev | liborocos-ocl-lxrt@LIBVER@-dev | liborocos-ocl-xenomai@LIBVER@-dev
+Description: Orocos Component Generation script
+ Contains the orocreate-pkg script for creating new component packages.
+
+
+

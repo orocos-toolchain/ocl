@@ -1,0 +1,11 @@
+usr/share/orocos-ocl/templates/Makefile
+usr/share/orocos-ocl/templates/pkgname-service.cpp
+usr/share/orocos-ocl/templates/pkgname-component.hpp
+usr/share/orocos-ocl/templates/pkgname-component.cpp
+usr/share/orocos-ocl/templates/support.cpp
+usr/share/orocos-ocl/templates/pkgname-plugin.cpp
+usr/share/orocos-ocl/templates/orocos-pkgname.pc.in
+usr/share/orocos-ocl/templates/manifest.xml
+usr/share/orocos-ocl/templates/pkgname-types.hpp
+usr/share/orocos-ocl/templates/CMakeLists.txt
+usr/bin/orocreate-pkg
