@@ -1511,7 +1511,7 @@ namespace OCL
             if ( ! bag.empty() ) {
                 sresult <<setw(0)<<nl;
                 for( RTT::PropertyBag::iterator it= bag.getProperties().begin(); it!=bag.getProperties().end(); ++it) {
-                    sresult <<setw(14)<<right<<(*it)->getType()<<" "<<coloron<<setw(14)<< (*it)->getName()<<coloroff;
+                    sresult <<setw(14)<<right<< Types()->toDot( (*it)->getType() )<<" "<<coloron<<setw(14)<< (*it)->getName()<<coloroff;
                     base::DataSourceBase::shared_ptr propds = (*it)->getDataSource();
                     this->printResult( propds.get(), false );
                     sresult <<" ("<<(*it)->getDescription()<<')' << nl;
@@ -1880,7 +1880,7 @@ namespace OCL
 			// Print Properties:
 			for( RTT::PropertyBag::iterator it = bag->begin(); it != bag->end(); ++it) {
 				base::DataSourceBase::shared_ptr pds = (*it)->getDataSource();
-				sresult << nl << setw(11)<< right << (*it)->getType()<< " "
+				sresult << nl << setw(11)<< right << Types()->toDot( (*it)->getType() )<< " "
 					 << coloron <<setw(14)<<left<< (*it)->getName() << coloroff;
 				this->printResult( pds.get(), false ); // do not recurse
 				sresult<<" ("<< (*it)->getDescription() <<')';
@@ -1900,7 +1900,7 @@ namespace OCL
             // Print Attributes:
             for( std::vector<std::string>::iterator it = objlist.begin(); it != objlist.end(); ++it) {
                 base::DataSourceBase::shared_ptr pds = taskobject->getValue(*it)->getDataSource();
-                sresult << setw(11)<< right << pds->getType()<< " "
+                sresult << setw(11)<< right << Types()->toDot( pds->getType() )<< " "
                      << coloron <<setw( 14 )<<left<< *it << coloroff;
                 this->printResult( pds.get(), false ); // do not recurse
                 sresult <<nl;
@@ -1929,9 +1929,9 @@ namespace OCL
 					" In" : "Out");
 				// Port data type + name
 				if ( !port->connected() )
-					sresult << "(U) " << setw(11)<<right<< port->getTypeInfo()->getTypeName();
+					sresult << "(U) " << setw(11)<<right<< Types()->toDot( port->getTypeInfo()->getTypeName() );
 				else
-					sresult << "(C) " << setw(11)<<right<< port->getTypeInfo()->getTypeName();
+					sresult << "(C) " << setw(11)<<right<< Types()->toDot( port->getTypeInfo()->getTypeName() );
 				sresult << " "
 					 << coloron <<setw( 14 )<<left<< *it << coloroff;
 
@@ -2071,14 +2071,14 @@ namespace OCL
         }
         sresult <<" " << coloron << m << coloroff<< "( ";
         for (std::vector<ArgumentDescription>::iterator it = args.begin(); it != args.end(); ++it) {
-            sresult << it->type <<" ";
+            sresult << Types()->toDot( it->type ) <<" ";
             sresult << coloron << it->name << coloroff;
             if ( it+1 != args.end() )
                 sresult << ", ";
             else
                 sresult << " ";
         }
-        sresult << ") : "<< ops->getResultType(m)<<nl;
+        sresult << ") : "<< Types()->toDot( ops->getResultType(m) )<<nl;
         sresult << "   " << ops->getDescription( m )<<nl;
         for (std::vector<ArgumentDescription>::iterator it = args.begin(); it != args.end(); ++it)
             sresult <<"   "<< it->name <<" : " << it->description << nl;
