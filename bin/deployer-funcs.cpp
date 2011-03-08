@@ -154,7 +154,7 @@ int deployerParseCmdLine(int                        argc,
 		}
 
  		// verify that is a valid logging level
-		boost::algorithm::to_lower(logLevel);	// always lower case
+		logLevel = boost::algorithm::to_lower_copy(logLevel);	// always lower case
 		if (vm.count("log-level"))
 		{
 			if (0 != logMap.count(logLevel))
