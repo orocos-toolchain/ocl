@@ -6,11 +6,11 @@ IF ( BUILD_REPORTING_TEST )
 
     GLOBAL_ADD_TEST( report main.cpp )
     # Use  TARGET_LINK_LIBRARIES( report libs... ) to add library deps.
-    target_link_libraries( report orocos-taskbrowser orocos-reporting )
+    PROGRAM_ADD_DEPS( report orocos-ocl-taskbrowser orocos-ocl-reporting )
 
     GLOBAL_ADD_TEST( tcpreport tcpmain.cpp )
     # Use  TARGET_LINK_LIBRARIES( report libs... ) to add library deps.
-    target_link_libraries( tcpreport orocos-taskbrowser orocos-reporting )
+    PROGRAM_ADD_DEPS( tcpreport orocos-ocl-taskbrowser orocos-ocl-reporting )
 
     # Copy this file to build dir.
     TEST_USES_FILE( reporter.cpf )
@@ -19,7 +19,7 @@ IF ( BUILD_REPORTING_TEST )
 
     GLOBAL_ADD_TEST( ncreport ncmain.cpp )
     # Use  TARGET_LINK_LIBRARIES( report libs... ) to add library deps.
-    target_link_libraries( ncreport orocos-taskbrowser orocos-reporting-netcdf )
+    PROGRAM_ADD_DEPS( ncreport orocos-ocl-taskbrowser orocos-ocl-reporting-netcdf )
 
   ENDIF( BUILD_REPORTING_NETCDF AND NETCDF_FOUND )
 

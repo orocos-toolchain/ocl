@@ -10,7 +10,7 @@ namespace logging {
 
 class OCL_API Category;
 
-OCL_API class CategoryStream
+class OCL_API CategoryStream
 {
 public:
 
