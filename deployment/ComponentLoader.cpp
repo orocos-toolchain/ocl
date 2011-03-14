@@ -134,7 +134,11 @@ bool ComponentLoader::import( std::string const& path_list )
                 log(Debug) << "Scanning file " << itr->path().string() << " ...";
                 if (is_regular_file(itr->status()) && itr->path().extension() == SO_EXT ) {
                     found = true;
+#if BOOST_VERSION >= 104600
+                    all_good = loadInProcess( itr->path().string(), makeShortFilename(itr->path().filename().string() ),  true) && all_good;
+#else
                     all_good = loadInProcess( itr->path().string(), makeShortFilename(itr->path().filename() ),  true) && all_good;
+#endif
                 } else {
                     if (!is_regular_file(itr->status()))
                         log(Debug) << "not a regular file: ignored."<<endlog();
@@ -167,7 +171,11 @@ bool ComponentLoader::import( std::string const& path_list )
                 log(Debug) << "Scanning file " << itr->path().string() << " ...";
                 if (is_regular_file(itr->status()) && itr->path().extension() == SO_EXT ) {
                     found = true;
+#if BOOST_VERSION >= 104600
+                    all_good = loadInProcess( itr->path().string(), makeShortFilename(itr->path().filename().string() ),  true) && all_good;
+#else
                     all_good = loadInProcess( itr->path().string(), makeShortFilename(itr->path().filename() ),  true) && all_good;
+#endif
                 }else {
                     if (!is_regular_file(itr->status()))
                         log(Debug) << "not a regular file: ignored."<<endlog();
@@ -196,7 +204,11 @@ bool ComponentLoader::import( std::string const& package, std::string const& pat
     // check first for exact match to *file*:
     path arg( package );
     if (is_regular_file(arg)) {
+#if BOOST_VERSION >= 104600
+	    return loadInProcess(arg.string(), makeShortFilename( arg.filename().string() ), true);
+#else
 	    return loadInProcess(arg.string(), makeShortFilename( arg.filename() ), true);
+#endif
     }
 
     // check for absolute path:
@@ -365,7 +377,11 @@ bool ComponentLoader::loadLibrary( std::string const& name )
 {
     path arg = name;
     // check for direct match:
+#if BOOST_VERSION >= 104600
+    if (is_regular_file( arg ) && loadInProcess( arg.string(), makeShortFilename( arg.filename().string() ), true ) )
+#else
     if (is_regular_file( arg ) && loadInProcess( arg.string(), makeShortFilename( arg.filename() ), true ) )
+#endif
         return true;
     // bail out if absolute path
     if ( arg.is_complete() )
@@ -376,7 +392,11 @@ bool ComponentLoader::loadLibrary( std::string const& name )
     vector<string> tryouts( paths.size() * 4 );
     tryouts.clear();
     path dir = arg.parent_path();
+#if BOOST_VERSION >= 104600
+    string file = arg.filename().string();
+#else
     string file = arg.filename();
+#endif
 
     for (vector<string>::iterator it = paths.begin(); it != paths.end(); ++it)
     {
