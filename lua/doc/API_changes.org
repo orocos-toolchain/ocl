@@ -20,6 +20,15 @@
 
 *API Changes in the Lua RTT bindings*
 
+ - [2011-03-18 Fri] Fix the problem of conversions getting broken
+   after type aliases were added. Also removed =rttlib.var_is_basic=
+   and instead exported the C one as =rtt.Variable.isbasic= method and
+   function.
+
+ - [2011-01-25 Tue] Automatically convert rtt Variables to Lua
+   types. This gets rid of the problem that RTT and lua types could
+   not be directly compared.
+
  - [2011-01-24 Mon] RTT operations are now called just like methods
    with =tc:operation()= syntax. If there exists a C++ method _and_ a
    RTT Operation with the same name, the operation will be called.
