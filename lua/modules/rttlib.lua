@@ -118,23 +118,12 @@ function ConnPolicy2tab(cp)
    return cp
 end
 
-local function var_is_basic(var)
-   assert(type(var) == 'userdata', "var_is_basic not a variable:" .. type(var))
-   local t = var:getType()
-   if t == "bool" or t == "char" or t == "double" or t == "float" or
-      t == "int" or t == "string" or t == "uint" or t == "void" then
-      return true
-   else
-      return false
-   end
-end
-
 function var2tab(var)
    local function __var2tab(var)
       local res
       if type(var) ~= 'userdata' then
 	 res=var
-      elseif var_is_basic(var) then
+      elseif rtt.Variable.isbasic(var) then
 	 res = var:tolua()
       else -- non basic type
 	 local parts = var:getMemberNames()
@@ -197,7 +186,7 @@ function varfromtab(var, tab)
       memdsb = var:getMember(k)
       if memdsb == nil then error("no member " .. k) end
 
-      if var_is_basic(memdsb) then
+      if rtt.Variable.isbasic(memdsb) then
 	 memdsb:assign(v);
       else
 	 fromtab(memdsb, v)
@@ -422,12 +411,12 @@ function port_clone_conn(p, suffix, cname)
    return cl
 end
 
--- created set of mirrored, connected ports
--- comp: taskcontext to mirror
--- tab: table of port names to mirror, if nil will mirror all
--- suffix: suffix
+--- Mirror a TaskContext's connected ports
+-- @param tc taskcontext to mirror
+-- @param tab table of port names to mirror (default: all)
+-- @param suffix suffix to default
 -- a table of { port, name, desc } tables
-function mirror(comp, suffix, tab)
+function mirror(tc, suffix, tab)
    local tab = tab or comp:getPortNames()
    local res = {}
    for _,pn in ipairs(tab) do

@@ -46,11 +46,11 @@ function fails()
 end
 
 function test_loadlib()
-   return d:call("loadLibrary", var.new("string", "lua/testing/testcomp-gnulinux"))
+   return d:import("testing/")
 end
 
 function test_create_testcomp()
-   if not d:call("loadComponent", var.new("string", "testcomp"), var.new("string", "OCL::Testcomp")) then
+   if not d:loadComponent("testcomp", "OCL::Testcomp") then
       return false
    end
    testcomp = d:getPeer("testcomp")
