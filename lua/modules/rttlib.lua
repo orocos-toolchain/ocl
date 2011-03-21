@@ -412,11 +412,11 @@ function port_clone_conn(p, suffix, cname)
 end
 
 --- Mirror a TaskContext's connected ports
--- @param tc taskcontext to mirror
+-- @param comp taskcontext to mirror
 -- @param tab table of port names to mirror (default: all)
 -- @param suffix suffix to default
 -- a table of { port, name, desc } tables
-function mirror(tc, suffix, tab)
+function mirror(comp, suffix, tab)
    local tab = tab or comp:getPortNames()
    local res = {}
    for _,pn in ipairs(tab) do
