@@ -44,7 +44,7 @@
 
 #ifdef  ORO_BUILD_LOGGING
 #   ifndef OS_RT_MALLOC
-#   warning Logging needs rtalloc!
+#   warning "Logging needs rtalloc!"
 #   endif
 #include <log4cpp/HierarchyMaintainer.hh>
 #include "logging/Category.hpp"
