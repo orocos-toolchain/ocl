@@ -48,7 +48,7 @@ version=`grep orocos-ocl debian/changelog | head -1 | awk '{print substr($$2,2,l
 #version=`find . -name liborocos-ocl*.so.* | awk '{if (match($$0,/[0-9]+\.[0-9]+\.[0-9]+$$/)) print substr($$0,RSTART)}' | head -1`
 major=`find . -name liborocos-ocl*.so.* | awk '{if (match($$0,/\.so\.[0-9]+\.[0-9]+.*$$/)) print substr($$0,RSTART+4,3)}' | head -1`
 
-CMAKE_OPTIONS=-DBUILD_REPORTING_NETCDF=ON -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_LOGGING=OFF
+CMAKE_OPTIONS=-DBUILD_REPORTING_NETCDF=ON -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_LOGGING=OFF -DBUILD_LUA_RTT=ON
 
 include debian/rules.targets
 
