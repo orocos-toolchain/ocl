@@ -800,7 +800,6 @@ namespace OCL
                 // quit on EOF (Ctrl-D)
                 command = commandStr ? commandStr : "quit"; // copy over to string
 #else
-                std::string command;
                 cout << prompt;
                 getline(cin,command);
                 if (!cin) // Ctrl-D
