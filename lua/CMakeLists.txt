@@ -27,6 +27,7 @@ if(BUILD_LUA_RTT)
     set_target_properties(orocos-ocl-lua PROPERTIES COMPILE_FLAGS "-DOCL_COMPONENT_ONLY")
     program_add_deps(rttlua orocos-ocl-deployment)
     install(TARGETS rttlua RUNTIME DESTINATION bin)
+    install(FILES modules/rttlib.lua modules/ansicolors.lua modules/utils.lua DESTINATION usr/share/lua/5.1/)
     if(NOT CURSES AND NOT READLINE)
        message(STATUS "Building without readline/curses support. If you
 	 want support for this try someting like 'sudo aptitude install
