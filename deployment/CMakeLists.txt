@@ -50,8 +50,11 @@ IF ( BUILD_DEPLOYMENT )
     ENDIF( ROS_ROOT )
 
     configure_file(comppath.cpp.in ${CMAKE_CURRENT_BINARY_DIR}/comppath.cpp @ONLY)
-    # This to reduce upgrade pains for in-tree upgraders:
-    execute_process( COMMAND ${CMAKE_COMMAND} -E remove -f ${CMAKE_CURRENT_SOURCE_DIR}/comppath.cpp )
+
+    if (NOT (${CMAKE_CURRENT_BINARY_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR}))
+        # This to reduce upgrade pains for in-tree upgraders:
+        execute_process( COMMAND ${CMAKE_COMMAND} -E remove -f ${CMAKE_CURRENT_SOURCE_DIR}/comppath.cpp )
+    endif()
 
     orocos_generate_package()
 
