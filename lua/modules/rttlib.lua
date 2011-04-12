@@ -427,6 +427,27 @@ function mirror(comp, suffix, tab)
    return res
 end
 
+--- Find a peer called name
+-- Will search through all reachable peers
+-- @param name name of component to find
+-- @param start_tc optional taskcontext to start search with
+function findpeer(name, start_tc)
+   local cache = {}
+   local function __findpeer(tc)
+      local tc_name = tc:getName()
+      if cache[tc_name] then return false else cache[tc_name] = true end
+      local peers = tc:getPeers()
+      if utils.table_has(peers, name) then return tc:getPeer(name) end
+      for i,pstr in ipairs(peers) do
+	 local p = __findpeer(tc:getPeer(pstr))
+	 if p then return p end
+      end
+      return false
+   end
+   local start_tc = start_tc or rtt.getTC()
+   return __findpeer(start_tc)
+end
+
 -- TaskContext metatable __index replacement for allowing operations
 -- to be called like methods. This is pretty slow, use getOperation to
 -- cache local op when speed matters.
