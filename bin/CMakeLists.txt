@@ -29,35 +29,31 @@ configure_file(installpath.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/installpath.hpp @O
 # Local Deployer application
 IF ( BUILD_TASKBROWSER AND BUILD_DEPLOYMENT)
 
-    ADD_EXECUTABLE( deployer-${OROCOS_TARGET} deployer.cpp deployer-funcs.cpp )
-    program_add_deps( deployer-${OROCOS_TARGET} ${EXTRA_DEPS} )
-    program_add_deps( deployer-${OROCOS_TARGET} ${OROCOS-RTT_LIBRARIES} orocos-ocl-taskbrowser orocos-ocl-deployment ${Boost_PROGRAM_OPTIONS_LIBRARY} ${EXTRA_LIBRARIES})
-    INSTALL( TARGETS deployer-${OROCOS_TARGET} RUNTIME DESTINATION bin)
+    orocos_executable( deployer deployer.cpp deployer-funcs.cpp )
+    program_add_deps( deployer ${EXTRA_DEPS} )
+    program_add_deps( deployer ${OROCOS-RTT_LIBRARIES} orocos-ocl-taskbrowser orocos-ocl-deployment ${Boost_PROGRAM_OPTIONS_LIBRARY} ${EXTRA_LIBRARIES})
 
 ENDIF ( BUILD_TASKBROWSER AND BUILD_DEPLOYMENT)
 
 # Remote TaskBrowser application
 IF ( BUILD_TASKBROWSER AND OROCOS-RTT_CORBA_FOUND)
 
-    ADD_EXECUTABLE( ctaskbrowser-${OROCOS_TARGET} ctaskbrowser.cpp )
-    program_add_deps( ctaskbrowser-${OROCOS_TARGET} ${EXTRA_DEPS} )
-    program_add_deps( ctaskbrowser-${OROCOS_TARGET} ${OROCOS-RTT_LIBRARIES} orocos-ocl-taskbrowser ${OROCOS-RTT_CORBA_LIBRARIES} ${EXTRA_LIBRARIES} )
-    INSTALL( TARGETS ctaskbrowser-${OROCOS_TARGET} RUNTIME DESTINATION bin)
+    orocos_executable( ctaskbrowser ctaskbrowser.cpp )
+    program_add_deps( ctaskbrowser ${EXTRA_DEPS} )
+    program_add_deps( ctaskbrowser ${OROCOS-RTT_LIBRARIES} orocos-ocl-taskbrowser ${OROCOS-RTT_CORBA_LIBRARIES} ${EXTRA_LIBRARIES} )
 
 ENDIF ( BUILD_TASKBROWSER AND OROCOS-RTT_CORBA_FOUND)
 
 # Deployment Server which can be accessed using ctaskbrowser
 IF ( BUILD_DEPLOYMENT AND OROCOS-RTT_CORBA_FOUND)
 
-    ADD_EXECUTABLE( cdeployer-${OROCOS_TARGET} cdeployer.cpp deployer-funcs.cpp )
-    program_add_deps( cdeployer-${OROCOS_TARGET} ${EXTRA_DEPS} )
-    program_add_deps( cdeployer-${OROCOS_TARGET} ${OROCOS-RTT_LIBRARIES} ${OROCOS-RTT_CORBA_LIBRARIES} orocos-ocl-deployment-corba ${Boost_PROGRAM_OPTIONS_LIBRARY} ${EXTRA_LIBRARIES})
-    INSTALL( TARGETS cdeployer-${OROCOS_TARGET} RUNTIME DESTINATION bin)
+    orocos_executable( cdeployer cdeployer.cpp deployer-funcs.cpp )
+    program_add_deps( cdeployer ${EXTRA_DEPS} )
+    program_add_deps( cdeployer ${OROCOS-RTT_LIBRARIES} ${OROCOS-RTT_CORBA_LIBRARIES} orocos-ocl-deployment-corba ${Boost_PROGRAM_OPTIONS_LIBRARY} ${EXTRA_LIBRARIES})
 
-    ADD_EXECUTABLE( deployer-corba-${OROCOS_TARGET} deployer-corba.cpp deployer-funcs.cpp )
-    program_add_deps( deployer-corba-${OROCOS_TARGET} ${EXTRA_DEPS} )
-    program_add_deps( deployer-corba-${OROCOS_TARGET} ${OROCOS-RTT_LIBRARIES} ${OROCOS-RTT_CORBA_LIBRARIES} orocos-ocl-deployment-corba orocos-ocl-taskbrowser ${Boost_PROGRAM_OPTIONS_LIBRARY} ${EXTRA_LIBRARIES})
-    INSTALL( TARGETS deployer-corba-${OROCOS_TARGET} RUNTIME DESTINATION bin)
+    orocos_executable( deployer-corba deployer-corba.cpp deployer-funcs.cpp )
+    program_add_deps( deployer-corba ${EXTRA_DEPS} )
+    program_add_deps( deployer-corba ${OROCOS-RTT_LIBRARIES} ${OROCOS-RTT_CORBA_LIBRARIES} orocos-ocl-deployment-corba orocos-ocl-taskbrowser ${Boost_PROGRAM_OPTIONS_LIBRARY} ${EXTRA_LIBRARIES})
 
 ENDIF ( BUILD_DEPLOYMENT AND OROCOS-RTT_CORBA_FOUND)
 
