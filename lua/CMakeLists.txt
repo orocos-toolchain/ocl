@@ -1,17 +1,14 @@
 
-option(BUILD_LUA_RTT "Build Lua RTT bindings" OFF)
+option(BUILD_LUA_RTT "Build Lua RTT bindings" ON)
 cmake_dependent_option(BUILD_LUA_RTT_DYNAMIC_MODULES "Build dynamic loadable Lua plugins for rtt and deployer (experimental!)" OFF "BUILD_LUA_RTT" OFF)
 
 if(BUILD_LUA_RTT)
 
-  find_package(Lua51 REQUIRED)
+  find_package(Lua51)
 
   if(NOT LUA51_FOUND)
 
-  message(FATAL_ERROR "Can not build LuaComponent without lua
-      libraries. On debian-like system you might want to try something
-      like 'sudo apt-get install liblua5.1-0-dev' or disable 
-      Lua-RTT completely.")
+  message(WARNING "Can not build LuaComponent without Lua library. On debian-like systems try 'sudo apt-get install liblua5.1-0-dev'.")
 
   else(NOT LUA51_FOUND)
 
