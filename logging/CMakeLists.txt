@@ -18,8 +18,8 @@ IF ( BUILD_LOGGING AND LOG4CPP_FOUND )
   orocos_library( orocos-ocl-log4cpp ${LOGLIB_CPPS} )
 
   orocos_install_headers( ${HPPS} INSTALL include/orocos/ocl )
-  target_link_libraries( orocos-ocl-log4cpp "${LOG4CPP_LIBRARIES}")
-  target_link_libraries( orocos-ocl-logging "${LOG4CPP_LIBRARIES}" orocos-ocl-log4cpp)
+  target_link_libraries( orocos-ocl-log4cpp ${LOG4CPP_LIBRARIES})
+  target_link_libraries( orocos-ocl-logging ${LOG4CPP_LIBRARIES} orocos-ocl-log4cpp)
 
   orocos_generate_package()
   ADD_SUBDIRECTORY( tests )

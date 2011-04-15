@@ -31,6 +31,7 @@ ENDIF ()
 # Find headers and libraries
 find_path(LOG4CPP_INCLUDE_DIR NAMES log4cpp/Category.hh ${LOG4CPP_INCLUDE_HINTS})
 find_library(LOG4CPP_LIBRARY NAMES log4cpp ${LOG4CPP_LIBRARY_HINTS})
+find_library(LOG4CPPD_LIBRARY NAMES log4cpp${CMAKE_DEBUG_POSTFIX} ${LOG4CPP_LIBRARY_HINTS})
 
 set(LOG4CPP_VERSION 6.0.0)
 message("Log4cpp version to look for: ${LOG4CPP_VERSION} (hard-coded in FindLog4cpp.cmake).")
@@ -60,7 +61,14 @@ if(LOG4CPP_FOUND)
   set(LOG4CPP_INCLUDE_DIRS ${LOG4CPP_INCLUDE_DIR})
 
   # Libraries
-  set(LOG4CPP_LIBRARIES ${LOG4CPP_LIBRARY})
+  if(LOG4CPP_LIBRARY)
+    set(LOG4CPP_LIBRARIES optimized ${LOG4CPP_LIBRARY})
+  else(LOG4CPP_LIBRARY)
+    set(LOG4CPP_LIBRARIES "")
+  endif(LOG4CPP_LIBRARY)
+  if(LOG4CPPD_LIBRARY)
+    set(LOG4CPP_LIBRARIES debug ${LOG4CPPD_LIBRARY} ${LOG4CPP_LIBRARIES})
+  endif(LOG4CPPD_LIBRARY)
 
   # Link dirs
   get_filename_component(LOG4CPP_LIBRARY_DIRS ${LOG4CPP_LIBRARY} PATH)
