@@ -460,6 +460,12 @@ function tc_index(tc, key)
    end
 end
 
+setmetatable(rtt.Variable, {__call=function(t,...) return rtt.Variable.new(...) end})
+setmetatable(rtt.Property, {__call=function(t,...) return rtt.Property.new(...) end})
+setmetatable(rtt.InputPort, {__call=function(t,...) return rtt.InputPort.new(...) end})
+setmetatable(rtt.OutputPort, {__call=function(t,...) return rtt.OutputPort.new(...) end})
+setmetatable(rtt.EEHook, {__call=function(t,...) return rtt.EEHook.new(...) end})
+
 -- enable pretty printing
 if type(debug) == 'table' then
    reg = debug.getregistry()
