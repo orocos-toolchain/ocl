@@ -385,12 +385,6 @@ function pptc(tc)
    print(tc2str(tc))
 end
 
-function info()
-   print("services:   ", table.concat(rtt.services(), ', '))
-   print("typekits:   ", table.concat(rtt.typekits(), ', '))
-   print("types:      ", table.concat(rtt.types(), ', '))
-end
-
 -- clone a port, with same name + suffix and connect both
 -- cname is optional component name used in description
 function port_clone_conn(p, suffix, cname)
@@ -447,6 +441,19 @@ function findpeer(name, start_tc)
    local start_tc = start_tc or rtt.getTC()
    return __findpeer(start_tc)
 end
+
+function info()
+   print(magenta("services:   "), table.concat(rtt.services(), ', '))
+   print(magenta("typekits:   "), table.concat(rtt.typekits(), ', '))
+   print(magenta("types:      "), table.concat(rtt.types(), ', '))
+
+   local depl = findpeer("deployer")
+   if depl and rtt.TaskContext.hasOperation(depl, "getComponentTypes") then
+      local t = var2tab(depl:getComponentTypes())
+      print(magenta("comp types: "), table.concat(t, ', '))
+   end
+end
+
 
 -- TaskContext metatable __index replacement for allowing operations
 -- to be called like methods. This is pretty slow, use getOperation to
