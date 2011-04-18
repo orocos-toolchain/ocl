@@ -23,7 +23,7 @@
 #include "lualib.h"
 
 #define RTTLUA_BOILER  "OROCOS RTTLua"
-#define RTTLUA_VERSION "1.0-beta2"
+#define RTTLUA_VERSION "1.0-beta3"
 #define XSTR(x) STR(x)
 #define STR(x)	#x
 
