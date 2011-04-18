@@ -2457,7 +2457,7 @@ bool call_func(lua_State *L, const std::string &fname, TaskContext *tc)
 
 	lua_getglobal(L, fname.c_str());
 
-	if (lua_pcall(L, 0, 1, NULL) != 0) {
+	if (lua_pcall(L, 0, 1, 0) != 0) {
 		Logger::log(Logger::Error) << "LuaComponent '"<< tc->getName()  <<"': error calling function "
 					   << fname << ": " << lua_tostring(L, -1) << endlog();
 		ret = false;
