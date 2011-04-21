@@ -1715,7 +1715,7 @@ namespace OCL
             if ( master_name == this->getName() )
 	        master_act = this->engine()->getActivity();
             else
-                if ( comps.count(master_name) )
+                if ( comps.count(master_name) && comps[master_name].act )
 		    master_act = comps[master_name].act;
                 else
 		    master_act = this->getPeer(master_name) ? getPeer(master_name)->engine()->getActivity() : 0; // last resort.
