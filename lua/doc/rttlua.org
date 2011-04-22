@@ -310,6 +310,7 @@
 
    | Method                            | flag | description                                                                 |
    |-----------------------------------+------+-----------------------------------------------------------------------------|
+   | =variable isbasic(type)=          |      | return true if the Variable is primitve, else false                         |
    | =variable new(type)=              | F    | create a new Variable of type                                               |
    | =variable new(type, ival)=        | F    | create new Variable of type and initialize with ival (only for basic types) |
    | =luaval tolua()=                  |      | convert to lua value (only for basic types)                                 |

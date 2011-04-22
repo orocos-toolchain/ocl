@@ -118,23 +118,12 @@ function ConnPolicy2tab(cp)
    return cp
 end
 
-local function var_is_basic(var)
-   assert(type(var) == 'userdata', "var_is_basic not a variable:" .. type(var))
-   local t = var:getType()
-   if t == "bool" or t == "char" or t == "double" or t == "float" or
-      t == "int" or t == "string" or t == "uint" or t == "void" then
-      return true
-   else
-      return false
-   end
-end
-
 function var2tab(var)
    local function __var2tab(var)
       local res
       if type(var) ~= 'userdata' then
 	 res=var
-      elseif var_is_basic(var) then
+      elseif rtt.Variable.isbasic(var) then
 	 res = var:tolua()
       else -- non basic type
 	 local parts = var:getMemberNames()
@@ -197,7 +186,7 @@ function varfromtab(var, tab)
       memdsb = var:getMember(k)
       if memdsb == nil then error("no member " .. k) end
 
-      if var_is_basic(memdsb) then
+      if rtt.Variable.isbasic(memdsb) then
 	 memdsb:assign(v);
       else
 	 fromtab(memdsb, v)
@@ -396,12 +385,6 @@ function pptc(tc)
    print(tc2str(tc))
 end
 
-function info()
-   print("services:   ", table.concat(rtt.services(), ', '))
-   print("typekits:   ", table.concat(rtt.typekits(), ', '))
-   print("types:      ", table.concat(rtt.types(), ', '))
-end
-
 -- clone a port, with same name + suffix and connect both
 -- cname is optional component name used in description
 function port_clone_conn(p, suffix, cname)
@@ -422,10 +405,10 @@ function port_clone_conn(p, suffix, cname)
    return cl
 end
 
--- created set of mirrored, connected ports
--- comp: taskcontext to mirror
--- tab: table of port names to mirror, if nil will mirror all
--- suffix: suffix
+--- Mirror a TaskContext's connected ports
+-- @param comp taskcontext to mirror
+-- @param tab table of port names to mirror (default: all)
+-- @param suffix suffix to default
 -- a table of { port, name, desc } tables
 function mirror(comp, suffix, tab)
    local tab = tab or comp:getPortNames()
@@ -438,6 +421,40 @@ function mirror(comp, suffix, tab)
    return res
 end
 
+--- Find a peer called name
+-- Will search through all reachable peers
+-- @param name name of component to find
+-- @param start_tc optional taskcontext to start search with
+function findpeer(name, start_tc)
+   local cache = {}
+   local function __findpeer(tc)
+      local tc_name = tc:getName()
+      if cache[tc_name] then return false else cache[tc_name] = true end
+      local peers = tc:getPeers()
+      if utils.table_has(peers, name) then return tc:getPeer(name) end
+      for i,pstr in ipairs(peers) do
+	 local p = __findpeer(tc:getPeer(pstr))
+	 if p then return p end
+      end
+      return false
+   end
+   local start_tc = start_tc or rtt.getTC()
+   return __findpeer(start_tc)
+end
+
+function info()
+   print(magenta("services:   "), table.concat(rtt.services(), ', '))
+   print(magenta("typekits:   "), table.concat(rtt.typekits(), ', '))
+   print(magenta("types:      "), table.concat(rtt.types(), ', '))
+
+   local depl = findpeer("deployer")
+   if depl and rtt.TaskContext.hasOperation(depl, "getComponentTypes") then
+      local t = var2tab(depl:getComponentTypes())
+      print(magenta("comp types: "), table.concat(t, ', '))
+   end
+end
+
+
 -- TaskContext metatable __index replacement for allowing operations
 -- to be called like methods. This is pretty slow, use getOperation to
 -- cache local op when speed matters.
@@ -449,6 +466,12 @@ function tc_index(tc, key)
       return reg.TaskContext[key]
    end
 end
+
+setmetatable(rtt.Variable, {__call=function(t,...) return rtt.Variable.new(...) end})
+setmetatable(rtt.Property, {__call=function(t,...) return rtt.Property.new(...) end})
+setmetatable(rtt.InputPort, {__call=function(t,...) return rtt.InputPort.new(...) end})
+setmetatable(rtt.OutputPort, {__call=function(t,...) return rtt.OutputPort.new(...) end})
+setmetatable(rtt.EEHook, {__call=function(t,...) return rtt.EEHook.new(...) end})
 
 -- enable pretty printing
 if type(debug) == 'table' then
