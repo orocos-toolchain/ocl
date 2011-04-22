@@ -20,7 +20,6 @@ IF ( BUILD_DEPLOYMENT )
     ENDIF()
     TARGET_LINK_LIBRARIES( orocos-ocl-deployment ${RTT_PLUGIN_rtt-marshalling_LIBRARIES} ${RTT_PLUGIN_rtt-scripting_LIBRARIES})
     TARGET_LINK_LIBRARIES( orocos-ocl-deployment ${Boost_FILESYSTEM_LIBRARIES} ${Boost_SYSTEM_LIBRARIES})
-    target_link_libraries( orocos-ocl-deployment LINK_INTERFACE_LIBRARIES )
     
     IF (OROCOS-RTT_CORBA_FOUND)
         orocos_library(orocos-ocl-deployment-corba CorbaDeploymentComponent.cpp )
