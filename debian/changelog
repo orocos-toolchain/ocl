@@ -1,3 +1,9 @@
+orocos-ocl (2.4.0-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Peter Soetens <peter@thesourceworks.com>  Sat, 30 Apr 2011 01:11:30 +0200
+
 orocos-ocl (2.3.1-1) unstable; urgency=low
 
   * New upstream release
