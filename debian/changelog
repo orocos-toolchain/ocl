@@ -1,3 +1,9 @@
+orocos-ocl (2.3.2-1) maverick; urgency=low
+
+  * New upstream release
+
+ -- Peter Soetens <peter@thesourceworks.com>  Tue, 03 May 2011 18:09:21 +0200
+
 orocos-ocl (2.3.1-1) unstable; urgency=low
 
   * New upstream release
