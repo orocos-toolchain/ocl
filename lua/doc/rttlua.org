@@ -211,7 +211,6 @@
    - =Property=
    - =Service=
    - =Operation=
-   - =Logger=
    - =EEHook=
 
   Probably the most important function is =rtt.getTC()= which returns
@@ -318,7 +317,8 @@
    | =string getType()=                |      | return the RTT type name in human readable format                           |
    | =string getTypeName()=            |      | return the RTT type name                                                    |
    | =table getMemberNames()=          |      | return a table of the names of subtypes of this variable                    |
-   | =variable getMember(name)=        |      | return variable which is a member with name                                 |
+   | =variable getMember(name)=        |      | return variable which is a member with name and convert to lua if basic     |
+   | =variable getMemberRaw(name)=     |      | return variable which but do not convert basic types                        |
    | =opBinary(string_op, var1, var2)= | F    | execute: var1 string_op var2                                                |
    | =bool assign(value)=              |      | assign value which can be a lua type or a Variable                          |
    | =bool resize(size)=               |      | resize type (only for array types)                                          |

@@ -298,6 +298,21 @@ static int Variable_getMember(lua_State *L)
 	return 1;
 }
 
+static int Variable_getMemberRaw(lua_State *L)
+{
+	DataSourceBase::shared_ptr *dsbp = luaM_checkudata_mt(L, 1, "Variable", DataSourceBase::shared_ptr);
+	DataSourceBase::shared_ptr memdsb;
+	const char *mem = luaL_checkstring(L, 2);
+
+	memdsb = (*dsbp)->getMember(mem);
+
+	if(memdsb == 0)
+		lua_pushnil(L);
+	else
+		luaM_pushobject_mt(L, "Variable", DataSourceBase::shared_ptr)(memdsb);
+	return 1;
+}
+
 static int Variable_update(lua_State *L)
 {
 	int ret;
@@ -603,6 +618,7 @@ static const struct luaL_Reg Variable_f [] = {
 	{ "getTypeName", Variable_getTypeName },
 	{ "getMemberNames", Variable_getMemberNames },
 	{ "getMember", Variable_getMember },
+	{ "getMemberRaw", Variable_getMemberRaw },
 	{ "resize", Variable_resize },
 	{ "opBinary", Variable_opBinary },
 	{ "assign", Variable_update }, /* assign seems a better name than update */
@@ -627,6 +643,7 @@ static const struct luaL_Reg Variable_m [] = {
 	{ "getTypeName", Variable_getTypeName },
 	{ "getMemberNames", Variable_getMemberNames },
 	{ "getMember", Variable_getMember },
+	{ "getMemberRaw", Variable_getMemberRaw },
 	{ "resize", Variable_resize },
 	{ "opBinary", Variable_opBinary },
 	{ "assign", Variable_update }, /* assign seems a better name than update */
