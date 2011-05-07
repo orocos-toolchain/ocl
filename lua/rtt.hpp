@@ -48,7 +48,12 @@ extern "C" {
 
 int luaopen_rtt(lua_State *L);
 int set_context_tc(RTT::TaskContext*, lua_State*);
-bool call_func(lua_State*, const std::string&, RTT::TaskContext*);
+
+/* call a function/0 named by string, the last two boolean arguments
+ * are wether to fail if no such function exists and wether to fail if
+ * no boolean result is returned.
+ */
+bool call_func(lua_State*, const std::string&, RTT::TaskContext*, int, int);
 }
 
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env rttlua
+#!/usr/bin/env rttlua-gnulinux
 
 require("rttlib")
 require("utils")
@@ -63,8 +63,8 @@ create_activities(d, act_spec)
 l.Producer:call("exec_file", "producer.lua")
 l.Consumer:call("exec_file", "consumer.lua")
 
-l.Producer:configure()
-l.Consumer:configure()
+print("l.Producer:configure():", l.Producer:configure())
+print("l.Consumer:configure():", l.Consumer:configure())
 
 -- create connections
 conn_spec = { { srccomp="Producer", srcport="outport", 
@@ -73,17 +73,12 @@ conn_spec = { { srccomp="Producer", srcport="outport",
 
 create_conns(d, conn_spec)
 
-rtt.Logger.setlevel("Info")
+rtt.setLogLevel("Info")
 
 l.Consumer:start()
 l.Producer:start()
 
 os.execute("sleep 5")
-
-
-kickout(d, "Producer", "Consumer")
-
-l.Consumer:stop()
-l.Producer:stop()
+--kickout(d, "Producer", "Consumer")
 
 --os.exit(0)

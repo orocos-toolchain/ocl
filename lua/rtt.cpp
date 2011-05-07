@@ -2217,7 +2217,7 @@ protected:
 			    in error messages */
 public:
 	EEHook(lua_State *_L, std::string _func) { L = _L; func = _func; tc = __getTC(L); }
-	bool execute() { return call_func(L, func.c_str(), tc); }
+	bool execute() { return call_func(L, func.c_str(), tc, 1, 1); }
 };
 
 static int EEHook_new(lua_State *L)
@@ -2468,11 +2468,18 @@ int set_context_tc(TaskContext *tc, lua_State *L)
 
 /* call a zero arity function with a boolean return value
  * used to call various hooks */
-bool call_func(lua_State *L, const std::string &fname, TaskContext *tc)
+bool call_func(lua_State *L, const std::string &fname, TaskContext *tc,
+	       int require_function, int require_result)
 {
-	bool ret;
-
+	bool ret = true;
 	lua_getglobal(L, fname.c_str());
+
+	if(lua_isnil(L, -1)) {
+		if(require_function)
+			luaL_error(L, "%s: no (required) Lua function %s", tc->getName().c_str(), fname.c_str());
+		else
+			goto out;
+	}
 
 	if (lua_pcall(L, 0, 1, 0) != 0) {
 		Logger::log(Logger::Error) << "LuaComponent '"<< tc->getName()  <<"': error calling function "
@@ -2480,16 +2487,17 @@ bool call_func(lua_State *L, const std::string &fname, TaskContext *tc)
 		ret = false;
 		goto out;
 	}
-	if (!lua_isboolean(L, -1)) {
-		Logger::log(Logger::Error) << "LuaComponent '" << tc->getName() << "': " << fname
-					   << " must return a bool but returned a"
-					   << lua_typename(L, lua_type(L, -1)) << endlog();
-		ret = false;
-		goto out;
+
+	if(require_result) {
+		if (!lua_isboolean(L, -1)) {
+			Logger::log(Logger::Error) << "LuaComponent '" << tc->getName() << "': " << fname
+						   << " must return a bool but returned a "
+						   << lua_typename(L, lua_type(L, -1)) << endlog();
+			ret = false;
+			goto out;
+		}
+		ret = lua_toboolean(L, -1);
 	}
-
-	ret = lua_toboolean(L, -1);
-
  out:
 	return ret;
 }
