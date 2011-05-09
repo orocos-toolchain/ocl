@@ -442,6 +442,26 @@ function findpeer(name, start_tc)
    return __findpeer(start_tc)
 end
 
+--- Call func on all reachable peers and return results a flattened table
+-- @param func function to call on peer
+-- @param start_tc optional taskcontext to start search with. If none given the current will be used.
+function mappeers(func, start_tc)
+   local cache = {}
+   local res = {}
+   local function __mappeers(tc)
+      local tc_name = tc:getName()
+      if cache[tc_name] then return else cache[tc_name] = true end
+      res[tc_name] = func(tc)
+      for i,pn in ipairs(tc:getPeers()) do __mappeers(tc:getPeer(pn)) end
+   end
+   local start_tc = start_tc or rtt.getTC()
+   __mappeers(start_tc)
+   return res
+end
+
+--- Print useful information
+-- print information about availabe services, typekits, types and
+-- component types
 function info()
    print(magenta("services:   "), table.concat(rtt.services(), ', '))
    print(magenta("typekits:   "), table.concat(rtt.typekits(), ', '))
