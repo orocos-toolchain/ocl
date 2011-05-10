@@ -2323,6 +2323,17 @@ static int Logger_logl(lua_State *L)
 
 /* misc stuff */
 
+static int getTime(lua_State *L)
+{
+	unsigned long nsec, sec;
+	RTT::os::TimeService::nsecs total_nsec = TimeService::Instance()->getNSecs();
+	sec =  total_nsec / 1000000000; 
+	nsec = total_nsec % 1000000000;
+	lua_pushinteger(L, sec);
+	lua_pushinteger(L, nsec);
+	return 2;
+}
+
 static int getTC(lua_State *L)
 {
 	lua_pushstring(L, "this_TC");
@@ -2358,6 +2369,7 @@ static int rtt_types(lua_State *L)
 }
 
 static const struct luaL_Reg rtt_f [] = {
+	{"getTime", getTime },
 	{"getTC", getTC },
 	{"services", rtt_services },
 	{"typekits", rtt_typekits },

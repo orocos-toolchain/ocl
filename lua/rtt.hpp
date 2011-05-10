@@ -39,6 +39,7 @@
 #include <rtt/types/Operators.hpp>
 #include <rtt/Logger.hpp>
 #include <rtt/plugin/PluginLoader.hpp>
+#include <rtt/os/TimeService.hpp>
 
 extern "C" {
 #include <lua.h>
