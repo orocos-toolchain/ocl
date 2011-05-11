@@ -509,11 +509,13 @@ namespace OCL
     bool DeploymentComponent::kickOutAll()
     {
         bool    ok = true;
-        while (nextGroup > 0)
+        while (nextGroup != -1 )
         {
-            ok &= kickOutGroup(nextGroup - 1);
+            ok &= kickOutGroup(nextGroup);
             --nextGroup;
         }
+        // reset group counter to zero
+        nextGroup = 0;
         return ok;
     }
 
@@ -1328,7 +1330,7 @@ namespace OCL
     {
         // do all groups
         bool valid = true;
-        for (int group = nextGroup - 1; group > 0; --group) {
+        for (int group = nextGroup ; group != -1; --group) {
             valid &= stopComponentsGroup(group);
         }
         return valid;
@@ -1360,7 +1362,7 @@ namespace OCL
     {
         // do all groups
         bool valid = true;
-        for (int group = nextGroup - 1; group > 0; --group) {
+        for (int group = nextGroup ; group != -1; --group) {
             valid &= cleanupComponentsGroup(group);
         }
         return valid;
@@ -1415,7 +1417,7 @@ namespace OCL
     {
         // do all groups
         bool valid = true;
-        for (int group = nextGroup - 1; group > 0; --group) {
+        for (int group = nextGroup ; group != -1; --group) {
             valid &= unloadComponentsGroup(group);
         }
         return valid;
@@ -1878,21 +1880,18 @@ namespace OCL
     bool DeploymentComponent::kickOutComponent(const std::string& comp_name)
     {
         RTT::Logger::In in("DeploymentComponent::kickOutComponent");
-        base::PropertyBase *it = root.find( comp_name );
-        if(!it) {
-            log(Error) << "Peer "<< comp_name << " not found in RTT::PropertyBag root"<< endlog();
-            return false;
-        }
 
-        RTT::TaskContext* peer = comps[ comp_name ].instance;
+        RTT::TaskContext* peer = comps.count(comp_name) ? comps[ comp_name ].instance : 0;
 
         if ( !peer ) {
-            log(Error) << "Peer not found: "<< comp_name <<endlog();
+            log(Error) << "Component not loaded by this Deployer: "<< comp_name <<endlog();
             return false;
         }
         stopComponent( peer );
         cleanupComponent (peer );
         unloadComponent( comp_name);
+
+        // also remove from XML if present:
         root.removeProperty( root.find( comp_name ) );
 
         return true;
