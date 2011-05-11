@@ -166,7 +166,7 @@ namespace OCL
             rl_resize_terminal();
     }
 #endif
-#endif
+
     char *TaskBrowser::rl_gets ()
     {
         /* If the buffer has already been allocated,
