@@ -1221,7 +1221,11 @@ namespace OCL
   bool DeploymentComponent::loadLibrary(const std::string& name)
   {
     RTT::Logger::In in("DeploymentComponent::loadLibrary");
-    return PluginLoader::Instance()->loadTypekit(name,".") || PluginLoader::Instance()->loadPlugin(name,".") || deployment::ComponentLoader::Instance()->import(name, ".");
+    if( PluginLoader::Instance()->loadTypekit(name,".") || PluginLoader::Instance()->loadPlugin(name,".") || deployment::ComponentLoader::Instance()->import(name, ".") == false) {
+        log(Error) << "No such library found: '"<< name <<"': not a typekit, plugin or component library."<<endlog();
+        return false;
+    }
+    return true;
   }
 
     // or type is a shared library or it is a class type.
