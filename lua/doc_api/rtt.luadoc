@@ -1,0 +1,55 @@
+--- RTT-Lua bindings API documentation.
+-- General information and toplevel API.
+-- This page documents the API available in Lua to interact with the OROCOS RTT framework.
+-- Please see the <a href="http://www.orocos.org/wiki/orocos/toolchain/LuaCookbook">Lua Cookbook</a> 
+-- for examples of how to use RTT Lua.
+-- @release Released under the RTT License (GPL with exception)
+-- @copyright Markus Klotzbuecher, Katholieke Universiteit Leuven, Belgium.
+
+module 'rtt'
+
+--- Get the current context TaskContext.
+-- This function returns the current TaskContext in whose context we
+-- are executing. In a LuaComponent this is the component itself and
+-- in a LuaService the component in which the Service is loaded.
+-- @return context TaskContext
+function getTC()
+
+--- Get current time.
+-- This function return the current absolute time using the RTT
+-- TimeService. getTime returns two values, first the number of
+-- seconds and the remaining nanoseconds.
+-- @return seconds
+-- @return nanoseconds
+function getTime()
+
+--- Return table of available services.
+-- @return table of currently loaded services
+function services()
+
+--- Return table of available types.
+-- @return table of currently loaded types
+function types()
+
+--- Return table of available typekits.
+-- @return table currently loaded typekits
+function typekits()
+
+--- Set the current log level.
+-- @param valid loglevel string
+function setLogLevel(string)
+
+--- Get the current log level.
+-- @return current loglevel as string
+function getLogLevel(string)
+
+--- Log a message using the RTT logger.
+-- log one or more string arguments using the current loglevel
+-- @param ... one or more strings
+function log(...)
+
+--- Log a message with a specific loglevel using the RTT logger.
+-- @see as log but the first argument is a string loglevel
+-- @param loglevel string loglevel to be used
+-- @param ... one or more strings to be logged
+function logl(loglevel, ...)

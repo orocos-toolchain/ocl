@@ -1,0 +1,54 @@
+
+--- RTT Lua interface to Services.
+-- Services enhance components with extra functionality. They can be
+-- accesses by using the
+-- <code>TaskContext:provides('service-name')</code> method.  The
+-- easiest way to see which services are loaded in a TaskContext is to
+-- call <code>print(tc:provides())</code> which will print services and
+-- subservices (only if rttlib is loaded).
+
+module 'rtt.Service'
+
+--- Get name of service.
+-- @return string name
+function getName()
+
+--- Get documentation of service.
+-- @return documentation string
+function doc()
+
+--- Get names of subservices.
+-- Returns a table of string names of subservices
+-- @return table of subservice names
+function getProviderNames()
+
+--- Get operation names of service.
+-- @return table of names of operations of this service
+function getOperationNames()
+
+--- Get port names of service.
+-- @return table of names of ports of this service
+function getPortNames()
+
+--- Return a subservice provided by this service.
+-- Will fail if the requested service does not exist.
+-- @param name name of service
+-- @return sub-service requested
+function provides(name)
+
+--- Return an operation of this service.
+-- Will fail if the requested operation does not exist.
+-- @param name of operation
+-- @return requested operation
+function getOperation(name)
+
+--- Check if a service has operation.
+-- @param name of operation
+-- @return true if operation exists, false otherwise
+function hasOperation(name)
+
+--- Return a port of this service.
+-- Will fail if the requested port does not exist.
+-- @param name of port
+-- @return requested port
+function getPort(name)

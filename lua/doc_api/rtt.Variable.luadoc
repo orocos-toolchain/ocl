@@ -1,0 +1,76 @@
+--- Variables are instances of RTT types.
+-- They are created by calling <code>rtt.Variable('type')</code>
+
+module "rtt.Variable"
+
+--- Variable constructor.
+-- Create a new RTT variable. There is also a short form
+-- rtt.Variable(type) which is preferred.
+-- @param type string id of the type to create
+-- @return new type
+function new(type)
+
+--- Variable constructor.
+-- Same as the previous version but allows to pass an initial value
+-- for basic types (string, int, double, ...)
+-- @param type string id of the type to create
+-- @param ival initial value
+-- @return new type
+function new(type, ival)
+
+--- Convert a basic Variable to the corresponding Lua type.
+-- Normally this is done automatically by functions such as
+-- <code>port:read()</code>.
+function tolua()
+
+--- Return a table of types know to RTT.
+-- This operation is only available as a function
+-- <code>rtt.Variable.getTypes()</code> and not as a method.
+-- @return table of know types
+function getTypes()
+
+--- Get the type of a Variable.
+-- returns the string name of this type in human readable form
+-- See the RTT API docs for the difference between this one an getTypeName()
+-- @return type name string
+function getType()
+
+--- Get the type of a Variable.
+-- See the RTT API docs for the difference between this one an getType()
+-- @return type name string
+function getTypeName()
+
+--- Get names of subfields of a variable.
+-- Returns a table of strings which are the names of the accessible subvariables.
+-- @return table of strings
+function  getMemberNames()
+
+--- Get a subvariable.
+-- Retrieve a subvariable by string name
+-- Note: returns nil if no subvariable with this name exists
+-- @param name of variable to accaess
+-- @return sub-Variable
+function getMember(name)
+
+--- Apply a binary operator.
+-- The most common operators (+, -, *, /, %, ^, ==, <, >, <=, >=) are
+-- supported directly using infix notation.
+-- @param string_op operator as a string
+-- @param var1 left hand side
+-- @param var2 right hand side
+-- @return result of operator application.
+function opBinary(string_op, var1, var2)
+
+--- Assign a value to a Variable.
+-- This function is only needed for basic Variables. Complex variables
+-- (Variables which have subfields) can be indexed and assigned
+-- appropriate Lua or RTT Variables using the '=' operator.
+-- @param value value to be assigned
+-- @return boolean indicating success or failure
+function assign(value)
+
+--- Resize an array type.
+-- Will always return false for non-array types.
+-- @param size size to which to resize to
+-- @return boolean indicating success or failure
+function resize(size)

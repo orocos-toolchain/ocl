@@ -1,0 +1,21 @@
+--- SendHandle module
+-- SendHandle is returned by a TaskContext <code>send()</code> operation.
+-- See the RTT documentation for details about how this works.
+
+module 'rtt.SendHandle'
+
+--- Collect results.  
+-- Collect results of send invocation. This call will block until the
+-- results become available
+-- @return SendStatus string ('SendSuccess', 'SendNotReady', 'SendFailure', 'unkown')
+-- @return zero or more results
+function collect()
+
+--- Collect results if available.
+-- Collect results of send invocation. Nonblocking version.
+-- @return SendStatus string ('SendSuccess', 'SendNotReady', 'SendFailure', 'unkown')
+-- @return zero or more results
+function collectIfDone()
+
+
+

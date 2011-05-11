@@ -1,0 +1,47 @@
+--- InputPort functions and methods.
+-- Input ports are created using the syntax <code>rtt.InputPort('type')</code>
+
+module 'rtt.InputPort'
+
+--- InputPort constructor.
+-- Note: the more intuitve syntax <code>rtt.InputPort('type')</code>
+-- is preferred.
+-- @param type type of input port to create
+-- @param name (optional) name of port
+-- @param desc (optional) description of port
+function new(type, name, desc)
+
+--- Read from an input port.
+-- @return FlowStatus string ('NoData', 'NewData', 'OldData')
+-- @return Variable (only in case of NewData or OldData)
+function read()
+
+--- Read from an input port into and store result in variable.
+-- This version allows to provide an appropriate Variable to store the
+-- result. This avoids a memory allocation.
+-- @param variable Appropriate variable to store result.
+-- @return FlowStatus string ('NoData', 'NewData', 'OldData')
+function read(variable)
+
+--- Return information about a port.
+-- The information is stored in a table with the fields:<br><br>
+-- <code>   name</code>: name of port<br>
+-- <code>   desc</code>: description of port<br>
+-- <code>   type</code>: type of port<br>
+-- <code>   connected</code>: boolean flag if port is connected or not<br>
+-- <code>   isLocal</code>: boolean flag if port is local or not<br>
+-- <code>   porttype</code>: type of port ('in' or 'out')<br><br>
+-- @return table with above fields.
+function info()
+
+--- Connect this port to a second one.
+-- For this ports do not have to be added to a TaskContext interface.
+-- @param port the port to connect to.
+-- @return boolean flag if connecting succeeded or not.
+function connect(port)
+
+--- Delete a port.
+-- This frees the memory and makes the port inaccessible from
+-- Lua. Make sure that the port was removed from all TaskContexts
+-- before calling this.
+function delete()
