@@ -113,6 +113,10 @@ namespace OCL
         PTrace straces;
 
 #if defined(HAS_READLINE) || defined(HAS_EDITLINE)
+#ifdef _POSIX_VERSION
+        static void rl_sigwinch_handler(int sig, siginfo_t *si, void *ctxt);
+#endif
+
         /* Read a string, and return a pointer to it.
            Returns NULL on EOF. */
         char *rl_gets ();
