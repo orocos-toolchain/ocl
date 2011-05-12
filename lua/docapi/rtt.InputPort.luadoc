@@ -12,15 +12,9 @@ module 'rtt.InputPort'
 function new(type, name, desc)
 
 --- Read from an input port.
+-- @param variable (optional). If provided the result will be stored in this variable. This avoids a memory allocation.
 -- @return FlowStatus string ('NoData', 'NewData', 'OldData')
--- @return Variable (only in case of NewData or OldData)
-function read()
-
---- Read from an input port into and store result in variable.
--- This version allows to provide an appropriate Variable to store the
--- result. This avoids a memory allocation.
--- @param variable Appropriate variable to store result.
--- @return FlowStatus string ('NoData', 'NewData', 'OldData')
+-- @return Variable (only in case of NewData or OldData and if no parameter Variable is provided)
 function read(variable)
 
 --- Return information about a port.
