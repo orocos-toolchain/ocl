@@ -71,12 +71,4 @@
 *   <li>OCL::ConsoleAppender
 *   </ul>
 *
-* \subsection lua Lua Compnent:
-* 	Component for running Lua scripts. Often, the rttlua program
-*       is used instead which is able to load and start the whole
-*       application.
-*   <ul>
-*   <li>OCL::LuaComponent
-*   </ul>
-*
 */

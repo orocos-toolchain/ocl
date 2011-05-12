@@ -8,7 +8,7 @@ IF (DOC_BUILD_DOCS)
   #list the xml files:
   SET( XML_SOURCES
     xml/orocos-deployment.xml xml/orocos-reporting.xml xml/orocos-taskbrowser.xml
-    xml/ocl-overview.xml xml/rttlua.xml )
+    xml/ocl-overview.xml)
 
   SEPARATE_ARGUMENTS(XML_SOURCES)
 
