@@ -44,10 +44,18 @@ static TaskContext* __getTC(lua_State*);
 
 #define DEBUG
 
+#ifdef MSVC
+#ifdef DEBUG
+# define _DBG(fmt, ...) printf("%s:%d\t" fmt "\n", __FUNCTION__, __LINE__, __VA_ARGS__)
+#else
+# define _DBG(fmt, ...) do { } while(0);
+#endif
+#else
 #ifdef DEBUG
 # define _DBG(fmt, args...) printf("%s:%d\t" fmt "\n", __FUNCTION__, __LINE__, ##args)
 #else
 # define _DBG(fmt, args...) do { } while(0);
+#endif
 #endif
 
 /*
