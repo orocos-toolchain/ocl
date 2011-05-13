@@ -152,6 +152,10 @@ CONFIGURE_FILE(Doxyfile.in Doxyfile @ONLY)
 ADD_CUSTOM_TARGET(docapi "doxygen" "Doxyfile")
 ADD_SUBDIRECTORY( doc )
 
+add_custom_target(luadocapi
+  "luadoc" "--nofiles" "-d" "${PROJECT_BINARY_DIR}/doc/luaapi/" "."
+  WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/lua/docapi/")
+
 if (DOC_ONLY)
   return()
 endif()

@@ -2,10 +2,6 @@
 option(BUILD_LUA_RTT "Build Lua RTT bindings" ON)
 cmake_dependent_option(BUILD_LUA_RTT_DYNAMIC_MODULES "Build dynamic loadable Lua plugins for rtt and deployer (experimental!)" OFF "BUILD_LUA_RTT" OFF)
 
-add_custom_target(luadocapi
-  "luadoc" "--nofiles" "-d" "${PROJECT_BINARY_DIR}/doc/luaapi/" "."
-  WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/lua/docapi/")
-
 if(BUILD_LUA_RTT)
 
   find_package(Lua51)
