@@ -107,6 +107,7 @@ if [ $? -ne 0 ]; then
 else
     pushd build &> /dev/null
     make luadocapi
+    cd doc
     tar cjvf orocos-ocl-$VERSION-luaapi.tar.bz2 luaapi
     mv orocos-ocl-$VERSION-luaapi.tar.bz2 ..
     popd &> /dev/null
