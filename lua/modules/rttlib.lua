@@ -194,6 +194,15 @@ function varfromtab(var, tab)
    end
 end
 
+--- Convert RTT Vector to Lua table
+-- @param sv Vector variable
+-- @return Lua table
+function vect2tab(sv)
+   local res = {}
+   assert(sv.size and sv.capacity, "vect2tab: arg not a vector (no size or capacity)")
+   for i=0,sv.size-1 do res[#res+1] = sv[i] end
+   return res
+end
 
 --
 -- pretty print properties
