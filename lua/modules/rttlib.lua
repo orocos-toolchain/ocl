@@ -204,6 +204,14 @@ function varfromtab(var, tab)
    end
 end
 
+--- Update contents of a Property from a table.
+-- Available as a method for Property using prop:fromtab(tab)
+-- @param var Variable to update
+-- @param tab appropriate table
+function propfromtab(prop, tab)
+   return prop:get():fromtab(tab)
+end
+
 --- Convert RTT Vector to Lua table
 -- @param sv Vector variable
 -- @return Lua table
@@ -523,6 +531,7 @@ if type(debug) == 'table' then
    reg.Variable.fromtab=varfromtab
    reg.Variable.var2tab=var2tab
    reg.Property.__tostring=prop2str
+   reg.Property.fromtab=propfromtab
    reg.Service.__tostring=service2str
    reg.ServiceRequester.__tostring=service_req2str
    reg.Operation.__tostring=op2str
