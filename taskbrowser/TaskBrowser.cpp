@@ -452,14 +452,14 @@ namespace OCL
         std::vector<std::string> attrs;
         attrs = taskobject->getAttributeNames();
         for (std::vector<std::string>::iterator i = attrs.begin(); i!= attrs.end(); ++i ) {
-            if ( i->find( component ) == 0 && !component.empty() && component.size() <= i->size() )
+            if ( i->find( component ) == 0 )
                 completes.push_back( peerpath + *i );
         }
         // all properties if RTT::TaskContext/Service:
         std::vector<std::string> props;
         taskobject->properties()->list(props);
         for (std::vector<std::string>::iterator i = props.begin(); i!= props.end(); ++i ) {
-            if ( i->find( component ) == 0 && !component.empty()  && component.size() <= i->size() ) {
+            if ( i->find( component ) == 0 ) {
                 completes.push_back( peerpath + *i );
             }
         }
