@@ -104,7 +104,7 @@ local function white(str, bright)
    return str
 end
 
--- pretty print a ConnPolicy
+--- Pretty-print a ConnPolicy.
 function ConnPolicy2tab(cp)
    if cp.type == 0 then cp.type = "DATA"
    elseif cp.type == 1 then cp.type = "BUFFER"
@@ -115,8 +115,14 @@ function ConnPolicy2tab(cp)
    elseif cp.lock_policy == 2 then cp.lock_policy = "LOCK_FREE"
    else cp.lock_policy = tostring(cp.lock_policy) .. " (invalid!)" end
 
+   if cp.transport == 0 then cp.transport = "default"
+   elseif cp.transport == 1 then cp.transport = "CORBA"
+   elseif cp.transport == 2 then cp.transport = "MQUEUE"
+   elseif cp.transport == 3 then cp.transport = "ROS"
+   else cp.transport = "(invalid)" end
    return cp
 end
+
 
 function var2tab(var)
    local function __var2tab(var)
@@ -151,8 +157,11 @@ function var2tab(var)
    return __var2tab(var)
 end
 
--- table of Variable pretty printers
--- must accept a table and return a table or string
+--- Table of Variable pretty printing functions.
+-- The contents of the table are key=value pairs, the key being the
+-- Variable type and value a function which accepts a table as an
+-- argument and returns either a table or string.
+-- @table var_pp
 var_pp = {}
 var_pp.ConnPolicy = ConnPolicy2tab
 
@@ -175,9 +184,10 @@ function var2str(var)
    end
 end
 
---
--- update contents of var from a table
---
+--- Update contents of a Variable from a table.
+-- Available as a method for Variables using var:fromtab(tab)
+-- @param var Variable to update
+-- @param tab
 function varfromtab(var, tab)
    local memdsb
    if type(tab) ~= 'table' then error("arg 2 is not a table") end
@@ -189,7 +199,7 @@ function varfromtab(var, tab)
       if rtt.Variable.isbasic(memdsb) then
 	 memdsb:assign(v);
       else
-	 fromtab(memdsb, v)
+	 varfromtab(memdsb, v)
       end
    end
 end
@@ -204,17 +214,15 @@ function vect2tab(sv)
    return res
 end
 
---
--- pretty print properties
---
+--- pretty print properties
+-- @param p property
+-- @return string
 function prop2str(p)
    local info = p:info()
    return white(info.name) .. ' (' .. info.type .. ')' .. " = " .. yellow(var2str(p:get())) .. red(" // " .. info.desc) .. ""
 end
 
---
--- convert a method to a string
---
+--- Convert an operation to a string.
 function __op2str(name, descr, rettype, arity, args)
    local str = ""
 
@@ -394,8 +402,11 @@ function pptc(tc)
    print(tc2str(tc))
 end
 
--- clone a port, with same name + suffix and connect both
--- cname is optional component name used in description
+--- Create an inverse, connected port of a given port.
+-- The default name will be the same as the given port.
+-- @param p port to create inverse, connected port.
+-- @param suffix string to append name of new port (optional)
+-- @param cname alternative name for port (optional).
 function port_clone_conn(p, suffix, cname)
    local cname = cname or ""
    local suf = suffix or ""
