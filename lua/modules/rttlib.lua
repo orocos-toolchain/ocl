@@ -502,6 +502,8 @@ function info()
    end
 end
 
+--- Check if a typekit has been loaded.
+function typekit_loaded(n) return utils.table_has(rtt.typekits(), n) end
 
 -- TaskContext metatable __index replacement for allowing operations
 -- to be called like methods. This is pretty slow, use getOperation to
