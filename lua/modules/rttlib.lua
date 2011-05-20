@@ -193,7 +193,9 @@ function varfromtab(var, tab)
    if type(tab) ~= 'table' then error("arg 2 is not a table") end
 
    for k,v in pairs(tab) do
-      memdsb = var:getMemberRaw(k)
+      if type(k) == 'number' then memdsb = var:getMemberRaw(k-1)
+      else memdsb = var:getMemberRaw(k) end
+
       if memdsb == nil then error("no member " .. k) end
 
       if rtt.Variable.isbasic(memdsb) then
