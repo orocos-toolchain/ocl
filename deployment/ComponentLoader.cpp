@@ -205,7 +205,7 @@ bool ComponentLoader::import( std::string const& package, std::string const& pat
     // check first for exact match:
     path arg( package );
     if (is_regular_file(arg)) {
-        return loadInProcess(arg.string(), makeShortFilename( arg.filename() ), true);
+        return loadInProcess(arg.string(), makeShortFilename( arg.FILENAME() ), true);
     }
 
     if ( isImported(package) ) {
