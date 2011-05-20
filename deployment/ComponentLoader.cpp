@@ -39,6 +39,13 @@
 #include <dlfcn.h>
 #endif
 
+// deal with boost v2/v3 filename differences
+#if (3==BOOST_FILESYSTEM_VERSION)
+#   define FILENAME()   filename().string()
+#else
+#   define FILENAME()   filename()
+#endif
+
 using namespace RTT;
 using namespace std;
 using namespace boost::filesystem;
@@ -161,7 +168,7 @@ void ComponentLoader::import( std::string const& package )
             {
                 log(Debug) << "Scanning file " << itr->path().string() << " ...";
                 if (is_regular_file(itr->status()) && itr->path().extension() == SO_EXT )
-                        loadInProcess( itr->path().string(), makeShortFilename(itr->path().filename() ),  true);
+                        loadInProcess( itr->path().string(), makeShortFilename(itr->path().FILENAME() ),  true);
                 else {
                     if (!is_regular_file(itr->status()))
                         log(Debug) << "not a regular file: ignored."<<endlog();
@@ -182,7 +189,7 @@ void ComponentLoader::import( std::string const& package )
             {
                 log(Debug) << "Scanning file " << itr->path().string() << " ...";
                 if (is_regular_file(itr->status()) && itr->path().extension() == SO_EXT )
-                        loadInProcess( itr->path().string(), makeShortFilename(itr->path().filename() ),  true);
+                        loadInProcess( itr->path().string(), makeShortFilename(itr->path().FILENAME() ),  true);
                 else {
                     if (!is_regular_file(itr->status()))
                         log(Debug) << "not a regular file: ignored."<<endlog();
@@ -216,7 +223,7 @@ bool ComponentLoader::import( std::string const& package, std::string const& pat
     }
 
     path dir = arg.parent_path();
-    string file = arg.filename();
+    string file = arg.FILENAME();
 
     for (vector<string>::iterator it = paths.begin(); it != paths.end(); ++it)
     {
