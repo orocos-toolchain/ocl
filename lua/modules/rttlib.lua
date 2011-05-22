@@ -392,7 +392,7 @@ function tc2str(tc)
 
    res[#res+1] = magenta("peers") .. ": " .. table.concat(tc:getPeers(), ', ')
    res[#res+1] = magenta("ports") .. ": "
-   for i,p in ipairs(tc:getPortNames(p)) do
+   for i,p in ipairs(tc:getPortNames()) do
       res[#res+1] = "   " .. port2str(tc:getPort(p))
    end
 
