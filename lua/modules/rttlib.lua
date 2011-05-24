@@ -255,6 +255,8 @@ function op2str(op)
    return __op2str(op:info())
 end
 
+--- Taskcontext operation to string.
+-- Old version. Using the op2str and __op2str versions are preferred.
 function tc_op2str(tc, op)
    local rettype, arity, descr, args = tc:getOpInfo(op)
    local str = ""
