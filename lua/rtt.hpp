@@ -40,6 +40,7 @@
 #include <rtt/Logger.hpp>
 #include <rtt/plugin/PluginLoader.hpp>
 #include <rtt/os/TimeService.hpp>
+#include <rtt/internal/GlobalService.hpp>
 
 extern "C" {
 #include <lua.h>

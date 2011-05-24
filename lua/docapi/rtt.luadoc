@@ -53,3 +53,10 @@ function log(...)
 -- @param loglevel string loglevel to be used
 -- @param ... one or more strings to be logged
 function logl(loglevel, ...)
+
+--- Access the global service.
+-- If the optional subservice is provided, that one is returned
+-- instead.
+-- @param subservice subservice string name to return instead of the global service.
+-- @return Service the requested service.
+function provides(subservice)

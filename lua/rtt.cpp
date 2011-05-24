@@ -2358,6 +2358,14 @@ static TaskContext* __getTC(lua_State *L)
 	return tc;
 }
 
+/* global service */
+static int provides_global(lua_State *L)
+{
+	luaM_pushobject_mt(L, "Service", Service::shared_ptr)(GlobalService::Instance());
+	lua_insert(L, 1);
+	return Service_provides(L);
+}
+
 static int rtt_services(lua_State *L)
 {
 	push_vect_str(L, PluginLoader::Instance()->listServices());
@@ -2379,6 +2387,7 @@ static int rtt_types(lua_State *L)
 static const struct luaL_Reg rtt_f [] = {
 	{"getTime", getTime },
 	{"getTC", getTC },
+	{"provides", provides_global },
 	{"services", rtt_services },
 	{"typekits", rtt_typekits },
 	{"types", rtt_types },

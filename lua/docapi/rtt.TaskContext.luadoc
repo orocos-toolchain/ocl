@@ -88,7 +88,7 @@ function addProperty(Property, name, desc)
 function getProperty(name)
 
 --- Return all properties in a table.
--- @return a table containing all properties the TaskContext
+-- @return a table containing all properties (not string names!) of the TaskContext
 function getProperties()
 
 --- Remove a Property from a TaskContext Interface.
@@ -96,11 +96,11 @@ function getProperties()
 function removeProperty(string)
 
 --- Return a table of names of the available operations.
--- @param table of operation names
+-- @return table of operation names
 function getOps()
 
 --- Return information about an Operation.
--- @param name name of operation
+-- @param string name of operation
 -- @return name of operation
 -- @return arity arity of operation
 -- @return description of operation

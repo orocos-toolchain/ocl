@@ -193,7 +193,9 @@ function varfromtab(var, tab)
    if type(tab) ~= 'table' then error("arg 2 is not a table") end
 
    for k,v in pairs(tab) do
-      memdsb = var:getMemberRaw(k)
+      if type(k) == 'number' then memdsb = var:getMemberRaw(k-1)
+      else memdsb = var:getMemberRaw(k) end
+
       if memdsb == nil then error("no member " .. k) end
 
       if rtt.Variable.isbasic(memdsb) then
@@ -390,7 +392,7 @@ function tc2str(tc)
 
    res[#res+1] = magenta("peers") .. ": " .. table.concat(tc:getPeers(), ', ')
    res[#res+1] = magenta("ports") .. ": "
-   for i,p in ipairs(tc:getPortNames(p)) do
+   for i,p in ipairs(tc:getPortNames()) do
       res[#res+1] = "   " .. port2str(tc:getPort(p))
    end
 
@@ -502,6 +504,8 @@ function info()
    end
 end
 
+--- Check if a typekit has been loaded.
+function typekit_loaded(n) return utils.table_has(rtt.typekits(), n) end
 
 -- TaskContext metatable __index replacement for allowing operations
 -- to be called like methods. This is pretty slow, use getOperation to
