@@ -67,6 +67,12 @@
 #include <sstream>
 #include <vector>
 
+#if defined(HAS_READLINE) || defined(HAS_EDITLINE)
+#ifdef _POSIX_VERSION
+#include <signal.h>
+#endif
+#endif
+
 #include <ocl/OCL.hpp>
 
 namespace OCL
