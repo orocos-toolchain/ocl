@@ -23,7 +23,7 @@ LoggingEvent::LoggingEvent(const LoggingEvent& toCopy) :
         message(toCopy.message),
         ndc(toCopy.ndc),
         priority(toCopy.priority),
-        threadName(toCopy.threadName).
+        threadName(toCopy.threadName),
         timeStamp(toCopy.timeStamp)
 {
 }
