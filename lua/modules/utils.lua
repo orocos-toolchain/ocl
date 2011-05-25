@@ -10,7 +10,7 @@ module('utils')
 
 -- increment major on API breaks
 -- increment minor on non breaking changes
-VERSION=0.5
+VERSION=0.6
 
 function append(car, ...)
    assert(type(car) == 'table')
@@ -63,6 +63,27 @@ function tab2str( tbl )
    end
    return "{" .. table.concat( result, "," ) .. "}"
 end
+
+--- Wrap a long string.
+-- source: http://lua-users.org/wiki/StringRecipes
+-- @param str string to wrap
+-- @param limit maximum line length
+-- @param indent regular indentation
+-- @param indent1 indentation of first line
+function wrap(str, limit, indent, indent1)
+   indent = indent or ""
+   indent1 = indent1 or indent
+   limit = limit or 72
+   local here = 1-#indent1
+   return indent1..str:gsub("(%s+)()(%S+)()",
+			    function(sp, st, word, fi)
+			       if fi-here > limit then
+				  here = st - #indent
+				  return "\n"..indent..word
+			       end
+			    end)
+end
+
 
 function pp(val)
    if type(val) == 'table' then print(tab2str(val)) 

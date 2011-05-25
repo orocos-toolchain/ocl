@@ -2335,7 +2335,7 @@ static int getTime(lua_State *L)
 {
 	unsigned long nsec, sec;
 	RTT::os::TimeService::nsecs total_nsec = TimeService::Instance()->getNSecs();
-	sec =  total_nsec / 1000000000; 
+	sec =  total_nsec / 1000000000;
 	nsec = total_nsec % 1000000000;
 	lua_pushinteger(L, sec);
 	lua_pushinteger(L, nsec);
@@ -2477,6 +2477,13 @@ int luaopen_rtt(lua_State *L)
 
 	/* misc toplevel functions */
 	luaL_register(L, "rtt", rtt_f);
+
+	/* constants
+	 * ConnPolicy.type DATA=0, BUFFER=1.
+	 * ConnPolicy.lock_policy UNSYNC=0, LOCKED=1, LOCK_FREE=2
+	 * ORO_SCHED_RT=1, ORO_SCHED_OTHER=0
+	 */
+
 
 	return 1;
 }
