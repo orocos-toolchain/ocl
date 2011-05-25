@@ -495,14 +495,17 @@ end
 -- print information about availabe services, typekits, types and
 -- component types
 function info()
-   print(magenta("services:   "), table.concat(rtt.services(), ', '))
-   print(magenta("typekits:   "), table.concat(rtt.typekits(), ', '))
-   print(magenta("types:      "), table.concat(rtt.types(), ', '))
+   local ind="            "
+   local ind1=""
+   print(magenta("services:   ") .. utils.wrap(table.concat(rtt.services(), ' '), 80, ind, ind1))
+   print(magenta("typekits:   ") .. utils.wrap(table.concat(rtt.typekits(), ' '), 80, ind, ind1))
+   print(magenta("types:      ") .. utils.wrap(table.concat(rtt.types(), ' '), 80, ind, ind1))
 
    local depl = findpeer("deployer")
    if depl and rtt.TaskContext.hasOperation(depl, "getComponentTypes") then
       local t = var2tab(depl:getComponentTypes())
-      print(magenta("comp types: "), table.concat(t, ', '))
+      -- print(magenta("comp types: "), table.concat(t, ', '))
+      print(magenta("comp types: ") .. utils.wrap(table.concat(t, ' '), 80, ind, ind1))
    end
 end
 
