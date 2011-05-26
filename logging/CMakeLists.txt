@@ -12,7 +12,7 @@ IF ( BUILD_LOGGING AND LOG4CPP_FOUND )
   set(LOGLIB_CPPS Category.cpp LoggingEvent.cpp CategoryStream.cpp)
   set(LOGCOMP_CPPS Appender.cpp FileAppender.cpp OstreamAppender.cpp LoggingService.cpp)
 
-  INCLUDE_DIRECTORIES( "${LOG4CPP_INCLUDE_DIRS}" "${LOG4CXX_INCLUDE_DIRS}" )
+  INCLUDE_DIRECTORIES( "${LOG4CPP_INCLUDE_DIRS}" )
   LINK_DIRECTORIES( "${LOG4CPP_LIBRARY_DIRS}" )
 
   orocos_component( orocos-ocl-logging ${LOGCOMP_CPPS} )
@@ -23,6 +23,7 @@ IF ( BUILD_LOGGING AND LOG4CPP_FOUND )
   target_link_libraries( orocos-ocl-logging ${LOG4CPP_LIBRARIES} orocos-ocl-log4cpp)
 
   if (LOG4CXX_FOUND)
+    include_directories( "${LOG4CXX_INCLUDE_DIRS}" )
     orocos_component( orocos-ocl-log4cxx ${LOG4CXXLIB_CPPS} )
     target_link_libraries( orocos-ocl-log4cxx orocos-ocl-log4cpp ${LOG4CXX_LIBRARIES} )
   endif()
