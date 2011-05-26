@@ -158,14 +158,20 @@ int main(int argc, char** argv)
                 return -1;
             }
 
-            // Only start the scripts after the Orb was created.
             for (std::vector<std::string>::const_iterator iter=scriptFiles.begin();
                  iter!=scriptFiles.end();
                  ++iter)
             {
                 if ( !(*iter).empty() )
                 {
-                    dc.kickStart( (*iter) );
+                    if ( (*iter).rfind(".xml",string::npos) == (*iter).length() - 4 || (*iter).rfind(".cpf",string::npos) == (*iter).length() - 4) {
+                        dc.kickStart( (*iter) );
+                        continue;
+                    } if ( (*iter).rfind(".ops",string::npos) == (*iter).length() - 4 || (*iter).rfind(".osd",string::npos) == (*iter).length() - 4) {
+                        dc.runScript( (*iter) );
+                        continue;
+                    }
+                    log(Error) << "Unknown extension of file: '"<< (*iter) <<"'. Must be xml, cpf for XML files or, ops or osd for script files."<<endlog();
                 }
             }
 
@@ -184,6 +190,10 @@ int main(int argc, char** argv)
 		std::cerr << "Unable to start Orocos" << std::endl;
         return -1;
 	}
+#ifdef  ORO_BUILD_LOGGING
+    log4cpp::HierarchyMaintainer::getDefaultMaintainer().shutdown();
+    log4cpp::HierarchyMaintainer::getDefaultMaintainer().deleteAllCategories();
+#endif
 
 #ifdef  ORO_BUILD_RTALLOC
     if (!rtMem)

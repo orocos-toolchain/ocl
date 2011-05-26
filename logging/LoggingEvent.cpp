@@ -13,7 +13,8 @@ LoggingEvent::LoggingEvent() :
         message(""),
         ndc(""),
         priority(log4cpp::Priority::NOTSET),
-        threadName("")
+        threadName(""),
+        timeStamp()
 {
 }
 
@@ -22,7 +23,8 @@ LoggingEvent::LoggingEvent(const LoggingEvent& toCopy) :
         message(toCopy.message),
         ndc(toCopy.ndc),
         priority(toCopy.priority),
-        threadName(toCopy.threadName)
+        threadName(toCopy.threadName),
+        timeStamp(toCopy.timeStamp)
 {
 }
 
@@ -34,7 +36,8 @@ LoggingEvent::LoggingEvent(const rt_string& categoryName,
         message(message),
         ndc(ndc),
         priority(priority),
-        threadName("")
+        threadName(""),
+        timeStamp()
 {
     char    buffer[16];
     threadName = log4cpp::threading::getThreadId(&buffer[0]);
@@ -49,6 +52,7 @@ const LoggingEvent& LoggingEvent::operator=(const LoggingEvent& rhs)
         ndc             = rhs.ndc;
         priority        = rhs.priority;
         threadName      = rhs.threadName;
+        timeStamp		= rhs.timeStamp;
     }
     return *this;
 }
