@@ -4,8 +4,10 @@
 -- accesses by using the
 -- <code>TaskContext:provides('service-name')</code> method.  The
 -- easiest way to see which services are loaded in a TaskContext is to
--- call <code>print(tc:provides())</code> which will print services and
--- subservices (only if rttlib is loaded).
+-- call <code>print(tc:provides())</code> which will print services
+-- and subservices (only if rttlib is loaded).  Operations of Services
+-- can be retrieved using <code>getOperation</code> or called directly
+-- <code>tc:provides("marshalling"):writeProperties("props.cpf")</code>.
 
 module 'rtt.Service'
 

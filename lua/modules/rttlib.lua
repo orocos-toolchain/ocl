@@ -512,6 +512,23 @@ end
 --- Check if a typekit has been loaded.
 function typekit_loaded(n) return utils.table_has(rtt.typekits(), n) end
 
+--- Enable Service:op() syntax
+-- Service metatable __index replacement for allowing operations
+-- to be called like methods. This is fairly slow, use getOperation to
+-- cache local op when speed matters.
+function service_index(srv, key)
+   local reg = debug.getregistry()
+   if rtt.Service.hasOperation(srv, key) then
+      return function (srv, ...)
+		local op = rtt.Service.getOperation(srv, key)
+		return op(...)
+	     end
+   else -- pass on to standard metatable
+      return reg.Service[key]
+   end
+end
+
+--- Enable tc:op() syntax
 -- TaskContext metatable __index replacement for allowing operations
 -- to be called like methods. This is pretty slow, use getOperation to
 -- cache local op when speed matters.
@@ -535,6 +552,7 @@ if type(debug) == 'table' then
    reg = debug.getregistry()
    reg.TaskContext.__tostring=tc2str
    reg.TaskContext.stat=portstats
+   reg.Service.__index=service_index -- enable operations as methods
    reg.TaskContext.__index=tc_index -- enable operations as methods
    reg.Variable.__tostring=var2str
    reg.Variable.fromtab=varfromtab
