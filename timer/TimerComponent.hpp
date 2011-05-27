@@ -26,17 +26,17 @@ namespace OCL
          * Helper class for catching the virtual timeout function of Timer.
          */
         struct TimeoutCatcher : public os::Timer {
-            RTT::OutputPort<RTT::os::Timer::TimerId>& me;
-            TimeoutCatcher(RTT::os::Timer::TimerId max_timers, RTT::OutputPort<RTT::os::Timer::TimerId>& e) :
-                    os::Timer(max_timers, ORO_SCHED_RT, os::HighestPriority), me(e)
+            std::vector<RTT::OutputPort<RTT::os::Timer::TimerId>* >& m_port_timers;
+            TimeoutCatcher(std::vector<RTT::OutputPort<RTT::os::Timer::TimerId>* >& port_timers) :
+                os::Timer(port_timers.size(), ORO_SCHED_RT, os::HighestPriority), m_port_timers(port_timers)
             {}
             virtual void timeout(os::Timer::TimerId id) {
-                me.write(id);
+                m_port_timers[id]->write(id);
             }
         };
 
+        std::vector<OutputPort<RTT::os::Timer::TimerId>* > port_timers;
         TimeoutCatcher mtimer;
-        OutputPort<RTT::os::Timer::TimerId> mtimeoutEvent;
 
         /**
          * This hook will check if a Activity has been properly
