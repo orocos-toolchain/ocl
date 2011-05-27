@@ -161,7 +161,7 @@ if (DOC_ONLY)
 endif()
 
 ## Find Orocos RTT with same version as OCL
-find_package(OROCOS-RTT ${OCL_VERSION} REQUIRED rtt-scripting rtt-marshalling ${RTT_HINTS})
+find_package(OROCOS-RTT ${OCL_VERSION} REQUIRED ${RTT_HINTS})
 if (NOT OROCOS-RTT_FOUND)
   message(FATAL_ERROR "\n   RTT not found. Is the version correct? Use the CMAKE_PREFIX_PATH cmake or environment variable to point to the installation directory of RTT.")
 else()
