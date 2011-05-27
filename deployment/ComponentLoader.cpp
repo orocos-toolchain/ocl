@@ -30,16 +30,26 @@ namespace OCL
 
 using namespace OCL;
 
-// chose the file extension applicable to the O/S
+// chose the file extension and debug postfix applicable to the O/S
 #ifdef  __APPLE__
 static const std::string SO_EXT(".dylib");
+static const std::string SO_POSTFIX("");
 #else
 # ifdef _WIN32
 static const std::string SO_EXT(".dll");
+#  ifdef _DEBUG
+static const std::string SO_POSTFIX("d");
+#  else
+static const std::string SO_POSTFIX("");
+#  endif // _DEBUG
 # else
 static const std::string SO_EXT(".so");
+static const std::string SO_POSTFIX("");
 # endif
 #endif
+
+// The full library suffix must be enforced by the UseOrocos macros
+static const std::string FULL_COMPONENT_SUFFIX(string("-") + string(OROCOS_TARGET_NAME) + SO_POSTFIX + SO_EXT);
 
 // choose how the PATH looks like
 # ifdef _WIN32
@@ -91,11 +101,20 @@ string makeShortFilename(string const& str) {
     string ret = str;
     if (str.substr(0,3) == "lib")
         ret = str.substr(3);
-    if (ret.rfind(SO_EXT) != string::npos)
-        ret = ret.substr(0, ret.rfind(SO_EXT) );
+    if (ret.rfind(FULL_COMPONENT_SUFFIX) != string::npos)
+        ret = ret.substr(0, ret.rfind(FULL_COMPONENT_SUFFIX) );
     return ret;
 }
 
+}
+
+bool hasEnding(string const &fullString, string const &ending)
+{
+    if (fullString.length() > ending.length()) {
+        return (0 == fullString.compare (fullString.length() - ending.length(), ending.length(), ending));
+    } else {
+        return false;
+    }
 }
 
 boost::shared_ptr<ComponentLoader> ComponentLoader::Instance() {
@@ -132,13 +151,23 @@ bool ComponentLoader::import( std::string const& path_list )
             for (directory_iterator itr(p); itr != directory_iterator(); ++itr)
             {
                 log(Debug) << "Scanning file " << itr->path().string() << " ...";
-                if (is_regular_file(itr->status()) && itr->path().extension() == SO_EXT ) {
-                    found = true;
+                if (is_regular_file(itr->status()) && itr->path().extension() == SO_EXT )
+                {
+                    std::string libname;
 #if BOOST_VERSION >= 104600
-                    all_good = loadInProcess( itr->path().string(), makeShortFilename(itr->path().filename().string() ),  true) && all_good;
+                    libname = itr->path().filename().string();
 #else
-                    all_good = loadInProcess( itr->path().string(), makeShortFilename(itr->path().filename() ),  true) && all_good;
+                    libname = itr->path().filename();
 #endif
+                    if(!isCompatibleComponent(libname))
+                    {
+                        log(Debug) << "not a compatible component: ignored."<<endlog();
+                    }
+                    else
+                    {
+                        found = true;
+                        all_good = loadInProcess( itr->path().string(), makeShortFilename(libname ),  true) && all_good;
+                    }
                 } else {
                     if (!is_regular_file(itr->status()))
                         log(Debug) << "not a regular file: ignored."<<endlog();
@@ -400,19 +429,19 @@ bool ComponentLoader::loadLibrary( std::string const& name )
 
     for (vector<string>::iterator it = paths.begin(); it != paths.end(); ++it)
     {
-        path p = path(*it) / dir / (file + SO_EXT);
+        path p = path(*it) / dir / (file + FULL_COMPONENT_SUFFIX);
         tryouts.push_back( p.string() );
         if (is_regular_file( p ) && loadInProcess( p.string(), makeShortFilename(file), true ) )
             return true;
-        p = path(*it) / dir / ("lib" + file + SO_EXT);
+        p = path(*it) / dir / ("lib" + file + FULL_COMPONENT_SUFFIX);
         tryouts.push_back( p.string() );
         if (is_regular_file( p ) && loadInProcess( p.string(), makeShortFilename(file), true ) )
             return true;
-        p = path(*it) / OROCOS_TARGET_NAME / dir / (file + SO_EXT);
+        p = path(*it) / OROCOS_TARGET_NAME / dir / (file + FULL_COMPONENT_SUFFIX);
         tryouts.push_back( p.string() );
         if (is_regular_file( p ) && loadInProcess( p.string(), makeShortFilename(file), true ) )
             return true;
-        p = path(*it) / OROCOS_TARGET_NAME / dir / ("lib" + file + SO_EXT);
+        p = path(*it) / OROCOS_TARGET_NAME / dir / ("lib" + file + FULL_COMPONENT_SUFFIX);
         tryouts.push_back( p.string() );
         if (is_regular_file( p ) && loadInProcess( p.string(), makeShortFilename(file), true ) )
             return true;
@@ -477,6 +506,14 @@ bool ComponentLoader::loadInProcess(string file, string libname, bool log_error)
                 return false;
         }
         else lib++;
+    }
+
+    // Last chance to validate component compatibility
+    if(!isCompatibleComponent(file))
+    {
+        if(log_error)
+            log(Error) << "Could not load library '"<< p.string() <<"': incompatible." <<endlog();
+        return false;
     }
 
     handle = dlopen ( p.string().c_str(), RTLD_NOW | RTLD_GLOBAL );
@@ -631,4 +668,34 @@ std::vector<std::string> ComponentLoader::listComponents() const
     for(map<string,ComponentData>::const_iterator it = comps.begin(); it != comps.end(); ++it)
         names.push_back( it->first );
     return names;
+}
+
+bool ComponentLoader::isCompatibleComponent(std::string const& filepath)
+{
+    path p(filepath);
+
+#if BOOST_VERSION >= 104600
+    string libname = p.filename().string();
+#else
+    string libname = p.filename();
+#endif
+
+    //log(Debug) << "Validating compatility of component file '" + libname + "'" <<endlog();
+
+#ifdef _WIN32
+    // On WIN32 target:
+    // - look if the library name ends with "win32.dll" on release mode
+    // - look if the library name ends with "win32d.dll" on debug mode
+    if(!hasEnding(libname, FULL_COMPONENT_SUFFIX))
+    {
+        //log(Debug) << "Component file '" + libname + "' is incompatible because it doesn't have the suffix " << FULL_COMPONENT_SUFFIX << endlog();
+        return false;
+    }
+#endif // _WIN32
+
+    // There's no validation on other targets
+
+    //log(Debug) << "Component file '" + libname + "' is valid." <<endlog();
+
+    return true;
 }
