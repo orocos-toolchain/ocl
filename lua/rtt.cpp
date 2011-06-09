@@ -334,8 +334,8 @@ static int Variable_update(lua_State *L)
 		dsb = Variable_fromlua(L, self->getType().c_str(), 2);
 
 	ret = self->update(dsb.get());
-	lua_pushboolean(L, ret);
-	return 1;
+	if (!ret) luaL_error(L, "Variable.assign: assignment failed");
+	return 0;
 }
 
 /* create variable */
