@@ -154,31 +154,43 @@ namespace OCL
 
 			if(!lua_file.empty())
 				exec_file(lua_file);
-			return call_func(L, "configureHook", this);
+			return call_func(L, "configureHook", this, 0, 1);
+		}
+
+		bool activateHook()
+		{
+			os::MutexLock lock(m);
+			return call_func(L, "activateHook", this, 0, 1);
 		}
 
 		bool startHook()
 		{
 			os::MutexLock lock(m);
-			return call_func(L, "startHook", this);
+			return call_func(L, "startHook", this, 0, 1);
 		}
 
 		void updateHook()
 		{
 			os::MutexLock lock(m);
-			call_func(L, "updateHook", this);
+			call_func(L, "updateHook", this, 0, 0);
 		}
 
 		void stopHook()
 		{
 			os::MutexLock lock(m);
-			call_func(L, "stopHook", this);
+			call_func(L, "stopHook", this, 0, 0);
 		}
 
 		void cleanupHook()
 		{
 			os::MutexLock lock(m);
-			call_func(L, "cleanupHook", this);
+			call_func(L, "cleanupHook", this, 0, 0);
+		}
+
+		void errorHook()
+		{
+			os::MutexLock lock(m);
+			call_func(L, "errorHook", this, 0, 0);
 		}
 	};
 }

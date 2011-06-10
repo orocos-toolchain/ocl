@@ -1,0 +1,39 @@
+--- OutputPort functions and methods.
+-- Output ports are created using the syntax <code>rtt.OutputPort('type')</code>
+
+module 'rtt.OutputPort'
+
+--- OutputPort constructor.
+-- Note: the more intuitve syntax <code>rtt.OutputPort('type')</code>
+-- is preferred.
+-- @param type type of output port to create
+-- @param name (optional) name of port
+-- @param desc (optional) description of port
+function new(type, name, desc)
+
+--- Write to an output port
+-- @param value to be written
+function write()
+
+--- Return information about a port.
+-- The information is stored in a table with the fields:<br><br>
+-- <code>   name</code>: name of port<br>
+-- <code>   desc</code>: description of port<br>
+-- <code>   type</code>: type of port<br>
+-- <code>   connected</code>: boolean flag if port is connected or not<br>
+-- <code>   isLocal</code>: boolean flag if port is local or not<br>
+-- <code>   porttype</code>: type of port ('in' or 'out')<br><br>
+-- @return table with above fields.
+function info()
+
+--- Connect this port to a second one.
+-- This works also without ports having been added to a TaskContext interface.
+-- @param port the port to connect to.
+-- @return boolean flag if connecting succeeded or not.
+function connect(port)
+
+--- Delete a port.
+-- This frees the memory and makes the port inaccessible from
+-- Lua. Make sure that the port was removed from all TaskContexts
+-- before calling this.
+function delete()

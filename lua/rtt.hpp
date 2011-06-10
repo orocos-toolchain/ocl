@@ -32,8 +32,6 @@
  * Suite 330, Boston, MA  02111-1307  USA
  */
 
-#define RTTLUA_VERSION	"1.0-beta2"
-
 #include <rtt/TaskContext.hpp>
 #include <rtt/Port.hpp>
 #include <rtt/types/Types.hpp>
@@ -41,6 +39,8 @@
 #include <rtt/types/Operators.hpp>
 #include <rtt/Logger.hpp>
 #include <rtt/plugin/PluginLoader.hpp>
+#include <rtt/os/TimeService.hpp>
+#include <rtt/internal/GlobalService.hpp>
 
 extern "C" {
 #include <lua.h>
@@ -50,7 +50,12 @@ extern "C" {
 
 int luaopen_rtt(lua_State *L);
 int set_context_tc(RTT::TaskContext*, lua_State*);
-bool call_func(lua_State*, const std::string&, RTT::TaskContext*);
+
+/* call a function/0 named by string, the last two boolean arguments
+ * are wether to fail if no such function exists and wether to fail if
+ * no boolean result is returned.
+ */
+bool call_func(lua_State*, const std::string&, RTT::TaskContext*, int, int);
 }
 
 

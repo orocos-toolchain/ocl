@@ -10,7 +10,7 @@ module('utils')
 
 -- increment major on API breaks
 -- increment minor on non breaking changes
-VERSION=0.4
+VERSION=0.6
 
 function append(car, ...)
    assert(type(car) == 'table')
@@ -19,7 +19,7 @@ function append(car, ...)
    for i,v in pairs(car) do
       table.insert(new_array, v)
    end
-   for _, tab in ipairs(arg) do
+   for _, tab in ipairs({...}) do
       for k,v in pairs(tab) do
 	 table.insert(new_array, v)
       end
@@ -64,6 +64,27 @@ function tab2str( tbl )
    return "{" .. table.concat( result, "," ) .. "}"
 end
 
+--- Wrap a long string.
+-- source: http://lua-users.org/wiki/StringRecipes
+-- @param str string to wrap
+-- @param limit maximum line length
+-- @param indent regular indentation
+-- @param indent1 indentation of first line
+function wrap(str, limit, indent, indent1)
+   indent = indent or ""
+   indent1 = indent1 or indent
+   limit = limit or 72
+   local here = 1-#indent1
+   return indent1..str:gsub("(%s+)()(%S+)()",
+			    function(sp, st, word, fi)
+			       if fi-here > limit then
+				  here = st - #indent
+				  return "\n"..indent..word
+			       end
+			    end)
+end
+
+
 function pp(val)
    if type(val) == 'table' then print(tab2str(val)) 
    else print(val) end
@@ -80,12 +101,12 @@ function rpad(str, len, char)
 end
 
 function stderr(...)
-   io.stderr:write(unpack(arg))
+   io.stderr:write(...)
    io.stderr:write("\n")
 end
 
 function stdout(...)
-   print(unpack(arg))
+   print(...)
 end
 
 function split(str, pat)
@@ -210,7 +231,8 @@ function AND(a, b) return a and b end
 -- and which takes table
 function andt(...)
    local res = true
-   for _,t in ipairs(arg) do
+   local tab = {...}
+   for _,t in ipairs(tab) do
       res = res and foldr(AND, true, t)
    end
    return res
@@ -250,4 +272,25 @@ function table_has(t, x)
       if e==x then return true end
    end
    return false
+end
+
+--- Convert arguments list into key-value pairs.
+-- The return table is indexable by parameters (i.e. ["-p"]) and the
+-- value is an array of zero to many option parameters.
+-- @param standard Lua argument table
+-- @return key-value table
+function proc_args(args)
+   local function is_opt(s) return string.sub(s, 1, 1) == '-' end
+   local res = { [0]={} }
+   local last_key = 0
+   for i=1,#args do
+      if is_opt(args[i]) then -- new key
+	 last_key = args[i]
+	 res[last_key] = {}
+      else -- option parameter, append to existing tab
+	 local list = res[last_key]
+	 list[#list+1] = args[i]
+      end
+   end
+   return res
 end

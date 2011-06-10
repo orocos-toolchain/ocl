@@ -1,0 +1,49 @@
+
+--- Property methods and functions. 
+--  Properties can be created using the syntax
+-- <code>rtt.Property('type')</code> Like Ports, Properties are not
+-- automatically garbage collected, so they must be manually removed
+-- from the TaskContext(s) they were added to and the delete method
+-- must be called on them.  Moreover, Properties behave much like
+-- Variables in that Properties holding complex RTT types (types with
+-- subfields) can be indexed directly using dot notation, as for
+-- instance: <code>propA.subfield1</code> etc.
+
+module 'rtt.Property'
+
+--- Property constructor.
+-- Note: the more intuitve syntax <code>rtt.Property('type')</code>
+-- is preferred.
+-- @param type type of Property to create
+-- @param name (optional) name of property
+-- @param desc (optional) description of property
+function new(type, name, desc)
+
+--- Get the Variable contained in a Property
+-- Note: this method is only needed for Properties containing basic
+-- types. Complex Properties (Properties which have subfields) can be
+-- accesses and assigned by using the dot notation 
+-- @return Variable
+function get()
+
+--- Set the value of a Property to a new value.
+-- Note: this method is only needed for Properties containing basic
+-- types. Complex Properties (Properties which have subfields) can be
+-- accesses and assigned by using the dot notation 
+-- @param variable value to which the property shall be set.
+-- @return true in case of success
+function set(variable)
+
+--- Get the name of a Property.
+-- @return name string
+function getName()
+
+--- Get description of Property.
+-- @return description string 
+function getDescription()
+
+--- Delete a Property.
+-- This frees the memory and makes the Property inaccessible from
+-- Lua. Make sure that the Property was removed from all TaskContexts
+-- before calling this.
+function delete()

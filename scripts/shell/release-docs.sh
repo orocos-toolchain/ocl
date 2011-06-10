@@ -99,6 +99,20 @@ cd build
   cd ..
 cd ..
 
+# generated Lua API docs
+which luadoc
+if [ $? -ne 0 ]; then
+    echo "No luadoc found, can't build and upload Lua API docs!"
+    exit 1
+else
+    pushd build &> /dev/null
+    make luadocapi
+    cd doc
+    tar cjvf orocos-ocl-$VERSION-luaapi.tar.bz2 luaapi
+    mv orocos-ocl-$VERSION-luaapi.tar.bz2 ..
+    popd &> /dev/null
+fi
+
 # Build base package
 cd build
   cd doc
@@ -133,6 +147,7 @@ cd build
 ssh $USER@$SERVER "mkdir -p $SPREFIX/$BRANCH/ocl/$VVERSION"
 scp orocos-ocl-$VERSION-doc.tar.bz2 $USER@$SERVER:$SPREFIX/$BRANCH/ocl/$VVERSION
 scp orocos-ocl-$VERSION-api.tar.bz2 $USER@$SERVER:$SPREFIX/$BRANCH/ocl/$VVERSION
+scp orocos-ocl-$VERSION-luaapi.tar.bz2 $USER@$SERVER:$SPREFIX/$BRANCH/ocl/$VVERSION
 # Install them in the 'documentation' dir:
 # 'doc' is not physically existing, it is the drupal path to imported docs
 # 'doc-xml' are the xml generated html/pdf files
@@ -143,7 +158,10 @@ ssh $USER@$SERVER "cd $SPREFIX/$BRANCH/documentation/ocl/v$BRANCHVERSION.x/ &&
 rm -rf doc api doc-xml &&
 tar -xjf ../../../ocl/$VVERSION/orocos-ocl-$VERSION-doc.tar.bz2 && 
 tar -xjf ../../../ocl/$VVERSION/orocos-ocl-$VERSION-api.tar.bz2 &&
-rm -f ../../../ocl/$VVERSION/orocos-ocl-$VERSION-api.tar.bz2 ../../../ocl/$VVERSION/orocos-ocl-$VERSION-doc.tar.bz2 &&
+tar -xjf ../../../ocl/$VVERSION/orocos-ocl-$VERSION-luaapi.tar.bz2 &&
+rm -f ../../../ocl/$VVERSION/orocos-ocl-$VERSION-api.tar.bz2 \
+      ../../../ocl/$VVERSION/orocos-ocl-$VERSION-luaapi.tar.bz2 \
+      ../../../ocl/$VVERSION/orocos-ocl-$VERSION-doc.tar.bz2 &&
 cd .. && { linkv=\$(ls -l v2.x | sed -e\"s/l.*-> v//;s/\.//g\;s/x//\"); branchv=\$(echo $BRANCHVERSION | sed -e\"s/\.//g\"); if test 0\$branchv -gt 0\$linkv; then
 rm -f v2.x && ln -s v$BRANCHVERSION.x v2.x ;
 fi;
@@ -155,6 +173,7 @@ ssh $USER@$SERVER "cd $SPREFIX/$BRANCH/documentation/ocl/$VVERSION &&
 rm -rf doc api doc-xml &&
 tar -xjf ../../../ocl/$VVERSION/orocos-ocl-$VERSION-doc.tar.bz2 && 
 tar -xjf ../../../ocl/$VVERSION/orocos-ocl-$VERSION-api.tar.bz2 &&
+tar -xjf ../../../ocl/$VVERSION/orocos-ocl-$VERSION-luaapi.tar.bz2 &&
 rm -f ../../../ocl/$VVERSION/orocos-ocl-$VERSION-api.tar.bz2 ../../../ocl/$VVERSION/orocos-ocl-$VERSION-doc.tar.bz2
 "
 fi

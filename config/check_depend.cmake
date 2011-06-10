@@ -84,6 +84,12 @@ if(LOG4CPP_FOUND)
   message("Found log4cpp in ${LOG4CPP_INCLUDE_DIRS}")
 endif(LOG4CPP_FOUND)
 
+# Uses LOG4CPP_ROOT from above in ROS builds:
+find_package( Log4cxx )
+if(LOG4CXX_FOUND)
+  message("Found log4cxx in ${LOG4CPP_INCLUDE_DIRS}")
+endif(LOG4CXX_FOUND)
+
 find_package(Boost COMPONENTS program_options filesystem system)
 
 # On win32, dynamically linking with boost_program_options requires

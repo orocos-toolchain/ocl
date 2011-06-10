@@ -1,0 +1,30 @@
+--- Execution Engine Hook handling.
+-- Note: this module is only applicable to the LuaService.
+-- The EEHook provides a mechanism to register a Lua function in the
+-- ExecutionEngine of the parent TaskContext, so that this function is
+-- called for every updateHook call.
+
+module 'rtt.EEHook'
+
+--- Construct an EEHook.
+-- Note: the simpler syntax rtt.EEHook() is preferred.<br>
+-- Important: make sure that the newly created Hook is assigned to a
+-- variable which will exist beyond the scope of exec_str or
+-- exec_file. More concretely, don't make it <code>local</code> or it
+-- will be garbage collected.<br>
+-- The hook is initially disabled, so
+-- 'enable' must be called to activate calling of the attached Lua
+-- function.
+-- @param name string with function to be called on updateHook.
+-- @return EEHook
+function new(name)
+
+--- Enable EEHook.
+-- After this the attached Lua function will be called when updateHook is.
+-- @return boolean (same as RTT::ExecutionEngine::runFunction)
+function enable()
+
+--- Disable EEHook.
+-- This will unregister the hook from the execution engine.
+-- @return boolean (same as RTT::ExecutionEngine::removeFunction)
+function disable()

@@ -329,6 +329,8 @@ namespace OCL
             tbcoms.push_back(".unloadStateMachine ");
             tbcoms.push_back(".light");
             tbcoms.push_back(".dark");
+            tbcoms.push_back(".hex");
+            tbcoms.push_back(".nohex");
             tbcoms.push_back(".nocolors");
             tbcoms.push_back(".connect");
             tbcoms.push_back(".record");
@@ -642,6 +644,7 @@ namespace OCL
           debug(0),
           line_read(0),
           lastc(0), storedname(""), storedline(-1),
+          usehex(false),
           macrorecording(false)
     {
         tb = this;
@@ -1252,6 +1255,16 @@ namespace OCL
             endMacro();
             return;
         }
+        if ( instr == "hex") {
+            usehex = true;
+            cout << "Switching to hex notation for output (use .nohex to revert)." <<endl;
+            return;
+        }
+        if ( instr == "nohex") {
+            usehex = false;
+            cout << "Turning off hex notation for output." <<endl;
+            return;
+        }
         if ( instr == "provide") {
             while ( ss ) {
                 cout << "Trying to locate service '" << arg << "'..."<<endl;
@@ -1525,7 +1538,10 @@ namespace OCL
         dsb->evaluate();
         if (dsb->getMemberNames().empty() || dsb->getTypeInfo()->isStreamable() ) {
             if (debug) cerr << "terminal item " << dsb->getTypeName() << nl;
-            sresult << dsb;
+            if (usehex)
+                sresult << std::hex << dsb;
+            else
+                sresult << std::dec << dsb;
         } else {
             sresult << setw(0);
             sresult << "{";
@@ -1693,6 +1709,10 @@ namespace OCL
         cout <<titlecol("Changing Colors")<<nl;
         cout << "  You can inform the TaskBrowser of your background color by typing "<<comcol(".dark")<<nl;
         cout << "  "<<comcol(".light")<<", or "<<comcol(".nocolors")<<" to increase readability."<<nl;
+
+        cout <<titlecol("Output Formatting")<<nl;
+        cout << "  Use the commands "<<comcol(".hex") << " or " << comcol(".nohex") << " to turn hexadecimal "<<nl;
+        cout << "  notation of integers on or off."<<nl;
 
         cout <<titlecol("Macro Recording / RTT::Command line history")<<nl;
         cout << "  You can browse the commandline history by using the up-arrow key or press "<<comcol("Ctrl r")<<nl;

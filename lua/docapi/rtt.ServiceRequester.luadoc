@@ -1,0 +1,29 @@
+--- RTT Lua interface to ServiceRequester.  
+-- ServiceRequesters are the inverse of Services. See the RTT docs for
+-- details. ServiceRequesters are retured by the
+-- <code>TaskContext:requires()</code> call. They can be connected
+-- with the the <code>TaskContext::connectServices()</code> method.
+--
+
+module 'rtt.ServiceRequester'
+
+--- Get name of ServiceRequester.
+-- @return name name of ServiceRequester
+function getRequestName()
+
+--- Get requied subservices.
+-- @return table of names of required subservices
+function getRequesterNames()
+
+--- Get a required sub-ServiceRequester.
+-- @param name of sub-ServiceRequester requested.
+function requires(name)
+
+--- Check if ServiceRequester is ready.
+-- To be ready all operations must be resolved.
+-- @return true if ready, false otherwise.
+function ready()
+
+--- Disconnect a ServiceRequester a service.
+function disconnect()
+

@@ -104,7 +104,7 @@ local function white(str, bright)
    return str
 end
 
--- pretty print a ConnPolicy
+--- Pretty-print a ConnPolicy.
 function ConnPolicy2tab(cp)
    if cp.type == 0 then cp.type = "DATA"
    elseif cp.type == 1 then cp.type = "BUFFER"
@@ -115,26 +115,21 @@ function ConnPolicy2tab(cp)
    elseif cp.lock_policy == 2 then cp.lock_policy = "LOCK_FREE"
    else cp.lock_policy = tostring(cp.lock_policy) .. " (invalid!)" end
 
+   if cp.transport == 0 then cp.transport = "default"
+   elseif cp.transport == 1 then cp.transport = "CORBA"
+   elseif cp.transport == 2 then cp.transport = "MQUEUE"
+   elseif cp.transport == 3 then cp.transport = "ROS"
+   else cp.transport = "(invalid)" end
    return cp
 end
 
-local function var_is_basic(var)
-   assert(type(var) == 'userdata', "var_is_basic not a variable:" .. type(var))
-   local t = var:getType()
-   if t == "bool" or t == "char" or t == "double" or t == "float" or
-      t == "int" or t == "string" or t == "uint" or t == "void" then
-      return true
-   else
-      return false
-   end
-end
 
 function var2tab(var)
    local function __var2tab(var)
       local res
       if type(var) ~= 'userdata' then
 	 res=var
-      elseif var_is_basic(var) then
+      elseif rtt.Variable.isbasic(var) then
 	 res = var:tolua()
       else -- non basic type
 	 local parts = var:getMemberNames()
@@ -162,8 +157,11 @@ function var2tab(var)
    return __var2tab(var)
 end
 
--- table of Variable pretty printers
--- must accept a table and return a table or string
+--- Table of Variable pretty printing functions.
+-- The contents of the table are key=value pairs, the key being the
+-- Variable type and value a function which accepts a table as an
+-- argument and returns either a table or string.
+-- @table var_pp
 var_pp = {}
 var_pp.ConnPolicy = ConnPolicy2tab
 
@@ -186,37 +184,55 @@ function var2str(var)
    end
 end
 
---
--- update contents of var from a table
---
+--- Update contents of a Variable from a table.
+-- Available as a method for Variables using var:fromtab(tab)
+-- @param var Variable to update
+-- @param tab
 function varfromtab(var, tab)
    local memdsb
    if type(tab) ~= 'table' then error("arg 2 is not a table") end
 
    for k,v in pairs(tab) do
-      memdsb = var:getMember(k)
+      if type(k) == 'number' then memdsb = var:getMemberRaw(k-1)
+      else memdsb = var:getMemberRaw(k) end
+
       if memdsb == nil then error("no member " .. k) end
 
-      if var_is_basic(memdsb) then
+      if rtt.Variable.isbasic(memdsb) then
 	 memdsb:assign(v);
       else
-	 fromtab(memdsb, v)
+	 varfromtab(memdsb, v)
       end
    end
 end
 
+--- Update contents of a Property from a table.
+-- Available as a method for Property using prop:fromtab(tab)
+-- @param var Variable to update
+-- @param tab appropriate table
+function propfromtab(prop, tab)
+   return prop:get():fromtab(tab)
+end
 
---
--- pretty print properties
---
+--- Convert RTT Vector to Lua table
+-- @param sv Vector variable
+-- @return Lua table
+function vect2tab(sv)
+   local res = {}
+   assert(sv.size and sv.capacity, "vect2tab: arg not a vector (no size or capacity)")
+   for i=0,sv.size-1 do res[#res+1] = sv[i] end
+   return res
+end
+
+--- pretty print properties
+-- @param p property
+-- @return string
 function prop2str(p)
    local info = p:info()
    return white(info.name) .. ' (' .. info.type .. ')' .. " = " .. yellow(var2str(p:get())) .. red(" // " .. info.desc) .. ""
 end
 
---
--- convert a method to a string
---
+--- Convert an operation to a string.
 function __op2str(name, descr, rettype, arity, args)
    local str = ""
 
@@ -239,6 +255,8 @@ function op2str(op)
    return __op2str(op:info())
 end
 
+--- Taskcontext operation to string.
+-- Old version. Using the op2str and __op2str versions are preferred.
 function tc_op2str(tc, op)
    local rettype, arity, descr, args = tc:getOpInfo(op)
    local str = ""
@@ -376,7 +394,7 @@ function tc2str(tc)
 
    res[#res+1] = magenta("peers") .. ": " .. table.concat(tc:getPeers(), ', ')
    res[#res+1] = magenta("ports") .. ": "
-   for i,p in ipairs(tc:getPortNames(p)) do
+   for i,p in ipairs(tc:getPortNames()) do
       res[#res+1] = "   " .. port2str(tc:getPort(p))
    end
 
@@ -396,14 +414,11 @@ function pptc(tc)
    print(tc2str(tc))
 end
 
-function info()
-   print("services:   ", table.concat(rtt.services(), ', '))
-   print("typekits:   ", table.concat(rtt.typekits(), ', '))
-   print("types:      ", table.concat(rtt.types(), ', '))
-end
-
--- clone a port, with same name + suffix and connect both
--- cname is optional component name used in description
+--- Create an inverse, connected port of a given port.
+-- The default name will be the same as the given port.
+-- @param p port to create inverse, connected port.
+-- @param suffix string to append name of new port (optional)
+-- @param cname alternative name for port (optional).
 function port_clone_conn(p, suffix, cname)
    local cname = cname or ""
    local suf = suffix or ""
@@ -422,10 +437,10 @@ function port_clone_conn(p, suffix, cname)
    return cl
 end
 
--- created set of mirrored, connected ports
--- comp: taskcontext to mirror
--- tab: table of port names to mirror, if nil will mirror all
--- suffix: suffix
+--- Mirror a TaskContext's connected ports
+-- @param comp taskcontext to mirror
+-- @param tab table of port names to mirror (default: all)
+-- @param suffix suffix to default
 -- a table of { port, name, desc } tables
 function mirror(comp, suffix, tab)
    local tab = tab or comp:getPortNames()
@@ -438,6 +453,82 @@ function mirror(comp, suffix, tab)
    return res
 end
 
+--- Find a peer called name
+-- Will search through all reachable peers
+-- @param name name of component to find
+-- @param start_tc optional taskcontext to start search with
+function findpeer(name, start_tc)
+   local cache = {}
+   local function __findpeer(tc)
+      local tc_name = tc:getName()
+      if cache[tc_name] then return false else cache[tc_name] = true end
+      local peers = tc:getPeers()
+      if utils.table_has(peers, name) then return tc:getPeer(name) end
+      for i,pstr in ipairs(peers) do
+	 local p = __findpeer(tc:getPeer(pstr))
+	 if p then return p end
+      end
+      return false
+   end
+   local start_tc = start_tc or rtt.getTC()
+   return __findpeer(start_tc)
+end
+
+--- Call func on all reachable peers and return results a flattened table
+-- @param func function to call on peer
+-- @param start_tc optional taskcontext to start search with. If none given the current will be used.
+function mappeers(func, start_tc)
+   local cache = {}
+   local res = {}
+   local function __mappeers(tc)
+      local tc_name = tc:getName()
+      if cache[tc_name] then return else cache[tc_name] = true end
+      res[tc_name] = func(tc)
+      for i,pn in ipairs(tc:getPeers()) do __mappeers(tc:getPeer(pn)) end
+   end
+   local start_tc = start_tc or rtt.getTC()
+   __mappeers(start_tc)
+   return res
+end
+
+--- Print useful information
+-- print information about availabe services, typekits, types and
+-- component types
+function info()
+   local ind="            "
+   local ind1=""
+   print(magenta("services:   ") .. utils.wrap(table.concat(rtt.services(), ' '), 80, ind, ind1))
+   print(magenta("typekits:   ") .. utils.wrap(table.concat(rtt.typekits(), ' '), 80, ind, ind1))
+   print(magenta("types:      ") .. utils.wrap(table.concat(rtt.types(), ' '), 80, ind, ind1))
+
+   local depl = findpeer("deployer")
+   if depl and rtt.TaskContext.hasOperation(depl, "getComponentTypes") then
+      local t = var2tab(depl:getComponentTypes())
+      -- print(magenta("comp types: "), table.concat(t, ', '))
+      print(magenta("comp types: ") .. utils.wrap(table.concat(t, ' '), 80, ind, ind1))
+   end
+end
+
+--- Check if a typekit has been loaded.
+function typekit_loaded(n) return utils.table_has(rtt.typekits(), n) end
+
+--- Enable Service:op() syntax
+-- Service metatable __index replacement for allowing operations
+-- to be called like methods. This is fairly slow, use getOperation to
+-- cache local op when speed matters.
+function service_index(srv, key)
+   local reg = debug.getregistry()
+   if rtt.Service.hasOperation(srv, key) then
+      return function (srv, ...)
+		local op = rtt.Service.getOperation(srv, key)
+		return op(...)
+	     end
+   else -- pass on to standard metatable
+      return reg.Service[key]
+   end
+end
+
+--- Enable tc:op() syntax
 -- TaskContext metatable __index replacement for allowing operations
 -- to be called like methods. This is pretty slow, use getOperation to
 -- cache local op when speed matters.
@@ -450,16 +541,24 @@ function tc_index(tc, key)
    end
 end
 
+setmetatable(rtt.Variable, {__call=function(t,...) return rtt.Variable.new(...) end})
+setmetatable(rtt.Property, {__call=function(t,...) return rtt.Property.new(...) end})
+setmetatable(rtt.InputPort, {__call=function(t,...) return rtt.InputPort.new(...) end})
+setmetatable(rtt.OutputPort, {__call=function(t,...) return rtt.OutputPort.new(...) end})
+setmetatable(rtt.EEHook, {__call=function(t,...) return rtt.EEHook.new(...) end})
+
 -- enable pretty printing
 if type(debug) == 'table' then
    reg = debug.getregistry()
    reg.TaskContext.__tostring=tc2str
    reg.TaskContext.stat=portstats
+   reg.Service.__index=service_index -- enable operations as methods
    reg.TaskContext.__index=tc_index -- enable operations as methods
    reg.Variable.__tostring=var2str
    reg.Variable.fromtab=varfromtab
    reg.Variable.var2tab=var2tab
    reg.Property.__tostring=prop2str
+   reg.Property.fromtab=propfromtab
    reg.Service.__tostring=service2str
    reg.ServiceRequester.__tostring=service_req2str
    reg.Operation.__tostring=op2str

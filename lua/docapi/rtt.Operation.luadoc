@@ -1,0 +1,27 @@
+--- Call and send'able Operations.
+-- This type is only returned by <code>Service:getOperation(op)</code>
+-- and <code>TaskContext:getOperation(op)</code> (which are really the
+-- same). It can be invoked with the familiar <code>op(arg1,
+-- arg2)</code> syntax.
+
+module 'rtt.Operation'
+
+--- Return information about an Operation.
+-- @return name of operation
+-- @return description of operation
+-- @return result type
+-- @return arity arity of operation
+-- @return table of argument descriptions
+function info()
+
+--- Call an Operation
+-- The simpler syntax <code>op(arg1, arg2)</code> is preferred.
+-- @param ... zero or more arguments
+-- @return return value and zero or more out arguments
+function call(...)
+
+
+--- Send an Operation
+-- @param ... zero or more arguments
+-- @return SendHandle
+function send(string, ...)
