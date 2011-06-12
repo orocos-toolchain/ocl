@@ -187,8 +187,8 @@ static bool Variable_is_a(DataSourceBase::shared_ptr dsb, const std::string & ty
 static bool __Variable_isbasic(DataSourceBase::shared_ptr dsb)
 {
 	if ( Variable_is_a(dsb, "bool") || Variable_is_a(dsb, "double") || Variable_is_a(dsb, "float") ||
-	     Variable_is_a(dsb, "uint") || Variable_is_a(dsb, "int") || Variable_is_a(dsb, "char") ||
-	     Variable_is_a(dsb, "string") || Variable_is_a(dsb, "void"))
+	     Variable_is_a(dsb, "uint") || Variable_is_a(dsb, "int") || Variable_is_a(dsb, "long") ||
+	     Variable_is_a(dsb, "char") || Variable_is_a(dsb, "string") || Variable_is_a(dsb, "void"))
 		return true;
 	else
 		return false;
@@ -224,6 +224,10 @@ static int __Variable_tolua(lua_State *L, DataSourceBase::shared_ptr dsb)
 		else goto out_nodsb;
 	} else if (Variable_is_a(dsb, "uint")) {
 		DataSource<unsigned int>* dsb = DataSource<unsigned int>::narrow(ds);
+		if(dsb) lua_pushnumber(L, ((lua_Number) dsb->get()));
+		else goto out_nodsb;
+	} else if (Variable_is_a(dsb, "long")) {
+		DataSource<long>* dsb = DataSource<long>::narrow(ds);
 		if(dsb) lua_pushnumber(L, ((lua_Number) dsb->get()));
 		else goto out_nodsb;
 	} else if (Variable_is_a(dsb, "int")) {
@@ -391,6 +395,15 @@ static DataSourceBase::shared_ptr Variable_fromlua(lua_State *L, const char* typ
 			goto out_conv_err;
 
 		dsb = new ValueDataSource<unsigned int>((unsigned int) x);
+
+	} else if (__typenames_cmp(type, "long")) {
+		lua_Number x;
+		if (luatype == LUA_TNUMBER)
+			x = lua_tonumber(L, valind);
+		else
+			goto out_conv_err;
+
+		dsb = new ValueDataSource<long>((long) x);
 
 	} else if (__typenames_cmp(type, "double")) {
 		lua_Number x;
