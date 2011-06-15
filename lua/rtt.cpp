@@ -295,18 +295,72 @@ static int Variable_getMemberNames(lua_State *L)
 	return 1;
 }
 
+
+/* caching of DSB members
+ * lookup of DSB using getMember and caches result.
+ * returns DSB (or nil if lookup fails) on top of stack.
+ */
+static DataSourceBase::shared_ptr lookup_member(lua_State *L, DataSourceBase::shared_ptr parent, const char* mem)
+{
+	DataSourceBase *varptr;
+	DataSourceBase::shared_ptr *dsbp;
+	DataSourceBase::shared_ptr memdsb;
+
+	varptr = parent.get();
+
+	lua_pushlightuserdata(L, (void*) varptr);
+	lua_rawget(L, LUA_REGISTRYINDEX);
+
+	if(lua_type(L, -1) == LUA_TNIL)
+		goto cache_miss;
+
+	lua_pushstring(L, mem);
+	lua_rawget(L, -2);
+
+	if ((dsbp = luaM_testudata_mt(L, -1, "Variable", DataSourceBase::shared_ptr)) != NULL) {
+		memdsb=*dsbp;
+		goto out;
+	}
+
+	lua_pop(L, 1); /* pop nil from table lookup */
+
+ cache_miss:
+	/* slowpath */
+	log(Error) << "cache miss: " << mem  << endlog();
+	memdsb = parent->getMember(mem);
+
+	if(memdsb == 0)
+		goto out;
+
+	/* if nil is on top of stack, we have to create a new table */
+	if(lua_type(L, -1) == LUA_TNIL) {
+		lua_newtable(L);				/* member lookup tab for this Variable */
+		lua_pushlightuserdata(L, (void*) varptr); /* index for REGISTRY */
+		lua_pushvalue(L, -2);			/* duplicates table */
+		lua_rawset(L, LUA_REGISTRYINDEX);	/* REG[varptr]=newtab */
+	}
+
+	/* cache dsb in table */
+	lua_pushstring(L, mem);
+	luaM_pushobject_mt(L, "Variable", DataSourceBase::shared_ptr)(memdsb);
+	lua_rawset(L, -3); 			/* newtab[mem]=memdsb, top is newtab */
+	luaM_pushobject_mt(L, "Variable", DataSourceBase::shared_ptr)(memdsb);
+
+ out:
+	return memdsb;
+}
+
 static int Variable_getMember(lua_State *L)
 {
 	DataSourceBase::shared_ptr *dsbp = luaM_checkudata_mt(L, 1, "Variable", DataSourceBase::shared_ptr);
 	DataSourceBase::shared_ptr memdsb;
 	const char *mem = luaL_checkstring(L, 2);
 
-	memdsb = (*dsbp)->getMember(mem);
-
-	if(memdsb == 0)
+	if ((memdsb = lookup_member(L, *dsbp, mem)) == 0)
 		lua_pushnil(L);
 	else
 		Variable_push_coerce(L, memdsb);
+
 	return 1;
 }
 
@@ -316,12 +370,11 @@ static int Variable_getMemberRaw(lua_State *L)
 	DataSourceBase::shared_ptr memdsb;
 	const char *mem = luaL_checkstring(L, 2);
 
-	memdsb = (*dsbp)->getMember(mem);
-
-	if(memdsb == 0)
+	if ((memdsb = lookup_member(L, (*dsbp), mem)) == 0)
 		lua_pushnil(L);
-	else
-		luaM_pushobject_mt(L, "Variable", DataSourceBase::shared_ptr)(memdsb);
+
+	/* else: Variable is already on top of stack */
+
 	return 1;
 }
 
@@ -610,15 +663,15 @@ static int Variable_newindex(lua_State *L)
 {
 	DataSourceBase::shared_ptr *newvalp;
 	DataSourceBase::shared_ptr newval;
-	DataSourceBase::shared_ptr master = *(luaM_checkudata_mt(L, 1, "Variable", DataSourceBase::shared_ptr));
-	const char* member = luaL_checkstring(L, 2);
+	DataSourceBase::shared_ptr parent = *(luaM_checkudata_mt(L, 1, "Variable", DataSourceBase::shared_ptr));
+	const char* mem = luaL_checkstring(L, 2);
 
 	/* get dsb to be updated: we need its type before get-or-create'ing arg3 */
 	types::OperatorRepository::shared_ptr opreg = types::OperatorRepository::Instance();
-	DataSourceBase::shared_ptr curval = master->getMember(member);
+	DataSourceBase::shared_ptr curval;
 
-	if (curval == 0)
-		luaL_error(L, "Variable.newindex: indexing failed, no member %s", member);
+	if ((curval = lookup_member(L, parent, mem)) == 0)
+		luaL_error(L, "Variable.newindex: indexing failed, no member %s", mem);
 
 	if ((newvalp = luaM_testudata_mt(L, 3, "Variable", DataSourceBase::shared_ptr)) != NULL)
 		newval = *newvalp;
