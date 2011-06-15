@@ -326,7 +326,6 @@ static DataSourceBase::shared_ptr lookup_member(lua_State *L, DataSourceBase::sh
 
  cache_miss:
 	/* slowpath */
-	log(Error) << "cache miss: " << mem  << endlog();
 	memdsb = parent->getMember(mem);
 
 	if(memdsb == 0)
