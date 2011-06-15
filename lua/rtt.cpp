@@ -351,6 +351,14 @@ static DataSourceBase::shared_ptr lookup_member(lua_State *L, DataSourceBase::sh
 	return memdsb;
 }
 
+/* set reg[varptr] to nil so table will be garbage collected */
+static void cache_clear(lua_State *L, DataSourceBase *varptr)
+{
+	lua_pushlightuserdata(L, (void*) varptr);
+	lua_pushnil(L);
+	lua_rawset(L, LUA_REGISTRYINDEX);
+}
+
 static int Variable_getMember(lua_State *L)
 {
 	DataSourceBase::shared_ptr *dsbp = luaM_checkudata_mt(L, 1, "Variable", DataSourceBase::shared_ptr);
@@ -686,6 +694,25 @@ static int Variable_newindex(lua_State *L)
 	return 1;
 }
 
+// Why doesn't the following work:
+// static int Variable_gc(lua_State *L)
+// {
+// 	DataSourceBase::shared_ptr *dsbp = (DataSourceBase::shared_ptr*) lua_touserdata(L, 1);
+// 	cache_clear(L, dsbp->get());
+// 	dsbp->~DataSourceBase::shared_ptr();
+// 	return 0;
+// }
+
+template<typename T>
+int VariableGC(lua_State* L)
+{
+	T* dsbp = (T*) lua_touserdata(L, 1);
+	cache_clear(L, dsbp->get());
+	reinterpret_cast<T*>(lua_touserdata(L, 1))->~T();
+	return 0;
+}
+
+
 static const struct luaL_Reg Variable_f [] = {
 	{ "new", Variable_new },
 	{ "tolua", Variable_tolua },
@@ -737,8 +764,9 @@ static const struct luaL_Reg Variable_m [] = {
 	{ "__le", Variable_le },
 	{ "__index", Variable_index },
 	{ "__newindex", Variable_newindex },
-	{ "__gc", GCMethod<DataSourceBase::shared_ptr> },
+	// { "__gc", GCMethod<DataSourceBase::shared_ptr> },
 	// {"__gc", Variable_gc},
+	{"__gc", VariableGC<DataSourceBase::shared_ptr> },
 	{ NULL, NULL}
 };
 
