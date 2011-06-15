@@ -677,7 +677,10 @@ static int Variable_newindex(lua_State *L)
 	else
 		newval = Variable_fromlua(L, curval->getType().c_str(), 3);
 
-	lua_pushboolean(L, curval->update(newval.get()));
+	if(!curval->update(newval.get()))
+		luaL_error(L, "Variable.newindex: failed to assign a %s to member %s of type %s", 
+			   newval->getType().c_str(), mem, curval->getType().c_str());
+
 	return 1;
 }
 
@@ -784,7 +787,10 @@ static int Property_set(lua_State *L)
 		newdsb = Variable_fromlua(L, pb->getTypeInfo()->getTypeName().c_str(), 2);
 
 	DataSourceBase::shared_ptr propdsb = pb->getDataSource();
-	propdsb->update(newdsb.get());
+	if(!propdsb->update(newdsb.get()))
+		luaL_error(L, "Property.set: failed to assign type %s to type %s", 
+			   newdsb->getType().c_str(), propdsb->getType().c_str());
+
 	return 1;
 }
 
