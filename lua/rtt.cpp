@@ -138,7 +138,9 @@ void* luaL_testudata (lua_State *L, int ud, const char *tname)
 	}
 
 	/* it has a MT, is it the right one? */
-	lua_getfield(L, LUA_REGISTRYINDEX, tname);
+	lua_pushstring(L, tname);
+	lua_rawget(L, LUA_REGISTRYINDEX);
+
 	if (!lua_rawequal(L, -1, -2))
 		p = NULL;
 
