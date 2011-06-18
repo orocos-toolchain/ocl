@@ -86,6 +86,15 @@ namespace OCL {
              * @return true if a new library was loaded or if this library was already loaded.
              */
             bool loadInProcess(std::string filename, std::string shortname, bool log_error );
+            /**
+             * Internal helper function that validate if a component is compatible with the
+             * current target. Currently, there's a validation only on the win32 platform
+             * to avoid mixing debug/release runtime libraries.
+             * @param filepath Full path of component to validate (with extension).
+             * @return true if the component is compatible
+             */
+            bool isCompatibleComponent(std::string const& filepath);
+
         public:
             typedef boost::shared_ptr<ComponentLoader> shared_ptr;
             /**

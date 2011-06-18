@@ -54,6 +54,17 @@ FIND_PATH( READLINE_H readline/readline.h )
 IF ( READLINE_H )
     MESSAGE("-- Looking for readline/readline.h - found")
     FIND_LIBRARY(READLINE_LIBRARY readline )
+    # On win32, we need to look for both readline (release) and readlineD (debug)
+    # to avoid mixing release/debug runtime libraries
+    IF(WIN32)
+        FIND_LIBRARY(READLINED_LIBRARY readlineD )
+        IF(READLINE_LIBRARY AND READLINED_LIBRARY)
+            SET(READLINE_LIBRARY
+                optimized ${READLINE_LIBRARY}
+                debug ${READLINED_LIBRARY})
+        ENDIF()
+        MESSAGE("READLINE_LIBRARY = ${READLINE_LIBRARY}")
+    ENDIF(WIN32)
     SET( READLINE 1 CACHE INTERNAL "libreadline" )
     SET( READLINE_INCLUDE_DIR ${READLINE_H} )
 ELSE ( READLINE_H  )

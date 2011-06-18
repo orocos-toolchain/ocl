@@ -747,10 +747,11 @@ namespace OCL
         cout <<"  (type '"<<underline<<"help"<<coloroff<<coloron<<"' for instructions and '"
         		<<underline<<"ls"<<coloroff<<coloron<<"' for context info)"<<nl<<nl;
 #ifdef USE_READLINE
-        cout << "    TAB completion and HISTORY is available ('bash' like)" <<coloroff<<nl<<nl;
+        cout << "    TAB completion and HISTORY is available ('bash' like)" <<nl<<nl;
 #else
-        cout << "    TAB completion and history is NOT available (LGPL-version)" <<coloroff<<nl<<nl;
+        cout << "    TAB completion and history is NOT available (LGPL-version)" <<nl<<nl;
 #endif
+        cout << "    Use '"<<underline<<"Ctrl-D"<<coloroff<<coloron<<"' or type '"<<underline<<"quit"<<coloroff<<coloron<<"' to exit this program." <<coloroff<<nl<<nl;
 
         while (1) {
             try {

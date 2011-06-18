@@ -1,17 +1,65 @@
-#!/bin/bash
+#!/bin/bash -e
+
+
+function help
+{
+    echo
+    echo "Creates a new Orocos component package."
+    echo " Usage: $(basename $0) [-f] package_name [component] [plugin] [service] [typekit] [support] [empty] [cmake]"
+    echo
+    echo " If no package type after the package name is specified, an all-in-one"
+    echo " template is created that can serve as everything. You may provide multiple arguments."
+    echo
+    echo "component    Creates component .hpp/cpp template and cmake logic."
+    echo "plugin       Creates plugin .cpp template and cmake logic."
+    echo "service      Creates service .cpp template and cmake logic."
+    echo "typekit      Creates typekit cmake logic for calling typegen."
+    echo "support      Creates support library .cpp template and cmake logic."
+    echo "empty        Creates an empty package with only a manifest.xml."
+    echo "cmake        Creates a package with only a manifest.xml, Makefile and CMakelist.txt."
+    echo
+    echo "Example:"
+    echo " $(basename $0) table_filter component service"
+    echo "   Creates a package table_filter containing one component and one service."
+    echo
+}
 
 if [ x$1 = x ]; then
-    echo "Creates a new Orocos component package."
-    echo "Usage: $0 package_name"
+    help
     exit 1
 fi
 
 cwd="$(pwd)"
 abspath=$(dirname "$(cd "${0%/*}" 2>/dev/null; echo "$PWD"/"${0##*/}")")
 
-pkgname=$1
+# Parse arguments
+force=
+for arg in $*; do
+    case "$arg" in
+	-f)
+	    force=-p
+	    ;;
+	-h|--help)
+	    help
+	    exit 1
+	    ;;
+	*)
+	    if [ x$pkgname = x ]; then
+		pkgname=$arg
+	    else
+		ptypes="$ptypes $arg"
+	    fi
+	    ;;
+    esac
+done
+
+# Arguments post-processing:
 allcappkgname=$(echo $pkgname | tr [:lower:] [:upper:])
 cappkgname=$(echo $allcappkgname | cut -c1)$(echo $pkgname | cut -c2-)
+	
+if [ x"$ptypes" = x ]; then
+    ptypes=all
+fi
 
 # Locate the template directory. First look in orocos/ros roots
 # Default location:
@@ -40,12 +88,43 @@ else
     echo "Using templates at $templatedir..."
 fi
 
-mkdir $pkgname || { echo "Directory already exists: $pkgname" ; exit 1; }
+mkdir $force $pkgname || { echo "Package already exists. Use -f to force creation" ; exit 1; }
 
-for i in "$templatedir"/*; do
+# different logic depending on package type:
+# default files:
+files="$templatedir/Makefile $templatedir/manifest.xml $templatedir/CMakeLists.txt"
+for arg in $ptypes; do
+case "$arg" in
+    "all")
+	files="$(find $templatedir -maxdepth 1 -type f)"
+	cmake_files="component plugin service typekit support"
+	;;
+    "empty")
+	files=$templatedir/manifest.xml
+	;;
+    "cmake")
+	;;
+    *)
+        files="$files $templatedir/*$arg*"
+	cmake_files="$cmake_files $arg"
+	;;
+esac
+done
+
+# process template files:
+for i in $files; do
     tgtname=$(echo $(basename "$i") | sed -e "s/pkgname/$pkgname/g;s/Pkgname/$cappkgname/g;")
     cat "$i" | sed -e "s/@PKGNAME@/$allcappkgname/g;s/@pkgname@/$pkgname/g;s/@Pkgname@/$cappkgname/g;" > $pkgname/$tgtname
 done
+
+# add CMake snippets:
+for i in $cmake_files; do
+    cat $templatedir/cmake/$i.cmake >> $pkgname/CMakeLists.txt
+done
+
+if [ "$cmake_files" ]; then
+    cat $templatedir/cmake/tail.cmake >> $pkgname/CMakeLists.txt
+fi
 
 echo "Package $pkgname created in directory $cwd/$pkgname"
 exit 0

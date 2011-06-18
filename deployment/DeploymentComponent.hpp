@@ -169,8 +169,6 @@ namespace OCL
         typedef std::map<std::string, ComponentData> CompList;
         CompList comps;
 
-        static std::string default_comp_path;
-
         /**
          * This function imports available plugins from
          * the path formed by the expression

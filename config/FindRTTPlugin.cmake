@@ -17,7 +17,7 @@
 
 include(LibFindMacros)
 
-find_package(Orocos-RTT REQUIRED ${RTT_HINTS})
+find_package(OROCOS-RTT REQUIRED ${RTT_HINTS})
 
 FOREACH(COMPONENT ${RTTPlugin_FIND_COMPONENTS})
     # We search for both 'given name' and 'given name + -target'
@@ -46,7 +46,24 @@ FOREACH(COMPONENT ${RTTPlugin_FIND_COMPONENTS})
       list(APPEND RTT_PLUGIN_${COMPONENT}_PROCESS_LIBS   RTT_PLUGIN_${COMPONENT}_LIBRARY)
     endif()
 
-    libfind_process( RTT_PLUGIN_${COMPONENT} )
-    
-ENDFOREACH(COMPONENT)
+    # Forward FIND_REQUIRED
+    if(RTTPlugin_FIND_REQUIRED)
+        set(RTT_PLUGIN_${COMPONENT}_FIND_REQUIRED TRUE)
+    endif()
 
+    # Forward FIND_QUIET
+    if(RTTPlugin_FIND_QUIET)
+        set(RTT_PLUGIN_${COMPONENT}_FIND_QUIET TRUE)
+    endif()
+    
+    libfind_process( RTT_PLUGIN_${COMPONENT} )
+
+    # Since libfind_process does not deal correctly with "optimized" and "debug" keywords,
+    # we have to manualy add them thereafter
+    if(RTT_PLUGIN_${COMPONENT}_LIBRARY AND RTT_PLUGIN_${COMPONENT}D_LIBRARY)
+        set(RTT_PLUGIN_${COMPONENT}_LIBRARIES
+            debug ${RTT_PLUGIN_${COMPONENT}D_LIBRARY}
+            optimized ${RTT_PLUGIN_${COMPONENT}_LIBRARY})
+    endif()
+
+ENDFOREACH(COMPONENT)

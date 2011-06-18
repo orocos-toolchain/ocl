@@ -66,6 +66,8 @@ namespace OCL
      */
     static std::set<string> valid_names;
 
+    extern char const* default_comp_path_build;
+
 #define ORO_str(s) ORO__str(s)
 #define ORO__str(s) #s
 
@@ -216,7 +218,7 @@ namespace OCL
                 compPath = string(paths);
             } else {
                 log(Info) <<"No RTT_COMPONENT_PATH set. Using default." <<endlog();
-                compPath = default_comp_path ;
+                compPath = default_comp_path_build ;
             }
         }
         log(Info) <<"RTT_COMPONENT_PATH was set to " << compPath << endlog();
