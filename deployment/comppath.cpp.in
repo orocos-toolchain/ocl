@@ -3,4 +3,10 @@
 
 #include "deployment/DeploymentComponent.hpp"
 
-std::string OCL::DeploymentComponent::default_comp_path = "@DEFAULT_COMPONENT_PATH@";
+namespace OCL
+{ 
+    /** @cond */
+    char const* default_comp_path_build = "@DEFAULT_COMPONENT_PATH@";
+    /** @endcond */
+}
+
