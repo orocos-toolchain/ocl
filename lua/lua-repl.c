@@ -117,6 +117,9 @@ static void print_version (void) {
   l_message(NULL, RTTLUA_BOILER " " RTTLUA_VERSION " / " LUA_RELEASE " (" XSTR(OROCOS_TARGET) ")" );
 }
 
+static void print_quit_info (void) {
+  l_message(NULL, " Use Ctrl-D to quit." );
+}
 
 static int getargs (lua_State *L, char **argv, int n) {
   int narg;
@@ -369,6 +372,7 @@ static int pmain (lua_State *L) {
   else if (script == 0 && !has_e && !has_v) {
     if (lua_stdin_is_tty()) {
       print_version();
+      print_quit_info();
       dotty(L);
     }
     else dofile(L, NULL);  /* executes stdin as a file */
