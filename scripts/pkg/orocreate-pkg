@@ -119,11 +119,11 @@ done
 
 # add CMake snippets:
 for i in $cmake_files; do
-    cat $templatedir/cmake/$i.cmake >> $pkgname/CMakeLists.txt
+    cat $templatedir/cmake/$i.cmake | sed -e "s/@PKGNAME@/$allcappkgname/g;s/@pkgname@/$pkgname/g;s/@Pkgname@/$cappkgname/g;" >> $pkgname/CMakeLists.txt
 done
 
 if [ "$cmake_files" ]; then
-    cat $templatedir/cmake/tail.cmake >> $pkgname/CMakeLists.txt
+    cat $templatedir/cmake/tail.cmake | sed -e "s/@PKGNAME@/$allcappkgname/g;s/@pkgname@/$pkgname/g;s/@Pkgname@/$cappkgname/g;"  >> $pkgname/CMakeLists.txt
 fi
 
 echo "Package $pkgname created in directory $cwd/$pkgname"
