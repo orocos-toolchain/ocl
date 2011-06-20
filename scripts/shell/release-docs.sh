@@ -162,7 +162,7 @@ tar -xjf ../../../ocl/$VVERSION/orocos-ocl-$VERSION-luaapi.tar.bz2 &&
 rm -f ../../../ocl/$VVERSION/orocos-ocl-$VERSION-api.tar.bz2 \
       ../../../ocl/$VVERSION/orocos-ocl-$VERSION-luaapi.tar.bz2 \
       ../../../ocl/$VVERSION/orocos-ocl-$VERSION-doc.tar.bz2 &&
-cd .. && { linkv=\$(ls -l v2.x | sed -e\"s/l.*-> v//;s/\.//g\;s/x//\"); branchv=\$(echo $BRANCHVERSION | sed -e\"s/\.//g\"); if test 0\$branchv -gt 0\$linkv; then
+cd .. && { linkv=\$(ls -l v2.x | sed -e\"s/l.*-> v//;s/\.//g;s/x//\"); branchv=\$(echo $BRANCHVERSION | sed -e\"s/\.//g\"); if test 0\$branchv -gt 0\$linkv; then
 rm -f v2.x && ln -s v$BRANCHVERSION.x v2.x ;
 fi;
 }
