@@ -104,6 +104,10 @@ case "$arg" in
 	;;
     "cmake")
 	;;
+    "typekit")
+	files="$files $templatedir/*-types.hpp"
+	cmake_files="$cmake_files $arg"
+	;;
     *)
         files="$files $templatedir/*$arg*"
 	cmake_files="$cmake_files $arg"
