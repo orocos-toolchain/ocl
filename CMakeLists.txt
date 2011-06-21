@@ -89,7 +89,7 @@ if(OROCOS_TARGET STREQUAL "win32")
     endif()
     add_definitions(/wd4355 /wd4251 /wd4180 /wd4996 /bigobj /Oi ${PARALLEL_FLAG} /DBOOST_ALL_NO_LIB)
     #list(APPEND OROCOS-RTT_LIBRARIES kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib  ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib Ws2_32.lib winmm.lib)
-    set(RTT_HINTS "c:\Program Files\orocos") # Look here if user forgot to set CMAKE_PREFIX_PATH
+    set(RTT_HINTS HINTS "c:/Program Files/orocos") # Look here if user forgot to set CMAKE_PREFIX_PATH
   endif()
   set(CMAKE_DEBUG_POSTFIX "d")
 endif(OROCOS_TARGET STREQUAL "win32")
