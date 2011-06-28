@@ -910,7 +910,7 @@
 	  application with the <option>Server</option> property set to 1.
 	  You can connect to it from another deployer application by using the XML
 	  syntax:<programlisting>
-<![CDATA[ <!-- Uses Naming Service to lookup 'Mycomponent' -->
+<![CDATA[ <!-- Uses CORBA Naming Service to lookup 'Mycomponent' -->
  <struct name="MyComponent" type="CORBA">
  </struct>
 
