@@ -1168,12 +1168,22 @@ static const struct luaL_Reg OutputPort_m [] = {
 
 struct OperationHandle {
 	OperationInterfacePart *oip;
+	OperationCallerC *occ;
 	unsigned int arity;
 	bool is_void;
 	std::vector<base::DataSourceBase::shared_ptr> args;
 	base::DataSourceBase::shared_ptr call_dsb;
 	base::DataSourceBase::shared_ptr ret_dsb;
 };
+
+template<typename T>
+int OperationGC(lua_State* L)
+{
+	T* oh = (T*) lua_touserdata(L, 1);
+	delete oh->occ;
+	reinterpret_cast<T*>(lua_touserdata(L, 1))->~T();
+	return 0;
+}
 
 static int Operation_info(lua_State *L)
 {
@@ -1202,8 +1212,7 @@ static int Operation_info(lua_State *L)
 
 static int __Operation_call(lua_State *L)
 {
-	DataSourceBase::shared_ptr dsb;
-	DataSourceBase::shared_ptr *dsbp;
+	DataSourceBase::shared_ptr dsb, *dsbp;
 
 	OperationHandle *oh = luaM_checkudata_mt(L, 1, "Operation", OperationHandle);
 	OperationInterfacePart *oip = oh->oip;
@@ -1212,6 +1221,7 @@ static int __Operation_call(lua_State *L)
 	if(oh->arity != argc-1)
 		luaL_error(L, "Operation.call: wrong number of args. expected %d, got %d", oh->arity, argc-1);
 
+	/* update dsbs */
 	for(unsigned int arg=2; arg<=argc; arg++) {
 		/* fastpath: Variable argument */
 		if ((dsbp = luaM_testudata_mt(L, arg, "Variable", DataSourceBase::shared_ptr)) != NULL) {
@@ -1224,15 +1234,41 @@ static int __Operation_call(lua_State *L)
 		oh->args[arg-2]->update(dsb.get());
 	}
 
-	// if not void, then assign to ret dsb. else just evaluate and
-	// return nil.
-	if(!oh->is_void) {
-		oh->ret_dsb->update(oh->call_dsb.get());
+	if(!oh->occ->call())
+		luaL_error(L, "Operation.call: call failed.");
+
+	if(!oh->is_void)
 		Variable_push_coerce(L, oh->ret_dsb);
-	} else {
-		oh->call_dsb->evaluate();
+	else
 		lua_pushnil(L);
+	return 1;
+}
+
+static int __Operation_send(lua_State *L)
+{
+	DataSourceBase::shared_ptr dsb, *dsbp;
+
+	OperationHandle *oh = luaM_checkudata_mt(L, 1, "Operation", OperationHandle);
+	OperationInterfacePart *oip = oh->oip;
+	unsigned int argc = lua_gettop(L);
+
+	if(oh->arity != argc-1)
+		luaL_error(L, "Operation.send: wrong number of args. expected %d, got %d", oh->arity, argc-1);
+
+	/* update dsbs */
+	for(unsigned int arg=2; arg<=argc; arg++) {
+		/* fastpath: Variable argument */
+		if ((dsbp = luaM_testudata_mt(L, arg, "Variable", DataSourceBase::shared_ptr)) != NULL) {
+			dsb = *dsbp;
+		} else {
+			/* slowpath: convert lua value to dsb */
+			std::string type = oip->getArgumentType(arg-1)->getTypeName();
+			dsb = Variable_fromlua(L, type.c_str(), arg);
+		}
+		oh->args[arg-2]->update(dsb.get());
 	}
+
+	luaM_pushobject_mt(L, "SendHandle", SendHandleC)(oh->occ->send());
 	return 1;
 }
 
@@ -1245,40 +1281,6 @@ static int Operation_call(lua_State *L)
 		luaL_error(L, "Operation.call: caught exception");
 	}
 	return ret;
-}
-
-static int __Operation_send(lua_State *L)
-{
-	DataSourceBase::shared_ptr dsb, *dsbp;
-
-	unsigned int argc = lua_gettop(L);
-	TaskContext *this_tc = __getTC(L);
-
-	OperationHandle *oh = luaM_checkudata_mt(L, 1, "Operation", OperationHandle);
-	OperationInterfacePart *oip = oh->oip;
-
-	// leaky! if check below fails...
-	OperationCallerC *occ = new OperationCallerC(oip, oip->getName(), this_tc->engine()); // todo: alloc on stack?
-
-	if(oip->arity() != argc-1)
-		luaL_error(L, "Operation.send: wrong number of args. expected %d, got %d",
-			   oip->arity(), argc);
-
-	for(unsigned int arg=2; arg<=argc; arg++) {
-		/* fastpath: Variable argument */
-		if ((dsbp = luaM_testudata_mt(L, arg, "Variable", DataSourceBase::shared_ptr)) != NULL) {
-			dsb = *dsbp;
-		} else  {
-			/* slowpath: convert lua value to dsb */
-			std::string type = oip->getArgumentType(arg-1)->getTypeName().c_str();
-			dsb = Variable_fromlua(L, type.c_str(), arg);
-		}
-		occ->arg(dsb);
-	}
-
-	/* call send and construct push SendHandle userdata */
-	luaM_pushobject_mt(L, "SendHandle", SendHandleC)(occ->send());
-	return 1;
 }
 
 static int Operation_send(lua_State *L)
@@ -1305,6 +1307,7 @@ static const struct luaL_Reg Operation_m [] = {
 	{ "info", Operation_info },
 	{ "send", Operation_send },
 	{ "__call", Operation_call },
+	{ "__gc", OperationGC<OperationHandle> },
 	{ NULL, NULL }
 };
 
@@ -1416,14 +1419,13 @@ static int Service_getOperation(lua_State *L)
 		luaL_error(L, "Service_getOperation: service %s has no operation %s",
 			   srv->getName().c_str(), op_str);
 
-
-	// oh = (OperationHandle*) new(L, "Operation") OperationHandle();
 	oh = (OperationHandle*) luaM_pushobject_mt(L, "Operation", OperationHandle)();
 	oh->oip = oip;
 	oh->arity = oip->arity();
 	oh->args.reserve(oh->arity);
-
 	this_tc = __getTC(L);
+
+	oh->occ = new OperationCallerC(oip, op_str, this_tc->engine());
 
 	/* create args
 	 * getArgumentType(0) is return value
@@ -1436,12 +1438,7 @@ static int Service_getOperation(lua_State *L)
 
 		dsb = ti->buildValue();
 		oh->args.push_back(dsb);
-	}
-
-	try {
-		oh->call_dsb = oip->produce(oh->args, this_tc->engine());
-	} catch(...) {
-		luaL_error(L, "Service.getOperation: caught exception (produce)");
+		oh->occ->arg(dsb);
 	}
 
 	// TODO: Figure out which arguments are out args and instead
@@ -1455,10 +1452,15 @@ static int Service_getOperation(lua_State *L)
 			luaL_error(L, "Operation.call: can't create return value DSB of type '%s'",
 				   oip->resultType().c_str());
 		oh->ret_dsb=ti->buildValue();
+		oh->occ->ret(oh->ret_dsb);
 		oh->is_void=false;
 	} else {
 		oh->is_void=true;
 	}
+
+	if(!oh->occ->ready())
+		luaL_error(L, "Service.getOperation: OperationCallerC not ready!");
+
 	return 1;
 }
 
