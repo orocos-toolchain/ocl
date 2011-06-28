@@ -1,7 +1,7 @@
 ifdef ROS_ROOT
 default: install
 include $(shell rospack find mk)/cmake.mk
-EXTRA_CMAKE_FLAGS=-DCMAKE_INSTALL_PREFIX=`rospack find ocl`/install -DBUILD_TESTING=OFF
+EXTRA_CMAKE_FLAGS=-DCMAKE_INSTALL_PREFIX=`rosstack find orocos_toolchain`/install -DBUILD_TESTING=OFF
 install: all
 	cd build; ${MAKE} install
 else

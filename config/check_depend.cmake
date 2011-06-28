@@ -82,13 +82,6 @@ ELSE ( EDITLINE_H  )
     SET( EDITLINE 0 CACHE INTERNAL "libedit" )
 ENDIF ( EDITLINE_H )
 
-# Since in ros-builds, log4cpp will be installed in log4cpp/install,
-# we look there too.
-if (ROS_ROOT)
-  rosbuild_find_ros_package( log4cpp )
-  set(LOG4CPP_ROOT ${log4cpp_PACKAGE_PATH}/install)
-  message("ROS log4cpp in ${LOG4CPP_ROOT}")
-endif(ROS_ROOT)
 # Uses LOG4CPP_ROOT from above in ROS builds:
 find_package( Log4cpp 6.0) # 6.0 is the Orocos extended API of log4cpp
 if(LOG4CPP_FOUND)

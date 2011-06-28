@@ -32,7 +32,7 @@ IF ( BUILD_DEPLOYMENT )
     
     # rospack support
     IF ( ROS_ROOT )
-        rosbuild_find_ros_package( roslib )
+	set(roslib_PACKAGE_PATH ${ROS_ROOT}/core/roslib) ### XXX hardcoded
         include_directories( ${roslib_PACKAGE_PATH}/include )
         find_library(ROS_LIB roslib ${roslib_PACKAGE_PATH}/lib )
         TARGET_LINK_LIBRARIES( orocos-ocl-deployment ${ROS_LIB} )
@@ -40,9 +40,9 @@ IF ( BUILD_DEPLOYMENT )
 	# Necessary when building Debian packages:
 	set(ROS_STACK_DIR_FINAL $ENV{ROS_STACK_DIR_FINAL})
 	if (ROS_STACK_DIR_FINAL)
-	  set(DEFAULT_COMPONENT_PATH "${ROS_STACK_DIR_FINAL}/orocos_toolchain_ros/ocl/lib/orocos")
+	  set(DEFAULT_COMPONENT_PATH "${ROS_STACK_DIR_FINAL}/orocos_toolchain_ros/orocos_toolchain/install/lib/orocos")
 	else(ROS_STACK_DIR_FINAL)
-          set(DEFAULT_COMPONENT_PATH "${PROJECT_SOURCE_DIR}/lib/orocos" CACHE STRING "Default component lookup path when none given. (semi-)colon separated list." FORCE)
+          set(DEFAULT_COMPONENT_PATH "${PROJECT_SOURCE_DIR}/../install/lib/orocos" CACHE STRING "Default component lookup path when none given. (semi-)colon separated list." FORCE)
 	endif(ROS_STACK_DIR_FINAL)
     ELSE( ROS_ROOT)
 	SET(DEFAULT_COMPONENT_PATH "${OROCOS-RTT_PATH}/lib/orocos" CACHE STRING "Default component lookup path when none given. (semi-)colon separated list." )
