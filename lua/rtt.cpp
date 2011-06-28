@@ -1163,23 +1163,30 @@ static const struct luaL_Reg OutputPort_m [] = {
 };
 
 /***************************************************************
- * Operation (boxed)
+ * Operation
  ***************************************************************/
 
-gen_push_bxptr(Operation_push, "Operation", OperationInterfacePart)
+struct OperationHandle {
+	OperationInterfacePart *oip;
+	unsigned int arity;
+	bool is_void;
+	std::vector<base::DataSourceBase::shared_ptr> args;
+	base::DataSourceBase::shared_ptr call_dsb;
+	base::DataSourceBase::shared_ptr ret_dsb;
+};
 
 static int Operation_info(lua_State *L)
 {
 	int i=1;
-	OperationInterfacePart *oip = *(luaM_checkudata_mt_bx(L, 1, "Operation", OperationInterfacePart));
 	std::vector<ArgumentDescription> args;
+	OperationHandle *op = luaM_checkudata_mt(L, 1, "Operation", OperationHandle);
 
-	lua_pushstring(L, oip->getName().c_str());	/* name */
-	lua_pushstring(L, oip->description().c_str());	/* description */
-	lua_pushstring(L, oip->resultType().c_str());	/* result type */
-	lua_pushinteger(L, oip->arity());		/* arity */
+	lua_pushstring(L, op->oip->getName().c_str());		/* name */
+	lua_pushstring(L, op->oip->description().c_str());	/* description */
+	lua_pushstring(L, op->oip->resultType().c_str());	/* result type */
+	lua_pushinteger(L, op->arity);				/* arity */
 
-	args = oip->getArgumentList();
+	args = op->oip->getArgumentList();
 
 	lua_newtable(L);
 
@@ -1190,52 +1197,40 @@ static int Operation_info(lua_State *L)
 		lua_pushstring(L, "desc"); lua_pushstring(L, it->description.c_str()); lua_rawset(L, -3);
 		lua_rawseti(L, -2, i++);
 	}
-
 	return 5;
 }
 
 static int __Operation_call(lua_State *L)
 {
-	std::vector<base::DataSourceBase::shared_ptr> args;
 	DataSourceBase::shared_ptr dsb;
 	DataSourceBase::shared_ptr *dsbp;
-	DataSourceBase::shared_ptr ret, ret2;
-	types::TypeInfo *ti;
 
+	OperationHandle *oh = luaM_checkudata_mt(L, 1, "Operation", OperationHandle);
+	OperationInterfacePart *oip = oh->oip;
 	unsigned int argc = lua_gettop(L);
-	TaskContext *this_tc = __getTC(L);
-	OperationInterfacePart *oip = *(luaM_checkudata_mt_bx(L, 1, "Operation", OperationInterfacePart));
 
-	if(oip->arity() != argc-1)
-		luaL_error(L, "Operation.call: wrong number of args. expected %d, got %d", oip->arity(), argc-1);
+	if(oh->arity != argc-1)
+		luaL_error(L, "Operation.call: wrong number of args. expected %d, got %d", oh->arity, argc-1);
 
 	for(unsigned int arg=2; arg<=argc; arg++) {
 		/* fastpath: Variable argument */
 		if ((dsbp = luaM_testudata_mt(L, arg, "Variable", DataSourceBase::shared_ptr)) != NULL) {
 			dsb = *dsbp;
-		} else  {
+		} else {
 			/* slowpath: convert lua value to dsb */
-			std::string type = oip->getArgumentType(arg-1)->getTypeName().c_str();
+			std::string type = oip->getArgumentType(arg-1)->getTypeName();
 			dsb = Variable_fromlua(L, type.c_str(), arg);
 		}
-		args.push_back(dsb);
+		oh->args[arg-2]->update(dsb.get());
 	}
 
-	ret = oip->produce(args, this_tc->engine());
-
-	/* not so nice: construct a ValueDataSource for the return Value
-	 * todo: at least avoid the type conversion to string.
-	 */
-	if(oip->resultType() != "void") {
-		ti = types::TypeInfoRepository::Instance()->type(oip->resultType());
-		if(!ti)
-			luaL_error(L, "Operation.call: can't create return value DSB of type '%s'",
-				   oip->resultType().c_str());
-		ret2 = ti->buildValue();
-		ret2->update(ret.get());
-		Variable_push_coerce(L, ret2);
+	// if not void, then assign to ret dsb. else just evaluate and
+	// return nil.
+	if(!oh->is_void) {
+		oh->ret_dsb->update(oh->call_dsb.get());
+		Variable_push_coerce(L, oh->ret_dsb);
 	} else {
-		ret->evaluate();
+		oh->call_dsb->evaluate();
 		lua_pushnil(L);
 	}
 	return 1;
@@ -1258,8 +1253,11 @@ static int __Operation_send(lua_State *L)
 
 	unsigned int argc = lua_gettop(L);
 	TaskContext *this_tc = __getTC(L);
-	OperationInterfacePart *oip = *(luaM_checkudata_mt_bx(L, 1, "Operation", OperationInterfacePart));
 
+	OperationHandle *oh = luaM_checkudata_mt(L, 1, "Operation", OperationHandle);
+	OperationInterfacePart *oip = oh->oip;
+
+	// leaky! if check below fails...
 	OperationCallerC *occ = new OperationCallerC(oip, oip->getName(), this_tc->engine()); // todo: alloc on stack?
 
 	if(oip->arity() != argc-1)
@@ -1405,6 +1403,10 @@ static int Service_getOperation(lua_State *L)
 	const char *op_str;
 	OperationInterfacePart *oip;
 	Service::shared_ptr srv;
+	DataSourceBase::shared_ptr dsb;
+	types::TypeInfo *ti;
+	OperationHandle *oh;
+	TaskContext *this_tc;
 
 	srv = *(luaM_checkudata_mt(L, 1, "Service", Service::shared_ptr));
 	op_str = luaL_checkstring(L, 2);
@@ -1413,7 +1415,50 @@ static int Service_getOperation(lua_State *L)
 	if(!oip)
 		luaL_error(L, "Service_getOperation: service %s has no operation %s",
 			   srv->getName().c_str(), op_str);
-	Operation_push(L, oip);
+
+
+	// oh = (OperationHandle*) new(L, "Operation") OperationHandle();
+	oh = (OperationHandle*) luaM_pushobject_mt(L, "Operation", OperationHandle)();
+	oh->oip = oip;
+	oh->arity = oip->arity();
+	oh->args.reserve(oh->arity);
+
+	this_tc = __getTC(L);
+
+	/* create args
+	 * getArgumentType(0) is return value
+	 */
+	for(unsigned int arg=1; arg <= oh->arity; arg++) {
+		std::string type = oip->getArgumentType(arg)->getTypeName();
+		ti = types::TypeInfoRepository::Instance()->type(type);
+		if(!ti)
+			luaL_error(L, "Operation.call: can't create DSB for arg %d of type '%s'", arg, type.c_str());
+
+		dsb = ti->buildValue();
+		oh->args.push_back(dsb);
+	}
+
+	try {
+		oh->call_dsb = oip->produce(oh->args, this_tc->engine());
+	} catch(...) {
+		luaL_error(L, "Service.getOperation: caught exception (produce)");
+	}
+
+	// TODO: Figure out which arguments are out args and instead
+	// of singe ret dsb prepare a vector with ret, outdsb1, //
+	// outdsb2 to be returned.
+
+	/* return value */
+	if(oip->resultType() != "void"){
+		ti = types::TypeInfoRepository::Instance()->type(oip->resultType());
+		if(!ti)
+			luaL_error(L, "Operation.call: can't create return value DSB of type '%s'",
+				   oip->resultType().c_str());
+		oh->ret_dsb=ti->buildValue();
+		oh->is_void=false;
+	} else {
+		oh->is_void=true;
+	}
 	return 1;
 }
 
@@ -2116,7 +2161,6 @@ static int __SendHandle_collect(lua_State *L, bool block)
 
 	SendStatus_push(L, ss);
 
-	/* store all DSB in coll_args to luabind::object */
 	for (int i=0; i<coll_argc; i++) {
 		Variable_push_coerce(L, coll_args[i]);
 	}
