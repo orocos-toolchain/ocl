@@ -2137,25 +2137,45 @@ static void SendStatus_push(lua_State *L, SendStatus ss)
 
 static int __SendHandle_collect(lua_State *L, bool block)
 {
+	unsigned int coll_argc;
 	std::vector<DataSourceBase::shared_ptr> coll_args;
 	SendStatus ss;
 	const types::TypeInfo *ti;
-	OperationInterfacePart *orp;
-	DataSourceBase::shared_ptr tmpdsb;
-	int coll_argc;
+	OperationInterfacePart *oip;
+	DataSourceBase::shared_ptr dsb, *dsbp;
 
+	unsigned int argc = lua_gettop(L);
 	SendHandleC *shc = luaM_checkudata_mt(L, 1, "SendHandle", SendHandleC);
 
 	/* get orp pointer */
-	orp = shc->getOrp();
-	coll_argc = orp->collectArity();
+	oip = shc->getOrp();
+	coll_argc = oip->collectArity();
 
-	/* create appropriate datasources */
-	for(int i=1; i <= coll_argc; i++) {
-		ti = orp->getCollectType(i);
-		tmpdsb = ti->buildValue();
-		coll_args.push_back(tmpdsb);
-		shc->arg(tmpdsb);
+	if(argc == 1) {
+		// No args supplied, create them.
+		for(unsigned int i=1; i<=coll_argc; i++) {
+			ti = oip->getCollectType(i);
+			dsb = ti->buildValue();
+			coll_args.push_back(dsb);
+			shc->arg(dsb);
+		}
+	} else if (argc-1 == coll_argc) {
+		// args supplied, use them.
+		for(unsigned int arg=2; arg<=argc; arg++) {
+			/* fastpath: Variable argument */
+			if ((dsbp = luaM_testudata_mt(L, arg, "Variable", DataSourceBase::shared_ptr)) != NULL) {
+				dsb = *dsbp;
+			} else {
+				/* slowpath: convert lua value to dsb */
+				std::string type = oip->getArgumentType(arg-1)->getTypeName();
+				dsb = Variable_fromlua(L, type.c_str(), arg);
+			}
+			coll_args.push_back(dsb);
+			shc->arg(dsb);
+		}
+	} else {
+		luaL_error(L, "SendHandle.collect: wrong number of args. expected either 0 or %d, got %d", 
+			   coll_argc, argc-1);
 	}
 
 	if(block) ss = shc->collect();
@@ -2163,8 +2183,9 @@ static int __SendHandle_collect(lua_State *L, bool block)
 
 	SendStatus_push(L, ss);
 
-	for (int i=0; i<coll_argc; i++) {
-		Variable_push_coerce(L, coll_args[i]);
+	if(ss == SendSuccess) {
+		for (unsigned int i=0; i<coll_argc; i++)
+			Variable_push_coerce(L, coll_args[i]);
 	}
 	/* SendStatus + collect args */
 	return coll_argc + 1;
