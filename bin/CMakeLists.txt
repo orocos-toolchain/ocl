@@ -34,6 +34,14 @@ IF ( BUILD_TASKBROWSER AND BUILD_DEPLOYMENT)
     program_add_deps( deployer ${OROCOS-RTT_LIBRARIES} orocos-ocl-taskbrowser orocos-ocl-deployment ${Boost_PROGRAM_OPTIONS_LIBRARY} ${EXTRA_LIBRARIES})
 
 ENDIF ( BUILD_TASKBROWSER AND BUILD_DEPLOYMENT)
+IF ( BUILD_DEPLOYMENT)
+
+    orocos_executable( rttscript deployer.cpp deployer-funcs.cpp )
+    program_add_deps( rttscript ${EXTRA_DEPS} )
+    program_add_deps( rttscript ${OROCOS-RTT_LIBRARIES} orocos-ocl-deployment ${Boost_PROGRAM_OPTIONS_LIBRARY} ${EXTRA_LIBRARIES})
+    set_target_properties( rttscript PROPERTIES COMPILE_DEFINITIONS RTT_SCRIPT_PROGRAM )
+
+ENDIF ( BUILD_DEPLOYMENT)
 
 # Remote TaskBrowser application
 IF ( BUILD_TASKBROWSER AND OROCOS-RTT_CORBA_FOUND)

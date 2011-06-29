@@ -34,7 +34,13 @@
 #include <rtt/RTT.hpp>
 #include <rtt/Logger.hpp>
 
+#ifndef RTT_SCRIPT_PROGRAM
+#define USE_TASKBROWSER
+#endif
+
+#ifdef USE_TASKBROWSER
 #include <taskbrowser/TaskBrowser.hpp>
+#endif
 #include <deployment/DeploymentComponent.hpp>
 #include <iostream>
 #include <string>
@@ -156,16 +162,16 @@ int main(int argc, char** argv)
                     log(Error) << "Unknown extension of file: '"<< (*iter) <<"'. Must be xml, cpf for XML files or, ops or osd for script files."<<endlog();
                 }
             }
-
+#ifdef USE_TASKBROWSER
             OCL::TaskBrowser tb( &dc );
 
             tb.loop();
+#endif
+        }
 #ifdef  ORO_BUILD_RTALLOC
-            if (0 != rtMem)
+        if (0 != rtMem)
             {
-                // warning: at this point all RTT components haven't yet been
-                // stopped and cleaned up, so any RT memory there hasn't yet been
-                // deallocated!
+                // print statistics after deployment finished, but before os_exit() (needs Logger):
                 log(Debug) << "TLSF bytes allocated=" << memSize
                            << " overhead=" << (memSize - freeMem)
                            << " max-used=" << get_max_size(rtMem)
@@ -174,7 +180,6 @@ int main(int argc, char** argv)
                            << endlog();
             }
 #endif
-        }
 
         __os_exit();
         rc = 0;
