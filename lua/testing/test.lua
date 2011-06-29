@@ -81,7 +81,7 @@ function test_call_op_1_out()
    local i = var.new("int", 1)
    local res = testcomp:op_1_out(i)
 
-   if i ~= 2 then
+   if i:tolua() ~= 2 then
       print("wrong i, expected 2, got ", i)
       return false
    else
@@ -120,7 +120,7 @@ function test_call_op_1_out_retval()
 
    print("retval", res)
    print("retval", res)
-   print("retval", res)
+   print("retval", i)
 
    if i ~= var.new("int", 34) then
       print("Checkpoint 2: wrong i, expected 34, got ", i)
