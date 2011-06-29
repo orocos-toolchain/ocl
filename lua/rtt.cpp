@@ -688,7 +688,7 @@ static int Variable_newindex(lua_State *L)
 		newval = Variable_fromlua(L, curval->getType().c_str(), 3);
 
 	if(!curval->update(newval.get()))
-		luaL_error(L, "Variable.newindex: failed to assign a %s to member %s of type %s", 
+		luaL_error(L, "Variable.newindex: failed to assign a %s to member %s of type %s",
 			   newval->getType().c_str(), mem, curval->getType().c_str());
 
 	return 1;
@@ -818,7 +818,7 @@ static int Property_set(lua_State *L)
 
 	DataSourceBase::shared_ptr propdsb = pb->getDataSource();
 	if(!propdsb->update(newdsb.get()))
-		luaL_error(L, "Property.set: failed to assign type %s to type %s", 
+		luaL_error(L, "Property.set: failed to assign type %s to type %s",
 			   newdsb->getType().c_str(), propdsb->getType().c_str());
 
 	return 1;
@@ -1998,7 +1998,8 @@ static int __TaskContext_call(lua_State *L)
 		luaL_error(L, "TaskContext.call: no operation %s", op);
 
 	if(orp->arity() != argc-2)
-		luaL_error(L, "TaskContext.call: wrong number of args. expected %d, got %d", orp->arity(), argc-2);
+		luaL_error(L, "TaskContext.call: wrong number of args for %s. expected %d, got %d",
+			   op, orp->arity(), argc-2);
 
 	for(unsigned int arg=3; arg<=argc; arg++) {
 		/* fastpath: Variable argument */
