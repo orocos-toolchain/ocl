@@ -95,7 +95,7 @@ int deployerParseCmdLine(int                        argc,
          "Require CORBA name service")
 		("DeployerName",
 		 po::value<std::string>(&name),
-		 "Name of deployer component (the --DeployerName flag is optional)")
+		 "Name of deployer component (the --DeployerName flag is optional). If you provide a script or XML file name, that will be run instead.")
 		;
 	pos.add("DeployerName", 1);
 
@@ -173,8 +173,10 @@ int deployerParseCmdLine(int                        argc,
 		    if (name.find_last_of(".xml") != string::npos ||
 		            name.find_last_of(".cpf") != string::npos ||
 		            name.find_last_of(".osd") != string::npos ||
-		            name.find_last_of(".ops") != string::npos )
-		        log(Warning) <<"The given Deployer name "<<name <<" resembles a filename. Did you forget to use '-s' ?"<<endlog();
+                name.find_last_of(".ops") != string::npos ) {
+                scriptFiles.push_back(name);
+		        name.clear();
+            }            
 		}
 	}
 	catch (std::logic_error e)

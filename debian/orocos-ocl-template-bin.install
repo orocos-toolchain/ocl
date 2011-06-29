@@ -3,3 +3,4 @@ usr/bin/cdeployer-@TARGET@
 usr/bin/deployer-@TARGET@
 usr/bin/deployer-corba-@TARGET@
 usr/bin/rttlua-@TARGET@
+usr/bin/rttscript-@TARGET@
