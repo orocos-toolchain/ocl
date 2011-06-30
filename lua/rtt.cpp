@@ -2460,6 +2460,33 @@ static TaskContext* __getTC(lua_State *L)
 	return tc;
 }
 
+/* access to the globals repository */
+static int globals_getNames(lua_State *L)
+{
+	GlobalsRepository::shared_ptr gr = GlobalsRepository::Instance();
+	push_vect_str(L, gr->getAttributeNames() );
+	return 1;
+}
+
+static int globals_get(lua_State *L)
+{
+	const char *name;
+	base::AttributeBase *ab;
+	DataSourceBase::shared_ptr dsb;
+
+	name = luaL_checkstring(L, 1);
+	GlobalsRepository::shared_ptr gr = GlobalsRepository::Instance();
+
+	ab = gr->getAttribute(name);
+
+	if (ab)
+		luaM_pushobject_mt(L, "Variable", DataSourceBase::shared_ptr)(ab->getDataSource());
+	else
+		lua_pushnil(L);
+
+	return 1;
+}
+
 /* global service */
 static int provides_global(lua_State *L)
 {
@@ -2489,6 +2516,8 @@ static int rtt_types(lua_State *L)
 static const struct luaL_Reg rtt_f [] = {
 	{"getTime", getTime },
 	{"getTC", getTC },
+	{"globals_getNames", globals_getNames },
+	{"globals_get", globals_get },
 	{"provides", provides_global },
 	{"services", rtt_services },
 	{"typekits", rtt_typekits },

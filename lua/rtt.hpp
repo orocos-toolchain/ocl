@@ -41,6 +41,7 @@
 #include <rtt/plugin/PluginLoader.hpp>
 #include <rtt/os/TimeService.hpp>
 #include <rtt/internal/GlobalService.hpp>
+#include <rtt/types/GlobalsRepository.hpp>
 
 extern "C" {
 #include <lua.h>

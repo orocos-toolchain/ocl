@@ -547,6 +547,19 @@ setmetatable(rtt.InputPort, {__call=function(t,...) return rtt.InputPort.new(...
 setmetatable(rtt.OutputPort, {__call=function(t,...) return rtt.OutputPort.new(...) end})
 setmetatable(rtt.EEHook, {__call=function(t,...) return rtt.EEHook.new(...) end})
 
+-- create a globals tab with a metatable that forwards __index to
+-- globals_get() and __tostring prints all know globals.
+rtt.globals={}
+local globals_mt= {
+   __index=function(t,v) return rtt.globals_get(v) end,
+   __tostring=function(t)
+		 local res = {}
+		 for _,v in ipairs(rtt.globals_getNames()) do res[v] = rtt.globals_get(v) end
+		 return utils.tab2str(res)
+	      end
+}
+setmetatable(rtt.globals, globals_mt)
+
 -- enable pretty printing
 if type(debug) == 'table' then
    reg = debug.getregistry()
