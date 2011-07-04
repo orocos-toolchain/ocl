@@ -74,3 +74,8 @@ function assign(value)
 -- @param size size to which to resize to
 -- @return boolean indicating success or failure
 function resize(size)
+
+--- Check if a Variable is basic
+-- @param Variable to check
+-- @return boolean true if basic, false otherwise
+function isbasic(var)
