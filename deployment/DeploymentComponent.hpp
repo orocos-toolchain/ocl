@@ -507,6 +507,8 @@ namespace OCL
         /**
          * (Re-)set the activity of a component.
          *
+         * CPU affinity defaults to all available CPUs
+         *
          * @param comp_name The name of the component to change.
          * @param act_type  The RTT::Activity type: 'Activity', 'PeriodicActivity', 'SequentialActivity' or 'SlaveActivity'.
          * @param priority  The scheduler priority (OS dependent).
@@ -521,6 +523,26 @@ namespace OCL
                          const std::string& act_type,
                          double period, int priority,
                          int scheduler, const std::string& master_name = "");
+
+        /**
+         * (Re-)set the activity of a component.
+         *
+         * @param comp_name The name of the component to change.
+         * @param act_type  The RTT::Activity type: 'Activity', 'PeriodicActivity', 'SequentialActivity' or 'SlaveActivity'.
+         * @param priority  The scheduler priority (OS dependent).
+         * @param period    The period of the activity.
+         * @param scheduler The scheduler type \a ORO_SCHED_RT or \a ORO_SCHED_OTHER.
+         * @param cpu_affinity The prefered cpu to run on (a mask)
+         * @param master_name The name of the master component in case of a extras::SlaveActivity with a master.
+         *
+         * @return false if one of the parameters does not match or if the
+         * component is running.
+         */
+        bool setNamedActivity(const std::string& comp_name,
+                         const std::string& act_type,
+                         double period, int priority,
+                         int scheduler, unsigned cpu_affinity,
+                         const std::string& master_name = "");
 
         /**
          * Load a (partial) application XML configuration from disk. The

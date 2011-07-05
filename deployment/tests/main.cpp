@@ -40,11 +40,13 @@ int ORO_main(int, char**)
 {
     MyTask t1("ComponentA");
     MyTask t2("ComponentB");
+    MyTask t3("ComponentC");
 
     {
         DeploymentComponent dc;
         dc.addPeer( &t1 );
         dc.addPeer( &t2 );
+        dc.addPeer( &t3 );
         dc.kickStart("deployment.cpf");
         TaskBrowser tb(&dc);
 

@@ -887,6 +887,14 @@ namespace OCL
                                         log(Error)<<"Please specify priority <short> of PeriodicActivity."<<endlog();
                                         valid = false;
                                     }
+
+                                    unsigned cpu_affinity = ~0; // default to all CPUs
+                                    RTT::Property<unsigned> cpu_affinity_prop = nm.rvalue().getProperty("CpuAffinity");
+                                    if(cpu_affinity_prop.ready()) {
+                                        cpu_affinity = cpu_affinity_prop.get();
+                                    }
+                                    // else ignore as is optional
+
                                     RTT::Property<string> sched;
                                     if (nm.rvalue().getProperty("Scheduler") )
                                         sched = nm.rvalue().getProperty("Scheduler"); // work around RTT 1.0.2 bug
@@ -897,7 +905,7 @@ namespace OCL
                                             valid = false;
                                     }
                                     if (valid) {
-                                        this->setNamedActivity(comp.getName(), nm.rvalue().getType(), per.get(), prio.get(), scheduler );
+                                        this->setNamedActivity(comp.getName(), nm.rvalue().getType(), per.get(), prio.get(), scheduler, cpu_affinity );
                                     }
                                 } else
                                     if ( nm.rvalue().getType() == "Activity" || nm.rvalue().getType() == "NonPeriodicActivity" ) {
@@ -910,6 +918,14 @@ namespace OCL
                                             log(Error)<<"Please specify priority <short> of Activity."<<endlog();
                                             valid = false;
                                         }
+
+                                        unsigned int cpu_affinity = ~0; // default to all CPUs
+                                        RTT::Property<unsigned int> cpu_affinity_prop = nm.rvalue().getProperty("CpuAffinity");
+                                        if(cpu_affinity_prop.ready()) {
+                                            cpu_affinity = cpu_affinity_prop.get();
+                                        }
+                                        // else ignore as is optional
+
                                         RTT::Property<string> sched = nm.rvalue().getProperty("Scheduler");
                                         int scheduler = ORO_SCHED_RT;
                                         if ( sched.ready() ) {
@@ -918,7 +934,7 @@ namespace OCL
                                                 valid = false;
                                         }
                                         if (valid) {
-                                            this->setNamedActivity(comp.getName(), nm.rvalue().getType(), per.get(), prio.get(), scheduler );
+                                            this->setNamedActivity(comp.getName(), nm.rvalue().getType(), per.get(), prio.get(), scheduler, cpu_affinity );
                                         }
                                     } else
                                         if ( nm.rvalue().getType() == "SlaveActivity" ) {
@@ -1700,6 +1716,21 @@ namespace OCL
                                                double period, int priority,
                                                int scheduler, const std::string& master_name)
     {
+        return setNamedActivity(comp_name,
+                                act_type,
+                                period,
+                                priority,
+                                scheduler,
+                                ~0,             // cpu_affinity == all CPUs
+                                master_name);
+    }
+
+    bool DeploymentComponent::setNamedActivity(const std::string& comp_name,
+                                               const std::string& act_type,
+                                               double period, int priority,
+                                               int scheduler, unsigned cpu_affinity,
+                                               const std::string& master_name)
+    {
         // This helper function does not actualy set the activity, it just creates it and
         // stores it in comps[comp_name].act
         RTT::TaskContext* peer = 0;
@@ -1744,14 +1775,14 @@ namespace OCL
         base::ActivityInterface* newact = 0;
         // standard case:
         if ( act_type == "Activity")
-            newact = new RTT::Activity(scheduler, priority, period);
+            newact = new RTT::Activity(scheduler, priority, period, cpu_affinity, 0);
         else
             // special cases:
             if ( act_type == "PeriodicActivity" && period != 0.0)
-                newact = new RTT::extras::PeriodicActivity(scheduler, priority, period);
+                newact = new RTT::extras::PeriodicActivity(scheduler, priority, period, cpu_affinity, 0);
             else
             if ( act_type == "NonPeriodicActivity" && period == 0.0)
-                newact = new RTT::Activity(scheduler, priority, period);
+                newact = new RTT::Activity(scheduler, priority, period, cpu_affinity, 0);
             else
                 if ( act_type == "SlaveActivity" ) {
                     if ( master_act == 0 )
@@ -1763,13 +1794,12 @@ namespace OCL
                 }
                 else
                     if (act_type == "Activity") {
-                        newact = new Activity(scheduler, priority, period, 0, comp_name);
+                        newact = new Activity(scheduler, priority, period, cpu_affinity, 0, comp_name);
                     }
                     else
                         if (act_type == "SequentialActivity") {
                             newact = new SequentialActivity();
                         }
-
         if (newact == 0) {
             log(Error) << "Can't create '"<< act_type << "' for component "<<comp_name<<": incorrect arguments."<<endlog();
             return false;
