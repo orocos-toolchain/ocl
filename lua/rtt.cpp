@@ -1276,8 +1276,11 @@ static int __Operation_send(lua_State *L)
 			/* slowpath: convert lua value to dsb */
 			std::string type = oip->getArgumentType(arg-1)->getTypeName();
 			dsb = Variable_fromlua(L, type.c_str(), arg);
+			/* this dsb must outlive occ->call (see comment in
+			   OperationHandle def.): */
+			oh->dsb_store.push_back(dsb);
 		}
-		oh->args[arg-2]->update(dsb.get());
+		oh->args[arg-2]->setReference(dsb);
 	}
 
 	luaM_pushobject_mt(L, "SendHandle", SendHandleC)(oh->occ->send());
