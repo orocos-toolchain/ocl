@@ -1171,7 +1171,14 @@ struct OperationHandle {
 	OperationCallerC *occ;
 	unsigned int arity;
 	bool is_void;
-	std::vector<base::DataSourceBase::shared_ptr> args;
+
+	/* we need to store references to the dsb which we created
+	   on-the-fly, because the ReferenceDSB does not hold a
+	   shared_ptr, and hence these DSN might get destructed
+	   before/during the call
+	 */
+	std::vector<base::DataSourceBase::shared_ptr> dsb_store;
+	std::vector<internal::Reference*> args;
 	base::DataSourceBase::shared_ptr call_dsb;
 	base::DataSourceBase::shared_ptr ret_dsb;
 };
@@ -1230,12 +1237,17 @@ static int __Operation_call(lua_State *L)
 			/* slowpath: convert lua value to dsb */
 			std::string type = oip->getArgumentType(arg-1)->getTypeName();
 			dsb = Variable_fromlua(L, type.c_str(), arg);
+			/* this dsb must outlive occ->call (see comment in
+			   OperationHandle def.): */
+			oh->dsb_store.push_back(dsb);
 		}
-		oh->args[arg-2]->update(dsb.get());
+		oh->args[arg-2]->setReference(dsb);
 	}
 
 	if(!oh->occ->call())
 		luaL_error(L, "Operation.call: call failed.");
+
+	oh->dsb_store.clear();
 
 	if(!oh->is_void)
 		Variable_push_coerce(L, oh->ret_dsb);
@@ -1436,8 +1448,8 @@ static int Service_getOperation(lua_State *L)
 		if(!ti)
 			luaL_error(L, "Operation.call: can't create DSB for arg %d of type '%s'", arg, type.c_str());
 
-		dsb = ti->buildValue();
-		oh->args.push_back(dsb);
+		dsb = ti->buildReference((void*) 0xdeadbeef);
+		oh->args.push_back(dynamic_cast<internal::Reference*>(dsb.get()));
 		oh->occ->arg(dsb);
 	}
 
