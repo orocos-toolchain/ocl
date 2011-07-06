@@ -2153,7 +2153,7 @@ static void SendStatus_push(lua_State *L, SendStatus ss)
 static int __SendHandle_collect(lua_State *L, bool block)
 {
 	unsigned int coll_argc;
-	std::vector<DataSourceBase::shared_ptr> coll_args;
+	std::vector<DataSourceBase::shared_ptr> coll_args; /* temporarily store args */
 	SendStatus ss;
 	const types::TypeInfo *ti;
 	OperationInterfacePart *oip;
@@ -2177,15 +2177,10 @@ static int __SendHandle_collect(lua_State *L, bool block)
 	} else if (argc-1 == coll_argc) {
 		// args supplied, use them.
 		for(unsigned int arg=2; arg<=argc; arg++) {
-			/* fastpath: Variable argument */
-			if ((dsbp = luaM_testudata_mt(L, arg, "Variable", DataSourceBase::shared_ptr)) != NULL) {
+			if ((dsbp = luaM_testudata_mt(L, arg, "Variable", DataSourceBase::shared_ptr)) != NULL)
 				dsb = *dsbp;
-			} else {
-				/* slowpath: convert lua value to dsb */
-				std::string type = oip->getArgumentType(arg-1)->getTypeName();
-				dsb = Variable_fromlua(L, type.c_str(), arg);
-			}
-			coll_args.push_back(dsb);
+			else
+				luaL_error(L, "SendHandle.collect: expected Variable argument at position %d", arg-1);
 			shc->arg(dsb);
 		}
 	} else {
@@ -2199,23 +2194,15 @@ static int __SendHandle_collect(lua_State *L, bool block)
 	SendStatus_push(L, ss);
 
 	if(ss == SendSuccess) {
-		for (unsigned int i=0; i<coll_argc; i++)
+		for (unsigned int i=0; i<coll_args.size(); i++)
 			Variable_push_coerce(L, coll_args[i]);
 	}
 	/* SendStatus + collect args */
-	return coll_argc + 1;
+	return coll_args.size() + 1;
 }
 
-static int SendHandle_collect(lua_State *L)
-{
-	return __SendHandle_collect(L, true);
-}
-
-static int SendHandle_collectIfDone(lua_State *L)
-{
-	return __SendHandle_collect(L, false);
-}
-
+static int SendHandle_collect(lua_State *L) { return __SendHandle_collect(L, true); }
+static int SendHandle_collectIfDone(lua_State *L) { return __SendHandle_collect(L, false); }
 
 static const struct luaL_Reg SendHandle_f [] = {
 	{ "collect", SendHandle_collect },

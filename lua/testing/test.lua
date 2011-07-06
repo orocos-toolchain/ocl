@@ -41,15 +41,13 @@ var = rtt.Variable
 TC=rtt.getTC()
 d=TC:getPeer("deployer")
 
-function fails()
-   return false
-end
+function fails() return false end
 
 function test_loadlib()
    return d:import("ocl")
 end
 
-
+--- Test
 function test_create_testcomp()
    if not d:loadComponent("testcomp", "OCL::Testcomp") then
       return false
@@ -162,6 +160,17 @@ function test_send_op2()
    end
 end
 
+function test_send_op2_with_collect_args()
+   local res=rtt.Variable("double")
+   local sh = testcomp:send("op_2", "hullo", 55.5)
+   ss = sh:collect(res)
+   if ss ~= "SendSuccess" or res:tolua() ~= 111 then
+      print("SendSucess:", ss, ", res: ", res)
+      return false
+   else return true end
+end
+
+
 function test_dataflow_lua()
    po = rtt.OutputPort.new("string", "po", "my output port")
    pi = rtt.InputPort.new("string", "pi", "my input port")
@@ -247,11 +256,9 @@ function test_lua_eehook()
 end
 
 local tests = {
-   -- { tfunc=fails, descr="this one _must_ fail!" },
    { tstr='return TC:getName() == "lua"' },
    { tstr='return TC:getState() == "PreOperational"' },
    { tstr='return TC:getPeer("deployer") ~= nil' },
-   -- { tstr='return TC:getPeer("gargoyle22") == nil' },
    { tstr='return (TC:getPeer("deployer")):getName() == "deployer"' },
    { tfunc=test_loadlib, descr="trying to load library testcomp-gnulinux" },
    { tfunc=test_create_testcomp, descr="trying to instantiate testcomp" },
@@ -265,7 +272,8 @@ local tests = {
    { tfunc=test_call_op_1_out_retval, descr="post(testcomp:call('op_1_out_retval', 33)), i==34" },
    { tfunc=test_var_assignment, descr="testing assigment of variables" },
    { tfunc=test_coercion, descr="testing coercion of variables in call" },
-   { tfunc=test_send_op2, descr="testing send for op_2" },
+   { tfunc=test_send_op2, descr="testing send for op_2 and collect()" },
+   { tfunc=test_send_op2_with_collect_args, descr="testing sending op_2 and collect(var)"},
    { tfunc=test_dataflow_lua, descr="testing dataflow with conversion from/to basic lua types" },
    { tfunc=test_lua_service, descr="testing interaction with lua service" },
    { tfunc=test_lua_eehook, descr="testing EEHook" },
