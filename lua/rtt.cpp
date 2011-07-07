@@ -1757,51 +1757,6 @@ static int TaskContext_getPortNames(lua_State *L)
 	return 1;
 }
 
-
-#if 0
-static int __tc_addport(lua_State *L, TaskContext *tc, int tcind,
-		       PortInterface *pi, int piind)
-{
-	int len;
-	_DBG("in: gettop=%d", lua_gettop(L));
-	/* manage TC to which the port has been added
-	 * PortOwners={p1={tc1, tc2, tc3}, p2={tc3}}
-	 */
-	lua_getfield(L, LUA_ENVIRONINDEX, "PortOwners");
-	if (lua_isnil(L, -1)) {
-		_DBG("creating new PortOwners");
-		lua_pop(L, 1);
-		lua_newtable(L);
-	} else {
-		_DBG("PortOwners exists... len=%d", lua_objlen(L, -1));
-	}
-
-	/* now we have the "PortOwners" table at the top either way */
-	lua_pushvalue(L, piind);	/* make copy of Port userdata */
-	lua_rawget(L, -2);		/* get table at PortOwners[piind] */
-
-	if (lua_isnil(L, -1)) {
-		_DBG("creating new PortOwners[0x%x]", (unsigned long) pi);
-		lua_pop(L, 1);
-		lua_newtable(L);	/* create new table for adding TC's */
-	} else {
-		_DBG("PortOwners[0x%x] exists, len=%d", (unsigned long) pi, lua_objlen(L, -1));
-	}
-
-	lua_pushvalue(L, 1); 	/* stack: -1 TC-userdata, -2 PortOwners[pi] table, -3 PortOwners tab */
-	len = lua_objlen(L, -2);
-	lua_rawseti(L, -2, len+1);	/* store TC ud in table at next free index */
-					/* stack: -1 PortOwners[pi] table, -2 PortOwners tab */
-
-	lua_pushvalue(L, piind); /* push Port userdata (key), stack: port-ud, tab, PortOwners */
-	lua_rawset(L, -3);	/* PortOwners[port-ud] = { tc }, stack: PortOwners */
-
-	lua_setfield(L, LUA_ENVIRONINDEX, "PortOwners");
-
-	_DBG("out: gettop=%d", lua_gettop(L));
-}
-#endif
-
 static int TaskContext_addPort(lua_State *L)
 {
 	const char* name, *desc;
@@ -2162,40 +2117,6 @@ static int TaskContext_del(lua_State *L)
 	lua_setmetatable(L, -2);
 	return 0;
 }
-
-#if 0
-/* dispatcher: if a method with name then use that, else forward to
- * default service.
- *
- * This is useful but also potentially very confusing, because it
- * creates a mix of ':' and '.' for calling methods. For some like
- * 'activate' which are duplicates this is really bad. For consistency
- * it would be better to have sth. like TaskContext:ops() which
- * returns an indexable object that returns services like:
- * TC:ops().op_1("hullo")
- */
-static int TaskContext_index(lua_State *L)
-{
-	Service::shared_ptr srv;
-	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
-	const char* key = luaL_checkstring(L, 2);
-
-	lua_getmetatable(L, 1);
-	lua_getfield(L, -1, key);
-
-	/* Either key is name of a method in the metatable */
-	if(!lua_isnil(L, -1))
-		return 1;
-
-	/* ... or its a field access, so recall as self.get(self, value). */
-	lua_settop(L, 2);
-	srv = tc->provides();
-	luaM_pushobject_mt(L, "Service", Service::shared_ptr)(srv);
-	lua_replace(L, 1);
-	/* todo: could fall back on ports? */
-	return Service_getOperation(L);
-}
-#endif
 
 static const struct luaL_Reg TaskContext_f [] = {
 	{ "getName", TaskContext_getName },
@@ -2558,13 +2479,6 @@ int luaopen_rtt(lua_State *L)
 
 	/* misc toplevel functions */
 	luaL_register(L, "rtt", rtt_f);
-
-	/* constants
-	 * ConnPolicy.type DATA=0, BUFFER=1.
-	 * ConnPolicy.lock_policy UNSYNC=0, LOCKED=1, LOCK_FREE=2
-	 * ORO_SCHED_RT=1, ORO_SCHED_OTHER=0
-	 */
-
 
 	return 1;
 }
