@@ -1,4 +1,4 @@
---- TaskContext methods
+--- TaskContext methods.
 -- The following methods are available for TaskContext types
 --
 
@@ -27,6 +27,13 @@ function activate()
 --- Cleanup TaskContext.
 -- @return boolean to indicate wether cleanup succeeded
 function cleanup()
+
+--- Raise a run-time error.
+function error()
+
+--- Recover from a run-time error.
+-- @return boolean to indicate wether recovering succeeded
+function recover()
 
 --- Get current TaskContext lifecycle state.
 -- @return current state (string)

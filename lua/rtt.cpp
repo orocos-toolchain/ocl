@@ -1680,6 +1680,21 @@ static int TaskContext_cleanup(lua_State *L)
 	return 1;
 }
 
+static int TaskContext_error(lua_State *L)
+{
+	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
+	tc->error();
+	return 0;
+}
+
+static int TaskContext_recover(lua_State *L)
+{
+	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
+	bool ret = tc->recover();
+	lua_pushboolean(L, ret);
+	return 1;
+}
+
 static int TaskContext_getState(lua_State *L)
 {
 	TaskCore::TaskState ts;
@@ -2125,6 +2140,8 @@ static const struct luaL_Reg TaskContext_f [] = {
 	{ "configure", TaskContext_configure },
 	{ "activate", TaskContext_activate },
 	{ "cleanup", TaskContext_cleanup },
+	{ "error", TaskContext_error },
+	{ "recover", TaskContext_recover },
 	{ "getState", TaskContext_getState },
 	{ "getPeers", TaskContext_getPeers },
 	{ "addPeer", TaskContext_addPeer },
@@ -2156,6 +2173,8 @@ static const struct luaL_Reg TaskContext_m [] = {
 	{ "configure", TaskContext_configure },
 	{ "activate", TaskContext_activate },
 	{ "cleanup", TaskContext_cleanup },
+	{ "error", TaskContext_error },
+	{ "recover", TaskContext_recover },
 	{ "getState", TaskContext_getState },
 	{ "getPeers", TaskContext_getPeers },
 	{ "addPeer", TaskContext_addPeer },
