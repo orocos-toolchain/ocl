@@ -389,7 +389,7 @@ function tc2str(tc)
 
    for i,v in ipairs( { "isActive", "getPeriod" } )
    do
-      res[#res+1] = magenta(v) .. ": " .. tostring(tc:call(v)) .. ""
+      res[#res+1] = magenta(v) .. ": " .. tostring(tc:getOperation(v)()) .. ""
    end
 
    res[#res+1] = magenta("peers") .. ": " .. table.concat(tc:getPeers(), ', ')
@@ -535,12 +535,13 @@ end
 function tc_index(tc, key)
    local reg = debug.getregistry()
    if rtt.TaskContext.hasOperation(tc, key) then
-      return function (tc, ...) return rtt.TaskContext.call(tc, key, ...) end
+      return function (tc, ...) return rtt.TaskContext.getOperation(tc, key)(...) end
    else -- pass on to standard metatable
       return reg.TaskContext[key]
    end
 end
 
+-- conveniance constructors
 setmetatable(rtt.Variable, {__call=function(t,...) return rtt.Variable.new(...) end})
 setmetatable(rtt.Property, {__call=function(t,...) return rtt.Property.new(...) end})
 setmetatable(rtt.InputPort, {__call=function(t,...) return rtt.InputPort.new(...) end})

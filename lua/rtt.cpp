@@ -2041,72 +2041,6 @@ static int TaskContext_connectServices(lua_State *L)
 	return 1;
 }
 
-static int __TaskContext_call(lua_State *L)
-{
-	unsigned int argc = lua_gettop(L);
-	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
-	const char *op = luaL_checkstring(L, 2);
-
-	TaskContext *this_tc = __getTC(L);
-	std::vector<base::DataSourceBase::shared_ptr> args;
-	DataSourceBase::shared_ptr dsb;
-	DataSourceBase::shared_ptr *dsbp;
-	DataSourceBase::shared_ptr ret, ret2;
-	types::TypeInfo *ti;
-
-	OperationInterfacePart *orp = tc->operations()->getPart(op);
-
-	if(!orp)
-		luaL_error(L, "TaskContext.call: no operation %s", op);
-
-	if(orp->arity() != argc-2)
-		luaL_error(L, "TaskContext.call: wrong number of args for %s. expected %d, got %d",
-			   op, orp->arity(), argc-2);
-
-	for(unsigned int arg=3; arg<=argc; arg++) {
-		/* fastpath: Variable argument */
-		if ((dsbp = luaM_testudata_mt(L, arg, "Variable", DataSourceBase::shared_ptr)) != NULL) {
-			dsb = *dsbp;
-		} else  {
-			/* slowpath: convert lua value to dsb */
-			std::string type = orp->getArgumentType(arg-2)->getTypeName().c_str();
-			dsb = Variable_fromlua(L, type.c_str(), arg);
-		}
-		args.push_back(dsb);
-	}
-
-	ret = tc->operations()->produce(op, args, this_tc->engine());
-
-	/* not so nice: construct a ValueDataSource for the return Value
-	 * todo: at least avoid the type conversion to string.
-	 */
-	if(orp->resultType() != "void") {
-		ti = types::TypeInfoRepository::Instance()->type(orp->resultType());
-		if(!ti)
-			luaL_error(L, "TaskContext.call: failed to construct result type %s",
-				   orp->resultType().c_str());
-		ret2 = ti->buildValue();
-		ret2->update(ret.get());
-		Variable_push_coerce(L, ret2);
-	} else {
-		ret->evaluate();
-		lua_pushnil(L);
-	}
-	return 1;
-}
-
-static int TaskContext_call(lua_State *L)
-{
-	int ret;
-	try {
-		ret = __TaskContext_call(L);
-	} catch(...) {
-		luaL_error(L, "TaskContext.call: caught exception");
-	}
-	return ret;
-}
-
-
 static int TaskContext_hasOperation(lua_State *L)
 {
 	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
@@ -2217,55 +2151,6 @@ static const struct luaL_Reg SendHandle_m [] = {
 	{ NULL, NULL }
 };
 
-/* TaskContext continued */
-static int __TaskContext_send(lua_State *L)
-{
-	unsigned int argc = lua_gettop(L);
-	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
-	TaskContext *this_tc = __getTC(L);
-	const char *op = luaL_checkstring(L, 2);
-
-	OperationInterfacePart *orp = tc->operations()->getPart(op);
-	OperationCallerC *occ = new OperationCallerC(orp, op, this_tc->engine()); // todo: alloc on stack?
-	DataSourceBase::shared_ptr dsb;
-	DataSourceBase::shared_ptr *dsbp;
-
-	if(!orp)
-		luaL_error(L, "TaskContext.send: no operation %s for TaskContext %s",
-			   op, tc->getName().c_str());
-
-	if(orp->arity() != argc-2)
-		luaL_error(L, "TaskContext.send: wrong number of args. expected %d, got %d",
-			   orp->arity(), argc);
-
-	for(unsigned int arg=3; arg<=argc; arg++) {
-		/* fastpath: Variable argument */
-		if ((dsbp = luaM_testudata_mt(L, arg, "Variable", DataSourceBase::shared_ptr)) != NULL) {
-			dsb = *dsbp;
-		} else  {
-			/* slowpath: convert lua value to dsb */
-			std::string type = orp->getArgumentType(arg-2)->getTypeName().c_str();
-			dsb = Variable_fromlua(L, type.c_str() ,arg);
-		}
-		occ->arg(dsb);
-	}
-
-	/* call send and construct push SendHandle userdata */
-	luaM_pushobject_mt(L, "SendHandle", SendHandleC)(occ->send());
-	return 1;
-}
-
-static int TaskContext_send(lua_State *L)
-{
-	int ret;
-	try {
-		ret = __TaskContext_send(L);
-	} catch(...) {
-		luaL_error(L, "TaskContext.send: caught exception");
-	}
-	return ret;
-}
-
 /* only explicit destruction allowed */
 static int TaskContext_del(lua_State *L)
 {
@@ -2338,9 +2223,7 @@ static const struct luaL_Reg TaskContext_f [] = {
 	{ "hasOperation", TaskContext_hasOperation },
 	{ "provides", TaskContext_provides },
 	{ "connectServices", TaskContext_connectServices },
-	{ "call", TaskContext_call },
 	{ "getOperation", TaskContext_getOperation },
-	{ "send", TaskContext_send },
 	{ "delete", TaskContext_del },
 	{ NULL, NULL}
 };
@@ -2372,9 +2255,7 @@ static const struct luaL_Reg TaskContext_m [] = {
 	{ "provides", TaskContext_provides },
 	{ "requires", TaskContext_requires },
 	{ "connectServices", TaskContext_connectServices },
-	{ "call", TaskContext_call },
 	{ "getOperation", TaskContext_getOperation },
-	{ "send", TaskContext_send },
 	{ "delete", TaskContext_del },
 	// { "__index", TaskContext_index },
 	/* we don't GC TaskContexts
