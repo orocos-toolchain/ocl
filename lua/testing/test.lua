@@ -64,7 +64,7 @@ function test_call_op_0_ot() return testcomp:op_0_ot() end
 function test_call_op_2()
    local dbl = var.new("double", 1.1)
    local s = var.new("string", "hello op2")
-   local res = testcomp:call("op_2", s, dbl)
+   local res = testcomp:op_2(s, dbl)
 
    if not res == 2.2 then
       print("wrong result, expected 2.2, got ", res)
@@ -151,7 +151,7 @@ function test_coercion()
 end
 
 function test_send_op2()
-   local sh = testcomp:send("op_2", "hullo", 55.5)
+   local sh = testcomp:getOperation("op_2"):send("hullo", 55.5)
    ss, res = sh:collect()
    if ss ~= "SendSuccess" or res ~= 111 then
       return false
@@ -162,7 +162,7 @@ end
 
 function test_send_op2_with_collect_args()
    local res=rtt.Variable("double")
-   local sh = testcomp:send("op_2", "hullo", 55.5)
+   local sh = testcomp:getOperation("op_2"):send("hullo", 55.5)
    ss = sh:collect(res)
    if ss ~= "SendSuccess" or res:tolua() ~= 111 then
       print("SendSucess:", ss, ", res: ", res)
