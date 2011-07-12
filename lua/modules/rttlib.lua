@@ -548,6 +548,19 @@ function tc_index(tc, key)
    end
 end
 
+--- Return the (RTT aware) type of an object.
+-- falls back on the standard 'type' if not an RTT object.
+-- @param obj
+-- @return string
+function rtt_type(obj)
+   local mt = getmetatable(obj)
+   if mt then
+      local reg=debug.getregistry()
+      for k,v in pairs(reg) do if v == mt then return k end end
+   end
+   return type(obj)
+end
+
 -- conveniance constructors
 setmetatable(rtt.Variable, {__call=function(t,...) return rtt.Variable.new(...) end})
 setmetatable(rtt.Property, {__call=function(t,...) return rtt.Property.new(...) end})
