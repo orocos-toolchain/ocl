@@ -138,7 +138,9 @@ void* luaL_testudata (lua_State *L, int ud, const char *tname)
 	}
 
 	/* it has a MT, is it the right one? */
-	lua_getfield(L, LUA_REGISTRYINDEX, tname);
+	lua_pushstring(L, tname);
+	lua_rawget(L, LUA_REGISTRYINDEX);
+
 	if (!lua_rawequal(L, -1, -2))
 		p = NULL;
 
@@ -187,8 +189,8 @@ static bool Variable_is_a(DataSourceBase::shared_ptr dsb, const std::string & ty
 static bool __Variable_isbasic(DataSourceBase::shared_ptr dsb)
 {
 	if ( Variable_is_a(dsb, "bool") || Variable_is_a(dsb, "double") || Variable_is_a(dsb, "float") ||
-	     Variable_is_a(dsb, "uint") || Variable_is_a(dsb, "int") || Variable_is_a(dsb, "char") ||
-	     Variable_is_a(dsb, "string") || Variable_is_a(dsb, "void"))
+	     Variable_is_a(dsb, "uint") || Variable_is_a(dsb, "int") || Variable_is_a(dsb, "long") ||
+	     Variable_is_a(dsb, "char") || Variable_is_a(dsb, "string") || Variable_is_a(dsb, "void"))
 		return true;
 	else
 		return false;
@@ -224,6 +226,10 @@ static int __Variable_tolua(lua_State *L, DataSourceBase::shared_ptr dsb)
 		else goto out_nodsb;
 	} else if (Variable_is_a(dsb, "uint")) {
 		DataSource<unsigned int>* dsb = DataSource<unsigned int>::narrow(ds);
+		if(dsb) lua_pushnumber(L, ((lua_Number) dsb->get()));
+		else goto out_nodsb;
+	} else if (Variable_is_a(dsb, "long")) {
+		DataSource<long>* dsb = DataSource<long>::narrow(ds);
 		if(dsb) lua_pushnumber(L, ((lua_Number) dsb->get()));
 		else goto out_nodsb;
 	} else if (Variable_is_a(dsb, "int")) {
@@ -291,18 +297,79 @@ static int Variable_getMemberNames(lua_State *L)
 	return 1;
 }
 
+
+/* caching of DSB members
+ * lookup of DSB using getMember and caches result.
+ * returns DSB (or nil if lookup fails) on top of stack.
+ */
+static DataSourceBase::shared_ptr lookup_member(lua_State *L, DataSourceBase::shared_ptr parent, const char* mem)
+{
+	DataSourceBase *varptr;
+	DataSourceBase::shared_ptr *dsbp;
+	DataSourceBase::shared_ptr memdsb;
+
+	varptr = parent.get();
+
+	lua_pushlightuserdata(L, (void*) varptr);
+	lua_rawget(L, LUA_REGISTRYINDEX);
+
+	if(lua_type(L, -1) == LUA_TNIL)
+		goto cache_miss;
+
+	lua_pushstring(L, mem);
+	lua_rawget(L, -2);
+
+	if ((dsbp = luaM_testudata_mt(L, -1, "Variable", DataSourceBase::shared_ptr)) != NULL) {
+		memdsb=*dsbp;
+		goto out;
+	}
+
+	lua_pop(L, 1); /* pop nil from table lookup */
+
+ cache_miss:
+	/* slowpath */
+	memdsb = parent->getMember(mem);
+
+	if(memdsb == 0)
+		goto out;
+
+	/* if nil is on top of stack, we have to create a new table */
+	if(lua_type(L, -1) == LUA_TNIL) {
+		lua_newtable(L);				/* member lookup tab for this Variable */
+		lua_pushlightuserdata(L, (void*) varptr); /* index for REGISTRY */
+		lua_pushvalue(L, -2);			/* duplicates table */
+		lua_rawset(L, LUA_REGISTRYINDEX);	/* REG[varptr]=newtab */
+	}
+
+	/* cache dsb in table */
+	lua_pushstring(L, mem);
+	luaM_pushobject_mt(L, "Variable", DataSourceBase::shared_ptr)(memdsb);
+	lua_rawset(L, -3); 			/* newtab[mem]=memdsb, top is newtab */
+	luaM_pushobject_mt(L, "Variable", DataSourceBase::shared_ptr)(memdsb);
+
+ out:
+	return memdsb;
+}
+
+/* set reg[varptr] to nil so table will be garbage collected */
+static void cache_clear(lua_State *L, DataSourceBase *varptr)
+{
+	lua_pushlightuserdata(L, (void*) varptr);
+	lua_pushnil(L);
+	lua_rawset(L, LUA_REGISTRYINDEX);
+}
+
 static int Variable_getMember(lua_State *L)
 {
 	DataSourceBase::shared_ptr *dsbp = luaM_checkudata_mt(L, 1, "Variable", DataSourceBase::shared_ptr);
 	DataSourceBase::shared_ptr memdsb;
 	const char *mem = luaL_checkstring(L, 2);
 
-	memdsb = (*dsbp)->getMember(mem);
-
-	if(memdsb == 0)
+	if ((memdsb = lookup_member(L, *dsbp, mem)) == 0)
 		lua_pushnil(L);
 	else
 		Variable_push_coerce(L, memdsb);
+
 	return 1;
 }
 
@@ -312,12 +379,11 @@ static int Variable_getMemberRaw(lua_State *L)
 	DataSourceBase::shared_ptr memdsb;
 	const char *mem = luaL_checkstring(L, 2);
 
-	memdsb = (*dsbp)->getMember(mem);
-
-	if(memdsb == 0)
+	if ((memdsb = lookup_member(L, (*dsbp), mem)) == 0)
 		lua_pushnil(L);
-	else
-		luaM_pushobject_mt(L, "Variable", DataSourceBase::shared_ptr)(memdsb);
+
+	/* else: Variable is already on top of stack */
+
 	return 1;
 }
 
@@ -334,8 +400,8 @@ static int Variable_update(lua_State *L)
 		dsb = Variable_fromlua(L, self->getType().c_str(), 2);
 
 	ret = self->update(dsb.get());
-	lua_pushboolean(L, ret);
-	return 1;
+	if (!ret) luaL_error(L, "Variable.assign: assignment failed");
+	return 0;
 }
 
 /* create variable */
@@ -391,6 +457,15 @@ static DataSourceBase::shared_ptr Variable_fromlua(lua_State *L, const char* typ
 			goto out_conv_err;
 
 		dsb = new ValueDataSource<unsigned int>((unsigned int) x);
+
+	} else if (__typenames_cmp(type, "long")) {
+		lua_Number x;
+		if (luatype == LUA_TNUMBER)
+			x = lua_tonumber(L, valind);
+		else
+			goto out_conv_err;
+
+		dsb = new ValueDataSource<long>((long) x);
 
 	} else if (__typenames_cmp(type, "double")) {
 		lua_Number x;
@@ -597,24 +672,46 @@ static int Variable_newindex(lua_State *L)
 {
 	DataSourceBase::shared_ptr *newvalp;
 	DataSourceBase::shared_ptr newval;
-	DataSourceBase::shared_ptr master = *(luaM_checkudata_mt(L, 1, "Variable", DataSourceBase::shared_ptr));
-	const char* member = luaL_checkstring(L, 2);
+	DataSourceBase::shared_ptr parent = *(luaM_checkudata_mt(L, 1, "Variable", DataSourceBase::shared_ptr));
+	const char* mem = luaL_checkstring(L, 2);
 
 	/* get dsb to be updated: we need its type before get-or-create'ing arg3 */
 	types::OperatorRepository::shared_ptr opreg = types::OperatorRepository::Instance();
-	DataSourceBase::shared_ptr curval = master->getMember(member);
+	DataSourceBase::shared_ptr curval;
 
-	if (curval == 0)
-		luaL_error(L, "Variable.newindex: indexing failed, no member %s", member);
+	if ((curval = lookup_member(L, parent, mem)) == 0)
+		luaL_error(L, "Variable.newindex: indexing failed, no member %s", mem);
 
 	if ((newvalp = luaM_testudata_mt(L, 3, "Variable", DataSourceBase::shared_ptr)) != NULL)
 		newval = *newvalp;
 	else
 		newval = Variable_fromlua(L, curval->getType().c_str(), 3);
 
-	lua_pushboolean(L, curval->update(newval.get()));
+	if(!curval->update(newval.get()))
+		luaL_error(L, "Variable.newindex: failed to assign a %s to member %s of type %s",
+			   newval->getType().c_str(), mem, curval->getType().c_str());
+
 	return 1;
 }
+
+// Why doesn't the following work:
+// static int Variable_gc(lua_State *L)
+// {
+// 	DataSourceBase::shared_ptr *dsbp = (DataSourceBase::shared_ptr*) lua_touserdata(L, 1);
+// 	cache_clear(L, dsbp->get());
+// 	dsbp->~DataSourceBase::shared_ptr();
+// 	return 0;
+// }
+
+template<typename T>
+int VariableGC(lua_State* L)
+{
+	T* dsbp = (T*) lua_touserdata(L, 1);
+	cache_clear(L, dsbp->get());
+	reinterpret_cast<T*>(lua_touserdata(L, 1))->~T();
+	return 0;
+}
+
 
 static const struct luaL_Reg Variable_f [] = {
 	{ "new", Variable_new },
@@ -667,8 +764,9 @@ static const struct luaL_Reg Variable_m [] = {
 	{ "__le", Variable_le },
 	{ "__index", Variable_index },
 	{ "__newindex", Variable_newindex },
-	{ "__gc", GCMethod<DataSourceBase::shared_ptr> },
+	// { "__gc", GCMethod<DataSourceBase::shared_ptr> },
 	// {"__gc", Variable_gc},
+	{"__gc", VariableGC<DataSourceBase::shared_ptr> },
 	{ NULL, NULL}
 };
 
@@ -719,7 +817,10 @@ static int Property_set(lua_State *L)
 		newdsb = Variable_fromlua(L, pb->getTypeInfo()->getTypeName().c_str(), 2);
 
 	DataSourceBase::shared_ptr propdsb = pb->getDataSource();
-	propdsb->update(newdsb.get());
+	if(!propdsb->update(newdsb.get()))
+		luaL_error(L, "Property.set: failed to assign type %s to type %s",
+			   newdsb->getType().c_str(), propdsb->getType().c_str());
+
 	return 1;
 }
 
@@ -1062,23 +1163,47 @@ static const struct luaL_Reg OutputPort_m [] = {
 };
 
 /***************************************************************
- * Operation (boxed)
+ * Operation
  ***************************************************************/
 
-gen_push_bxptr(Operation_push, "Operation", OperationInterfacePart)
+struct OperationHandle {
+	OperationInterfacePart *oip;
+	OperationCallerC *occ;
+	unsigned int arity;
+	bool is_void;
+
+	/* we need to store references to the dsb which we created
+	   on-the-fly, because the ReferenceDSB does not hold a
+	   shared_ptr, and hence these DSN might get destructed
+	   before/during the call
+	 */
+	std::vector<base::DataSourceBase::shared_ptr> dsb_store;
+	std::vector<internal::Reference*> args;
+	base::DataSourceBase::shared_ptr call_dsb;
+	base::DataSourceBase::shared_ptr ret_dsb;
+};
+
+template<typename T>
+int OperationGC(lua_State* L)
+{
+	T* oh = (T*) lua_touserdata(L, 1);
+	delete oh->occ;
+	reinterpret_cast<T*>(lua_touserdata(L, 1))->~T();
+	return 0;
+}
 
 static int Operation_info(lua_State *L)
 {
 	int i=1;
-	OperationInterfacePart *oip = *(luaM_checkudata_mt_bx(L, 1, "Operation", OperationInterfacePart));
 	std::vector<ArgumentDescription> args;
+	OperationHandle *op = luaM_checkudata_mt(L, 1, "Operation", OperationHandle);
 
-	lua_pushstring(L, oip->getName().c_str());	/* name */
-	lua_pushstring(L, oip->description().c_str());	/* description */
-	lua_pushstring(L, oip->resultType().c_str());	/* result type */
-	lua_pushinteger(L, oip->arity());		/* arity */
+	lua_pushstring(L, op->oip->getName().c_str());		/* name */
+	lua_pushstring(L, op->oip->description().c_str());	/* description */
+	lua_pushstring(L, op->oip->resultType().c_str());	/* result type */
+	lua_pushinteger(L, op->arity);				/* arity */
 
-	args = oip->getArgumentList();
+	args = op->oip->getArgumentList();
 
 	lua_newtable(L);
 
@@ -1089,54 +1214,76 @@ static int Operation_info(lua_State *L)
 		lua_pushstring(L, "desc"); lua_pushstring(L, it->description.c_str()); lua_rawset(L, -3);
 		lua_rawseti(L, -2, i++);
 	}
-
 	return 5;
 }
 
 static int __Operation_call(lua_State *L)
 {
-	std::vector<base::DataSourceBase::shared_ptr> args;
-	DataSourceBase::shared_ptr dsb;
-	DataSourceBase::shared_ptr *dsbp;
-	DataSourceBase::shared_ptr ret, ret2;
-	types::TypeInfo *ti;
+	DataSourceBase::shared_ptr dsb, *dsbp;
 
+	OperationHandle *oh = luaM_checkudata_mt(L, 1, "Operation", OperationHandle);
+	OperationInterfacePart *oip = oh->oip;
 	unsigned int argc = lua_gettop(L);
-	TaskContext *this_tc = __getTC(L);
-	OperationInterfacePart *oip = *(luaM_checkudata_mt_bx(L, 1, "Operation", OperationInterfacePart));
 
-	if(oip->arity() != argc-1)
-		luaL_error(L, "Operation.call: wrong number of args. expected %d, got %d", oip->arity(), argc-1);
+	if(oh->arity != argc-1)
+		luaL_error(L, "Operation.call: wrong number of args. expected %d, got %d", oh->arity, argc-1);
 
+	/* update dsbs */
 	for(unsigned int arg=2; arg<=argc; arg++) {
 		/* fastpath: Variable argument */
 		if ((dsbp = luaM_testudata_mt(L, arg, "Variable", DataSourceBase::shared_ptr)) != NULL) {
 			dsb = *dsbp;
-		} else  {
+		} else {
 			/* slowpath: convert lua value to dsb */
-			std::string type = oip->getArgumentType(arg-1)->getTypeName().c_str();
+			std::string type = oip->getArgumentType(arg-1)->getTypeName();
 			dsb = Variable_fromlua(L, type.c_str(), arg);
+			/* this dsb must outlive occ->call (see comment in
+			   OperationHandle def.): */
+			oh->dsb_store.push_back(dsb);
 		}
-		args.push_back(dsb);
+		oh->args[arg-2]->setReference(dsb);
 	}
 
-	ret = oip->produce(args, this_tc->engine());
+	if(!oh->occ->call())
+		luaL_error(L, "Operation.call: call failed.");
 
-	/* not so nice: construct a ValueDataSource for the return Value
-	 * todo: at least avoid the type conversion to string.
-	 */
-	if(oip->resultType() != "void") {
-		ti = types::TypeInfoRepository::Instance()->type(oip->resultType());
-		if(!ti)
-			luaL_error(L, "Operation.call: can't create return value DSB of type '%s'",
-				   oip->resultType().c_str());
-		ret2 = ti->buildValue();
-		ret2->update(ret.get());
-		Variable_push_coerce(L, ret2);
-	} else {
-		ret->evaluate();
+	oh->dsb_store.clear();
+
+	if(!oh->is_void)
+		Variable_push_coerce(L, oh->ret_dsb);
+	else
 		lua_pushnil(L);
+	return 1;
+}
+
+static int __Operation_send(lua_State *L)
+{
+	DataSourceBase::shared_ptr dsb, *dsbp;
+
+	OperationHandle *oh = luaM_checkudata_mt(L, 1, "Operation", OperationHandle);
+	OperationInterfacePart *oip = oh->oip;
+	unsigned int argc = lua_gettop(L);
+
+	if(oh->arity != argc-1)
+		luaL_error(L, "Operation.send: wrong number of args. expected %d, got %d", oh->arity, argc-1);
+
+	/* update dsbs */
+	for(unsigned int arg=2; arg<=argc; arg++) {
+		/* fastpath: Variable argument */
+		if ((dsbp = luaM_testudata_mt(L, arg, "Variable", DataSourceBase::shared_ptr)) != NULL) {
+			dsb = *dsbp;
+		} else {
+			/* slowpath: convert lua value to dsb */
+			std::string type = oip->getArgumentType(arg-1)->getTypeName();
+			dsb = Variable_fromlua(L, type.c_str(), arg);
+			/* this dsb must outlive occ->call (see comment in
+			   OperationHandle def.): */
+			oh->dsb_store.push_back(dsb);
+		}
+		oh->args[arg-2]->setReference(dsb);
 	}
+
+	luaM_pushobject_mt(L, "SendHandle", SendHandleC)(oh->occ->send());
 	return 1;
 }
 
@@ -1149,37 +1296,6 @@ static int Operation_call(lua_State *L)
 		luaL_error(L, "Operation.call: caught exception");
 	}
 	return ret;
-}
-
-static int __Operation_send(lua_State *L)
-{
-	DataSourceBase::shared_ptr dsb, *dsbp;
-
-	unsigned int argc = lua_gettop(L);
-	TaskContext *this_tc = __getTC(L);
-	OperationInterfacePart *oip = *(luaM_checkudata_mt_bx(L, 1, "Operation", OperationInterfacePart));
-
-	OperationCallerC *occ = new OperationCallerC(oip, oip->getName(), this_tc->engine()); // todo: alloc on stack?
-
-	if(oip->arity() != argc-1)
-		luaL_error(L, "Operation.send: wrong number of args. expected %d, got %d",
-			   oip->arity(), argc);
-
-	for(unsigned int arg=2; arg<=argc; arg++) {
-		/* fastpath: Variable argument */
-		if ((dsbp = luaM_testudata_mt(L, arg, "Variable", DataSourceBase::shared_ptr)) != NULL) {
-			dsb = *dsbp;
-		} else  {
-			/* slowpath: convert lua value to dsb */
-			std::string type = oip->getArgumentType(arg-1)->getTypeName().c_str();
-			dsb = Variable_fromlua(L, type.c_str(), arg);
-		}
-		occ->arg(dsb);
-	}
-
-	/* call send and construct push SendHandle userdata */
-	luaM_pushobject_mt(L, "SendHandle", SendHandleC)(occ->send());
-	return 1;
 }
 
 static int Operation_send(lua_State *L)
@@ -1206,6 +1322,7 @@ static const struct luaL_Reg Operation_m [] = {
 	{ "info", Operation_info },
 	{ "send", Operation_send },
 	{ "__call", Operation_call },
+	{ "__gc", OperationGC<OperationHandle> },
 	{ NULL, NULL }
 };
 
@@ -1304,6 +1421,10 @@ static int Service_getOperation(lua_State *L)
 	const char *op_str;
 	OperationInterfacePart *oip;
 	Service::shared_ptr srv;
+	DataSourceBase::shared_ptr dsb;
+	types::TypeInfo *ti;
+	OperationHandle *oh;
+	TaskContext *this_tc;
 
 	srv = *(luaM_checkudata_mt(L, 1, "Service", Service::shared_ptr));
 	op_str = luaL_checkstring(L, 2);
@@ -1312,7 +1433,49 @@ static int Service_getOperation(lua_State *L)
 	if(!oip)
 		luaL_error(L, "Service_getOperation: service %s has no operation %s",
 			   srv->getName().c_str(), op_str);
-	Operation_push(L, oip);
+
+	oh = (OperationHandle*) luaM_pushobject_mt(L, "Operation", OperationHandle)();
+	oh->oip = oip;
+	oh->arity = oip->arity();
+	oh->args.reserve(oh->arity);
+	this_tc = __getTC(L);
+
+	oh->occ = new OperationCallerC(oip, op_str, this_tc->engine());
+
+	/* create args
+	 * getArgumentType(0) is return value
+	 */
+	for(unsigned int arg=1; arg <= oh->arity; arg++) {
+		std::string type = oip->getArgumentType(arg)->getTypeName();
+		ti = types::TypeInfoRepository::Instance()->type(type);
+		if(!ti)
+			luaL_error(L, "Operation.call: can't create DSB for arg %d of type '%s'", arg, type.c_str());
+
+		dsb = ti->buildReference((void*) 0xdeadbeef);
+		oh->args.push_back(dynamic_cast<internal::Reference*>(dsb.get()));
+		oh->occ->arg(dsb);
+	}
+
+	// TODO: Figure out which arguments are out args and instead
+	// of singe ret dsb prepare a vector with ret, outdsb1, //
+	// outdsb2 to be returned.
+
+	/* return value */
+	if(oip->resultType() != "void"){
+		ti = types::TypeInfoRepository::Instance()->type(oip->resultType());
+		if(!ti)
+			luaL_error(L, "Operation.call: can't create return value DSB of type '%s'",
+				   oip->resultType().c_str());
+		oh->ret_dsb=ti->buildValue();
+		oh->occ->ret(oh->ret_dsb);
+		oh->is_void=false;
+	} else {
+		oh->is_void=true;
+	}
+
+	if(!oh->occ->ready())
+		luaL_error(L, "Service.getOperation: OperationCallerC not ready!");
+
 	return 1;
 }
 
@@ -1517,6 +1680,21 @@ static int TaskContext_cleanup(lua_State *L)
 	return 1;
 }
 
+static int TaskContext_error(lua_State *L)
+{
+	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
+	tc->error();
+	return 0;
+}
+
+static int TaskContext_recover(lua_State *L)
+{
+	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
+	bool ret = tc->recover();
+	lua_pushboolean(L, ret);
+	return 1;
+}
+
 static int TaskContext_getState(lua_State *L)
 {
 	TaskCore::TaskState ts;
@@ -1593,51 +1771,6 @@ static int TaskContext_getPortNames(lua_State *L)
 	push_vect_str(L, plist);
 	return 1;
 }
-
-
-#if 0
-static int __tc_addport(lua_State *L, TaskContext *tc, int tcind,
-		       PortInterface *pi, int piind)
-{
-	int len;
-	_DBG("in: gettop=%d", lua_gettop(L));
-	/* manage TC to which the port has been added
-	 * PortOwners={p1={tc1, tc2, tc3}, p2={tc3}}
-	 */
-	lua_getfield(L, LUA_ENVIRONINDEX, "PortOwners");
-	if (lua_isnil(L, -1)) {
-		_DBG("creating new PortOwners");
-		lua_pop(L, 1);
-		lua_newtable(L);
-	} else {
-		_DBG("PortOwners exists... len=%d", lua_objlen(L, -1));
-	}
-
-	/* now we have the "PortOwners" table at the top either way */
-	lua_pushvalue(L, piind);	/* make copy of Port userdata */
-	lua_rawget(L, -2);		/* get table at PortOwners[piind] */
-
-	if (lua_isnil(L, -1)) {
-		_DBG("creating new PortOwners[0x%x]", (unsigned long) pi);
-		lua_pop(L, 1);
-		lua_newtable(L);	/* create new table for adding TC's */
-	} else {
-		_DBG("PortOwners[0x%x] exists, len=%d", (unsigned long) pi, lua_objlen(L, -1));
-	}
-
-	lua_pushvalue(L, 1); 	/* stack: -1 TC-userdata, -2 PortOwners[pi] table, -3 PortOwners tab */
-	len = lua_objlen(L, -2);
-	lua_rawseti(L, -2, len+1);	/* store TC ud in table at next free index */
-					/* stack: -1 PortOwners[pi] table, -2 PortOwners tab */
-
-	lua_pushvalue(L, piind); /* push Port userdata (key), stack: port-ud, tab, PortOwners */
-	lua_rawset(L, -3);	/* PortOwners[port-ud] = { tc }, stack: PortOwners */
-
-	lua_setfield(L, LUA_ENVIRONINDEX, "PortOwners");
-
-	_DBG("out: gettop=%d", lua_gettop(L));
-}
-#endif
 
 static int TaskContext_addPort(lua_State *L)
 {
@@ -1878,71 +2011,6 @@ static int TaskContext_connectServices(lua_State *L)
 	return 1;
 }
 
-static int __TaskContext_call(lua_State *L)
-{
-	unsigned int argc = lua_gettop(L);
-	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
-	const char *op = luaL_checkstring(L, 2);
-
-	TaskContext *this_tc = __getTC(L);
-	std::vector<base::DataSourceBase::shared_ptr> args;
-	DataSourceBase::shared_ptr dsb;
-	DataSourceBase::shared_ptr *dsbp;
-	DataSourceBase::shared_ptr ret, ret2;
-	types::TypeInfo *ti;
-
-	OperationInterfacePart *orp = tc->operations()->getPart(op);
-
-	if(!orp)
-		luaL_error(L, "TaskContext.call: no operation %s", op);
-
-	if(orp->arity() != argc-2)
-		luaL_error(L, "TaskContext.call: wrong number of args. expected %d, got %d", orp->arity(), argc-2);
-
-	for(unsigned int arg=3; arg<=argc; arg++) {
-		/* fastpath: Variable argument */
-		if ((dsbp = luaM_testudata_mt(L, arg, "Variable", DataSourceBase::shared_ptr)) != NULL) {
-			dsb = *dsbp;
-		} else  {
-			/* slowpath: convert lua value to dsb */
-			std::string type = orp->getArgumentType(arg-2)->getTypeName().c_str();
-			dsb = Variable_fromlua(L, type.c_str(), arg);
-		}
-		args.push_back(dsb);
-	}
-
-	ret = tc->operations()->produce(op, args, this_tc->engine());
-
-	/* not so nice: construct a ValueDataSource for the return Value
-	 * todo: at least avoid the type conversion to string.
-	 */
-	if(orp->resultType() != "void") {
-		ti = types::TypeInfoRepository::Instance()->type(orp->resultType());
-		if(!ti)
-			luaL_error(L, "TaskContext.call: failed to construct result type %s",
-				   orp->resultType().c_str());
-		ret2 = ti->buildValue();
-		ret2->update(ret.get());
-		Variable_push_coerce(L, ret2);
-	} else {
-		ret->evaluate();
-		lua_pushnil(L);
-	}
-	return 1;
-}
-
-static int TaskContext_call(lua_State *L)
-{
-	int ret;
-	try {
-		ret = __TaskContext_call(L);
-	} catch(...) {
-		luaL_error(L, "TaskContext.call: caught exception");
-	}
-	return ret;
-}
-
-
 static int TaskContext_hasOperation(lua_State *L)
 {
 	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
@@ -1988,25 +2056,40 @@ static void SendStatus_push(lua_State *L, SendStatus ss)
 
 static int __SendHandle_collect(lua_State *L, bool block)
 {
-	std::vector<DataSourceBase::shared_ptr> coll_args;
+	unsigned int coll_argc;
+	std::vector<DataSourceBase::shared_ptr> coll_args; /* temporarily store args */
 	SendStatus ss;
 	const types::TypeInfo *ti;
-	OperationInterfacePart *orp;
-	DataSourceBase::shared_ptr tmpdsb;
-	int coll_argc;
+	OperationInterfacePart *oip;
+	DataSourceBase::shared_ptr dsb, *dsbp;
 
+	unsigned int argc = lua_gettop(L);
 	SendHandleC *shc = luaM_checkudata_mt(L, 1, "SendHandle", SendHandleC);
 
 	/* get orp pointer */
-	orp = shc->getOrp();
-	coll_argc = orp->collectArity();
+	oip = shc->getOrp();
+	coll_argc = oip->collectArity();
 
-	/* create appropriate datasources */
-	for(int i=1; i <= coll_argc; i++) {
-		ti = orp->getCollectType(i);
-		tmpdsb = ti->buildValue();
-		coll_args.push_back(tmpdsb);
-		shc->arg(tmpdsb);
+	if(argc == 1) {
+		// No args supplied, create them.
+		for(unsigned int i=1; i<=coll_argc; i++) {
+			ti = oip->getCollectType(i);
+			dsb = ti->buildValue();
+			coll_args.push_back(dsb);
+			shc->arg(dsb);
+		}
+	} else if (argc-1 == coll_argc) {
+		// args supplied, use them.
+		for(unsigned int arg=2; arg<=argc; arg++) {
+			if ((dsbp = luaM_testudata_mt(L, arg, "Variable", DataSourceBase::shared_ptr)) != NULL)
+				dsb = *dsbp;
+			else
+				luaL_error(L, "SendHandle.collect: expected Variable argument at position %d", arg-1);
+			shc->arg(dsb);
+		}
+	} else {
+		luaL_error(L, "SendHandle.collect: wrong number of args. expected either 0 or %d, got %d", 
+			   coll_argc, argc-1);
 	}
 
 	if(block) ss = shc->collect();
@@ -2014,24 +2097,16 @@ static int __SendHandle_collect(lua_State *L, bool block)
 
 	SendStatus_push(L, ss);
 
-	/* store all DSB in coll_args to luabind::object */
-	for (int i=0; i<coll_argc; i++) {
-		Variable_push_coerce(L, coll_args[i]);
+	if(ss == SendSuccess) {
+		for (unsigned int i=0; i<coll_args.size(); i++)
+			Variable_push_coerce(L, coll_args[i]);
 	}
 	/* SendStatus + collect args */
-	return coll_argc + 1;
+	return coll_args.size() + 1;
 }
 
-static int SendHandle_collect(lua_State *L)
-{
-	return __SendHandle_collect(L, true);
-}
-
-static int SendHandle_collectIfDone(lua_State *L)
-{
-	return __SendHandle_collect(L, false);
-}
-
+static int SendHandle_collect(lua_State *L) { return __SendHandle_collect(L, true); }
+static int SendHandle_collectIfDone(lua_State *L) { return __SendHandle_collect(L, false); }
 
 static const struct luaL_Reg SendHandle_f [] = {
 	{ "collect", SendHandle_collect },
@@ -2046,55 +2121,6 @@ static const struct luaL_Reg SendHandle_m [] = {
 	{ NULL, NULL }
 };
 
-/* TaskContext continued */
-static int __TaskContext_send(lua_State *L)
-{
-	unsigned int argc = lua_gettop(L);
-	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
-	TaskContext *this_tc = __getTC(L);
-	const char *op = luaL_checkstring(L, 2);
-
-	OperationInterfacePart *orp = tc->operations()->getPart(op);
-	OperationCallerC *occ = new OperationCallerC(orp, op, this_tc->engine()); // todo: alloc on stack?
-	DataSourceBase::shared_ptr dsb;
-	DataSourceBase::shared_ptr *dsbp;
-
-	if(!orp)
-		luaL_error(L, "TaskContext.send: no operation %s for TaskContext %s",
-			   op, tc->getName().c_str());
-
-	if(orp->arity() != argc-2)
-		luaL_error(L, "TaskContext.send: wrong number of args. expected %d, got %d",
-			   orp->arity(), argc);
-
-	for(unsigned int arg=3; arg<=argc; arg++) {
-		/* fastpath: Variable argument */
-		if ((dsbp = luaM_testudata_mt(L, arg, "Variable", DataSourceBase::shared_ptr)) != NULL) {
-			dsb = *dsbp;
-		} else  {
-			/* slowpath: convert lua value to dsb */
-			std::string type = orp->getArgumentType(arg-2)->getTypeName().c_str();
-			dsb = Variable_fromlua(L, type.c_str() ,arg);
-		}
-		occ->arg(dsb);
-	}
-
-	/* call send and construct push SendHandle userdata */
-	luaM_pushobject_mt(L, "SendHandle", SendHandleC)(occ->send());
-	return 1;
-}
-
-static int TaskContext_send(lua_State *L)
-{
-	int ret;
-	try {
-		ret = __TaskContext_send(L);
-	} catch(...) {
-		luaL_error(L, "TaskContext.send: caught exception");
-	}
-	return ret;
-}
-
 /* only explicit destruction allowed */
 static int TaskContext_del(lua_State *L)
 {
@@ -2107,40 +2133,6 @@ static int TaskContext_del(lua_State *L)
 	return 0;
 }
 
-#if 0
-/* dispatcher: if a method with name then use that, else forward to
- * default service.
- *
- * This is useful but also potentially very confusing, because it
- * creates a mix of ':' and '.' for calling methods. For some like
- * 'activate' which are duplicates this is really bad. For consistency
- * it would be better to have sth. like TaskContext:ops() which
- * returns an indexable object that returns services like:
- * TC:ops().op_1("hullo")
- */
-static int TaskContext_index(lua_State *L)
-{
-	Service::shared_ptr srv;
-	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
-	const char* key = luaL_checkstring(L, 2);
-
-	lua_getmetatable(L, 1);
-	lua_getfield(L, -1, key);
-
-	/* Either key is name of a method in the metatable */
-	if(!lua_isnil(L, -1))
-		return 1;
-
-	/* ... or its a field access, so recall as self.get(self, value). */
-	lua_settop(L, 2);
-	srv = tc->provides();
-	luaM_pushobject_mt(L, "Service", Service::shared_ptr)(srv);
-	lua_replace(L, 1);
-	/* todo: could fall back on ports? */
-	return Service_getOperation(L);
-}
-#endif
-
 static const struct luaL_Reg TaskContext_f [] = {
 	{ "getName", TaskContext_getName },
 	{ "start", TaskContext_start },
@@ -2148,6 +2140,8 @@ static const struct luaL_Reg TaskContext_f [] = {
 	{ "configure", TaskContext_configure },
 	{ "activate", TaskContext_activate },
 	{ "cleanup", TaskContext_cleanup },
+	{ "error", TaskContext_error },
+	{ "recover", TaskContext_recover },
 	{ "getState", TaskContext_getState },
 	{ "getPeers", TaskContext_getPeers },
 	{ "addPeer", TaskContext_addPeer },
@@ -2167,9 +2161,7 @@ static const struct luaL_Reg TaskContext_f [] = {
 	{ "hasOperation", TaskContext_hasOperation },
 	{ "provides", TaskContext_provides },
 	{ "connectServices", TaskContext_connectServices },
-	{ "call", TaskContext_call },
 	{ "getOperation", TaskContext_getOperation },
-	{ "send", TaskContext_send },
 	{ "delete", TaskContext_del },
 	{ NULL, NULL}
 };
@@ -2181,6 +2173,8 @@ static const struct luaL_Reg TaskContext_m [] = {
 	{ "configure", TaskContext_configure },
 	{ "activate", TaskContext_activate },
 	{ "cleanup", TaskContext_cleanup },
+	{ "error", TaskContext_error },
+	{ "recover", TaskContext_recover },
 	{ "getState", TaskContext_getState },
 	{ "getPeers", TaskContext_getPeers },
 	{ "addPeer", TaskContext_addPeer },
@@ -2201,9 +2195,7 @@ static const struct luaL_Reg TaskContext_m [] = {
 	{ "provides", TaskContext_provides },
 	{ "requires", TaskContext_requires },
 	{ "connectServices", TaskContext_connectServices },
-	{ "call", TaskContext_call },
 	{ "getOperation", TaskContext_getOperation },
-	{ "send", TaskContext_send },
 	{ "delete", TaskContext_del },
 	// { "__index", TaskContext_index },
 	/* we don't GC TaskContexts
@@ -2358,6 +2350,33 @@ static TaskContext* __getTC(lua_State *L)
 	return tc;
 }
 
+/* access to the globals repository */
+static int globals_getNames(lua_State *L)
+{
+	GlobalsRepository::shared_ptr gr = GlobalsRepository::Instance();
+	push_vect_str(L, gr->getAttributeNames() );
+	return 1;
+}
+
+static int globals_get(lua_State *L)
+{
+	const char *name;
+	base::AttributeBase *ab;
+	DataSourceBase::shared_ptr dsb;
+
+	name = luaL_checkstring(L, 1);
+	GlobalsRepository::shared_ptr gr = GlobalsRepository::Instance();
+
+	ab = gr->getAttribute(name);
+
+	if (ab)
+		luaM_pushobject_mt(L, "Variable", DataSourceBase::shared_ptr)(ab->getDataSource());
+	else
+		lua_pushnil(L);
+
+	return 1;
+}
+
 /* global service */
 static int provides_global(lua_State *L)
 {
@@ -2387,6 +2406,8 @@ static int rtt_types(lua_State *L)
 static const struct luaL_Reg rtt_f [] = {
 	{"getTime", getTime },
 	{"getTC", getTC },
+	{"globals_getNames", globals_getNames },
+	{"globals_get", globals_get },
 	{"provides", provides_global },
 	{"services", rtt_services },
 	{"typekits", rtt_typekits },
@@ -2477,13 +2498,6 @@ int luaopen_rtt(lua_State *L)
 
 	/* misc toplevel functions */
 	luaL_register(L, "rtt", rtt_f);
-
-	/* constants
-	 * ConnPolicy.type DATA=0, BUFFER=1.
-	 * ConnPolicy.lock_policy UNSYNC=0, LOCKED=1, LOCK_FREE=2
-	 * ORO_SCHED_RT=1, ORO_SCHED_OTHER=0
-	 */
-
 
 	return 1;
 }

@@ -48,63 +48,47 @@ module("rttlib")
 
 color=false
 
+--- Condition colorization.
+--
+
 local function red(str, bright)
-   if color then
-      str = col.red(str)
-      if bright then str=col.bright(str) end
-   end
+   if color then str = col.red(str); if bright then str=col.bright(str) end end
    return str
 end
 
 local function blue(str, bright)
-   if color then
-      str = col.blue(str)
-      if bright then str=col.bright(str) end
-   end
+   if color then str = col.blue(str); if bright then str=col.bright(str) end end
    return str
 end
 
 local function green(str, bright)
-   if color then
-      str = col.green(str)
-      if bright then str=col.bright(str) end
-   end
+   if color then str = col.green(str); if bright then str=col.bright(str) end end
    return str
 end
 
 local function yellow(str, bright)
-   if color then
-      str = col.yellow(str)
-      if bright then str=col.bright(str) end
-   end
+   if color then str = col.yellow(str); if bright then str=col.bright(str) end end
    return str
 end
 
 local function magenta(str, bright)
-   if color then
-      str = col.magenta(str)
-      if bright then str=col.bright(str) end
-   end
+   if color then str = col.magenta(str); if bright then str=col.bright(str) end end
    return str
 end
 
 local function cyan(str, bright)
-   if color then
-      str = col.cyan(str)
-      if bright then str=col.bright(str) end
-   end
+   if color then str = col.cyan(str); if bright then str=col.bright(str) end end
    return str
 end
 
 local function white(str, bright)
-   if color then
-      str = col.white(str)
-      if bright then str=col.bright(str) end
-   end
+   if color then str = col.white(str); if bright then str=col.bright(str) end end
    return str
 end
 
---- Pretty-print a ConnPolicy.
+--- Beautify a ConnPolicy table.
+-- @param cp ConnPolicy table
+-- @return the processed table
 function ConnPolicy2tab(cp)
    if cp.type == 0 then cp.type = "DATA"
    elseif cp.type == 1 then cp.type = "BUFFER"
@@ -124,6 +108,9 @@ function ConnPolicy2tab(cp)
 end
 
 
+--- Convert an RTT Variable to a table.
+-- @param var Variable
+-- @return table tab representation of Variable
 function var2tab(var)
    local function __var2tab(var)
       local res
@@ -165,6 +152,9 @@ end
 var_pp = {}
 var_pp.ConnPolicy = ConnPolicy2tab
 
+--- Convert a RTT Variable to a string.
+-- @param var
+-- @return string
 function var2str(var)
    if type(var) ~= 'userdata' then return tostring(var) end
 
@@ -233,6 +223,12 @@ function prop2str(p)
 end
 
 --- Convert an operation to a string.
+-- @param name name of operation
+-- @param descr description
+-- @param rettype return type
+-- @param arity arity of operation
+-- @param args table of argument tables {type, name}
+-- @return string
 function __op2str(name, descr, rettype, arity, args)
    local str = ""
 
@@ -251,6 +247,9 @@ function __op2str(name, descr, rettype, arity, args)
    return str
 end
 
+--- Convert an operation to a string.
+-- @param op Operation
+-- @return string
 function op2str(op)
    return __op2str(op:info())
 end
@@ -319,6 +318,9 @@ function service_req2str(sr, inds, indn)
 end
 
 
+--- Convert a port to a string.
+-- @param p Port
+-- @return string
 function port2str(p)
    local inf = p:info()
    local ret = {}
@@ -346,7 +348,10 @@ function port2str(p)
    return table.concat(ret, '')
 end
 
--- port contents
+--- Convert the value of the port to a coloured string.
+-- @param port
+-- @param comp component this port belongs to (used to access port service)
+-- @param string
 function portval2str(port, comp)
    local inf = port:info()
    local res = white(inf.name) .. ' (' .. inf.type .. ')  ='
@@ -365,6 +370,8 @@ function portval2str(port, comp)
    return res
 end
 
+--- Print the values of all ports of a component.
+-- @param comp TaskContext
 function portstats(comp)
    for i,p in ipairs(comp:getPortNames(p)) do
       print(portval2str(comp:getPort(p), comp))
@@ -379,9 +386,9 @@ local function tc_colorstate(state)
    return red(state, true)
 end
 
---
--- pretty print a taskcontext
---
+--- Convert a TaskContext to a nice string.
+-- @param tc TaskContext
+-- @return string
 function tc2str(tc)
    local res = {}
    res[#res+1] = magenta('TaskContext') .. ': ' .. green(tc:getName(), true)
@@ -389,7 +396,7 @@ function tc2str(tc)
 
    for i,v in ipairs( { "isActive", "getPeriod" } )
    do
-      res[#res+1] = magenta(v) .. ": " .. tostring(tc:call(v)) .. ""
+      res[#res+1] = magenta(v) .. ": " .. tostring(tc:getOperation(v)()) .. ""
    end
 
    res[#res+1] = magenta("peers") .. ": " .. table.concat(tc:getPeers(), ', ')
@@ -535,17 +542,44 @@ end
 function tc_index(tc, key)
    local reg = debug.getregistry()
    if rtt.TaskContext.hasOperation(tc, key) then
-      return function (tc, ...) return rtt.TaskContext.call(tc, key, ...) end
+      return function (tc, ...) return rtt.TaskContext.getOperation(tc, key)(...) end
    else -- pass on to standard metatable
       return reg.TaskContext[key]
    end
 end
 
+--- Return the (RTT aware) type of an object.
+-- falls back on the standard 'type' if not an RTT object.
+-- @param obj
+-- @return string
+function rtt_type(obj)
+   local mt = getmetatable(obj)
+   if mt then
+      local reg=debug.getregistry()
+      for k,v in pairs(reg) do if v == mt then return k end end
+   end
+   return type(obj)
+end
+
+-- conveniance constructors
 setmetatable(rtt.Variable, {__call=function(t,...) return rtt.Variable.new(...) end})
 setmetatable(rtt.Property, {__call=function(t,...) return rtt.Property.new(...) end})
 setmetatable(rtt.InputPort, {__call=function(t,...) return rtt.InputPort.new(...) end})
 setmetatable(rtt.OutputPort, {__call=function(t,...) return rtt.OutputPort.new(...) end})
 setmetatable(rtt.EEHook, {__call=function(t,...) return rtt.EEHook.new(...) end})
+
+-- create a globals tab with a metatable that forwards __index to
+-- globals_get() and __tostring prints all know globals.
+rtt.globals={}
+local globals_mt= {
+   __index=function(t,v) return rtt.globals_get(v) end,
+   __tostring=function(t)
+		 local res = {}
+		 for _,v in ipairs(rtt.globals_getNames()) do res[v] = rtt.globals_get(v) end
+		 return utils.tab2str(res)
+	      end
+}
+setmetatable(rtt.globals, globals_mt)
 
 -- enable pretty printing
 if type(debug) == 'table' then

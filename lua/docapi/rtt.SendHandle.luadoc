@@ -1,4 +1,4 @@
---- SendHandle module
+--- SendHandle module.
 -- SendHandle is returned by a TaskContext <code>send()</code> operation.
 -- See the RTT documentation for details about how this works.
 

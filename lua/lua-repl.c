@@ -118,7 +118,7 @@ static void print_version (void) {
 }
 
 static void print_quit_info (void) {
-  l_message(NULL, " Use Ctrl-D to quit." );
+  l_message(NULL, " Use Ctrl-d to quit." );
 }
 
 static int getargs (lua_State *L, char **argv, int n) {

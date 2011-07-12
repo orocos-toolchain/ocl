@@ -1,4 +1,4 @@
---- TaskContext methods
+--- TaskContext methods.
 -- The following methods are available for TaskContext types
 --
 
@@ -27,6 +27,13 @@ function activate()
 --- Cleanup TaskContext.
 -- @return boolean to indicate wether cleanup succeeded
 function cleanup()
+
+--- Raise a run-time error.
+function error()
+
+--- Recover from a run-time error.
+-- @return boolean to indicate wether recovering succeeded
+function recover()
 
 --- Get current TaskContext lifecycle state.
 -- @return current state (string)
@@ -131,9 +138,11 @@ function requires(name)
 function connectServices(peer)
 
 --- Call an Operation of a TaskContext.
--- Note: using this method directly is discouraged. Use
--- <code>TaskContext:operation()</code> or the Service.getOperation
--- interface.
+-- Note: this pumbing method is removed as from toolchain-2.5. Instead
+-- call the operation directly using
+-- <code>TaskContext:operation()</code> (conveniant, but non-rt) or
+-- use the Service:getOperation interface to get an operation which
+-- can then be called using <code>op(arg1, arg2, ...)</code>
 -- @param name name of operation
 -- @param ... zero or more arguments
 -- @return return value plus zero or more out arguments.
@@ -150,13 +159,6 @@ function getOperation(name)
 -- @param name name of operation to check
 -- @return true if operation with name exists.
 function hasOperation(name)
-
---- Send an Operation
--- see the RTT docs about sending operations.
--- @param name of operation
--- @param ... zero or more arguments
--- @return SendHandle
-function SendHandle send(name, ...)
 
 --- Delete a TaskContext
 -- Delete a TaskContext and free the memory. Normally this function
