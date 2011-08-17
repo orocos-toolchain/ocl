@@ -32,6 +32,8 @@
  * Suite 330, Boston, MA  02111-1307  USA
  */
 
+#define LUA_RTT_TLSF 1
+
 #ifndef OCL_COMPONENT_ONLY
 extern "C" {
 #include "lua-repl.h"
