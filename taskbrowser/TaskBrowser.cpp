@@ -1317,6 +1317,9 @@ namespace OCL
         std::vector<std::string> strs;
         boost::split(strs, names, boost::is_any_of("."));
 
+        // strs could be empty because of a bug in Boost 1.44 (see https://svn.boost.org/trac/boost/ticket/4751)
+        if (strs.empty()) return serv;
+
         string component = strs.front();
         if (! context->hasPeer(component) && !context->provides()->hasService(component) ) {
             return serv;

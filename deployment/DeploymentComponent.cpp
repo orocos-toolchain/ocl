@@ -279,6 +279,9 @@ namespace OCL
     	std::vector<std::string> strs;
     	boost::split(strs, names, boost::is_any_of("."));
 
+      // strs could be empty because of a bug in Boost 1.44 (see https://svn.boost.org/trac/boost/ticket/4751)
+      if (strs.empty()) return Service::shared_ptr();
+
     	string component = strs.front();
     	if (!hasPeer(component) && component != this->getName() ) {
     		log(Error) << "No such component: '"<< component <<"'" <<endlog();
@@ -307,6 +310,9 @@ namespace OCL
     base::PortInterface* DeploymentComponent::stringToPort(string const& names) {
     	std::vector<std::string> strs;
     	boost::split(strs, names, boost::is_any_of("."));
+
+      // strs could be empty because of a bug in Boost 1.44 (see https://svn.boost.org/trac/boost/ticket/4751)
+      if (strs.empty()) return 0;
 
     	string component = strs.front();
     	if (!hasPeer(component) && component != this->getName() ) {
