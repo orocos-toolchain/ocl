@@ -22,7 +22,11 @@
 #include "lauxlib.h"
 #include "lualib.h"
 
-#define RTTLUA_BOILER  "OROCOS RTTLua"
+#ifdef LUA_RTT_TLSF
+ #define RTTLUA_BOILER  "OROCOS RTTLua (TLSF)"
+#else
+ #define RTTLUA_BOILER  "OROCOS RTTLua"
+#endif
 #define RTTLUA_VERSION "1.0-beta3"
 #define XSTR(x) STR(x)
 #define STR(x)	#x

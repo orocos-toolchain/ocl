@@ -21,19 +21,19 @@
 
 #include <sys/types.h>
 
-extern size_t init_memory_pool(size_t, void *);
-extern size_t get_used_size(void *);
-extern size_t get_max_size(void *);
-extern void destroy_memory_pool(void *);
-extern size_t add_new_area(void *, size_t, void *);
-extern void *malloc_ex(size_t, void *);
-extern void free_ex(void *, void *);
-extern void *realloc_ex(void *, size_t, void *);
-extern void *calloc_ex(size_t, size_t, void *);
+extern size_t rtl_init_memory_pool(size_t, void *);
+extern size_t rtl_get_used_size(void *);
+extern size_t rtl_get_max_size(void *);
+extern void rtl_destroy_memory_pool(void *);
+extern size_t rtl_add_new_area(void *, size_t, void *);
+extern void *rtl_malloc_ex(size_t, void *);
+extern void rtl_free_ex(void *, void *);
+extern void *rtl_realloc_ex(void *, size_t, void *);
+extern void *rtl_calloc_ex(size_t, size_t, void *);
 
-extern void *tlsf_malloc(size_t size);
-extern void tlsf_free(void *ptr);
-extern void *tlsf_realloc(void *ptr, size_t size);
-extern void *tlsf_calloc(size_t nelem, size_t elem_size);
+extern void *rtl_tlsf_malloc(size_t size);
+extern void rtl_tlsf_free(void *ptr);
+extern void *rtl_tlsf_realloc(void *ptr, size_t size);
+extern void *rtl_tlsf_calloc(size_t nelem, size_t elem_size);
 
 #endif

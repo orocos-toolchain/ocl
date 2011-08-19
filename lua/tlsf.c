@@ -37,7 +37,7 @@
  * - Created set_bit/clear_bit fuctions because they are not present 
  *   on x86_64.
  * - Added locking support + extra file target.h to show how to use it.
- * - Added get_used_size function (REMOVED in 2.4)
+ * - Added rtl_get_used_size function (REMOVED in 2.4)
  * - Added rtl_realloc and rtl_calloc function
  * - Implemented realloc clever support.
  * - Added some test code in the example directory.
@@ -461,18 +461,18 @@ static __inline__ bhdr_t *process_area(void *area, size_t size) {
 static char *mp = NULL;         /* Default memory pool. */
 
 /******************************************************************/
-size_t init_memory_pool(size_t mem_pool_size, void *mem_pool) {
+size_t rtl_init_memory_pool(size_t mem_pool_size, void *mem_pool) {
 /******************************************************************/
     tlsf_t *tlsf;
     bhdr_t *b, *ib;
 
     if (!mem_pool || !mem_pool_size || mem_pool_size < sizeof(tlsf_t) + BHDR_OVERHEAD * 8) {
-        ERROR_MSG("init_memory_pool (): memory_pool invalid\n");
+        ERROR_MSG("rtl_init_memory_pool (): memory_pool invalid\n");
         return (size_t) - 1;
     }
 
     if (((unsigned long) mem_pool & PTR_MASK)) {
-        ERROR_MSG("init_memory_pool (): mem_pool must be aligned to a word\n");
+        ERROR_MSG("rtl_init_memory_pool (): mem_pool must be aligned to a word\n");
         return (size_t) - 1;
     }
     tlsf = (tlsf_t *) mem_pool;
@@ -496,7 +496,7 @@ size_t init_memory_pool(size_t mem_pool_size, void *mem_pool) {
                       (mem_pool, ROUNDUP_SIZE(sizeof(tlsf_t))),
                       ROUNDDOWN_SIZE(mem_pool_size - sizeof(tlsf_t)));
     b = GET_NEXT_BLOCK(ib->ptr.buffer, ib->size & BLOCK_SIZE);
-    free_ex(b->ptr.buffer, tlsf);
+    rtl_free_ex(b->ptr.buffer, tlsf);
     tlsf->area_head = (area_info_t *) ib->ptr.buffer;
 
 #if TLSF_STATISTIC
@@ -508,7 +508,7 @@ size_t init_memory_pool(size_t mem_pool_size, void *mem_pool) {
 }
 
 /******************************************************************/
-size_t add_new_area(void *area, size_t area_size, void *mem_pool) {
+size_t rtl_add_new_area(void *area, size_t area_size, void *mem_pool) {
 /******************************************************************/
     tlsf_t *tlsf = (tlsf_t *) mem_pool;
     area_info_t *ptr, *ptr_prev, *ai;
@@ -582,13 +582,13 @@ size_t add_new_area(void *area, size_t area_size, void *mem_pool) {
     ai->next = tlsf->area_head;
     ai->end = lb0;
     tlsf->area_head = ai;
-    free_ex(b0->ptr.buffer, mem_pool);
+    rtl_free_ex(b0->ptr.buffer, mem_pool);
     return (b0->size & BLOCK_SIZE);
 }
 
 
 /******************************************************************/
-size_t get_used_size(void *mem_pool ATTRIBUTE_UNUSED) {
+size_t rtl_get_used_size(void *mem_pool ATTRIBUTE_UNUSED) {
 /******************************************************************/
 #if TLSF_STATISTIC
     return ((tlsf_t *) mem_pool)->used_size;
@@ -598,7 +598,7 @@ size_t get_used_size(void *mem_pool ATTRIBUTE_UNUSED) {
 }
 
 /******************************************************************/
-size_t get_max_size(void *mem_pool ATTRIBUTE_UNUSED) {
+size_t rtl_get_max_size(void *mem_pool ATTRIBUTE_UNUSED) {
 /******************************************************************/
 #if TLSF_STATISTIC
     return ((tlsf_t *) mem_pool)->max_size;
@@ -608,7 +608,7 @@ size_t get_max_size(void *mem_pool ATTRIBUTE_UNUSED) {
 }
 
 /******************************************************************/
-void destroy_memory_pool(void *mem_pool) {
+void rtl_destroy_memory_pool(void *mem_pool) {
 /******************************************************************/
     tlsf_t *tlsf = (tlsf_t *) mem_pool;
 
@@ -620,7 +620,7 @@ void destroy_memory_pool(void *mem_pool) {
 
 
 /******************************************************************/
-void *tlsf_malloc(size_t size) {
+void *rtl_tlsf_malloc(size_t size) {
 /******************************************************************/
     void *ret;
 
@@ -634,13 +634,13 @@ void *tlsf_malloc(size_t size) {
         area = get_new_area(&area_size);
         if (area == ((void *) ~0))
             return NULL;        /* Not enough system memory */
-        init_memory_pool(area_size, area);
+        rtl_init_memory_pool(area_size, area);
     }
 #endif
 
     TLSF_ACQUIRE_LOCK(&((tlsf_t *) mp)->lock);
 
-    ret = malloc_ex(size, mp);
+    ret = rtl_malloc_ex(size, mp);
 
     TLSF_RELEASE_LOCK(&((tlsf_t *) mp)->lock);
 
@@ -648,31 +648,31 @@ void *tlsf_malloc(size_t size) {
 }
 
 /******************************************************************/
-void tlsf_free(void *ptr) {
+void rtl_tlsf_free(void *ptr) {
 /******************************************************************/
 
     TLSF_ACQUIRE_LOCK(&((tlsf_t *) mp)->lock);
 
-    free_ex(ptr, mp);
+    rtl_free_ex(ptr, mp);
 
     TLSF_RELEASE_LOCK(&((tlsf_t *) mp)->lock);
 
 }
 
 /******************************************************************/
-void *tlsf_realloc(void *ptr, size_t size) {
+void *rtl_tlsf_realloc(void *ptr, size_t size) {
 /******************************************************************/
     void *ret;
 
 #if USE_MMAP || USE_SBRK
     if (!mp) {
-        return tlsf_malloc(size);
+        return rtl_tlsf_malloc(size);
     }
 #endif
 
     TLSF_ACQUIRE_LOCK(&((tlsf_t *) mp)->lock);
 
-    ret = realloc_ex(ptr, size, mp);
+    ret = rtl_realloc_ex(ptr, size, mp);
 
     TLSF_RELEASE_LOCK(&((tlsf_t *) mp)->lock);
 
@@ -680,13 +680,13 @@ void *tlsf_realloc(void *ptr, size_t size) {
 }
 
 /******************************************************************/
-void *tlsf_calloc(size_t nelem, size_t elem_size) {
+void *rtl_tlsf_calloc(size_t nelem, size_t elem_size) {
 /******************************************************************/
     void *ret;
 
     TLSF_ACQUIRE_LOCK(&((tlsf_t *) mp)->lock);
 
-    ret = calloc_ex(nelem, elem_size, mp);
+    ret = rtl_calloc_ex(nelem, elem_size, mp);
 
     TLSF_RELEASE_LOCK(&((tlsf_t *) mp)->lock);
 
@@ -694,7 +694,7 @@ void *tlsf_calloc(size_t nelem, size_t elem_size) {
 }
 
 /******************************************************************/
-void *malloc_ex(size_t size, void *mem_pool) {
+void *rtl_malloc_ex(size_t size, void *mem_pool) {
 /******************************************************************/
     tlsf_t *tlsf = (tlsf_t *) mem_pool;
     bhdr_t *b, *b2, *next_b;
@@ -719,7 +719,7 @@ void *malloc_ex(size_t size, void *mem_pool) {
         area = get_new_area(&area_size);        /* Call sbrk or mmap */
         if (area == ((void *) ~0))
             return NULL;        /* Not enough system memory */
-        add_new_area(area, area_size, mem_pool);
+        rtl_add_new_area(area, area_size, mem_pool);
         /* Rounding up the requested size and calculating fl and sl */
         MAPPING_SEARCH(&size, &fl, &sl);
         /* Searching a free block */
@@ -755,7 +755,7 @@ void *malloc_ex(size_t size, void *mem_pool) {
 }
 
 /******************************************************************/
-void free_ex(void *ptr, void *mem_pool) {
+void rtl_free_ex(void *ptr, void *mem_pool) {
 /******************************************************************/
     tlsf_t *tlsf = (tlsf_t *) mem_pool;
     bhdr_t *b, *tmp_b;
@@ -768,7 +768,7 @@ void free_ex(void *ptr, void *mem_pool) {
 
 #ifdef CHECK_DOUBLE_FREE
     if (b->size & FREE_BLOCK) {
-        ERROR_MSG("free_ex(): double free %p\n", ptr);
+        ERROR_MSG("rtl_free_ex(): double free %p\n", ptr);
         return;
     }
 #endif
@@ -801,7 +801,7 @@ void free_ex(void *ptr, void *mem_pool) {
 }
 
 /******************************************************************/
-void *realloc_ex(void *ptr, size_t new_size, void *mem_pool) {
+void *rtl_realloc_ex(void *ptr, size_t new_size, void *mem_pool) {
 /******************************************************************/
     tlsf_t *tlsf = (tlsf_t *) mem_pool;
     void *ptr_aux;
@@ -812,11 +812,11 @@ void *realloc_ex(void *ptr, size_t new_size, void *mem_pool) {
 
     if (!ptr) {
         if (new_size)
-            return (void *) malloc_ex(new_size, mem_pool);
+            return (void *) rtl_malloc_ex(new_size, mem_pool);
         if (!new_size)
             return NULL;
     } else if (!new_size) {
-        free_ex(ptr, mem_pool);
+        rtl_free_ex(ptr, mem_pool);
         return NULL;
     }
 
@@ -824,8 +824,8 @@ void *realloc_ex(void *ptr, size_t new_size, void *mem_pool) {
 
 #ifdef CHECK_DOUBLE_FREE
     if (b->size & FREE_BLOCK) {
-        ERROR_MSG("realloc_ex(): invalid pointer %p\n", ptr);
-        return (void *) malloc_ex(new_size, mem_pool);
+        ERROR_MSG("rtl_realloc_ex(): invalid pointer %p\n", ptr);
+        return (void *) rtl_malloc_ex(new_size, mem_pool);
     }
 #endif
 
@@ -881,7 +881,7 @@ void *realloc_ex(void *ptr, size_t new_size, void *mem_pool) {
         }
     }
 
-    if (!(ptr_aux = malloc_ex(new_size, mem_pool))) {
+    if (!(ptr_aux = rtl_malloc_ex(new_size, mem_pool))) {
         return NULL;
     }
 
@@ -889,20 +889,20 @@ void *realloc_ex(void *ptr, size_t new_size, void *mem_pool) {
 
     memcpy(ptr_aux, ptr, cpsize);
 
-    free_ex(ptr, mem_pool);
+    rtl_free_ex(ptr, mem_pool);
     return ptr_aux;
 }
 
 
 /******************************************************************/
-void *calloc_ex(size_t nelem, size_t elem_size, void *mem_pool) {
+void *rtl_calloc_ex(size_t nelem, size_t elem_size, void *mem_pool) {
 /******************************************************************/
     void *ptr;
 
     if (nelem <= 0 || elem_size <= 0)
         return NULL;
 
-    if (!(ptr = malloc_ex(nelem * elem_size, mem_pool)))
+    if (!(ptr = rtl_malloc_ex(nelem * elem_size, mem_pool)))
         return NULL;
     memset(ptr, 0, nelem * elem_size);
 
