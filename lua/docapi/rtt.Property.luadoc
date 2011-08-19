@@ -34,13 +34,14 @@ function get()
 -- @return true in case of success
 function set(variable)
 
---- Get the name of a Property.
--- @return name string
-function getName()
+--- Return information about a property.
+-- The information is stored in a table with the fields:<br><br>
+-- <code>   name</code>: name of port<br>
+-- <code>   desc</code>: description of port<br>
+-- <code>   type</code>: type of port<br>
+-- @return table with above fields.
+function info()
 
---- Get description of Property.
--- @return description string 
-function getDescription()
 
 --- Delete a Property.
 -- This frees the memory and makes the Property inaccessible from
