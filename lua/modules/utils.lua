@@ -10,7 +10,7 @@ module('utils')
 
 -- increment major on API breaks
 -- increment minor on non breaking changes
-VERSION=0.6
+VERSION=0.7
 
 function append(car, ...)
    assert(type(car) == 'table')
@@ -272,6 +272,15 @@ function table_has(t, x)
       if e==x then return true end
    end
    return false
+end
+
+--- Return a new table with unique elements.
+function table_unique(t)
+   local res = {}
+   for i,v in ipairs(t) do
+      if not table_has(res, v) then res[#res+1]=v end
+   end
+   return res
 end
 
 --- Convert arguments list into key-value pairs.
