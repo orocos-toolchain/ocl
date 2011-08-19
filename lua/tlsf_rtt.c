@@ -167,11 +167,6 @@ static int tlsf_stats(lua_State *L)
 {
 	struct lua_tlsf_info *tlsf_inf = get_context_tlsf_info(L);
 
-	printf("cur=%lu, max=%lu, tot=%u\n", 
-	       rtl_get_used_size(tlsf_inf->pool),
-	       rtl_get_max_size(tlsf_inf->pool),
-	       tlsf_inf->total_mem);
-
 	lua_pushinteger(L, rtl_get_used_size(tlsf_inf->pool));
 	lua_pushinteger(L, rtl_get_max_size(tlsf_inf->pool));
 	lua_pushinteger(L, tlsf_inf->total_mem);
