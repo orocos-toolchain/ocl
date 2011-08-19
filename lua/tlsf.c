@@ -514,6 +514,11 @@ size_t rtl_add_new_area(void *area, size_t area_size, void *mem_pool) {
     area_info_t *ptr, *ptr_prev, *ai;
     bhdr_t *ib0, *b0, *lb0, *ib1, *b1, *lb1, *next_b;
 
+#if TLSF_STATISTIC
+    size_t savesz;
+    savesz = tlsf->used_size;
+#endif
+
     memset(area, 0, area_size);
     ptr = tlsf->area_head;
     ptr_prev = 0;
@@ -583,6 +588,10 @@ size_t rtl_add_new_area(void *area, size_t area_size, void *mem_pool) {
     ai->end = lb0;
     tlsf->area_head = ai;
     rtl_free_ex(b0->ptr.buffer, mem_pool);
+
+#if TLSF_STATISTIC
+    tlsf->used_size=savesz;
+#endif
     return (b0->size & BLOCK_SIZE);
 }
 
