@@ -69,6 +69,12 @@ namespace OCL
 			return i%2;
 		}
 
+		void throw_exception()
+		{
+			throw std::runtime_error("Alas, its time to go.");
+		}
+
+
 		void updateHook() {
 			// log(Info) << "inside update_hook" << endlog();
 		}
@@ -114,6 +120,7 @@ namespace OCL
 			this->addOperation( "op_1_out", &Testcomp::op_1_out, this, OwnThread).doc("'op_1_out' Description").arg("i", "any int");
 			this->addOperation( "op_3_out", &Testcomp::op_3_out, this, OwnThread).doc("'op_3_out' Description").arg("mes", "just any string.").arg("double", "just any double").arg("i", "just any int");
 			this->addOperation( "op_1_out_retval", &Testcomp::op_1_out_retval, this, OwnThread).doc("'op_1_out' Description").arg("i", "any int");
+			this->addOperation( "throw", &Testcomp::throw_exception, this, ClientThread).doc("This operation throws an exception");
 			this->provides("printing")
 				->addOperation( "print", &Testcomp::op_1,
 						this, OwnThread).doc("'op_1' Description").arg("mes", "just any string.");

@@ -1292,8 +1292,9 @@ static int Operation_call(lua_State *L)
 	int ret;
 	try {
 		ret = __Operation_call(L);
-	} catch(...) {
-		luaL_error(L, "Operation.call: caught exception");
+	} catch(const std::exception &exc) {
+
+		luaL_error(L, "Operation.call: caught exception '%s'", exc.what());
 	}
 	return ret;
 }
@@ -1303,8 +1304,8 @@ static int Operation_send(lua_State *L)
 	int ret;
 	try {
 		ret = __Operation_send(L);
-	} catch(...) {
-		luaL_error(L, "Operation.send: caught exception");
+	} catch(const std::exception &exc) {
+		luaL_error(L, "Operation.send: caught exception '%s'", exc.what());
 	}
 	return ret;
 }
