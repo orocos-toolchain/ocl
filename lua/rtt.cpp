@@ -1293,8 +1293,9 @@ static int Operation_call(lua_State *L)
 	try {
 		ret = __Operation_call(L);
 	} catch(const std::exception &exc) {
-
 		luaL_error(L, "Operation.call: caught exception '%s'", exc.what());
+	} catch(...) {
+		luaL_error(L, "Operation.call: caught unknown exception");
 	}
 	return ret;
 }
@@ -1306,6 +1307,8 @@ static int Operation_send(lua_State *L)
 		ret = __Operation_send(L);
 	} catch(const std::exception &exc) {
 		luaL_error(L, "Operation.send: caught exception '%s'", exc.what());
+	} catch(...) {
+		luaL_error(L, "Operation.call: caught unknown exception");
 	}
 	return ret;
 }
