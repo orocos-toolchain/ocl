@@ -18,7 +18,7 @@
 # define _DBG(x, mask, fmt, args...) do { } while(0);
 #endif
 
-#define TLSF_POOL_MIN_SIZE	4*1014*1024
+#define TLSF_POOL_MIN_SIZE	1*1014*1024
 
 /* create a memory pool of sz and initialize it for use with TLSF */
 int tlsf_rtt_init_mp(struct lua_tlsf_info *tlsf_inf, size_t sz)

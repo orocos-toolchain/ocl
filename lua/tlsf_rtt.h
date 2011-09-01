@@ -3,7 +3,7 @@
 #include <lauxlib.h>
 #include <lualib.h>
 
-#define TLSF_INITIAL_POOLSIZE	4*1024*1024
+#define TLSF_INITIAL_POOLSIZE	1*1024*1024
 #undef	TLSF_DEBUG
 
 /* this is used as the opque Lua userdata to the alloc func */
