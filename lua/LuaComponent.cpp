@@ -266,7 +266,7 @@ int ORO_main(int argc, char** argv)
 #include "ocl/Component.hpp"
 
 #ifdef LUA_RTT_TLSF
- ORO_CREATE_COMPONENT2( OCL::LuaComponent, OCL::LuaComponentTLSF )
+ ORO_CREATE_COMPONENT2( OCL::LuaComponent, OCL::LuaTLSFComponent )
 #else
  ORO_CREATE_COMPONENT( OCL::LuaComponent )
 #endif
