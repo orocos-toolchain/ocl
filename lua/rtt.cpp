@@ -2338,6 +2338,15 @@ static int getTime(lua_State *L)
 	return 2;
 }
 
+static int rtt_sleep(lua_State *L)
+{
+	TIME_SPEC ts;
+	ts.tv_sec = luaL_checknumber(L, 1);
+	ts.tv_nsec = luaL_checknumber(L, 2);
+	rtos_nanosleep(&ts, NULL);
+	return 0;
+}
+
 static int getTC(lua_State *L)
 {
 	lua_pushstring(L, "this_TC");
@@ -2409,6 +2418,7 @@ static int rtt_types(lua_State *L)
 
 static const struct luaL_Reg rtt_f [] = {
 	{"getTime", getTime },
+	{"sleep", rtt_sleep },
 	{"getTC", getTC },
 	{"globals_getNames", globals_getNames },
 	{"globals_get", globals_get },
