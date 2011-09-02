@@ -64,6 +64,12 @@ extern "C" {
 }
 #endif
 
+#ifdef LUA_RTT_TLSF
+#define LuaComponent LuaTLSFComponent
+#else
+#define LuaComponent LuaComponent
+#endif
+
 #define INIT_FILE	"~/.rttlua"
 
 using namespace std;
@@ -265,9 +271,5 @@ int ORO_main(int argc, char** argv)
 
 #include "ocl/Component.hpp"
 
-#ifdef LUA_RTT_TLSF
- ORO_CREATE_COMPONENT2( OCL::LuaComponent, OCL::LuaTLSFComponent )
-#else
- ORO_CREATE_COMPONENT( OCL::LuaComponent )
-#endif
+ORO_CREATE_COMPONENT( OCL::LuaComponent )
 #endif
