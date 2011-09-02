@@ -490,7 +490,10 @@ static void Variable_fromlua(lua_State *L, DataSourceBase::shared_ptr& dsb, int 
 		else
 			goto out_conv_err;
 
-		(ValueDataSource<bool>::narrow(dsb.get()))->set((bool) x);
+		AssignableDataSource<bool> *ads = ValueDataSource<bool>::narrow(dsb.get());
+		if (ads == NULL)
+			luaL_error(L, "Variable_fromlua: failed to narrow target dsb to bool");
+		ads->set((bool) x);
 
 	} else if (__typenames_cmp(L, ti, "int")) {
 		lua_Number x;
@@ -499,7 +502,10 @@ static void Variable_fromlua(lua_State *L, DataSourceBase::shared_ptr& dsb, int 
 		else
 			goto out_conv_err;
 
-		(ValueDataSource<int>::narrow(dsb.get()))->set((int) x);
+		AssignableDataSource<int> *ads = ValueDataSource<int>::narrow(dsb.get());
+		if (ads == NULL)
+			luaL_error(L, "Variable_fromlua: failed to narrow target dsb to int");
+		ads->set((int) x);
 
 	} else if (__typenames_cmp(L, ti, "uint")) {
 		lua_Number x;
@@ -508,7 +514,10 @@ static void Variable_fromlua(lua_State *L, DataSourceBase::shared_ptr& dsb, int 
 		else
 			goto out_conv_err;
 
-		(ValueDataSource<unsigned int>::narrow(dsb.get()))->set((unsigned int) x);
+		AssignableDataSource<unsigned int> *ads = ValueDataSource<unsigned int>::narrow(dsb.get());
+		if (ads == NULL)
+			luaL_error(L, "Variable_fromlua: failed to narrow target dsb to unsigned int");
+		ads->set((unsigned int) x);
 
 	} else if (__typenames_cmp(L, ti, "long")) {
 		lua_Number x;
@@ -517,7 +526,10 @@ static void Variable_fromlua(lua_State *L, DataSourceBase::shared_ptr& dsb, int 
 		else
 			goto out_conv_err;
 
-		(ValueDataSource<long>::narrow(dsb.get()))->set((long) x);
+		AssignableDataSource<long> *ads = ValueDataSource<long>::narrow(dsb.get());
+		if (ads == NULL)
+			luaL_error(L, "Variable_fromlua: failed to narrow target dsb to long");
+		ads->set((long) x);
 
 	} else if (__typenames_cmp(L, ti, "double")) {
 		lua_Number x;
@@ -526,7 +538,10 @@ static void Variable_fromlua(lua_State *L, DataSourceBase::shared_ptr& dsb, int 
 		else
 			goto out_conv_err;
 
-		(ValueDataSource<double>::narrow(dsb.get()))->set((double) x);
+		AssignableDataSource<double> *ads = ValueDataSource<double>::narrow(dsb.get());
+		if (ads == NULL)
+			luaL_error(L, "Variable_fromlua: failed to narrow target dsb to double");
+		ads->set((double) x);
 
 	} else if (__typenames_cmp(L, ti, "float")) {
 		lua_Number x;
@@ -535,7 +550,10 @@ static void Variable_fromlua(lua_State *L, DataSourceBase::shared_ptr& dsb, int 
 		else
 			goto out_conv_err;
 
-		(ValueDataSource<float>::narrow(dsb.get()))->set((float) x);
+		AssignableDataSource<float> *ads = ValueDataSource<float>::narrow(dsb.get());
+		if (ads == NULL)
+			luaL_error(L, "Variable_fromlua: failed to narrow target dsb to float");
+		ads->set((float) x);
 
 	} else if (__typenames_cmp(L, ti, "char")) {
 		const char *x;
@@ -545,7 +563,10 @@ static void Variable_fromlua(lua_State *L, DataSourceBase::shared_ptr& dsb, int 
 		else
 			goto out_conv_err;
 
-		(ValueDataSource<char>::narrow(dsb.get()))->set((char) x[0]);
+		AssignableDataSource<char> *ads = ValueDataSource<char>::narrow(dsb.get());
+		if (ads == NULL)
+			luaL_error(L, "Variable_fromlua: failed to narrow target dsb to char");
+		ads->set((char) x[0]);
 
 	} else if (__typenames_cmp(L, ti, "string")) {
 		const char *x;
@@ -554,7 +575,10 @@ static void Variable_fromlua(lua_State *L, DataSourceBase::shared_ptr& dsb, int 
 		else
 			goto out_conv_err;
 
-		(ValueDataSource<std::string>::narrow(dsb.get()))->set((std::string) x);
+		AssignableDataSource<std::string> *ads = ValueDataSource<std::string>::narrow(dsb.get());
+		if (ads == NULL)
+			luaL_error(L, "Variable_fromlua: failed to narrow target dsb to std::string");
+		ads->set((std::string) x);
 
 	} else if (luatype == LUA_TNUMBER) { /* last resort, try conversion via double */
 		DataSourceBase::shared_ptr double_dsb = Variable_fromlua(L, "double", valind);
