@@ -51,8 +51,7 @@ namespace OCL
 
   ReportingComponent::ReportingComponent( std::string name /*= "Reporting" */ )
         : TaskContext( name ),
-          report("Report"),
-          snapshotOnly("SnapshotOnly","Set to true to only log data if a snapshot() was done.", false),
+          report("Report"), needs_copy(true),
           writeHeader("WriteHeader","Set to true to start each report with a header.", true),
           decompose("Decompose","Set to false in order to create multidimensional array in netcdf", true),
           synchronize_with_logging("Synchronize","Set to true if the timestamp should be synchronized with the logging",false),
@@ -61,7 +60,6 @@ namespace OCL
           starttime(0),
           timestamp("TimeStamp","The time at which the data was read.",0.0)
     {
-        this->properties()->addProperty( snapshotOnly );
         this->properties()->addProperty( writeHeader );
         this->properties()->addProperty( decompose );
         this->properties()->addProperty( synchronize_with_logging);
@@ -71,7 +69,7 @@ namespace OCL
         // Add the methods, methods make sure that they are
         // executed in the context of the (non realtime) caller.
 
-        this->addOperation("snapshot", &ReportingComponent::snapshot , this, RTT::ClientThread).doc("Take a new shapshot of all data and cause them to be written out.");
+        this->addOperation("snapshot", &ReportingComponent::snapshot , this, RTT::OwnThread).doc("Take a new shapshot of all data and cause them to be written out. Only works in one-shot mode.");
         this->addOperation("screenComponent", &ReportingComponent::screenComponent , this, RTT::ClientThread).doc("Display the variables and ports of a Component.").arg("Component", "Name of the Component");
         this->addOperation("reportComponent", &ReportingComponent::reportComponent , this, RTT::ClientThread).doc("Add a peer Component and report all its data ports").arg("Component", "Name of the Component");
         this->addOperation("unreportComponent", &ReportingComponent::unreportComponent , this, RTT::ClientThread).doc("Remove all Component's data ports from reporting.").arg("Component", "Name of the Component");
@@ -297,15 +295,10 @@ namespace OCL
         assert(ipi);
 
         ConnPolicy pol;
-        if (snapshotOnly.get() ) {
-            log(Info) << "Disabling buffering of data flow connections in SnapshotOnly mode." <<endlog();
-            pol = ConnPolicy::data(ConnPolicy::LOCK_FREE,true,false);
-        } else {
-            log(Info) << "Buffering of data flow connections is set to 10 samples." <<endlog();
-            pol = ConnPolicy::buffer(10,ConnPolicy::LOCK_FREE,true,false);
-        }
+        log(Info) << "Not buffering of data flow connections. You may miss samples." <<endlog();
+        pol = ConnPolicy::data(ConnPolicy::LOCK_FREE,true,false);
 
-        if (porti->connectTo(ourport, ConnPolicy::buffer(10,ConnPolicy::LOCK_FREE,true,false) ) == false)
+        if (porti->connectTo(ourport, pol ) == false)
         {
             log(Error) << "Could not connect to OutputPort " << porti->getName() << endlog();
             delete ourport; // XXX/TODO We're leaking ourport !
@@ -419,6 +412,11 @@ namespace OCL
             return false;
         }
 
+        if(synchronize_with_logging.get())
+            starttime = Logger::Instance()->getReferenceTime();
+        else
+            starttime = os::TimeService::Instance()->getTicks();
+
         // Write initial lines.
         this->copydata();
         // force all as new data:
@@ -436,8 +434,13 @@ namespace OCL
             }
         }
 
-        // write initial values with all value marshallers.
-        if (snapshotOnly.get() == false) {
+        // makeReport clears the flags:
+        for(Reports::iterator it = root.begin(); it != root.end(); ++it ) {
+            it->get<5>() = true;
+        }
+
+        // write initial values with all value marshallers (uses the forcing above)
+        if ( getActivity()->isPeriodic() ) {
             for(Marshallers::iterator it=marshallers.begin(); it != marshallers.end(); ++it) {
                 it->second->serialize( report );
                 it->second->flush();
@@ -446,44 +449,35 @@ namespace OCL
 
         this->cleanReport();
 
-        if(synchronize_with_logging.get())
-            starttime = Logger::Instance()->getReferenceTime();
-        else
-            starttime = os::TimeService::Instance()->getTicks();
-
         return true;
     }
 
     void ReportingComponent::snapshot() {
-        // this function always copies and reports all data
+        // this function always copies and reports all data It's run in ownthread, so updateHook will be run later.
+        if ( getActivity()->isPeriodic() )
+            return;
         copydata();
         // force logging of all data.
         for(Reports::iterator it = root.begin(); it != root.end(); ++it ) {
             it->get<5>() = true;
         }
-
-        if( this->engine()->getActivity() )
-            this->engine()->getActivity()->trigger();
     }
 
     bool ReportingComponent::copydata() {
         timestamp = os::TimeService::Instance()->secondsSince( starttime );
 
+        // result will become true if more data is to be read.
         bool result = false;
         // execute the copy commands (fast).
         for(Reports::iterator it = root.begin(); it != root.end(); ++it ) {
-            bool newdata = false;
-            do {
-                // execute() will only return true if the InputPortSource's evaluate()
-                // returned true too during readArguments().
-                (it->get<2>())->readArguments();
-                newdata = (it->get<2>())->execute(); // stores new data flag.
-                (it->get<5>()) |= newdata;
-                // if its a property/attr, get<5> will always be true, so we override with get<6>.
-                result |= newdata && (it->get<6>());
-                // if periodic, keep reading until we hit the last sample (or none are available):
-            } while ( newdata && (it->get<6>()) && this->getActivity()->isPeriodic() );
+            // execute() will only return true if the InputPortSource's evaluate()
+            // returned true too during readArguments().
+            (it->get<2>())->readArguments();
+            it->get<5>() = (it->get<2>())->execute(); // stores new data flag.
+            // if its a property/attr, get<5> will always be true, so we override (clear) with get<6>.
+            result = result || ( it->get<5>() && it->get<6>() );
         }
+        needs_copy = false;
         return result;
     }
 
@@ -525,16 +519,19 @@ namespace OCL
     {
         // Only clones were added to result, so delete them.
         deletePropertyBag( report );
+        needs_copy = true;
     }
 
     void ReportingComponent::updateHook() {
-        // in snapshot only mode we only log if data has been copied by snapshot()
-        if (snapshotOnly.get() && timestamp == 0.0)
-            return;
         // Step 1: Make copies in order to copy all data and get the timestamp
         //
-        if ( !snapshotOnly.get() )
-            this->copydata();
+        if ( needs_copy ) {
+            bool hasdata = this->copydata();
+            if (!hasdata) { // if no new data is here, bail out (otherwise, twice the same line is logged)!
+                cleanReport();
+                return;
+            }
+        }
 
         do {
             // Step 2: Prepare bag: Decompose to native types (double,int,...)
@@ -548,7 +545,9 @@ namespace OCL
             }
 
             this->cleanReport();
-        } while( copydata() && !snapshotOnly.get() ); // repeat if necessary and not in snapshotting.
+        } while( !getActivity()->isPeriodic() && copydata() ); // repeat if necessary. In periodic mode we always only sample once.
+        // clears needs_copy:
+        this->cleanReport();
     }
 
     void ReportingComponent::stopHook() {

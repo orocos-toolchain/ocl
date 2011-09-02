@@ -80,7 +80,6 @@ namespace RTT
                 if ( bag )
                     this->serialize( bag->value() );
                 else {
-                    this->s->width( v->getName().length() );
                     *this->s << v->getDataSource();
                 }
 			}

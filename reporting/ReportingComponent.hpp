@@ -229,7 +229,11 @@ namespace OCL
         Marshallers marshallers;
         RTT::PropertyBag report;
 
-        RTT::Property<bool>          snapshotOnly;
+        /**
+         * Used to communicate between snapshot() and updateHook()
+         * if updateHook needs to make a copy.
+         */
+        bool needs_copy;
         RTT::Property<std::string>   config;
         RTT::Property<bool>          writeHeader;
         RTT::Property<bool>          decompose;
