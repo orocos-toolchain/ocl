@@ -162,6 +162,7 @@ void push_vect_str(lua_State *L, const std::vector<std::string> &v)
 }
 
 /* forw decl */
+static void Variable_fromlua(lua_State *L, DataSourceBase::shared_ptr& dsb, int valind);
 static DataSourceBase::shared_ptr Variable_fromlua(lua_State *L, const types::TypeInfo* ti, int valind);
 static DataSourceBase::shared_ptr Variable_fromlua(lua_State *L, const char* type, int valind);
 
@@ -442,13 +443,14 @@ static int Variable_update(lua_State *L)
 	DataSourceBase::shared_ptr *dsbp;
 	DataSourceBase::shared_ptr self = *(luaM_checkudata_mt(L, 1, "Variable", DataSourceBase::shared_ptr));
 
-	if ((dsbp = luaM_testudata_mt(L, 2, "Variable", DataSourceBase::shared_ptr)) != NULL)
+	if ((dsbp = luaM_testudata_mt(L, 2, "Variable", DataSourceBase::shared_ptr)) != NULL) {
 		dsb = *dsbp;
-	else
-		dsb = Variable_fromlua(L, self->getTypeInfo(), 2);
+		ret = self->update(dsb.get());
+		if (!ret) luaL_error(L, "Variable.assign: assignment failed");
+	} else {
+		Variable_fromlua(L, self, 2);
+	}
 
-	ret = self->update(dsb.get());
-	if (!ret) luaL_error(L, "Variable.assign: assignment failed");
 	return 0;
 }
 
@@ -470,10 +472,12 @@ static int Variable_create(lua_State *L)
 	return 1;
 }
 
-/* try to convert lua value on stack at valind to DSB of ti */
-static DataSourceBase::shared_ptr Variable_fromlua(lua_State *L, const types::TypeInfo* ti, int valind)
+/* Try to convert the Lua value on stack at valind to given DSB
+ * if it returns, evertthing is ok */
+static void Variable_fromlua(lua_State *L, DataSourceBase::shared_ptr& dsb, int valind)
 {
-	DataSourceBase::shared_ptr dsb;
+	const types::TypeInfo* ti = dsb->getTypeInfo();
+
 	luaL_checkany(L, valind);
 	int luatype = lua_type(L, valind); 	/* type of lua variable */
 
@@ -486,7 +490,7 @@ static DataSourceBase::shared_ptr Variable_fromlua(lua_State *L, const types::Ty
 		else
 			goto out_conv_err;
 
-		dsb = new ValueDataSource<bool>((bool) x);
+		(ValueDataSource<bool>::narrow(dsb.get()))->set((bool) x);
 
 	} else if (__typenames_cmp(L, ti, "int")) {
 		lua_Number x;
@@ -495,7 +499,7 @@ static DataSourceBase::shared_ptr Variable_fromlua(lua_State *L, const types::Ty
 		else
 			goto out_conv_err;
 
-		dsb = new ValueDataSource<int>(x); // (int)
+		(ValueDataSource<int>::narrow(dsb.get()))->set((int) x);
 
 	} else if (__typenames_cmp(L, ti, "uint")) {
 		lua_Number x;
@@ -504,7 +508,7 @@ static DataSourceBase::shared_ptr Variable_fromlua(lua_State *L, const types::Ty
 		else
 			goto out_conv_err;
 
-		dsb = new ValueDataSource<unsigned int>((unsigned int) x);
+		(ValueDataSource<unsigned int>::narrow(dsb.get()))->set((unsigned int) x);
 
 	} else if (__typenames_cmp(L, ti, "long")) {
 		lua_Number x;
@@ -513,7 +517,7 @@ static DataSourceBase::shared_ptr Variable_fromlua(lua_State *L, const types::Ty
 		else
 			goto out_conv_err;
 
-		dsb = new ValueDataSource<long>((long) x);
+		(ValueDataSource<long>::narrow(dsb.get()))->set((long) x);
 
 	} else if (__typenames_cmp(L, ti, "double")) {
 		lua_Number x;
@@ -522,7 +526,7 @@ static DataSourceBase::shared_ptr Variable_fromlua(lua_State *L, const types::Ty
 		else
 			goto out_conv_err;
 
-		dsb = new ValueDataSource<double>((double) x);
+		(ValueDataSource<double>::narrow(dsb.get()))->set((double) x);
 
 	} else if (__typenames_cmp(L, ti, "float")) {
 		lua_Number x;
@@ -531,7 +535,7 @@ static DataSourceBase::shared_ptr Variable_fromlua(lua_State *L, const types::Ty
 		else
 			goto out_conv_err;
 
-		dsb = new ValueDataSource<float>((float) x);
+		(ValueDataSource<float>::narrow(dsb.get()))->set((float) x);
 
 	} else if (__typenames_cmp(L, ti, "char")) {
 		const char *x;
@@ -541,7 +545,7 @@ static DataSourceBase::shared_ptr Variable_fromlua(lua_State *L, const types::Ty
 		else
 			goto out_conv_err;
 
-		dsb = new ValueDataSource<char>(x[0]);
+		(ValueDataSource<char>::narrow(dsb.get()))->set((char) x[0]);
 
 	} else if (__typenames_cmp(L, ti, "string")) {
 		const char *x;
@@ -550,7 +554,7 @@ static DataSourceBase::shared_ptr Variable_fromlua(lua_State *L, const types::Ty
 		else
 			goto out_conv_err;
 
-		dsb = new ValueDataSource<std::string>(x);
+		(ValueDataSource<std::string>::narrow(dsb.get()))->set((std::string) x);
 
 	} else if (luatype == LUA_TNUMBER) { /* last resort, try conversion via double */
 		DataSourceBase::shared_ptr double_dsb = Variable_fromlua(L, "double", valind);
@@ -560,14 +564,26 @@ static DataSourceBase::shared_ptr Variable_fromlua(lua_State *L, const types::Ty
 	}
 
 	/* everybody happy */
-	return dsb;
+	return;
 
  out_conv_err:
-	luaL_error(L, "__lua_todsb: can't convert lua %s to %s variable", lua_typename(L, luatype), ti->getTypeName().c_str());
-	return NULL;
+	luaL_error(L, "__lua_todsb: can't convert lua %s to %s variable", 
+		   lua_typename(L, luatype), ti->getTypeName().c_str());
+	return;
 }
 
-/* This one should be avoided, to reduce needless name-ti lookups.
+/* Create a DSB of RTT ti from the Lua value at stack[valind]
+ * This one will create a dsb - NRT!*/
+static DataSourceBase::shared_ptr Variable_fromlua(lua_State *L, const types::TypeInfo *ti, int valind)
+{
+	DataSourceBase::shared_ptr dsb = ti->buildValue();
+	Variable_fromlua(L, dsb, valind);
+	return dsb;
+}
+
+/* Create a DSB of RTT type 'type' from the Lua value at stack[valind]
+ * This one will create a dsb - NRT!
+ * This one should be avoided, to reduce needless name-ti lookups.
  * preferred variant is the one taking TypeInfo * as second arg */
 static DataSourceBase::shared_ptr Variable_fromlua(lua_State *L, const char* type, int valind)
 {
@@ -737,15 +753,16 @@ static int Variable_newindex(lua_State *L)
 	if ((curval = lookup_member(L, parent, mem)) == 0)
 		luaL_error(L, "Variable.newindex: indexing failed, no member %s", mem);
 
-	if ((newvalp = luaM_testudata_mt(L, 3, "Variable", DataSourceBase::shared_ptr)) != NULL)
+
+	/* assigning a DSB */
+	if ((newvalp = luaM_testudata_mt(L, 3, "Variable", DataSourceBase::shared_ptr)) != NULL) {
 		newval = *newvalp;
-	else
-		newval = Variable_fromlua(L, curval->getTypeInfo(), 3);
-
-	if(!curval->update(newval.get()))
-		luaL_error(L, "Variable.newindex: failed to assign a %s to member %s of type %s",
-			   newval->getType().c_str(), mem, curval->getType().c_str());
-
+		if(!curval->update(newval.get())) {
+			luaL_error(L, "Variable.newindex: failed to assign %s to member %s of type %s",
+				   newval->getType().c_str(), mem, curval->getType().c_str());
+		}
+	} else /* assigning basic type */
+		Variable_fromlua(L, curval, 3);
 	return 1;
 }
 
@@ -864,18 +881,19 @@ static int Property_set(lua_State *L)
 {
 	DataSourceBase::shared_ptr newdsb;
 	DataSourceBase::shared_ptr *newdsbp;
+	DataSourceBase::shared_ptr propdsb;
 	PropertyBase *pb = *(luaM_checkudata_mt_bx(L, 1, "Property", PropertyBase));
+	propdsb = pb->getDataSource();
 
-	if ((newdsbp = luaM_testudata_mt(L, 2, "Variable", DataSourceBase::shared_ptr)) != NULL)
+	/* assigning a DSB */
+	if ((newdsbp = luaM_testudata_mt(L, 2, "Variable", DataSourceBase::shared_ptr)) != NULL) {
 		newdsb = *newdsbp;
-	else
-		newdsb = Variable_fromlua(L, pb->getTypeInfo(), 2);
-
-	DataSourceBase::shared_ptr propdsb = pb->getDataSource();
-	if(!propdsb->update(newdsb.get()))
-		luaL_error(L, "Property.set: failed to assign type %s to type %s",
-			   newdsb->getType().c_str(), propdsb->getType().c_str());
-
+		if(!propdsb->update(newdsb.get()))
+			luaL_error(L, "Property.set: failed to assign type %s to type %s",
+				   newdsb->getType().c_str(), propdsb->getType().c_str());
+	} else { /* assigning a Lua value */
+		Variable_fromlua(L, propdsb, 2);
+	}
 	return 1;
 }
 
