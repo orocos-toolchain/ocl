@@ -2532,15 +2532,15 @@ int set_context_tc(TaskContext *tc, lua_State *L)
 
 /* call a zero arity function with a boolean return value
  * used to call various hooks */
-bool call_func(lua_State *L, const std::string &fname, TaskContext *tc,
+bool call_func(lua_State *L, const char *fname, TaskContext *tc,
 	       int require_function, int require_result)
 {
 	bool ret = true;
-	lua_getglobal(L, fname.c_str());
+	lua_getglobal(L, fname);
 
 	if(lua_isnil(L, -1)) {
 		if(require_function)
-			luaL_error(L, "%s: no (required) Lua function %s", tc->getName().c_str(), fname.c_str());
+			luaL_error(L, "%s: no (required) Lua function %s", tc->getName().c_str(), fname);
 		else
 			goto out;
 	}

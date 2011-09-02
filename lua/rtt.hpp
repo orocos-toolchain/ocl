@@ -57,7 +57,7 @@ int set_context_tc(RTT::TaskContext*, lua_State*);
  * are wether to fail if no such function exists and wether to fail if
  * no boolean result is returned.
  */
-bool call_func(lua_State*, const std::string&, RTT::TaskContext*, int, int);
+bool call_func(lua_State*, const char*, RTT::TaskContext*, int, int);
 }
 
 
