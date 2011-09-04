@@ -173,6 +173,7 @@ static DataSourceBase::shared_ptr Variable_fromlua(lua_State *L, const char* typ
 /* name-> TypeInfo* cache */
 static const TypeInfo* ti_lookup(lua_State *L, const char *name)
 {
+	int top = lua_gettop(L);
 	const TypeInfo* ti;
 
 	/* try lookup */
@@ -208,6 +209,7 @@ static const TypeInfo* ti_lookup(lua_State *L, const char *name)
 	lua_rawset(L, -3);
  out:
 	/* everyone happy! */
+	lua_settop(L, top);
 	return ti;
 }
 
@@ -322,8 +324,20 @@ static int Variable_tolua(lua_State *L)
 	return __Variable_tolua(L, dsb);
 }
 
-/*
- * this function takes a dsb and either pushes it as a Lua type if the
+/* Function takes a DSB, that is also expected on the top of the
+ * stack. If the DSB is basic, it replaces the dsb with the
+ * corresponding Lua value. Otherwise it does nothing, leaving the DSB
+ * on the top of the stack.
+ */
+static void Variable_coerce(lua_State *L, DataSourceBase::shared_ptr dsb)
+{
+	if (__Variable_isbasic(L, dsb)) {
+		lua_pop(L, 1);
+		__Variable_tolua(L, dsb);
+	}
+}
+
+/* this function takes a dsb and either pushes it as a Lua type if the
  * dsb is basic or otherwise as at Variable
  */
 static void Variable_push_coerce(lua_State *L, DataSourceBase::shared_ptr dsb)
@@ -358,23 +372,21 @@ static DataSourceBase::shared_ptr lookup_member(lua_State *L, DataSourceBase::sh
 	DataSourceBase *varptr;
 	DataSourceBase::shared_ptr *dsbp;
 	DataSourceBase::shared_ptr memdsb;
+	int top = lua_gettop(L);
 
 	varptr = parent.get();
 
 	lua_pushlightuserdata(L, (void*) varptr);
 	lua_rawget(L, LUA_REGISTRYINDEX);
 
-	if(lua_type(L, -1) == LUA_TNIL) {
+	if(lua_type(L, -1) == LUA_TNIL)
 		goto cache_miss;
-	}
 
 	lua_pushstring(L, mem);
 	lua_rawget(L, -2);
 
 	if ((dsbp = luaM_testudata_mt(L, -1, "Variable", DataSourceBase::shared_ptr)) != NULL) {
 		memdsb=*dsbp;
-		// printf("double hit:  dsb %s (%p) / mem=%s (%p)\n",
-		//        parent->getTypeName().c_str(), varptr, mem, memdsb.get());
 		goto out;
 	}
 
@@ -384,23 +396,16 @@ static DataSourceBase::shared_ptr lookup_member(lua_State *L, DataSourceBase::sh
 	/* slowpath */
 	memdsb = parent->getMember(mem);
 
-	if(memdsb == 0) {
-		/* printf("lookup_member getMember failure of %s in dsb %p\n", mem, varptr); */
+	if(memdsb == 0)
 		goto out;
-	}
 
 	/* if nil is on top of stack, we have to create a new table */
 	if(lua_type(L, -1) == LUA_TNIL) {
-		// printf("parent MISS, dsb %s (%p) / dsb cache miss mem=%s (%p)\n",
-		//        parent->getTypeName().c_str(), varptr, mem, memdsb.get());
 		lua_newtable(L);				/* member lookup tab for this Variable */
 		lua_pushlightuserdata(L, (void*) varptr); /* index for REGISTRY */
 		lua_pushvalue(L, -2);			/* duplicates table */
 		lua_rawset(L, LUA_REGISTRYINDEX);	/* REG[varptr]=newtab */
-	} /* else {
-	     printf("parent hit, dsb %s (%p) / dsb cache MISS mem=%s (%p)\n",
-	     parent->getTypeName().c_str(), varptr, mem, memdsb.get());
-	     } */
+	}
 
 	/* cache dsb in table */
 	lua_pushstring(L, mem);
@@ -409,13 +414,15 @@ static DataSourceBase::shared_ptr lookup_member(lua_State *L, DataSourceBase::sh
 	luaM_pushobject_mt(L, "Variable", DataSourceBase::shared_ptr)(memdsb);
 
  out:
+	lua_replace(L, top+1); // make new var top of stack
+	lua_settop(L, top+1);
+
 	return memdsb;
 }
 
 /* set reg[varptr] to nil so table will be garbage collected */
 static void cache_clear(lua_State *L, DataSourceBase *varptr)
 {
-	printf("clearing %p\n", varptr);
 	lua_pushlightuserdata(L, (void*) varptr);
 	lua_pushnil(L);
 	lua_rawset(L, LUA_REGISTRYINDEX);
@@ -430,7 +437,7 @@ static int Variable_getMember(lua_State *L)
 	if ((memdsb = lookup_member(L, *dsbp, mem)) == 0)
 		luaL_error(L, "Variable.getMember: indexing failed, no member %s", mem);
 	else
-		Variable_push_coerce(L, memdsb);
+		Variable_coerce(L, memdsb);
 
 	return 1;
 }
