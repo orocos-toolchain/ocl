@@ -227,9 +227,8 @@ static bool __typenames_cmp(lua_State *L, const types::TypeInfo *ti1, const char
 
 /* helper, check if a dsb is of type type. Works also if dsb is known
    under an alias of type */
-static bool Variable_is_a(lua_State *L, DataSourceBase::shared_ptr dsb, const char* type)
+static bool Variable_is_a(lua_State *L, const types::TypeInfo *ti1, const char* type)
 {
-	const types::TypeInfo *ti1 = dsb->getTypeInfo();
 	const types::TypeInfo *ti2 = ti_lookup(L, type);
 	return ti1 == ti2;
 }
@@ -237,9 +236,11 @@ static bool Variable_is_a(lua_State *L, DataSourceBase::shared_ptr dsb, const ch
 /* helper, check if a variable is basic, that is _tolua will succeed */
 static bool __Variable_isbasic(lua_State *L, DataSourceBase::shared_ptr dsb)
 {
-	if ( Variable_is_a(L, dsb, "bool") || Variable_is_a(L, dsb, "double") || Variable_is_a(L, dsb, "float") ||
-	     Variable_is_a(L, dsb, "uint") || Variable_is_a(L, dsb, "int") || Variable_is_a(L, dsb, "long") ||
-	     Variable_is_a(L, dsb, "char") || Variable_is_a(L, dsb, "string") || Variable_is_a(L, dsb, "void"))
+	const types::TypeInfo *ti = dsb->getTypeInfo();
+
+	if ( Variable_is_a(L, ti, "bool") || Variable_is_a(L, ti, "double") || Variable_is_a(L, ti, "float") ||
+	     Variable_is_a(L, ti, "uint") || Variable_is_a(L, ti, "int") || Variable_is_a(L, ti, "long") ||
+	     Variable_is_a(L, ti, "char") || Variable_is_a(L, ti, "string") || Variable_is_a(L, ti, "void"))
 		return true;
 	else
 		return false;
@@ -259,42 +260,43 @@ static int Variable_isbasic(lua_State *L)
 static int __Variable_tolua(lua_State *L, DataSourceBase::shared_ptr dsb)
 {
 	DataSourceBase *ds = dsb.get();
+	const types::TypeInfo* ti = dsb->getTypeInfo();
 	assert(ds);
 
-	if(Variable_is_a(L, dsb, "bool")) {
+	if(Variable_is_a(L, ti, "bool")) {
 		DataSource<bool>* dsb = DataSource<bool>::narrow(ds);
 		if(dsb) lua_pushboolean(L, dsb->get());
 		else goto out_nodsb;
-	} else if (Variable_is_a(L, dsb, "float")) {
+	} else if (Variable_is_a(L, ti, "float")) {
 		DataSource<float>* dsb = DataSource<float>::narrow(ds);
 		if(dsb) lua_pushnumber(L, ((lua_Number) dsb->get()));
 		else goto out_nodsb;
-	} else if (Variable_is_a(L, dsb, "double")) {
+	} else if (Variable_is_a(L, ti, "double")) {
 		DataSource<double>* dsb = DataSource<double>::narrow(ds);
 		if(dsb) lua_pushnumber(L, ((lua_Number) dsb->get()));
 		else goto out_nodsb;
-	} else if (Variable_is_a(L, dsb, "uint")) {
+	} else if (Variable_is_a(L, ti, "uint")) {
 		DataSource<unsigned int>* dsb = DataSource<unsigned int>::narrow(ds);
 		if(dsb) lua_pushnumber(L, ((lua_Number) dsb->get()));
 		else goto out_nodsb;
-	} else if (Variable_is_a(L, dsb, "long")) {
+	} else if (Variable_is_a(L, ti, "long")) {
 		DataSource<long>* dsb = DataSource<long>::narrow(ds);
 		if(dsb) lua_pushnumber(L, ((lua_Number) dsb->get()));
 		else goto out_nodsb;
-	} else if (Variable_is_a(L, dsb, "int")) {
+	} else if (Variable_is_a(L, ti, "int")) {
 		DataSource<int>* dsb = DataSource<int>::narrow(ds);
 		if(dsb) lua_pushnumber(L, ((lua_Number) dsb->get()));
 		else goto out_nodsb;
-	} else if (Variable_is_a(L, dsb, "char")) {
+	} else if (Variable_is_a(L, ti, "char")) {
 		DataSource<char>* dsb = DataSource<char>::narrow(ds);
 		char c = dsb->get();
 		if(dsb) lua_pushlstring(L, &c, 1);
 		else goto out_nodsb;
-	} else if (Variable_is_a(L, dsb, "string")) {
+	} else if (Variable_is_a(L, ti, "string")) {
 		DataSource<std::string>* dsb = DataSource<std::string>::narrow(ds);
 		if(dsb) lua_pushlstring(L, dsb->get().c_str(), dsb->get().size());
 		else goto out_nodsb;
-	} else if (Variable_is_a(L, dsb, "void")) {
+	} else if (Variable_is_a(L, ti, "void")) {
 		DataSource<void>* dsb = DataSource<void>::narrow(ds);
 		if(dsb) lua_pushnil(L);
 		else goto out_nodsb;
