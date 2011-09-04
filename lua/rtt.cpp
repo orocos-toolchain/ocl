@@ -364,14 +364,17 @@ static DataSourceBase::shared_ptr lookup_member(lua_State *L, DataSourceBase::sh
 	lua_pushlightuserdata(L, (void*) varptr);
 	lua_rawget(L, LUA_REGISTRYINDEX);
 
-	if(lua_type(L, -1) == LUA_TNIL)
+	if(lua_type(L, -1) == LUA_TNIL) {
 		goto cache_miss;
+	}
 
 	lua_pushstring(L, mem);
 	lua_rawget(L, -2);
 
 	if ((dsbp = luaM_testudata_mt(L, -1, "Variable", DataSourceBase::shared_ptr)) != NULL) {
 		memdsb=*dsbp;
+		// printf("double hit:  dsb %s (%p) / mem=%s (%p)\n",
+		//        parent->getTypeName().c_str(), varptr, mem, memdsb.get());
 		goto out;
 	}
 
@@ -381,16 +384,23 @@ static DataSourceBase::shared_ptr lookup_member(lua_State *L, DataSourceBase::sh
 	/* slowpath */
 	memdsb = parent->getMember(mem);
 
-	if(memdsb == 0)
+	if(memdsb == 0) {
+		/* printf("lookup_member getMember failure of %s in dsb %p\n", mem, varptr); */
 		goto out;
+	}
 
 	/* if nil is on top of stack, we have to create a new table */
 	if(lua_type(L, -1) == LUA_TNIL) {
+		// printf("parent MISS, dsb %s (%p) / dsb cache miss mem=%s (%p)\n",
+		//        parent->getTypeName().c_str(), varptr, mem, memdsb.get());
 		lua_newtable(L);				/* member lookup tab for this Variable */
 		lua_pushlightuserdata(L, (void*) varptr); /* index for REGISTRY */
 		lua_pushvalue(L, -2);			/* duplicates table */
 		lua_rawset(L, LUA_REGISTRYINDEX);	/* REG[varptr]=newtab */
-	}
+	} /* else {
+	     printf("parent hit, dsb %s (%p) / dsb cache MISS mem=%s (%p)\n",
+	     parent->getTypeName().c_str(), varptr, mem, memdsb.get());
+	     } */
 
 	/* cache dsb in table */
 	lua_pushstring(L, mem);
@@ -405,6 +415,7 @@ static DataSourceBase::shared_ptr lookup_member(lua_State *L, DataSourceBase::sh
 /* set reg[varptr] to nil so table will be garbage collected */
 static void cache_clear(lua_State *L, DataSourceBase *varptr)
 {
+	printf("clearing %p\n", varptr);
 	lua_pushlightuserdata(L, (void*) varptr);
 	lua_pushnil(L);
 	lua_rawset(L, LUA_REGISTRYINDEX);
