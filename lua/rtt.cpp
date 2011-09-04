@@ -234,7 +234,7 @@ static bool Variable_is_a(lua_State *L, const types::TypeInfo *ti1, const char* 
 }
 
 /* helper, check if a variable is basic, that is _tolua will succeed */
-static bool __Variable_isbasic(lua_State *L, DataSourceBase::shared_ptr dsb)
+static bool __Variable_isbasic(lua_State *L, DataSourceBase::shared_ptr &dsb)
 {
 	const types::TypeInfo *ti = dsb->getTypeInfo();
 
@@ -428,7 +428,7 @@ static int Variable_getMember(lua_State *L)
 	const char *mem = luaL_checkstring(L, 2);
 
 	if ((memdsb = lookup_member(L, *dsbp, mem)) == 0)
-		lua_pushnil(L);
+		luaL_error(L, "Variable.getMember: indexing failed, no member %s", mem);
 	else
 		Variable_push_coerce(L, memdsb);
 
@@ -442,7 +442,7 @@ static int Variable_getMemberRaw(lua_State *L)
 	const char *mem = luaL_checkstring(L, 2);
 
 	if ((memdsb = lookup_member(L, (*dsbp), mem)) == 0)
-		lua_pushnil(L);
+		luaL_error(L, "Variable.getMemberRaw: indexing failed, no member %s", mem);
 
 	/* else: Variable is already on top of stack */
 
@@ -604,7 +604,7 @@ static void Variable_fromlua(lua_State *L, DataSourceBase::shared_ptr& dsb, int 
 	return;
 
  out_conv_err:
-	luaL_error(L, "__lua_todsb: can't convert lua %s to %s variable", 
+	luaL_error(L, "__lua_todsb: can't convert lua %s to %s variable",
 		   lua_typename(L, luatype), ti->getTypeName().c_str());
 	return;
 }
@@ -817,7 +817,7 @@ int VariableGC(lua_State* L)
 {
 	T* dsbp = (T*) lua_touserdata(L, 1);
 	cache_clear(L, dsbp->get());
-	reinterpret_cast<T*>(lua_touserdata(L, 1))->~T();
+	reinterpret_cast<T*>(dsbp)->~T();
 	return 0;
 }
 
@@ -2457,7 +2457,7 @@ static int rtt_sleep(lua_State *L)
 static int getTC(lua_State *L)
 {
 	lua_pushstring(L, "this_TC");
-	lua_gettable(L, LUA_REGISTRYINDEX);
+	lua_rawget(L, LUA_REGISTRYINDEX);
 	return 1;
 }
 
@@ -2632,7 +2632,7 @@ int set_context_tc(TaskContext *tc, lua_State *L)
 	*new_tc = (TaskContext*) tc;
 	luaL_getmetatable(L, "TaskContext");
 	lua_setmetatable(L, -2);
-	lua_settable(L, LUA_REGISTRYINDEX);
+	lua_rawset(L, LUA_REGISTRYINDEX);
 	return 0;
 }
 
