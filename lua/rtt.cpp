@@ -2684,6 +2684,7 @@ bool call_func(lua_State *L, const char *fname, TaskContext *tc,
 			goto out;
 		}
 		ret = lua_toboolean(L, -1);
+		lua_pop(L); /* pop result */
 	}
  out:
 	return ret;
