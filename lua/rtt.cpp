@@ -362,6 +362,13 @@ static int Variable_getMemberNames(lua_State *L)
 	return 1;
 }
 
+static int Variable_tolightuserdata(lua_State *L)
+{
+	DataSourceBase::shared_ptr dsb = *(luaM_checkudata_mt(L, 1, "Variable", DataSourceBase::shared_ptr));
+	lua_pushlightuserdata(L, dsb->getRawPointer());
+	return 1;
+}
+
 
 /* caching of DSB members
  * lookup of DSB using getMember and caches result.
@@ -840,6 +847,7 @@ static const struct luaL_Reg Variable_f [] = {
 	{ "getMemberNames", Variable_getMemberNames },
 	{ "getMember", Variable_getMember },
 	{ "getMemberRaw", Variable_getMemberRaw },
+	{ "tolud", Variable_tolightuserdata },
 	{ "resize", Variable_resize },
 	{ "opBinary", Variable_opBinary },
 	{ "assign", Variable_update }, /* assign seems a better name than update */
@@ -865,6 +873,7 @@ static const struct luaL_Reg Variable_m [] = {
 	{ "getMemberNames", Variable_getMemberNames },
 	{ "getMember", Variable_getMember },
 	{ "getMemberRaw", Variable_getMemberRaw },
+	{ "tolud", Variable_tolightuserdata },
 	{ "resize", Variable_resize },
 	{ "opBinary", Variable_opBinary },
 	{ "assign", Variable_update }, /* assign seems a better name than update */
