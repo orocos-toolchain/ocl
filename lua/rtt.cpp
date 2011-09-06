@@ -2659,16 +2659,18 @@ bool call_func(lua_State *L, const char *fname, TaskContext *tc,
 	       int require_function, int require_result)
 {
 	bool ret = true;
+	int num_res = (require_result != 0) ? 1 : 0;
 	lua_getglobal(L, fname);
 
 	if(lua_isnil(L, -1)) {
+		lua_pop(L, 1);
 		if(require_function)
 			luaL_error(L, "%s: no (required) Lua function %s", tc->getName().c_str(), fname);
 		else
 			goto out;
 	}
 
-	if (lua_pcall(L, 0, 1, 0) != 0) {
+	if (lua_pcall(L, 0, num_res, 0) != 0) {
 		Logger::log(Logger::Error) << "LuaComponent '"<< tc->getName()  <<"': error calling function "
 					   << fname << ": " << lua_tostring(L, -1) << endlog();
 		ret = false;
@@ -2684,7 +2686,7 @@ bool call_func(lua_State *L, const char *fname, TaskContext *tc,
 			goto out;
 		}
 		ret = lua_toboolean(L, -1);
-		lua_pop(L); /* pop result */
+		lua_pop(L, 1); /* pop result */
 	}
  out:
 	return ret;
