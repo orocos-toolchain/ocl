@@ -59,6 +59,7 @@ if(BUILD_LUA_RTT)
       target_link_libraries(orocos-ocl-lua-tlsf tlsf_rtt ${LUA_LIBRARIES} ${OROCOS-RTT_LIBRARIES})
 
       install(TARGETS rttlua-tlsf RUNTIME DESTINATION bin)
+      install(FILES modules/tlsf_ext.lua DESTINATION usr/share/lua/5.1/)
     endif(BUILD_LUA_RTT_TLSF)
 
     add_subdirectory( plugins )
