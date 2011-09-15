@@ -2374,7 +2374,7 @@ static int globals_get(lua_State *L)
 	ab = gr->getAttribute(name);
 
 	if (ab)
-		luaM_pushobject_mt(L, "Variable", DataSourceBase::shared_ptr)(ab->getDataSource());
+		Variable_push_coerce(L, ab->getDataSource());
 	else
 		lua_pushnil(L);
 
