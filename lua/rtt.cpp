@@ -1308,7 +1308,7 @@ static int Operation_send(lua_State *L)
 	} catch(const std::exception &exc) {
 		luaL_error(L, "Operation.send: caught exception '%s'", exc.what());
 	} catch(...) {
-		luaL_error(L, "Operation.call: caught unknown exception");
+		luaL_error(L, "Operation.send: caught unknown exception");
 	}
 	return ret;
 }
