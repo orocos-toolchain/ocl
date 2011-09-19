@@ -472,6 +472,22 @@ namespace OCL
                          int scheduler);
 
         /**
+         * (Re-)set the activity of a component and run it on a given CPU.
+         *
+         * @param comp_name The name of the component to change.
+         * @param period    The period of the activity (or 0.0 if non periodic).
+         * @param priority  The scheduler priority (OS dependent).
+         * @param scheduler The scheduler type \a ORO_SCHED_RT or \a ORO_SCHED_OTHER.
+	 * @param cpu_nr    The CPU to run the thread on. Numbering starts from zero.
+         *
+         * @return false if one of the parameters does not match or if the
+         * component is running.
+         */
+        bool setActivityOnCPU(const std::string& comp_name,
+                         double period, int priority,
+			      int scheduler, unsigned int cpu_nr);
+
+        /**
          * (Re-)set the activity of a component with a (threadless, reactive) sequential activity.
          *
          * @param comp_name The name of the component to change.
