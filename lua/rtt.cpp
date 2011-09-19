@@ -170,9 +170,12 @@ static DataSourceBase::shared_ptr Variable_fromlua(lua_State *L, const char* typ
  * Variable (DataSourceBase)
  ***************************************************************/
 
-/* name-> TypeInfo* cache */
 static const TypeInfo* ti_lookup(lua_State *L, const char *name)
 {
+#ifndef TYPEINFO_CACHING
+	return types::TypeInfoRepository::Instance()->type(name);
+#else
+/* name-> TypeInfo* cache */
 	int top = lua_gettop(L);
 	const TypeInfo* ti;
 
@@ -211,6 +214,7 @@ static const TypeInfo* ti_lookup(lua_State *L, const char *name)
 	/* everyone happy! */
 	lua_settop(L, top);
 	return ti;
+#endif /* TYPEINFO_CACHING */
 }
 
 /* helper, check if two type names are alias to the same TypeInfo */
