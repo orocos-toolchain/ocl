@@ -29,14 +29,14 @@ int tlsf_rtt_init_mp(struct lua_tlsf_info *tlsf_inf, size_t sz)
 	tlsf_inf->total_mem = 0;
 
 	if(sz < TLSF_POOL_MIN_SIZE) {
-		fprintf(stderr, "error: requested tlsf pool size (0x%lx) too small\n", sz);
+		fprintf(stderr, "error: requested tlsf pool size (0x%lx) too small\n", (unsigned long) sz);
 		goto fail;
 	}
 
 	tlsf_inf->pool = malloc(sz);
 
 	if(!tlsf_inf->pool) {
-		fprintf(stderr, "error failed to allocate: 0x%lx bytes\n", sz);
+		fprintf(stderr, "error failed to allocate: 0x%lx bytes\n", (unsigned long) sz);
 		goto fail;
 	}
 
@@ -71,14 +71,16 @@ void* tlsf_alloc (void *ud, void *ptr, size_t osize, size_t nsize)
 	struct lua_tlsf_info *tlsf_inf = (struct lua_tlsf_info*) ud;
 
 	if (nsize == 0) {
-		_DBG(DEBUG_TLSF_FREE, tlsf_inf->mask, "freeing 0x%lx, osize=%lu, nsize=%lu", (unsigned long) ptr, osize, nsize);
+		_DBG(DEBUG_TLSF_FREE, tlsf_inf->mask, "freeing 0x%lx, osize=%lu, nsize=%lu",
+		     (unsigned long) ptr, (unsigned long) osize, (unsigned long) nsize);
 		rtl_free_ex(ptr, tlsf_inf->pool);
 		return NULL;
 	} else {
 		if(DEBUG_TLSF_TRACE & tlsf_inf->mask) {
 			lua_sethook(tlsf_inf->L, tlsf_trace_hook, LUA_MASKCALL | LUA_MASKRET | LUA_MASKLINE | LUA_MASKCOUNT, 1);
 		}
-		_DBG(DEBUG_TLSF_ALLOC, tlsf_inf->mask, "allocating 0x%lx, osize=%lu, nsize=%lu", (unsigned long) ptr, osize, nsize);
+		_DBG(DEBUG_TLSF_ALLOC, tlsf_inf->mask, "allocating 0x%lx, osize=%lu, nsize=%lu",
+		     (unsigned long) ptr, (unsigned long) osize, (unsigned long) nsize);
 		return rtl_realloc_ex(ptr, nsize, tlsf_inf->pool);
 	}
 }
