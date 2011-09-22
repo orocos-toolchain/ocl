@@ -39,6 +39,7 @@ if(BUILD_LUA_RTT)
      endif(NOT CURSES AND NOT READLINE)
 
      program_add_deps(rttlua lua-repl ${LUA_LIBRARIES} ${OROCOS-RTT_LIBRARIES})
+     install(PROGRAMS ../bin/rttlua DESTINATION bin)
      target_link_libraries(orocos-ocl-lua ${LUA_LIBRARIES} ${OROCOS-RTT_LIBRARIES})
 
      add_subdirectory( plugins )
