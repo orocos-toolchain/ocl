@@ -7,7 +7,7 @@ IF ( BUILD_DEPLOYMENT )
   find_package(Boost 1.36 REQUIRED filesystem system)
 
     # This gathers all the .cpp files into the variable 'SRCS'
-    SET( HPPS DeploymentComponent.hpp )
+    SET( HPPS DeploymentComponent.hpp ComponentLoader.hpp)
     SET( SRCS DeploymentComponent.cpp ComponentLoader.cpp ${CMAKE_CURRENT_BINARY_DIR}/comppath.cpp)
 
     orocos_library( orocos-ocl-deployment ${SRCS})
