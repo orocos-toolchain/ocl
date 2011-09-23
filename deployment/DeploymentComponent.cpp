@@ -1862,9 +1862,6 @@ namespace OCL
         RTT::Property<std::string>  import_file;
         std::vector<std::string> deleted_components_type;
 
-        // demarshalling failures:
-        bool failure = false;
-
         marsh::PropertyDemarshaller demarshaller(config_file);
         try {
             if ( demarshaller.deserialize( from_file ) ){
@@ -1878,12 +1875,10 @@ namespace OCL
             }
             else {
                 log(Error)<< "Some error occured while parsing "<< config_file <<endlog();
-                failure = true;
             }
         } catch (...)
             {
                 log(Error)<< "Uncaught exception in kickOut() !"<< endlog();
-                failure = true;
             }
     }
 

@@ -52,6 +52,18 @@ function  getMemberNames()
 -- @return sub-Variable
 function getMember(name)
 
+--- Get a subvariable (no conversion to Lua).
+-- Retrieve a subvariable by string name
+-- Note: does not convert basic Variables to Lua.
+-- @param name of variable to accaess
+-- @return sub-Variable
+function getMemberRaw(name)
+
+--- Return ptr to contained data as lightuserdata.
+-- For use with luaffi. Use with care.
+-- @return lightuserdata
+function tolud()
+
 --- Apply a binary operator.
 -- The most common operators (+, -, *, /, %, ^, ==, <, >, <=, >=) are
 -- supported directly using infix notation.

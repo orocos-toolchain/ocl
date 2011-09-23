@@ -1,0 +1,30 @@
+--- TLSF Lua extensions.
+-- This module documents the TLSF extensions.
+-- Only available for TLSF plugin/components are compiled.
+-- @release Released under the RTT License (GPL with exception)
+-- @copyright Markus Klotzbuecher, Katholieke Universiteit Leuven, Belgium.
+
+module 'tlsf'
+
+--- Get statistics about memory use.
+-- All values are in bytes.
+-- @return currently used memory
+-- @return previous maximum of memory used
+-- @return total amount of available memory
+function stats()
+
+--- Warn about memory allocations.
+-- Enabling warnings will print messages when memory is allocated.
+-- If called without arguments returns the current warn status.
+-- Only for debugging purposes.
+-- @param enable true to enable, false to disable
+-- @return current warn status (only when zero args are provided)
+function warn(enable)
+
+--- Trace memory allocations.
+-- Enabling tracing will print a backtrace when memory is allocated.
+-- If called without arguments returns the current trace status.
+-- For debugging purposes.
+-- @param enable true to enable, false to disable
+-- @return current trace status (only when zero args are provided)
+function trace(enable)
