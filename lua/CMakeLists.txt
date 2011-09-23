@@ -27,6 +27,7 @@ if(BUILD_LUA_RTT)
     target_link_libraries(orocos-ocl-lua ${LUA_LIBRARIES} ${OROCOS-RTT_LIBRARIES})
     set_target_properties(orocos-ocl-lua PROPERTIES COMPILE_FLAGS "-DOCL_COMPONENT_ONLY")
     install(TARGETS rttlua RUNTIME DESTINATION bin)
+    install(PROGRAMS ../bin/rttlua DESTINATION bin) # The shell script
 
     install(FILES modules/rttlib.lua modules/ansicolors.lua modules/utils.lua modules/rttros.lua DESTINATION usr/share/lua/5.1/)
 
@@ -59,6 +60,7 @@ if(BUILD_LUA_RTT)
       target_link_libraries(orocos-ocl-lua-tlsf tlsf_rtt ${LUA_LIBRARIES} ${OROCOS-RTT_LIBRARIES})
 
       install(TARGETS rttlua-tlsf RUNTIME DESTINATION bin)
+      install(PROGRAMS ../bin/rttlua-tlsf DESTINATION bin) # The shell script
       install(FILES modules/tlsf_ext.lua DESTINATION usr/share/lua/5.1/)
     endif(BUILD_LUA_RTT_TLSF)
 
