@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 
 cwd="$(pwd)"
 abspath=$(dirname "$(cd "${0%/*}" 2>/dev/null; echo "$PWD"/"${0##*/}")")
