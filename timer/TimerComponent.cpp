@@ -12,8 +12,8 @@ namespace OCL
     using namespace RTT;
 
     TimerComponent::TimerComponent( std::string name /*= "os::Timer" */ )
-        : TaskContext( name, PreOperational ), port_timers(32),
-          mtimer( port_timers ),
+        : TaskContext( name, PreOperational ), port_timers(32), mtimeoutEvent("timeout"),
+          mtimer( port_timers, mtimeoutEvent ),
           waitForCommand( "waitFor", &TimerComponent::waitFor, this), //, &TimerComponent::isTimerExpired, this),
           waitCommand( "wait", &TimerComponent::wait, this) //&TimerComponent::isTimerExpired, this)
     {
@@ -28,6 +28,7 @@ namespace OCL
         this->addOperation("setMaxTimers", &os::Timer::setMaxTimers , &mtimer, RTT::ClientThread).doc("Raise or lower the maximum amount of timers.").arg("timers", "The largest amount of timers. The highest timerId is max-1.");
         this->addOperation( waitForCommand ).doc("Wait until a timer expires.").arg("timerId", "A numeric id of the timer to wait for.");
         this->addOperation( waitCommand ).doc("Arm and wait until that timer expires.").arg("timerId", "A numeric id of the timer to arm and to wait for.").arg("delay", "The delay in seconds before the timer expires.");
+        this->addPort(mtimeoutEvent).doc("This port is written each time ANY timer expires. The timer id is the value sent in this port. This port is for backwards compatibility only. It is advised to use the timer_* ports.");
         for(unsigned int i=0;i<port_timers.size();i++){
             ostringstream port_name;
             port_name<<"timer_"<<i;
