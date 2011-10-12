@@ -14,6 +14,12 @@ extern "C" {
 }
 #endif
 
+#ifdef LUA_RTT_TLSF
+#define LuaService LuaTLSFService
+#else
+#define LuaService LuaService
+#endif
+
 using namespace RTT;
 
 class LuaService : public Service
