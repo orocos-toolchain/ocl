@@ -33,7 +33,11 @@ protected:
 
 public:
 	LuaService(RTT::TaskContext* tc)
+#if LUA_RTT_TLSF
+		: RTT::Service("LuaTLSF", tc)
+#else
 		: RTT::Service("Lua", tc)
+#endif
 	{
 		/* initialize lua */
 		os::MutexLock lock(m);
