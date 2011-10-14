@@ -678,6 +678,13 @@ static int Variable_getType(lua_State *L)
 	return 1;
 }
 
+static int Variable_getTypeIdName(lua_State *L)
+{
+	DataSourceBase::shared_ptr *dsbp = luaM_checkudata_mt(L, 1, "Variable", DataSourceBase::shared_ptr);
+	lua_pushstring(L, (*dsbp)->getTypeInfo()->getTypeIdName());
+	return 1;
+}
+
 static int Variable_getTypeName(lua_State *L)
 {
 	DataSourceBase::shared_ptr *dsbp = luaM_checkudata_mt(L, 1, "Variable", DataSourceBase::shared_ptr);
@@ -842,6 +849,7 @@ static const struct luaL_Reg Variable_f [] = {
 	{ "getTypes", Variable_getTypes },
 	{ "getType", Variable_getType },
 	{ "getTypeName", Variable_getTypeName },
+	{ "getTypeIdName", Variable_getTypeIdName },
 	{ "getMemberNames", Variable_getMemberNames },
 	{ "getMember", Variable_getMember },
 	{ "getMemberRaw", Variable_getMemberRaw },
@@ -868,6 +876,7 @@ static const struct luaL_Reg Variable_m [] = {
 	{ "toString", Variable_toString },
 	{ "getType", Variable_getType },
 	{ "getTypeName", Variable_getTypeName },
+	{ "getTypeIdName", Variable_getTypeIdName },
 	{ "getMemberNames", Variable_getMemberNames },
 	{ "getMember", Variable_getMember },
 	{ "getMemberRaw", Variable_getMemberRaw },

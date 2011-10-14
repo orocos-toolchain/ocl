@@ -40,6 +40,11 @@ function getType()
 -- @return type name string
 function getTypeName()
 
+--- Get the typeid of the contained C++ type.
+-- The result of this call must be demangeled using <code>c++filt -t</code>
+-- @return typeid string
+function getTypeIdName()
+
 --- Get names of subfields of a variable.
 -- Returns a table of strings which are the names of the accessible subvariables.
 -- @return table of strings
