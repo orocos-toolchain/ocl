@@ -637,6 +637,7 @@ static DataSourceBase::shared_ptr Variable_fromlua(lua_State *L, const types::Ty
 static DataSourceBase::shared_ptr Variable_fromlua(lua_State *L, const char* type, int valind)
 {
 	const types::TypeInfo* ti = ti_lookup(L, type);
+	if(!ti) luaL_error(L, "Variable_fromlua: %s is not a known type. Load typekit?", type);
 	return Variable_fromlua(L, ti, valind);
 }
 
@@ -1351,6 +1352,7 @@ static int Operation_info(lua_State *L)
 
 static int __Operation_call(lua_State *L)
 {
+	bool ret;
 	DataSourceBase::shared_ptr dsb, *dsbp;
 
 	OperationHandle *oh = luaM_checkudata_mt(L, 1, "Operation", OperationHandle);
@@ -1372,7 +1374,12 @@ static int __Operation_call(lua_State *L)
 			   OperationHandle def.): */
 			oh->dsb_store.push_back(dsb);
 		}
-		oh->args[arg-2]->setReference(dsb);
+		if(!dsb->isAssignable())
+			luaL_error(L, "Operation.call: argument %d is not assignable.", arg-1);
+
+		ret = oh->args[arg-2]->setReference(dsb);
+		if (!ret)
+			luaL_error(L, "Operation_call: setReference failed, wrong type of argument?");
 	}
 
 	if(!oh->occ->call())
@@ -1589,10 +1596,6 @@ static int Service_getOperation(lua_State *L)
 		oh->args.push_back(dynamic_cast<internal::Reference*>(dsb.get()));
 		oh->occ->arg(dsb);
 	}
-
-	// TODO: Figure out which arguments are out args and instead
-	// of singe ret dsb prepare a vector with ret, outdsb1, //
-	// outdsb2 to be returned.
 
 	/* return value */
 	if(oip->resultType() != "void"){
