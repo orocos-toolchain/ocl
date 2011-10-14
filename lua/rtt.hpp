@@ -50,6 +50,8 @@ extern "C" {
 #include <lualib.h>
 #include <string.h>
 
+#include <stdint.h>
+
 int luaopen_rtt(lua_State *L);
 int set_context_tc(RTT::TaskContext*, lua_State*);
 
