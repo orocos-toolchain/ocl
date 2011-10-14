@@ -2380,6 +2380,7 @@ static int EEHook_disable(lua_State *L)
 	return 1;
 }
 
+#if 0
 static int EEHook_gc(lua_State *L)
 {
 	EEHook_disable(L);
@@ -2387,6 +2388,7 @@ static int EEHook_gc(lua_State *L)
 	reinterpret_cast<EEHook*>(lua_touserdata(L, 1))->~EEHook();
 	return 0;
 }
+#endif
 
 static const struct luaL_Reg EEHook_f [] = {
 	{ "new", EEHook_new },
@@ -2398,7 +2400,7 @@ static const struct luaL_Reg EEHook_f [] = {
 static const struct luaL_Reg EEHook_m [] = {
 	{ "enable", EEHook_enable },
 	{ "disable", EEHook_disable },
-	{ "__gc", EEHook_gc },
+	/* { "__gc", EEHook_gc }, */
 };
 
 

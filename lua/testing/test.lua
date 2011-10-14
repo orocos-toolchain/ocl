@@ -237,8 +237,8 @@ function test_lua_eehook()
 		       counter = counter + 1
 		       if counter >= 17 then
 			  p:set(counter)
+			  print("disabling hook", eeh:disable())
 			  return false
-			  -- print("disabling hook", eeh:disable())
 		       end
 		       return true
 		    end
