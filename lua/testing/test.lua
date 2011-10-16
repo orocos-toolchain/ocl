@@ -237,8 +237,8 @@ function test_lua_eehook()
 		       counter = counter + 1
 		       if counter >= 17 then
 			  p:set(counter)
+			  print("disabling hook", eeh:disable())
 			  return false
-			  -- print("disabling hook", eeh:disable())
 		       end
 		       return true
 		    end
@@ -253,6 +253,12 @@ function test_lua_eehook()
    res_prop = c_eehook:getProperty("result")
    res = res_prop:get() == 17
    return res
+end
+
+function call_uint8_arg()
+   d:import("rtt_rosnode")
+   x=rtt.Variable("uint8", 3)
+   return not testcomp:op1_uint8(x) and testcomp:op1_uint8(120)
 end
 
 local tests = {
@@ -270,6 +276,7 @@ local tests = {
    { tfunc=test_call_op_1_out, descr="post(testcomp:call('op_1_out', 1)), i==2" },
    { tfunc=test_call_op_3_out, descr="postconditions of testcomp:call('op_3_out', 1)" },
    { tfunc=test_call_op_1_out_retval, descr="post(testcomp:call('op_1_out_retval', 33)), i==34" },
+   { tfunc=call_uint8_arg, descr="testing an operation call with an uint8 argument" },
    { tfunc=test_var_assignment, descr="testing assigment of variables" },
    { tfunc=test_coercion, descr="testing coercion of variables in call" },
    { tfunc=test_send_op2, descr="testing send for op_2 and collect()" },
