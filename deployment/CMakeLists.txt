@@ -40,7 +40,7 @@ IF ( BUILD_DEPLOYMENT )
 	# Necessary when building Debian packages:
 	set(ROS_STACK_DIR_FINAL $ENV{ROS_STACK_DIR_FINAL})
 	if (ROS_STACK_DIR_FINAL)
-	  set(DEFAULT_COMPONENT_PATH "${ROS_STACK_DIR_FINAL}/orocos_toolchain_ros/orocos_toolchain/install/lib/orocos")
+	  set(DEFAULT_COMPONENT_PATH "${ROS_STACK_DIR_FINAL}/orocos_toolchain/install/lib/orocos")
 	else(ROS_STACK_DIR_FINAL)
           set(DEFAULT_COMPONENT_PATH "${PROJECT_SOURCE_DIR}/../install/lib/orocos" CACHE STRING "Default component lookup path when none given. (semi-)colon separated list." FORCE)
 	endif(ROS_STACK_DIR_FINAL)
