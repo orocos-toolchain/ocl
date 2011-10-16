@@ -516,6 +516,20 @@ function info()
    end
 end
 
+function stat()
+   function __stat_tc(tc)
+      local state = tc:getState()
+      print(table.concat{utils.strsetlen(tc:getName(), 20, true),
+			 tc_colorstate(tc:getState()) .. string.rep(' ', 20-string.len(state)),
+			 utils.strsetlen(tostring(tc:isActive()), 10, false),
+			 utils.strsetlen(tostring(tc:getPeriod()), 10, false)}, ' ')
+   end
+
+   print(table.concat{utils.rpad("Name", 20), utils.rpad("State", 20),
+		      utils.rpad("isActive", 10), utils.rpad("Period", 10)}, ' ')
+   mappeers(__stat_tc)
+end
+
 --- Check if a typekit has been loaded.
 function typekit_loaded(n) return utils.table_has(rtt.typekits(), n) end
 

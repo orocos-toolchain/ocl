@@ -14,6 +14,12 @@ extern "C" {
 }
 #endif
 
+#ifdef LUA_RTT_TLSF
+#define LuaService LuaTLSFService
+#else
+#define LuaService LuaService
+#endif
+
 using namespace RTT;
 
 class LuaService : public Service
@@ -27,7 +33,11 @@ protected:
 
 public:
 	LuaService(RTT::TaskContext* tc)
+#if LUA_RTT_TLSF
+		: RTT::Service("LuaTLSF", tc)
+#else
 		: RTT::Service("Lua", tc)
+#endif
 	{
 		/* initialize lua */
 		os::MutexLock lock(m);
