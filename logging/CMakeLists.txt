@@ -28,7 +28,7 @@ IF ( BUILD_LOGGING AND LOG4CPP_FOUND )
     target_link_libraries( orocos-ocl-log4cxx orocos-ocl-log4cpp ${LOG4CXX_LIBRARIES} )
   endif()
 
-  orocos_generate_package()
+  orocos_generate_package( DEPENDS log4cpp )
   ADD_SUBDIRECTORY( tests )
 
 ENDIF ( BUILD_LOGGING  AND LOG4CPP_FOUND )
