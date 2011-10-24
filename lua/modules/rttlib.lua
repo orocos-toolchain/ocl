@@ -48,6 +48,10 @@ module("rttlib")
 
 color=false
 
+local defops_lst = { "activate", "cleanup", "configure", "error", "getCpuAffinity", "getPeriod",
+		     "inRunTimeError", "isActive", "isConfigured", "isRunning", "setCpuAffinity",
+		     "setPeriod", "start", "stop", "trigger", "update", "inFatalError" }
+
 --- Condition colorization.
 --
 
@@ -389,7 +393,7 @@ end
 --- Convert a TaskContext to a nice string.
 -- @param tc TaskContext
 -- @return string
-function tc2str(tc)
+function tc2str(tc, full)
    local res = {}
    res[#res+1] = magenta('TaskContext') .. ': ' .. green(tc:getName(), true)
    res[#res+1] = magenta("state") .. ": " .. tc_colorstate(tc:getState())
@@ -412,7 +416,9 @@ function tc2str(tc)
 
    res[#res+1] = magenta("operations") .. ":"
    for i,v in ipairs(tc:getOps()) do
-      res[#res+1] = "   " .. tc_op2str(tc, v)
+      if not utils.table_has(defops_lst, v) or full then
+	 res[#res+1] = "   " .. tc_op2str(tc, v)
+      end
    end
    return table.concat(res, '\n')
 end
@@ -599,6 +605,7 @@ setmetatable(rtt.globals, globals_mt)
 if type(debug) == 'table' then
    reg = debug.getregistry()
    reg.TaskContext.__tostring=tc2str
+   reg.TaskContext.show=function(tc) return tc2str(tc, true) end
    reg.TaskContext.stat=portstats
    reg.Service.__index=service_index -- enable operations as methods
    reg.TaskContext.__index=tc_index -- enable operations as methods
