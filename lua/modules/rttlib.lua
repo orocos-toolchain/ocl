@@ -90,6 +90,19 @@ local function white(str, bright)
    return str
 end
 
+
+--- Indent a string if it contains newlines.
+-- Used to nicely print multiline values and keep single line values
+-- on one line. Will add a newline to the first line and indent.
+-- @param str string to conditionally indent.
+-- @param ind indentation
+-- @return indented or unmodified string.
+function if_nl_ind(str, ind)
+   ind = ind or "\t\t"
+   if not string.match(str, '\n') then return str end
+   return string.gsub('\n'..str, '\n', '\n'..ind)
+end
+
 --- Beautify a ConnPolicy table.
 -- @param cp ConnPolicy table
 -- @return the processed table
@@ -223,7 +236,7 @@ end
 -- @return string
 function prop2str(p)
    local info = p:info()
-   return white(info.name) .. ' (' .. info.type .. ')' .. " = " .. yellow(var2str(p:get())) .. red(" // " .. info.desc) .. ""
+   return white(info.name) .. ' (' .. info.type .. ')' .. " = " .. if_nl_ind(yellow(var2str(p:get()))) .. red(" // " .. info.desc) .. ""
 end
 
 --- Convert an operation to a string.
@@ -324,8 +337,9 @@ end
 
 --- Convert a port to a string.
 -- @param p Port
+-- @param nodoc don't add documentation
 -- @return string
-function port2str(p)
+function port2str(p, nodoc)
    local inf = p:info()
    local ret = {}
 
@@ -348,7 +362,7 @@ function port2str(p)
    ret [#ret+1] = table.concat(attrs, ', ')
 
    ret[#ret+1] = "] "
-   ret[#ret+1] = red("// " .. inf.desc)
+   if not nodoc then ret[#ret+1] = red("// " .. inf.desc) end
    return table.concat(ret, '')
 end
 
@@ -358,20 +372,19 @@ end
 -- @param string
 function portval2str(port, comp)
    local inf = port:info()
-   local res = white(inf.name) .. ' (' .. inf.type .. ')  ='
-
-   if inf.type == 'unknown_t' then
-      res = res .. " ?"
+   local portstr = white(inf.name) .. ' (' .. inf.type .. ')  = '
+   local value
+   if inf.type == 'unknown_t' then value = "?"
    elseif inf.porttype == 'in' then
       local fs, data = port:read()
 
-      if fs == 'NoData' then res = res .. ' NoData'
-      elseif fs == 'NewData' then res = res .. ' ' .. green(var2str(data))
-      else res = res .. ' ' .. yellow(var2str(data)) end
+      if fs == 'NoData' then value=' NoData'
+      elseif fs == 'NewData' then value = green(var2str(data))
+      else value = yellow(var2str(data)) end
    else
-      res = res .. ' ' .. cyan(var2str(comp:provides(inf.name):getOperation("last")()))
+      value = cyan(var2str(comp:provides(inf.name):getOperation("last")()))
    end
-   return res
+   return portstr .. if_nl_ind(value)
 end
 
 --- Print the values of all ports of a component.
@@ -615,6 +628,7 @@ if type(debug) == 'table' then
    reg.Property.__tostring=prop2str
    reg.Property.fromtab=propfromtab
    reg.Service.__tostring=service2str
+   reg.Service.stat=portstats
    reg.ServiceRequester.__tostring=service_req2str
    reg.Operation.__tostring=op2str
    reg.InputPort.__tostring=port2str
