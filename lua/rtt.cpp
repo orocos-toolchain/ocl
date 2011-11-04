@@ -1137,6 +1137,10 @@ static int InputPort_new(lua_State *L)
 		luaL_error(L, "InputPort.new: unknown type %s", type);
 
 	ipi = ti->inputPort(name);
+
+	if(!ipi)
+		luaL_error(L, "InputPort.new: creating port of type %s failed", type);
+
 	ipi->doc(desc);
 	InputPort_push(L, ipi);
 	return 1;
@@ -1233,6 +1237,10 @@ static int OutputPort_new(lua_State *L)
 		luaL_error(L, "OutputPort.new: unknown type %s", type);
 
 	opi = ti->outputPort(name);
+
+	if(!opi)
+		luaL_error(L, "OutputPort.new: creating port of type %s failed", type);
+
 	opi->doc(desc);
 	OutputPort_push(L, opi);
 	return 1;
