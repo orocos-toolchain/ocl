@@ -53,7 +53,7 @@ function addPeer(TaskContext)
 function removePeer(string)
 
 --- Get a peer of a TaskContext.
--- @param name of peer
+-- @param string name of peer
 -- @return the requested peer TaskContext
 function getPeer(string)
 
@@ -76,7 +76,7 @@ function addPort(port, name, desc)
 function addEventPort(port, name, desc)
 
 --- Get a port of a TaskContext interface.
--- @param name of port
+-- @param string name of port
 -- @return Port
 function getPort(string)
 
