@@ -401,6 +401,7 @@ bool ComponentLoader::importInstalledPackage(std::string const& package, std::st
     log(Error) << trypaths << endlog();
     for(vector<string>::iterator it=tryouts.begin(); it != tryouts.end(); ++it)
         log(Error) << *it << endlog();
+    return false;
 }
 
 bool ComponentLoader::loadLibrary( std::string const& name )
