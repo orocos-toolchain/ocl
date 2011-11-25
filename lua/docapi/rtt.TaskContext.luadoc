@@ -49,7 +49,7 @@ function getPeers()
 function addPeer(TaskContext)
 
 --- Remove a peer.
--- @param name of peer to be removed
+-- @param string name of peer to be removed
 function removePeer(string)
 
 --- Get a peer of a TaskContext.
@@ -81,7 +81,7 @@ function addEventPort(port, name, desc)
 function getPort(string)
 
 --- Remove a port from a TaskContext interface.
--- @param name of port
+-- @param string name of port
 function removePort(string)
 
 --- Add a property to a TaskContext.
@@ -103,7 +103,7 @@ function getProperties()
 function getPropertyNames()
 
 --- Remove a Property from a TaskContext Interface.
--- @param name name of property to be removed
+-- @param string name of property to be removed
 function removeProperty(string)
 
 --- Return a table of names of the available operations.
