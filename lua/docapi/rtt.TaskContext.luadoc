@@ -98,6 +98,10 @@ function getProperty(name)
 -- @return a table containing all properties (not string names!) of the TaskContext
 function getProperties()
 
+--- Return the names of all properties in a table.
+-- @return a table containing all properties string names of the TaskContext
+function getPropertyNames()
+
 --- Remove a Property from a TaskContext Interface.
 -- @param name name of property to be removed
 function removeProperty(string)

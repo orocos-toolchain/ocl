@@ -2047,6 +2047,15 @@ static int TaskContext_getProperty(lua_State *L)
 	return 1;
 }
 
+
+static int TaskContext_getPropertyNames(lua_State *L)
+{
+	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
+	std::vector<std::string> plist = tc->properties()->list();
+	push_vect_str(L, plist);
+	return 1;
+}
+
 static int TaskContext_getProperties(lua_State *L)
 {
 	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
@@ -2300,6 +2309,7 @@ static const struct luaL_Reg TaskContext_f [] = {
 	{ "addProperty", TaskContext_addProperty },
 	{ "getProperty", TaskContext_getProperty },
 	{ "getProperties", TaskContext_getProperties },
+	{ "getPropertyNames", TaskContext_getPropertyNames },
 	{ "removeProperty", TaskContext_removeProperty },
 	{ "getOps", TaskContext_getOps },
 	{ "getOpInfo", TaskContext_getOpInfo },
@@ -2333,6 +2343,7 @@ static const struct luaL_Reg TaskContext_m [] = {
 	{ "addProperty", TaskContext_addProperty },
 	{ "getProperty", TaskContext_getProperty },
 	{ "getProperties", TaskContext_getProperties },
+	{ "getPropertyNames", TaskContext_getPropertyNames },
 	{ "removeProperty", TaskContext_removeProperty },
 	{ "getOps", TaskContext_getOps },
 	{ "getOpInfo", TaskContext_getOpInfo },
