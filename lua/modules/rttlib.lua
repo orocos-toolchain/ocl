@@ -440,6 +440,43 @@ function pptc(tc)
    print(tc2str(tc))
 end
 
+
+--- Cleanup ports and properties of this Lua Component.
+-- Only use this function if the proper properties were actually
+-- created from Lua (yes, this will be commonly the case).  The
+-- built-in Properties 'lua_string' and 'lua_file' are ignored.
+-- @return number of removed properties, number of removed ports
+function tc_cleanup()
+   local tc=rtt.getTC()
+
+   local function cleanup_prop(pname)
+      local prop = tc:getProperty(pname)
+      tc:removeProperty(pname)
+      prop:delete()
+   end
+
+   local function cleanup_port(pname)
+      local port = tc:getPort(pname)
+      tc:removePort(pname)
+      port:delete()
+   end
+
+   -- get list of property names (remove built-in ones)
+   local propnames=utils.filter(function(n,i)
+				   if n=='lua_string' or n=='lua_file' then
+				      return false
+				   end
+				   return true
+				end, tc:getPropertyNames())
+
+   local portnames = tc:getPortNames()
+
+   utils.foreach(cleanup_prop, propnames)
+   utils.foreach(cleanup_port, portnames)
+   return #propnames, #portnames
+end
+
+
 --- Create an inverse, connected port of a given port.
 -- The default name will be the same as the given port.
 -- @param p port to create inverse, connected port.
