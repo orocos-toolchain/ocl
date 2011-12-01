@@ -8,8 +8,8 @@ IF(WIN32)
 ENDIF()
 
 IF ( BUILD_RTALLOC )
-  # default to 20 kilobytes - see minimum size warning in deployer-funcs.cpp
-  SET(ORO_DEFAULT_RTALLOC_SIZE 20480 CACHE STRING "Real-time memory pool size (bytes)")
+  # default to 512 kilobytes - see minimum size warning in deployer-funcs.cpp
+  SET(ORO_DEFAULT_RTALLOC_SIZE 524288 CACHE STRING "Real-time memory pool size (bytes) for operations and logging.")
   ADD_DEFINITIONS("-DORO_BUILD_RTALLOC -DORO_DEFAULT_RTALLOC_SIZE=${ORO_DEFAULT_RTALLOC_SIZE}")
 ELSE ( BUILD_RTALLOC )
   ADD_DEFINITIONS("-DORO_DEFAULT_RTALLOC_SIZE=0")
