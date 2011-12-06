@@ -170,10 +170,10 @@ int deployerParseCmdLine(int                        argc,
 			}
 		}
 		if (vm.count("DeployerName")) {
-		    if (name.find_last_of(".xml") != string::npos ||
-		            name.find_last_of(".cpf") != string::npos ||
-		            name.find_last_of(".osd") != string::npos ||
-                name.find_last_of(".ops") != string::npos ) {
+		    if (name.rfind(".xml") == 4 ||
+		            name.rfind(".cpf") == 4 ||
+		            name.rfind(".osd") == 4 ||
+                name.rfind(".ops") == 4 ) {
                 scriptFiles.push_back(name);
 		        name.clear();
             }            
