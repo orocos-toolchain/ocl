@@ -1873,7 +1873,7 @@ namespace OCL
         base::ActivityInterface* newact = 0;
         // standard case:
         if ( act_type == "Activity")
-            newact = new RTT::Activity(scheduler, priority, period, cpu_affinity, 0);
+            newact = new RTT::Activity(scheduler, priority, period, cpu_affinity, 0, comp_name);
         else
             // special cases:
             if ( act_type == "PeriodicActivity" && period != 0.0)
