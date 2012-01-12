@@ -157,7 +157,6 @@ namespace OCL
         this->addOperation("connectPeers", cp, this, ClientThread).doc("Connect two Components known to this Component.").arg("One", "The first component.").arg("Two", "The second component.");
         cp = &DeploymentComponent::connectPorts;
         this->addOperation("connectPorts", cp, this, ClientThread).doc("DEPRECATED. Connect the Data Ports of two Components known to this Component.").arg("One", "The first component.").arg("Two", "The second component.");
-        cp = &DeploymentComponent::addPeer;
         typedef bool(DeploymentComponent::*DC4Fun)(const std::string&, const std::string&,
                                                    const std::string&, const std::string&);
         DC4Fun cp4 = &DeploymentComponent::connectPorts;
@@ -182,7 +181,9 @@ namespace OCL
 
         this->addOperation("connectServices", (bool(DeploymentComponent::*)(const std::string&, const std::string&))&DeploymentComponent::connectServices, this, ClientThread).doc("Connect the matching provides/requires services of two Components known to this Component.").arg("One", "The first component.").arg("Two", "The second component.");
 
+        cp = &DeploymentComponent::addPeer;
         this->addOperation("addPeer", cp, this, ClientThread).doc("Add a peer to a Component.").arg("From", "The first component.").arg("To", "The other component.");
+        this->addOperation("aliasPeer", &DeploymentComponent::aliasPeer, this, ClientThread).doc("Add a peer to a Component with an alternative name.").arg("From", "The component which will see 'To' in its peer list.").arg("To", "The component which will be seen by 'From'.").arg("Alias","The name under which 'To' is known to 'From'");
         typedef void(DeploymentComponent::*RPFun)(const std::string&);
         RPFun rp = &RTT::TaskContext::removePeer;
         this->addOperation("removePeer", rp, this, ClientThread).doc("Remove a peer from this Component.").arg("PeerName", "The name of the peer to remove.");
@@ -332,6 +333,22 @@ namespace OCL
             return false;
         }
         return t1->addPeer(t2);
+    }
+
+    bool DeploymentComponent::aliasPeer(const std::string& from, const std::string& to, const std::string& alias)
+    {
+        RTT::Logger::In in("DeploymentComponent::addPeer");
+        RTT::TaskContext* t1 = from == this->getName() ? this : this->getPeer(from);
+        RTT::TaskContext* t2 = to == this->getName() ? this : this->getPeer(to);
+        if (!t1) {
+            log(Error)<< "No such peer known to deployer '"<< this->getName()<< "': "<<from<<endlog();
+            return false;
+        }
+        if (!t2) {
+            log(Error)<< "No such peer known to deployer '"<< this->getName()<< "': "<<to<<endlog();
+            return false;
+        }
+        return t1->addPeer(t2, alias);
     }
 
     Service::shared_ptr DeploymentComponent::stringToService(string const& names) {

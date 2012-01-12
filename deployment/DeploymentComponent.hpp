@@ -362,6 +362,19 @@ namespace OCL
          */
         bool addPeer(const std::string& from, const std::string& target);
 
+        /**
+         * Make one component a peer of the other, in one direction, with an alternative name, such
+         * that one can use the services of the other and knows it under the name of the alias.
+         *
+         * @param from The component that must 'see' \a target and use its services.
+         * @param target The component that is 'seen' and used by \a from.
+         * @param alias The name of the target as it will be seen by \a from.
+         *
+         * @return true if both components are peers of this deployment component and
+         * target became a peer of from.
+         */
+        bool aliasPeer(const std::string& from, const std::string& target, const std::string& alias);
+
         using RTT::TaskContext::addPeer;
         using RTT::TaskContext::connectPeers;
 
