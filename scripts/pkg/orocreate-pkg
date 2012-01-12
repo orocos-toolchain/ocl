@@ -88,7 +88,7 @@ else
     echo "Using templates at $templatedir..."
 fi
 
-mkdir $force $pkgname || { echo "Package already exists. Use -f to force creation" ; exit 1; }
+mkdir $force $pkgname || { echo "Package already exists. Use -f to force creation (will not erase your package but will overwrite generated files)" ; exit 1; }
 
 # different logic depending on package type:
 # default files:
