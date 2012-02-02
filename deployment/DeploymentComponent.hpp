@@ -526,6 +526,21 @@ namespace OCL
                          int scheduler);
 
         /**
+         * (Re-)set the activity of a component with a FileDescriptor activity.
+         *
+         * @param comp_name The name of the component to change.
+         * @param timeout   The timeout of the activity (or 0.0 if no timeout).
+         * @param priority  The scheduler priority (OS dependent).
+         * @param scheduler The scheduler type \a ORO_SCHED_RT or \a ORO_SCHED_OTHER.
+         *
+         * @return false if one of the parameters does not match or if the
+         * component is running.
+         */
+        bool setFileDescriptorActivity(const std::string& comp_name,
+                         double timeout, int priority,
+                         int scheduler);
+						 
+        /**
          * (Re-)set the activity of a component and run it on a given CPU.
          *
          * @param comp_name The name of the component to change.

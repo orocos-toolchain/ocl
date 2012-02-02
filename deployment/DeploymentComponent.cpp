@@ -32,6 +32,7 @@
 #include "ComponentLoader.hpp"
 #include <rtt/extras/Activities.hpp>
 #include <rtt/extras/SequentialActivity.hpp>
+#include <rtt/extras/FileDescriptorActivity.hpp>
 #include <rtt/marsh/PropertyMarshaller.hpp>
 #include <rtt/marsh/PropertyDemarshaller.hpp>
 #include <rtt/scripting/Scripting.hpp>
@@ -198,6 +199,12 @@ namespace OCL
         this->addOperation("setSequentialActivity", &DeploymentComponent::setSequentialActivity, this, ClientThread).doc("Attach a 'stand alone' sequential activity to a Component.").arg("CompName", "The name of the Component.");
         this->addOperation("setSlaveActivity", &DeploymentComponent::setSlaveActivity, this, ClientThread).doc("Attach a 'stand alone' slave activity to a Component.").arg("CompName", "The name of the Component.").arg("Period", "The period of the activity (set to zero for non periodic).");
         this->addOperation("setMasterSlaveActivity", &DeploymentComponent::setMasterSlaveActivity, this, ClientThread).doc("Attach a slave activity with a master to a Component. The slave becomes a peer of the master as well.").arg("Master", "The name of the Component which is master of the Slave.").arg("Slave", "The name of the Component which gets the SlaveActivity.");
+		this->addOperation("setFileDescriptorActivity", &DeploymentComponent::setFileDescriptorActivity, this, ClientThread)
+			.doc("Attach a File Descriptor activity to a Component.")
+			.arg("CompName", "The name of the Component.")
+			.arg("Timeout", "The timeout of the activity (set to zero for no timeout).")
+			.arg("Priority", "The priority of the activity.")
+			.arg("SchedType", "The scheduler type of the activity.");
 
         valid_names.insert("AutoUnload");
         valid_names.insert("UseNamingService");
@@ -1816,6 +1823,20 @@ namespace OCL
         return false;
     }
 
+	bool DeploymentComponent::setFileDescriptorActivity(const std::string& comp_name,
+                                          double timeout, int priority,
+                                          int scheduler)
+    {
+        if ( this->setNamedActivity(comp_name, "FileDescriptorActivity", timeout, priority, scheduler) ) {
+            assert( comps[comp_name].instance );
+            assert( comps[comp_name].act );
+            comps[comp_name].instance->setActivity( comps[comp_name].act );
+            comps[comp_name].act = 0;
+            return true;
+        }
+        return false;
+    }
+	
     bool DeploymentComponent::setActivityOnCPU(const std::string& comp_name,
                                           double period, int priority,
 					       int scheduler, unsigned int cpu_nr)
@@ -1973,6 +1994,13 @@ namespace OCL
                         if (act_type == "SequentialActivity") {
                             newact = new SequentialActivity();
                         }
+			else if ( act_type == "FileDescriptorActivity") {
+				using namespace RTT::extras;
+                newact = new FileDescriptorActivity(scheduler, priority, 0);
+				FileDescriptorActivity* fdact = dynamic_cast< RTT::extras::FileDescriptorActivity* > (newact);
+				if (fdact) fdact->setTimeout(period);
+				else newact = 0;
+			}
         if (newact == 0) {
             log(Error) << "Can't create '"<< act_type << "' for component "<<comp_name<<": incorrect arguments."<<endlog();
             return false;
