@@ -164,13 +164,6 @@ namespace OCL
 
     // Signal code only on Posix:
 #if defined(USE_SIGNALS)
-    // catch ctrl+c signal
-    void ctrl_c_catcher(int sig)
-    {
-        ::signal(sig, SIG_IGN);
-        rl_free_line_state();
-        ::signal(SIGINT, ctrl_c_catcher);
-    }
 
     void TaskBrowser::rl_sigwinch_handler(int sig, siginfo_t *si, void *ctxt) {
 #if defined(OROCOS_TARGET_XENOMAI) && CONFIG_XENO_VERSION_MAJOR == 2 && CONFIG_XENO_VERSION_MINOR >= 5
@@ -732,8 +725,6 @@ namespace OCL
     void TaskBrowser::loop()
     {
 #ifdef USE_SIGNALS
-        // Intercept Ctrl-C
-        ::signal( SIGINT, ctrl_c_catcher );
         // Let readline intercept relevant signals
         if(rl_catch_signals == 0)
             cerr << "Error: not catching signals !"<<endl;
@@ -789,10 +780,6 @@ namespace OCL
                 }
                 // Check port status:
                 checkPorts();
-#ifdef USE_SIGNALS
-                // Call readline wrapper :
-                ::signal( SIGINT, ctrl_c_catcher ); // catch ctrl_c only when editting a line.
-#endif
                 std::string command;
                 // When using rxvt on windows, the process will receive signals when the arrow keys are used
                 // during input. We compile with /EHa to catch these signals and don't print anything.
@@ -813,9 +800,6 @@ namespace OCL
                     cerr << "The command line reader throwed an exception." <<endlog();
                 }
                 str_trim( command, ' ');
-#ifdef USE_SIGNALS
-                ::signal( SIGINT, SIG_DFL );        // do not catch ctrl_c
-#endif
                 cout << coloroff;
                 if ( command == "quit" ) {
                     // Intercept no Ctrl-C
