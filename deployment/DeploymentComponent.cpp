@@ -39,6 +39,13 @@
 #include <rtt/plugin/PluginLoader.hpp>
 #include <boost/algorithm/string.hpp>
 
+# if defined(_POSIX_VERSION)
+#   define USE_SIGNALS 1
+# endif
+
+#ifdef USE_SIGNALS
+#include <signal.h>
+#endif
 
 #include <cstdio>
 #include <cstdlib>
@@ -51,6 +58,8 @@
 #include <iostream>
 #include <fstream>
 #include <set>
+
+
 
 using namespace Orocos;
 
@@ -66,7 +75,19 @@ namespace OCL
      */
     static std::set<string> valid_names;
 
+    static int got_signal = -1;
+
     extern char const* default_comp_path_build;
+
+    // Signal code only on Posix:
+#if defined(USE_SIGNALS)
+    // catch ctrl+c signal
+    void ctrl_c_catcher(int sig)
+    {
+    	// Ctrl-C received (or any other signal)
+    	got_signal = sig;
+    }
+#endif
 
 #define ORO_str(s) ORO__str(s)
 #define ORO__str(s) #s
@@ -123,6 +144,10 @@ namespace OCL
 
         this->addOperation("kickOutComponent", &DeploymentComponent::kickOutComponent, this, ClientThread).doc("Calls stopComponents, cleanupComponent and unloadComponent in a row.").arg("comp_name", "component name");
         this->addOperation("kickOut", &DeploymentComponent::kickOut, this, ClientThread).doc("Calls stopComponents, cleanupComponents and unloadComponents in a row.").arg("File", "The file which contains the name of the components to kickOut (for example, the same used in kickStart).");
+
+        this->addOperation("waitForInterrupt", &DeploymentComponent::waitForInterrupt, this, ClientThread).doc("This operation waits for the SIGINT signal and then returns. This allows you to wait in a script for ^C.");
+        this->addOperation("waitForSignal", &DeploymentComponent::waitForSignal, this, ClientThread).doc("This operation waits for the signal of the argument and then returns. This allows you to wait in a script for any signal except SIGKILL and SIGSTOP.").arg("signal number","The signal number to wait for.");
+
 
         // Work around compiler ambiguity:
         typedef bool(DeploymentComponent::*DCFun)(const std::string&, const std::string&);
@@ -241,6 +266,38 @@ namespace OCL
           kickOutAll();
       }
       ComponentLoader::Release();
+    }
+
+    bool DeploymentComponent::waitForInterrupt() {
+    	if ( !waitForSignal(SIGINT) )
+    		return false;
+    	cout << "DeploymentComponent: Got interrupt !" <<endl;
+    	return true;
+    }
+
+    bool DeploymentComponent::waitForSignal(int sig) {
+#ifdef USE_SIGNALS
+    	struct sigaction sa, sold;
+    	sa.sa_handler = ctrl_c_catcher;
+    	if ( ::sigaction(sig, &sa, &sold) != 0) {
+    		cout << "DeploymentComponent: Failed to install signal handler for signal " << sig << endl;
+    		return false;
+    	}
+    	while (got_signal != sig) {
+    		TIME_SPEC ts;
+    		ts.tv_sec = 1;
+    		ts.tv_nsec = 0;
+    		rtos_nanosleep(&ts, 0);
+    	}
+    	got_signal = -1;
+    	// reinstall previous handler if present.
+    	if (sold.sa_handler || sold.sa_sigaction)
+    		::sigaction(sig, &sold, NULL);
+    	return true;
+#else
+		cout << "DeploymentComponent: Failed to install signal handler for signal " << sig << ": Not supported by this Operating System. "<<endl;
+		return false;
+#endif
     }
 
     bool DeploymentComponent::connectPeers(const std::string& one, const std::string& other)
