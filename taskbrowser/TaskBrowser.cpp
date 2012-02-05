@@ -1513,6 +1513,8 @@ namespace OCL
         // e.g. eval true once or time measurements.
         // becomes only really handy for 'watches' (to deprecate).
         ds->reset();
+        // this is needed to read a ds's value. Otherwise, a cached value may be returned.
+        ds->evaluate();
 
         DataSource<RTT::PropertyBag>* dspbag = DataSource<RTT::PropertyBag>::narrow(ds.get());
         if (dspbag) {
@@ -1539,7 +1541,6 @@ namespace OCL
 
         // Print the members of the type:
         base::DataSourceBase::shared_ptr dsb(ds);
-        dsb->evaluate();
         if (dsb->getMemberNames().empty() || dsb->getTypeInfo()->isStreamable() ) {
             if (debug) cerr << "terminal item " << dsb->getTypeName() << nl;
             if (usehex)
@@ -1962,9 +1963,11 @@ namespace OCL
                 }
                 OutputPortInterface* oport = dynamic_cast<OutputPortInterface*>(port);
                 if (oport) {
-                    if ( oport->keepsLastWrittenValue())
-                        sresult << " => " << oport->getDataSource();
-                    else
+                    if ( oport->keepsLastWrittenValue()) {
+                    	DataSourceBase::shared_ptr dsb = oport->getDataSource();
+                    	dsb->evaluate(); // read last written value.
+                        sresult << " => " << dsb;
+                    } else
                         sresult << " => (keepsLastWrittenValue() == false. Enable it for this port in order to see it in the TaskBrowser.)";
                 }
 #if 0
