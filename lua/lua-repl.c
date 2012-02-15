@@ -27,7 +27,7 @@
 #else
  #define RTTLUA_BOILER  "OROCOS RTTLua"
 #endif
-#define RTTLUA_VERSION "1.0-beta4"
+#define RTTLUA_VERSION "1.0-beta5"
 #define XSTR(x) STR(x)
 #define STR(x)	#x
 
