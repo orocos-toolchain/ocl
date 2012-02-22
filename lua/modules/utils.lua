@@ -109,9 +109,9 @@ end
 -- @return processed string.
 function strsetlen(str, len, dots)
    if string.len(str) > len and dots then
-      return string.sub(str, len - 3) .. "..."
+      return string.sub(str, 1, len - 4) .. "... "
    elseif string.len(str) > len then
-      return string.sub(str, len)
+      return string.sub(str, 1, len)
    else return rpad(str, len, ' ') end
 end
 
