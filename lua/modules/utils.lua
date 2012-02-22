@@ -10,7 +10,7 @@ module('utils')
 
 -- increment major on API breaks
 -- increment minor on non breaking changes
-VERSION=0.9
+VERSION=0.93
 
 function append(car, ...)
    assert(type(car) == 'table')
@@ -205,6 +205,16 @@ function deepcopy(object)
    return _copy(object)
 end
 
+function imap(f, tab)
+   local newtab = {}
+   if tab == nil then return newtab end
+   for i,v in ipairs(tab) do
+      local res = f(v,i)
+      newtab[#newtab+1] = res
+   end
+   return newtab
+end
+
 function map(f, tab)
    local newtab = {}
    if tab == nil then return newtab end
@@ -339,4 +349,27 @@ function advise(where, oldfun, newfun)
    else
       return function (...) oldfun(...); newfun(...); end
    end
+end
+
+--- Check wether a file exists.
+-- @param fn filename to check.
+-- @return true or false
+function file_exists(fn)
+   local f=io.open(fn);
+   if f then io.close(f); return true end
+   return false
+end
+
+--- From Book  "Lua programming gems", Chapter 2, pg. 26.
+function memoize (f)
+   local mem = {} 			-- memoizing table
+   setmetatable(mem, {__mode = "kv"}) 	-- make it weak
+   return function (x) 			-- new version of ’f’, with memoizing
+	     local r = mem[x]
+	     if r == nil then 	-- no previous result?
+		r = f(x) 	-- calls original function
+		mem[x] = r 	-- store result for reuse
+	     end
+	     return r
+	  end
 end
