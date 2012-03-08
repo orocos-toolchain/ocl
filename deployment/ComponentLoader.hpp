@@ -70,7 +70,7 @@ namespace OCL {
 
             std::vector< LoadedLib > loadedLibs;
 
-            std::vector< string > loadedPackages;
+            std::vector< std::string > loadedPackages;
 
             /**
              * Path to look for if all else fails.

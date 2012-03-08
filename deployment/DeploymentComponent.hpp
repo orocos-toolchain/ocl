@@ -141,7 +141,7 @@ namespace OCL
             bool autostart, autoconf, autoconnect, autosave;
             bool proxy, server, use_naming;
             std::string configfile;
-            vector<string> plugins;
+            std::vector<std::string> plugins;
             /// Group number this component belongs to
             int group;
         };
@@ -208,7 +208,7 @@ namespace OCL
          * @return null if the service could not be found, the service
          * otherwise
          */
-        Service::shared_ptr stringToService(string const& names);
+        Service::shared_ptr stringToService(std::string const& names);
         /**
          * Converts a dot-separated path to a service to a Port
          * object.
@@ -217,7 +217,7 @@ namespace OCL
          * @return null if the port could not be found, the port
          * otherwise
          */
-        base::PortInterface* stringToPort(string const& names);
+        base::PortInterface* stringToPort(std::string const& names);
     public:
         /**
          * Constructs and configures this component.
