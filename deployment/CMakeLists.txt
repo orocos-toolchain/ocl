@@ -18,7 +18,7 @@ IF ( BUILD_DEPLOYMENT )
     IF(NOT WIN32)
       TARGET_LINK_LIBRARIES( orocos-ocl-deployment "dl" )
     ENDIF()
-    TARGET_LINK_LIBRARIES( orocos-ocl-deployment ${RTT_PLUGIN_rtt-marshalling_LIBRARIES} ${RTT_PLUGIN_rtt-scripting_LIBRARIES})
+    TARGET_LINK_LIBRARIES( orocos-ocl-deployment ${RTT_PLUGIN_rtt-marshalling_${OROCOS_TARGET}_LIBRARIES} ${RTT_PLUGIN_rtt-scripting_${OROCOS_TARGET}_LIBRARIES})
     TARGET_LINK_LIBRARIES( orocos-ocl-deployment ${Boost_FILESYSTEM_LIBRARIES} ${Boost_SYSTEM_LIBRARIES})
     
     IF (OROCOS-RTT_CORBA_FOUND)

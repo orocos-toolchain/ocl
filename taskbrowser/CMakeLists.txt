@@ -76,7 +76,7 @@ IF ( BUILD_TASKBROWSER )
       endif(UNIX)
     endif (USE_EDITLINE)
 
-    TARGET_LINK_LIBRARIES( orocos-ocl-taskbrowser ${RTT_PLUGIN_rtt-scripting_LIBRARIES} )
+    TARGET_LINK_LIBRARIES( orocos-ocl-taskbrowser ${RTT_PLUGIN_rtt-scripting_${OROCOS_TARGET}_LIBRARIES} )
 
     orocos_generate_package()
 
