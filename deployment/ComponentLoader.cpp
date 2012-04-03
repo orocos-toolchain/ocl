@@ -322,7 +322,7 @@ bool ComponentLoader::importRosPackage(std::string const& package)
             }
             // since it was a ROS package, we exit here.
             if (!found) {
-                log(Warning) <<"The ROS package '"<< package <<"' in '"<< getPath( package ) << "' nor its dependencies contained a lib/orocos directory. I'll look in the RTT_COMPONENT_PATH next."<<endlog();
+                log(Debug) <<"The ROS package '"<< package <<"' in '"<< getPath( package ) << "' nor its dependencies contained a lib/orocos directory. I'll look in the RTT_COMPONENT_PATH next."<<endlog();
             }
             return found;
         } else

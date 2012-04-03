@@ -443,9 +443,9 @@ namespace OCL
 
         // Warn about already connected ports.
         if ( ap->connected() && bp->connected() ) {
-            log(Warning) << "Port '"<< ap->getName() << "' of Component '"<<a->getName()
+            log(Debug) << "Port '"<< ap->getName() << "' of Component '"<<a->getName()
                        << "' and port '"<< bp->getName() << "' of Component '"<<b->getName()
-                       << "' are already connected but (probably) not to each other."<<endlog();
+                       << "' are already connected but (probably) not to each other. Connecting them anyway."<<endlog();
         }
 
         // use the base::PortInterface implementation
@@ -475,7 +475,7 @@ namespace OCL
     // New API:
     bool DeploymentComponent::connect(const std::string& one, const std::string& other, ConnPolicy cp)
     {
-	RTT::Logger::In in("DeploymentComponent::connectPorts");
+        RTT::Logger::In in("DeploymentComponent::connect");
 		base::PortInterface* ap, *bp;
 		ap = stringToPort(one);
 		bp = stringToPort(other);
@@ -484,9 +484,9 @@ namespace OCL
 
         // Warn about already connected ports.
         if ( ap->connected() && bp->connected() ) {
-            log(Warning) << "Port '"<< ap->getName() << "' of '"<< one
+            log(Debug) << "Port '"<< ap->getName() << "' of '"<< one
                        << "' and port '"<< bp->getName() << "' of '"<< other
-                       << "' are already connected but (probably) not to each other."<<endlog();
+                       << "' are already connected but (probably) not to each other. Connecting them anyway."<<endlog();
         }
 
         // use the base::PortInterface implementation
