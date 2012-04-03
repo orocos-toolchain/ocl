@@ -10,8 +10,12 @@
   <articleinfo>
     <title>The Deployment Component</title>
     <copyright>
-      <year>2006,2007,2008,2009, 2010</year>
+      <year>2006,2007,2008,2009</year>
       <holder>Peter Soetens, FMTC</holder>
+      <holder>Peter Soetens, The SourceWorks</holder>
+    </copyright>
+    <copyright>
+      <year>2010,2011,2012</year>
       <holder>Peter Soetens, The SourceWorks</holder>
     </copyright>
 
@@ -122,9 +126,22 @@
 	also <command>deployer-&lt;target&gt; --help</command> for an overview
 	of the options.
       </para>
+			<note><para>In case you set the OROCOS_TARGET environment variable to the target you want to
+			use (for example "gnulinux"), you can also start the <command>deployer</command> command
+			(which is a shell script), which will in turn start the
+			<command>deployer-$OROCOS_TARGET</command> program. If no OROCOS_TARGET has been set, it will
+			refuse to start.</para><para> Similar scripts are available for <command>rttscript</command>,
+			<command>cdeployer</command>, <command>ctaskbrowser</command> and
+			<command>deployer-corba</command>.  </para></note>
       <para>
-	There are three related programs to the deployer application.
+	There are four related programs to the deployer application.
 	<itemizedlist>
+	  <listitem><para><command>rttscript-&lt;target&gt;</command>:
+	  like above but does not show a TaskBrowser prompt. When
+		it is finished deploying, it undeploys and quits. You'll need
+		to use a crafted .ops script to hold-off the quiting until
+		your applications needs to. Useful for doing little tasks
+		from the command line, unit tests or another script. </para></listitem>
 	  <listitem><para><command>cdeployer-&lt;target&gt;</command>:
 	  like above but starts the CORBA enabled non-interactive
 	  deployer application. You are not presented with a
@@ -162,6 +179,8 @@
 		  variable.</para></listitem>
 	  <listitem><para><command>--no-consolelog</command> Turn off logging to
 		  the console (will still log to 'orocos.log')</para></listitem>
+	  <listitem><para><command>--daemon</command> (also -d) run the deployer as a
+		  background process. Will not open up a TaskBrowser prompt.</para></listitem>
 	  <listitem><para><command>--DeployerName deployer-name</command> Name of 
 		  deployer component (the --DeployerName flag is optional)</para></listitem>
 	</itemizedlist>
@@ -989,7 +1008,7 @@
   ORO_LIST_COMPONENT_TYPE( NS::ComponentX )</programlisting>
          <para>
 	   and in <filename>ComponentY.cpp</filename> the same but without the
-	   ORO_CREATE_COMPONENT_TYPE macro:
+	   ORO_CREATE_COMPONENT_LIBRARY macro:
 	 </para>
 	<programlisting>  #include "ComponentY.hpp"
   #include &lt;ocl/Component.hpp&gt;
@@ -1051,6 +1070,13 @@
 	</para>
 	<programlisting>  CFLAGS= -O2 -Wall
   LDFLAGS=</programlisting>
+  <note>
+		<para>
+			If you use CMake with the UseOrocos.cmake macros, you don't need
+			any of this manual setup. The Orocos macros set the right flags
+			for you.
+		</para>
+	</note>
       </section>
     </section>
 </article>
