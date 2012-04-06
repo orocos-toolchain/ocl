@@ -32,6 +32,12 @@ function info()
 -- @return boolean flag if connecting succeeded or not.
 function connect(port)
 
+--- Disconnect this port
+-- For this ports do not have to be added to a TaskContext interface.
+-- @param port (optional) the port to disconnect from, if nil all connected ports will be disconnected
+-- @return boolean flag if disconnecting succeeded or not.
+function disconnect(port)
+
 --- Delete a port.
 -- This frees the memory and makes the port inaccessible from
 -- Lua. Make sure that the port was removed from all TaskContexts
