@@ -122,6 +122,8 @@ namespace OCL
         this->addOperation("path", &DeploymentComponent::path, this, ClientThread).doc("Add additional directories to the component search path without importing them.").arg("Paths", "A colon or semi-colon separated list of paths to search for packages.");
 
         this->addOperation("loadComponent", &DeploymentComponent::loadComponent, this, ClientThread).doc("Load a new component instance from a library.").arg("Name", "The name of the to be created component").arg("Type", "The component type, used to lookup the library.");
+        // avoid warning about overriding
+        this->provides()->removeOperation("loadService");
         this->addOperation("loadService", &DeploymentComponent::loadService, this, ClientThread).doc("Load a discovered service or plugin in an existing component.").arg("Name", "The name of the component which will receive the service").arg("Service", "The name of the service or plugin.");
         this->addOperation("unloadComponent", &DeploymentComponent::unloadComponent, this, ClientThread).doc("Unload a loaded component instance.").arg("Name", "The name of the to be created component");
         this->addOperation("displayComponentTypes", &DeploymentComponent::displayComponentTypes, this, ClientThread).doc("Print out a list of all component types this component can create.");
