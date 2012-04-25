@@ -3,6 +3,7 @@ option(BUILD_LUA_RTT "Build Lua RTT bindings" ON)
 cmake_dependent_option(BUILD_LUA_RTT_DYNAMIC_MODULES "Build dynamic loadable Lua plugins for rtt and deployer (experimental!)" OFF "BUILD_LUA_RTT" OFF)
 
 cmake_dependent_option(BUILD_LUA_RTT_TLSF "Build TLSF enabled Lua version (experimental!)" ON "BUILD_LUA_RTT" OFF)
+cmake_dependent_option(BUILD_LUA_RTT_CORBA "Build CORBA enabled Lua version (experimental!)" ON "BUILD_LUA_RTT" OFF)
 
 if(BUILD_LUA_RTT)
 
@@ -41,6 +42,17 @@ if(BUILD_LUA_RTT)
     endif(NOT CURSES AND NOT READLINE)
 
     set_target_properties(lua-repl PROPERTIES COMPILE_FLAGS "${LUA_REPL_FLAGS}")
+
+    # CORBA version
+    if(BUILD_LUA_RTT_CORBA AND OROCOS-RTT_CORBA_FOUND)
+
+      orocos_executable(rttlua-corba rtt.cpp LuaComponent.cpp)
+      program_add_deps(rttlua-corba lua-repl orocos-ocl-deployment ${LUA_LIBRARIES} ${OROCOS-RTT_CORBA_LIBRARIES} orocos-ocl-deployment-corba)
+      set_target_properties(rttlua-corba PROPERTIES COMPILE_FLAGS "-DLUA_RTT_CORBA")
+      install(TARGETS rttlua-corba RUNTIME DESTINATION bin)
+      install(PROGRAMS ../bin/rttlua DESTINATION bin RENAME rttlua-corba) # The shell script
+
+    endif(BUILD_LUA_RTT_CORBA AND OROCOS-RTT_CORBA_FOUND)
 
     # TLSF version
     if(BUILD_LUA_RTT_TLSF)

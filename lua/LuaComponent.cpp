@@ -56,7 +56,12 @@ int main_args(lua_State *L, int argc, char **argv);
 #include <rtt/os/MutexLock.hpp>
 #include <rtt/TaskContext.hpp>
 #include <ocl/OCL.hpp>
+#if defined(LUA_RTT_CORBA)
+#include <rtt/transports/corba/TaskContextServer.hpp>
+#include <deployment/CorbaDeploymentComponent.hpp>
+#else
 #include <deployment/DeploymentComponent.hpp>
+#endif
 
 #ifdef LUA_RTT_TLSF
 extern "C" {
@@ -75,6 +80,9 @@ extern "C" {
 using namespace std;
 using namespace RTT;
 using namespace Orocos;
+#if defined(LUA_RTT_CORBA)
+using namespace RTT::corba;
+#endif
 
 namespace OCL
 {
@@ -250,8 +258,49 @@ int ORO_main(int argc, char** argv)
 	wordexp_t init_exp;
 
 	LuaComponent lua("lua");
-	DeploymentComponent dc("deployer");
-	lua.connectPeers(&dc);
+	DeploymentComponent * dc;
+
+#if defined(LUA_RTT_CORBA)
+	int  orb_argc = argc;
+	char** orb_argv = 0;
+        
+	while(orb_argc) {
+	  if(0 == strcmp("--", argv[argc - orb_argc])) {
+	    argv[argc - orb_argc] = argv[0];
+	    orb_argv = &argv[argc - orb_argc];
+	    argc -= orb_argc;
+	    break;
+	  }
+	  orb_argc--;
+	}
+        
+	if(orb_argc) {
+	  try {
+	    TaskContextServer::InitOrb(orb_argc, orb_argv);
+   
+	    dc = new CorbaDeploymentComponent("deployer");
+   
+	    TaskContextServer::Create( dc, true, true );
+   
+	    // The orb thread accepts incomming CORBA calls.
+	    TaskContextServer::ThreadOrb();
+	  } 
+	  catch( CORBA::Exception &e ) {
+	    log(Error) << argv[0] <<" ORO_main : CORBA exception raised!" << Logger::nl;
+	    log() << CORBA_EXCEPTION_INFO(e) << endlog();
+	  } catch (...) {
+	    log(Error) << "Uncaught exception." << endlog();
+	  }
+ 
+	  // lua_repl doesn't use argc ?
+	  argv[argc] = NULL;
+	}
+	else
+#endif
+
+	dc = new DeploymentComponent("deployer");
+
+	lua.connectPeers(dc);
 
 	/* run init file */
 	wordexp(INIT_FILE, &init_exp, 0);
@@ -264,6 +313,16 @@ int ORO_main(int argc, char** argv)
 	wordfree(&init_exp);
 
 	lua.lua_repl(argc, argv);
+
+#if defined(LUA_RTT_CORBA)
+	if(orb_argc) {
+	  TaskContextServer::ShutdownOrb();
+	  TaskContextServer::DestroyOrb();
+	}
+#endif
+
+	delete dc;
+
 	return 0;
 }
 
