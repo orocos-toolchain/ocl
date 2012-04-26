@@ -1690,6 +1690,32 @@ static int Service_getPort(lua_State *L)
 	return 1;
 }
 
+#ifdef RTT_LACKS_THIS
+static int Service_getPropertyNames(lua_State *L)
+{
+	Service::shared_ptr srv = *(luaM_checkudata_mt(L, 1, "Service", Service::shared_ptr));
+	push_vect_str(L, srv->getPropertyNames());
+	return 1;
+}
+#endif
+
+static int Service_getProperty(lua_State *L)
+{
+	const char *name;
+	PropertyBase *prop;
+
+	Service::shared_ptr srv = *(luaM_checkudata_mt(L, 1, "Service", Service::shared_ptr));
+	name = luaL_checkstring(L, 2);
+
+	prop = srv->getProperty(name);
+
+	if(!prop)
+		luaL_error(L, "%s failed. No such property", __FILE__);
+
+	Property_push(L, prop);
+	return 1;
+}
+
 static const struct luaL_Reg Service_f [] = {
 	{ "getName", Service_getName },
 	{ "doc", Service_doc },
@@ -1700,6 +1726,8 @@ static const struct luaL_Reg Service_f [] = {
 	{ "provides", Service_provides },
 	{ "getOperation", Service_getOperation },
 	{ "getPort", Service_getPort },
+	/* { "getPropertyNames", Service_getPropertyNames }, */
+	{ "getProperty", Service_getProperty },
 	{ NULL, NULL }
 };
 
@@ -1713,6 +1741,8 @@ static const struct luaL_Reg Service_m [] = {
 	{ "provides", Service_provides },
 	{ "getOperation", Service_getOperation },
 	{ "getPort", Service_getPort },
+	/* { "getPropertyNames", Service_getPropertyNames }, */
+	{ "getProperty", Service_getProperty },
 	{ "__gc", GCMethod<Service::shared_ptr> },
 	{ NULL, NULL }
 };
