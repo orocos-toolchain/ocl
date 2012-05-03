@@ -210,6 +210,15 @@ namespace OCL
          */
         Service::shared_ptr stringToService(string const& names);
         /**
+         * Converts a dot-separated path to a service to a ServiceRequester
+         * object.
+         * @param name a dot-separated path name to a service. The first
+         * part of the name must be the component name. For example 'Controller.arm'.
+         * @return null if the service could not be found, the service
+         * otherwise
+         */
+        ServiceRequester* stringToServiceRequester(std::string const& names);
+        /**
          * Converts a dot-separated path to a service to a Port
          * object.
          * @param name a dot-separated path name to a port. The first
@@ -336,6 +345,14 @@ namespace OCL
          * or vice versa.
          */
         bool connectServices(const std::string& one, const std::string& other);
+
+        /**
+         * Connects a required operation to a provided operation.
+         * @param required The dot-separated name of a required operation
+         * @param provided The dot-separated name of a provided operation
+         * @return true if required is connected to provided
+         */
+        bool connectOperations(const std::string& required, const std::string& provided);
 
         /**
          * Make one component a peer of the other, in one direction, such
