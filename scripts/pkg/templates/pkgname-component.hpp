@@ -8,7 +8,7 @@ class @Pkgname@
     : public RTT::TaskContext
 {
  public:
-    @Pkgname@(string const& name)
+    @Pkgname@(std::string const& name)
         : TaskContext(name)
     {
         std::cout << "@Pkgname@ constructed !" <<std::endl;
