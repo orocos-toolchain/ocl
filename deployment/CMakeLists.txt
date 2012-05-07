@@ -32,9 +32,9 @@ IF ( BUILD_DEPLOYMENT )
     
     # rospack support
     IF ( ROS_ROOT )
-	set(roslib_PACKAGE_PATH ${ROS_ROOT}/core/roslib) ### XXX hardcoded
-        include_directories( ${roslib_PACKAGE_PATH}/include )
-        find_library(ROS_LIB roslib ${roslib_PACKAGE_PATH}/lib )
+        find_path(roslib_PACKAGE_PATH ros/package.h PATHS ${ROS_ROOT}/../.. ${ROS_ROOT}/core/roslib PATH_SUFFIXES include)
+	include_directories( ${roslib_PACKAGE_PATH} )
+        find_library(ROS_LIB roslib PATHS  ${ROS_ROOT}/../.. ${ROS_ROOT}/core/roslib PATH_SUFFIXES lib)
         TARGET_LINK_LIBRARIES( orocos-ocl-deployment ${ROS_LIB} )
         ADD_DEFINITIONS( -DHAS_ROSLIB )
 	# Necessary when building Debian packages:

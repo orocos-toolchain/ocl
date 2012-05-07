@@ -11,6 +11,7 @@
 		<rosdep name="libreadline"/>
 		<rosdep name="lua-dev"/>
 		<depend package="rtt" />
+		<depend package="rospack" />
 		<depend package="log4cpp" />
 
 		<export>
