@@ -938,6 +938,13 @@ static int Property_get(lua_State *L)
 	return 1;
 }
 
+static int Property_getRaw(lua_State *L)
+{
+	PropertyBase *pb = *(luaM_checkudata_mt_bx(L, 1, "Property", PropertyBase));
+	luaM_pushobject_mt(L, "Variable", DataSourceBase::shared_ptr)(pb->getDataSource());
+	return 1;
+}
+
 static int Property_set(lua_State *L)
 {
 	DataSourceBase::shared_ptr newdsb;
@@ -1027,6 +1034,7 @@ static int Property_newindex(lua_State *L)
 static const struct luaL_Reg Property_f [] = {
 	{"new", Property_new },
 	{"get", Property_get },
+	{"getRaw", Property_getRaw },
 	{"set", Property_set },
 	{"info", Property_info },
 	{"delete", Property_del },
@@ -1035,6 +1043,7 @@ static const struct luaL_Reg Property_f [] = {
 
 static const struct luaL_Reg Property_m [] = {
 	{"get", Property_get },
+	{"getRaw", Property_getRaw },
 	{"set", Property_set },
 	{"info", Property_info },
 	// todo: shall we or not? s.o. {"__gc", Property_gc },
