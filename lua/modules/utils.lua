@@ -10,7 +10,7 @@ module('utils')
 
 -- increment major on API breaks
 -- increment minor on non breaking changes
-VERSION=0.93
+VERSION=0.95
 
 function append(car, ...)
    assert(type(car) == 'table')
@@ -149,7 +149,7 @@ function basename(n)
    if not string.find(n, '[\\.]') then
       return n
    else
-      local t = utils.split(n, "[\\.]")
+      local t = split(n, "[\\.]")
       return t[#t]
    end
 end
@@ -372,4 +372,30 @@ function memoize (f)
 	     end
 	     return r
 	  end
+end
+
+--- call thunk every s+ns seconds.
+function gen_do_every(s, ns, thunk, gettime)
+   local next = { sec=0, nsec=0 }
+   local cur = { sec=0, nsec=0 }
+   local inc = { sec=s, nsec=ns }
+
+   return function()
+	     cur.sec, cur.nsec = gettime()
+
+	     if time.cmp(cur, next) == 1 then
+		thunk()
+		next.sec, next.nsec = time.add(cur, inc)
+	     end
+	  end
+end
+
+function expand(tpl, params)
+   return string.gsub(tpl, "%$(%a+)",
+		      function(w)
+			 if not params[w] then
+			    error("expand: no param for variable " .. w)
+			 end
+			 return params[w]
+		      end)
 end
