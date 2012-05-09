@@ -3,8 +3,8 @@
 -- some own ones, some collected from the lua wiki
 --
 
-local type, pairs, ipairs, setmetatable, getmetatable, assert, table, print, tostring, string, io, unpack =
-   type, pairs, ipairs, setmetatable, getmetatable, assert, table, print, tostring, string, io, unpack
+local type, pairs, ipairs, setmetatable, getmetatable, assert, table, print, tostring, string, io, unpack, error =
+   type, pairs, ipairs, setmetatable, getmetatable, assert, table, print, tostring, string, io, unpack, error
 
 module('utils')
 
