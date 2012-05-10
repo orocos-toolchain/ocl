@@ -202,7 +202,6 @@ namespace OCL
 #endif
 		bool configureHook()
 		{
-			os::MutexLock lock(m);
 			if(!lua_string.empty())
 				exec_str(lua_string);
 
