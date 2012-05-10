@@ -84,7 +84,7 @@ namespace OCL
 		std::string lua_string;
 		std::string lua_file;
 		lua_State *L;
-		os::Mutex m;
+		os::MutexRecursive m;
 #if LUA_RTT_TLSF
 		struct lua_tlsf_info tlsf_inf;
 #endif
