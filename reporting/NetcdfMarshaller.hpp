@@ -6,6 +6,8 @@
 #include <boost/lexical_cast.hpp>
 
 #include <netcdf.h>
+#include <iostream>
+using namespace std;
 
 namespace RTT
 {
@@ -99,7 +101,7 @@ namespace RTT
           else
             prefix += "." + v.getName();
 
-          serialize(v.get());
+          serialize(v.rvalue());
 
           prefix = oldpref;
           nameless_counter = 0;
@@ -249,13 +251,13 @@ namespace RTT
           /**
            * Specify the number of values that will be written in each dimension
            */
-          count[0] = 1; count[1] = v->get().size();
+          count[0] = 1; count[1] = v->rvalue().size();
 
           retval = nc_inq_varid(ncid, name, &varid);
           if (retval)
             log(Error) << "Could not get variable id of " << name << ", error " << retval <<endlog();
 
-          retval = nc_put_vara_double(ncid, varid, start, count, &(v->get().front()));
+          retval = nc_put_vara_double(ncid, varid, start, count, &(v->rvalue().front()));
           if(retval)
             log(Error) << "Could not write variable " << name << ", error " << retval <<endlog();
 
@@ -263,17 +265,20 @@ namespace RTT
 
         std::string composeName(std::string propertyName)
         {
-          std::string prefix_name;
+          std::string last_name;
 
           if( propertyName.empty() ) {
             nameless_counter++;
-            prefix_name = prefix + boost::lexical_cast<std::string>( nameless_counter );
+            last_name = boost::lexical_cast<std::string>( nameless_counter );
           }
           else {
             nameless_counter = 0;
-            prefix_name = propertyName;
+            last_name = propertyName;
           }
-          return prefix_name;
+          if ( prefix.empty() )
+          	return last_name;
+          else
+          	return prefix + "." + last_name;
         }
 
         /**
