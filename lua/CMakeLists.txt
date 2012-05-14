@@ -18,7 +18,7 @@ if(BUILD_LUA_RTT)
     include_directories(${LUA_INCLUDE_DIR})
 
     add_library(lua-repl STATIC lua-repl.c)
-    target_link_libraries(lua-repl "ncurses" "readline" "dl" "history" ${LUA_LIBRARIES})
+    target_link_libraries(lua-repl ${LUA_LIBRARIES})
     set_target_properties(lua-repl PROPERTIES COMPILE_FLAGS "-DOROCOS_TARGET=${OROCOS_TARGET}")
 
     orocos_component(orocos-ocl-lua rtt.cpp LuaComponent.cpp )
@@ -37,6 +37,7 @@ if(BUILD_LUA_RTT)
       set(LUA_REPL_FLAGS "-DLUA_ANSI")
     else(NOT CURSES AND NOT READLINE)
       set(LUA_REPL_FLAGS "-DLUA_USE_LINUX")
+      target_link_libraries(lua-repl "ncurses" "readline" "dl" "history" )
     endif(NOT CURSES AND NOT READLINE)
 
     set_target_properties(lua-repl PROPERTIES COMPILE_FLAGS "${LUA_REPL_FLAGS}")
