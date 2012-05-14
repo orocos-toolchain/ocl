@@ -86,6 +86,15 @@ namespace OCL {
              * @return true if a new library was loaded or if this library was already loaded.
              */
             bool loadInProcess(std::string filename, std::string shortname, bool log_error );
+
+            /**
+             * Internal function that does try to reload a previously loaded library by first dl_close'ing the library.
+             * @param filename The path+filename to open
+             * @param shortname The short name of this file
+             * @return true if this library was reloaded.
+             */
+            bool reloadInProcess(std::string filename, std::string shortname);
+
             /**
              * Internal helper function that validate if a component is compatible with the
              * current target. Currently, there's a validation only on the win32 platform
@@ -154,6 +163,12 @@ namespace OCL {
              * Relative paths are interpreted with regard to the plugin path.
              */
             bool loadLibrary(std::string const& path);
+
+            /**
+             * Reloads a component library.
+             * @param filepath an absolute path to a library.
+             */
+            bool reloadLibrary(std::string const& filepath);
 
             /**
              * Creates a new component an earlier discovered component type.

@@ -403,6 +403,20 @@ bool ComponentLoader::importInstalledPackage(std::string const& package, std::st
         log(Error) << *it << endlog();
 }
 
+bool ComponentLoader::reloadLibrary(std::string const& name)
+{
+    path arg = name;
+    // check for direct match:
+#if BOOST_VERSION >= 104600
+    if (is_regular_file( arg ) && reloadInProcess( arg.string(), makeShortFilename( arg.filename().string() ) ) )
+#else
+    if (is_regular_file( arg ) && reloadInProcess( arg.string(), makeShortFilename( arg.filename() ) ) )
+#endif
+        return true;
+    // bail out if not an absolute path
+    return false;
+}
+
 bool ComponentLoader::loadLibrary( std::string const& name )
 {
     path arg = name;
@@ -467,8 +481,8 @@ bool ComponentLoader::isImported(string type_name)
     return false;
 }
 
-// loads a single component in the current process.
-bool ComponentLoader::loadInProcess(string file, string libname, bool log_error) {
+bool ComponentLoader::reloadInProcess(string file, string libname)
+{
     path p(file);
     char* error;
     void* handle;
@@ -476,13 +490,13 @@ bool ComponentLoader::loadInProcess(string file, string libname, bool log_error)
 
     // check if the library is already loaded
     // NOTE if this library has been loaded, you can unload and reload it to apply changes (may be you have updated the dynamic library)
-    // anyway it is safe to do this only if there isn't any isntance whom type was loaded from this library
+    // anyway it is safe to do this only if there isn't any instance whose type was loaded from this library
 
     std::vector<LoadedLib>::iterator lib = loadedLibs.begin();
     while (lib != loadedLibs.end()) {
-        // there is already a library with the same name
-        if ( lib->shortname == libname) {
-            log(Warning) <<"Library "<< lib->filename <<" already loaded... " ;
+        // We only reload if it's exactly the same file.
+        if ( lib->filename == file) {
+            log(Info) <<"Component library "<< lib->filename <<" already loaded... " ;
 
             bool can_unload = true;
             CompList::iterator cit;
@@ -490,24 +504,34 @@ bool ComponentLoader::loadInProcess(string file, string libname, bool log_error)
                 for ( cit = comps.begin(); cit != comps.end(); ++cit) {
                     if( (*ctype) == cit->second.type ) {
                         // the type of an allocated component was loaded from this library. it might be unsafe to reload the library
-                        log(Warning) << "can NOT reload library because of the instance " << cit->second.type  <<"::"<<cit->second.instance->getName()  <<endlog();
+                        log(Info) << "can NOT reload library because of the instance " << cit->second.type  <<"::"<<cit->second.instance->getName()  <<endlog();
                         can_unload = false;
                     }
                 }
             }
             if( can_unload ) {
-                log(Warning) << "try to RELOAD"<<endlog();
+                log(Info) << "try to RELOAD"<<endlog();
                 dlclose(lib->handle);
                 // remove the library info from the vector
                 std::vector<LoadedLib>::iterator lib_un = lib;
                 loadedLibs.erase(lib_un);
-                lib = loadedLibs.end();
+                return loadInProcess(file, libname, true);
             }
             else
                 return false;
         }
         else lib++;
     }
+    log(Error) << "Can't reload Component library "<< file << " since it was not loaded or is not a component library." <<endlog();
+    return false;
+}
+
+// loads a single component in the current process.
+bool ComponentLoader::loadInProcess(string file, string libname, bool log_error) {
+    path p(file);
+    char* error;
+    void* handle;
+    bool success=false;
 
     // Last chance to validate component compatibility
     if(!isCompatibleComponent(file))

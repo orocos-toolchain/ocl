@@ -96,7 +96,8 @@ namespace OCL
         this->addAttribute( highest_Priority );
 
 
-        this->addOperation("loadLibrary", &DeploymentComponent::loadLibrary, this, ClientThread).doc("Load a new library (component, plugin or typekit) into memory.").arg("Name", "The absolute or relative name of the to be loaded library.");
+        this->addOperation("reloadLibrary", &DeploymentComponent::reloadLibrary, this, ClientThread).doc("Reload a new component library into memory.").arg("FilePath", "The absolute file name of the to be reloaded library. Warning: this is a low-level function only to be used during development/testing.");
+        this->addOperation("loadLibrary", &DeploymentComponent::loadLibrary, this, ClientThread).doc("Load a new library (component, plugin or typekit) into memory.").arg("Name", "The absolute or relative name of the to be loaded library. Warning: this is a low-level function you should only use if import() doesn't work for you.");
         this->addOperation("import", &DeploymentComponent::import, this, ClientThread).doc("Import all components, plugins and typekits from a given package or directory in the search path.").arg("Package", "The name absolute or relative name of a directory or package.");
         this->addOperation("path", &DeploymentComponent::path, this, ClientThread).doc("Add additional directories to the component search path without importing them.").arg("Paths", "A colon or semi-colon separated list of paths to search for packages.");
 
@@ -1492,6 +1493,12 @@ namespace OCL
     {
         RTT::Logger::In in("DeploymentComponent::loadLibrary");
         return PluginLoader::Instance()->loadLibrary(name) || ComponentLoader::Instance()->loadLibrary(name);
+    }
+
+    bool DeploymentComponent::reloadLibrary(const std::string& name)
+    {
+        RTT::Logger::In in("DeploymentComponent::reloadLibrary");
+        return ComponentLoader::Instance()->reloadLibrary(name);
     }
 
     bool DeploymentComponent::loadService(const std::string& name, const std::string& type) {

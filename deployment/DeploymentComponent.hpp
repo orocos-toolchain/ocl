@@ -355,38 +355,49 @@ namespace OCL
         /**
          * Import a component package or directory.
          * The import statement searches through the component paths
-	 * set with path() or set using the RTT_COMPONENT_PATH
-	 * environment variable.
-	 *
-	 * @param package A (ros) package or directory name. All components,
-	 * plugins and typekits in package will be loaded and become
-	 * available to the application. As a special case, you may
-	 * specify a path to a library directly, which will be loaded when
-	 * found. 
-	 * @return true if the package could be found and loaded,
-	 * false if no such package was found in the search path.
+         * set with path() or set using the RTT_COMPONENT_PATH
+         * environment variable.
+         *
+         * @param package A (ros) package or directory name. All components,
+         * plugins and typekits in package will be loaded and become
+         * available to the application. As a special case, you may
+         * specify a path to a library directly, which will be loaded when
+         * found.
+         * @return true if the package could be found and loaded,
+         * false if no such package was found in the search path.
          */
         bool import(const std::string& package);
 
-	/**
-	 * Add an additional path to search for component packages.
-	 *
-	 * @param a colon or semi-colon separated list of 
-	 * directories to search for. Typically, paths have
-	 * the form prefix1/lib/orocos:prefix2/lib/orocos etc.
-	 */
-	void path(const std::string& path);
+        /**
+         * Add an additional path to search for component packages.
+         *
+         * @param a colon or semi-colon separated list of
+         * directories to search for. Typically, paths have
+         * the form prefix1/lib/orocos:prefix2/lib/orocos etc.
+         */
+        void path(const std::string& path);
 
         /**
-         * Use this command to load a dynamic library into the memory of the
-         * current process.
+         * Use this command to load a plugin or component library into the memory of the
+         * current process. This is a low-level function which you should
+         * only use if you could not use import().
          *
          * @param name an absolute or relative path to a loadable library.
          *
          * @return True if it could be loaded, false otherwise.
-	 * @deprecated Use import() and path() to load libraries.
          */
         bool loadLibrary(const std::string& name);
+
+        /**
+         * Use this command to \b reload a \b component library into the memory of the
+         * current process. This is a low-level function which you should
+         * only use for testing/development
+         *
+         * @param filepath an \b absolute path to a loaded library.
+         *
+         * @return True if it could be reloaded, false otherwise.
+         */
+        bool reloadLibrary(const std::string& filepath);
 
         /**
          * Load a new component in the current process. It wil appear
