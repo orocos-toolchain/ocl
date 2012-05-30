@@ -32,16 +32,18 @@ IF ( BUILD_DEPLOYMENT )
     
     # rospack support
     IF ( ROS_ROOT )
-        # Begin: New catkin style of fetching ROS deps
-        find_package(ROS REQUIRED COMPONENTS roslib)
-        include_directories(${ROS_INCLUDE_DIRS})
-        target_Link_libraries( orocos-ocl-deployment ${ROS_LIBRARIES})
-        # END: New catkin style
-	set(roslib_PACKAGE_PATH ${ROS_ROOT}/core/roslib) ### XXX hardcoded
-        include_directories( ${roslib_PACKAGE_PATH}/include )
-        find_library(ROS_LIB roslib ${roslib_PACKAGE_PATH}/lib )
-        TARGET_LINK_LIBRARIES( orocos-ocl-deployment ${ROS_LIB} )
+        # Catkin style of fetching ROS deps
+        FIND_PACKAGE( ROS COMPONENTS roslib )
+        INCLUDE_DIRECTORIES( ${ROS_INCLUDE_DIRS} )
+        TARGET_LINK_LIBRARIES( orocos-ocl-deployment ${ROS_LIBRARIES})
         ADD_DEFINITIONS( -DHAS_ROSLIB )
+        # TODO: The following block to get roslib is deprecated as of ROS Fuerte, but is left in for pre-Fuerte compatibility
+        IF(NOT ROS_FOUND)
+          set(roslib_PACKAGE_PATH ${ROS_ROOT}/core/roslib) ### XXX hardcoded
+          include_directories( ${roslib_PACKAGE_PATH}/include )
+          find_library(ROS_LIB roslib ${roslib_PACKAGE_PATH}/lib )
+          TARGET_LINK_LIBRARIES( orocos-ocl-deployment ${ROS_LIB} )
+        ENDIF(not ROS_FOUND)
 	# Necessary when building Debian packages:
 	set(ROS_STACK_DIR_FINAL $ENV{ROS_STACK_DIR_FINAL})
 	if (ROS_STACK_DIR_FINAL)
