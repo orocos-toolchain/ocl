@@ -32,6 +32,11 @@ IF ( BUILD_DEPLOYMENT )
     
     # rospack support
     IF ( ROS_ROOT )
+        # Begin: New catkin style of fetching ROS deps
+        find_package(ROS REQUIRED COMPONENTS roslib)
+        include_directories(${ROS_INCLUDE_DIRS})
+        target_Link_libraries( orocos-ocl-deployment ${ROS_LIBRARIES})
+        # END: New catkin style
 	set(roslib_PACKAGE_PATH ${ROS_ROOT}/core/roslib) ### XXX hardcoded
         include_directories( ${roslib_PACKAGE_PATH}/include )
         find_library(ROS_LIB roslib ${roslib_PACKAGE_PATH}/lib )
