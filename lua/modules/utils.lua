@@ -10,7 +10,7 @@ module('utils')
 
 -- increment major on API breaks
 -- increment minor on non breaking changes
-VERSION=0.96
+VERSION=0.97
 
 function append(car, ...)
    assert(type(car) == 'table')
@@ -99,6 +99,12 @@ function rpad(str, len, char)
    if char == nil then char = ' ' end
    return str .. string.rep(char, len - #str)
 end
+
+--- Strip ANSI color escape sequence from string.
+-- @param str string
+-- @return stripped string
+-- @return number of replacements
+function strip_ansi(str) return string.gsub(str, "\27%[%d+m", "") end
 
 --- Convert string to string of fixed lenght.
 -- Will either pad with whitespace if too short or will cut of tail if
