@@ -488,6 +488,22 @@ function tc_cleanup()
    return #propnames, #portnames
 end
 
+--- Check if a TaskContext has a port with name
+-- @param tc TaskContext
+-- @param name port name to check for
+-- @return true or false
+function tc_has_port(tc, name)
+   return utils.table_has(TaskContext.getPortNames(tc), name)
+end
+
+--- Check if a TaskContext has a property with name
+-- @param tc TaskContext
+-- @param name property name to check for
+-- @return true or false
+function tc_has_property(tc, name)
+   return utils.table_has(TaskContext.getPropertyNames(tc), name)
+end
+
 
 --- Create an inverse, connected port of a given port.
 -- The default name will be the same as the given port.
