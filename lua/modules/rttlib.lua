@@ -448,10 +448,69 @@ function tc2str(tc, full)
    return table.concat(res, '\n')
 end
 
+--- Print a TaskContext.
 function pptc(tc)
    print(tc2str(tc))
 end
 
+-- Sample iface data structure for create_if function below.
+-- iface={
+--    ports={
+--       { name='conf_events', datatype='string', type='in+event', desc="Configuration events in-port" },
+--       { name='foo', datatype='int', type='in', desc="numeric in-port" },
+--       { name='conf_status', datatype='string', type='out', desc="Current configuration status" },
+--    },
+--    properties={
+--       { name='configurations', datatype='string', desc="Set of configuration" },
+--    }
+-- }
+
+--- Construct a port/property interface from an interface spec.
+-- If a port/property with name exists it is left untouched.
+-- The interface can be removed by using rttlib.tc_cleanup()
+-- @param iface interface specification
+-- @param tc optional TaskContext of interface to construct. default is rtt.getTC().
+function create_if(iface, tc)
+   local tc = tc or rtt.getTC()
+   local res={ ports={}, props={} }
+
+   function create_port(pspec, i)
+      local p
+      assert(pspec.name, "missing port name in entry"..tostring(i))
+      pspec.desc=pspec.desc or ""
+
+      if tc_has_port(tc, pspec.name) then return end
+
+      if pspec.type=='out' then
+	 p=rtt.OutputPort(pspec.datatype)
+      elseif pspec.type=='in' or pspec.type=='in+event' then
+	 p=rtt.InputPort(pspec.datatype)
+      else
+	 error("unknown port type "..tostring(pspec.type))
+      end
+      if pspec.type=='in+event' then
+	 tc:addEventPort(p, pspec.name, pspec.desc)
+      else
+	 tc:addPort(p, pspec.name, pspec.desc)
+      end
+      res.ports[pspec.name]=p
+   end
+
+   function create_prop(pspec, i)
+      local p
+      assert(pspec.name, "missing property name in entry"..tostring(i))
+      pspec.desc=pspec.desc or ""
+
+      if tc_has_property(tc, pspec.name) then return end
+      p=rtt.Property(pspec.datatype)
+      tc:addProperty(p, pspec.name, pspec.desc)
+      res.props[pspec.name]=p
+   end
+
+   utils.foreach(create_port, iface.ports)
+   utils.foreach(create_prop, iface.properties)
+   return res
+end
 
 --- Cleanup ports and properties of this Lua Component.
 -- Only use this function if the proper properties were actually
