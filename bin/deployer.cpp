@@ -176,6 +176,8 @@ int main(int argc, char** argv)
                 OCL::TaskBrowser tb( &dc );
 
                 tb.loop();
+
+                dc.shutdownDeployment();
             }
 #endif
         }
