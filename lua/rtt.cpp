@@ -1618,7 +1618,7 @@ static int Service_getOperation(lua_State *L)
 	OperationInterfacePart *oip;
 	Service::shared_ptr srv;
 	DataSourceBase::shared_ptr dsb;
-	types::TypeInfo *ti;
+	const types::TypeInfo *ti;
 	OperationHandle *oh;
 	TaskContext *this_tc;
 
@@ -1654,7 +1654,7 @@ static int Service_getOperation(lua_State *L)
 
 	/* return value */
 	if(oip->resultType() != "void"){
-		ti = types::TypeInfoRepository::Instance()->type(oip->resultType());
+		ti = oip->getArgumentType(0); // 0 == return type
 		if(!ti)
 			luaL_error(L, "Operation.call: can't create return value DSB of type '%s'",
 				   oip->resultType().c_str());
