@@ -831,6 +831,14 @@ namespace OCL
             return this->cleanupComponent( this->getPeer(comp_name) );
         }
 
+		/**
+		 * Clean up and shutdown the entire deployment
+		 * If an operation named "shutdownDeployment" is found in a peer
+         * component named "Application", then that operation is called
+         * otherwise nothing occurs.
+		 */
+		void shutdownDeployment();
+
     };
 
 

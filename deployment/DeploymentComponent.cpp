@@ -2021,4 +2021,121 @@ namespace OCL
 
         return true;
     }
+
+    void DeploymentComponent::shutdownDeployment()
+    {
+        static const char*	PEER="Application";
+        static const char*	NAME="shutdownDeployment";
+
+        // names of override properties
+        static const char*	WAIT_PROP_NAME="shutdownWait_ms";
+        static const char*	TOTAL_WAIT_PROP_NAME="shutdownTotalWait_ms";
+
+        // if have operation named NAME in peer PEER then call it
+        RTT::TaskContext* peer = getPeer(PEER);
+        if (0 != peer)
+        {
+            RTT::OperationCaller<void(void)>	ds =
+                peer->getOperation(NAME);
+            if (ds.ready())
+            {
+                log(Info) << "Shutting down deployment." << endlog();
+                RTT::SendHandle<void(void)> handle = ds.send();
+                if (handle.ready())
+                {
+                    // set defaults
+
+                    // number milliseconds to wait in between completion checks
+                    int wait		= 50;
+                    // total number milliseconds to wait for completion
+                    int totalWait	= 2000;
+
+                    // any overrides?
+                    RTT::Property<int> wait_prop =
+                        this->properties()->getProperty(WAIT_PROP_NAME);
+                    if (wait_prop.ready())
+                    {
+                        int w = wait_prop.rvalue();
+                        if (0 < w)
+                        {
+                            wait = w;
+                            log(Debug) << "Using override value for " << WAIT_PROP_NAME << endlog();
+                        }
+                        else
+                        {
+                            log(Warning) << "Ignoring illegal value for " << WAIT_PROP_NAME << endlog();
+                        }
+                    }
+                    else
+                    {
+                        log(Debug) << "Using default value for " << WAIT_PROP_NAME << endlog();
+                    }
+
+                    RTT::Property<int> totalWait_prop =
+                        this->properties()->getProperty(TOTAL_WAIT_PROP_NAME);
+                    if (totalWait_prop.ready())
+                    {
+                        int w = totalWait_prop.rvalue();
+                        if (0 < w)
+                        {
+                            totalWait = w;
+                            log(Debug) << "Using override value for " << TOTAL_WAIT_PROP_NAME << endlog();
+                        }
+
+                        {
+                            log(Warning) << "Ignoring illegal value for " << TOTAL_WAIT_PROP_NAME << endlog();
+                        }
+                    }
+                    else
+                    {
+                        log(Debug) << "Using default value for " << TOTAL_WAIT_PROP_NAME << endlog();
+                    }
+
+                    // enforce constraints
+                    if (wait > totalWait)
+                    {
+                        wait = totalWait;
+                        log(Warning) << "Setting wait == totalWait" << endlog();
+                    }
+
+                    const long int wait_ns = wait * 1000000LL;
+                    TIME_SPEC ts;
+                    ts.tv_sec  = wait_ns / 1000000000LL;
+                    ts.tv_nsec = wait_ns % 1000000000LL;
+
+                    // wait till done or timed out
+                    log(Debug) << "Waiting for deployment shutdown to complete ..." << endlog();
+                    int waited = 0;
+                    while ((RTT::SendNotReady == handle.collectIfDone()) &&
+                           (waited < totalWait))
+                    {
+                        (void)rtos_nanosleep(&ts, NULL);
+                        waited += wait;
+                    }
+                    if (waited >= totalWait)
+                    {
+                        log(Error) << "Timed out waiting for deployment shutdown to complete." << endlog();
+                    }
+                    else
+                    {
+                        log(Debug) << "Deployment shutdown completed." << endlog();
+                    }
+                }
+                else
+                {
+                    log(Error) << "Failed to start operation: " << NAME << endlog();
+                }
+
+            }
+            else
+            {
+                log(Info) << "Ignoring missing deployment shutdown function." << endlog();
+            }
+        }
+        else
+        {
+            log(Info) << "Ignoring deployment shutdown function due to missing peer." << endlog();
+        }
+    }
+
 }

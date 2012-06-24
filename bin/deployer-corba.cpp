@@ -186,6 +186,9 @@ int main(int argc, char** argv)
             if ( !vm.count("daemon") ) {
                  OCL::TaskBrowser tb( &dc );
                  tb.loop();
+
+                 // do it while CORBA is still up in case need to do anything remote.
+                 dc.shutdownDeployment();
             }
 
             TaskContextServer::ShutdownOrb();
