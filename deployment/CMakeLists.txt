@@ -35,18 +35,19 @@ IF ( BUILD_DEPLOYMENT )
       # Catkin style of fetching ROS deps
       FIND_PACKAGE( ROS QUIET COMPONENTS roslib )
 
-      IF(ROS_FOUND)
-        INCLUDE_DIRECTORIES( ${ROS_INCLUDE_DIRS} )
-        TARGET_LINK_LIBRARIES( orocos-ocl-deployment ${ROS_LIBRARIES})
-      ELSE(ROS_FOUND)
+      IF(ROS_FOUND) # Fuerte
+        include_directories( ${ROS_INCLUDE_DIRS} )
+        target_link_libraries( orocos-ocl-deployment ${ROS_LIBRARIES})
+	add_definitions( -DHAS_ROSLIB )
+      ELSE(ROS_FOUND) # pre-Fuerte
         # TODO: This block to get roslib is deprecated as of ROS Fuerte, but is left in for pre-Fuerte compatibility
         set(roslib_PACKAGE_PATH ${ROS_ROOT}/core/roslib) ### XXX hardcoded
-        include_directories( ${roslib_PACKAGE_PATH}/include )
 	message("Falling back to roslib in: ${roslib_PACKAGE_PATH}")
         find_library(ROS_LIB roslib ${roslib_PACKAGE_PATH}/lib )
         if ( NOT ROS_LIB )
 	  find_package( ROS COMPONENTS roslib ) # Yells at user (non-QUIET !)
 	else()
+          include_directories( ${roslib_PACKAGE_PATH}/include )
           target_link_libraries( orocos-ocl-deployment ${ROS_LIB} )
 	  add_definitions( -DHAS_ROSLIB )
 	endif()
