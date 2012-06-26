@@ -136,6 +136,8 @@ if (ROS_ROOT)
     )
   # Tell UseOrocos macros we don't want to build ros-style:
   set(NO_ROS_PACKAGE TRUE)
+  # Tell deployer to use ROSlib support.
+  set(ROSLIB_SUPPORT TRUE)
 endif()
 
 # We force this to have same location of executables in ROS and non-ROS builds.

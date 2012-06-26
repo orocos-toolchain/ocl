@@ -31,22 +31,27 @@ IF ( BUILD_DEPLOYMENT )
     ENDIF(OROCOS-RTT_CORBA_FOUND)
     
     # rospack support
-    IF ( ROS_ROOT )
+    IF ( ROSLIB_SUPPORT )
       # Catkin style of fetching ROS deps
-      FIND_PACKAGE( ROS COMPONENTS roslib )
+      FIND_PACKAGE( ROS QUIET COMPONENTS roslib )
 
       IF(ROS_FOUND)
         INCLUDE_DIRECTORIES( ${ROS_INCLUDE_DIRS} )
         TARGET_LINK_LIBRARIES( orocos-ocl-deployment ${ROS_LIBRARIES})
-      ELSEIF(ROS_FOUND)
+      ELSE(ROS_FOUND)
         # TODO: This block to get roslib is deprecated as of ROS Fuerte, but is left in for pre-Fuerte compatibility
         set(roslib_PACKAGE_PATH ${ROS_ROOT}/core/roslib) ### XXX hardcoded
         include_directories( ${roslib_PACKAGE_PATH}/include )
+	message("Falling back to roslib in: ${roslib_PACKAGE_PATH}")
         find_library(ROS_LIB roslib ${roslib_PACKAGE_PATH}/lib )
-        TARGET_LINK_LIBRARIES( orocos-ocl-deployment ${ROS_LIB} )
+        if ( NOT ROS_LIB )
+	  find_package( ROS COMPONENTS roslib ) # Yells at user (non-QUIET !)
+	else()
+          target_link_libraries( orocos-ocl-deployment ${ROS_LIB} )
+	  add_definitions( -DHAS_ROSLIB )
+	endif()
       ENDIF(ROS_FOUND)
 
-      ADD_DEFINITIONS( -DHAS_ROSLIB )
 	# Necessary when building Debian packages:
 	set(ROS_STACK_DIR_FINAL $ENV{ROS_STACK_DIR_FINAL})
 	if (ROS_STACK_DIR_FINAL)
@@ -54,9 +59,10 @@ IF ( BUILD_DEPLOYMENT )
 	else(ROS_STACK_DIR_FINAL)
           set(DEFAULT_COMPONENT_PATH "${PROJECT_SOURCE_DIR}/../install/lib/orocos" CACHE STRING "Default component lookup path when none given. (semi-)colon separated list." FORCE)
 	endif(ROS_STACK_DIR_FINAL)
-    ELSE( ROS_ROOT)
-	SET(DEFAULT_COMPONENT_PATH "${OROCOS-RTT_PATH}/lib/orocos" CACHE STRING "Default component lookup path when none given. (semi-)colon separated list." )
-    ENDIF( ROS_ROOT )
+    ELSE( ROSLIB_SUPPORT )
+	set(DEFAULT_COMPONENT_PATH "${OROCOS-RTT_PATH}/lib/orocos" CACHE STRING "Default component lookup path when none given. (semi-)colon separated list." )
+	message("No roslib package support.")
+    ENDIF( ROSLIB_SUPPORT )
 
     configure_file(comppath.cpp.in ${CMAKE_CURRENT_BINARY_DIR}/comppath.cpp @ONLY)
 
