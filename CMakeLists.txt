@@ -193,6 +193,13 @@ IF(NO_GPL)
   ADD_DEFINITIONS( -DNO_GPL )
 ENDIF(NO_GPL)
 
+OPTION( BUILD_RTALLOC "Build with rt-malloc support (requires rt-malloc in RTT to be enabled)." TRUE)
+# RTALLOC is forced to off on win32
+IF(WIN32)
+  SET(BUILD_RTALLOC OFF CACHE BOOL "docstring" FORCE)
+ENDIF()
+
+
 
 ###########################################################
 #                                                         #
