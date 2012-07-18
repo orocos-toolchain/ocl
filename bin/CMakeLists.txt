@@ -1,6 +1,5 @@
 SET(EXTRA_LIBRARIES)
 SET(EXTRA_DEPS)
-OPTION( BUILD_RTALLOC "Build with rt-malloc support (requires rt-malloc in RTT to be enabled)." TRUE)
 
 # RTALLOC is forced to off on win32
 IF(WIN32)

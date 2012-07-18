@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "cpf.dtd">
+<properties>
+    <simple name="LayoutName" type="string"><description>Layout name (e.g. 'simple', 'pattern')</description><value>pattern</value></simple>
+    <simple name="LayoutPattern" type="string"><description>Layout conversion pattern (for those layouts that use a pattern)</description><value>[%-5p] [%c{1}] %m%n</value></simple>
+    <simple name="MaxEventsPerCycle" type="long"><description>Maximum number of log events to pop per cycle</description><value>100</value></simple>
+</properties>
