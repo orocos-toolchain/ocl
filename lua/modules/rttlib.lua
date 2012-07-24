@@ -303,9 +303,16 @@ function service2str(s, inds, indn)
    local function __s2str(s, inds, indn)
       local ind = string.rep(inds, indn)
       t[#t+1] = ind .. magenta("Service: ") .. cyan(s:getName())
-      t[#t+1] = ind .. magenta("   Subservices: ") .. cyan(table.concat(s:getProviderNames(), ', '))
-      t[#t+1] = ind .. magenta("   Operations:  ") .. cyan(table.concat(s:getOperationNames(), ', '))
-      t[#t+1] = ind .. magenta("   Ports:       ") .. cyan(table.concat(s:getPortNames(), ', '))
+      t[#t+1] = ind .. magenta("    Subservices: ") .. cyan(table.concat(s:getProviderNames(), ', '))
+      t[#t+1] = magenta("    Ports") .. ": "
+      for i,p in ipairs(s:getPortNames()) do
+          t[#t+1] = "       " .. port2str(s:getPort(p))
+      end
+      t[#t+1] = magenta("    Properties") .. ":"
+      for i,p in ipairs(s:getProperties()) do
+          t[#t+1] = "       " .. prop2str(p)
+      end
+      t[#t+1] = ind .. magenta("    Operations:  ") .. cyan(table.concat(s:getOperationNames(), ', '))
 
       utils.foreach(function (sstr)
 		       local nexts = s:provides(sstr)
