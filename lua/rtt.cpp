@@ -2236,6 +2236,14 @@ static int TaskContext_provides(lua_State *L)
 	return Service_provides(L);
 }
 
+static int TaskContext_getProviderNames(lua_State *L)
+{
+	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
+	Service::shared_ptr srv = tc->provides();
+	push_vect_str(L, srv->getProviderNames());
+	return 1;
+}
+
 static int TaskContext_requires(lua_State *L)
 {
 	ServiceRequester *sr;
@@ -2410,6 +2418,7 @@ static const struct luaL_Reg TaskContext_f [] = {
 	{ "getOpInfo", TaskContext_getOpInfo },
 	{ "hasOperation", TaskContext_hasOperation },
 	{ "provides", TaskContext_provides },
+	{ "getProviderNames", TaskContext_getProviderNames },
 	{ "connectServices", TaskContext_connectServices },
 	{ "getOperation", TaskContext_getOperation },
 	{ "delete", TaskContext_del },
@@ -2444,6 +2453,7 @@ static const struct luaL_Reg TaskContext_m [] = {
 	{ "getOpInfo", TaskContext_getOpInfo },
 	{ "hasOperation", TaskContext_hasOperation },
 	{ "provides", TaskContext_provides },
+	{ "getProviderNames", TaskContext_getProviderNames },
 	{ "requires", TaskContext_requires },
 	{ "connectServices", TaskContext_connectServices },
 	{ "getOperation", TaskContext_getOperation },

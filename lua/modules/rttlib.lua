@@ -427,28 +427,29 @@ end
 function tc2str(tc, full)
    local res = {}
    res[#res+1] = magenta('TaskContext') .. ': ' .. green(TaskContext.getName(tc), true)
-   res[#res+1] = magenta("state") .. ": " .. tc_colorstate(TaskContext.getState(tc))
+   res[#res+1] = magenta("    state") .. ": " .. tc_colorstate(TaskContext.getState(tc))
 
    for i,v in ipairs( { "isActive", "getPeriod" } )
    do
-      res[#res+1] = magenta(v) .. ": " .. tostring(TaskContext.getOperation(tc, v)()) .. ""
+      res[#res+1] = "    " .. magenta(v) .. ": " .. tostring(TaskContext.getOperation(tc, v)()) .. ""
    end
 
-   res[#res+1] = magenta("peers") .. ": " .. table.concat(TaskContext.getPeers(tc), ', ')
-   res[#res+1] = magenta("ports") .. ": "
+   res[#res+1] = magenta("    Peers") .. ": " .. cyan(table.concat(TaskContext.getPeers(tc), ', '))
+   res[#res+1] = magenta("    Services") .. ": " .. cyan(table.concat(TaskContext.getProviderNames(tc), ', '))
+   res[#res+1] = magenta("    Ports") .. ": "
    for i,p in ipairs(TaskContext.getPortNames(tc)) do
-      res[#res+1] = "   " .. port2str(TaskContext.getPort(tc, p))
+      res[#res+1] = "       " .. port2str(TaskContext.getPort(tc, p))
    end
 
-   res[#res+1] = magenta("properties") .. ":"
+   res[#res+1] = magenta("    Properties") .. ":"
    for i,p in ipairs(TaskContext.getProperties(tc)) do
-      res[#res+1] = "   " .. prop2str(p)
+      res[#res+1] = "       " .. prop2str(p)
    end
 
-   res[#res+1] = magenta("operations") .. ":"
+   res[#res+1] = magenta("    Operations") .. ":"
    for i,v in ipairs(TaskContext.getOps(tc)) do
       if not utils.table_has(defops_lst, v) or full then
-	 res[#res+1] = "   " .. tc_op2str(tc, v)
+	 res[#res+1] = "       " .. tc_op2str(tc, v)
       end
    end
    return table.concat(res, '\n')
