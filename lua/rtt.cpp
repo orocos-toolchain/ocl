@@ -1141,16 +1141,16 @@ static int Port_disconnect(lua_State *L)
 			   lua_typename(L, arg_type));
     }
     if((pip2 = (PortInterface**) luaL_testudata(L, 2, "InputPort")) != NULL) {
-        pi2= *pip2;
+	pi2= *pip2;
     } else if((pip2 = (PortInterface**) luaL_testudata(L, 2, "OutputPort")) != NULL) {
-        pi2= *pip2;
+	pi2= *pip2;
     }
 
     if (pi2 != NULL)
-        ret = pi1->disconnect(pi2);
+	ret = pi1->disconnect(pi2);
     else{
-        pi1->disconnect();
-        ret = 1;
+	pi1->disconnect();
+	ret = 1;
     }
     lua_pushboolean(L, ret);
 
@@ -1699,15 +1699,6 @@ static int Service_getPort(lua_State *L)
 	return 1;
 }
 
-#ifdef RTT_LACKS_THIS
-static int Service_getPropertyNames(lua_State *L)
-{
-	Service::shared_ptr srv = *(luaM_checkudata_mt(L, 1, "Service", Service::shared_ptr));
-	push_vect_str(L, srv->getPropertyNames());
-	return 1;
-}
-#endif
-
 static int Service_getProperty(lua_State *L)
 {
 	const char *name;
@@ -1725,6 +1716,31 @@ static int Service_getProperty(lua_State *L)
 	return 1;
 }
 
+static int Service_getPropertyNames(lua_State *L)
+{
+	Service::shared_ptr srv;
+	srv = *(luaM_checkudata_mt(L, 1, "Service", Service::shared_ptr));
+	std::vector<std::string> plist = srv->properties()->list();
+	push_vect_str(L, plist);
+	return 1;
+}
+
+static int Service_getProperties(lua_State *L)
+{
+	Service::shared_ptr srv;
+	srv = *(luaM_checkudata_mt(L, 1, "Service", Service::shared_ptr));
+	vector<PropertyBase*> props = srv->properties()->getProperties();
+
+	int key = 1;
+	lua_createtable(L, props.size(), 0);
+	for(vector<PropertyBase*>::iterator it = props.begin(); it != props.end(); ++it) {
+		Property_push(L, *it);
+		lua_rawseti(L, -2, key++);
+	}
+
+	return 1;
+}
+
 static const struct luaL_Reg Service_f [] = {
 	{ "getName", Service_getName },
 	{ "doc", Service_doc },
@@ -1735,8 +1751,9 @@ static const struct luaL_Reg Service_f [] = {
 	{ "provides", Service_provides },
 	{ "getOperation", Service_getOperation },
 	{ "getPort", Service_getPort },
-	/* { "getPropertyNames", Service_getPropertyNames }, */
 	{ "getProperty", Service_getProperty },
+	{ "getProperties", Service_getProperties },
+	{ "getPropertyNames", Service_getPropertyNames },
 	{ NULL, NULL }
 };
 
@@ -1750,8 +1767,9 @@ static const struct luaL_Reg Service_m [] = {
 	{ "provides", Service_provides },
 	{ "getOperation", Service_getOperation },
 	{ "getPort", Service_getPort },
-	/* { "getPropertyNames", Service_getPropertyNames }, */
 	{ "getProperty", Service_getProperty },
+	{ "getProperties", Service_getProperties },
+	{ "getPropertyNames", Service_getPropertyNames },
 	{ "__gc", GCMethod<Service::shared_ptr> },
 	{ NULL, NULL }
 };
