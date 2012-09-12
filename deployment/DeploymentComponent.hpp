@@ -141,7 +141,7 @@ namespace OCL
             bool autostart, autoconf, autoconnect, autosave;
             bool proxy, server, use_naming;
             std::string configfile;
-            vector<string> plugins;
+            std::vector<std::string> plugins;
             /// Group number this component belongs to
             int group;
         };
@@ -208,7 +208,7 @@ namespace OCL
          * @return null if the service could not be found, the service
          * otherwise
          */
-        Service::shared_ptr stringToService(string const& names);
+        Service::shared_ptr stringToService(std::string const& names);
         /**
          * Converts a dot-separated path to a service to a ServiceRequester
          * object.
@@ -226,7 +226,20 @@ namespace OCL
          * @return null if the port could not be found, the port
          * otherwise
          */
-        base::PortInterface* stringToPort(string const& names);
+        base::PortInterface* stringToPort(std::string const& names);
+
+        /**
+         * Waits for any signal and then returns.
+         * @return false if this function could not install a signal handler.
+         */
+        bool waitForSignal(int signumber);
+
+        /**
+         * Waits for SIGINT and then returns.
+         * @return false if this function could not install a signal handler.
+         */
+        bool waitForInterrupt();
+
     public:
         /**
          * Constructs and configures this component.
@@ -365,6 +378,19 @@ namespace OCL
          * target became a peer of from.
          */
         bool addPeer(const std::string& from, const std::string& target);
+
+        /**
+         * Make one component a peer of the other, in one direction, with an alternative name, such
+         * that one can use the services of the other and knows it under the name of the alias.
+         *
+         * @param from The component that must 'see' \a target and use its services.
+         * @param target The component that is 'seen' and used by \a from.
+         * @param alias The name of the target as it will be seen by \a from.
+         *
+         * @return true if both components are peers of this deployment component and
+         * target became a peer of from.
+         */
+        bool aliasPeer(const std::string& from, const std::string& target, const std::string& alias);
 
         using RTT::TaskContext::addPeer;
         using RTT::TaskContext::connectPeers;
@@ -832,6 +858,14 @@ namespace OCL
         {
             return this->cleanupComponent( this->getPeer(comp_name) );
         }
+
+		/**
+		 * Clean up and shutdown the entire deployment
+		 * If an operation named "shutdownDeployment" is found in a peer
+         * component named "Application", then that operation is called
+         * otherwise nothing occurs.
+		 */
+		void shutdownDeployment();
 
     };
 

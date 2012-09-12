@@ -164,13 +164,6 @@ namespace OCL
 
     // Signal code only on Posix:
 #if defined(USE_SIGNALS)
-    // catch ctrl+c signal
-    void ctrl_c_catcher(int sig)
-    {
-        ::signal(sig, SIG_IGN);
-        rl_free_line_state();
-        ::signal(SIGINT, ctrl_c_catcher);
-    }
 
     void TaskBrowser::rl_sigwinch_handler(int sig, siginfo_t *si, void *ctxt) {
 #if defined(OROCOS_TARGET_XENOMAI) && CONFIG_XENO_VERSION_MAJOR == 2 && CONFIG_XENO_VERSION_MINOR >= 5
@@ -732,8 +725,6 @@ namespace OCL
     void TaskBrowser::loop()
     {
 #ifdef USE_SIGNALS
-        // Intercept Ctrl-C
-        ::signal( SIGINT, ctrl_c_catcher );
         // Let readline intercept relevant signals
         if(rl_catch_signals == 0)
             cerr << "Error: not catching signals !"<<endl;
@@ -789,10 +780,6 @@ namespace OCL
                 }
                 // Check port status:
                 checkPorts();
-#ifdef USE_SIGNALS
-                // Call readline wrapper :
-                ::signal( SIGINT, ctrl_c_catcher ); // catch ctrl_c only when editting a line.
-#endif
                 std::string command;
                 // When using rxvt on windows, the process will receive signals when the arrow keys are used
                 // during input. We compile with /EHa to catch these signals and don't print anything.
@@ -813,9 +800,6 @@ namespace OCL
                     cerr << "The command line reader throwed an exception." <<endlog();
                 }
                 str_trim( command, ' ');
-#ifdef USE_SIGNALS
-                ::signal( SIGINT, SIG_DFL );        // do not catch ctrl_c
-#endif
                 cout << coloroff;
                 if ( command == "quit" ) {
                     // Intercept no Ctrl-C
@@ -1317,6 +1301,9 @@ namespace OCL
         std::vector<std::string> strs;
         boost::split(strs, names, boost::is_any_of("."));
 
+        // strs could be empty because of a bug in Boost 1.44 (see https://svn.boost.org/trac/boost/ticket/4751)
+        if (strs.empty()) return serv;
+
         string component = strs.front();
         if (! context->hasPeer(component) && !context->provides()->hasService(component) ) {
             return serv;
@@ -1510,6 +1497,8 @@ namespace OCL
         // e.g. eval true once or time measurements.
         // becomes only really handy for 'watches' (to deprecate).
         ds->reset();
+        // this is needed to read a ds's value. Otherwise, a cached value may be returned.
+        ds->evaluate();
 
         DataSource<RTT::PropertyBag>* dspbag = DataSource<RTT::PropertyBag>::narrow(ds.get());
         if (dspbag) {
@@ -1536,7 +1525,6 @@ namespace OCL
 
         // Print the members of the type:
         base::DataSourceBase::shared_ptr dsb(ds);
-        dsb->evaluate();
         if (dsb->getMemberNames().empty() || dsb->getTypeInfo()->isStreamable() ) {
             if (debug) cerr << "terminal item " << dsb->getTypeName() << nl;
             if (usehex)
@@ -1959,9 +1947,11 @@ namespace OCL
                 }
                 OutputPortInterface* oport = dynamic_cast<OutputPortInterface*>(port);
                 if (oport) {
-                    if ( oport->keepsLastWrittenValue())
-                        sresult << " => " << oport->getDataSource();
-                    else
+                    if ( oport->keepsLastWrittenValue()) {
+                    	DataSourceBase::shared_ptr dsb = oport->getDataSource();
+                    	dsb->evaluate(); // read last written value.
+                        sresult << " => " << dsb;
+                    } else
                         sresult << " => (keepsLastWrittenValue() == false. Enable it for this port in order to see it in the TaskBrowser.)";
                 }
 #if 0

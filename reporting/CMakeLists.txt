@@ -38,7 +38,7 @@ IF ( BUILD_REPORTING )
       target_link_libraries( orocos-ocl-reporting-netcdf ${NETCDF_LIBS} orocos-ocl-reporting )
     ENDIF ( BUILD_REPORTING_NETCDF AND NETCDF_FOUND )
     
-    target_link_libraries( orocos-ocl-reporting ${RTT_PLUGIN_rtt-marshalling_LIBRARIES} )
+    target_link_libraries( orocos-ocl-reporting ${RTT_PLUGIN_rtt-marshalling_${OROCOS_TARGET}_LIBRARIES} )
 
     orocos_generate_package()
     

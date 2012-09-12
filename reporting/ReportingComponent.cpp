@@ -262,6 +262,10 @@ namespace OCL
         }
         std::vector<std::string> strs;
         boost::split(strs, port, boost::is_any_of("."));
+
+        // strs could be empty because of a bug in Boost 1.44 (see https://svn.boost.org/trac/boost/ticket/4751)
+        if (strs.empty()) return false;
+
         Service::shared_ptr service=comp->provides();
         while ( strs.size() != 1 && service) {
             service = service->getService( strs.front() );

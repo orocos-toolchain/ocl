@@ -49,11 +49,11 @@ function getPeers()
 function addPeer(TaskContext)
 
 --- Remove a peer.
--- @param name of peer to be removed
+-- @param string name of peer to be removed
 function removePeer(string)
 
 --- Get a peer of a TaskContext.
--- @param name of peer
+-- @param string name of peer
 -- @return the requested peer TaskContext
 function getPeer(string)
 
@@ -76,12 +76,12 @@ function addPort(port, name, desc)
 function addEventPort(port, name, desc)
 
 --- Get a port of a TaskContext interface.
--- @param name of port
+-- @param string name of port
 -- @return Port
 function getPort(string)
 
 --- Remove a port from a TaskContext interface.
--- @param name of port
+-- @param string name of port
 function removePort(string)
 
 --- Add a property to a TaskContext.
@@ -98,8 +98,12 @@ function getProperty(name)
 -- @return a table containing all properties (not string names!) of the TaskContext
 function getProperties()
 
+--- Return the names of all properties in a table.
+-- @return a table containing all properties string names of the TaskContext
+function getPropertyNames()
+
 --- Remove a Property from a TaskContext Interface.
--- @param name name of property to be removed
+-- @param string name of property to be removed
 function removeProperty(string)
 
 --- Return a table of names of the available operations.
@@ -121,7 +125,7 @@ function getOpInfo(string)
 -- @return Service requested
 function provides(name)
 
---- Get required services
+--- Get required services.
 -- Return a ServiceRequester which represents the services required by
 -- this component to work. If no name is given the default
 -- ServiceRequester is returned. See the RTT docs for more information
@@ -130,7 +134,7 @@ function provides(name)
 -- @return ServiceRequester
 function requires(name)
 
---- Connect required and provided services
+--- Connect required and provided services.
 -- Connect the RequiredServices of this component to the provided
 -- services of the given peer.
 -- @param peer taskcontext which has what we want.
@@ -148,7 +152,7 @@ function connectServices(peer)
 -- @return return value plus zero or more out arguments.
 function call(name, ...)
 
---- get an Operation
+--- get an Operation.
 -- get an operation object which can be called directly. This is the
 -- fastest way to get a call out.
 -- @param name name of operation

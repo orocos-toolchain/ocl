@@ -26,7 +26,7 @@ class TestTaskContext
     InputPort<int> irport;
     InputPort<float> frport;
     InputPort<double> drport;  
-
+    int i;
 public:
     TestTaskContext(std::string name)
         : TaskContext(name),
@@ -40,7 +40,7 @@ public:
           srport("sr_port"),
           irport("ir_port"),
           frport("fr_port"),
-          drport("dr_port")
+          drport("dr_port"), i(0)
     { 
         this->properties()->addProperty( hello );
         this->ports()->addPort( cwport );
@@ -57,46 +57,14 @@ public:
         std::vector<double> init(10, 5.4528);
         dwport.write( init );
     }
-};
 
-class TestTaskContext2
-    : public TaskContext
-{
-    Property<string> hello;
-    OutputPort<char> cwport;
-    OutputPort<short> swport;
-    OutputPort<int> iwport;
-    OutputPort<float> fwport;
-    OutputPort<double> dwport;
-    InputPort<char> crport;
-    InputPort<short> srport;
-    InputPort<int> irport;
-    InputPort<float> frport;
-
-public:
-    TestTaskContext2(std::string name)
-        : TaskContext(name),
-          hello("Hello", "The hello thing", "World"),
-          cwport("cw_port", 'b'),
-          swport("sw_port", 1),
-          iwport("iw_port", 0),
-          fwport("fw_port", 0.0),
-          dwport("dw_port"),
-          crport("cr_port"),
-          srport("sr_port"),
-          irport("ir_port"),
-          frport("fr_port")
-    {
-        this->properties()->addProperty( hello );
-        this->ports()->addPort( cwport );
-        this->ports()->addPort( swport );
-        this->ports()->addPort( iwport );
-        this->ports()->addPort( fwport );
-        this->ports()->addPort( dwport );
-        this->ports()->addPort( crport );
-        this->ports()->addPort( srport );
-        this->ports()->addPort( irport );
-        this->ports()->addPort( frport );
+    void updateHook() {
+    	cwport.write(i);
+    	swport.write(i);
+    	iwport.write(i);
+    	fwport.write(i);
+    	dwport.write( std::vector<double>(10,i) );
+    	++i;
     }
 };
 
@@ -111,12 +79,15 @@ int ORO_main( int argc, char** argv)
     }
 
 
-    Activity act(10, 0.1);
     NetcdfReporting rc("Reporting");
+    rc.setPeriod(0.01);
     TestTaskContext gtc("MyPeer");
-    TestTaskContext2 gtc2("MyPeer2");
+    gtc.setPeriod(0.005);
+    TestTaskContext gtc2("MyPeer2");
+    gtc.setPeriod(0.02);
 
-    TestTaskContext2 gtc3("MySoloPeer");
+    TestTaskContext gtc3("MyPeer3");
+    gtc.setPeriod(0.01);
 
     rc.addPeer( &gtc );
     rc.addPeer( &gtc2 );
@@ -125,16 +96,12 @@ int ORO_main( int argc, char** argv)
 
     TaskBrowser tb( &rc );
 
-    act.run( rc.engine() );
-
-    cout <<endl<< "  This demo allows reporting of Components." << endl;
+    cout <<endl<< "  This demo allows reporting of 3 Components at 100Hz, 200Hz and 50Hz." << endl;
     cout << "  Use 'reportComponent(\"MyPeer\")' and/or 'reportComponent(\"MyPeer2\")'" <<endl;
     cout << "  Then invoke 'start()' and 'stop()'" <<endl;
     cout << "  Other methods (type 'this') are available as well."<<endl;
         
     tb.loop();
-
-    act.stop();
 
     return 0;
 }

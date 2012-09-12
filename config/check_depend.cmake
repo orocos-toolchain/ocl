@@ -103,5 +103,5 @@ if(NOT Boost_USE_STATIC_LIBS)
     add_definitions(-DBOOST_PROGRAM_OPTIONS_DYN_LINK)
 endif()
 
-INCLUDE_DIRECTORIES( ${Boost_INCLUDE_DIR} ${READLINE_INCLUDE_DIR} ${CURSES_INCLUDE_DIR} )
+include_directories( ${Boost_INCLUDE_DIR} )
 

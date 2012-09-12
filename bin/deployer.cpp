@@ -56,6 +56,7 @@
 
 using namespace RTT;
 namespace po = boost::program_options;
+using namespace std;
 
 int main(int argc, char** argv)
 {
@@ -123,25 +124,32 @@ int main(int argc, char** argv)
         freeMem = init_memory_pool(memSize, rtMem);
         if ((size_t)-1 == freeMem)
         {
-            log(Critical) << "Invalid memory pool size of " << memSize 
-                          << " bytes (TLSF has a several kilobyte overhead)." << endlog();
+            cerr << "Invalid memory pool size of " << memSize 
+                          << " bytes (TLSF has a several kilobyte overhead)." << endl;
             free(rtMem);
             return -1;
         }
-        log(Info) << "Real-time memory: " << freeMem << " bytes free of "
-                  << memSize << " allocated." << endlog();
+        cout << "Real-time memory: " << freeMem << " bytes free of "
+                  << memSize << " allocated." << endl;
     }
 #endif  // ORO_BUILD_RTALLOC
 
 #ifdef  ORO_BUILD_LOGGING
-    log(Info) << "Setting OCL factory for real-time logging" << endlog();
     log4cpp::HierarchyMaintainer::set_category_factory(
         OCL::logging::Category::createOCLCategory);
 #endif
 
+
+    /******************** WARNING ***********************
+     *   NO log(...) statements before __os_init() !!!!! 
+     ***************************************************/
+
     // start Orocos _AFTER_ setting up log4cpp
 	if (0 == __os_init(argc - optIndex, &argv[optIndex]))
     {
+#ifdef  ORO_BUILD_LOGGING
+        log(Info) << "OCL factory set for real-time logging" << endlog();
+#endif
         // scope to force dc destruction prior to memory free
         {
             OCL::DeploymentComponent dc( name, siteFile );
@@ -152,10 +160,10 @@ int main(int argc, char** argv)
             {
                 if ( !(*iter).empty() )
                 {
-                    if ( (*iter).rfind(".xml",string::npos) == (*iter).length() - 4 || (*iter).rfind(".cpf",string::npos) == (*iter).length() - 4) {
+                    if ( (*iter).rfind(".xml",std::string::npos) == (*iter).length() - 4 || (*iter).rfind(".cpf",std::string::npos) == (*iter).length() - 4) {
                         dc.kickStart( (*iter) );
                         continue;
-                    } if ( (*iter).rfind(".ops",string::npos) == (*iter).length() - 4 || (*iter).rfind(".osd",string::npos) == (*iter).length() - 4) {
+                    } if ( (*iter).rfind(".ops",std::string::npos) == (*iter).length() - 4 || (*iter).rfind(".osd",std::string::npos) == (*iter).length() - 4) {
                         dc.runScript( (*iter) );
                         continue;
                     }
@@ -163,9 +171,14 @@ int main(int argc, char** argv)
                 }
             }
 #ifdef USE_TASKBROWSER
-            OCL::TaskBrowser tb( &dc );
+            // We don't start an interactive console when we're a daemon
+            if ( !vm.count("daemon") ) {
+                OCL::TaskBrowser tb( &dc );
 
-            tb.loop();
+                tb.loop();
+
+                dc.shutdownDeployment();
+            }
 #endif
         }
 #ifdef  ORO_BUILD_RTALLOC

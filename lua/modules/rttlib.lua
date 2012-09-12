@@ -48,6 +48,13 @@ module("rttlib")
 
 color=false
 
+local defops_lst = { "activate", "cleanup", "configure", "error", "getCpuAffinity", "getPeriod",
+		     "inRunTimeError", "isActive", "isConfigured", "isRunning", "setCpuAffinity",
+		     "setPeriod", "start", "stop", "trigger", "update", "inFatalError" }
+
+-- shortcut
+local TaskContext=rtt.TaskContext
+
 --- Condition colorization.
 --
 
@@ -84,6 +91,19 @@ end
 local function white(str, bright)
    if color then str = col.white(str); if bright then str=col.bright(str) end end
    return str
+end
+
+
+--- Indent a string if it contains newlines.
+-- Used to nicely print multiline values and keep single line values
+-- on one line. Will add a newline to the first line and indent.
+-- @param str string to conditionally indent.
+-- @param ind indentation
+-- @return indented or unmodified string.
+function if_nl_ind(str, ind)
+   ind = ind or "\t\t"
+   if not string.match(str, '\n') then return str end
+   return string.gsub('\n'..str, '\n', '\n'..ind)
 end
 
 --- Beautify a ConnPolicy table.
@@ -219,7 +239,7 @@ end
 -- @return string
 function prop2str(p)
    local info = p:info()
-   return white(info.name) .. ' (' .. info.type .. ')' .. " = " .. yellow(var2str(p:get())) .. red(" // " .. info.desc) .. ""
+   return white(info.name) .. ' (' .. info.type .. ')' .. " = " .. if_nl_ind(yellow(var2str(p:get()))) .. red(" // " .. info.desc) .. ""
 end
 
 --- Convert an operation to a string.
@@ -257,7 +277,7 @@ end
 --- Taskcontext operation to string.
 -- Old version. Using the op2str and __op2str versions are preferred.
 function tc_op2str(tc, op)
-   local rettype, arity, descr, args = tc:getOpInfo(op)
+   local rettype, arity, descr, args = TaskContext.getOpInfo(tc, op)
    local str = ""
 
    if #args < 1  then
@@ -320,8 +340,9 @@ end
 
 --- Convert a port to a string.
 -- @param p Port
+-- @param nodoc don't add documentation
 -- @return string
-function port2str(p)
+function port2str(p, nodoc)
    local inf = p:info()
    local ret = {}
 
@@ -344,7 +365,7 @@ function port2str(p)
    ret [#ret+1] = table.concat(attrs, ', ')
 
    ret[#ret+1] = "] "
-   ret[#ret+1] = red("// " .. inf.desc)
+   if not nodoc then ret[#ret+1] = red("// " .. inf.desc) end
    return table.concat(ret, '')
 end
 
@@ -354,20 +375,19 @@ end
 -- @param string
 function portval2str(port, comp)
    local inf = port:info()
-   local res = white(inf.name) .. ' (' .. inf.type .. ')  ='
-
-   if inf.type == 'unknown_t' then
-      res = res .. " ?"
+   local portstr = white(inf.name) .. ' (' .. inf.type .. ')  = '
+   local value
+   if inf.type == 'unknown_t' then value = "?"
    elseif inf.porttype == 'in' then
       local fs, data = port:read()
 
-      if fs == 'NoData' then res = res .. ' NoData'
-      elseif fs == 'NewData' then res = res .. ' ' .. green(var2str(data))
-      else res = res .. ' ' .. yellow(var2str(data)) end
+      if fs == 'NoData' then value=' NoData'
+      elseif fs == 'NewData' then value = green(var2str(data))
+      else value = yellow(var2str(data)) end
    else
-      res = res .. ' ' .. cyan(var2str(comp:provides(inf.name):getOperation("last")()))
+      value = cyan(var2str(comp:provides(inf.name):getOperation("last")()))
    end
-   return res
+   return portstr .. if_nl_ind(value)
 end
 
 --- Print the values of all ports of a component.
@@ -389,30 +409,32 @@ end
 --- Convert a TaskContext to a nice string.
 -- @param tc TaskContext
 -- @return string
-function tc2str(tc)
+function tc2str(tc, full)
    local res = {}
-   res[#res+1] = magenta('TaskContext') .. ': ' .. green(tc:getName(), true)
-   res[#res+1] = magenta("state") .. ": " .. tc_colorstate(tc:getState())
+   res[#res+1] = magenta('TaskContext') .. ': ' .. green(TaskContext.getName(tc), true)
+   res[#res+1] = magenta("state") .. ": " .. tc_colorstate(TaskContext.getState(tc))
 
    for i,v in ipairs( { "isActive", "getPeriod" } )
    do
-      res[#res+1] = magenta(v) .. ": " .. tostring(tc:getOperation(v)()) .. ""
+      res[#res+1] = magenta(v) .. ": " .. tostring(TaskContext.getOperation(tc, v)()) .. ""
    end
 
-   res[#res+1] = magenta("peers") .. ": " .. table.concat(tc:getPeers(), ', ')
+   res[#res+1] = magenta("peers") .. ": " .. table.concat(TaskContext.getPeers(tc), ', ')
    res[#res+1] = magenta("ports") .. ": "
-   for i,p in ipairs(tc:getPortNames()) do
-      res[#res+1] = "   " .. port2str(tc:getPort(p))
+   for i,p in ipairs(TaskContext.getPortNames(tc)) do
+      res[#res+1] = "   " .. port2str(TaskContext.getPort(tc, p))
    end
 
    res[#res+1] = magenta("properties") .. ":"
-   for i,p in ipairs(tc:getProperties()) do
+   for i,p in ipairs(TaskContext.getProperties(tc)) do
       res[#res+1] = "   " .. prop2str(p)
    end
 
    res[#res+1] = magenta("operations") .. ":"
-   for i,v in ipairs(tc:getOps()) do
-      res[#res+1] = "   " .. tc_op2str(tc, v)
+   for i,v in ipairs(TaskContext.getOps(tc)) do
+      if not utils.table_has(defops_lst, v) or full then
+	 res[#res+1] = "   " .. tc_op2str(tc, v)
+      end
    end
    return table.concat(res, '\n')
 end
@@ -420,6 +442,43 @@ end
 function pptc(tc)
    print(tc2str(tc))
 end
+
+
+--- Cleanup ports and properties of this Lua Component.
+-- Only use this function if the proper properties were actually
+-- created from Lua (yes, this will be commonly the case).  The
+-- built-in Properties 'lua_string' and 'lua_file' are ignored.
+-- @return number of removed properties, number of removed ports
+function tc_cleanup()
+   local tc=rtt.getTC()
+
+   local function cleanup_prop(pname)
+      local prop = TaskContext.getProperty(tc, pname)
+      TaskContext.removeProperty(tc, pname)
+      prop:delete()
+   end
+
+   local function cleanup_port(pname)
+      local port = TaskContext.getPort(tc, pname)
+      TaskContext.removePort(tc, pname)
+      port:delete()
+   end
+
+   -- get list of property names (remove built-in ones)
+   local propnames=utils.filter(function(n,i)
+				   if n=='lua_string' or n=='lua_file' then
+				      return false
+				   end
+				   return true
+				end, TaskContext.getPropertyNames(tc))
+
+   local portnames = TaskContext.getPortNames(tc)
+
+   utils.foreach(cleanup_prop, propnames)
+   utils.foreach(cleanup_port, portnames)
+   return #propnames, #portnames
+end
+
 
 --- Create an inverse, connected port of a given port.
 -- The default name will be the same as the given port.
@@ -467,12 +526,12 @@ end
 function findpeer(name, start_tc)
    local cache = {}
    local function __findpeer(tc)
-      local tc_name = tc:getName()
+      local tc_name = TaskContext.getName(tc)
       if cache[tc_name] then return false else cache[tc_name] = true end
-      local peers = tc:getPeers()
-      if utils.table_has(peers, name) then return tc:getPeer(name) end
+      local peers = TaskContext.getPeers(tc)
+      if utils.table_has(peers, name) then return TaskContext.getPeer(tc, name) end
       for i,pstr in ipairs(peers) do
-	 local p = __findpeer(tc:getPeer(pstr))
+	 local p = __findpeer(TaskContext.getPeer(tc, pstr))
 	 if p then return p end
       end
       return false
@@ -488,10 +547,10 @@ function mappeers(func, start_tc)
    local cache = {}
    local res = {}
    local function __mappeers(tc)
-      local tc_name = tc:getName()
+      local tc_name = TaskContext.getName(tc)
       if cache[tc_name] then return else cache[tc_name] = true end
       res[tc_name] = func(tc)
-      for i,pn in ipairs(tc:getPeers()) do __mappeers(tc:getPeer(pn)) end
+      for i,pn in ipairs(TaskContext.getPeers(tc)) do __mappeers(TaskContext.getPeer(tc, pn)) end
    end
    local start_tc = start_tc or rtt.getTC()
    __mappeers(start_tc)
@@ -518,14 +577,14 @@ end
 
 function stat()
    function __stat_tc(tc)
-      local state = tc:getState()
-      print(table.concat{utils.strsetlen(tc:getName(), 20, true),
-			 tc_colorstate(tc:getState()) .. string.rep(' ', 20-string.len(state)),
+      local state = TaskContext.getState(tc)
+      print(table.concat{utils.strsetlen(TaskContext.getName(tc), 40, true),
+			 tc_colorstate(TaskContext.getState(tc)) .. string.rep(' ', 20-string.len(state)),
 			 utils.strsetlen(tostring(tc:isActive()), 10, false),
 			 utils.strsetlen(tostring(tc:getPeriod()), 10, false)}, ' ')
    end
 
-   print(table.concat{utils.rpad("Name", 20), utils.rpad("State", 20),
+   print(table.concat{utils.rpad("Name", 40), utils.rpad("State", 20),
 		      utils.rpad("isActive", 10), utils.rpad("Period", 10)}, ' ')
    mappeers(__stat_tc)
 end
@@ -599,6 +658,7 @@ setmetatable(rtt.globals, globals_mt)
 if type(debug) == 'table' then
    reg = debug.getregistry()
    reg.TaskContext.__tostring=tc2str
+   reg.TaskContext.show=function(tc) return tc2str(tc, true) end
    reg.TaskContext.stat=portstats
    reg.Service.__index=service_index -- enable operations as methods
    reg.TaskContext.__index=tc_index -- enable operations as methods
@@ -608,6 +668,7 @@ if type(debug) == 'table' then
    reg.Property.__tostring=prop2str
    reg.Property.fromtab=propfromtab
    reg.Service.__tostring=service2str
+   reg.Service.stat=portstats
    reg.ServiceRequester.__tostring=service_req2str
    reg.Operation.__tostring=op2str
    reg.InputPort.__tostring=port2str

@@ -9,6 +9,9 @@
 #define DIMENSION_VAR 1
 #define DIMENSION_ARRAY 2
 
+#include <iostream>
+using namespace std;
+
 namespace RTT
 {
     /**
@@ -123,7 +126,7 @@ namespace RTT
         else
           prefix += "." + v.getName();
 
-        serialize(v.get());
+        serialize(v.rvalue());
 
         prefix = oldpref;
         nameless_counter = 0;
@@ -248,7 +251,7 @@ namespace RTT
         int var_dim;
 
         // create new dimension
-        retval = nc_def_dim(ncid, dimname, v->get().size(), &var_dim);
+        retval = nc_def_dim(ncid, dimname, v->rvalue().size(), &var_dim);
         if ( retval )
           log(Error) << "Could not create new dimension for "<< dimname <<", error "<< retval <<endlog();
 
@@ -266,17 +269,20 @@ namespace RTT
 
       std::string composeName(std::string propertyName)
       {
-        std::string prefix_name;
+        std::string last_name;
 
         if( propertyName.empty() ) {
           nameless_counter++;
-          prefix_name = prefix + boost::lexical_cast<std::string>( nameless_counter );
+          last_name = boost::lexical_cast<std::string>( nameless_counter );
         }
         else {
           nameless_counter = 0;
-          prefix_name = propertyName;
+          last_name = propertyName;
         }
-        return prefix_name;
+        if ( prefix.empty() )
+        	return last_name;
+        else
+        	return prefix + "." + last_name;
       }
 
       virtual void flush() {}
