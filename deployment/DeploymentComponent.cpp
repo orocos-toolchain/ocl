@@ -1347,14 +1347,14 @@ namespace OCL
                 if ( (*pf)->getName() == "PropertyFile" || (*pf)->getName() == "UpdateProperties" || (*pf)->getName() == "LoadProperties"){
                     dummy = *pf; // convert to type.
                     string filename = dummy.get();
-                    marsh::PropertyLoader pl;
+                    marsh::PropertyLoader pl(peer);
                     bool strict = (*pf)->getName() == "PropertyFile" ? true : false;
                     bool load = (*pf)->getName() == "LoadProperties" ? true : false;
                     bool ret;
                     if (!load)
-                        ret = pl.configure( filename, peer, strict );
+                        ret = pl.configure( filename, strict );
                     else
-                        ret = pl.load(filename, peer);
+                        ret = pl.load(filename);
                     if (!ret) {
                         log(Error) << "Failed to configure properties for component "<< comp.getName() <<endlog();
                         valid = false;
@@ -1557,8 +1557,8 @@ namespace OCL
                     if ( it->autosave && !it->configfile.empty()) {
                         if (it->loadedProperties) {
                             string file = it->configfile; // get file name
-                            PropertyLoader pl;
-                            bool ret = pl.save( file, it->instance, true ); // save all !
+                            PropertyLoader pl(it->instance);
+                            bool ret = pl.save( file, true ); // save all !
                             if (!ret) {
                                 log(Error) << "Failed to save properties for component "<< it->instance->getName() <<endlog();
                                 valid = false;
@@ -2004,8 +2004,8 @@ namespace OCL
             return false;
         }
 
-        marsh::PropertyLoader pl;
-        return pl.configure( filename, c, true ); // strict:true
+        marsh::PropertyLoader pl(c);
+        return pl.configure( filename, true ); // strict:true
     }
 
     FactoryMap& DeploymentComponent::getFactories()
