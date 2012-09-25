@@ -9,6 +9,7 @@
 		<url>http://www.orocos.org/ocl</url>
 
 		<rosdep name="libreadline-dev"/>
+		<rosdep name="libncurses-dev"/>
 		<rosdep name="lua-dev"/>
 		<depend package="rtt" />
 		<depend package="log4cpp" />
