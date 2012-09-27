@@ -1555,6 +1555,7 @@ static int Service_getOperationNames(lua_State *L)
 	return 1;
 }
 
+
 static int Service_hasOperation(lua_State *L)
 {
 	int ret;
@@ -1690,6 +1691,51 @@ static int Service_getPort(lua_State *L)
 	return 1;
 }
 
+static int Service_getProperty(lua_State *L)
+{
+	const char *name;
+	PropertyBase *prop;
+
+	Service::shared_ptr srv;
+
+	srv = *(luaM_checkudata_mt(L, 1, "Service", Service::shared_ptr));
+	name = luaL_checkstring(L, 2);
+
+	prop = srv->properties()->getProperty(name);
+
+	if(!prop)
+		luaL_error(L, "%s failed. No such property", __FILE__);
+
+	Property_push(L, prop);
+	return 1;
+}
+
+
+static int Service_getPropertyNames(lua_State *L)
+{
+	Service::shared_ptr srv;
+	srv = *(luaM_checkudata_mt(L, 1, "Service", Service::shared_ptr));
+	std::vector<std::string> plist = srv->properties()->list();
+	push_vect_str(L, plist);
+	return 1;
+}
+
+static int Service_getProperties(lua_State *L)
+{
+	Service::shared_ptr srv;
+	srv = *(luaM_checkudata_mt(L, 1, "Service", Service::shared_ptr));
+	vector<PropertyBase*> props = srv->properties()->getProperties();
+
+	int key = 1;
+	lua_createtable(L, props.size(), 0);
+	for(vector<PropertyBase*>::iterator it = props.begin(); it != props.end(); ++it) {
+		Property_push(L, *it);
+		lua_rawseti(L, -2, key++);
+	}
+
+	return 1;
+}
+
 static const struct luaL_Reg Service_f [] = {
 	{ "getName", Service_getName },
 	{ "doc", Service_doc },
@@ -1700,6 +1746,9 @@ static const struct luaL_Reg Service_f [] = {
 	{ "provides", Service_provides },
 	{ "getOperation", Service_getOperation },
 	{ "getPort", Service_getPort },
+	{ "getProperty", Service_getProperty },
+	{ "getProperties", Service_getProperties },
+	{ "getPropertyNames", Service_getPropertyNames },
 	{ NULL, NULL }
 };
 
@@ -1713,6 +1762,9 @@ static const struct luaL_Reg Service_m [] = {
 	{ "provides", Service_provides },
 	{ "getOperation", Service_getOperation },
 	{ "getPort", Service_getPort },
+	{ "getProperty", Service_getProperty },
+	{ "getProperties", Service_getProperties },
+	{ "getPropertyNames", Service_getPropertyNames },
 	{ "__gc", GCMethod<Service::shared_ptr> },
 	{ NULL, NULL }
 };
@@ -2179,6 +2231,14 @@ static int TaskContext_provides(lua_State *L)
 	return Service_provides(L);
 }
 
+static int TaskContext_getProviderNames(lua_State *L)
+{
+	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
+	Service::shared_ptr srv = tc->provides();
+	push_vect_str(L, srv->getProviderNames());
+	return 1;
+}
+
 static int TaskContext_requires(lua_State *L)
 {
 	ServiceRequester *sr;
@@ -2353,6 +2413,7 @@ static const struct luaL_Reg TaskContext_f [] = {
 	{ "getOpInfo", TaskContext_getOpInfo },
 	{ "hasOperation", TaskContext_hasOperation },
 	{ "provides", TaskContext_provides },
+	{ "getProviderNames", TaskContext_getProviderNames },
 	{ "connectServices", TaskContext_connectServices },
 	{ "getOperation", TaskContext_getOperation },
 	{ "delete", TaskContext_del },
@@ -2387,6 +2448,7 @@ static const struct luaL_Reg TaskContext_m [] = {
 	{ "getOpInfo", TaskContext_getOpInfo },
 	{ "hasOperation", TaskContext_hasOperation },
 	{ "provides", TaskContext_provides },
+	{ "getProviderNames", TaskContext_getProviderNames },
 	{ "requires", TaskContext_requires },
 	{ "connectServices", TaskContext_connectServices },
 	{ "getOperation", TaskContext_getOperation },

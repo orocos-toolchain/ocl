@@ -37,8 +37,7 @@
 #include <rtt/scripting/Scripting.hpp>
 #include <rtt/ConnPolicy.hpp>
 #include <rtt/plugin/PluginLoader.hpp>
-#include <boost/algorithm/string.hpp>
-#include <rtt/base/OperationCallerBaseInvoker.hpp>
+
 # if defined(_POSIX_VERSION)
 #   define USE_SIGNALS 1
 # endif
@@ -46,6 +45,9 @@
 #ifdef USE_SIGNALS
 #include <signal.h>
 #endif
+
+#include <boost/algorithm/string.hpp>
+#include <rtt/base/OperationCallerBaseInvoker.hpp>
 
 #include <cstdio>
 #include <cstdlib>
