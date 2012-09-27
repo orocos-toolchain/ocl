@@ -36,57 +36,17 @@ public:
     }
 };
 
-class HelloProvider
-    : public RTT::TaskContext
-{
-public:
-    bool hello() {
-        RTT::Logger::In("connectOperations Test");
-        log(Info) << "Hello World!" << endlog();
-        return true;
-    }
-
-    HelloProvider()
-    : RTT::TaskContext("HelloProvider")
-    {
-        this->provides("hello_service")->addOperation("hello", &HelloProvider::hello, this);
-    }
-};
-
-class HelloRequester
-    : public RTT::TaskContext
-{
-public:
-    RTT::OperationCaller<bool()> helloworld;
-    HelloRequester()
-    : RTT::TaskContext("HelloRequester"),
-      helloworld("helloworld")
-    {
-        this->requires()->addOperationCaller(helloworld);
-    }
-    void virtual updateHook() {
-        helloworld();
-    }
-};
-
 int ORO_main(int, char**)
 {
-    RTT::Logger::Instance()->setLogLevel(RTT::Logger::Info);
-
     MyTask t1("ComponentA");
     MyTask t2("ComponentB");
     MyTask t3("ComponentC");
-
-    HelloProvider p;
-    HelloRequester r;
 
     {
         DeploymentComponent dc;
         dc.addPeer( &t1 );
         dc.addPeer( &t2 );
         dc.addPeer( &t3 );
-        dc.addPeer( &p );
-        dc.addPeer( &r );
         dc.kickStart("deployment.cpf");
         TaskBrowser tb(&dc);
 
