@@ -1564,6 +1564,7 @@ static int Service_getOperationNames(lua_State *L)
 	return 1;
 }
 
+
 static int Service_hasOperation(lua_State *L)
 {
 	int ret;

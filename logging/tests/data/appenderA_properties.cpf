@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "cpf.dtd">
+<properties>
+    <simple name="LayoutName" type="string"><description>Layout name (e.g. 'simple', 'pattern')</description><value>pattern</value></simple>
+    <simple name="LayoutPattern" type="string"><description>Layout conversion pattern (for those layouts that use a pattern)</description><value>%d [%-5p] [%c] %m%n</value></simple>
+    <simple name="Filename" type="string"><description>Name of file to log to</description><value>orocos-log4cpp.log</value></simple>
+    <simple name="MaxEventsPerCycle" type="long"><description>Maximum number of log events to pop per cycle</description><value>100</value></simple>
+</properties>

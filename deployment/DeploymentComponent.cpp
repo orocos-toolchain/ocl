@@ -37,7 +37,6 @@
 #include <rtt/scripting/Scripting.hpp>
 #include <rtt/ConnPolicy.hpp>
 #include <rtt/plugin/PluginLoader.hpp>
-#include <boost/algorithm/string.hpp>
 
 # if defined(_POSIX_VERSION)
 #   define USE_SIGNALS 1
@@ -46,6 +45,9 @@
 #ifdef USE_SIGNALS
 #include <signal.h>
 #endif
+
+#include <boost/algorithm/string.hpp>
+#include <rtt/base/OperationCallerBaseInvoker.hpp>
 
 #include <cstdio>
 #include <cstdlib>
@@ -180,6 +182,7 @@ namespace OCL
                 .arg("policy", "The connection policy which serves to describe the stream to be created. Use 'ConnPolicy()' to use the default.");
 
         this->addOperation("connectServices", (bool(DeploymentComponent::*)(const std::string&, const std::string&))&DeploymentComponent::connectServices, this, ClientThread).doc("Connect the matching provides/requires services of two Components known to this Component.").arg("One", "The first component.").arg("Two", "The second component.");
+        this->addOperation("connectOperations", &DeploymentComponent::connectOperations, this, ClientThread).doc("Connect the matching provides/requires operations of two Components known to this Component.").arg("Requested", "The requested operation (dot-separated path).").arg("Provided", "The provided operation (dot-separated path).");
 
         cp = &DeploymentComponent::addPeer;
         this->addOperation("addPeer", cp, this, ClientThread).doc("Add a peer to a Component.").arg("From", "The first component.").arg("To", "The other component.");
@@ -383,6 +386,35 @@ namespace OCL
     	return ret;
     }
 
+    ServiceRequester* DeploymentComponent::stringToServiceRequester(string const& names) {
+        std::vector<std::string> strs;
+        boost::split(strs, names, boost::is_any_of("."));
+
+        string component = strs.front();
+        if (!hasPeer(component) && component != this->getName() ) {
+            log(Error) << "No such component: '"<< component <<"'" <<endlog();
+            if ( names.find('.') != string::npos )
+                log(Error)<< " when looking for service '" << names <<"'" <<endlog();
+            return NULL;
+        }
+        // component is peer or self:
+        ServiceRequester* ret = (component != this->getName() ? getPeer(component)->requires() : this->requires());
+
+        // remove component name:
+        strs.erase( strs.begin() );
+
+        // iterate over remainders:
+        while ( !strs.empty() && ret) {
+            ret = ret->requires( strs.front() );
+            if (ret)
+                strs.erase( strs.begin() );
+        }
+        if (!ret) {
+            log(Error) <<"No such service: '"<< strs.front() <<"' while looking for service '"<< names<<"'"<<endlog();
+        }
+        return ret;
+    }
+
     base::PortInterface* DeploymentComponent::stringToPort(string const& names) {
     	std::vector<std::string> strs;
     	boost::split(strs, names, boost::is_any_of("."));
@@ -546,6 +578,42 @@ namespace OCL
         return a->connectServices(b);
     }
 
+    bool DeploymentComponent::connectOperations(const std::string& required, const std::string& provided)
+    {
+        RTT::Logger::In in("DeploymentComponent::connectOperations");
+        // Required service
+        boost::iterator_range<std::string::const_iterator> reqs = boost::algorithm::find_last(required, ".");
+        std::string reqs_name(required.begin(), reqs.begin());
+        std::string rop_name(reqs.begin()+1, required.end());
+        log(Debug) << "Looking for required operation " << rop_name << " in service " << reqs_name << endlog();
+        ServiceRequester* r = this->stringToServiceRequester(reqs_name);
+        // Provided service
+        boost::iterator_range<std::string::const_iterator> pros = boost::algorithm::find_last(provided, ".");
+        std::string pros_name(provided.begin(), pros.begin());
+        std::string pop_name(pros.begin()+1, provided.end());
+        log(Debug) << "Looking for provided operation " << pop_name << " in service " << pros_name << endlog();
+        Service::shared_ptr p = this->stringToService(pros_name);
+        // Requested operation
+        RTT::base::OperationCallerBaseInvoker* rop = r->getOperationCaller(rop_name);
+        if (! rop) {
+            log(Error) << "No requested operation " << rop_name << " found in service " << reqs_name << endlog();
+            return false;
+        }
+        if ( rop->ready() ) {
+            log(Error) << "Requested operation " << rop_name << " already connected to a provided operation!" << endlog();
+            return false;
+        }
+        // Provided operation
+        if (! p->hasOperation(pop_name)) {
+            log(Error) << "No provided operation " << pop_name << " found in service " << pros_name << endlog();
+            return false;
+        }
+        // Connection
+        rop->setImplementation(p->getLocalOperation( pop_name ), r->getServiceOwner()->engine());
+        if ( rop->ready() )
+            log(Debug) << "Successfully set up OperationCaller for operation " << rop_name << endlog();
+        return rop->ready();
+    }
 
     int string_to_oro_sched(const std::string& sched) {
         if ( sched == "ORO_SCHED_OTHER" )

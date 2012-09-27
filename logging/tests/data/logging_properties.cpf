@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "cpf.dtd">
+<properties>
+    <struct name="Levels" type="PropertyBag">
+        <simple name="org.orocos.ocl.logging.tests.TestComponent" type="string"><value>info</value></simple>
+    </struct>
+    <struct name="Appenders" type="PropertyBag">
+        <simple name="org.orocos.ocl.logging.tests.TestComponent" type="string"><value>AppenderA</value></simple>
+        <simple name="org.orocos.ocl.logging.tests.TestComponent" type="string"><value>AppenderB</value></simple>
+    </struct>
+</properties>
