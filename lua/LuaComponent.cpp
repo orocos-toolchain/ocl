@@ -302,14 +302,17 @@ int ORO_main(int argc, char** argv)
 #endif
 
 	LuaComponent lua("lua");
-	DeploymentComponent * dc;
+	DeploymentComponent * dc = 0;
 
 #if defined(LUA_RTT_CORBA)
 	int  orb_argc = argc;
 	char** orb_argv = 0;
+	char* orb_sep = 0;
         
+	/* find the "--" separator */
 	while(orb_argc) {
 	  if(0 == strcmp("--", argv[argc - orb_argc])) {
+	    orb_sep = argv[argc - orb_argc];
 	    argv[argc - orb_argc] = argv[0];
 	    orb_argv = &argv[argc - orb_argc];
 	    argc -= orb_argc;
@@ -318,11 +321,12 @@ int ORO_main(int argc, char** argv)
 	  orb_argc--;
 	}
         
+	/* if the "--" separator is found perhaps we have orb arguments */
 	if(orb_argc) {
 	  try {
 	    TaskContextServer::InitOrb(orb_argc, orb_argv);
    
-	    dc = new CorbaDeploymentComponent("deployer");
+	    dc = new CorbaDeploymentComponent("Deployer");
    
 	    TaskContextServer::Create( dc, true, true );
    
@@ -332,17 +336,27 @@ int ORO_main(int argc, char** argv)
 	  catch( CORBA::Exception &e ) {
 	    log(Error) << argv[0] <<" ORO_main : CORBA exception raised!" << Logger::nl;
 	    log() << CORBA_EXCEPTION_INFO(e) << endlog();
+	    if(dc)
+	    {
+	      delete dc;
+	      dc = 0;
+	    }
 	  } catch (...) {
 	    log(Error) << "Uncaught exception." << endlog();
+	    if(dc)
+	    {
+	      delete dc;
+	      dc = 0;
+	    }
 	  }
  
-	  // lua_repl doesn't use argc ?
-	  argv[argc] = NULL;
+	  argv[argc] = dc?NULL:orb_sep;
 	}
-	else
-#endif
 
-	dc = new DeploymentComponent("deployer");
+	/* fallback to the default deployer if corba have failed to provide one */
+	if(!dc)
+#endif
+	dc = new DeploymentComponent("Deployer");
 
 	lua.connectPeers(dc);
 
