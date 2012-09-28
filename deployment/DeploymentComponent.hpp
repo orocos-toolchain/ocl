@@ -838,7 +838,7 @@ namespace OCL
          * Returns the factory singleton which creates all types of components
          * for the DeploymentComponent.
          */
-        FactoryMap& getFactories();
+        const RTT::FactoryMap& getFactories() const;
 
         /**
          * Stop a single loaded and running component.

@@ -55,9 +55,9 @@ bool Appender::configureLayout()
         }
         else 
         {
-            log(Error) << "Invalid layout '" << layoutName
+            RTT::log(RTT::Error) << "Invalid layout '" << layoutName
                        << "' in configuration for category: "
-                       << getName() << endlog();
+                       << getName() << RTT::endlog();
             rc = false;
         }
     }

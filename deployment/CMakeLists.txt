@@ -7,19 +7,15 @@ IF ( BUILD_DEPLOYMENT )
   find_package(Boost 1.36 REQUIRED filesystem system)
 
     # This gathers all the .cpp files into the variable 'SRCS'
-    SET( HPPS DeploymentComponent.hpp ComponentLoader.hpp)
-    SET( SRCS DeploymentComponent.cpp ComponentLoader.cpp ${CMAKE_CURRENT_BINARY_DIR}/comppath.cpp)
+    SET( HPPS DeploymentComponent.hpp )
+    SET( SRCS DeploymentComponent.cpp )
 
     orocos_library( orocos-ocl-deployment ${SRCS})
     SET_TARGET_PROPERTIES( orocos-ocl-deployment PROPERTIES
       DEFINE_SYMBOL OCL_DLL_EXPORT)
     orocos_install_headers( ${HPPS} INSTALL include/orocos/ocl )
     
-    IF(NOT WIN32)
-      TARGET_LINK_LIBRARIES( orocos-ocl-deployment "dl" )
-    ENDIF()
     TARGET_LINK_LIBRARIES( orocos-ocl-deployment ${RTT_PLUGIN_rtt-marshalling_${OROCOS_TARGET}_LIBRARIES} ${RTT_PLUGIN_rtt-scripting_${OROCOS_TARGET}_LIBRARIES})
-    TARGET_LINK_LIBRARIES( orocos-ocl-deployment ${Boost_FILESYSTEM_LIBRARIES} ${Boost_SYSTEM_LIBRARIES})
     
     IF (OROCOS-RTT_CORBA_FOUND)
         orocos_library(orocos-ocl-deployment-corba CorbaDeploymentComponent.cpp )
@@ -30,48 +26,6 @@ IF ( BUILD_DEPLOYMENT )
         TARGET_LINK_LIBRARIES( orocos-ocl-deployment-corba ${OROCOS-RTT_CORBA_LIBRARIES})
     ENDIF(OROCOS-RTT_CORBA_FOUND)
     
-    # rospack support
-    IF ( ROSLIB_SUPPORT )
-      # Catkin style of fetching ROS deps
-      FIND_PACKAGE( ROS QUIET COMPONENTS roslib )
-
-      IF(ROS_FOUND) # Fuerte
-        include_directories( ${ROS_INCLUDE_DIRS} )
-        target_link_libraries( orocos-ocl-deployment ${ROS_LIBRARIES})
-	add_definitions( -DHAS_ROSLIB )
-      ELSE(ROS_FOUND) # pre-Fuerte
-        # TODO: This block to get roslib is deprecated as of ROS Fuerte, but is left in for pre-Fuerte compatibility
-        set(roslib_PACKAGE_PATH ${ROS_ROOT}/core/roslib) ### XXX hardcoded
-	message("Falling back to roslib in: ${roslib_PACKAGE_PATH}")
-        find_library(ROS_LIB roslib ${roslib_PACKAGE_PATH}/lib )
-        if ( NOT ROS_LIB )
-	  find_package( ROS COMPONENTS roslib ) # Yells at user (non-QUIET !)
-	else()
-          include_directories( ${roslib_PACKAGE_PATH}/include )
-          target_link_libraries( orocos-ocl-deployment ${ROS_LIB} )
-	  add_definitions( -DHAS_ROSLIB )
-	endif()
-      ENDIF(ROS_FOUND)
-
-	# Necessary when building Debian packages:
-	set(ROS_STACK_DIR_FINAL $ENV{ROS_STACK_DIR_FINAL})
-	if (ROS_STACK_DIR_FINAL)
-	  set(DEFAULT_COMPONENT_PATH "${ROS_STACK_DIR_FINAL}/orocos_toolchain/install/lib/orocos")
-	else(ROS_STACK_DIR_FINAL)
-          set(DEFAULT_COMPONENT_PATH "${PROJECT_SOURCE_DIR}/../install/lib/orocos" CACHE STRING "Default component lookup path when none given. (semi-)colon separated list." FORCE)
-	endif(ROS_STACK_DIR_FINAL)
-    ELSE( ROSLIB_SUPPORT )
-	set(DEFAULT_COMPONENT_PATH "${OROCOS-RTT_PATH}/lib/orocos" CACHE STRING "Default component lookup path when none given. (semi-)colon separated list." )
-	message("No roslib package support.")
-    ENDIF( ROSLIB_SUPPORT )
-
-    configure_file(comppath.cpp.in ${CMAKE_CURRENT_BINARY_DIR}/comppath.cpp @ONLY)
-
-    if (NOT (${CMAKE_CURRENT_BINARY_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR}))
-        # This to reduce upgrade pains for in-tree upgraders:
-        execute_process( COMMAND ${CMAKE_COMMAND} -E remove -f ${CMAKE_CURRENT_SOURCE_DIR}/comppath.cpp )
-    endif()
-
     orocos_generate_package()
 
     ADD_SUBDIRECTORY( tests )

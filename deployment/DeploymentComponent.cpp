@@ -29,7 +29,7 @@
 
 #include <rtt/RTT.hpp>
 #include "DeploymentComponent.hpp"
-#include "ComponentLoader.hpp"
+#include <rtt/deployment/ComponentLoader.hpp>
 #include <rtt/extras/Activities.hpp>
 #include <rtt/extras/SequentialActivity.hpp>
 #include <rtt/extras/FileDescriptorActivity.hpp>
@@ -79,8 +79,6 @@ namespace OCL
     static std::set<string> valid_names;
 
     static int got_signal = -1;
-
-    extern char const* default_comp_path_build;
 
     // Signal code only on Posix:
 #if defined(USE_SIGNALS)
@@ -251,21 +249,16 @@ namespace OCL
     bool DeploymentComponent::configureHook()
     {
         Logger::In in("DeploymentComponent::configure");
-        char* paths = getenv("RTT_COMPONENT_PATH");
         if (compPath.empty() )
         {
-            if (paths) {
-                compPath = string(paths);
-            } else {
-                log(Info) <<"No RTT_COMPONENT_PATH set. Using default." <<endlog();
-                compPath = default_comp_path_build ;
-            }
+            compPath = ComponentLoader::Instance()->getComponentPath();
+        } else {
+            log(Info) <<"RTT_COMPONENT_PATH was set to " << compPath << endlog();
+            log(Info) <<"Re-scanning for plugins and components..."<<endlog();
+            PluginLoader::Instance()->setPluginPath(compPath);
+            ComponentLoader::Instance()->setComponentPath(compPath);
+            ComponentLoader::Instance()->import(compPath);
         }
-        log(Info) <<"RTT_COMPONENT_PATH was set to " << compPath << endlog();
-        log(Info) <<"Re-scanning for plugins and components..."<<endlog();
-        PluginLoader::Instance()->setPluginPath(compPath);
-        ComponentLoader::Instance()->setComponentPath(compPath);
-        ComponentLoader::Instance()->import(compPath);
         return true;
     }
 
@@ -1790,20 +1783,20 @@ namespace OCL
 
     void DeploymentComponent::displayComponentTypes() const
     {
-        OCL::FactoryMap::iterator it;
+        FactoryMap::const_iterator it;
         cout << "I can create the following component types: " <<endl;
-        for(it = OCL::ComponentFactories::Instance().begin(); it != OCL::ComponentFactories::Instance().end(); ++it) {
+        for(it = getFactories().begin(); it != getFactories().end(); ++it) {
             cout << "   " << it->first << endl;
         }
-        if ( OCL::ComponentFactories::Instance().size() == 0 )
+        if ( getFactories().size() == 0 )
             cout << "   (none)"<<endl;
     }
 
     std::vector<std::string> DeploymentComponent::getComponentTypes() const
     {
         std::vector<std::string> s;
-        OCL::FactoryMap::iterator it;
-        for(it = OCL::ComponentFactories::Instance().begin(); it != OCL::ComponentFactories::Instance().end(); ++it)
+        FactoryMap::const_iterator it;
+        for(it = getFactories().begin(); it != getFactories().end(); ++it)
             s.push_back(it->first);
 
         return s;
@@ -2036,9 +2029,9 @@ namespace OCL
         return pl.configure( filename, true ); // strict:true
     }
 
-    FactoryMap& DeploymentComponent::getFactories()
+    const FactoryMap& DeploymentComponent::getFactories() const
     {
-        return ComponentFactories::Instance();
+        return RTT::ComponentLoader::Instance()->getFactories();
     }
 
     void DeploymentComponent::kickOut(const std::string& config_file)

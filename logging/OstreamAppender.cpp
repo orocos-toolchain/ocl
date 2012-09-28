@@ -27,7 +27,7 @@ void OstreamAppender::updateHook()
     if (!log_port.connected()) return;      // no category connected to us
 
     OCL::logging::LoggingEvent   event;
-    if (log_port.read( event ) == NewData)
+    if (log_port.read( event ) == RTT::NewData)
     {
         log4cpp::LoggingEvent   e2 = event.toLog4cpp();
         assert(appender);
