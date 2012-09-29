@@ -29,6 +29,7 @@
 #include "CorbaDeploymentComponent.hpp"
 #include <rtt/transports/corba/TaskContextProxy.hpp>
 #include <rtt/transports/corba/TaskContextServer.hpp>
+#include <rtt/deployment/ComponentLoader.hpp>
 #include "ocl/Component.hpp"
 #include <fstream>
 
@@ -79,10 +80,10 @@ CorbaDeploymentComponent::CorbaDeploymentComponent(const std::string& name, cons
         : DeploymentComponent(name, siteFile)
     {
         log(Info) << "Registering TaskContextProxy factory." <<endlog();
-        getFactories()["TaskContextProxy"] = &createTaskContextProxy;
-        getFactories()["CORBA"] = &createTaskContextProxy;
-        getFactories()["IORFile"] = &createTaskContextProxyIORFile;
-        getFactories()["IOR"] = &createTaskContextProxyIOR;
+        ComponentLoader::Instance()->addFactory("TaskContextProxy", &createTaskContextProxy);
+        ComponentLoader::Instance()->addFactory("CORBA", &createTaskContextProxy);
+        ComponentLoader::Instance()->addFactory("IORFile", &createTaskContextProxyIORFile);
+        ComponentLoader::Instance()->addFactory("IOR", &createTaskContextProxyIOR);
 
         this->addOperation("server", &CorbaDeploymentComponent::createServer, this, ClientThread).doc("Creates a CORBA TaskContext server for the given component").arg("tc", "Name of the RTT::TaskContext (must be a peer).").arg("UseNamingService", "Set to true to use the naming service.");
     }
