@@ -54,3 +54,17 @@ function hasOperation(name)
 -- @param name of port
 -- @return requested port
 function getPort(name)
+
+--- Return a property of this service.
+-- Will fail if the requested property does not exist.
+-- @param name name of property
+-- @return requested property
+function getProperty(name)
+
+--- Get property names of service.
+-- @return table of names of properties of this service
+function getPropertyNames()
+
+--- Get all properties of service.
+-- @return table of properties of this service
+function getProperties()

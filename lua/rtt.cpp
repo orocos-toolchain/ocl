@@ -938,6 +938,13 @@ static int Property_get(lua_State *L)
 	return 1;
 }
 
+static int Property_getRaw(lua_State *L)
+{
+	PropertyBase *pb = *(luaM_checkudata_mt_bx(L, 1, "Property", PropertyBase));
+	luaM_pushobject_mt(L, "Variable", DataSourceBase::shared_ptr)(pb->getDataSource());
+	return 1;
+}
+
 static int Property_set(lua_State *L)
 {
 	DataSourceBase::shared_ptr newdsb;
@@ -1027,6 +1034,7 @@ static int Property_newindex(lua_State *L)
 static const struct luaL_Reg Property_f [] = {
 	{"new", Property_new },
 	{"get", Property_get },
+	{"getRaw", Property_getRaw },
 	{"set", Property_set },
 	{"info", Property_info },
 	{"delete", Property_del },
@@ -1035,6 +1043,7 @@ static const struct luaL_Reg Property_f [] = {
 
 static const struct luaL_Reg Property_m [] = {
 	{"get", Property_get },
+	{"getRaw", Property_getRaw },
 	{"set", Property_set },
 	{"info", Property_info },
 	// todo: shall we or not? s.o. {"__gc", Property_gc },
@@ -1132,16 +1141,16 @@ static int Port_disconnect(lua_State *L)
 			   lua_typename(L, arg_type));
     }
     if((pip2 = (PortInterface**) luaL_testudata(L, 2, "InputPort")) != NULL) {
-        pi2= *pip2;
+	pi2= *pip2;
     } else if((pip2 = (PortInterface**) luaL_testudata(L, 2, "OutputPort")) != NULL) {
-        pi2= *pip2;
+	pi2= *pip2;
     }
 
     if (pi2 != NULL)
-        ret = pi1->disconnect(pi2);
+	ret = pi1->disconnect(pi2);
     else{
-        pi1->disconnect();
-        ret = 1;
+	pi1->disconnect();
+	ret = 1;
     }
     lua_pushboolean(L, ret);
 
@@ -1610,7 +1619,7 @@ static int Service_getOperation(lua_State *L)
 	OperationInterfacePart *oip;
 	Service::shared_ptr srv;
 	DataSourceBase::shared_ptr dsb;
-	types::TypeInfo *ti;
+	const types::TypeInfo *ti;
 	OperationHandle *oh;
 	TaskContext *this_tc;
 
@@ -1646,7 +1655,7 @@ static int Service_getOperation(lua_State *L)
 
 	/* return value */
 	if(oip->resultType() != "void"){
-		ti = types::TypeInfoRepository::Instance()->type(oip->resultType());
+		ti = oip->getArgumentType(0); // 0 == return type
 		if(!ti)
 			luaL_error(L, "Operation.call: can't create return value DSB of type '%s'",
 				   oip->resultType().c_str());
@@ -1696,12 +1705,10 @@ static int Service_getProperty(lua_State *L)
 	const char *name;
 	PropertyBase *prop;
 
-	Service::shared_ptr srv;
-
-	srv = *(luaM_checkudata_mt(L, 1, "Service", Service::shared_ptr));
+	Service::shared_ptr srv = *(luaM_checkudata_mt(L, 1, "Service", Service::shared_ptr));
 	name = luaL_checkstring(L, 2);
 
-	prop = srv->properties()->getProperty(name);
+	prop = srv->getProperty(name);
 
 	if(!prop)
 		luaL_error(L, "%s failed. No such property", __FILE__);
@@ -1709,7 +1716,6 @@ static int Service_getProperty(lua_State *L)
 	Property_push(L, prop);
 	return 1;
 }
-
 
 static int Service_getPropertyNames(lua_State *L)
 {

@@ -26,6 +26,11 @@ function new(type, name, desc)
 -- @return Variable
 function get()
 
+--- Get the Variable contained in a Property
+-- as above, but will not convert basic types to Lua.
+-- @return Variable
+function getRaw()
+
 --- Set the value of a Property to a new value.
 -- Note: this method is only needed for Properties containing basic
 -- types. Complex Properties (Properties which have subfields) can be

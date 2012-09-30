@@ -26,3 +26,6 @@ function find_rospack(package)
    assert(rospack_path_cache[package] ~= "", "Package path could not be found for " .. package)
    return rospack_path_cache[package]
 end
+
+-- Help Markus' poor, confused brain:
+rospack_find=find_rospack

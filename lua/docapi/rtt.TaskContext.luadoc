@@ -125,6 +125,10 @@ function getOpInfo(string)
 -- @return Service requested
 function provides(name)
 
+--- Get names of services provided by a TaskContext.
+-- @return table of string names
+function getProviderNames()
+
 --- Get required services.
 -- Return a ServiceRequester which represents the services required by
 -- this component to work. If no name is given the default

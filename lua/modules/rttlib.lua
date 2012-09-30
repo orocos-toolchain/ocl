@@ -203,7 +203,9 @@ function varfromtab(var, tab)
    if type(tab) ~= 'table' then error("arg 2 is not a table") end
 
    for k,v in pairs(tab) do
-      if type(k) == 'number' then memdsb = var:getMemberRaw(k-1)
+      if type(k) == 'number' then
+	 if k > var.size then var:resize(k) end
+	 memdsb = var:getMemberRaw(k-1)
       else memdsb = var:getMemberRaw(k) end
 
       if memdsb == nil then error("no member " .. k) end
@@ -302,17 +304,23 @@ function service2str(s, inds, indn)
 
    local function __s2str(s, inds, indn)
       local ind = string.rep(inds, indn)
-      t[#t+1] = ind .. magenta("Service: ") .. cyan(s:getName())
-      t[#t+1] = ind .. magenta("    Subservices: ") .. cyan(table.concat(s:getProviderNames(), ', '))
-      t[#t+1] = magenta("    Ports") .. ": "
-      for i,p in ipairs(s:getPortNames()) do
-          t[#t+1] = "       " .. port2str(s:getPort(p))
-      end
-      t[#t+1] = magenta("    Properties") .. ":"
-      for i,p in ipairs(s:getProperties()) do
-          t[#t+1] = "       " .. prop2str(p)
-      end
-      t[#t+1] = ind .. magenta("    Operations:  ") .. cyan(table.concat(s:getOperationNames(), ', '))
+      t[#t+1] = ind .. magenta("Service: ") .. cyan(s:getName(), true)
+      t[#t+1] = ind .. magenta("   Subservices: ") .. cyan(table.concat(s:getProviderNames(), ', '))
+
+      t[#t+1] = ind .. magenta("   Ports:       ") -- .. cyan(table.concat(s:getPortNames(), ', '))
+      utils.foreach(function(portname)
+		       t[#t+1] = ind .. "        " .. port2str(s:getPort(portname))
+		    end, s:getPortNames())
+
+      t[#t+1] = ind .. magenta("   Properties:  ")
+      utils.foreach(function(p)
+		       t[#t+1] = ind .. "       " .. prop2str(p)
+		    end, s:getProperties())
+
+      t[#t+1] = ind .. magenta("   Operations:  ")
+      utils.foreach(function(opname)
+		       t[#t+1] = ind .. "        " .. op2str(s:getOperation(opname))
+		    end, s:getOperationNames())
 
       utils.foreach(function (sstr)
 		       local nexts = s:provides(sstr)
@@ -419,38 +427,96 @@ end
 function tc2str(tc, full)
    local res = {}
    res[#res+1] = magenta('TaskContext') .. ': ' .. green(TaskContext.getName(tc), true)
-   res[#res+1] = magenta("    state") .. ": " .. tc_colorstate(TaskContext.getState(tc))
+   res[#res+1] = magenta("   state") .. ": " .. tc_colorstate(TaskContext.getState(tc))
 
-   for i,v in ipairs( { "isActive", "getPeriod" } )
-   do
-      res[#res+1] = "    " .. magenta(v) .. ": " .. tostring(TaskContext.getOperation(tc, v)()) .. ""
+   for i,v in ipairs( { "isActive", "getPeriod" } ) do
+      res[#res+1] = "   " .. magenta(v) .. ": " .. tostring(TaskContext.getOperation(tc, v)()) .. ""
    end
 
-   res[#res+1] = magenta("    Peers") .. ": " .. cyan(table.concat(TaskContext.getPeers(tc), ', '))
-   res[#res+1] = magenta("    Services") .. ": " .. cyan(table.concat(TaskContext.getProviderNames(tc), ', '))
-   res[#res+1] = magenta("    Ports") .. ": "
+   res[#res+1] = magenta("   Peers") .. ": " .. cyan(table.concat(TaskContext.getPeers(tc), ', '))
+   res[#res+1] = magenta("   Services") .. ": " .. cyan(table.concat(TaskContext.getProviderNames(tc), ', '))
+   res[#res+1] = magenta("   Ports") .. ": "
    for i,p in ipairs(TaskContext.getPortNames(tc)) do
       res[#res+1] = "       " .. port2str(TaskContext.getPort(tc, p))
    end
 
-   res[#res+1] = magenta("    Properties") .. ":"
+   res[#res+1] = magenta("   Properties") .. ":"
    for i,p in ipairs(TaskContext.getProperties(tc)) do
-      res[#res+1] = "       " .. prop2str(p)
+      res[#res+1] = "      " .. prop2str(p)
    end
 
-   res[#res+1] = magenta("    Operations") .. ":"
+   res[#res+1] = magenta("   Operations") .. ":"
    for i,v in ipairs(TaskContext.getOps(tc)) do
       if not utils.table_has(defops_lst, v) or full then
-	 res[#res+1] = "       " .. tc_op2str(tc, v)
+	 res[#res+1] = "      " .. tc_op2str(tc, v)
       end
    end
    return table.concat(res, '\n')
 end
 
+--- Print a TaskContext.
 function pptc(tc)
    print(tc2str(tc))
 end
 
+-- Sample iface data structure for create_if function below.
+-- iface={
+--    ports={
+--       { name='conf_events', datatype='string', type='in+event', desc="Configuration events in-port" },
+--       { name='foo', datatype='int', type='in', desc="numeric in-port" },
+--       { name='conf_status', datatype='string', type='out', desc="Current configuration status" },
+--    },
+--    properties={
+--       { name='configurations', datatype='string', desc="Set of configuration" },
+--    }
+-- }
+
+--- Construct a port/property interface from an interface spec.
+-- If a port/property with name exists it is left untouched.
+-- The interface can be removed by using rttlib.tc_cleanup()
+-- @param iface interface specification
+-- @param tc optional TaskContext of interface to construct. default is rtt.getTC().
+function create_if(iface, tc)
+   local tc = tc or rtt.getTC()
+   local res={ ports={}, props={} }
+
+   function create_port(pspec, i)
+      local p
+      assert(pspec.name, "missing port name in entry"..tostring(i))
+      pspec.desc=pspec.desc or ""
+
+      if tc_has_port(tc, pspec.name) then return end
+
+      if pspec.type=='out' then
+	 p=rtt.OutputPort(pspec.datatype)
+      elseif pspec.type=='in' or pspec.type=='in+event' then
+	 p=rtt.InputPort(pspec.datatype)
+      else
+	 error("unknown port type "..tostring(pspec.type))
+      end
+      if pspec.type=='in+event' then
+	 tc:addEventPort(p, pspec.name, pspec.desc)
+      else
+	 tc:addPort(p, pspec.name, pspec.desc)
+      end
+      res.ports[pspec.name]=p
+   end
+
+   function create_prop(pspec, i)
+      local p
+      assert(pspec.name, "missing property name in entry"..tostring(i))
+      pspec.desc=pspec.desc or ""
+
+      if tc_has_property(tc, pspec.name) then return end
+      p=rtt.Property(pspec.datatype)
+      tc:addProperty(p, pspec.name, pspec.desc)
+      res.props[pspec.name]=p
+   end
+
+   utils.foreach(create_port, iface.ports)
+   utils.foreach(create_prop, iface.properties)
+   return res
+end
 
 --- Cleanup ports and properties of this Lua Component.
 -- Only use this function if the proper properties were actually
@@ -485,6 +551,22 @@ function tc_cleanup()
    utils.foreach(cleanup_prop, propnames)
    utils.foreach(cleanup_port, portnames)
    return #propnames, #portnames
+end
+
+--- Check if a TaskContext has a port with name
+-- @param tc TaskContext
+-- @param name port name to check for
+-- @return true or false
+function tc_has_port(tc, name)
+   return utils.table_has(TaskContext.getPortNames(tc), name)
+end
+
+--- Check if a TaskContext has a property with name
+-- @param tc TaskContext
+-- @param name property name to check for
+-- @return true or false
+function tc_has_property(tc, name)
+   return utils.table_has(TaskContext.getPropertyNames(tc), name)
 end
 
 
