@@ -63,7 +63,7 @@ if(BUILD_LUA_RTT)
     if(BUILD_LUA_RTT_CORBA AND OROCOS-RTT_CORBA_FOUND)
 
       orocos_executable(rttlua-corba rtt.cpp LuaComponent.cpp)
-      program_add_deps(rttlua-corba lua-repl orocos-ocl-deployment ${LUA_LIBRARIES} ${OROCOS-RTT_CORBA_LIBRARIES} orocos-ocl-deployment-corba)
+      program_add_deps(rttlua-corba lua-repl orocos-ocl-deployment ${LUA_LIBRARIES} ${OROCOS-RTT_CORBA_LIBRARIES} orocos-ocl-deployment-corba ${EXTRA_DEPS} ${EXTRA_LIBRARIES} )
       set_target_properties(rttlua-corba PROPERTIES COMPILE_FLAGS "-DLUA_RTT_CORBA")
       install(TARGETS rttlua-corba RUNTIME DESTINATION bin)
       install(PROGRAMS ../bin/rttlua DESTINATION bin RENAME rttlua-corba) # The shell script
