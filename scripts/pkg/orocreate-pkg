@@ -123,7 +123,7 @@ for i in $files; do
 done
 
 if [ "$srcfiles" ]; then
-  mkdir $pkgname/src
+  mkdir $force $pkgname/src
 fi
 
 # process src files:
