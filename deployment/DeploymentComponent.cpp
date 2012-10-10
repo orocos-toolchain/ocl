@@ -236,7 +236,11 @@ namespace OCL
 
             // Backwards compatibility with < 2.3: import OCL by default
             log(Info) << "No site file was found. Importing 'ocl' by default." <<endlog();
-            import("ocl");
+            try {
+                import("ocl");
+            } catch (std::exception& e) {
+                // ignore errors.
+            }
             return;
         }
 
