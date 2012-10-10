@@ -485,7 +485,11 @@ function create_if(iface, tc)
       assert(pspec.name, "missing port name in entry"..tostring(i))
       pspec.desc=pspec.desc or ""
 
-      if tc_has_port(tc, pspec.name) then return end
+      -- probably should check if type and event match
+      if tc_has_port(tc, pspec.name) then
+	 res.ports[pspec.name] = tc:getPort(pspec.name)
+	 return
+      end
 
       if pspec.type=='out' then
 	 p=rtt.OutputPort(pspec.datatype)
@@ -507,7 +511,10 @@ function create_if(iface, tc)
       assert(pspec.name, "missing property name in entry"..tostring(i))
       pspec.desc=pspec.desc or ""
 
-      if tc_has_property(tc, pspec.name) then return end
+      if tc_has_property(tc, pspec.name) then
+	 res.props[pspec.name] = tc:getProperty(pspec.name)
+	 return
+      end
       p=rtt.Property(pspec.datatype)
       tc:addProperty(p, pspec.name, pspec.desc)
       res.props[pspec.name]=p
