@@ -33,24 +33,6 @@
  */
 
 #ifndef OCL_COMPONENT_ONLY
-
-#include <rtt/rtt-config.h>
-#ifdef OS_RT_MALLOC
-// need access to all TLSF functions embedded in RTT
-#define ORO_MEMORY_POOL
-#include <rtt/os/tlsf/tlsf.h>
-#endif
-#include <rtt/os/main.h>
-#include <rtt/RTT.hpp>
-#include <rtt/Logger.hpp>
-#ifdef  ORO_BUILD_LOGGING
-#   ifndef OS_RT_MALLOC
-#   warning "Logging needs rtalloc!"
-#   endif
-#include <log4cpp/HierarchyMaintainer.hh>
-#include "logging/Category.hpp"
-#endif
-
 extern "C" {
 #include "lua-repl.h"
 void dotty (lua_State *L);
@@ -267,33 +249,6 @@ int ORO_main(int argc, char** argv)
 	struct stat stb;
 	wordexp_t init_exp;
 
-#ifdef  ORO_BUILD_RTALLOC
-    size_t                  memSize     = ORO_DEFAULT_RTALLOC_SIZE;
-    void*                   rtMem       = 0;
-    size_t                  freeMem     = 0;
-    if (0 < memSize)
-    {
-        // don't calloc() as is first thing TLSF does.
-        rtMem = malloc(memSize);
-        assert(0 != rtMem);
-        freeMem = init_memory_pool(memSize, rtMem);
-        if ((size_t)-1 == freeMem)
-        {
-            cerr << "Invalid memory pool size of " << memSize 
-                          << " bytes (TLSF has a several kilobyte overhead)." << endl;
-            free(rtMem);
-            return -1;
-        }
-        cout << "Real-time memory: " << freeMem << " bytes free of "
-                  << memSize << " allocated." << endl;
-    }
-#endif  // ORO_BUILD_RTALLOC
-
-#ifdef  ORO_BUILD_LOGGING
-    log4cpp::HierarchyMaintainer::set_category_factory(
-        OCL::logging::Category::createOCLCategory);
-#endif
-
 	LuaComponent lua("lua");
 	DeploymentComponent dc("deployer");
 	lua.connectPeers(&dc);
@@ -309,26 +264,6 @@ int ORO_main(int argc, char** argv)
 	wordfree(&init_exp);
 
 	lua.lua_repl(argc, argv);
-
-#ifdef  ORO_BUILD_LOGGING
-    log4cpp::HierarchyMaintainer::getDefaultMaintainer().shutdown();
-    log4cpp::HierarchyMaintainer::getDefaultMaintainer().deleteAllCategories();
-#endif
-
-#ifdef  ORO_BUILD_RTALLOC
-    if (0 != rtMem)
-    {
-        std::cout << "TLSF bytes allocated=" << memSize
-                  << " overhead=" << (memSize - freeMem)
-                  << " max-used=" << get_max_size(rtMem)
-                  << " currently-used=" << get_used_size(rtMem)
-                  << " still-allocated=" << (get_used_size(rtMem) - (memSize - freeMem))
-                  << "\n";
-
-        destroy_memory_pool(rtMem);
-        free(rtMem);
-    }
-#endif
 	return 0;
 }
 
