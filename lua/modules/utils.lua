@@ -10,7 +10,7 @@ module('utils')
 
 -- increment major on API breaks
 -- increment minor on non breaking changes
-VERSION=0.6
+VERSION=0.93
 
 function append(car, ...)
    assert(type(car) == 'table')
@@ -86,7 +86,7 @@ end
 
 
 function pp(val)
-   if type(val) == 'table' then print(tab2str(val)) 
+   if type(val) == 'table' then print(tab2str(val))
    else print(val) end
 end
 
@@ -98,6 +98,21 @@ end
 function rpad(str, len, char)
    if char == nil then char = ' ' end
    return str .. string.rep(char, len - #str)
+end
+
+--- Convert string to string of fixed lenght.
+-- Will either pad with whitespace if too short or will cut of tail if
+-- too long. If dots is true add '...' to truncated string.
+-- @param str string
+-- @param len lenght to set to.
+-- @param dots boolean, if true append dots to truncated strings.
+-- @return processed string.
+function strsetlen(str, len, dots)
+   if string.len(str) > len and dots then
+      return string.sub(str, 1, len - 4) .. "... "
+   elseif string.len(str) > len then
+      return string.sub(str, 1, len)
+   else return rpad(str, len, ' ') end
 end
 
 function stderr(...)
@@ -190,6 +205,16 @@ function deepcopy(object)
    return _copy(object)
 end
 
+function imap(f, tab)
+   local newtab = {}
+   if tab == nil then return newtab end
+   for i,v in ipairs(tab) do
+      local res = f(v,i)
+      newtab[#newtab+1] = res
+   end
+   return newtab
+end
+
 function map(f, tab)
    local newtab = {}
    if tab == nil then return newtab end
@@ -274,6 +299,15 @@ function table_has(t, x)
    return false
 end
 
+--- Return a new table with unique elements.
+function table_unique(t)
+   local res = {}
+   for i,v in ipairs(t) do
+      if not table_has(res, v) then res[#res+1]=v end
+   end
+   return res
+end
+
 --- Convert arguments list into key-value pairs.
 -- The return table is indexable by parameters (i.e. ["-p"]) and the
 -- value is an array of zero to many option parameters.
@@ -293,4 +327,49 @@ function proc_args(args)
       end
    end
    return res
+end
+
+--- Simple advice functionality
+-- If oldfun is not nil then returns a closure that invokes both
+-- oldfun and newfun. If newfun is called before or after oldfun
+-- depends on the where parameter, that can take the values of
+-- 'before' or 'after'.
+-- If oldfun is nil, newfun is returned.
+-- @param where string <code>before</code>' or <code>after</code>
+-- @param oldfun (can be nil)
+-- @param newfunc
+function advise(where, oldfun, newfun)
+   assert(where == 'before' or where == 'after',
+	  "advise: Invalid value " .. tostring(where) .. " for where")
+
+   if oldfun == nil then return newfun end
+
+   if where == 'before' then
+      return function (...) newfun(...); oldfun(...); end
+   else
+      return function (...) oldfun(...); newfun(...); end
+   end
+end
+
+--- Check wether a file exists.
+-- @param fn filename to check.
+-- @return true or false
+function file_exists(fn)
+   local f=io.open(fn);
+   if f then io.close(f); return true end
+   return false
+end
+
+--- From Book  "Lua programming gems", Chapter 2, pg. 26.
+function memoize (f)
+   local mem = {} 			-- memoizing table
+   setmetatable(mem, {__mode = "kv"}) 	-- make it weak
+   return function (x) 			-- new version of ’f’, with memoizing
+	     local r = mem[x]
+	     if r == nil then 	-- no previous result?
+		r = f(x) 	-- calls original function
+		mem[x] = r 	-- store result for reuse
+	     end
+	     return r
+	  end
 end

@@ -22,8 +22,12 @@
 #include "lauxlib.h"
 #include "lualib.h"
 
-#define RTTLUA_BOILER  "OROCOS RTTLua"
-#define RTTLUA_VERSION "1.0-beta3"
+#ifdef LUA_RTT_TLSF
+ #define RTTLUA_BOILER  "OROCOS RTTLua (TLSF)"
+#else
+ #define RTTLUA_BOILER  "OROCOS RTTLua"
+#endif
+#define RTTLUA_VERSION "1.0-beta5"
 #define XSTR(x) STR(x)
 #define STR(x)	#x
 
@@ -118,7 +122,7 @@ static void print_version (void) {
 }
 
 static void print_quit_info (void) {
-  l_message(NULL, " Use Ctrl-D to quit." );
+  l_message(NULL, " Use Ctrl-d to quit." );
 }
 
 static int getargs (lua_State *L, char **argv, int n) {

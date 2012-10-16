@@ -167,7 +167,7 @@ namespace OCL
         void endMacro();
 
         void checkPorts();
-        Service::shared_ptr stringToService(string const& names);
+        Service::shared_ptr stringToService(std::string const& names);
     public:
 
         /**
@@ -220,7 +220,7 @@ namespace OCL
         /**
          * Print help about an operation
          */
-        void printHelp(string command);
+        void printHelp(std::string command);
 
         /**
          * Print info this peer or another peer at "peerpath".

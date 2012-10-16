@@ -40,6 +40,11 @@ function getType()
 -- @return type name string
 function getTypeName()
 
+--- Get the typeid of the contained C++ type.
+-- The result of this call must be demangeled using <code>c++filt -t</code>
+-- @return typeid string
+function getTypeIdName()
+
 --- Get names of subfields of a variable.
 -- Returns a table of strings which are the names of the accessible subvariables.
 -- @return table of strings
@@ -51,6 +56,18 @@ function  getMemberNames()
 -- @param name of variable to accaess
 -- @return sub-Variable
 function getMember(name)
+
+--- Get a subvariable (no conversion to Lua).
+-- Retrieve a subvariable by string name
+-- Note: does not convert basic Variables to Lua.
+-- @param name of variable to accaess
+-- @return sub-Variable
+function getMemberRaw(name)
+
+--- Return ptr to contained data as lightuserdata.
+-- For use with luaffi. Use with care.
+-- @return lightuserdata
+function tolud()
 
 --- Apply a binary operator.
 -- The most common operators (+, -, *, /, %, ^, ==, <, >, <=, >=) are
@@ -74,3 +91,8 @@ function assign(value)
 -- @param size size to which to resize to
 -- @return boolean indicating success or failure
 function resize(size)
+
+--- Check if a Variable is basic
+-- @param Variable to check
+-- @return boolean true if basic, false otherwise
+function isbasic(var)

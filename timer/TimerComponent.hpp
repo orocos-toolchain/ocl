@@ -27,16 +27,20 @@ namespace OCL
          */
         struct TimeoutCatcher : public os::Timer {
             RTT::OutputPort<RTT::os::Timer::TimerId>& me;
-            TimeoutCatcher(RTT::os::Timer::TimerId max_timers, RTT::OutputPort<RTT::os::Timer::TimerId>& e) :
-                    os::Timer(max_timers, ORO_SCHED_RT, os::HighestPriority), me(e)
+            std::vector<RTT::OutputPort<RTT::os::Timer::TimerId>* >& m_port_timers;
+            TimeoutCatcher(std::vector<RTT::OutputPort<RTT::os::Timer::TimerId>* >& port_timers, RTT::OutputPort<RTT::os::Timer::TimerId>&  op) :
+                me(op),
+                os::Timer(port_timers.size(), ORO_SCHED_RT, os::HighestPriority), m_port_timers(port_timers)
             {}
             virtual void timeout(os::Timer::TimerId id) {
+                m_port_timers[id]->write(id);
                 me.write(id);
             }
         };
 
-        TimeoutCatcher mtimer;
+        std::vector<OutputPort<RTT::os::Timer::TimerId>* > port_timers;
         OutputPort<RTT::os::Timer::TimerId> mtimeoutEvent;
+        TimeoutCatcher mtimer;
 
         /**
          * This hook will check if a Activity has been properly

@@ -39,10 +39,10 @@ int setenv(const char *name, const char *value, int overwrite)
 #else
 std::string getEnvString(const char *name)
 {
-    string ret;
+    std::string ret;
     char* c = getenv(name);
     if (c)
-        return string(c);
+        return std::string(c);
     return ret;
 }
 bool isEnv(const char* name)

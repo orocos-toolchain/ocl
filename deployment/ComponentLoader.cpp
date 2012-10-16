@@ -263,13 +263,20 @@ bool ComponentLoader::import( std::string const& package, std::string const& pat
     // from here on: it's a package name or a path.
     // package names must be found to return true. 
     // path will be scanned and will always return true, but will warn when invalid.
-    // a package name 
+    if ( importRosPackage(package) )
+        return true;
 
+    // Try the RTT_COMPONENT_PATH:
+    return importInstalledPackage(package, path_list);
+}
+
+bool ComponentLoader::importRosPackage(std::string const& package)
+{
     // check for rospack
 #ifdef HAS_ROSLIB
     using namespace ros::package;
     try {
-        bool all_good = true, found = false;
+        bool found = false;
         string ppath = getPath( package );
         if ( !ppath.empty() ) {
             path rospath = path(ppath) / "lib" / "orocos";
@@ -291,15 +298,13 @@ bool ComponentLoader::import( std::string const& package, std::string const& pat
                     found = true;
                     if ( import( deppath_target.string() ) ) {
                         loadedPackages.push_back( *it );
-                    } else
-                        all_good = false;
+                    }
                 }
                 else if ( is_directory( deppath ) ) {
                     found = true;
                     if ( import( deppath.string() ) ) {
                         loadedPackages.push_back( *it );
-                    } else
-                        all_good = false;
+                    }
                 }
             }
             // now that all deps are done, import the package itself:
@@ -308,27 +313,29 @@ bool ComponentLoader::import( std::string const& package, std::string const& pat
                 found = true;
                 if ( import( rospath_target.string() ) ) {
                     loadedPackages.push_back( package );
-                } else
-                    all_good = false;
+                }
             } else if ( is_directory( rospath ) ) {
                 found = true;
                 if ( import( rospath.string() ) ) {
                     loadedPackages.push_back( package );
-                } else
-                    all_good = false;
+                }
             }
             // since it was a ROS package, we exit here.
             if (!found) {
-                log(Error) <<"The ROS package '"<< package <<"' in '"<< ppath << "' nor its dependencies contained a lib/orocos directory."<<endlog();
+                log(Debug) <<"The ROS package '"<< package <<"' in '"<< getPath( package ) << "' nor its dependencies contained a lib/orocos directory. I'll look in the RTT_COMPONENT_PATH next."<<endlog();
             }
-            return all_good && found;
+            return found;
         } else
             log(Info) << "Not a ros package: " << package << endlog();
     } catch(...) {
         log(Info) << "Not a ros package: " << package << endlog();
     }
 #endif
+    return false;
+}
 
+bool ComponentLoader::importInstalledPackage(std::string const& package, std::string const& path_list)
+{
     string paths;
     string trypaths;
     vector<string> tryouts;
@@ -394,12 +401,7 @@ bool ComponentLoader::import( std::string const& package, std::string const& pat
     log(Error) << trypaths << endlog();
     for(vector<string>::iterator it=tryouts.begin(); it != tryouts.end(); ++it)
         log(Error) << *it << endlog();
-
-#ifdef HAS_ROSLIB
-    log(Error) << "Package also not found in ROS_PACKAGE_PATH paths." <<endlog();
-#endif
     return false;
-
 }
 
 bool ComponentLoader::loadLibrary( std::string const& name )

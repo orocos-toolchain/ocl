@@ -141,7 +141,7 @@ namespace OCL
             bool autostart, autoconf, autoconnect, autosave;
             bool proxy, server, use_naming;
             std::string configfile;
-            vector<string> plugins;
+            std::vector<std::string> plugins;
             /// Group number this component belongs to
             int group;
         };
@@ -208,7 +208,7 @@ namespace OCL
          * @return null if the service could not be found, the service
          * otherwise
          */
-        Service::shared_ptr stringToService(string const& names);
+        Service::shared_ptr stringToService(std::string const& names);
         /**
          * Converts a dot-separated path to a service to a Port
          * object.
@@ -217,7 +217,20 @@ namespace OCL
          * @return null if the port could not be found, the port
          * otherwise
          */
-        base::PortInterface* stringToPort(string const& names);
+        base::PortInterface* stringToPort(std::string const& names);
+
+        /**
+         * Waits for any signal and then returns.
+         * @return false if this function could not install a signal handler.
+         */
+        bool waitForSignal(int signumber);
+
+        /**
+         * Waits for SIGINT and then returns.
+         * @return false if this function could not install a signal handler.
+         */
+        bool waitForInterrupt();
+
     public:
         /**
          * Constructs and configures this component.
@@ -349,6 +362,19 @@ namespace OCL
          */
         bool addPeer(const std::string& from, const std::string& target);
 
+        /**
+         * Make one component a peer of the other, in one direction, with an alternative name, such
+         * that one can use the services of the other and knows it under the name of the alias.
+         *
+         * @param from The component that must 'see' \a target and use its services.
+         * @param target The component that is 'seen' and used by \a from.
+         * @param alias The name of the target as it will be seen by \a from.
+         *
+         * @return true if both components are peers of this deployment component and
+         * target became a peer of from.
+         */
+        bool aliasPeer(const std::string& from, const std::string& target, const std::string& alias);
+
         using RTT::TaskContext::addPeer;
         using RTT::TaskContext::connectPeers;
 
@@ -472,6 +498,22 @@ namespace OCL
                          int scheduler);
 
         /**
+         * (Re-)set the activity of a component and run it on a given CPU.
+         *
+         * @param comp_name The name of the component to change.
+         * @param period    The period of the activity (or 0.0 if non periodic).
+         * @param priority  The scheduler priority (OS dependent).
+         * @param scheduler The scheduler type \a ORO_SCHED_RT or \a ORO_SCHED_OTHER.
+	 * @param cpu_nr    The CPU to run the thread on. Numbering starts from zero.
+         *
+         * @return false if one of the parameters does not match or if the
+         * component is running.
+         */
+        bool setActivityOnCPU(const std::string& comp_name,
+                         double period, int priority,
+			      int scheduler, unsigned int cpu_nr);
+
+        /**
          * (Re-)set the activity of a component with a (threadless, reactive) sequential activity.
          *
          * @param comp_name The name of the component to change.
@@ -507,6 +549,8 @@ namespace OCL
         /**
          * (Re-)set the activity of a component.
          *
+         * CPU affinity defaults to all available CPUs
+         *
          * @param comp_name The name of the component to change.
          * @param act_type  The RTT::Activity type: 'Activity', 'PeriodicActivity', 'SequentialActivity' or 'SlaveActivity'.
          * @param priority  The scheduler priority (OS dependent).
@@ -521,6 +565,26 @@ namespace OCL
                          const std::string& act_type,
                          double period, int priority,
                          int scheduler, const std::string& master_name = "");
+
+        /**
+         * (Re-)set the activity of a component.
+         *
+         * @param comp_name The name of the component to change.
+         * @param act_type  The RTT::Activity type: 'Activity', 'PeriodicActivity', 'SequentialActivity' or 'SlaveActivity'.
+         * @param priority  The scheduler priority (OS dependent).
+         * @param period    The period of the activity.
+         * @param scheduler The scheduler type \a ORO_SCHED_RT or \a ORO_SCHED_OTHER.
+         * @param cpu_affinity The prefered cpu to run on (a mask)
+         * @param master_name The name of the master component in case of a extras::SlaveActivity with a master.
+         *
+         * @return false if one of the parameters does not match or if the
+         * component is running.
+         */
+        bool setNamedActivity(const std::string& comp_name,
+                         const std::string& act_type,
+                         double period, int priority,
+                         int scheduler, unsigned cpu_affinity,
+                         const std::string& master_name = "");
 
         /**
          * Load a (partial) application XML configuration from disk. The
@@ -766,6 +830,14 @@ namespace OCL
         {
             return this->cleanupComponent( this->getPeer(comp_name) );
         }
+
+		/**
+		 * Clean up and shutdown the entire deployment
+		 * If an operation named "shutdownDeployment" is found in a peer
+         * component named "Application", then that operation is called
+         * otherwise nothing occurs.
+		 */
+		void shutdownDeployment();
 
     };
 

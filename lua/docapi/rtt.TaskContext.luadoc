@@ -1,4 +1,4 @@
---- TaskContext methods
+--- TaskContext methods.
 -- The following methods are available for TaskContext types
 --
 
@@ -28,6 +28,13 @@ function activate()
 -- @return boolean to indicate wether cleanup succeeded
 function cleanup()
 
+--- Raise a run-time error.
+function error()
+
+--- Recover from a run-time error.
+-- @return boolean to indicate wether recovering succeeded
+function recover()
+
 --- Get current TaskContext lifecycle state.
 -- @return current state (string)
 function getState()
@@ -42,11 +49,11 @@ function getPeers()
 function addPeer(TaskContext)
 
 --- Remove a peer.
--- @param name of peer to be removed
+-- @param string name of peer to be removed
 function removePeer(string)
 
 --- Get a peer of a TaskContext.
--- @param name of peer
+-- @param string name of peer
 -- @return the requested peer TaskContext
 function getPeer(string)
 
@@ -69,12 +76,12 @@ function addPort(port, name, desc)
 function addEventPort(port, name, desc)
 
 --- Get a port of a TaskContext interface.
--- @param name of port
+-- @param string name of port
 -- @return Port
 function getPort(string)
 
 --- Remove a port from a TaskContext interface.
--- @param name of port
+-- @param string name of port
 function removePort(string)
 
 --- Add a property to a TaskContext.
@@ -91,8 +98,12 @@ function getProperty(name)
 -- @return a table containing all properties (not string names!) of the TaskContext
 function getProperties()
 
+--- Return the names of all properties in a table.
+-- @return a table containing all properties string names of the TaskContext
+function getPropertyNames()
+
 --- Remove a Property from a TaskContext Interface.
--- @param name name of property to be removed
+-- @param string name of property to be removed
 function removeProperty(string)
 
 --- Return a table of names of the available operations.
@@ -114,7 +125,7 @@ function getOpInfo(string)
 -- @return Service requested
 function provides(name)
 
---- Get required services
+--- Get required services.
 -- Return a ServiceRequester which represents the services required by
 -- this component to work. If no name is given the default
 -- ServiceRequester is returned. See the RTT docs for more information
@@ -123,7 +134,7 @@ function provides(name)
 -- @return ServiceRequester
 function requires(name)
 
---- Connect required and provided services
+--- Connect required and provided services.
 -- Connect the RequiredServices of this component to the provided
 -- services of the given peer.
 -- @param peer taskcontext which has what we want.
@@ -131,15 +142,17 @@ function requires(name)
 function connectServices(peer)
 
 --- Call an Operation of a TaskContext.
--- Note: using this method directly is discouraged. Use
--- <code>TaskContext:operation()</code> or the Service.getOperation
--- interface.
+-- Note: this pumbing method is removed as from toolchain-2.5. Instead
+-- call the operation directly using
+-- <code>TaskContext:operation()</code> (conveniant, but non-rt) or
+-- use the Service:getOperation interface to get an operation which
+-- can then be called using <code>op(arg1, arg2, ...)</code>
 -- @param name name of operation
 -- @param ... zero or more arguments
 -- @return return value plus zero or more out arguments.
 function call(name, ...)
 
---- get an Operation
+--- get an Operation.
 -- get an operation object which can be called directly. This is the
 -- fastest way to get a call out.
 -- @param name name of operation
@@ -150,13 +163,6 @@ function getOperation(name)
 -- @param name name of operation to check
 -- @return true if operation with name exists.
 function hasOperation(name)
-
---- Send an Operation
--- see the RTT docs about sending operations.
--- @param name of operation
--- @param ... zero or more arguments
--- @return SendHandle
-function SendHandle send(name, ...)
 
 --- Delete a TaskContext
 -- Delete a TaskContext and free the memory. Normally this function

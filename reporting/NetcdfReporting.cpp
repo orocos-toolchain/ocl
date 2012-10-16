@@ -21,12 +21,11 @@ namespace OCL
           repfile("ReportFile","Location on disc to store the reports.", "reports.nc")
     {
         this->properties()->addProperty( repfile );
-	this->decompose.set(false);
 
-	if( types::TypeInfoRepository::Instance()->type("short") == 0 )
-	  {
-	    types::TypeInfoRepository::Instance()->addType(new types::TemplateTypeInfo<short, true>("short"));
-          }
+        if(types::TypeInfoRepository::Instance()->getTypeInfo<short>() == 0 )
+        {
+        	types::TypeInfoRepository::Instance()->addType(new types::TemplateTypeInfo<short, true>("short"));
+        }
     }
 
     bool NetcdfReporting::startHook()

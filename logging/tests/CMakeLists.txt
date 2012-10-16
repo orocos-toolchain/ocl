@@ -6,7 +6,7 @@ IF ( BUILD_LOGGING_TEST )
   INCLUDE_DIRECTORIES( ${LOG4CPP_INCLUDE_DIRS} )
   LINK_DIRECTORIES( ${LOG4CPP_LIBRARY_DIRS} )
 
-  CREATE_COMPONENT(orocos-logging-tests 
+  orocos_component(orocos-logging-tests
 	TestComponent.cpp
 	TestLoggingAvailability.cpp
 	)

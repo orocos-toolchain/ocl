@@ -70,7 +70,7 @@ namespace OCL {
 
             std::vector< LoadedLib > loadedLibs;
 
-            std::vector< string > loadedPackages;
+            std::vector< std::string > loadedPackages;
 
             /**
              * Path to look for if all else fails.
@@ -95,6 +95,15 @@ namespace OCL {
              */
             bool isCompatibleComponent(std::string const& filepath);
 
+            /**
+             * Returns true only if \a package is a ROS package and contained a lib/orocos directory.
+             */
+            bool importRosPackage(std::string const& package);
+
+            /**
+             * Returns true if \a package is a subdir of the RTT_COMPONENT_PATH
+             */
+            bool importInstalledPackage(std::string const& package, std::string const& path_list);
         public:
             typedef boost::shared_ptr<ComponentLoader> shared_ptr;
             /**

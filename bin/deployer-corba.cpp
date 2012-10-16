@@ -126,13 +126,13 @@ int main(int argc, char** argv)
         size_t freeMem = init_memory_pool(memSize, rtMem);
         if ((size_t)-1 == freeMem)
         {
-            log(Critical) << "Invalid memory pool size of " << memSize
-                          << " bytes (TLSF has a several kilobyte overhead)." << endlog();
+            cerr << "Invalid memory pool size of " << memSize
+                          << " bytes (TLSF has a several kilobyte overhead)." << endl;
             free(rtMem);
             return -1;
         }
-        log(Info) << "Real-time memory: " << freeMem << " bytes free of "
-                  << memSize << " allocated." << endlog();
+        cout << "Real-time memory: " << freeMem << " bytes free of "
+                  << memSize << " allocated." << endl;
     }
 #endif  // ORO_BUILD_RTALLOC
 
@@ -140,12 +140,14 @@ int main(int argc, char** argv)
     // use our log4cpp-derived categories to do real-time logging
     log4cpp::HierarchyMaintainer::set_category_factory(
         OCL::logging::Category::createOCLCategory);
-    log(Info) << "Using real-time logging" << endlog();
 #endif
 
     // start Orocos _AFTER_ setting up log4cpp
 	if (0 == __os_init(argc - taoIndex, &argv[taoIndex]))
     {
+#ifdef  ORO_BUILD_LOGGING
+        log(Info) << "OCL factory set for real-time logging" << endlog();
+#endif
         rc = -1;     // prove otherwise
         try {
             // if TAO options not found then have TAO process just the program name,
@@ -180,10 +182,14 @@ int main(int argc, char** argv)
                     log(Error) << "Unknown extension of file: '"<< (*iter) <<"'. Must be xml, cpf for XML files or, ops or osd for script files."<<endlog();
                 }
             }
-            
-            OCL::TaskBrowser tb( &dc );
 
-            tb.loop();
+            if ( !vm.count("daemon") ) {
+                 OCL::TaskBrowser tb( &dc );
+                 tb.loop();
+
+                 // do it while CORBA is still up in case need to do anything remote.
+                 dc.shutdownDeployment();
+            }
 
             TaskContextServer::ShutdownOrb();
 

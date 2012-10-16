@@ -92,7 +92,6 @@ namespace RTT
                     i != v.getProperties().end();
                     i++ )
                 {
-
                     this->serialize(*i);
                 }
 			}
@@ -106,11 +105,10 @@ namespace RTT
                     ++nameless_counter;
                 else
                     nameless_counter = 0;
-
                 if ( !prefix.empty() )
-                    *this->s << " " << prefix << ".";
+                    *this->s << ' ' << prefix << '.';
                 else
-                    *this->s << " ";
+                    *this->s << ' ';
                 if ( nameless_counter )
                     *this->s << nameless_counter;
                 else
@@ -119,13 +117,20 @@ namespace RTT
 
             virtual void serialize(const Property<PropertyBag> &v)
 			{
-                std::string oldpref = prefix;
-                prefix += "." + v.getName();
+                if ( v.rvalue().empty() )
+                    store( v.getName() + "[0]" );
+                else {
+                    std::string oldpref = prefix;
+                    if ( prefix.empty() )
+                        prefix = v.getName();
+                    else
+                        prefix += '.' + v.getName();
 
-                serialize(v.get());
+                    serialize(v.rvalue());
 
-                prefix = oldpref;
-                nameless_counter = 0;
+                    prefix = oldpref;
+                    nameless_counter = 0;
+                }
             }
 
             virtual void flush()

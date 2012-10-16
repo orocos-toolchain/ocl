@@ -60,3 +60,13 @@ function logl(loglevel, ...)
 -- @param subservice subservice string name to return instead of the global service.
 -- @return Service the requested service.
 function provides(subservice)
+
+
+--- Get a list of names of global RTT variables.
+-- @return table of strings
+function globals_getNames()
+
+--- Get the value of a global RTT variable
+-- @param name string name of global to get
+-- @return value of global
+function globals_get(name)

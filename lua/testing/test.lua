@@ -41,14 +41,13 @@ var = rtt.Variable
 TC=rtt.getTC()
 d=TC:getPeer("deployer")
 
-function fails()
-   return false
-end
+function fails() return false end
 
 function test_loadlib()
-   return d:import("testing/")
+   return d:import("ocl")
 end
 
+--- Test
 function test_create_testcomp()
    if not d:loadComponent("testcomp", "OCL::Testcomp") then
       return false
@@ -57,17 +56,17 @@ function test_create_testcomp()
    return testcomp:getName() == "testcomp"
 end
 
-function test_call_op_null_0() return testcomp:call("null_0") == nil end
-function test_send_op_null_0() return testcomp:send("null_0"):collect() == 'SendSuccess' end
-function test_call_op_0_ct() return testcomp:call("op_0_ct") end
-function test_call_op_0_ot() return testcomp:call("op_0_ot") end
+function test_call_op_null_0() return testcomp:null_0() == nil end
+function test_send_op_null_0() return testcomp:getOperation("null_0"):send():collect() == 'SendSuccess' end
+function test_call_op_0_ct() return testcomp:op_0_ct() end
+function test_call_op_0_ot() return testcomp:op_0_ot() end
 
 function test_call_op_2()
    local dbl = var.new("double", 1.1)
    local s = var.new("string", "hello op2")
-   local res = testcomp:call("op_2", s, dbl)
+   local res = testcomp:op_2(s, dbl)
 
-   if not res == var.new("double", 2.2) then
+   if not res == 2.2 then
       print("wrong result, expected 2.2, got ", res)
       return false
    else
@@ -78,10 +77,9 @@ end
 -- test
 function test_call_op_1_out()
    local i = var.new("int", 1)
-   local res = testcomp:call("op_1_out", i)
-   print("result testcomp:call('op_1_out', i): ", i)
-   print("result testcomp:call('op_1_out', i): ", i)
-   if i ~= var.new("int", 2) then
+   local res = testcomp:op_1_out(i)
+
+   if i:tolua() ~= 2 then
       print("wrong i, expected 2, got ", i)
       return false
    else
@@ -93,7 +91,7 @@ function test_call_op_3_out()
    local s = var.new("string", "hello op3")
    local d = var.new("double", 1.1)
    local i = var.new("int", 33)
-   local res=testcomp:call("op_3_out", s, d, i)
+   local res=testcomp:op_3_out(s, d, i)
 
    if s ~= var.new("string", "hello op3-this-string-has-a-tail") or d ~= var.new("double", 2.2) or i ~= var.new("int", 4711) then
       print("Checkpoint 1: wrong state of outvalues", s, d, i)
@@ -111,7 +109,7 @@ end
 
 function test_call_op_1_out_retval()
    local i = var.new("int", 33)
-   local res = testcomp:call("op_1_out_retval", i)
+   local res = testcomp:op_1_out_retval(i)
 
    if i ~= var.new("int", 34) then
       print("Checkpoint 1: wrong i, expected 34, got ", i)
@@ -120,7 +118,7 @@ function test_call_op_1_out_retval()
 
    print("retval", res)
    print("retval", res)
-   print("retval", res)
+   print("retval", i)
 
    if i ~= var.new("int", 34) then
       print("Checkpoint 2: wrong i, expected 34, got ", i)
@@ -148,35 +146,46 @@ function test_var_assignment()
 end
 
 function test_coercion()
-   local x = testcomp:call("op_2", "a-lua-string", 33.3)
-   return x:tolua() == 66.6
+   local x = testcomp:op_2("a-lua-string", 33.3)
+   return x == 66.6
 end
 
 function test_send_op2()
-   local sh = testcomp:send("op_2", "hullo", 55.5)
+   local sh = testcomp:getOperation("op_2"):send("hullo", 55.5)
    ss, res = sh:collect()
-   if ss ~= "SendSuccess" or res ~= var.new("double", 111) then
+   if ss ~= "SendSuccess" or res ~= 111 then
       return false
    else
       return true
    end
 end
 
+function test_send_op2_with_collect_args()
+   local res=rtt.Variable("double")
+   local sh = testcomp:getOperation("op_2"):send("hullo", 55.5)
+   ss = sh:collect(res)
+   if ss ~= "SendSuccess" or res:tolua() ~= 111 then
+      print("SendSucess:", ss, ", res: ", res)
+      return false
+   else return true end
+end
+
+
 function test_dataflow_lua()
    po = rtt.OutputPort.new("string", "po", "my output port")
    pi = rtt.InputPort.new("string", "pi", "my input port")
    TC:addPort(po)
    TC:addPort(pi)
-   print("connecting ports... ", d:call("connectTwoPorts", "lua", "po", "lua", "pi"))
+   print("connecting ports... ", d:connectTwoPorts("lua", "po", "lua", "pi"))
    po:write("hello_ports")
    local res, val = pi:read()
-   return res == "NewData" and val:tolua() == "hello_ports"
+   return res == "NewData" and val == "hello_ports"
 end
 
 function test_lua_service()
    -- load lua service into deployer
-   d:addPeer(d)
-   d:call("loadService", "deployer", "Lua")
+   d:addPeer("deployer", "deployer")
+   d:loadService("deployer", "Lua")
    local execstr_op = d:provides("Lua"):getOperation("exec_str")
    execstr_op([[
 		    require("rttlib")
@@ -187,7 +196,7 @@ function test_lua_service()
 	      ]])
 
    local p = d:getProperty("service-testprop")
-   local res =  p:get() == var.new("string", "hullo from the lua service!")
+   local res =  p:get() == "hullo from the lua service!"
    d:removeProperty("service-testprop")
    p:delete()
    d:removePeer("deployer")
@@ -202,18 +211,18 @@ end
 -- by this testscript to see if everything went ok.
 --
 function test_lua_eehook()
-   d:call('loadComponent', "c_eehook", "OCL::LuaComponent")
-   d:call("loadService", "c_eehook", "Lua")
+   d:loadComponent("c_eehook", "OCL::LuaComponent")
+   d:loadService("c_eehook", "Lua")
    c_eehook = d:getPeer("c_eehook")
 
-   c_eehook:call("exec_str", 'function configureHook() return true end')
-   c_eehook:call("exec_str", 'function startHook() return true end')
-   c_eehook:call("exec_str", 'function updateHook() return true end')
-   c_eehook:call("exec_str", 'function stopHook() return true end')
-   c_eehook:call("exec_str", 'function cleanupHook() return true end')
+   c_eehook:exec_str('function configureHook() return true end')
+   c_eehook:exec_str('function startHook() return true end')
+   c_eehook:exec_str('function updateHook() return true end')
+   c_eehook:exec_str('function stopHook() return true end')
+   c_eehook:exec_str('function cleanupHook() return true end')
    c_eehook:configure()
 
-   d:call("setActivity", "c_eehook", 0.01, 0, 0)
+   d:setActivity("c_eehook", 0.01, 0, 0)
 
    local execstr_op = c_eehook:provides("Lua"):getOperation("exec_str")
    execstr_op([[
@@ -228,8 +237,8 @@ function test_lua_eehook()
 		       counter = counter + 1
 		       if counter >= 17 then
 			  p:set(counter)
+			  print("disabling hook", eeh:disable())
 			  return false
-			  -- print("disabling hook", eeh:disable())
 		       end
 		       return true
 		    end
@@ -242,16 +251,20 @@ function test_lua_eehook()
    os.execute("sleep 0.5")
    -- check result
    res_prop = c_eehook:getProperty("result")
-   res = res_prop:get() == var.new("int", 17)
+   res = res_prop:get() == 17
    return res
 end
 
+function call_uint8_arg()
+   d:import("rtt_rosnode")
+   x=rtt.Variable("uint8", 3)
+   return not testcomp:op1_uint8(x) and testcomp:op1_uint8(120)
+end
+
 local tests = {
-   { tfunc=fails, descr="this one _must_ fail!" },
    { tstr='return TC:getName() == "lua"' },
    { tstr='return TC:getState() == "PreOperational"' },
    { tstr='return TC:getPeer("deployer") ~= nil' },
-   -- { tstr='return TC:getPeer("gargoyle22") == nil' },
    { tstr='return (TC:getPeer("deployer")):getName() == "deployer"' },
    { tfunc=test_loadlib, descr="trying to load library testcomp-gnulinux" },
    { tfunc=test_create_testcomp, descr="trying to instantiate testcomp" },
@@ -263,9 +276,11 @@ local tests = {
    { tfunc=test_call_op_1_out, descr="post(testcomp:call('op_1_out', 1)), i==2" },
    { tfunc=test_call_op_3_out, descr="postconditions of testcomp:call('op_3_out', 1)" },
    { tfunc=test_call_op_1_out_retval, descr="post(testcomp:call('op_1_out_retval', 33)), i==34" },
+   { tfunc=call_uint8_arg, descr="testing an operation call with an uint8 argument" },
    { tfunc=test_var_assignment, descr="testing assigment of variables" },
    { tfunc=test_coercion, descr="testing coercion of variables in call" },
-   { tfunc=test_send_op2, descr="testing send for op_2" },
+   { tfunc=test_send_op2, descr="testing send for op_2 and collect()" },
+   { tfunc=test_send_op2_with_collect_args, descr="testing sending op_2 and collect(var)"},
    { tfunc=test_dataflow_lua, descr="testing dataflow with conversion from/to basic lua types" },
    { tfunc=test_lua_service, descr="testing interaction with lua service" },
    { tfunc=test_lua_eehook, descr="testing EEHook" },

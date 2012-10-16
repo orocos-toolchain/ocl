@@ -39,6 +39,13 @@
 #include <rtt/plugin/PluginLoader.hpp>
 #include <boost/algorithm/string.hpp>
 
+# if defined(_POSIX_VERSION)
+#   define USE_SIGNALS 1
+# endif
+
+#ifdef USE_SIGNALS
+#include <signal.h>
+#endif
 
 #include <cstdio>
 #include <cstdlib>
@@ -51,6 +58,8 @@
 #include <iostream>
 #include <fstream>
 #include <set>
+
+
 
 using namespace Orocos;
 
@@ -66,7 +75,19 @@ namespace OCL
      */
     static std::set<string> valid_names;
 
+    static int got_signal = -1;
+
     extern char const* default_comp_path_build;
+
+    // Signal code only on Posix:
+#if defined(USE_SIGNALS)
+    // catch ctrl+c signal
+    void ctrl_c_catcher(int sig)
+    {
+    	// Ctrl-C received (or any other signal)
+    	got_signal = sig;
+    }
+#endif
 
 #define ORO_str(s) ORO__str(s)
 #define ORO__str(s) #s
@@ -101,6 +122,8 @@ namespace OCL
         this->addOperation("path", &DeploymentComponent::path, this, ClientThread).doc("Add additional directories to the component search path without importing them.").arg("Paths", "A colon or semi-colon separated list of paths to search for packages.");
 
         this->addOperation("loadComponent", &DeploymentComponent::loadComponent, this, ClientThread).doc("Load a new component instance from a library.").arg("Name", "The name of the to be created component").arg("Type", "The component type, used to lookup the library.");
+        // avoid warning about overriding
+        this->provides()->removeOperation("loadService");
         this->addOperation("loadService", &DeploymentComponent::loadService, this, ClientThread).doc("Load a discovered service or plugin in an existing component.").arg("Name", "The name of the component which will receive the service").arg("Service", "The name of the service or plugin.");
         this->addOperation("unloadComponent", &DeploymentComponent::unloadComponent, this, ClientThread).doc("Unload a loaded component instance.").arg("Name", "The name of the to be created component");
         this->addOperation("displayComponentTypes", &DeploymentComponent::displayComponentTypes, this, ClientThread).doc("Print out a list of all component types this component can create.");
@@ -124,13 +147,16 @@ namespace OCL
         this->addOperation("kickOutComponent", &DeploymentComponent::kickOutComponent, this, ClientThread).doc("Calls stopComponents, cleanupComponent and unloadComponent in a row.").arg("comp_name", "component name");
         this->addOperation("kickOut", &DeploymentComponent::kickOut, this, ClientThread).doc("Calls stopComponents, cleanupComponents and unloadComponents in a row.").arg("File", "The file which contains the name of the components to kickOut (for example, the same used in kickStart).");
 
+        this->addOperation("waitForInterrupt", &DeploymentComponent::waitForInterrupt, this, ClientThread).doc("This operation waits for the SIGINT signal and then returns. This allows you to wait in a script for ^C.");
+        this->addOperation("waitForSignal", &DeploymentComponent::waitForSignal, this, ClientThread).doc("This operation waits for the signal of the argument and then returns. This allows you to wait in a script for any signal except SIGKILL and SIGSTOP.").arg("signal number","The signal number to wait for.");
+
+
         // Work around compiler ambiguity:
         typedef bool(DeploymentComponent::*DCFun)(const std::string&, const std::string&);
         DCFun cp = &DeploymentComponent::connectPeers;
         this->addOperation("connectPeers", cp, this, ClientThread).doc("Connect two Components known to this Component.").arg("One", "The first component.").arg("Two", "The second component.");
         cp = &DeploymentComponent::connectPorts;
         this->addOperation("connectPorts", cp, this, ClientThread).doc("DEPRECATED. Connect the Data Ports of two Components known to this Component.").arg("One", "The first component.").arg("Two", "The second component.");
-        cp = &DeploymentComponent::addPeer;
         typedef bool(DeploymentComponent::*DC4Fun)(const std::string&, const std::string&,
                                                    const std::string&, const std::string&);
         DC4Fun cp4 = &DeploymentComponent::connectPorts;
@@ -155,12 +181,15 @@ namespace OCL
 
         this->addOperation("connectServices", (bool(DeploymentComponent::*)(const std::string&, const std::string&))&DeploymentComponent::connectServices, this, ClientThread).doc("Connect the matching provides/requires services of two Components known to this Component.").arg("One", "The first component.").arg("Two", "The second component.");
 
+        cp = &DeploymentComponent::addPeer;
         this->addOperation("addPeer", cp, this, ClientThread).doc("Add a peer to a Component.").arg("From", "The first component.").arg("To", "The other component.");
+        this->addOperation("aliasPeer", &DeploymentComponent::aliasPeer, this, ClientThread).doc("Add a peer to a Component with an alternative name.").arg("From", "The component which will see 'To' in its peer list.").arg("To", "The component which will be seen by 'From'.").arg("Alias","The name under which 'To' is known to 'From'");
         typedef void(DeploymentComponent::*RPFun)(const std::string&);
         RPFun rp = &RTT::TaskContext::removePeer;
         this->addOperation("removePeer", rp, this, ClientThread).doc("Remove a peer from this Component.").arg("PeerName", "The name of the peer to remove.");
 
         this->addOperation("setActivity", &DeploymentComponent::setActivity, this, ClientThread).doc("Attach an activity to a Component.").arg("CompName", "The name of the Component.").arg("Period", "The period of the activity (set to 0.0 for non periodic).").arg("Priority", "The priority of the activity.").arg("SchedType", "The scheduler type of the activity.");
+        this->addOperation("setActivityOnCPU", &DeploymentComponent::setActivityOnCPU, this, ClientThread).doc("Attach an activity to a Component.").arg("CompName", "The name of the Component.").arg("Period", "The period of the activity (set to 0.0 for non periodic).").arg("Priority", "The priority of the activity.").arg("SchedType", "The scheduler type of the activity.").arg("CPU","The CPU to run on, starting from zero.");
         this->addOperation("setPeriodicActivity", &DeploymentComponent::setPeriodicActivity, this, ClientThread).doc("Attach a periodic activity to a Component.").arg("CompName", "The name of the Component.").arg("Period", "The period of the activity.").arg("Priority", "The priority of the activity.").arg("SchedType", "The scheduler type of the activity.");
         this->addOperation("setSequentialActivity", &DeploymentComponent::setSequentialActivity, this, ClientThread).doc("Attach a 'stand alone' sequential activity to a Component.").arg("CompName", "The name of the Component.");
         this->addOperation("setSlaveActivity", &DeploymentComponent::setSlaveActivity, this, ClientThread).doc("Attach a 'stand alone' slave activity to a Component.").arg("CompName", "The name of the Component.").arg("Period", "The period of the activity (set to zero for non periodic).");
@@ -242,6 +271,38 @@ namespace OCL
       ComponentLoader::Release();
     }
 
+    bool DeploymentComponent::waitForInterrupt() {
+    	if ( !waitForSignal(SIGINT) )
+    		return false;
+    	cout << "DeploymentComponent: Got interrupt !" <<endl;
+    	return true;
+    }
+
+    bool DeploymentComponent::waitForSignal(int sig) {
+#ifdef USE_SIGNALS
+    	struct sigaction sa, sold;
+    	sa.sa_handler = ctrl_c_catcher;
+    	if ( ::sigaction(sig, &sa, &sold) != 0) {
+    		cout << "DeploymentComponent: Failed to install signal handler for signal " << sig << endl;
+    		return false;
+    	}
+    	while (got_signal != sig) {
+    		TIME_SPEC ts;
+    		ts.tv_sec = 1;
+    		ts.tv_nsec = 0;
+    		rtos_nanosleep(&ts, 0);
+    	}
+    	got_signal = -1;
+    	// reinstall previous handler if present.
+    	if (sold.sa_handler || sold.sa_sigaction)
+    		::sigaction(sig, &sold, NULL);
+    	return true;
+#else
+		cout << "DeploymentComponent: Failed to install signal handler for signal " << sig << ": Not supported by this Operating System. "<<endl;
+		return false;
+#endif
+    }
+
     bool DeploymentComponent::connectPeers(const std::string& one, const std::string& other)
     {
         RTT::Logger::In in("DeploymentComponent::connectPeers");
@@ -274,9 +335,28 @@ namespace OCL
         return t1->addPeer(t2);
     }
 
+    bool DeploymentComponent::aliasPeer(const std::string& from, const std::string& to, const std::string& alias)
+    {
+        RTT::Logger::In in("DeploymentComponent::addPeer");
+        RTT::TaskContext* t1 = from == this->getName() ? this : this->getPeer(from);
+        RTT::TaskContext* t2 = to == this->getName() ? this : this->getPeer(to);
+        if (!t1) {
+            log(Error)<< "No such peer known to deployer '"<< this->getName()<< "': "<<from<<endlog();
+            return false;
+        }
+        if (!t2) {
+            log(Error)<< "No such peer known to deployer '"<< this->getName()<< "': "<<to<<endlog();
+            return false;
+        }
+        return t1->addPeer(t2, alias);
+    }
+
     Service::shared_ptr DeploymentComponent::stringToService(string const& names) {
     	std::vector<std::string> strs;
     	boost::split(strs, names, boost::is_any_of("."));
+
+      // strs could be empty because of a bug in Boost 1.44 (see https://svn.boost.org/trac/boost/ticket/4751)
+      if (strs.empty()) return Service::shared_ptr();
 
     	string component = strs.front();
     	if (!hasPeer(component) && component != this->getName() ) {
@@ -306,6 +386,9 @@ namespace OCL
     base::PortInterface* DeploymentComponent::stringToPort(string const& names) {
     	std::vector<std::string> strs;
     	boost::split(strs, names, boost::is_any_of("."));
+
+      // strs could be empty because of a bug in Boost 1.44 (see https://svn.boost.org/trac/boost/ticket/4751)
+      if (strs.empty()) return 0;
 
     	string component = strs.front();
     	if (!hasPeer(component) && component != this->getName() ) {
@@ -379,9 +462,9 @@ namespace OCL
 
         // Warn about already connected ports.
         if ( ap->connected() && bp->connected() ) {
-            log(Warning) << "Port '"<< ap->getName() << "' of Component '"<<a->getName()
+            log(Debug) << "Port '"<< ap->getName() << "' of Component '"<<a->getName()
                        << "' and port '"<< bp->getName() << "' of Component '"<<b->getName()
-                       << "' are already connected but (probably) not to each other."<<endlog();
+                       << "' are already connected but (probably) not to each other. Connecting them anyway."<<endlog();
         }
 
         // use the base::PortInterface implementation
@@ -411,7 +494,7 @@ namespace OCL
     // New API:
     bool DeploymentComponent::connect(const std::string& one, const std::string& other, ConnPolicy cp)
     {
-	RTT::Logger::In in("DeploymentComponent::connectPorts");
+        RTT::Logger::In in("DeploymentComponent::connect");
 		base::PortInterface* ap, *bp;
 		ap = stringToPort(one);
 		bp = stringToPort(other);
@@ -420,9 +503,9 @@ namespace OCL
 
         // Warn about already connected ports.
         if ( ap->connected() && bp->connected() ) {
-            log(Warning) << "Port '"<< ap->getName() << "' of '"<< one
+            log(Debug) << "Port '"<< ap->getName() << "' of '"<< one
                        << "' and port '"<< bp->getName() << "' of '"<< other
-                       << "' are already connected but (probably) not to each other."<<endlog();
+                       << "' are already connected but (probably) not to each other. Connecting them anyway."<<endlog();
         }
 
         // use the base::PortInterface implementation
@@ -887,6 +970,14 @@ namespace OCL
                                         log(Error)<<"Please specify priority <short> of PeriodicActivity."<<endlog();
                                         valid = false;
                                     }
+
+                                    unsigned cpu_affinity = ~0; // default to all CPUs
+                                    RTT::Property<unsigned> cpu_affinity_prop = nm.rvalue().getProperty("CpuAffinity");
+                                    if(cpu_affinity_prop.ready()) {
+                                        cpu_affinity = cpu_affinity_prop.get();
+                                    }
+                                    // else ignore as is optional
+
                                     RTT::Property<string> sched;
                                     if (nm.rvalue().getProperty("Scheduler") )
                                         sched = nm.rvalue().getProperty("Scheduler"); // work around RTT 1.0.2 bug
@@ -897,7 +988,7 @@ namespace OCL
                                             valid = false;
                                     }
                                     if (valid) {
-                                        this->setNamedActivity(comp.getName(), nm.rvalue().getType(), per.get(), prio.get(), scheduler );
+                                        this->setNamedActivity(comp.getName(), nm.rvalue().getType(), per.get(), prio.get(), scheduler, cpu_affinity );
                                     }
                                 } else
                                     if ( nm.rvalue().getType() == "Activity" || nm.rvalue().getType() == "NonPeriodicActivity" ) {
@@ -910,6 +1001,14 @@ namespace OCL
                                             log(Error)<<"Please specify priority <short> of Activity."<<endlog();
                                             valid = false;
                                         }
+
+                                        unsigned int cpu_affinity = ~0; // default to all CPUs
+                                        RTT::Property<unsigned int> cpu_affinity_prop = nm.rvalue().getProperty("CpuAffinity");
+                                        if(cpu_affinity_prop.ready()) {
+                                            cpu_affinity = cpu_affinity_prop.get();
+                                        }
+                                        // else ignore as is optional
+
                                         RTT::Property<string> sched = nm.rvalue().getProperty("Scheduler");
                                         int scheduler = ORO_SCHED_RT;
                                         if ( sched.ready() ) {
@@ -918,7 +1017,7 @@ namespace OCL
                                                 valid = false;
                                         }
                                         if (valid) {
-                                            this->setNamedActivity(comp.getName(), nm.rvalue().getType(), per.get(), prio.get(), scheduler );
+                                            this->setNamedActivity(comp.getName(), nm.rvalue().getType(), per.get(), prio.get(), scheduler, cpu_affinity );
                                         }
                                     } else
                                         if ( nm.rvalue().getType() == "SlaveActivity" ) {
@@ -1642,6 +1741,21 @@ namespace OCL
         return false;
     }
 
+    bool DeploymentComponent::setActivityOnCPU(const std::string& comp_name,
+                                          double period, int priority,
+					       int scheduler, unsigned int cpu_nr)
+    {
+        unsigned int mask = 0x1 << cpu_nr;
+        if ( this->setNamedActivity(comp_name, "Activity", period, priority, scheduler, mask) ) {
+            assert( comps[comp_name].instance );
+            assert( comps[comp_name].act );
+            comps[comp_name].instance->setActivity( comps[comp_name].act );
+            comps[comp_name].act = 0;
+            return true;
+        }
+        return false;
+    }
+
     bool DeploymentComponent::setPeriodicActivity(const std::string& comp_name,
                                                   double period, int priority,
                                                   int scheduler)
@@ -1700,6 +1814,21 @@ namespace OCL
                                                double period, int priority,
                                                int scheduler, const std::string& master_name)
     {
+        return setNamedActivity(comp_name,
+                                act_type,
+                                period,
+                                priority,
+                                scheduler,
+                                ~0,             // cpu_affinity == all CPUs
+                                master_name);
+    }
+
+    bool DeploymentComponent::setNamedActivity(const std::string& comp_name,
+                                               const std::string& act_type,
+                                               double period, int priority,
+                                               int scheduler, unsigned cpu_affinity,
+                                               const std::string& master_name)
+    {
         // This helper function does not actualy set the activity, it just creates it and
         // stores it in comps[comp_name].act
         RTT::TaskContext* peer = 0;
@@ -1744,14 +1873,14 @@ namespace OCL
         base::ActivityInterface* newact = 0;
         // standard case:
         if ( act_type == "Activity")
-            newact = new RTT::Activity(scheduler, priority, period);
+            newact = new RTT::Activity(scheduler, priority, period, cpu_affinity, 0, comp_name);
         else
             // special cases:
             if ( act_type == "PeriodicActivity" && period != 0.0)
-                newact = new RTT::extras::PeriodicActivity(scheduler, priority, period);
+                newact = new RTT::extras::PeriodicActivity(scheduler, priority, period, cpu_affinity, 0);
             else
             if ( act_type == "NonPeriodicActivity" && period == 0.0)
-                newact = new RTT::Activity(scheduler, priority, period);
+                newact = new RTT::Activity(scheduler, priority, period, cpu_affinity, 0);
             else
                 if ( act_type == "SlaveActivity" ) {
                     if ( master_act == 0 )
@@ -1763,13 +1892,12 @@ namespace OCL
                 }
                 else
                     if (act_type == "Activity") {
-                        newact = new Activity(scheduler, priority, period, 0, comp_name);
+                        newact = new Activity(scheduler, priority, period, cpu_affinity, 0, comp_name);
                     }
                     else
                         if (act_type == "SequentialActivity") {
                             newact = new SequentialActivity();
                         }
-
         if (newact == 0) {
             log(Error) << "Can't create '"<< act_type << "' for component "<<comp_name<<": incorrect arguments."<<endlog();
             return false;
@@ -1817,9 +1945,6 @@ namespace OCL
         RTT::Property<std::string>  import_file;
         std::vector<std::string> deleted_components_type;
 
-        // demarshalling failures:
-        bool failure = false;
-
         marsh::PropertyDemarshaller demarshaller(config_file);
         try {
             if ( demarshaller.deserialize( from_file ) ){
@@ -1833,12 +1958,10 @@ namespace OCL
             }
             else {
                 log(Error)<< "Some error occured while parsing "<< config_file <<endlog();
-                failure = true;
             }
         } catch (...)
             {
                 log(Error)<< "Uncaught exception in kickOut() !"<< endlog();
-                failure = true;
             }
     }
 
@@ -1898,4 +2021,121 @@ namespace OCL
 
         return true;
     }
+
+    void DeploymentComponent::shutdownDeployment()
+    {
+        static const char*	PEER="Application";
+        static const char*	NAME="shutdownDeployment";
+
+        // names of override properties
+        static const char*	WAIT_PROP_NAME="shutdownWait_ms";
+        static const char*	TOTAL_WAIT_PROP_NAME="shutdownTotalWait_ms";
+
+        // if have operation named NAME in peer PEER then call it
+        RTT::TaskContext* peer = getPeer(PEER);
+        if (0 != peer)
+        {
+            RTT::OperationCaller<void(void)>	ds =
+                peer->getOperation(NAME);
+            if (ds.ready())
+            {
+                log(Info) << "Shutting down deployment." << endlog();
+                RTT::SendHandle<void(void)> handle = ds.send();
+                if (handle.ready())
+                {
+                    // set defaults
+
+                    // number milliseconds to wait in between completion checks
+                    int wait		= 50;
+                    // total number milliseconds to wait for completion
+                    int totalWait	= 2000;
+
+                    // any overrides?
+                    RTT::Property<int> wait_prop =
+                        this->properties()->getProperty(WAIT_PROP_NAME);
+                    if (wait_prop.ready())
+                    {
+                        int w = wait_prop.rvalue();
+                        if (0 < w)
+                        {
+                            wait = w;
+                            log(Debug) << "Using override value for " << WAIT_PROP_NAME << endlog();
+                        }
+                        else
+                        {
+                            log(Warning) << "Ignoring illegal value for " << WAIT_PROP_NAME << endlog();
+                        }
+                    }
+                    else
+                    {
+                        log(Debug) << "Using default value for " << WAIT_PROP_NAME << endlog();
+                    }
+
+                    RTT::Property<int> totalWait_prop =
+                        this->properties()->getProperty(TOTAL_WAIT_PROP_NAME);
+                    if (totalWait_prop.ready())
+                    {
+                        int w = totalWait_prop.rvalue();
+                        if (0 < w)
+                        {
+                            totalWait = w;
+                            log(Debug) << "Using override value for " << TOTAL_WAIT_PROP_NAME << endlog();
+                        }
+
+                        {
+                            log(Warning) << "Ignoring illegal value for " << TOTAL_WAIT_PROP_NAME << endlog();
+                        }
+                    }
+                    else
+                    {
+                        log(Debug) << "Using default value for " << TOTAL_WAIT_PROP_NAME << endlog();
+                    }
+
+                    // enforce constraints
+                    if (wait > totalWait)
+                    {
+                        wait = totalWait;
+                        log(Warning) << "Setting wait == totalWait" << endlog();
+                    }
+
+                    const long int wait_ns = wait * 1000000LL;
+                    TIME_SPEC ts;
+                    ts.tv_sec  = wait_ns / 1000000000LL;
+                    ts.tv_nsec = wait_ns % 1000000000LL;
+
+                    // wait till done or timed out
+                    log(Debug) << "Waiting for deployment shutdown to complete ..." << endlog();
+                    int waited = 0;
+                    while ((RTT::SendNotReady == handle.collectIfDone()) &&
+                           (waited < totalWait))
+                    {
+                        (void)rtos_nanosleep(&ts, NULL);
+                        waited += wait;
+                    }
+                    if (waited >= totalWait)
+                    {
+                        log(Error) << "Timed out waiting for deployment shutdown to complete." << endlog();
+                    }
+                    else
+                    {
+                        log(Debug) << "Deployment shutdown completed." << endlog();
+                    }
+                }
+                else
+                {
+                    log(Error) << "Failed to start operation: " << NAME << endlog();
+                }
+
+            }
+            else
+            {
+                log(Info) << "Ignoring missing deployment shutdown function." << endlog();
+            }
+        }
+        else
+        {
+            log(Info) << "Ignoring deployment shutdown function due to missing peer." << endlog();
+        }
+    }
+
 }

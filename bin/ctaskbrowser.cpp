@@ -58,7 +58,7 @@ int ORO_main(int argc, char** argv)
 #ifdef OROPKG_OS_XENOMAI
         std::cout<<" -- Xenomai.";
 #endif
-        std::cout << endl;
+        std::cout << std::endl;
         return 0;
     }
 

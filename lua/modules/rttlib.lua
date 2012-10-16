@@ -48,63 +48,67 @@ module("rttlib")
 
 color=false
 
+local defops_lst = { "activate", "cleanup", "configure", "error", "getCpuAffinity", "getPeriod",
+		     "inRunTimeError", "isActive", "isConfigured", "isRunning", "setCpuAffinity",
+		     "setPeriod", "start", "stop", "trigger", "update", "inFatalError" }
+
+-- shortcut
+local TaskContext=rtt.TaskContext
+
+--- Condition colorization.
+--
+
 local function red(str, bright)
-   if color then
-      str = col.red(str)
-      if bright then str=col.bright(str) end
-   end
+   if color then str = col.red(str); if bright then str=col.bright(str) end end
    return str
 end
 
 local function blue(str, bright)
-   if color then
-      str = col.blue(str)
-      if bright then str=col.bright(str) end
-   end
+   if color then str = col.blue(str); if bright then str=col.bright(str) end end
    return str
 end
 
 local function green(str, bright)
-   if color then
-      str = col.green(str)
-      if bright then str=col.bright(str) end
-   end
+   if color then str = col.green(str); if bright then str=col.bright(str) end end
    return str
 end
 
 local function yellow(str, bright)
-   if color then
-      str = col.yellow(str)
-      if bright then str=col.bright(str) end
-   end
+   if color then str = col.yellow(str); if bright then str=col.bright(str) end end
    return str
 end
 
 local function magenta(str, bright)
-   if color then
-      str = col.magenta(str)
-      if bright then str=col.bright(str) end
-   end
+   if color then str = col.magenta(str); if bright then str=col.bright(str) end end
    return str
 end
 
 local function cyan(str, bright)
-   if color then
-      str = col.cyan(str)
-      if bright then str=col.bright(str) end
-   end
+   if color then str = col.cyan(str); if bright then str=col.bright(str) end end
    return str
 end
 
 local function white(str, bright)
-   if color then
-      str = col.white(str)
-      if bright then str=col.bright(str) end
-   end
+   if color then str = col.white(str); if bright then str=col.bright(str) end end
    return str
 end
 
---- Pretty-print a ConnPolicy.
+
+--- Indent a string if it contains newlines.
+-- Used to nicely print multiline values and keep single line values
+-- on one line. Will add a newline to the first line and indent.
+-- @param str string to conditionally indent.
+-- @param ind indentation
+-- @return indented or unmodified string.
+function if_nl_ind(str, ind)
+   ind = ind or "\t\t"
+   if not string.match(str, '\n') then return str end
+   return string.gsub('\n'..str, '\n', '\n'..ind)
+end
+
+--- Beautify a ConnPolicy table.
+-- @param cp ConnPolicy table
+-- @return the processed table
 function ConnPolicy2tab(cp)
    if cp.type == 0 then cp.type = "DATA"
    elseif cp.type == 1 then cp.type = "BUFFER"
@@ -124,6 +128,9 @@ function ConnPolicy2tab(cp)
 end
 
 
+--- Convert an RTT Variable to a table.
+-- @param var Variable
+-- @return table tab representation of Variable
 function var2tab(var)
    local function __var2tab(var)
       local res
@@ -165,6 +172,9 @@ end
 var_pp = {}
 var_pp.ConnPolicy = ConnPolicy2tab
 
+--- Convert a RTT Variable to a string.
+-- @param var
+-- @return string
 function var2str(var)
    if type(var) ~= 'userdata' then return tostring(var) end
 
@@ -229,10 +239,16 @@ end
 -- @return string
 function prop2str(p)
    local info = p:info()
-   return white(info.name) .. ' (' .. info.type .. ')' .. " = " .. yellow(var2str(p:get())) .. red(" // " .. info.desc) .. ""
+   return white(info.name) .. ' (' .. info.type .. ')' .. " = " .. if_nl_ind(yellow(var2str(p:get()))) .. red(" // " .. info.desc) .. ""
 end
 
 --- Convert an operation to a string.
+-- @param name name of operation
+-- @param descr description
+-- @param rettype return type
+-- @param arity arity of operation
+-- @param args table of argument tables {type, name}
+-- @return string
 function __op2str(name, descr, rettype, arity, args)
    local str = ""
 
@@ -251,6 +267,9 @@ function __op2str(name, descr, rettype, arity, args)
    return str
 end
 
+--- Convert an operation to a string.
+-- @param op Operation
+-- @return string
 function op2str(op)
    return __op2str(op:info())
 end
@@ -258,7 +277,7 @@ end
 --- Taskcontext operation to string.
 -- Old version. Using the op2str and __op2str versions are preferred.
 function tc_op2str(tc, op)
-   local rettype, arity, descr, args = tc:getOpInfo(op)
+   local rettype, arity, descr, args = TaskContext.getOpInfo(tc, op)
    local str = ""
 
    if #args < 1  then
@@ -284,9 +303,16 @@ function service2str(s, inds, indn)
    local function __s2str(s, inds, indn)
       local ind = string.rep(inds, indn)
       t[#t+1] = ind .. magenta("Service: ") .. cyan(s:getName())
-      t[#t+1] = ind .. magenta("   Subservices: ") .. cyan(table.concat(s:getProviderNames(), ', '))
-      t[#t+1] = ind .. magenta("   Operations:  ") .. cyan(table.concat(s:getOperationNames(), ', '))
-      t[#t+1] = ind .. magenta("   Ports:       ") .. cyan(table.concat(s:getPortNames(), ', '))
+      t[#t+1] = ind .. magenta("    Subservices: ") .. cyan(table.concat(s:getProviderNames(), ', '))
+      t[#t+1] = magenta("    Ports") .. ": "
+      for i,p in ipairs(s:getPortNames()) do
+          t[#t+1] = "       " .. port2str(s:getPort(p))
+      end
+      t[#t+1] = magenta("    Properties") .. ":"
+      for i,p in ipairs(s:getProperties()) do
+          t[#t+1] = "       " .. prop2str(p)
+      end
+      t[#t+1] = ind .. magenta("    Operations:  ") .. cyan(table.concat(s:getOperationNames(), ', '))
 
       utils.foreach(function (sstr)
 		       local nexts = s:provides(sstr)
@@ -319,7 +345,11 @@ function service_req2str(sr, inds, indn)
 end
 
 
-function port2str(p)
+--- Convert a port to a string.
+-- @param p Port
+-- @param nodoc don't add documentation
+-- @return string
+function port2str(p, nodoc)
    local inf = p:info()
    local ret = {}
 
@@ -342,29 +372,33 @@ function port2str(p)
    ret [#ret+1] = table.concat(attrs, ', ')
 
    ret[#ret+1] = "] "
-   ret[#ret+1] = red("// " .. inf.desc)
+   if not nodoc then ret[#ret+1] = red("// " .. inf.desc) end
    return table.concat(ret, '')
 end
 
--- port contents
+--- Convert the value of the port to a coloured string.
+-- @param port
+-- @param comp component this port belongs to (used to access port service)
+-- @param string
 function portval2str(port, comp)
    local inf = port:info()
-   local res = white(inf.name) .. ' (' .. inf.type .. ')  ='
-
-   if inf.type == 'unknown_t' then
-      res = res .. " ?"
+   local portstr = white(inf.name) .. ' (' .. inf.type .. ')  = '
+   local value
+   if inf.type == 'unknown_t' then value = "?"
    elseif inf.porttype == 'in' then
       local fs, data = port:read()
 
-      if fs == 'NoData' then res = res .. ' NoData'
-      elseif fs == 'NewData' then res = res .. ' ' .. green(var2str(data))
-      else res = res .. ' ' .. yellow(var2str(data)) end
+      if fs == 'NoData' then value=' NoData'
+      elseif fs == 'NewData' then value = green(var2str(data))
+      else value = yellow(var2str(data)) end
    else
-      res = res .. ' ' .. cyan(var2str(comp:provides(inf.name):getOperation("last")()))
+      value = cyan(var2str(comp:provides(inf.name):getOperation("last")()))
    end
-   return res
+   return portstr .. if_nl_ind(value)
 end
 
+--- Print the values of all ports of a component.
+-- @param comp TaskContext
 function portstats(comp)
    for i,p in ipairs(comp:getPortNames(p)) do
       print(portval2str(comp:getPort(p), comp))
@@ -379,33 +413,36 @@ local function tc_colorstate(state)
    return red(state, true)
 end
 
---
--- pretty print a taskcontext
---
-function tc2str(tc)
+--- Convert a TaskContext to a nice string.
+-- @param tc TaskContext
+-- @return string
+function tc2str(tc, full)
    local res = {}
-   res[#res+1] = magenta('TaskContext') .. ': ' .. green(tc:getName(), true)
-   res[#res+1] = magenta("state") .. ": " .. tc_colorstate(tc:getState())
+   res[#res+1] = magenta('TaskContext') .. ': ' .. green(TaskContext.getName(tc), true)
+   res[#res+1] = magenta("    state") .. ": " .. tc_colorstate(TaskContext.getState(tc))
 
    for i,v in ipairs( { "isActive", "getPeriod" } )
    do
-      res[#res+1] = magenta(v) .. ": " .. tostring(tc:call(v)) .. ""
+      res[#res+1] = "    " .. magenta(v) .. ": " .. tostring(TaskContext.getOperation(tc, v)()) .. ""
    end
 
-   res[#res+1] = magenta("peers") .. ": " .. table.concat(tc:getPeers(), ', ')
-   res[#res+1] = magenta("ports") .. ": "
-   for i,p in ipairs(tc:getPortNames()) do
-      res[#res+1] = "   " .. port2str(tc:getPort(p))
+   res[#res+1] = magenta("    Peers") .. ": " .. cyan(table.concat(TaskContext.getPeers(tc), ', '))
+   res[#res+1] = magenta("    Services") .. ": " .. cyan(table.concat(TaskContext.getProviderNames(tc), ', '))
+   res[#res+1] = magenta("    Ports") .. ": "
+   for i,p in ipairs(TaskContext.getPortNames(tc)) do
+      res[#res+1] = "       " .. port2str(TaskContext.getPort(tc, p))
    end
 
-   res[#res+1] = magenta("properties") .. ":"
-   for i,p in ipairs(tc:getProperties()) do
-      res[#res+1] = "   " .. prop2str(p)
+   res[#res+1] = magenta("    Properties") .. ":"
+   for i,p in ipairs(TaskContext.getProperties(tc)) do
+      res[#res+1] = "       " .. prop2str(p)
    end
 
-   res[#res+1] = magenta("operations") .. ":"
-   for i,v in ipairs(tc:getOps()) do
-      res[#res+1] = "   " .. tc_op2str(tc, v)
+   res[#res+1] = magenta("    Operations") .. ":"
+   for i,v in ipairs(TaskContext.getOps(tc)) do
+      if not utils.table_has(defops_lst, v) or full then
+	 res[#res+1] = "       " .. tc_op2str(tc, v)
+      end
    end
    return table.concat(res, '\n')
 end
@@ -413,6 +450,43 @@ end
 function pptc(tc)
    print(tc2str(tc))
 end
+
+
+--- Cleanup ports and properties of this Lua Component.
+-- Only use this function if the proper properties were actually
+-- created from Lua (yes, this will be commonly the case).  The
+-- built-in Properties 'lua_string' and 'lua_file' are ignored.
+-- @return number of removed properties, number of removed ports
+function tc_cleanup()
+   local tc=rtt.getTC()
+
+   local function cleanup_prop(pname)
+      local prop = TaskContext.getProperty(tc, pname)
+      TaskContext.removeProperty(tc, pname)
+      prop:delete()
+   end
+
+   local function cleanup_port(pname)
+      local port = TaskContext.getPort(tc, pname)
+      TaskContext.removePort(tc, pname)
+      port:delete()
+   end
+
+   -- get list of property names (remove built-in ones)
+   local propnames=utils.filter(function(n,i)
+				   if n=='lua_string' or n=='lua_file' then
+				      return false
+				   end
+				   return true
+				end, TaskContext.getPropertyNames(tc))
+
+   local portnames = TaskContext.getPortNames(tc)
+
+   utils.foreach(cleanup_prop, propnames)
+   utils.foreach(cleanup_port, portnames)
+   return #propnames, #portnames
+end
+
 
 --- Create an inverse, connected port of a given port.
 -- The default name will be the same as the given port.
@@ -460,12 +534,12 @@ end
 function findpeer(name, start_tc)
    local cache = {}
    local function __findpeer(tc)
-      local tc_name = tc:getName()
+      local tc_name = TaskContext.getName(tc)
       if cache[tc_name] then return false else cache[tc_name] = true end
-      local peers = tc:getPeers()
-      if utils.table_has(peers, name) then return tc:getPeer(name) end
+      local peers = TaskContext.getPeers(tc)
+      if utils.table_has(peers, name) then return TaskContext.getPeer(tc, name) end
       for i,pstr in ipairs(peers) do
-	 local p = __findpeer(tc:getPeer(pstr))
+	 local p = __findpeer(TaskContext.getPeer(tc, pstr))
 	 if p then return p end
       end
       return false
@@ -481,10 +555,10 @@ function mappeers(func, start_tc)
    local cache = {}
    local res = {}
    local function __mappeers(tc)
-      local tc_name = tc:getName()
+      local tc_name = TaskContext.getName(tc)
       if cache[tc_name] then return else cache[tc_name] = true end
       res[tc_name] = func(tc)
-      for i,pn in ipairs(tc:getPeers()) do __mappeers(tc:getPeer(pn)) end
+      for i,pn in ipairs(TaskContext.getPeers(tc)) do __mappeers(TaskContext.getPeer(tc, pn)) end
    end
    local start_tc = start_tc or rtt.getTC()
    __mappeers(start_tc)
@@ -507,6 +581,20 @@ function info()
       -- print(magenta("comp types: "), table.concat(t, ', '))
       print(magenta("comp types: ") .. utils.wrap(table.concat(t, ' '), 80, ind, ind1))
    end
+end
+
+function stat()
+   function __stat_tc(tc)
+      local state = TaskContext.getState(tc)
+      print(table.concat{utils.strsetlen(TaskContext.getName(tc), 40, true),
+			 tc_colorstate(TaskContext.getState(tc)) .. string.rep(' ', 20-string.len(state)),
+			 utils.strsetlen(tostring(tc:isActive()), 10, false),
+			 utils.strsetlen(tostring(tc:getPeriod()), 10, false)}, ' ')
+   end
+
+   print(table.concat{utils.rpad("Name", 40), utils.rpad("State", 20),
+		      utils.rpad("isActive", 10), utils.rpad("Period", 10)}, ' ')
+   mappeers(__stat_tc)
 end
 
 --- Check if a typekit has been loaded.
@@ -535,22 +623,50 @@ end
 function tc_index(tc, key)
    local reg = debug.getregistry()
    if rtt.TaskContext.hasOperation(tc, key) then
-      return function (tc, ...) return rtt.TaskContext.call(tc, key, ...) end
+      return function (tc, ...) return rtt.TaskContext.getOperation(tc, key)(...) end
    else -- pass on to standard metatable
       return reg.TaskContext[key]
    end
 end
 
+--- Return the (RTT aware) type of an object.
+-- falls back on the standard 'type' if not an RTT object.
+-- @param obj
+-- @return string
+function rtt_type(obj)
+   local mt = getmetatable(obj)
+   if mt then
+      local reg=debug.getregistry()
+      for k,v in pairs(reg) do if v == mt then return k end end
+   end
+   return type(obj)
+end
+
+-- conveniance constructors
 setmetatable(rtt.Variable, {__call=function(t,...) return rtt.Variable.new(...) end})
 setmetatable(rtt.Property, {__call=function(t,...) return rtt.Property.new(...) end})
 setmetatable(rtt.InputPort, {__call=function(t,...) return rtt.InputPort.new(...) end})
 setmetatable(rtt.OutputPort, {__call=function(t,...) return rtt.OutputPort.new(...) end})
 setmetatable(rtt.EEHook, {__call=function(t,...) return rtt.EEHook.new(...) end})
 
+-- create a globals tab with a metatable that forwards __index to
+-- globals_get() and __tostring prints all know globals.
+rtt.globals={}
+local globals_mt= {
+   __index=function(t,v) return rtt.globals_get(v) end,
+   __tostring=function(t)
+		 local res = {}
+		 for _,v in ipairs(rtt.globals_getNames()) do res[v] = rtt.globals_get(v) end
+		 return utils.tab2str(res)
+	      end
+}
+setmetatable(rtt.globals, globals_mt)
+
 -- enable pretty printing
 if type(debug) == 'table' then
    reg = debug.getregistry()
    reg.TaskContext.__tostring=tc2str
+   reg.TaskContext.show=function(tc) return tc2str(tc, true) end
    reg.TaskContext.stat=portstats
    reg.Service.__index=service_index -- enable operations as methods
    reg.TaskContext.__index=tc_index -- enable operations as methods
@@ -560,6 +676,7 @@ if type(debug) == 'table' then
    reg.Property.__tostring=prop2str
    reg.Property.fromtab=propfromtab
    reg.Service.__tostring=service2str
+   reg.Service.stat=portstats
    reg.ServiceRequester.__tostring=service_req2str
    reg.Operation.__tostring=op2str
    reg.InputPort.__tostring=port2str

@@ -1,0 +1,20 @@
+#!/bin/bash
+
+cwd="$(pwd)"
+abspath=$(dirname "$(cd "${0%/*}" 2>/dev/null; echo "$PWD"/"${0##*/}")")
+cmd=$(basename $0)
+
+if [ -z "${OROCOS_TARGET}" ]; then
+    possibilities=$(echo $abspath/$cmd-*)
+    if [ -z "$possibilities" -o ! -f "$possibilities" ]; then
+	echo "You have not set the OROCOS_TARGET environment variable. I need it to know which target to run."
+	echo "You can set it by doing for example: 'export OROCOS_TARGET=gnulinux' in your .bashrc"
+	echo " or before you run this script."
+	exit 1
+    fi
+    cmd=$possibilities
+else
+    cmd=$abspath/$cmd-${OROCOS_TARGET}
+fi
+
+$cmd $*

@@ -40,13 +40,17 @@
 #include <rtt/Logger.hpp>
 #include <rtt/plugin/PluginLoader.hpp>
 #include <rtt/os/TimeService.hpp>
+#include <rtt/os/fosi.h>
 #include <rtt/internal/GlobalService.hpp>
+#include <rtt/types/GlobalsRepository.hpp>
 
 extern "C" {
 #include <lua.h>
 #include <lauxlib.h>
 #include <lualib.h>
 #include <string.h>
+
+#include <stdint.h>
 
 int luaopen_rtt(lua_State *L);
 int set_context_tc(RTT::TaskContext*, lua_State*);
@@ -55,7 +59,7 @@ int set_context_tc(RTT::TaskContext*, lua_State*);
  * are wether to fail if no such function exists and wether to fail if
  * no boolean result is returned.
  */
-bool call_func(lua_State*, const std::string&, RTT::TaskContext*, int, int);
+bool call_func(lua_State*, const char*, RTT::TaskContext*, int, int);
 }
 
 

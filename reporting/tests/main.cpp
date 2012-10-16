@@ -36,11 +36,15 @@ public:
         std::vector<double> init(10, 1.0);
         dwport.setDataSample( init );
         this->setPeriod(0.1);
+        start();
     }
 
     void updateHook() {
         std::vector<double> init(10, input.get() );
         dwport.write( init );
+        input.set( input.get() + 1 );
+        if (input.get() > 100 )
+            input.set( 0 );
     }
 };
 
@@ -65,10 +69,14 @@ public:
         this->ports()->addPort( dwport );
         this->addAttribute( input );
         this->setPeriod(0.2);
+        start();
     }
 
     void updateHook() {
         dwport.write( input.get() );
+        input.set( input.get() + 1 );
+        if (input.get() > 100 )
+            input.set( 0 );
     }
 };
 
