@@ -39,6 +39,7 @@
 
 #include "ocl/Component.hpp"
 #include <rtt/types/PropertyDecomposition.hpp>
+#include <boost/lexical_cast.hpp>
 
 ORO_CREATE_COMPONENT_TYPE()
 
@@ -48,6 +49,127 @@ namespace OCL
     using namespace std;
     using namespace RTT;
     using namespace RTT::detail;
+
+    //! Helper data source to check if two sizes are *still* equal and check an upstream comparison as well.
+    //! We use this to track changes in sizes for our sequences, which will lead to a rebuild.
+    class CheckSizeDataSource : public ValueDataSource<bool>
+    {
+        int msize;
+        DataSource<int>::shared_ptr mds;
+        DataSource<bool>::shared_ptr mupstream;
+    public:
+        CheckSizeDataSource(int size, DataSource<int>::shared_ptr ds, DataSource<bool>::shared_ptr upstream)
+            : msize(size), mds(ds), mupstream(upstream)
+        {}
+        /**
+         * Returns true if the size or the upstream size remained the same.
+         */
+        bool get() {
+            // it's very important to first check upstream, because
+            // if upstream changed size, downstream might already be corrupt !
+            // (downstream will be corrupt upon capacity changes upstream)
+            if (mupstream)
+                return mupstream->get() && msize == mds->get();
+            else
+                return msize == mds->get();
+        }
+    };
+
+    /**
+     * Decompose a given type using getMember() into a property tree.
+     *
+     * This function shares 90% of the code with RTT::types::propertyDecomposition, but is optimised
+     * for speed and only uses getMember with references, not the custom decomposeType functions.
+     */
+    bool memberDecomposition( base::DataSourceBase::shared_ptr dsb, PropertyBag& targetbag, DataSource<bool>::shared_ptr& resized)
+    {
+        assert(dsb);
+
+        vector<string> parts = dsb->getMemberNames();
+        if ( parts.empty() ) {
+            return false;
+        }
+
+        targetbag.setType( dsb->getTypeName() );
+
+        // needed for recursion.
+        auto_ptr< Property<PropertyBag> > recurse_bag( new Property<PropertyBag>("recurse_bag","") );
+        // First at the explicitly listed parts:
+        for(vector<string>::iterator it = parts.begin(); it != parts.end(); ++it ) {
+            // we first force getMember to get to the type, then we do it again but with a reference set.
+            DataSourceBase::shared_ptr part = dsb->getMember( *it );
+            if (!part) {
+                log(Error) <<"memberDecomposition: Inconsistent type info for "<< dsb->getTypeName() << ": reported to have part '"<<*it<<"' but failed to return it."<<endlog();
+                continue;
+            }
+            if ( !part->isAssignable() ) {
+                // For example: the case for size() and capacity() in SequenceTypeInfo
+                log(Debug)<<"memberDecomposition: Part "<< *it << ":"<< part->getTypeName() << " is not changeable."<<endlog();
+                continue;
+            }
+            // now the reference magic:
+            DataSourceBase::shared_ptr ref = part->getTypeInfo()->buildReference( 0 );
+            dsb->getTypeInfo()->getMember( dynamic_cast<Reference*>(ref.get() ), dsb, *it); // fills in ref
+            // newpb will contain a reference to the port's datasource data !
+            PropertyBase* newpb = part->getTypeInfo()->buildProperty(*it,"Part", ref);
+            if ( !newpb ) {
+                log(Error)<< "Decomposition failed because Part '"<<*it<<"' is not known to type system."<<endlog();
+                continue;
+            }
+            // finally recurse or add it to the target bag:
+            if ( !memberDecomposition( ref, recurse_bag->value(), resized) ) {
+                assert( recurse_bag->value().empty() );
+                // finally: check for conversions (enums use this):
+                base::DataSourceBase::shared_ptr converted = newpb->getTypeInfo()->convertType( dsb );
+                if ( converted && converted != dsb ) {
+                    // converted contains another type.
+                    targetbag.add( converted->getTypeInfo()->buildProperty(*it, "", converted) );
+                    delete newpb;
+                } else
+                    targetbag.ownProperty( newpb ); // leaf
+            } else {
+                recurse_bag->setName(*it);
+                // setType() is done by recursive of self.
+                targetbag.ownProperty( recurse_bag.release() ); //recursed.
+                recurse_bag.reset( new Property<PropertyBag>("recurse_bag","") );
+                delete newpb; // since we recursed, the recurse_bag now 'embodies' newpb.
+            }
+        }
+
+        // Next get the numbered parts. This is much more involved since sequences may be resizable.
+        // We keep track of the size, and if that changes, we will have to force a re-decomposition
+        // of the sequence's internals.
+        DataSource<int>::shared_ptr size = DataSource<int>::narrow( dsb->getMember("size").get() );
+        if (size) {
+            int msize = size->get();
+            for (int i=0; i < msize; ++i) {
+                string indx = boost::lexical_cast<string>( i );
+                DataSourceBase::shared_ptr item = dsb->getMember(indx);
+                resized = new CheckSizeDataSource( msize, boost::dynamic_pointer_cast< DataSource<int> >( item ), resized );
+                if (item) {
+                    if ( !item->isAssignable() ) {
+                        // For example: the case for size() and capacity() in SequenceTypeInfo
+                        log(Warning)<<"memberDecomposition: Item '"<< indx << "' of type "<< dsb->getTypeName() << " is not changeable."<<endlog();
+                        continue;
+                    }
+                    // finally recurse or add it to the target bag:
+                    PropertyBase* newpb = item->getTypeInfo()->buildProperty( indx,"",item);
+                    if ( !memberDecomposition( item, recurse_bag->value(), resized) ) {
+                        targetbag.ownProperty( newpb ); // leaf
+                    } else {
+                        delete newpb;
+                        recurse_bag->setName( indx );
+                        // setType() is done by recursive of self.
+                        targetbag.ownProperty( recurse_bag.release() ); //recursed.
+                        recurse_bag.reset( new Property<PropertyBag>("recurse_bag","") );
+                    }
+                }
+            }
+        }
+        if (targetbag.empty() )
+            log(Debug) << "memberDecomposition: "<<  dsb->getTypeName() << " returns an empty property bag." << endlog();
+        return true;
+    }
 
   ReportingComponent::ReportingComponent( std::string name /*= "Reporting" */ )
         : TaskContext( name ),
@@ -69,7 +191,7 @@ namespace OCL
         // Add the methods, methods make sure that they are
         // executed in the context of the (non realtime) caller.
 
-        this->addOperation("snapshot", &ReportingComponent::snapshot , this, RTT::OwnThread).doc("Take a new shapshot of all data and cause them to be written out. Only works in one-shot mode.");
+        this->addOperation("snapshot", &ReportingComponent::snapshot , this, RTT::OwnThread).doc("Take a new shapshot of all data and cause them to be written out.");
         this->addOperation("screenComponent", &ReportingComponent::screenComponent , this, RTT::ClientThread).doc("Display the variables and ports of a Component.").arg("Component", "Name of the Component");
         this->addOperation("reportComponent", &ReportingComponent::reportComponent , this, RTT::ClientThread).doc("Add a peer Component and report all its data ports").arg("Component", "Name of the Component");
         this->addOperation("unreportComponent", &ReportingComponent::unreportComponent , this, RTT::ClientThread).doc("Remove all Component's data ports from reporting.").arg("Component", "Name of the Component");
@@ -376,7 +498,7 @@ namespace OCL
         // check for duplicates:
         for (Reports::iterator it = root.begin();
              it != root.end(); ++it)
-            if ( it->get<0>() == tag ) {
+            if ( it->get<T_QualName>() == tag ) {
                 return true;
             }
 
@@ -402,7 +524,7 @@ namespace OCL
     {
         for (Reports::iterator it = root.begin();
              it != root.end(); ++it)
-            if ( it->get<0>() == tag ) {
+            if ( it->get<T_QualName>() == tag ) {
                 root.erase(it);
                 return true;
             }
@@ -425,9 +547,9 @@ namespace OCL
         this->copydata();
         // force all as new data:
         for(Reports::iterator it = root.begin(); it != root.end(); ++it ) {
-            it->get<5>() = true;
+            it->get<T_NewData>() = true;
         }
-        this->makeReport();
+        this->makeReport2();
 
         // write headers
         if (writeHeader.get()) {
@@ -440,7 +562,7 @@ namespace OCL
 
         // makeReport clears the flags:
         for(Reports::iterator it = root.begin(); it != root.end(); ++it ) {
-            it->get<5>() = true;
+            it->get<T_NewData>() = true;
         }
 
         // write initial values with all value marshallers (uses the forcing above)
@@ -450,8 +572,6 @@ namespace OCL
                 it->second->flush();
             }
         }
-
-        this->cleanReport();
 
         return true;
     }
@@ -463,7 +583,7 @@ namespace OCL
         copydata();
         // force logging of all data.
         for(Reports::iterator it = root.begin(); it != root.end(); ++it ) {
-            it->get<5>() = true;
+            it->get<T_NewData>() = true;
         }
     }
 
@@ -476,14 +596,42 @@ namespace OCL
         for(Reports::iterator it = root.begin(); it != root.end(); ++it ) {
             // execute() will only return true if the InputPortSource's evaluate()
             // returned true too during readArguments().
-            (it->get<2>())->readArguments();
-            it->get<5>() = (it->get<2>())->execute(); // stores new data flag.
-            // if its a property/attr, get<5> will always be true, so we override (clear) with get<6>.
-            result = result || ( it->get<5>() && it->get<6>() );
+            (it->get<T_CopyCmd>())->readArguments();
+            it->get<T_NewData>() = (it->get<T_CopyCmd>())->execute(); // stores new data flag.
+            // if its a property/attr, get<T_NewData> will always be true, so we override (clear) with get<T_Tracked>.
+            result = result || ( it->get<T_NewData>() && it->get<T_Tracked>() );
         }
         needs_copy = false;
         return result;
     }
+
+    void ReportingComponent::makeReport2()
+    {
+        // Uses the port DS itself to make the report.
+        assert( report.empty() );
+        // For the timestamp, we need to add a new property object:
+        report.add( timestamp.getTypeInfo()->buildProperty( timestamp.getName(), "", timestamp.getDataSource() ) );
+        DataSource<bool>::shared_ptr checker;
+        for(Reports::iterator it = root.begin(); it != root.end(); ++it ) {
+            Property<PropertyBag>* subbag = new Property<PropertyBag>( it->get<T_QualName>(), "");
+            if ( memberDecomposition( it->get<T_PortDS>(), subbag->value(), checker ) )
+                report.add( subbag );
+            else {
+                // property or simple value port...
+                base::DataSourceBase::shared_ptr converted = it->get<T_PortDS>()->getTypeInfo()->convertType( it->get<T_PortDS>() );
+                if ( converted && converted != it->get<T_PortDS>() ) {
+                    // converted contains another type.
+                    report.add( converted->getTypeInfo()->buildProperty(it->get<T_QualName>(), "", converted) );
+                } else
+                    report.add( it->get<T_PortDS>()->getTypeInfo()->buildProperty(it->get<T_QualName>(), "", it->get<T_PortDS>()) );
+                delete subbag;
+            }
+
+        }
+        mchecker = checker;
+        timestamp = 0.0; // reset.
+    }
+        
 
     void ReportingComponent::makeReport()
     {
@@ -495,22 +643,22 @@ namespace OCL
         // 3. the decomposition of the copy, present in 'report'.
         report.add( timestamp.clone() );
         for(Reports::iterator it = root.begin(); it != root.end(); ++it ) {
-            if (  it->get<5>() || null.rvalue() == "last" ) {
-                base::DataSourceBase::shared_ptr clone = it->get<3>();
-                Property<PropertyBag>* subbag = new Property<PropertyBag>( it->get<0>(), "");
+            if (  it->get<T_NewData>() || null.rvalue() == "last" ) {
+                base::DataSourceBase::shared_ptr clone = it->get<T_TgtDS>();
+                Property<PropertyBag>* subbag = new Property<PropertyBag>( it->get<T_QualName>(), "");
                 if ( decompose.get() && typeDecomposition( clone, subbag->value() ) )
                     report.add( subbag );
                 else {
                     base::DataSourceBase::shared_ptr converted = clone->getTypeInfo()->decomposeType(clone);
                     if ( converted && converted != clone ) {
                         // converted contains another type, or a property bag.
-                        report.add( converted->getTypeInfo()->buildProperty(it->get<0>(), "", converted) );
+                        report.add( converted->getTypeInfo()->buildProperty(it->get<T_QualName>(), "", converted) );
                     } else
                         // use the original clone.
-                        report.add( clone->getTypeInfo()->buildProperty(it->get<0>(), "", clone) );
+                        report.add( clone->getTypeInfo()->buildProperty(it->get<T_QualName>(), "", clone) );
                     delete subbag;
                 }
-                it->get<5>() = false;
+                it->get<T_NewData>() = false;
             } else {
                 //  no new data
                 report.add( null.clone() );
@@ -527,31 +675,21 @@ namespace OCL
     }
 
     void ReportingComponent::updateHook() {
-        // Step 1: Make copies in order to copy all data and get the timestamp
-        //
-        if ( needs_copy ) {
-            bool hasdata = this->copydata();
-            if (!hasdata) { // if no new data is here, bail out (otherwise, twice the same line is logged)!
-                cleanReport();
-                return;
-            }
+        // if any data sequence got resized, we rebuild the whole bunch.
+        // otherwise, we need to track every individual array (not impossible though, but still needs an upstream concept).
+        if ( mchecker->get() == false ) {
+            cleanReport();
+            makeReport();
         }
-
+        timestamp = os::TimeService::Instance()->secondsSince( starttime );
         do {
-            // Step 2: Prepare bag: Decompose to native types (double,int,...)
-            this->makeReport();
-
             // Step 3: print out the result
             // write out to all marshallers
             for(Marshallers::iterator it=marshallers.begin(); it != marshallers.end(); ++it) {
                 it->second->serialize( report );
                 it->second->flush();
             }
-
-            this->cleanReport();
         } while( !getActivity()->isPeriodic() && copydata() ); // repeat if necessary. In periodic mode we always only sample once.
-        // clears needs_copy:
-        this->cleanReport();
     }
 
     void ReportingComponent::stopHook() {
@@ -559,6 +697,7 @@ namespace OCL
         for(Marshallers::iterator it=marshallers.begin(); it != marshallers.end(); ++it) {
             it->second->flush();
         }
+        cleanReport();
     }
 
 }

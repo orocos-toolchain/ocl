@@ -204,6 +204,9 @@ namespace OCL
                              boost::shared_ptr<RTT::base::ActionInterface>,
                              RTT::base::DataSourceBase::shared_ptr,
                              std::string,bool,bool> DTupple;
+
+        //! Use these to index DTupple objects.
+        typedef enum { T_QualName = 0, T_PortDS, T_CopyCmd, T_TgtDS, T_DataType, T_NewData, T_Tracked } T_Types;
         /**
          * Stores the 'datasource' of all reported items as properties.
          */
@@ -217,6 +220,7 @@ namespace OCL
         virtual bool startHook();
 
         void makeReport();
+        void makeReport2();
 
         /**
          * This not real-time function processes the copied data.
@@ -243,6 +247,8 @@ namespace OCL
 
         RTT::os::TimeService::ticks starttime;
         RTT::Property<RTT::os::TimeService::Seconds> timestamp;
+        //! If false, a sequence size has changed.
+        RTT::internal::DataSource<bool>::shared_ptr mchecker;
 
     };
 
