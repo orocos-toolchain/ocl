@@ -182,7 +182,6 @@ namespace OCL
           insnapshot("Snapshot","Set to true to enable snapshot mode. This will cause a non-periodic reporter to only report data upon the snapshot() operation.",false),
           synchronize_with_logging("Synchronize","Set to true if the timestamp should be synchronized with the logging",false),
           report_data("ReportData","A PropertyBag which defines which ports or components to report."),
-          null("NullSample","The characters written to the log to indicate that no new data was available for that port during a snapshot(). As a special value, the string 'last' is interpreted as repeating the last value.","last"),
           starttime(0),
           timestamp("TimeStamp","The time at which the data was read.",0.0)
     {
@@ -193,7 +192,6 @@ namespace OCL
         this->properties()->addProperty( insnapshot );
         this->properties()->addProperty( synchronize_with_logging);
         this->properties()->addProperty( report_data);
-        this->properties()->addProperty( null);
 
         // Add the methods, methods make sure that they are
         // executed in the context of the (non realtime) caller.
@@ -543,12 +541,8 @@ namespace OCL
         else
             starttime = os::TimeService::Instance()->getTicks();
 
-        // Write initial lines.
+        // Get initial data samples
         this->copydata();
-        // force all as new data:
-        for(Reports::iterator it = root.begin(); it != root.end(); ++it ) {
-            it->get<T_NewData>() = true;
-        }
         this->makeReport2();
 
         // write headers
@@ -558,11 +552,6 @@ namespace OCL
                 it->first->serialize( report );
                 it->first->flush();
             }
-        }
-
-        // makeReport clears the flags:
-        for(Reports::iterator it = root.begin(); it != root.end(); ++it ) {
-            it->get<T_NewData>() = true;
         }
 
         // write initial values with all value marshallers (uses the forcing above)
@@ -582,10 +571,6 @@ namespace OCL
         if ( getActivity()->isPeriodic() )
             return;
         copydata();
-        // force logging of all data.
-        for(Reports::iterator it = root.begin(); it != root.end(); ++it ) {
-            it->get<T_NewData>() = true;
-        }
         snapshotted = true;
         updateHook();
     }
@@ -647,7 +632,6 @@ namespace OCL
         // if any data sequence got resized, we rebuild the whole bunch.
         // otherwise, we need to track every individual array (not impossible though, but still needs an upstream concept).
         if ( mchecker && mchecker->get() == false ) {
-            std::cout<<"."<<std::endl;
             cleanReport();
             makeReport2();
         } else

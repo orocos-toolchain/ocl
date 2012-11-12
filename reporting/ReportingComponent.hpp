@@ -241,7 +241,6 @@ namespace OCL
         RTT::Property<bool>          insnapshot;
         RTT::Property<bool>          synchronize_with_logging;
         RTT::Property<PropertyBag>   report_data;
-        RTT::Property<std::string>   null;
 
         RTT::os::TimeService::ticks starttime;
         RTT::Property<RTT::os::TimeService::Seconds> timestamp;

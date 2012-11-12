@@ -149,18 +149,18 @@ namespace RTT
                  */
 
                 std::string name = v.getName();
-                if ( v.get().getType() != "type_less")
-                    name+= std::string(" <") + v.get().getType() + std::string(">");
+                if ( v.value().getType() != "type_less")
+                    name+= std::string(" <") + v.value().getType() + std::string(">");
                 store( name ) ;
 
                 /**
                  * Serialize all properties on the line below.
                  */
                 line++;
-                if ( v.get().getProperties().empty() )
+                if ( v.value().getProperties().empty() )
                     store( std::string("<empty>") );
                 else
-                    serialize(v.get());
+                    serialize(v.value());
                 line--;
 
                 /**
