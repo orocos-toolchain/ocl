@@ -36,7 +36,7 @@ namespace OCL
        * Create a new netcdf dataset in the NC_CLOBBER mode.
        * This means that the nc_create function overwrites any existing dataset.
        */
-      retval = nc_create(repfile.get().c_str(), NC_CLOBBER, &ncid);
+      retval = nc_create(repfile.get().c_str(), NC_CLOBBER | NC_SHARE, &ncid);
       if ( retval ) {
        log(Error) << "Could not create "+repfile.get()+" for reporting."<<endlog();
        return false;
