@@ -225,7 +225,7 @@ namespace OCL
 
     const RTT::PropertyBag* TcpReporting::getReport()
     {
-        makeReport();
+        makeReport2();
         return &report;
     }
 

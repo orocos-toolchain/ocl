@@ -54,7 +54,7 @@ namespace OCL
     //! We use this to track changes in sizes for our sequences, which will lead to a rebuild.
     class CheckSizeDataSource : public ValueDataSource<bool>
     {
-        int msize;
+        mutable int msize;
         DataSource<int>::shared_ptr mds;
         DataSource<bool>::shared_ptr mupstream;
     public:
@@ -64,14 +64,17 @@ namespace OCL
         /**
          * Returns true if the size or the upstream size remained the same.
          */
-        bool get() {
+        bool get() const{
             // it's very important to first check upstream, because
             // if upstream changed size, downstream might already be corrupt !
             // (downstream will be corrupt upon capacity changes upstream)
+            bool result = true;
             if (mupstream)
-                return mupstream->get() && msize == mds->get();
+                result = (mupstream->get() && msize == mds->get());
             else
-                return msize == mds->get();
+                result = (msize == mds->get());
+            msize = mds->get();
+            return result;
         }
     };
 
@@ -145,7 +148,7 @@ namespace OCL
             for (int i=0; i < msize; ++i) {
                 string indx = boost::lexical_cast<string>( i );
                 DataSourceBase::shared_ptr item = dsb->getMember(indx);
-                resized = new CheckSizeDataSource( msize, boost::dynamic_pointer_cast< DataSource<int> >( item ), resized );
+                resized = new CheckSizeDataSource( msize, size, resized );
                 if (item) {
                     if ( !item->isAssignable() ) {
                         // For example: the case for size() and capacity() in SequenceTypeInfo
@@ -173,17 +176,21 @@ namespace OCL
 
   ReportingComponent::ReportingComponent( std::string name /*= "Reporting" */ )
         : TaskContext( name ),
-          report("Report"), needs_copy(true),
+          report("Report"), snapshotted(false),
           writeHeader("WriteHeader","Set to true to start each report with a header.", true),
           decompose("Decompose","Set to false in order to create multidimensional array in netcdf", true),
+          insnapshot("Snapshot","Set to true to enable snapshot mode. This will cause a non-periodic reporter to only report data upon the snapshot() operation.",false),
           synchronize_with_logging("Synchronize","Set to true if the timestamp should be synchronized with the logging",false),
           report_data("ReportData","A PropertyBag which defines which ports or components to report."),
           null("NullSample","The characters written to the log to indicate that no new data was available for that port during a snapshot(). As a special value, the string 'last' is interpreted as repeating the last value.","last"),
           starttime(0),
           timestamp("TimeStamp","The time at which the data was read.",0.0)
     {
+        this->provides()->doc("Captures data on data ports. A periodic reporter will sample each added port according to its period, a non-periodic reporter will write out data as it comes in, or only during a snapshot() if the Snapshot property is true.");
+
         this->properties()->addProperty( writeHeader );
         this->properties()->addProperty( decompose );
+        this->properties()->addProperty( insnapshot );
         this->properties()->addProperty( synchronize_with_logging);
         this->properties()->addProperty( report_data);
         this->properties()->addProperty( null);
@@ -509,14 +516,7 @@ namespace OCL
             log(Error) << "Could not report '"<< tag <<"' : unknown type." << endlog();
             return false;
         }
-        try {
-            boost::shared_ptr<base::ActionInterface> comm( clone->updateAction( orig.get() ) );
-            assert( comm );
-            root.push_back( boost::make_tuple( tag, orig, comm, clone, type, false, track ) );
-        } catch ( internal::bad_assignment& ba ) {
-            log(Error) << "Could not report '"<< tag <<"' : failed to create Command." << endlog();
-            return false;
-        }
+        root.push_back( boost::make_tuple( tag, orig, type, false, track ) );
         return true;
     }
 
@@ -573,6 +573,7 @@ namespace OCL
             }
         }
 
+        snapshotted = false;
         return true;
     }
 
@@ -585,6 +586,8 @@ namespace OCL
         for(Reports::iterator it = root.begin(); it != root.end(); ++it ) {
             it->get<T_NewData>() = true;
         }
+        snapshotted = true;
+        updateHook();
     }
 
     bool ReportingComponent::copydata() {
@@ -592,16 +595,12 @@ namespace OCL
 
         // result will become true if more data is to be read.
         bool result = false;
-        // execute the copy commands (fast).
+        // This evaluates the InputPortDataSource evaluate() returns true upon new data.
         for(Reports::iterator it = root.begin(); it != root.end(); ++it ) {
-            // execute() will only return true if the InputPortSource's evaluate()
-            // returned true too during readArguments().
-            (it->get<T_CopyCmd>())->readArguments();
-            it->get<T_NewData>() = (it->get<T_CopyCmd>())->execute(); // stores new data flag.
+            it->get<T_NewData>() = (it->get<T_PortDS>())->evaluate(); // stores 'NewData' flag.
             // if its a property/attr, get<T_NewData> will always be true, so we override (clear) with get<T_Tracked>.
             result = result || ( it->get<T_NewData>() && it->get<T_Tracked>() );
         }
-        needs_copy = false;
         return result;
     }
 
@@ -632,56 +631,28 @@ namespace OCL
         timestamp = 0.0; // reset.
     }
         
-
-    void ReportingComponent::makeReport()
-    {
-        // This function must clone/copy all data samples because we apply
-        // decomposition of structs. So at the end of this function there are
-        // three instances of each data sample:
-        // 1. the one in the input port's datasource
-        // 2. the 1:1 copy made during copydata(), present in 'root'.
-        // 3. the decomposition of the copy, present in 'report'.
-        report.add( timestamp.clone() );
-        for(Reports::iterator it = root.begin(); it != root.end(); ++it ) {
-            if (  it->get<T_NewData>() || null.rvalue() == "last" ) {
-                base::DataSourceBase::shared_ptr clone = it->get<T_TgtDS>();
-                Property<PropertyBag>* subbag = new Property<PropertyBag>( it->get<T_QualName>(), "");
-                if ( decompose.get() && typeDecomposition( clone, subbag->value() ) )
-                    report.add( subbag );
-                else {
-                    base::DataSourceBase::shared_ptr converted = clone->getTypeInfo()->decomposeType(clone);
-                    if ( converted && converted != clone ) {
-                        // converted contains another type, or a property bag.
-                        report.add( converted->getTypeInfo()->buildProperty(it->get<T_QualName>(), "", converted) );
-                    } else
-                        // use the original clone.
-                        report.add( clone->getTypeInfo()->buildProperty(it->get<T_QualName>(), "", clone) );
-                    delete subbag;
-                }
-                it->get<T_NewData>() = false;
-            } else {
-                //  no new data
-                report.add( null.clone() );
-            }
-        }
-        timestamp = 0.0; // reset.
-    }
-
     void ReportingComponent::cleanReport()
     {
         // Only clones were added to result, so delete them.
         deletePropertyBag( report );
-        needs_copy = true;
     }
 
     void ReportingComponent::updateHook() {
+        //If not periodic and insnapshot is true, only continue if snapshot is called.
+        if( !getActivity()->isPeriodic() && insnapshot.get() && !snapshotted)
+            return;
+        else
+            snapshotted = false;
+
         // if any data sequence got resized, we rebuild the whole bunch.
         // otherwise, we need to track every individual array (not impossible though, but still needs an upstream concept).
-        if ( mchecker->get() == false ) {
+        if ( mchecker && mchecker->get() == false ) {
+            std::cout<<"."<<std::endl;
             cleanReport();
-            makeReport();
-        }
-        timestamp = os::TimeService::Instance()->secondsSince( starttime );
+            makeReport2();
+        } else
+            copydata();
+
         do {
             // Step 3: print out the result
             // write out to all marshallers
@@ -689,7 +660,7 @@ namespace OCL
                 it->second->serialize( report );
                 it->second->flush();
             }
-        } while( !getActivity()->isPeriodic() && copydata() ); // repeat if necessary. In periodic mode we always only sample once.
+        } while( !getActivity()->isPeriodic() && !insnapshot.get() && copydata() ); // repeat if necessary. In periodic mode we always only sample once.
     }
 
     void ReportingComponent::stopHook() {

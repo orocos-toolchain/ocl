@@ -201,12 +201,10 @@ namespace OCL
          */
         typedef boost::tuple<std::string,
                              RTT::base::DataSourceBase::shared_ptr,
-                             boost::shared_ptr<RTT::base::ActionInterface>,
-                             RTT::base::DataSourceBase::shared_ptr,
                              std::string,bool,bool> DTupple;
 
         //! Use these to index DTupple objects.
-        typedef enum { T_QualName = 0, T_PortDS, T_CopyCmd, T_TgtDS, T_DataType, T_NewData, T_Tracked } T_Types;
+        typedef enum { T_QualName = 0, T_PortDS, T_DataType, T_NewData, T_Tracked } T_Types;
         /**
          * Stores the 'datasource' of all reported items as properties.
          */
@@ -219,7 +217,6 @@ namespace OCL
 
         virtual bool startHook();
 
-        void makeReport();
         void makeReport2();
 
         /**
@@ -237,10 +234,11 @@ namespace OCL
          * Used to communicate between snapshot() and updateHook()
          * if updateHook needs to make a copy.
          */
-        bool needs_copy;
+        bool snapshotted;
         RTT::Property<std::string>   config;
         RTT::Property<bool>          writeHeader;
         RTT::Property<bool>          decompose;
+        RTT::Property<bool>          insnapshot;
         RTT::Property<bool>          synchronize_with_logging;
         RTT::Property<PropertyBag>   report_data;
         RTT::Property<std::string>   null;
