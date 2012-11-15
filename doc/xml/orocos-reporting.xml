@@ -13,6 +13,10 @@
       <year>2006,2007,2008,2009</year>
       <holder>Peter Soetens, FMTC</holder>
     </copyright>
+    <copyright>
+      <year>2010-2012</year>
+      <holder>Peter Soetens</holder>
+    </copyright>
 
     <legalnotice>
       <para>
@@ -35,19 +39,28 @@
       <classname>OCL::ReportingComponent</classname> for monitoring
       and capturing data exchanged between Orocos components.
     </para>
+		<note>
+			<para>
+				Since version 2.6, the ReportingComponent has had a makeover to boost
+				efficiency and to rework non-periodic and snapshot modes. For periodic
+				reporting, the behavior remained the same.
+			</para>
+		</note
     <section>
       <title>Principle</title>
       <para>
 	Each Orocos component can have a number of data ports. One
 	can configure the reporting components such that one or more
 	ports are captured of one or more peer components. The reporting
-	components can work sample rate based or event based.
-	A number of file format can be selected.
+	components can work sample rate based, event based, or by requesting
+	a snapshot of the current state.
+	A number of file formats can be selected.
       </para>
       <para>
-	The Reporter can uses buffers in order to log all data it receives
-	or just report the last values in case it is flooded with data.
-	This must be configured for all connections equally.
+				The Reporter can use buffers in order to log all data it receives
+				or just report the last values in case it is flooded with data.
+				By default, the Reporter will setup unbuffered connections and you
+				need to override this manually if you wish to deviate from that.
       </para>
       <para>
 	A common usage scenario of the
@@ -93,7 +106,10 @@
     </para>
     <para>
       In order to report data of other components, they must be added as a Peer
-      to the reporting component. The following C++ setup code does this for the
+      to the reporting component. 
+		</para> <!--
+		<para>
+		The following C++ setup code does this for the
       example above (<xref linkend="fig-reporting-example"/>):
       <programlisting>  #include &lt;ocl/FileReporting.hpp>
 
@@ -106,13 +122,12 @@
   reporter.addPeer( &amp;controller );
   reporter.addPeer( &amp;camera );
   controller.addPeer( &amp;plant );</programlisting>
-    </para>
+    </para> -->
     <para>
-      Alternatively, if you use the Deployer, you might add this listing
-      to your application XML file, instead of using the hard-coded C++ setup
-      above:
+			The following deployment XML file creates a Reporting component as in the
+      example above (<xref linkend="fig-reporting-example"/>):
     </para>
-    <programlisting><![CDATA[   <simple name="Import" type="string"><value>/usr/lib/liborocos-reporting</value></simple>
+    <programlisting><![CDATA[   <simple name="Import" type="string"><value>ocl</value></simple>
 
   <struct name="Reporter" type="OCL::FileReporting">
 
@@ -138,25 +153,22 @@
     </para>
     <para>
       If the Reporter has a periodic activity, it will sample all its
-      input ports and write out the new values. For old values, a '-'
-      (dash) is written by default instead of a value. You can configure
-      this behaviour by using the <option>NullSample</option> property
-      (see below). 
+      input ports and write out the current values.
     </para>
     <para>
       If the Reporter's activity is non-periodic (<option>Period</option> omitted or
       zero), it will only write out a new value when new data arrives
       on one of the connected ports.  Ports that did not get a new
-      value will also output the NullSample.
+      value will repeat the previous value.
     </para>
     <para>
-      The values of reported attributes or properties are always printed,
-      and do not cause the triggering of a new data report.
+      Also the values of attributes or properties can be logged.
     </para>
     <section>
-      <title>Property Configuration File</title>
+      <title>Reporting Configuration File</title>
       <para>
-	This is an example property file:
+				This is an example property file, to configure a Reporting component, once it was
+				created :
       </para>
       <programlisting><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE properties SYSTEM "cpf.dtd">
@@ -164,17 +176,8 @@
   <simple name="WriteHeader" type="boolean">
     <description>Set to true to start each report with a header.</description><value>1</value>
   </simple>
-  <simple name="NullSample" type="string">
-    <description>The characters written to the log to indicate 
-      that no new data was available for that port during a snapshot(). 
-      As a special value, the string 'last' is interpreted as repeating the last value.</description>
-    <value>-</value>
-  </simple>
-  <simple name="Decompose" type="boolean">
-    <description>Set to false in order to create multidimensional array in netcdf</description><value>1</value>
-  </simple>
   <simple name="Synchronize" type="boolean">
-    <description>Set to true if the timestamp should be synchronized with the logging</description><value>0</value>
+    <description>Set to true if the timestamp should be synchronized with the RTT::Logger</description><value>0</value>
   </simple>
   <simple name="WriteHeader" type="boolean">
     <description>Set to true to start each report with a header.</description><value>1</value>
@@ -200,17 +203,6 @@
 	 If <option>WriteHeader</option> is set to true, a header will be written
 	 describing the file format layout.
        </para>
-       <para>
-	 If <option>Decompose</option> is set to true, complex data on ports will
-	 be decomposed into separate table columns. Otherwise, each port appears as one
-	 column. The NetcdfReporter requires this to be false, most other reporters
-	 are better of if this is true (the default).
-       </para>
-       <para>
-	 The <option>NullSample</option> is a string which you can set to <option>last</option>
-	 in order to repeat the last value if no new data arrived. This can not be 
-	 set on a per port basis.
-       </para>
     </section>
     <section>
       <title>ReportData section</title>
@@ -219,8 +211,8 @@
 	As the example shows (see also <xref linkend="fig-reporting-example"/>),
 	a complete component can be monitored (Camera) or specific ports of
 	a peer component can be monitored. The reporting component can monitor
-	any data type as long as it is known in the Orocos type system. Extending
-	the type system is explained in the Plugin Manual of the Real-Time Toolkit.
+	any data type as long as it's typkit is loaded in the Orocos type system (use ROS' rtt_rosnode or
+	typegen to generate typekits).
       </para>
     </section>
     <section>
@@ -279,33 +271,9 @@
     <title>Forcing data reporting (snapshot).</title>
     <para>
       One can force that all current data ports are sampled and
-      written out.  This is independent of the periodic or non
-      periodic execution of the Reporter. There is a method available
-      that is called snapshot(). It may be called from real-time
-      contexts. Since a snapshot writes out all data samples, it is
-      not possible to see which ones changed in comparison to the
-      previous snapshot.
+      written out using the snapshot() operation. 
+			This only works when the Reporter is non-periodic
+			and the Snapshot property is set to true.
     </para>
-    <para>
-      In case you <emphasis>only</emphasis> want to log data in case
-      of a snapshot(), you need to set the
-      <option>SnapshotOnly</option> property to 1. Even more when this
-      flag is set, the reporting component will reduce all connections
-      to being unbuffered during a configure() run, such that a snapshot()
-      always returns the most recent values.
-      <note><para>SnapshotOnly is the inverse of the OCL 1.x
-      AutoTrigger option. If you had AutoTrigger disabled, then enable
-      SnapshotOnly in OCL 2.x.</para></note>
-    </para>
-  </section>
-  <section>
-    <title>Future work</title>
-    <para>
-      In time, it should become possible to set buffering policies for
-      each connection, or let the deployment component form the
-      connections from components to reporting and let the reporting
-      component pick them up. This would allow for an easier use and
-      configurability.
-     </para>
-  </section>
+	</section>
 </article>
