@@ -169,7 +169,7 @@ endif()
 ## Find Orocos RTT with same version as OCL
 find_package(OROCOS-RTT ${OCL_VERSION} REQUIRED ${RTT_HINTS})
 if (NOT OROCOS-RTT_FOUND)
-  message(FATAL_ERROR "\n   RTT not found. Is the version correct? Use the CMAKE_PREFIX_PATH cmake or environment variable to point to the installation directory of RTT.")
+  message(FATAL_ERROR "\n   RTT not found:\n * Is the version correct (${OCL_VERSION} or higher) ?\n * Did you build & install it ?\n * Did you source env.sh ?\n")
 else()
   include(${OROCOS-RTT_USE_FILE_PATH}/UseOROCOS-RTT.cmake)
   add_definitions( -DRTT_COMPONENT )

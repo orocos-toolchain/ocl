@@ -17,8 +17,11 @@ include(FindPackageHandleStandardArgs)
 IF (NOT LOG4CPP_ROOT)
     # See if LOG4CPP_ROOT is set in process environment
     IF ( NOT $ENV{LOG4CPP_ROOT} STREQUAL "" )
-        SET (LOG4CPP_ROOT "$ENV{LOG4CPP_ROOT}")
-	MESSAGE(STATUS "Detected LOG4CPP_ROOT set to '${LOG4CPP_ROOT}'")
+      SET (LOG4CPP_ROOT "$ENV{LOG4CPP_ROOT}")
+      MESSAGE("Detected LOG4CPP_ROOT set to '${LOG4CPP_ROOT}'")
+    ELSE()
+      SET (LOG4CPP_ROOT "${CMAKE_INSTALL_PREFIX}")
+      message("Setting LOG4CPP_ROOT to ${CMAKE_INSTALL_PREFIX}")
     ENDIF ()
 ENDIF ()
 

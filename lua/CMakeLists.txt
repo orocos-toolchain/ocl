@@ -23,13 +23,13 @@ if(BUILD_LUA_RTT)
       add_definitions("-DORO_DEFAULT_RTALLOC_SIZE=0")
     endif ( BUILD_RTALLOC )
 
-    if ( BUILD_LOGGING )
+    if ( BUILD_LOGGING AND LOG4CPP_FOUND )
       include_directories( "${LOG4CPP_INCLUDE_DIRS}" )
       link_directories( "${LOG4CPP_LIBRARY_DIRS}" )
       list(APPEND EXTRA_LIBRARIES "${LOG4CPP_LIBRARY}")
       list(APPEND EXTRA_DEPS "orocos-ocl-log4cpp")
       add_definitions("-DORO_BUILD_LOGGING")
-    endif ( BUILD_LOGGING )
+    endif ( BUILD_LOGGING AND LOG4CPP_FOUND )
 
     # compiling lua component and rttlua interpreter
     include_directories(${LUA_INCLUDE_DIR})
