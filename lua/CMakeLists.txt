@@ -4,6 +4,7 @@ cmake_dependent_option(BUILD_LUA_RTT_DYNAMIC_MODULES "Build dynamic loadable Lua
 
 cmake_dependent_option(BUILD_LUA_RTT_TLSF "Build TLSF enabled Lua version (experimental!)" ON "BUILD_LUA_RTT" OFF)
 cmake_dependent_option(BUILD_LUA_RTT_CORBA "Build CORBA enabled Lua version (experimental!)" ON "BUILD_LUA_RTT" OFF)
+cmake_dependent_option(LUA_RTT_TYPEINFO_CACHING "Let Lua RTT bindings do Typeinfo Caching" ON "BUILD_LUA_RTT" OFF)
 
 if(BUILD_LUA_RTT)
 
@@ -37,6 +38,10 @@ if(BUILD_LUA_RTT)
     add_library(lua-repl STATIC lua-repl.c)
     target_link_libraries(lua-repl ${LUA_LIBRARIES})
     set_target_properties(lua-repl PROPERTIES COMPILE_FLAGS "-DOROCOS_TARGET=${OROCOS_TARGET}")
+
+    if(LUA_RTT_TYPEINFO_CACHING)
+      add_definitions("-DTYPEINFO_CACHING")
+    endif(LUA_RTT_TYPEINFO_CACHING)
 
     orocos_component(orocos-ocl-lua rtt.cpp LuaComponent.cpp )
     orocos_executable(rttlua rtt.cpp LuaComponent.cpp)
