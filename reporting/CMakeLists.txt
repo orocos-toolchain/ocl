@@ -1,6 +1,5 @@
 OPTION( BUILD_REPORTING "Build Reporting Component" ON )
-# Set to OFF by default as it does not compile
-OPTION( BUILD_REPORTING_NETCDF "Build the Netcdf Reporting Component" OFF )
+OPTION( BUILD_REPORTING_NETCDF "Build the Netcdf Reporting Component" ON )
 
 IF ( BUILD_REPORTING )
 
