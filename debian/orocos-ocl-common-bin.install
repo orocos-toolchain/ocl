@@ -14,3 +14,16 @@ usr/share/orocos-ocl/templates/cmake/support.cmake
 usr/share/orocos-ocl/templates/cmake/tail.cmake
 usr/share/orocos-ocl/templates/cmake/typekit.cmake
 usr/bin/orocreate-pkg
+usr/bin/ctaskbrowser
+usr/bin/cdeployer
+usr/bin/deployer
+usr/bin/deployer-corba
+usr/bin/rttlua
+usr/bin/rttscript
+usr/bin/rttlua-tlsf
+usr/bin/rttlua-corba
+usr/share/lua/5.1/utils.lua
+usr/share/lua/5.1/tlsf_ext.lua
+usr/share/lua/5.1/ansicolors.lua
+usr/share/lua/5.1/rttros.lua
+usr/share/lua/5.1/rttlib.lua

@@ -51,7 +51,7 @@ if(BUILD_LUA_RTT)
     install(TARGETS rttlua RUNTIME DESTINATION bin)
     install(PROGRAMS ../bin/rttlua DESTINATION bin) # The shell script
 
-    install(FILES modules/rttlib.lua modules/ansicolors.lua modules/utils.lua modules/rttros.lua DESTINATION usr/share/lua/5.1/)
+    install(FILES modules/rttlib.lua modules/ansicolors.lua modules/utils.lua modules/rttros.lua DESTINATION share/lua/5.1/)
 
     # Handle curses/readline
     if(NOT CURSES AND NOT READLINE)
@@ -95,7 +95,7 @@ if(BUILD_LUA_RTT)
 
       install(TARGETS rttlua-tlsf RUNTIME DESTINATION bin)
       install(PROGRAMS ../bin/rttlua-tlsf DESTINATION bin) # The shell script
-      install(FILES modules/tlsf_ext.lua DESTINATION usr/share/lua/5.1/)
+      install(FILES modules/tlsf_ext.lua DESTINATION share/lua/5.1/)
     endif(BUILD_LUA_RTT_TLSF)
 
     add_subdirectory( plugins )

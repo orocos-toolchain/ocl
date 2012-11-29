@@ -6,7 +6,9 @@ usr/lib/orocos/@TARGET@/ocl/liborocos-ocl-reporting-netcdf-@TARGET@.so
 usr/lib/orocos/@TARGET@/ocl/liborocos-ocl-timer-@TARGET@.so
 usr/lib/orocos/@TARGET@/ocl/liborocos-ocl-helloworld-@TARGET@.so
 usr/lib/orocos/@TARGET@/ocl/liborocos-ocl-lua-@TARGET@.so
+usr/lib/orocos/@TARGET@/ocl/liborocos-ocl-lua-tlsf-@TARGET@.so
 usr/lib/orocos/@TARGET@/ocl/plugins/libos-@TARGET@.so
 usr/lib/orocos/@TARGET@/ocl/plugins/libprint-@TARGET@.so
 usr/lib/orocos/@TARGET@/ocl/plugins/librttlua-plugin-@TARGET@.so
+usr/lib/orocos/@TARGET@/ocl/plugins/librttlua-tlsf-plugin-@TARGET@.so
 usr/lib/orocos/@TARGET@/ocl/types/libocl-@TARGET@.so
