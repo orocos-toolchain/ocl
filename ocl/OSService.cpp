@@ -52,6 +52,8 @@ bool isEnv(const char* name)
 }
 #endif
 
+#include <rtt/os/startstop.h>
+
 namespace OCL
 {
 
@@ -76,6 +78,23 @@ namespace OCL
             addOperation("setenv", &OSService::setenv, this).doc(
                     "Sets an environment variable.").arg("name",
                             "The name of the environment variable to write.").arg("value","The text to set.");
+            addOperation("argc", &OSService::argc, this).doc("Returns the number of arguments, given to this application.");
+            addOperation("argv", &OSService::argv, this).doc("Returns the arguments as a sequence of strings, given to this application.");
+        }
+
+        int argc(void)
+        {
+            return __os_main_argc();
+        }
+
+        std::vector<std::string> argv(void)
+        {
+            int a = argc();
+            char** args = __os_main_argv();
+            std::vector<std::string> ret(a);
+            for (int i = 0; i != a; ++i)
+                ret[i] = std::string(args[i]);
+            return ret;
         }
 
         std::string getenv(const std::string& arg)
