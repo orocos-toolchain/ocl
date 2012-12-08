@@ -39,4 +39,7 @@
 // functionality of ocl/Component.hpp is in rtt/Component.hpp now, just forward
 #include <rtt/Component.hpp>
 
+// In order to silent client code which assumes we declare this namespace (see bug #999)
+namespace OCL {}
+
 #endif
