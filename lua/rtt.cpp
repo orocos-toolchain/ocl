@@ -1646,9 +1646,14 @@ static int Service_getOperation(lua_State *L)
 		std::string type = oip->getArgumentType(arg)->getTypeName();
 		ti = types::TypeInfoRepository::Instance()->type(type);
 		if(!ti)
-			luaL_error(L, "Operation.call: can't create DSB for arg %d of type '%s'", arg, type.c_str());
+			luaL_error(L, "Operation.call: '%s', failed to locate TypeInfo for arg %d of type '%s'",
+				   op_str, arg, type.c_str());
 
 		dsb = ti->buildReference((void*) 0xdeadbeef);
+		if(!dsb)
+			luaL_error(L, "Operation.call: '%s', failed to build DSB for arg %d of type '%s'",
+				   op_str, arg, type.c_str());
+
 		oh->args.push_back(dynamic_cast<internal::Reference*>(dsb.get()));
 		oh->occ->arg(dsb);
 	}
@@ -1657,9 +1662,13 @@ static int Service_getOperation(lua_State *L)
 	if(oip->resultType() != "void"){
 		ti = oip->getArgumentType(0); // 0 == return type
 		if(!ti)
-			luaL_error(L, "Operation.call: can't create return value DSB of type '%s'",
-				   oip->resultType().c_str());
+			luaL_error(L, "Operation.call: '%s', failed to locate TypeInfo for return value of type '%s'",
+				   op_str, oip->resultType().c_str());
 		oh->ret_dsb=ti->buildValue();
+		if(!oh->ret_dsb)
+			luaL_error(L, "Operation.call: '%s', failed to build DSB for return value of type '%s'",
+				   op_str, oip->resultType().c_str());
+
 		oh->occ->ret(oh->ret_dsb);
 		oh->is_void=false;
 	} else {
