@@ -583,14 +583,15 @@ end
 -- @param suffix string to append name of new port (optional)
 -- @param cname alternative name for port (optional).
 function port_clone_conn(p, suffix, cname)
-   local cname = cname or ""
-   local suf = suffix or ""
    local inf = p:info()
+   local suf = suffix or ""
+   local cname = cname or inf.name
+
    local cl
    if inf.porttype == 'in' then
-      cl = rtt.OutputPort.new(inf.type, inf.name .. suf, "Inverse port of " .. cname .. "." .. inf.name)
+      cl = rtt.OutputPort.new(inf.type, cname .. suf, "Inverse port of " .. inf.name)
    elseif inf.porttype == 'out' then
-      cl = rtt.InputPort.new(inf.type, inf.name .. suf, "Inverse port of " .. cname .. "." .. inf.name)
+      cl = rtt.InputPort.new(inf.type, cname .. suf, "Inverse port of " .. inf.name)
    else
       error("unkown port type: " .. utils.tab2str(inf))
    end
