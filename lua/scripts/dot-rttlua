@@ -2,4 +2,4 @@ require("rttlib")
 rttlib.color=true
 var = rtt.Variable
 tc = rtt.getTC()
-d = tc:getPeer("deployer")
+d = tc:getPeer("Deployer")

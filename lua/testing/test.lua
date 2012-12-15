@@ -39,7 +39,7 @@ require("uunit")
 rtt.setLogLevel("Warning")
 var = rtt.Variable
 TC=rtt.getTC()
-d=TC:getPeer("deployer")
+d=TC:getPeer("Deployer")
 
 function fails() return false end
 
@@ -184,8 +184,8 @@ end
 
 function test_lua_service()
    -- load lua service into deployer
-   d:addPeer("deployer", "deployer")
-   d:loadService("deployer", "Lua")
+   d:addPeer("Deployer", "Deployer")
+   d:loadService("Deployer", "Lua")
    local execstr_op = d:provides("Lua"):getOperation("exec_str")
    execstr_op([[
 		    require("rttlib")
@@ -199,7 +199,7 @@ function test_lua_service()
    local res =  p:get() == "hullo from the lua service!"
    d:removeProperty("service-testprop")
    p:delete()
-   d:removePeer("deployer")
+   d:removePeer("Deployer")
    return res
 end
 
@@ -264,8 +264,8 @@ end
 local tests = {
    { tstr='return TC:getName() == "lua"' },
    { tstr='return TC:getState() == "PreOperational"' },
-   { tstr='return TC:getPeer("deployer") ~= nil' },
-   { tstr='return (TC:getPeer("deployer")):getName() == "deployer"' },
+   { tstr='return TC:getPeer("Deployer") ~= nil' },
+   { tstr='return (TC:getPeer("Deployer")):getName() == "Deployer"' },
    { tfunc=test_loadlib, descr="trying to load library testcomp-gnulinux" },
    { tfunc=test_create_testcomp, descr="trying to instantiate testcomp" },
    { tfunc=test_call_op_null_0, descr="calling testcomp operation null_0" },

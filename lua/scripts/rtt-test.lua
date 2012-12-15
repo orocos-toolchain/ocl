@@ -1,4 +1,4 @@
---require("deployer")
+--require("Deployer")
 -- require("rtt")
 rtt.Logger.getlevel()
 require("rttlib")
@@ -9,7 +9,7 @@ rtt.Logger.setlevel("Info")
 var = rtt.Variable
 
 --d=deployer.new("myDeployer")
-d = TC:getPeer("deployer")
+d = TC:getPeer("Deployer")
 
 -- setup pretty printing
 mt = getmetatable(rtt.Variable.new("int"))
@@ -151,7 +151,7 @@ function test_ports()
    TC:addPort(op)
    TC:addPort(ip)
 
-   depl = TC:getPeer("deployer")
+   depl = TC:getPeer("Deployer")
    print("connecting ports: ",
 	 depl:call("connectTwoPorts",
 		   var.new("string", "lua"),

@@ -665,7 +665,7 @@ function info()
    print(magenta("typekits:   ") .. utils.wrap(table.concat(rtt.typekits(), ' '), 80, ind, ind1))
    print(magenta("types:      ") .. utils.wrap(table.concat(rtt.types(), ' '), 80, ind, ind1))
 
-   local depl = findpeer("deployer")
+   local depl = findpeer("Deployer")
    if depl and rtt.TaskContext.hasOperation(depl, "getComponentTypes") then
       local t = var2tab(depl:getComponentTypes())
       -- print(magenta("comp types: "), table.concat(t, ', '))
