@@ -6,7 +6,7 @@ rtt.setLogLevel("Info")
 write_props=false
  
 tc = rtt.getTC()
-depl = tc:getPeer("deployer")
+depl = tc:getPeer("Deployer")
  
 -- Create components. Enable BUILD_LOGGING and BUILD_TESTS for this to
 -- work.
