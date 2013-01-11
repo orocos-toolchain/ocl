@@ -207,9 +207,11 @@ static const TypeInfo* ti_lookup(lua_State *L, const char *name)
  cache_miss:
 	lua_pop(L, 1); /* pop the nil */
 	ti = types::TypeInfoRepository::Instance()->type(name);
-	lua_pushstring(L, name);
-	lua_pushlightuserdata(L, (void*) ti);
-	lua_rawset(L, -3);
+	if (ti) { // only save if type exists !
+		lua_pushstring(L, name);
+		lua_pushlightuserdata(L, (void*) ti);
+		lua_rawset(L, -3);
+	}
  out:
 	/* everyone happy! */
 	lua_settop(L, top);
