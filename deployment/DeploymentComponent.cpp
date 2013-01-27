@@ -1085,7 +1085,7 @@ namespace OCL
                                         RTT::Property<string> sched = nm.rvalue().getProperty("Scheduler");
                                         int scheduler = ORO_SCHED_RT;
                                         if ( sched.ready() ) {
-                                            int scheduler = string_to_oro_sched( sched.get());
+                                            scheduler = string_to_oro_sched( sched.get());
                                             if (scheduler == -1 )
                                                 valid = false;
                                         }
