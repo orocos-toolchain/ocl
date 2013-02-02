@@ -98,6 +98,7 @@ case "$arg" in
     "all")
 	files="$(find $templatedir -maxdepth 1 -type f)"
 	srcfiles="$(find $templatedir/src -maxdepth 1 -type f)"
+	incfiles="$(find $templatedir/include -maxdepth 1 -type f)"
 	cmake_files="component plugin service typekit support"
 	;;
     "empty")
@@ -106,15 +107,23 @@ case "$arg" in
     "cmake")
 	;;
     "typekit")
-	srcfiles="$templatedir/src/*-types.hpp"
-	cmake_files="$cmake_files $arg"
+	incfiles="$templatedir/include/*-types.hpp"
+	typekit=1
 	;;
     *)
-        srcfiles="$templatedir/src/*$arg*"
+        srcfiles="$srcfiles $templatedir/src/CMakeLists.txt $templatedir/src/*$arg*"
 	cmake_files="$cmake_files $arg"
 	;;
 esac
 done
+
+# create src dir if required
+if [ "$srcfiles" ]; then
+  mkdir $force $pkgname/src
+fi
+if [ "$incfiles" ]; then
+  mkdir -p $pkgname/include/$pkgname
+fi
 
 # process template files:
 for i in $files; do
@@ -122,8 +131,14 @@ for i in $files; do
     cat "$i" | sed -e "s/@PKGNAME@/$allcappkgname/g;s/@pkgname@/$pkgname/g;s/@Pkgname@/$cappkgname/g;" > $pkgname/$tgtname
 done
 
+# Done after main CMakeListst.txt is copied:
 if [ "$srcfiles" ]; then
-  mkdir $force $pkgname/src
+  cat $templatedir/cmake/srcdir.cmake | sed -e "s/@PKGNAME@/$allcappkgname/g;s/@pkgname@/$pkgname/g;s/@Pkgname@/$cappkgname/g;"  >> $pkgname/CMakeLists.txt
+fi
+
+# Typegen is at toplevel
+if [ "$typekit" ]; then
+  cat $templatedir/cmake/typekit.cmake | sed -e "s/@PKGNAME@/$allcappkgname/g;s/@pkgname@/$pkgname/g;s/@Pkgname@/$cappkgname/g;"  >> $pkgname/CMakeLists.txt
 fi
 
 # process src files:
@@ -131,10 +146,14 @@ for i in $srcfiles; do
     tgtname=$(echo $(basename "$i") | sed -e "s/pkgname/$pkgname/g;s/Pkgname/$cappkgname/g;")
     cat "$i" | sed -e "s/@PKGNAME@/$allcappkgname/g;s/@pkgname@/$pkgname/g;s/@Pkgname@/$cappkgname/g;" > $pkgname/src/$tgtname
 done
+for i in $incfiles; do
+    tgtname=$(echo $(basename "$i") | sed -e "s/pkgname/$pkgname/g;s/Pkgname/$cappkgname/g;")
+    cat "$i" | sed -e "s/@PKGNAME@/$allcappkgname/g;s/@pkgname@/$pkgname/g;s/@Pkgname@/$cappkgname/g;" > $pkgname/include/$pkgname/$tgtname
+done
 
 # add CMake snippets:
 for i in $cmake_files; do
-  cat $templatedir/cmake/$i.cmake | sed -e "s/@PKGNAME@/$allcappkgname/g;s/@pkgname@/$pkgname/g;s/@Pkgname@/$cappkgname/g;" >> $pkgname/CMakeLists.txt
+  cat $templatedir/cmake/$i.cmake | sed -e "s/@PKGNAME@/$allcappkgname/g;s/@pkgname@/$pkgname/g;s/@Pkgname@/$cappkgname/g;" >> $pkgname/src/CMakeLists.txt
 done
 
 if [ "$cmake_files" ]; then

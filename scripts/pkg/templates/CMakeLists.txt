@@ -19,12 +19,3 @@ endif()
 # Defines the orocos_* cmake macros. See that file for additional
 # documentation.
 include( ${OROCOS-RTT_USE_FILE_PATH}/UseOROCOS-RTT.cmake )
-
-#
-# Components, types and plugins.
-#
-# The CMake 'target' names are identical to the first argument of the
-# macros below, except for orocos_typegen_headers, where the target is fully
-# controlled by generated code of 'typegen'.
-#
-
