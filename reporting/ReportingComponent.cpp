@@ -421,7 +421,7 @@ namespace OCL
         // creating a connection object.
         base::PortInterface* ourport = porti->antiClone();
         assert(ourport);
-        ourport->setName(component + "_" + porti->getName());
+        ourport->setName(component + "_" + port);
         ipi = dynamic_cast<base::InputPortInterface*> (ourport);
         assert(ipi);
 
@@ -436,7 +436,7 @@ namespace OCL
             return false;
         }
 
-        if (this->reportDataSource(component + "." + porti->getName(), "Port",
+        if (this->reportDataSource(component + "." + port, "Port",
                                    ipi->getDataSource(), true) == false)
         {
             log(Error) << "Failed reporting port " << port << endlog();
@@ -444,7 +444,7 @@ namespace OCL
             return false;
         }
         this->ports()->addEventPort( *ipi );
-        log(Info) << "Monitoring OutputPort " << porti->getName() << " : ok." << endlog();
+        log(Info) << "Monitoring OutputPort " << port << " : ok." << endlog();
         // Add port to ReportData properties if component nor port are listed yet.
         if ( !report_data.value().findValue<string>(component) && !report_data.value().findValue<string>( component+"."+port) )
             report_data.value().ownProperty(new Property<string>("Port","",component+"."+port));
@@ -606,8 +606,9 @@ namespace OCL
                 if ( converted && converted != it->get<T_PortDS>() ) {
                     // converted contains another type.
                     report.add( converted->getTypeInfo()->buildProperty(it->get<T_QualName>(), "", converted) );
-                } else
+                } else {
                     report.add( it->get<T_PortDS>()->getTypeInfo()->buildProperty(it->get<T_QualName>(), "", it->get<T_PortDS>()) );
+                }
                 delete subbag;
             }
 
