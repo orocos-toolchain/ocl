@@ -1097,8 +1097,6 @@ static int Port_connect(lua_State *L)
 	PortInterface **pip1, **pip2;
 	PortInterface *pi1 = NULL;
 	PortInterface *pi2 = NULL;
-    ConnPolicy **cpp;
-	ConnPolicy *cp = NULL;
 
 	if((pip1 = (PortInterface**) luaL_testudata(L, 1, "InputPort")) != NULL) {
 		pi1= *pip1;
@@ -1121,15 +1119,7 @@ static int Port_connect(lua_State *L)
 			   lua_typename(L, arg_type));
 	}
 
-	if((cpp = (ConnPolicy**) luaL_testudata(L, 3, "ConnPolicy")) != NULL) {
-		cp=*cpp;
-	}
-
-    if ( cp )
-        ret = pi1->connectTo(pi2, *cp);
-    else
-        ret = pi1->connectTo(pi2);
-
+	ret = pi1->connectTo(pi2);
 	lua_pushboolean(L, ret);
 
 	return 1;
