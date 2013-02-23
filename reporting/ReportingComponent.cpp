@@ -182,6 +182,7 @@ namespace OCL
           insnapshot("Snapshot","Set to true to enable snapshot mode. This will cause a non-periodic reporter to only report data upon the snapshot() operation.",false),
           synchronize_with_logging("Synchronize","Set to true if the timestamp should be synchronized with the logging",false),
           report_data("ReportData","A PropertyBag which defines which ports or components to report."),
+          report_policy( ConnPolicy::data(ConnPolicy::LOCK_FREE,true,false) ),
           starttime(0),
           timestamp("TimeStamp","The time at which the data was read.",0.0)
     {
@@ -192,7 +193,7 @@ namespace OCL
         this->properties()->addProperty( insnapshot );
         this->properties()->addProperty( synchronize_with_logging);
         this->properties()->addProperty( report_data);
-
+        this->properties()->addProperty( "ReportPolicy", report_policy).doc("The ConnPolicy for the reporter's port connections.");
         // Add the methods, methods make sure that they are
         // executed in the context of the (non realtime) caller.
 
@@ -425,11 +426,13 @@ namespace OCL
         ipi = dynamic_cast<base::InputPortInterface*> (ourport);
         assert(ipi);
 
-        ConnPolicy pol;
-        log(Info) << "Not buffering of data flow connections. You may miss samples." <<endlog();
-        pol = ConnPolicy::data(ConnPolicy::LOCK_FREE,true,false);
+        if (report_policy.type == ConnPolicy::DATA ) {
+            log(Info) << "Not buffering of data flow connections. You may miss samples." <<endlog();
+        } else {
+            log(Info) << "Buffering ports with size "<< report_policy.size << ", as set in ReportPolicy property." <<endlog();
+        }
 
-        if (porti->connectTo(ourport, pol ) == false)
+        if (porti->connectTo(ourport, report_policy ) == false)
         {
             log(Error) << "Could not connect to OutputPort " << porti->getName() << endlog();
             delete ourport; // XXX/TODO We're leaking ourport !
