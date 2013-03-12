@@ -178,7 +178,7 @@ namespace OCL
         : TaskContext( name ),
           report("Report"), snapshotted(false),
           writeHeader("WriteHeader","Set to true to start each report with a header.", true),
-          decompose("Decompose","Set to false in order to create multidimensional array in netcdf", true),
+          decompose("Decompose","Set to false in order to not decompose the port data. The marshaller must be able to handle this itself for this to work.", true),
           insnapshot("Snapshot","Set to true to enable snapshot mode. This will cause a non-periodic reporter to only report data upon the snapshot() operation.",false),
           synchronize_with_logging("Synchronize","Set to true if the timestamp should be synchronized with the logging",false),
           report_data("ReportData","A PropertyBag which defines which ports or components to report."),
@@ -601,7 +601,7 @@ namespace OCL
         DataSource<bool>::shared_ptr checker;
         for(Reports::iterator it = root.begin(); it != root.end(); ++it ) {
             Property<PropertyBag>* subbag = new Property<PropertyBag>( it->get<T_QualName>(), "");
-            if ( memberDecomposition( it->get<T_PortDS>(), subbag->value(), checker ) )
+            if ( decompose.get() && memberDecomposition( it->get<T_PortDS>(), subbag->value(), checker ) )
                 report.add( subbag );
             else {
                 // property or simple value port...
