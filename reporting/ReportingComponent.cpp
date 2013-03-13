@@ -183,6 +183,7 @@ namespace OCL
           synchronize_with_logging("Synchronize","Set to true if the timestamp should be synchronized with the logging",false),
           report_data("ReportData","A PropertyBag which defines which ports or components to report."),
           report_policy( ConnPolicy::data(ConnPolicy::LOCK_FREE,true,false) ),
+          onlyNewData(false),
           starttime(0),
           timestamp("TimeStamp","The time at which the data was read.",0.0)
     {
@@ -194,6 +195,7 @@ namespace OCL
         this->properties()->addProperty( synchronize_with_logging);
         this->properties()->addProperty( report_data);
         this->properties()->addProperty( "ReportPolicy", report_policy).doc("The ConnPolicy for the reporter's port connections.");
+        this->properties()->addProperty( "ReportOnlyNewData", onlyNewData).doc("Turn on in order to only write out NewData on ports and omit unchanged ports. Turn off in order to sample and write out all ports (even old data).");
         // Add the methods, methods make sure that they are
         // executed in the context of the (non realtime) caller.
 
@@ -517,7 +519,8 @@ namespace OCL
             log(Error) << "Could not report '"<< tag <<"' : unknown type." << endlog();
             return false;
         }
-        root.push_back( boost::make_tuple( tag, orig, type, false, track ) );
+        PropertyBase* prop = 0;
+        root.push_back( boost::make_tuple( tag, orig, type, prop, false, track ) );
         return true;
     }
 
@@ -601,23 +604,27 @@ namespace OCL
         DataSource<bool>::shared_ptr checker;
         for(Reports::iterator it = root.begin(); it != root.end(); ++it ) {
             Property<PropertyBag>* subbag = new Property<PropertyBag>( it->get<T_QualName>(), "");
-            if ( decompose.get() && memberDecomposition( it->get<T_PortDS>(), subbag->value(), checker ) )
+            if ( decompose.get() && memberDecomposition( it->get<T_PortDS>(), subbag->value(), checker ) ) {
                 report.add( subbag );
-            else {
+                it->get<T_Property>() = subbag;
+            } else {
                 // property or simple value port...
                 base::DataSourceBase::shared_ptr converted = it->get<T_PortDS>()->getTypeInfo()->convertType( it->get<T_PortDS>() );
                 if ( converted && converted != it->get<T_PortDS>() ) {
                     // converted contains another type.
-                    report.add( converted->getTypeInfo()->buildProperty(it->get<T_QualName>(), "", converted) );
+                    PropertyBase* convProp = converted->getTypeInfo()->buildProperty(it->get<T_QualName>(), "", converted);
+                    it->get<T_Property>() = convProp;
+                    report.add(convProp);
                 } else {
-                    report.add( it->get<T_PortDS>()->getTypeInfo()->buildProperty(it->get<T_QualName>(), "", it->get<T_PortDS>()) );
+                    PropertyBase* origProp = it->get<T_PortDS>()->getTypeInfo()->buildProperty(it->get<T_QualName>(), "", it->get<T_PortDS>());
+                    it->get<T_Property>() = origProp;
+                    report.add(origProp);
                 }
                 delete subbag;
             }
 
         }
         mchecker = checker;
-        timestamp = 0.0; // reset.
     }
         
     void ReportingComponent::cleanReport()
@@ -645,7 +652,20 @@ namespace OCL
             // Step 3: print out the result
             // write out to all marshallers
             for(Marshallers::iterator it=marshallers.begin(); it != marshallers.end(); ++it) {
-                it->second->serialize( report );
+                if ( onlyNewData ) {
+                    // Serialize only changed ports:
+                    it->second->serialize( *report.begin() ); // TimeStamp.
+                    for (Reports::const_iterator i = root.begin();
+                         i != root.end();
+                         i++ )
+                        {
+                            if ( i->get<T_NewData>() )
+                                it->second->serialize( i->get<T_Property>() );
+                        }
+                } else {
+                    // pass on all ports to the marshaller
+                    it->second->serialize( report );
+                }
                 it->second->flush();
             }
         } while( !getActivity()->isPeriodic() && !insnapshot.get() && copydata() ); // repeat if necessary. In periodic mode we always only sample once.

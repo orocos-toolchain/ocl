@@ -201,10 +201,10 @@ namespace OCL
          */
         typedef boost::tuple<std::string,
                              RTT::base::DataSourceBase::shared_ptr,
-                             std::string,bool,bool> DTupple;
+                             std::string,RTT::base::PropertyBase*,bool,bool> DTupple;
 
         //! Use these to index DTupple objects.
-        typedef enum { T_QualName = 0, T_PortDS, T_DataType, T_NewData, T_Tracked } T_Types;
+        typedef enum { T_QualName = 0, T_PortDS, T_DataType, T_Property, T_NewData, T_Tracked } T_Types;
         /**
          * Stores the 'datasource' of all reported items as properties.
          */
@@ -242,6 +242,7 @@ namespace OCL
         RTT::Property<bool>          synchronize_with_logging;
         RTT::Property<PropertyBag>   report_data;
         RTT::ConnPolicy              report_policy;
+        bool                         onlyNewData;
 
         RTT::os::TimeService::ticks starttime;
         RTT::Property<RTT::os::TimeService::Seconds> timestamp;
