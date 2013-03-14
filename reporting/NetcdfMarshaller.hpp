@@ -114,7 +114,7 @@ namespace RTT
         {
           int retval;
           int varid;
-          signed char value = v->get();
+          signed char value = v->rvalue();
           std::string sname = composeName(v->getName());
 
           /**
@@ -140,7 +140,7 @@ namespace RTT
 
           int retval;
           int varid;
-          short value = v->get();
+          short value = v->rvalue();
           std::string sname = composeName(v->getName());
 
           /**
@@ -165,7 +165,7 @@ namespace RTT
         {
           int retval;
           int varid;
-          int value = v->get();
+          int value = v->rvalue();
           std::string sname = composeName(v->getName());
 
           /**
@@ -190,7 +190,7 @@ namespace RTT
         {
           int retval;
           int varid;
-          float value = v->get();
+          float value = v->rvalue();
           std::string sname = composeName(v->getName());
 
           /**
@@ -216,7 +216,7 @@ namespace RTT
         {
           int retval;
           int varid;
-          double value = v->get();
+          double value = v->rvalue();
           std::string sname = composeName(v->getName());
 
           /**
