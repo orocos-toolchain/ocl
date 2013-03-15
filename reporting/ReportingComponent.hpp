@@ -201,17 +201,17 @@ namespace OCL
          */
         typedef boost::tuple<std::string,
                              RTT::base::DataSourceBase::shared_ptr,
-                             std::string,RTT::base::PropertyBase*,bool,bool> DTupple;
+                             std::string,RTT::base::PropertyBase*,RTT::base::InputPortInterface*,bool,bool> DTupple;
 
         //! Use these to index DTupple objects.
-        typedef enum { T_QualName = 0, T_PortDS, T_DataType, T_Property, T_NewData, T_Tracked } T_Types;
+        typedef enum { T_QualName = 0, T_PortDS, T_DataType, T_Property, T_Port, T_NewData, T_Tracked } T_Types;
         /**
          * Stores the 'datasource' of all reported items as properties.
          */
         typedef std::vector<DTupple> Reports;
         Reports root;
 
-        bool reportDataSource(std::string tag, std::string type, RTT::base::DataSourceBase::shared_ptr origm, bool);
+        bool reportDataSource(std::string tag, std::string type, RTT::base::DataSourceBase::shared_ptr origm, RTT::base::InputPortInterface* ipi, bool);
 
         bool unreportDataSource(std::string tag);
 

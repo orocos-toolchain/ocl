@@ -442,7 +442,7 @@ namespace OCL
         }
 
         if (this->reportDataSource(component + "." + port, "Port",
-                                   ipi->getDataSource(), true) == false)
+                                   ipi->getDataSource(),ipi, true) == false)
         {
             log(Error) << "Failed reporting port " << port << endlog();
             delete ourport;
@@ -478,7 +478,7 @@ namespace OCL
         // Is it an attribute ?
         if ( comp->provides()->getValue( dataname ) ) {
             if (this->reportDataSource( component + "." + dataname, "Data",
-                                        comp->provides()->getValue( dataname )->getDataSource(), false ) == false) {
+                                        comp->provides()->getValue( dataname )->getDataSource(), 0,  false ) == false) {
                 log(Error) << "Failed reporting data " << dataname <<endlog();
                 return false;
             }
@@ -487,7 +487,7 @@ namespace OCL
         // Is it a property ?
         if ( comp->properties() && comp->properties()->find( dataname ) ) {
             if (this->reportDataSource( component + "." + dataname, "Data",
-                                        comp->properties()->find( dataname )->getDataSource(), false ) == false) {
+                                        comp->properties()->find( dataname )->getDataSource(), 0, false ) == false) {
                 log(Error) << "Failed reporting data " << dataname <<endlog();
                 return false;
             }
@@ -503,7 +503,7 @@ namespace OCL
         return this->unreportDataSource( component +"." + datasource) && report_data.value().removeProperty( report_data.value().findValue<string>(component+"."+datasource));
     }
 
-    bool ReportingComponent::reportDataSource(std::string tag, std::string type, base::DataSourceBase::shared_ptr orig, bool track)
+    bool ReportingComponent::reportDataSource(std::string tag, std::string type, base::DataSourceBase::shared_ptr orig, base::InputPortInterface* ipi, bool track)
     {
         // check for duplicates:
         for (Reports::iterator it = root.begin();
@@ -520,7 +520,7 @@ namespace OCL
             return false;
         }
         PropertyBase* prop = 0;
-        root.push_back( boost::make_tuple( tag, orig, type, prop, false, track ) );
+        root.push_back( boost::make_tuple( tag, orig, type, prop, ipi, false, track ) );
         return true;
     }
 
@@ -568,6 +568,13 @@ namespace OCL
             }
         }
 
+#ifndef ORO_SIGNALLING_PORTS
+        // Turn off port triggering in snapshot mode, and vice versa.
+        for(Reports::iterator it = root.begin(); it != root.end(); ++it )
+            if ( it->get<T_Port>() )
+                it->get<T_Port>()->signalInterface( !insnapshot.get() );
+#endif
+
         snapshotted = false;
         return true;
     }
@@ -576,7 +583,6 @@ namespace OCL
         // this function always copies and reports all data It's run in ownthread, so updateHook will be run later.
         if ( getActivity()->isPeriodic() )
             return;
-        copydata();
         snapshotted = true;
         updateHook();
     }
