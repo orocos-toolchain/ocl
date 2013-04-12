@@ -763,6 +763,7 @@ if type(debug) == 'table' then
    reg.Variable.__tostring=var2str
    reg.Variable.fromtab=varfromtab
    reg.Variable.var2tab=var2tab
+   reg.Variable.totab=var2tab
    reg.Property.__tostring=prop2str
    reg.Property.fromtab=propfromtab
    reg.Service.__tostring=service2str
