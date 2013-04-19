@@ -568,12 +568,16 @@ namespace OCL
             }
         }
 
-#ifndef ORO_SIGNALLING_PORTS
         // Turn off port triggering in snapshot mode, and vice versa.
+        // Also clears any old data in the buffers
         for(Reports::iterator it = root.begin(); it != root.end(); ++it )
-            if ( it->get<T_Port>() )
+            if ( it->get<T_Port>() ) {
+#ifndef ORO_SIGNALLING_PORTS
                 it->get<T_Port>()->signalInterface( !insnapshot.get() );
 #endif
+                it->get<T_Port>()->clear();
+            }
+
 
         snapshotted = false;
         return true;
