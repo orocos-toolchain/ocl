@@ -13,8 +13,9 @@ namespace logging {
 class LoggingService;
 
 /** A real-time capable category
-    \warning Private inheritance to hide all func's with std::string in
-    base class.
+    \warning This class uses intentionally \b private \b inheritance to 
+    hide all functions with std::string in the base class. Only use
+    RTT::rt_string objects.
 */
 class Category : public log4cpp::Category
 {
@@ -36,6 +37,10 @@ public:
     void emerg(const RTT::rt_string& message) throw();
     void fatal(const RTT::rt_string& message) throw();
 
+    /**
+     * Returns a stream-like object into which you can log
+     * arbitrary data which supports the operator<<().
+     */
     CategoryStream getRTStream(log4cpp::Priority::Value priority);
 
 protected:
