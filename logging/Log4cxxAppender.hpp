@@ -33,6 +33,10 @@ log4cxx::Log4cxxAppender(log4cxx::LayoutPtr(new log4cxx::SimpleLayout()),
 namespace OCL {
 namespace logging {
 
+/**
+ * Interoperability component which translates our log4cpp events to
+ * log4cxx events and sends them to a network/socket appender.
+ */
 class Log4cxxAppender
     : public RTT::TaskContext
 {
@@ -65,7 +69,7 @@ protected:
     /**
      * Maximum number of log events to pop per cycle
      *
-     * Defaults to 1.
+     * Defaults to 0.
      *
      * A value of 0 indicates to not limit the number of events per cycle.
      * With enough event production, this could lead to thread

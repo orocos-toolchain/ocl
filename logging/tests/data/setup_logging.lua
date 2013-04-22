@@ -16,16 +16,16 @@ depl:import(".")
 -- Create components. Enable BUILD_LOGGING and BUILD_TESTS for this to
 -- work.
 depl:loadComponent("AppenderA", "OCL::logging::FileAppender")
-depl:setActivity("AppenderA", 0.5, 0, 0)
+depl:setActivity("AppenderA", 1, 0, 0)
 
 depl:loadComponent("AppenderB", "OCL::logging::OstreamAppender")
-depl:setActivity("AppenderB", 0.5, 0, 0)
+depl:setActivity("AppenderB", 1, 0, 0)
  
 depl:loadComponent("LoggingService", "OCL::logging::LoggingService")
 depl:setActivity("LoggingService", 0.5, 0, 0)
 
 depl:loadComponent("TestComponent","OCL::logging::test::Component")
-depl:setActivity("TestComponent", 0.5, 0, 0)
+depl:setActivity("TestComponent", 0.01, 0, 0)
 
 aa = depl:getPeer("AppenderA")
 ab = depl:getPeer("AppenderB")
