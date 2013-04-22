@@ -1,3 +1,7 @@
+
+-- Run this test in your build/logging/tests directory with the command:
+-- rttlua-gnulinux -i data/setup_logging.lua
+
 require("rttlib")
  
 rtt.setLogLevel("Info")
@@ -7,6 +11,7 @@ write_props=false
  
 tc = rtt.getTC()
 depl = tc:getPeer("Deployer")
+depl:import(".")
  
 -- Create components. Enable BUILD_LOGGING and BUILD_TESTS for this to
 -- work.
@@ -36,17 +41,19 @@ depl:loadService("AppenderA","marshalling")
 depl:loadService("AppenderB","marshalling")
  
 if write_props then
-	ls:provides("marshalling"):writeProperties("logging_properties.cpf")
-	aa:provides("marshalling"):writeProperties("appenderA_properties.cpf")
-	ab:provides("marshalling"):writeProperties("appenderB_properties.cpf")
+	ls:provides("marshalling"):writeProperties("data/logging_properties.cpf")
+	aa:provides("marshalling"):writeProperties("data/appenderA_properties.cpf")
+	ab:provides("marshalling"):writeProperties("data/appenderB_properties.cpf")
 	print("Wrote property files. Edit them and set write_props=false")
 	os.exit(0)
 else
-	ls:provides("marshalling"):loadProperties("logging_properties.cpf")
-	aa:provides("marshalling"):loadProperties("appenderA_properties.cpf")
-	ab:provides("marshalling"):loadProperties("appenderB_properties.cpf")
+	ls:provides("marshalling"):loadProperties("data/logging_properties.cpf")
+	aa:provides("marshalling"):loadProperties("data/appenderA_properties.cpf")
+	ab:provides("marshalling"):loadProperties("data/appenderB_properties.cpf")
 end
  
+ls:configure()
+-- Test reconfiguration
 ls:configure()
 ls:start()
 ls:logCategories()

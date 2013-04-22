@@ -12,7 +12,7 @@ namespace logging {
 FileAppender::FileAppender(std::string name) :
 		OCL::logging::Appender(name),
         filename_prop("Filename", "Name of file to log to"),
-        maxEventsPerCycle_prop("MaxEventsPerCycle", "Maximum number of log events to pop per cycle"),
+        maxEventsPerCycle_prop("MaxEventsPerCycle", "Maximum number of log events to pop per cycle",1),
         maxEventsPerCycle(1)
 {
     properties()->addProperty(filename_prop);
@@ -37,6 +37,9 @@ bool FileAppender::configureHook()
     maxEventsPerCycle = m;
 
     // \todo error checking
+    if (appender)
+        delete appender; // in case the filename changed...
+
     appender = new log4cpp::FileAppender(getName(), filename_prop.rvalue());
 
     return configureLayout();
