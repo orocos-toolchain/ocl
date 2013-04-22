@@ -11,6 +11,7 @@
 #include <typeinfo>
 
 using namespace RTT;
+using namespace std;
 
 namespace OCL {
 namespace logging {
@@ -84,6 +85,17 @@ bool LoggingService::configureHook()
         }
     }
 
+    // first clear all existing appenders in order to avoid double connects:
+    for(vector<string>::iterator it = active_appenders.begin(); it != active_appenders.end(); ++it) {
+        base::PortInterface* port = 0;
+        TaskContext* appender	= getPeer(*it);
+        if (appender && (port = appender->ports()->getPort("LogPort")) )
+            port->disconnect();
+    }
+    if ( !active_appenders.empty() ) 
+        log(Warning) <<"Reconfiguring LoggingService '"<<getName() << "': I've removed all existing Appender connections and will now rebuild them."<<endlog();
+    active_appenders.clear();
+
     // create a port for each appender, and associate category/appender
 
     bag = appenders_prop.value();           // an empty bag is ok
@@ -142,6 +154,7 @@ bool LoggingService::configureHook()
                             << log4cpp::Priority::getPriorityName(category->getPriority());
                         log(Info) << str.str() << endlog();
 //                        std::cout << str.str() << std::endl;
+                        active_appenders.push_back(appenderName);
                     }
                     else
                     {
