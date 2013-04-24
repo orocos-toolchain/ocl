@@ -775,3 +775,47 @@ if type(debug) == 'table' then
 else
    print("no debug library, if required pretty printing must be enabled manually")
 end
+
+
+function help()
+   print [[
+rttlib quick help: prefix commands with "rttlib." . Use Ctrl-d to quit.
+
+Enable rttlib colors by setting "rttlib.color=true"
+
+Getting Information
+-------------------
+
+info()    print information about loaded components, services and typekits
+stat()    show state of running components
+
+Getting static information
+--------------------------
+
+> tc=rtt.getTC()
+> =tc
+
+(this is equal to "return tc")
+
+Getting dynamic information (ports):
+------------------------------------
+
+> tc:stat()
+
+
+Miscellaneous commands
+----------------------
+
+port_clone_conn(p)
+          create an inverse port connected to the given port p.
+          see API docs for optional arguments.
+
+mirror(comp)
+          for all ports of the given component, create inverse
+          connected ports and return them in a table.
+
+findpeer(name, start_tc)
+          search for a component with given name starting from
+          taskcontext tc.
+   ]]
+end
