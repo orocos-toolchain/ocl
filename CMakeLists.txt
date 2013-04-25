@@ -117,28 +117,10 @@ SET( ENV{OROCOS_COMPONENTS_REQUIRES} "")
 INCLUDE(${PROJ_SOURCE_DIR}/config/component_rules.cmake)
 INCLUDE(${PROJ_SOURCE_DIR}/config/TestUsesFile.cmake)
 
-## Check if we're in a ros build environment
-set (ROS_ROOT $ENV{ROS_ROOT} )
-if (ROS_ROOT)
-  # include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
-  # rosbuild_init()
-  # rosbuild_find_ros_package( rtt )
-  # set( RTT_HINTS HINTS ${rtt_PACKAGE_PATH}/install )
-  
-  # # reset default output directories                                                                                                                                                                                                           
-  # #set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
-  # set(COMPONENT_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib/orocos)
-
-  # We force it in case of ROS builds because the UseOrocos.cmake scripts will always look
-  # in this path, also during an autoproj/bootstrap build.
-  set(CMAKE_INSTALL_PREFIX
-    ${PROJECT_SOURCE_DIR}/../install CACHE PATH "Orocos install prefix for ROS builds" FORCE
-    )
-  # Tell UseOrocos macros we don't want to build ros-style:
-  set(NO_ROS_PACKAGE TRUE)
-  # Tell deployer to use ROSlib support.
-  set(ROSLIB_SUPPORT TRUE)
-endif()
+# Tell UseOrocos macros we don't want to build ros-style:
+set(NO_ROS_PACKAGE TRUE)
+# Tell deployer to use ROSlib support.
+set(ROSLIB_SUPPORT TRUE)
 
 # We force this to have same location of executables in ROS and non-ROS builds.
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
