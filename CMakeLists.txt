@@ -119,8 +119,6 @@ INCLUDE(${PROJ_SOURCE_DIR}/config/TestUsesFile.cmake)
 
 # Tell UseOrocos macros we don't want to build ros-style:
 set(NO_ROS_PACKAGE TRUE)
-# Tell deployer to use ROSlib support.
-set(ROSLIB_SUPPORT TRUE)
 
 # We force this to have same location of executables in ROS and non-ROS builds.
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
