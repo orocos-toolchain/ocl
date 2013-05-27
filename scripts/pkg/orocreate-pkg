@@ -68,8 +68,14 @@ templatedir="$abspath/../share/orocos-ocl/templates"
 if [ "x$OROCOS_ROOT" != x ]; then
     templatedir="$OROCOS_ROOT/ocl/scripts/pkg/templates"
 else
+
     if [ "x$ROS_ROOT" != x ]; then
-	templatedir="$(rospack find ocl)/scripts/pkg/templates"
+	set +e
+	oclpath=$(rospack find ocl)
+	set -e
+	if [ "x$oclpath" != x ]; then
+	    templatedir=$oclpath/scripts/pkg/templates
+	fi
     fi
 fi
 
