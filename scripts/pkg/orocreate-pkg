@@ -99,7 +99,8 @@ case "$arg" in
 	files="$(find $templatedir -maxdepth 1 -type f)"
 	srcfiles="$(find $templatedir/src -maxdepth 1 -type f)"
 	incfiles="$(find $templatedir/include -maxdepth 1 -type f)"
-	cmake_files="component plugin service typekit support"
+	cmake_files="component plugin service support"
+	typekit=1
 	;;
     "empty")
 	files=$templatedir/manifest.xml
