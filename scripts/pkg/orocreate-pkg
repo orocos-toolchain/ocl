@@ -63,7 +63,7 @@ fi
 
 # Locate the template directory. First look in orocos/ros roots
 # Default location:
-templatedir="$abspath/../share/orocos-ocl/templates"
+templatedir="$abspath/../share/ocl/templates"
 
 if [ "x$OROCOS_ROOT" != x ]; then
     templatedir="$OROCOS_ROOT/ocl/scripts/pkg/templates"
