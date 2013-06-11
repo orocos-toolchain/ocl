@@ -635,6 +635,7 @@ function findpeer(name, start_tc)
       return false
    end
    local start_tc = start_tc or rtt.getTC()
+   if start_tc:getName() == name then return start_tc end
    return __findpeer(start_tc)
 end
 
