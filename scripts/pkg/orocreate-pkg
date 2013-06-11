@@ -92,7 +92,7 @@ mkdir $force $pkgname || { echo "Package already exists. Use -f to force creatio
 
 # different logic depending on package type:
 # default files:
-files="$templatedir/Makefile $templatedir/manifest.xml $templatedir/CMakeLists.txt"
+files="$templatedir/Makefile $templatedir/manifest.xml.tpl $templatedir/CMakeLists.txt"
 for arg in $ptypes; do
 case "$arg" in
     "all")
@@ -103,7 +103,7 @@ case "$arg" in
 	typekit=1
 	;;
     "empty")
-	files=$templatedir/manifest.xml
+	files=$templatedir/manifest.xml.tpl
 	;;
     "cmake")
 	;;
@@ -126,9 +126,9 @@ if [ "$incfiles" ]; then
   mkdir -p $pkgname/include/$pkgname
 fi
 
-# process template files:
+# process template files (drop .tpl suffix if present):
 for i in $files; do
-    tgtname=$(echo $(basename "$i") | sed -e "s/pkgname/$pkgname/g;s/Pkgname/$cappkgname/g;")
+    tgtname=$(echo $(basename "$i") | sed -e "s/pkgname/$pkgname/g;s/Pkgname/$cappkgname/g;s/\.tpl//g;")
     cat "$i" | sed -e "s/@PKGNAME@/$allcappkgname/g;s/@pkgname@/$pkgname/g;s/@Pkgname@/$cappkgname/g;" > $pkgname/$tgtname
 done
 
