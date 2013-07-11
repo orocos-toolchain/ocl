@@ -10,6 +10,12 @@ namespace logging {
 
 class OCL_API Category;
 
+/**
+ * This is a utility class which you can use to stream messages into a 
+ * category object.
+ * It provides an std::iostream like syntax using the << operator, but you
+ * need to call flush() in order to do the actual write of your message.
+ */
 class OCL_API CategoryStream
 {
 public:
@@ -30,7 +36,8 @@ public:
     CategoryStream(const CategoryStream & rhs);
 
     /**
-     * Destructor for CategoryStream
+     * Destructor for CategoryStream which also flushes any remaining data
+     * to the Category object.
      **/
     virtual ~CategoryStream();
 

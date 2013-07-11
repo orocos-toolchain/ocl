@@ -41,11 +41,11 @@ namespace logging {
     }
 
 Log4cxxAppender::Log4cxxAppender(std::string name) :
-    RTT::TaskContext(name),
+    RTT::TaskContext(name,RTT::TaskContext::PreOperational),
         socketAppender(0),
         hostname_prop("localhost"), port_prop(4560),
         maxEventsPerCycle_prop(0),
-        maxEventsPerCycle(1)
+        maxEventsPerCycle(0)
 {
 
     ports()->addEventPort("LogPort", log_port );

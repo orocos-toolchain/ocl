@@ -40,21 +40,25 @@ bool Component::startHook()
 void Component::updateHook()
 {
 	static int i=0;
-	std::stringstream	str;
-	str << getName() << " " << i;
+	RTT::rt_ostringstream	str_a, str_b;
+	str_a <<"A:" << getName() << " " << i;
+	str_b <<"B:" << getName() << " " << i;
 
     // existing logging
 //	log(Debug) << str.str() << endlog();
 
     // new logging
-    logger->error("ERROR " + RTT::rt_string(str.str().c_str()));
-    logger->info( "INFO  " + RTT::rt_string(str.str().c_str()));
-    logger->debug("DEBUG " + RTT::rt_string(str.str().c_str()));
+    logger->error("ERROR " + RTT::rt_string(str_a.str().c_str()));
+    logger->error("ERROR " + RTT::rt_string(str_b.str().c_str()));
+    logger->info( "INFO  " + RTT::rt_string(str_a.str().c_str()));
+    logger->info( "INFO  " + RTT::rt_string(str_b.str().c_str()));
+    logger->debug("DEBUG " + RTT::rt_string(str_a.str().c_str()));
+    logger->debug("DEBUG " + RTT::rt_string(str_b.str().c_str()));
 
     // RTT logging
-    log(Error)   << std::string("RTT ERROR " + str.str())   << endlog();
-    log(Warning) << std::string("RTT WARNING " + str.str()) << endlog();
-    log(Info)    << std::string("RTT INFO " + str.str())    << endlog();
+    //log(Error)   << std::string("RTT ERROR " + str.str())   << endlog();
+    //log(Warning) << std::string("RTT WARNING " + str.str()) << endlog();
+    //log(Info)    << std::string("RTT INFO " + str.str())    << endlog();
 
     // and trying to use the std::string versions ...
 //    logger->error(std::string("Hello")); // COMPILER error - not accessible!
