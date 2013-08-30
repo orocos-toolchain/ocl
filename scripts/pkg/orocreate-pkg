@@ -74,7 +74,7 @@ else
 	oclpath=$(rospack find ocl)
 	set -e
 	if [ "x$oclpath" != x ]; then
-	    templatedir=$oclpath/scripts/pkg/templates
+	    templatedir=$oclpath/templates
 	fi
     fi
 fi
@@ -98,7 +98,7 @@ mkdir $force $pkgname || { echo "Package already exists. Use -f to force creatio
 
 # different logic depending on package type:
 # default files:
-files="$templatedir/Makefile $templatedir/manifest.xml.tpl $templatedir/CMakeLists.txt"
+files="$templatedir/Makefile $templatedir/manifest.xml.tpl $templatedir/package.xml $templatedir/CMakeLists.txt"
 for arg in $ptypes; do
 case "$arg" in
     "all")
@@ -109,7 +109,7 @@ case "$arg" in
 	typekit=1
 	;;
     "empty")
-	files=$templatedir/manifest.xml.tpl
+	files=$templatedir/manifest.xml.tpl $templatedir/package.xml
 	;;
     "cmake")
 	;;
