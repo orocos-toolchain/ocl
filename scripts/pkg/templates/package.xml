@@ -1,0 +1,21 @@
+<package>
+  <name>@pkgname@</name>
+  <version>1.0.0</version>
+  <description>This package contains the components of the @pkgname@ package</description>
+  <maintainer email="unknown@maintainer.com">Unknown Author</maintainer>
+
+  <license>Unknown</license>
+
+  <url type="website"></url>
+  <!-- <url type="bugtracker"></url> -->
+
+  <author>Unknown Author</author>
+
+  <build_depend>rtt</build_depend>
+  <build_depend>orogen</build_depend>
+  <run_depend>rtt</run_depend>
+
+  <export>
+
+  </export>
+</package>
