@@ -1,0 +1,28 @@
+<package>
+  <name>ocl-logging</name>
+  <version>2.6.0</version>
+  <description>
+    Orocos component library
+    This package contains standard components for the Orocos Toolchain
+  </description>
+  <license>LGPL v2</license>
+  <author>OCL Development Team</author>
+  <maintainer email="orocos-dev@lists.mech.kuleuven.be">OCL Development Team</maintainer>
+  <url>http://www.orocos.org/ocl</url>
+  
+  <buildtool_depend>cmake</buildtool_depend>
+  
+  <build_depend>rtt</build_depend>
+  <build_depend>ocl</build_depend>
+  <run_depend>rtt</run_depend>
+  <run_depend>ocl</run_depend>
+
+  <export>
+    <build_type>
+      cmake
+    </build_type>
+  </export>
+
+
+</package>
+
