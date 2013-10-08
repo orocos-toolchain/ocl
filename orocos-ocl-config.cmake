@@ -115,7 +115,7 @@ endif()
 
 if(NOT OROCOS-OCL_FIND_QUIETLY)
 
-  message(STATUS "Found orocos-ocl ${OROCOS-OCL_VERSION} for the ${OROCOS_TARGET} target. ${AVAILABLE_TRANSPORTS}")
+  message(STATUS "Found orocos-ocl ${OROCOS-OCL_VERSION} for the ${OROCOS_TARGET} target.")
 
   # List found components
   if(OROCOS-OCL_FOUND_COMPONENTS)
