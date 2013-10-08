@@ -89,7 +89,7 @@ endif()
 if(OROCOS-OCL_FOUND)
   # Bootstrap components on pkgconfig
   foreach(COMPONENT ${OROCOS-OCL_FIND_COMPONENTS})
-    orocos_find_package(${COMPONENT} REQUIRED OROCOS_ONLY) 
+    orocos_find_package(${COMPONENT} OROCOS_ONLY) 
 
     if(${COMPONENT}_FOUND)
       list(APPEND OROCOS-OCL_FOUND_COMPONENTS ${COMPONENT})
