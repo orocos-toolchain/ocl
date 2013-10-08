@@ -6,18 +6,18 @@
 # entry.
 #
 # find_package COMPONENTS represent OROCOS-OCL plugins such as logging, deployment, timer, etc.
-# The default search path for them is $ENV{PKG_CONFIG_PATH}
+# This uses the orocos_find_package() macro defined in the RTT use-file.
 #
 # This script sets the following variables:
 #  OROCOS-OCL_FOUND: Boolean that indicates if OROCOS-OCL was found
 #  OROCOS-OCL_INCLUDE_DIRS: Paths to the necessary header files
-#  OROCOS-OCL_LIBRARIES: Libraries to link against to use OROCOS-OCL
+#  OROCOS-OCL_LIBRARIES: Libraries to link against to use OROCOS-OCL and all of the requested components
 #  OROCOS-OCL_DEFINITIONS: Definitions to use when compiling code that uses OROCOS-OCL
 #
 # This script additionally sets variables for each requested find_package COMPONENTS (OROCOS-OCL plugins).
 # For example, for the ''ocl-logging'' plugin this would be:
 #  OROCOS-OCL_OCL-LOGGING_FOUND: Boolean that indicates if the component was found
-#  OROCOS-OCL_OCL-LOGGING_LIBRARY: Libraries to link against to use this component (notice singular _LIBRARY suffix)
+#  OROCOS-OCL_OCL-LOGGING_LIBRARIES: Libraries to link against to use this component (notice singular _LIBRARY suffix)
 #
 # Note for advanced users: Apart from the OROCOS-OCL_*_LIBRARIES variables, non-COMPONENTS targets can be accessed by
 # their imported name, e.g., target_link_libraries(bar @IMPORTED_TARGET_PREFIX@orocos-ocl-gnulinux_dynamic).
@@ -98,6 +98,7 @@ if(OROCOS-OCL_FOUND)
 
       string(TOUPPER ${COMPONENT} COMPONENT_UPPER)
 
+      set(OROCOS-OCL_${COMPONENT_UPPER}_FOUND True)
       set(OROCOS-OCL_${COMPONENT_UPPER}_LIBRARIES ${${COMPONENT}_LIBRARIES})
     else()
       LIST(APPEND OROCOS-OCL_MISSING_COMPONENTS ${COMPONENT})
