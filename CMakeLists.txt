@@ -210,6 +210,26 @@ SET(OROCOS_COMPONENTS_REQUIRES "$ENV{OROCOS_COMPONENTS_REQUIRES}")
 CONFIGURE_FILE( ${PROJ_SOURCE_DIR}/ocl/ocl-config.h.in ${PROJ_SOURCE_DIR}/ocl/ocl-config.h @ONLY)
 INSTALL( FILES ${PROJ_SOURCE_DIR}/ocl/ocl-config.h DESTINATION include/orocos/ocl )
 
+###############################
+#                             #
+# Package configuration files #
+#                             #
+###############################
+
+set(CONFIG_FILE_PATH "lib/cmake/orocos-ocl") # Folder lib/cmake is searched by default in CMake >= 2.6.3
+
+# Main package configuration file 
+INSTALL(
+  FILES ${PROJ_SOURCE_DIR}/orocos-ocl-config.cmake 
+  DESTINATION "${CONFIG_FILE_PATH}")
+
+# Version file
+CONFIGURE_FILE(orocos-ocl-config-version.cmake.in
+               orocos-ocl-config-version.cmake @ONLY)
+INSTALL(
+  FILES ${CMAKE_CURRENT_BINARY_DIR}/orocos-ocl-config-version.cmake 
+  DESTINATION "${CONFIG_FILE_PATH}")
+
 #MESSAGE("Selected dirs: $ENV{SELECTED_DIRS}")
 #SET(SELECTED_DIRS $ENV{SELECTED_DIRS})
 
