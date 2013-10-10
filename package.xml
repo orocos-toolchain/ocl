@@ -11,6 +11,7 @@
   <url>http://www.orocos.org/ocl</url>
   
   <buildtool_depend>cmake</buildtool_depend>
+  <run_depend>catkin</run_depend>
   
   <build_depend>libreadline-dev</build_depend>
   <build_depend>libncurses-dev</build_depend>
