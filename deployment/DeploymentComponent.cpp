@@ -287,34 +287,54 @@ namespace OCL
     }
 
     bool DeploymentComponent::waitForInterrupt() {
-    	if ( !waitForSignal(SIGINT) )
+        int sigs[] = { SIGINT, SIGTERM, SIGHUP };
+        if ( !waitForSignals(sigs, 3) )
     		return false;
     	cout << "DeploymentComponent: Got interrupt !" <<endl;
     	return true;
     }
 
     bool DeploymentComponent::waitForSignal(int sig) {
+        return waitForSignals(&sig, 1);
+    }
+
+    bool DeploymentComponent::waitForSignals(int *sigs, std::size_t sig_count) {
 #ifdef USE_SIGNALS
-    	struct sigaction sa, sold;
-    	sa.sa_handler = ctrl_c_catcher;
-    	if ( ::sigaction(sig, &sa, &sold) != 0) {
-    		cout << "DeploymentComponent: Failed to install signal handler for signal " << sig << endl;
-    		return false;
-    	}
-    	while (got_signal != sig) {
-    		TIME_SPEC ts;
-    		ts.tv_sec = 1;
-    		ts.tv_nsec = 0;
-    		rtos_nanosleep(&ts, 0);
-    	}
-    	got_signal = -1;
-    	// reinstall previous handler if present.
-    	if (sold.sa_handler || sold.sa_sigaction)
-    		::sigaction(sig, &sold, NULL);
-    	return true;
+        struct sigaction sa, sold[sig_count];
+        std::size_t index = 0;
+        sa.sa_handler = ctrl_c_catcher;
+        for( ; index < sig_count; ++index) {
+            if ( ::sigaction(sigs[index], &sa, &sold[index]) != 0) {
+                cout << "DeploymentComponent: Failed to install signal handler for signal " << sigs[index] << endl;
+                break;
+            }
+        }
+
+        if (index == sig_count) {
+            bool break_loop = false;
+            while(!break_loop) {
+                for(std::size_t check = 0; check < sig_count; ++check) {
+                    if (got_signal == sigs[check]) break_loop = true;
+                }
+                TIME_SPEC ts;
+                ts.tv_sec = 1;
+                ts.tv_nsec = 0;
+                rtos_nanosleep(&ts, 0);
+            }
+        }
+        got_signal = -1;
+
+        // reinstall previous handlers if present.
+        while(index > 0) {
+            index--;
+            if (sold[index].sa_handler || sold[index].sa_sigaction) {
+                ::sigaction(sigs[index], &sold[index], NULL);
+            }
+        }
+        return true;
 #else
-		cout << "DeploymentComponent: Failed to install signal handler for signal " << sig << ": Not supported by this Operating System. "<<endl;
-		return false;
+        cout << "DeploymentComponent: Failed to install signal handler for signal " << sig << ": Not supported by this Operating System. "<<endl;
+        return false;
 #endif
     }
 
