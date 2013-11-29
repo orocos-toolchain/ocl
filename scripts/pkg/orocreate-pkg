@@ -76,7 +76,7 @@ else
 	if [ "x$oclpath" != x ]; then
 	    templatedir=$oclpath/templates
 	fi
-	if [ ! -d "templatedir" ]; then
+	if [ ! -d "$templatedir" ]; then
 	    templatedir=$oclpath/templates
 	fi
     fi
