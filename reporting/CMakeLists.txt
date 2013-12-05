@@ -7,7 +7,7 @@ IF ( BUILD_REPORTING )
 
     # This gathers all the .cpp files into the variable 'SRCS'
     SET( SRCS ConsoleReporting.cpp FileReporting.cpp ReportingComponent.cpp )
-    SET( HPPS ConsoleReporting.hpp  FileReporting.hpp NiceHeaderMarshaller.hpp ReportingComponent.hpp)
+    SET( HPPS ConsoleReporting.hpp  FileReporting.hpp NiceHeaderMarshaller.hpp ReportingComponent.hpp TableMarshaller.hpp)
 
     # Reporting to a socket
     SET( SOCKET_SRCS command.cpp datasender.cpp socket.cpp socketmarshaller.cpp TcpReporting.cpp)
