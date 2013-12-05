@@ -241,3 +241,7 @@ INCLUDE(config/cmake_logging.cmake)
 ENDIF( DISPLAY_FLAGS )
 
 INSTALL(FILES package.xml DESTINATION share/ocl)
+
+# Install env-hook to set LUA_PATH environment variable
+CONFIGURE_FILE(env-hooks/00.ocl-lua.sh.in ${CMAKE_CURRENT_BINARY_DIR}/env-hooks/00.ocl-lua.sh @ONLY)
+INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/env-hooks/00.ocl-lua.sh DESTINATION etc/catkin/profile.d)
