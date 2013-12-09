@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE properties SYSTEM "cpf.dtd">
 <properties>
-<!-- <simple name="Import" type="string"><value>ocl</value></simple> -->
+<simple name="Import" type="string"><value>ocl</value></simple>
 
 <struct name="HelloWorld" type="OCL::HelloWorld">
   <simple name="Server" type="boolean"><value>1</value></simple>
