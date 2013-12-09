@@ -246,7 +246,7 @@ namespace OCL
 
         // OK: kick-start it. Need to do import("ocl") and set AutoConf to configure self.
         log(Info) << "Using site file '" << siteFile << "'." << endlog();
-        this->kickStart( siteFile );
+        this->kickStart( siteFile, false );
 
     }
 
@@ -643,11 +643,16 @@ namespace OCL
         return this->getProvider<Scripting>("scripting")->runScript( file_name );
     }
 
-    bool DeploymentComponent::kickStart(const std::string& configurationfile)
+    bool DeploymentComponent::kickStart(const std::string& configurationfile, const bool deploymentOnlyTested)
     {
         int thisGroup = nextGroup;
         ++nextGroup;    // whether succeed or fail
         if ( this->loadComponentsInGroup(configurationfile, thisGroup) ) {
+        	if (deploymentOnlyTested){
+                log(Warning) <<"Test of component loading from " << configurationfile <<" is successfull" <<endlog();
+                log(Warning) <<"No components are configured nor started due to commands in the .xml file" <<endlog();
+                return true;
+        	}
             if (this->configureComponentsGroup(thisGroup) ) {
                 if ( this->startComponentsGroup(thisGroup) ) {
                     log(Info) <<"Successfully loaded, configured and started components from "<< configurationfile <<endlog();

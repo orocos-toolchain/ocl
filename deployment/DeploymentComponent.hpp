@@ -754,7 +754,7 @@ namespace OCL
          * This function runs loadComponents, configureComponents and startComponents
          * in a row, given no failures occur along the way.
          */
-        bool kickStart(const std::string& file_name);
+        bool kickStart(const std::string& file_name, const bool deploymentOnlyTested);
 
         /**
          * Stop, cleanup and unload a single component which were loaded by this component.

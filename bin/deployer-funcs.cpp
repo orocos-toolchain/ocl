@@ -68,6 +68,7 @@ int deployerParseCmdLine(int                        argc,
                          std::vector<std::string>&  scriptFiles,
                          std::string&               name,
                          bool&                      requireNameService,
+                         bool&						deploymentOnlyTested,
                          po::variables_map&         vm,
                          po::options_description*   otherOptions)
 {
@@ -93,6 +94,8 @@ int deployerParseCmdLine(int                        argc,
 		 "Level at which to log from RTT (case-insensitive) Never,Fatal,Critical,Error,Warning,Info,Debug,Realtime")
 		("no-consolelog",
 		 "Turn off RTT logging to the console (will still log to 'orocos.log')")
+		("test",
+		 "Only component deployment and port connections are done (configuring/starting commands in .xml neglected)")
         ("require-name-service",
          "Require CORBA name service")
 		("DeployerName",
@@ -153,6 +156,13 @@ int deployerParseCmdLine(int                        argc,
 		{
             RTT::Logger::Instance()->mayLogStdOut(false);
             log(Warning) << "Console logging disabled" << endlog();
+		}
+
+        // only the basic deployment is tested (no configuring/no starting)
+		if (vm.count("test"))
+		{
+			deploymentOnlyTested = true;
+            log(Warning) << "Deployment test: components are not configured nor started due to commands in the .xml file" << endlog();
 		}
 
 		if (vm.count("require-name-service"))

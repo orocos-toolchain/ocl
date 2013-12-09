@@ -64,6 +64,7 @@ int main(int argc, char** argv)
     std::vector<std::string>    scriptFiles;
 	std::string                 name("Deployer");
     bool                        requireNameService = false;         // not used
+    bool                        deploymentOnlyTested = false;
     po::variables_map           vm;
 	po::options_description     otherOptions;
 
@@ -97,7 +98,7 @@ int main(int argc, char** argv)
     // if extra options not found then process all command line options,
     // otherwise process all options up to but not including "--"
     int rc = OCL::deployerParseCmdLine(!found ? argc : optIndex, argv,
-                                       siteFile, scriptFiles, name, requireNameService,
+                                       siteFile, scriptFiles, name, requireNameService,deploymentOnlyTested,
                                        vm, &otherOptions);
 
     if (0 != rc)
@@ -161,7 +162,7 @@ int main(int argc, char** argv)
                 if ( !(*iter).empty() )
                 {
                     if ( (*iter).rfind(".xml",std::string::npos) == (*iter).length() - 4 || (*iter).rfind(".cpf",std::string::npos) == (*iter).length() - 4) {
-                        dc.kickStart( (*iter) );
+                        dc.kickStart( (*iter), deploymentOnlyTested );
                         continue;
                     } if ( (*iter).rfind(".ops",std::string::npos) == (*iter).length() - 4 || (*iter).rfind(".osd",std::string::npos) == (*iter).length() - 4) {
                         dc.runScript( (*iter) );
