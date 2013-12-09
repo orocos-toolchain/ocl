@@ -109,7 +109,7 @@ namespace OCL
          * of the component.
          */
         HelloWorld(std::string name)
-            : RTT::TaskContext(name),
+            : RTT::TaskContext(name,PreOperational),
               // Name, description, value
               property("Hello Property"), flag(false),
               attribute("Hello Attribute"),
@@ -124,10 +124,10 @@ namespace OCL
 
             // Set log level more verbose than default,
             // such that we can see output :
-            if ( log().getLogLevel() < RTT::Logger::Info ) {
-                log().setLogLevel( RTT::Logger::Info );
-                log(Info) << "HelloWorld manually raises LogLevel to 'Info' (5). See also file 'orocos.log'."<<endlog();
-            }
+            //if ( log().getLogLevel() < RTT::Logger::Info ) {
+            //    log().setLogLevel( RTT::Logger::Info );
+            //    log(Info) << "HelloWorld manually raises LogLevel to 'Info' (5). See also file 'orocos.log'."<<endlog();
+            //}
 
             // Now add member variables to the interface:
             this->properties()->addProperty("the_property", property).doc("A friendly property.");
@@ -143,9 +143,9 @@ namespace OCL
 
             this->addOperation( "the_command", &HelloWorld::sayWorld, this, OwnThread).doc("'the_command' Description").arg("the_arg", "Use 'World' as argument to make the command succeed.");
 
-            log(Info) << "**** Starting the 'Hello' component ****" <<endlog();
+            // log(Info) << "**** Starting the 'Hello' component is cancelled ****" <<endlog();
             // Start the component's activity:
-            this->start();
+            //this->start();
         }
     };
 }
