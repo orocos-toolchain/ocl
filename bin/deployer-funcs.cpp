@@ -95,7 +95,7 @@ int deployerParseCmdLine(int                        argc,
 		("no-consolelog",
 		 "Turn off RTT logging to the console (will still log to 'orocos.log')")
 		("test",
-		 "Only component deployment and port connections are done (configuring/starting commands in .xml neglected)")
+		 "Only component loading and connecting peers and ports is tested (loading from .xml file only)")
         ("require-name-service",
          "Require CORBA name service")
 		("DeployerName",
@@ -158,7 +158,7 @@ int deployerParseCmdLine(int                        argc,
             log(Warning) << "Console logging disabled" << endlog();
 		}
 
-        // only the basic deployment is tested (no configuring/no starting)
+        // only the basic deployment is tested (components' taskState is not affected)
 		if (vm.count("test"))
 		{
 			deploymentOnlyTested = true;

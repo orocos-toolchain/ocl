@@ -649,11 +649,14 @@ namespace OCL
         ++nextGroup;    // whether succeed or fail
         if ( this->loadComponentsInGroup(configurationfile, thisGroup) ) {
         	if (deploymentOnlyTested){
-                log(Warning) <<"Test of component loading from " << configurationfile <<" is successfull" <<endlog();
-                log(Warning) <<"No components are configured nor started due to commands in the .xml file" <<endlog();
-                return true;
+                log(Warning) <<"Testing component loading from " << configurationfile <<" is successfull" <<endlog();
+                if (this->configureComponentsGroup(thisGroup,deploymentOnlyTested)){
+                    log(Warning) <<"Testing peer and port connections from " << configurationfile <<" is successfull" <<endlog();
+                    return true;
+                }
+                return false;
         	}
-            if (this->configureComponentsGroup(thisGroup) ) {
+            if (this->configureComponentsGroup(thisGroup,deploymentOnlyTested) ) {
                 if ( this->startComponentsGroup(thisGroup) ) {
                     log(Info) <<"Successfully loaded, configured and started components from "<< configurationfile <<endlog();
                     return true;
@@ -1165,12 +1168,12 @@ namespace OCL
         // do all groups
         bool valid = true;
         for (int group = nextGroup - 1; group > 0; --group) {
-            valid &= configureComponentsGroup(group);
+            valid &= configureComponentsGroup(group,false);
         }
         return valid;
     }
 
-    bool DeploymentComponent::configureComponentsGroup(const int group)
+    bool DeploymentComponent::configureComponentsGroup(const int group, const bool deploymentOnlyTested)
     {
         RTT::Logger::In in("DeploymentComponent::configureComponents");
         if ( root.empty() ) {
@@ -1317,8 +1320,13 @@ namespace OCL
             }
         }
 
+
         // Main configuration
         for (RTT::PropertyBag::iterator it= root.begin(); it!=root.end();it++) {
+
+        	// if TRUE components' taskState will not be affected by the deployment script
+            if (deploymentOnlyTested)
+            	break;
 
             RTT::Property<RTT::PropertyBag> comp = *it;
 

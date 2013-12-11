@@ -696,7 +696,7 @@ namespace OCL
          *
          * @return true if all the group's components could be succesfully configured.
          */
-        bool configureComponentsGroup(const int group);
+        bool configureComponentsGroup(const int group, const bool deploymentOnlyTested);
 
         /**
          * Start all components in the current configuration which have AutoStart
