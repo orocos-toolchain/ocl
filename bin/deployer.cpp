@@ -64,6 +64,7 @@ int main(int argc, char** argv)
     std::vector<std::string>    scriptFiles;
 	std::string                 name("Deployer");
     bool                        requireNameService = false;         // not used
+    bool                        deploymentOnlyChecked = false;
     po::variables_map           vm;
 	po::options_description     otherOptions;
 
@@ -97,7 +98,7 @@ int main(int argc, char** argv)
     // if extra options not found then process all command line options,
     // otherwise process all options up to but not including "--"
     int rc = OCL::deployerParseCmdLine(!found ? argc : optIndex, argv,
-                                       siteFile, scriptFiles, name, requireNameService,
+                                       siteFile, scriptFiles, name, requireNameService,deploymentOnlyChecked,
                                        vm, &otherOptions);
 
     if (0 != rc)
@@ -153,6 +154,7 @@ int main(int argc, char** argv)
         // scope to force dc destruction prior to memory free
         {
             OCL::DeploymentComponent dc( name, siteFile );
+            bool result = true;
 
             for (std::vector<std::string>::const_iterator iter=scriptFiles.begin();
                  iter!=scriptFiles.end();
@@ -161,18 +163,20 @@ int main(int argc, char** argv)
                 if ( !(*iter).empty() )
                 {
                     if ( (*iter).rfind(".xml",std::string::npos) == (*iter).length() - 4 || (*iter).rfind(".cpf",std::string::npos) == (*iter).length() - 4) {
-                        dc.kickStart( (*iter) );
+                        result = dc.kickStart( (*iter) ) && result;
                         continue;
                     } if ( (*iter).rfind(".ops",std::string::npos) == (*iter).length() - 4 || (*iter).rfind(".osd",std::string::npos) == (*iter).length() - 4) {
-                        dc.runScript( (*iter) );
+			result = dc.runScript( (*iter) ) && result;
                         continue;
                     }
                     log(Error) << "Unknown extension of file: '"<< (*iter) <<"'. Must be xml, cpf for XML files or, ops or osd for script files."<<endlog();
                 }
             }
+            if (result == false)
+		rc = -1;
 #ifdef USE_TASKBROWSER
             // We don't start an interactive console when we're a daemon
-            if ( !vm.count("daemon") ) {
+            if ( !deploymentOnlyChecked && !vm.count("daemon") ) {
                 OCL::TaskBrowser tb( &dc );
 
                 tb.loop();
@@ -195,7 +199,6 @@ int main(int argc, char** argv)
 #endif
 
         __os_exit();
-        rc = 0;
 	}
 	else
 	{

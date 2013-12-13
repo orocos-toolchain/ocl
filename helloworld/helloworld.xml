@@ -3,8 +3,41 @@
 <properties>
 <simple name="Import" type="string"><value>ocl</value></simple>
 
-<struct name="HelloWorld" type="OCL::HelloWorld">
+<struct name="Hello" type="OCL::HelloWorld">
   <simple name="Server" type="boolean"><value>1</value></simple>
   <simple name="UseNamingService" type="boolean"><value>1</value></simple>
+  <simple name="AutoConf" type="boolean"><value>1</value></simple>
+  <simple name="AutoStart" type="boolean"><value>1</value></simple>
+
+  <struct name="Peers" type="PropertyBag">
+      <simple type="string"><value>World</value></simple>
+  </struct>
+
+  <struct name="Ports" type="PropertyBag">
+      <simple name="the_results" type="string"><value>Connection</value></simple>
+  </struct>
+
 </struct>
+
+<struct name="World" type="OCL::HelloWorld">
+  <simple name="Server" type="boolean"><value>1</value></simple>
+  <simple name="UseNamingService" type="boolean"><value>1</value></simple>
+  <simple name="AutoConf" type="boolean"><value>1</value></simple>
+  <simple name="AutoStart" type="boolean"><value>1</value></simple>
+
+  <struct name="Peers" type="PropertyBag">
+      <simple type="string"><value>Hello</value></simple>
+  </struct>
+
+  <struct name="Ports" type="PropertyBag">
+      <simple name="the_buffer_port" type="string"><value>Connection</value></simple>
+  </struct>
+
+</struct>
+
+<struct name="Connection" type="ConnPolicy">
+    <simple name="type" type="long"><value>1</value></simple>
+    <simple name="size" type="long"><value>12</value></simple>
+</struct>
+
 </properties>
