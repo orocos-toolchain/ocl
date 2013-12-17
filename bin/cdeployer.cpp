@@ -61,6 +61,7 @@ int main(int argc, char** argv)
 	std::vector<std::string>    scriptFiles;
 	std::string                 name("Deployer");
     bool                        requireNameService = false;
+    bool                        deploymentOnlyChecked = false;
     po::variables_map           vm;
 	po::options_description     taoOptions("Additional options after a '--' are passed through to TAO");
 	// we don't actually list any options for TAO ...
@@ -100,7 +101,7 @@ int main(int argc, char** argv)
     // if TAO options not found then process all command line options,
     // otherwise process all options up to but not including "--"
 	int rc = OCL::deployerParseCmdLine(!found ? argc : taoIndex, argv,
-                                       siteFile, scriptFiles, name, requireNameService,
+                                       siteFile, scriptFiles, name, requireNameService, deploymentOnlyChecked,
                                        vm, &otherOptions);
 	if (0 != rc)
 	{
@@ -153,7 +154,7 @@ int main(int argc, char** argv)
         // scope to force dc destruction prior to memory free
         {
             OCL::CorbaDeploymentComponent dc( name, siteFile );
-
+            bool result = true;
             // if TAO options not found then have TAO process just the program name,
             // otherwise TAO processes the program name plus all options (potentially
             // none) after "--"
@@ -171,22 +172,27 @@ int main(int argc, char** argv)
                 if ( !(*iter).empty() )
                 {
                     if ( (*iter).rfind(".xml",string::npos) == (*iter).length() - 4 || (*iter).rfind(".cpf",string::npos) == (*iter).length() - 4) {
-                        dc.kickStart( (*iter) );
+                        result = dc.kickStart( (*iter) );
                         continue;
                     } if ( (*iter).rfind(".ops",string::npos) == (*iter).length() - 4 || (*iter).rfind(".osd",string::npos) == (*iter).length() - 4) {
-                        dc.runScript( (*iter) );
+                        result = dc.runScript( (*iter) );
                         continue;
                     }
                     log(Error) << "Unknown extension of file: '"<< (*iter) <<"'. Must be xml, cpf for XML files or, ops or osd for script files."<<endlog();
                 }
             }
+            if (result == false)
+            	rc = -1;
 
             // Export the DeploymentComponent as CORBA server.
-            TaskContextServer::RunOrb();
+            if ( !deploymentOnlyChecked ) {
+            	TaskContextServer::RunOrb();
+            }
 
             TaskContextServer::ShutdownOrb();
 
             TaskContextServer::DestroyOrb();
+
         }
 
         __os_exit();
@@ -209,5 +215,5 @@ int main(int argc, char** argv)
     }
 #endif  // ORO_BUILD_RTALLOC
 
-    return 0;
+    return rc;
 }
