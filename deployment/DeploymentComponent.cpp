@@ -252,7 +252,7 @@ namespace OCL
 
     bool DeploymentComponent::configureHook()
     {
-        Logger::In in("DeploymentComponent::configure");
+        Logger::In in("configure");
         if (compPath.empty() )
         {
             compPath = ComponentLoader::Instance()->getComponentPath();
@@ -313,7 +313,7 @@ namespace OCL
 
     bool DeploymentComponent::connectPeers(const std::string& one, const std::string& other)
     {
-        RTT::Logger::In in("DeploymentComponent::connectPeers");
+        RTT::Logger::In in("connectPeers");
         RTT::TaskContext* t1 = one == this->getName() ? this : this->getPeer(one);
         RTT::TaskContext* t2 = other == this->getName() ? this : this->getPeer(other);
         if (!t1) {
@@ -329,7 +329,7 @@ namespace OCL
 
     bool DeploymentComponent::addPeer(const std::string& from, const std::string& to)
     {
-        RTT::Logger::In in("DeploymentComponent::addPeer");
+        RTT::Logger::In in("addPeer");
         RTT::TaskContext* t1 = from == this->getName() ? this : this->getPeer(from);
         RTT::TaskContext* t2 = to == this->getName() ? this : this->getPeer(to);
         if (!t1) {
@@ -345,7 +345,7 @@ namespace OCL
 
     bool DeploymentComponent::aliasPeer(const std::string& from, const std::string& to, const std::string& alias)
     {
-        RTT::Logger::In in("DeploymentComponent::addPeer");
+        RTT::Logger::In in("addPeer");
         RTT::TaskContext* t1 = from == this->getName() ? this : this->getPeer(from);
         RTT::TaskContext* t2 = to == this->getName() ? this : this->getPeer(to);
         if (!t1) {
@@ -460,7 +460,7 @@ namespace OCL
 
     bool DeploymentComponent::connectPorts(const std::string& one, const std::string& other)
     {
-	RTT::Logger::In in("DeploymentComponent::connectPorts");
+	RTT::Logger::In in("connectPorts");
         RTT::TaskContext* a, *b;
         a = getPeer(one);
         b = getPeer(other);
@@ -479,7 +479,7 @@ namespace OCL
     bool DeploymentComponent::connectPorts(const std::string& one, const std::string& one_port,
                                            const std::string& other, const std::string& other_port)
     {
-	RTT::Logger::In in("DeploymentComponent::connectPorts");
+	RTT::Logger::In in("connectPorts");
 		Service::shared_ptr a,b;
 		a = stringToService(one);
 		b = stringToService(other);
@@ -531,7 +531,7 @@ namespace OCL
     // New API:
     bool DeploymentComponent::connect(const std::string& one, const std::string& other, ConnPolicy cp)
     {
-        RTT::Logger::In in("DeploymentComponent::connect");
+        RTT::Logger::In in("connect");
 		base::PortInterface* ap, *bp;
 		ap = stringToPort(one);
 		bp = stringToPort(other);
@@ -567,7 +567,7 @@ namespace OCL
 
     bool DeploymentComponent::connectServices(const std::string& one, const std::string& other)
     {
-    RTT::Logger::In in("DeploymentComponent::connectServices");
+    RTT::Logger::In in("connectServices");
         RTT::TaskContext* a, *b;
         a = getPeer(one);
         b = getPeer(other);
@@ -585,7 +585,7 @@ namespace OCL
 
     bool DeploymentComponent::connectOperations(const std::string& required, const std::string& provided)
     {
-        RTT::Logger::In in("DeploymentComponent::connectOperations");
+        RTT::Logger::In in("connectOperations");
         // Required service
         boost::iterator_range<std::string::const_iterator> reqs = boost::algorithm::find_last(required, ".");
         std::string reqs_name(required.begin(), reqs.begin());
@@ -713,7 +713,7 @@ namespace OCL
     bool DeploymentComponent::loadComponentsInGroup(const std::string& configurationfile,
                                                     const int group)
     {
-        RTT::Logger::In in("DeploymentComponent::loadComponents");
+        RTT::Logger::In in("loadComponents");
 
         RTT::PropertyBag from_file;
         log(Info) << "Loading '" <<configurationfile<<"' in group " << group << "."<< endlog();
@@ -1156,7 +1156,7 @@ namespace OCL
 
     bool DeploymentComponent::configureComponents()
     {
-        RTT::Logger::In in("DeploymentComponent::configureComponents");
+        RTT::Logger::In in("configureComponents");
         // do all groups
         bool valid = true;
         for (int group = nextGroup - 1; group > 0; --group) {
@@ -1167,7 +1167,7 @@ namespace OCL
 
     bool DeploymentComponent::configureComponentsGroup(const int group)
     {
-        RTT::Logger::In in("DeploymentComponent::configureComponents");
+        RTT::Logger::In in("configureComponents");
         if ( root.empty() ) {
             RTT::Logger::log() << RTT::Logger::Error
                           << "No components loaded by DeploymentComponent !" <<endlog();
@@ -1204,7 +1204,7 @@ namespace OCL
                     RTT::Property<string> nm = (*it);
                     if ( nm.ready() )
                         {
-                            this->addPeer( comps[comp.getName()].instance->getName(), nm.value() );
+                            valid = this->addPeer( comps[comp.getName()].instance->getName(), nm.value() ) && valid;
                             log(Info) << this->getName() << " connects " <<
                                 comps[comp.getName()].instance->getName() << " to "<< nm.value()  << endlog();
                         }
@@ -1306,7 +1306,7 @@ namespace OCL
                 for(RTT::TaskContext::PeerList::iterator pit = peers.begin(); pit != peers.end(); ++pit) {
                     if ( comps.count( *pit ) && comps[ *pit ].autoconnect ) {
                         RTT::TaskContext* other = peer->getPeer( *pit );
-                        ::RTT::connectPorts( peer, other );
+                        valid = RTT::connectPorts( peer, other ) && valid;
                     }
                 }
             }
@@ -1376,7 +1376,7 @@ namespace OCL
                 } else {
                     log(Info) << "Setting activity of "<< comp.getName() <<endlog();
                 }
-                peer->setActivity( comps[comp.getName()].act );
+                valid = peer->setActivity( comps[comp.getName()].act ) && valid;
                 assert( peer->engine()->getActivity() == comps[comp.getName()].act );
                 comps[comp.getName()].act = 0; // drops ownership.
             }
@@ -1449,7 +1449,7 @@ namespace OCL
 
     bool DeploymentComponent::startComponentsGroup(const int group)
     {
-        RTT::Logger::In in("DeploymentComponent::startComponentsGroup");
+        RTT::Logger::In in("startComponentsGroup");
         if (validConfig.get() == false) {
             log(Error) << "Not starting components with invalid configuration." <<endlog();
             return false;
@@ -1512,7 +1512,7 @@ namespace OCL
 
     bool DeploymentComponent::stopComponentsGroup(const int group)
     {
-        RTT::Logger::In in("DeploymentComponent::stopComponentsGroup");
+        RTT::Logger::In in("stopComponentsGroup");
         log(Info) << "Stopping group " << group << endlog();
         bool valid = true;
         // 1. Stop all activities, give components chance to cleanup.
@@ -1544,7 +1544,7 @@ namespace OCL
 
     bool DeploymentComponent::cleanupComponentsGroup(const int group)
     {
-        RTT::Logger::In in("DeploymentComponent::cleanupComponentsGroup");
+        RTT::Logger::In in("cleanupComponentsGroup");
         bool valid = true;
         log(Info) << "Cleaning up group " << group << endlog();
         // 1. Cleanup all activities, give components chance to cleanup.
@@ -1632,26 +1632,26 @@ namespace OCL
 
     bool DeploymentComponent::import(const std::string& package)
     {
-        RTT::Logger::In in("DeploymentComponent::import");
+        RTT::Logger::In in("import");
         return ComponentLoader::Instance()->import( package, "" ); // search in existing search paths
     }
 
     void DeploymentComponent::path(const std::string& path)
     {
-        RTT::Logger::In in("DeploymentComponent::path");
+        RTT::Logger::In in("path");
         ComponentLoader::Instance()->setComponentPath( ComponentLoader::Instance()->getComponentPath() + path );
         PluginLoader::Instance()->setPluginPath( PluginLoader::Instance()->getPluginPath() + path );
     }
 
     bool DeploymentComponent::loadLibrary(const std::string& name)
     {
-        RTT::Logger::In in("DeploymentComponent::loadLibrary");
+        RTT::Logger::In in("loadLibrary");
         return PluginLoader::Instance()->loadLibrary(name) || ComponentLoader::Instance()->loadLibrary(name);
     }
 
     bool DeploymentComponent::reloadLibrary(const std::string& name)
     {
-        RTT::Logger::In in("DeploymentComponent::reloadLibrary");
+        RTT::Logger::In in("reloadLibrary");
         return ComponentLoader::Instance()->reloadLibrary(name);
     }
 
@@ -1673,7 +1673,7 @@ namespace OCL
     // or type is a shared library or it is a class type.
     bool DeploymentComponent::loadComponent(const std::string& name, const std::string& type)
     {
-        RTT::Logger::In in("DeploymentComponent::loadComponent");
+        RTT::Logger::In in("loadComponent");
 
         if ( type == "RTT::PropertyBag" )
             return false; // It should be present as peer.
@@ -2040,7 +2040,7 @@ namespace OCL
 
     void DeploymentComponent::kickOut(const std::string& config_file)
     {
-        RTT::Logger::In in("DeploymentComponent::kickOut");
+        RTT::Logger::In in("kickOut");
         RTT::PropertyBag from_file;
         RTT::Property<std::string>  import_file;
         std::vector<std::string> deleted_components_type;
@@ -2067,7 +2067,7 @@ namespace OCL
 
     bool DeploymentComponent::cleanupComponent(RTT::TaskContext *instance)
     {
-        RTT::Logger::In in("DeploymentComponent::cleanupComponent");
+        RTT::Logger::In in("cleanupComponent");
         bool valid = true;
         // 1. Cleanup a single activities, give components chance to cleanup.
         if (instance) {
@@ -2085,7 +2085,7 @@ namespace OCL
 
     bool DeploymentComponent::stopComponent(RTT::TaskContext *instance)
     {
-        RTT::Logger::In in("DeploymentComponent::stopComponent");
+        RTT::Logger::In in("stopComponent");
         bool valid = true;
 
         if ( instance ) {
@@ -2104,7 +2104,7 @@ namespace OCL
 
     bool DeploymentComponent::kickOutComponent(const std::string& comp_name)
     {
-        RTT::Logger::In in("DeploymentComponent::kickOutComponent");
+        RTT::Logger::In in("kickOutComponent");
 
         RTT::TaskContext* peer = comps.count(comp_name) ? comps[ comp_name ].instance : 0;
 

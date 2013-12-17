@@ -56,6 +56,7 @@ extern int deployerParseCmdLine(
 	std::vector<std::string>&                       scriptFiles,
 	std::string&                                    name,
     bool&                                           requireNameService,
+    bool&                                           deploymentOnlyChecked,
     boost::program_options::variables_map&          vm,
 	boost::program_options::options_description*    otherOptions=NULL);
 

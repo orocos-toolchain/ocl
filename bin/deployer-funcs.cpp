@@ -68,6 +68,7 @@ int deployerParseCmdLine(int                        argc,
                          std::vector<std::string>&  scriptFiles,
                          std::string&               name,
                          bool&                      requireNameService,
+                         bool&						deploymentOnlyChecked,
                          po::variables_map&         vm,
                          po::options_description*   otherOptions)
 {
@@ -81,7 +82,7 @@ int deployerParseCmdLine(int                        argc,
 		("version",
 		 "Show program version")
 		("daemon,d",
-		 "Makes this program a daemon such that it runs in the background.")
+		 "Makes this program a daemon such that it runs in the background. Returns 1 in case of success.")
 		("start,s",
 		 po::value< std::vector<std::string> >(&scriptFiles),
 		 "Deployment XML or script file (eg 'config-file.xml' or 'script.ops')")
@@ -93,6 +94,8 @@ int deployerParseCmdLine(int                        argc,
 		 "Level at which to log from RTT (case-insensitive) Never,Fatal,Critical,Error,Warning,Info,Debug,Realtime")
 		("no-consolelog",
 		 "Turn off RTT logging to the console (will still log to 'orocos.log')")
+		("check",
+		 "Only check component loading, connecting peers and ports. Returns 255 in case of errors.")
         ("require-name-service",
          "Require CORBA name service")
 		("DeployerName",
@@ -144,21 +147,30 @@ int deployerParseCmdLine(int                        argc,
 
 		if (vm.count("daemon"))
 		{
-			if (fork() != 0 )
-				return 1;
+			if (vm.count("check"))
+				log(Warning) << "--check and --daemon are incompatible. Skipping the --daemon flag." <<endlog();
+			else
+				if (fork() != 0 )
+					return 1;
 		}
 
-        // turn off all console logging
+		// turn off all console logging
 		if (vm.count("no-consolelog"))
 		{
-            RTT::Logger::Instance()->mayLogStdOut(false);
-            log(Warning) << "Console logging disabled" << endlog();
+			RTT::Logger::Instance()->mayLogStdOut(false);
+			log(Info) << "Console logging disabled" << endlog();
+		}
+
+		if (vm.count("check"))
+		{
+			deploymentOnlyChecked = true;
+			log(Info) << "Deployment check: Only check component loading, connecting peers and ports. Returns 255 in case of errors." << endlog();
 		}
 
 		if (vm.count("require-name-service"))
 		{
-            requireNameService = true;
-            log(Info) << "CORBA name service required." << endlog();
+			requireNameService = true;
+			log(Info) << "CORBA name service required." << endlog();
 		}
 
  		// verify that is a valid logging level
