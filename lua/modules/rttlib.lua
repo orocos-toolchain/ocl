@@ -635,6 +635,7 @@ function findpeer(name, start_tc)
       return false
    end
    local start_tc = start_tc or rtt.getTC()
+   if start_tc:getName() == name then return start_tc end
    return __findpeer(start_tc)
 end
 
@@ -763,6 +764,7 @@ if type(debug) == 'table' then
    reg.Variable.__tostring=var2str
    reg.Variable.fromtab=varfromtab
    reg.Variable.var2tab=var2tab
+   reg.Variable.totab=var2tab
    reg.Property.__tostring=prop2str
    reg.Property.fromtab=propfromtab
    reg.Service.__tostring=service2str
@@ -773,4 +775,48 @@ if type(debug) == 'table' then
    reg.OutputPort.__tostring=port2str
 else
    print("no debug library, if required pretty printing must be enabled manually")
+end
+
+
+function help()
+   print [[
+rttlib quick help: prefix commands with "rttlib." . Use Ctrl-d to quit.
+
+Enable rttlib colors by setting "rttlib.color=true"
+
+Getting Information
+-------------------
+
+info()    print information about loaded components, services and typekits
+stat()    show state of running components
+
+Getting static information
+--------------------------
+
+> tc=rtt.getTC()
+> =tc
+
+(this is equal to "return tc")
+
+Getting dynamic information (ports):
+------------------------------------
+
+> tc:stat()
+
+
+Miscellaneous commands
+----------------------
+
+port_clone_conn(p)
+          create an inverse port connected to the given port p.
+          see API docs for optional arguments.
+
+mirror(comp)
+          for all ports of the given component, create inverse
+          connected ports and return them in a table.
+
+findpeer(name, start_tc)
+          search for a component with given name starting from
+          taskcontext tc.
+   ]]
 end

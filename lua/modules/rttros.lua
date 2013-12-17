@@ -13,7 +13,7 @@ module("rttros", package.seeall)
 
 local rospack_path_cache = {}
 
-function find_rospack(package)
+function find_rospack_roslua(package)
    if not rospack_path_cache[package] then
       local p = io.popen("rospack find " .. package .. " 2>/dev/null")
       local path = p:read("*a")
@@ -25,6 +25,21 @@ function find_rospack(package)
    assert(rospack_path_cache[package], "Package path could not be found for " .. package)
    assert(rospack_path_cache[package] ~= "", "Package path could not be found for " .. package)
    return rospack_path_cache[package]
+end
+
+local rtt_rospack_find=false
+function find_rospack(package)
+   if not rtt_rospack_find then
+      if not (rtt and rttlib) then
+	 error("find_rospack: not an rttlua _or_ rttlib not loaded.")
+      end
+      depl = rttlib.findpeer("deployer") or rttlib.findpeer("Deployer")
+      if not depl then error("find_rospack: failed to find a deployer") end
+      depl:import("rtt_rospack")
+      rtt_rospack_find=rtt.provides("rospack"):getOperation("find")
+   end
+   local res = rtt_rospack_find(package)
+   if res~="" then return res else return false end
 end
 
 -- Help Markus' poor, confused brain:
