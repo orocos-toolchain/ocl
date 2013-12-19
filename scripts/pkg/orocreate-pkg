@@ -5,7 +5,8 @@ function help
 {
     echo
     echo "Creates a new Orocos component package."
-    echo " Usage: $(basename $0) [-f] package_name [component] [plugin] [service] [typekit] [support] [empty] [cmake]"
+    echo " Usage: $(basename $0) [-f] [--catkin] package_name [component] [plugin] [service] [typekit] [support] [empty] [cmake]"
+    echo "        $(basename $0) --upgrade [-f] <package_name | directory>"
     echo
     echo " If no package type after the package name is specified, an all-in-one"
     echo " template is created that can serve as everything. You may provide multiple arguments."
@@ -15,12 +16,19 @@ function help
     echo "service      Creates service .cpp template and cmake logic."
     echo "typekit      Creates typekit cmake logic for calling typegen."
     echo "support      Creates support library .cpp template and cmake logic."
-    echo "empty        Creates an empty package with only a manifest.xml."
-    echo "cmake        Creates a package with only a manifest.xml, Makefile and CMakelist.txt."
+    echo "empty        Creates an empty package with only a manifest."
+    echo "cmake        Creates a package with only a manifest and CMakelists.txt."
     echo
     echo "Example:"
     echo " $(basename $0) table_filter component service"
     echo "   Creates a package table_filter containing one component and one service."
+    echo
+    echo "Other command line arguments:"
+    echo
+    echo " -f          Overwrite existing files."
+    echo " --catkin    Create a catkin package.xml file instead of a manifest.xml and a Makefile."
+    echo " --upgrade   Upgrade an existing package or all packages found in a directory tree"
+    echo "             for the current toolchain release (EXPERIMENTAL)."
     echo
 }
 
@@ -29,8 +37,68 @@ if [ x$1 = x ]; then
     exit 1
 fi
 
+function upgrade()
+{
+    dirs=
+    found=
+    if [ ! "$force" ]; then
+        interactive=-i
+    fi
+
+    for arg in $*; do
+        if [ -d $arg ]; then
+            for manifest in `find $arg -name manifest.xml -or -name package.xml`; do dirs="$dirs$(dirname $manifest) "; done
+        else
+            dirs="$dirs$(rospack find $arg) "
+        fi
+    done
+
+    for dir in $dirs; do
+        if [ -f $dir/Makefile ]; then
+            md5=$(md5sum $dir/Makefile | awk '{print $1}')
+            if [ "x$md5" = "xb20a34f974b4b692756256654cafaf37" ]; then
+                echo "Replacing default Makefile $dir/Makefile with newer version..."
+                cp -bv $interactive $templatedir/Makefile $dir/Makefile
+                echo
+                found_something=1
+            fi
+        fi
+        if [ -f $dir/manifest.xml ]; then
+            tempfile=$(mktemp)
+            sed 's/<depend package=\"log4cpp\"/<rosdep name=\"log4cpp\"/;
+                 s/<depend package=\"ocl\"/<rosdep name=\"ocl\"/;
+                 s/<depend package=\"orogen\"/<rosdep name=\"orogen\"/;
+                 s/<depend package=\"rtt\"/<rosdep name=\"rtt\"/;
+                 s/<depend package=\"rtt_typelib\"/<rosdep name=\"rtt_typelib\"/;
+                 s/<depend package=\"typelib\"/<rosdep name=\"typelib\"/;
+                 s/<depend package=\"uitlmm\"/<rosdep name=\"uitlmm\"/;
+                 s/<depend package=\"uitlrb\"/<rosdep name=\"uitlrb\"/;
+                 ' $dir/manifest.xml >$tempfile
+            if ! diff $dir/manifest.xml $tempfile >/dev/null; then
+                echo "Replacing orocos-toolchain package dependendencies in $dir/manifest.xml with rosdep rules..."
+                diff $dir/manifest.xml $tempfile || true
+                cp -bv $interactive $tempfile $dir/manifest.xml
+                echo
+                found_something=1
+            fi
+            unlink $tempfile
+        fi
+    done
+
+    if [ ! "$found_something" ]; then
+        echo "No package found that needs an upgrade."
+    fi
+
+    return 0
+}
+
 cwd="$(pwd)"
 abspath=$(dirname "$(cd "${0%/*}" 2>/dev/null; echo "$PWD"/"${0##*/}")")
+
+# Detect orocreate-catkin-pkg
+if [ "$(basename $0)" = "orocreate-catkin-pkg" ]; then
+	catkin=1
+fi
 
 # Parse arguments
 force=
@@ -39,10 +107,22 @@ for arg in $*; do
 	-f)
 	    force=-p
 	    ;;
+	--catkin)
+	    catkin=1
+	    ;;
+	--upgrade)
+	    upgrade=1
+	    ;;
 	-h|--help)
 	    help
 	    exit 1
 	    ;;
+    -*)
+        echo "Unknown command line option '$arg'"
+        echo
+        help
+        exit 1
+        ;;
 	*)
 	    if [ x$pkgname = x ]; then
 		pkgname=$arg
@@ -52,14 +132,6 @@ for arg in $*; do
 	    ;;
     esac
 done
-
-# Arguments post-processing:
-allcappkgname=$(echo $pkgname | tr [:lower:] [:upper:])
-cappkgname=$(echo $allcappkgname | cut -c1)$(echo $pkgname | cut -c2-)
-	
-if [ x"$ptypes" = x ]; then
-    ptypes=all
-fi
 
 # Locate the template directory. First look in orocos/ros roots
 # Default location:
@@ -97,22 +169,42 @@ else
     echo "Using templates at $templatedir..."
 fi
 
+# Arguments post-processing:
+allcappkgname=$(echo $pkgname | tr [:lower:] [:upper:])
+cappkgname=$(echo $allcappkgname | cut -c1)$(echo $pkgname | cut -c2-)
+
+if [ "$upgrade" ]; then
+  upgrade $pkgname $ptypes
+  exit $?
+fi
+	
+if [ x"$ptypes" = x ]; then
+    ptypes=all
+fi
+
 mkdir $force $pkgname || { echo "Package already exists. Use -f to force creation (will not erase your package but will overwrite generated files)" ; exit 1; }
 
 # different logic depending on package type:
 # default files:
-files="$templatedir/Makefile $templatedir/manifest.xml.tpl $templatedir/package.xml $templatedir/CMakeLists.txt"
+if [ "$catkin" ]; then
+	files="$templatedir/package.xml $templatedir/CMakeLists.txt"
+else
+	files="$templatedir/Makefile $templatedir/manifest.xml $templatedir/CMakeLists.txt"
+fi
 for arg in $ptypes; do
 case "$arg" in
     "all")
-	files="$(find $templatedir -maxdepth 1 -type f)"
 	srcfiles="$(find $templatedir/src -maxdepth 1 -type f)"
 	incfiles="$(find $templatedir/include -maxdepth 1 -type f)"
 	cmake_files="component plugin service support"
 	typekit=1
 	;;
     "empty")
-	files=$templatedir/manifest.xml.tpl $templatedir/package.xml
+	if [ "$catkin" ]; then
+		files="$templatedir/package.xml"
+	else
+		files="$templatedir/manifest.xml"
+	fi
 	;;
     "cmake")
 	;;
@@ -121,7 +213,7 @@ case "$arg" in
 	typekit=1
 	;;
     *)
-        srcfiles="$srcfiles $templatedir/src/CMakeLists.txt $templatedir/src/*$arg*"
+	srcfiles="$srcfiles $templatedir/src/CMakeLists.txt $templatedir/src/*$arg*"
 	cmake_files="$cmake_files $arg"
 	;;
 esac
