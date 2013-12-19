@@ -5,7 +5,7 @@
     <!--NOTE: set the license and author before you publish this code-->
     <license></license>
     <author>Unknown Author</author>
-    <depend package="rtt" />
-    <depend package="orogen" />
+    <rosdep name="rtt" />
+    <rosdep name="orogen" />
 </package>
 
