@@ -242,6 +242,8 @@ ENDIF( DISPLAY_FLAGS )
 
 INSTALL(FILES package.xml DESTINATION share/ocl)
 
-# Install env-hook to set LUA_PATH environment variable
-CONFIGURE_FILE(env-hooks/00.ocl-lua.sh.in ${CMAKE_CURRENT_BINARY_DIR}/env-hooks/00.ocl-lua.sh @ONLY)
-INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/env-hooks/00.ocl-lua.sh DESTINATION etc/catkin/profile.d)
+# Install an env-hook if catkin is found
+find_package(catkin)
+if(catkin_FOUND)
+  catkin_add_env_hooks(00.ocl-lua SHELLS sh DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/env-hooks)
+endif()
