@@ -434,9 +434,11 @@ namespace OCL
             log(Info) << "Buffering ports with size "<< report_policy.size << ", as set in ReportPolicy property." <<endlog();
         }
 
+        this->ports()->addEventPort( *ipi );
         if (porti->connectTo(ourport, report_policy ) == false)
         {
             log(Error) << "Could not connect to OutputPort " << porti->getName() << endlog();
+            this->ports()->removePort(ourport->getName());
             delete ourport; // XXX/TODO We're leaking ourport !
             return false;
         }
@@ -445,10 +447,11 @@ namespace OCL
                                    ipi->getDataSource(),ipi, true) == false)
         {
             log(Error) << "Failed reporting port " << port << endlog();
+            this->ports()->removePort(ourport->getName());
             delete ourport;
             return false;
         }
-        this->ports()->addEventPort( *ipi );
+
         log(Info) << "Monitoring OutputPort " << port << " : ok." << endlog();
         // Add port to ReportData properties if component nor port are listed yet.
         if ( !report_data.value().findValue<string>(component) && !report_data.value().findValue<string>( component+"."+port) )
