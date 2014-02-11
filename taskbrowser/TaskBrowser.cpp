@@ -291,7 +291,7 @@ namespace OCL
                      completes.push_back( path + *i + ".");
                 else
                     if ( startpos == std::string::npos || startpos+1 == line.length() || i->find( line.substr(startpos+1)) == 0 )
-                        completes.push_back( path + *i );
+                        completes.push_back( *i );
             }
             // Stop here if 'cd'
             if (line.find(std::string("cd ")) == 0)
@@ -302,12 +302,12 @@ namespace OCL
                 std::string path;
                 if ( !( pos+1 > startpos) )
                     path = line.substr(pos+1, startpos - pos);
-                //cerr << "path :"<<path<<endl;
+                //cerr << "provider:"<< *i << ", path :"<<path<<endl;
                 if ( *i == line.substr(startpos+1) )
                      completes.push_back( path + *i + ".");
                 else
                     if ( startpos == std::string::npos || startpos+1 == line.length() || i->find( line.substr(startpos+1)) == 0 )
-                        completes.push_back( path + *i );
+                        completes.push_back( *i );
             }
             return; // do not add component names.
         }
@@ -713,8 +713,10 @@ namespace OCL
     {
         string::size_type pos1 = str.find_first_not_of(to_trim);
         string::size_type pos2 = str.find_last_not_of(to_trim);
-        str = str.substr(pos1 == string::npos ? 0 : pos1,
-                         pos2 == string::npos ? str.length() - 1 : pos2 - pos1 + 1);
+        if (pos1 == string::npos) 
+            str.clear(); // nothing else present
+        else
+            str = str.substr(pos1, pos2 - pos1 + 1);
     }
 
 
@@ -820,6 +822,7 @@ namespace OCL
                 } else if ( command.find("ls") == 0 ) {
                     std::string::size_type pos = command.find("ls")+2;
                     command = std::string(command, pos, command.length());
+                    str_trim( command, ' ');
                     printInfo( command );
                 } else if ( command == "" ) { // nop
                 } else if ( command.find("cd ..") == 0  ) {
@@ -1087,8 +1090,11 @@ namespace OCL
                 log(Debug) <<"No such peer : "<< c <<endlog();
                 return 0;
             }
+        if ( !pp.foundPath() ) {
+                log(Debug) <<"No such peer : "<< c <<endlog();
+                return 0;
+            }
         taskobject = pp.taskObject();
-        assert(taskobject);
         peer = pp.peer();
         return pp.peer();
     }
@@ -1862,7 +1868,8 @@ namespace OCL
     {
         // this sets this->peer to the peer given
         peer = context;
-        if ( this->findPeer( peerp+"." ) == 0 ) {
+        taskobject = peer->provides();
+        if ( !peerp.empty() && peerp != "." && this->findPeer( peerp+"." ) == 0 ) {
             cerr << "No such peer or object: " << peerp << endl;
             return;
         }
