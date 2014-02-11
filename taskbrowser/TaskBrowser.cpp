@@ -651,6 +651,7 @@ namespace OCL
         rl_completion_append_character = '\0'; // avoid adding spaces
         rl_attempted_completion_function = &TaskBrowser::orocos_hmi_completion;
 
+        using_history();
         if ( read_history(".tb_history") != 0 ) {
             read_history("~/.tb_history");
         }
