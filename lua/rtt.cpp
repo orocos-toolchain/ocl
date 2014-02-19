@@ -1841,7 +1841,7 @@ static int ServiceRequester_requires(lua_State *L)
 	int argc, ret, i;
 	const char* subsr_str;
 	ServiceRequester *sr;
-	ServiceRequester *subsr;
+	ServiceRequester::shared_ptr subsr;
 
 	sr = *(luaM_checkudata_bx(L, 1, ServiceRequester));
 	argc = lua_gettop(L);
@@ -1859,7 +1859,7 @@ static int ServiceRequester_requires(lua_State *L)
 			luaL_error(L, "ServiceRequester: no required subservice %s of service %s",
 				   subsr_str, sr->getRequestName().c_str());
 		else
-			ServiceRequester_push(L, subsr);
+			ServiceRequester_push(L, subsr.get());
 	}
 	ret = argc - 1;
 
@@ -2267,14 +2267,14 @@ static int TaskContext_getProviderNames(lua_State *L)
 
 static int TaskContext_requires(lua_State *L)
 {
-	ServiceRequester *sr;
+	ServiceRequester::shared_ptr sr;
 	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
 	sr = tc->requires();
 
 	if(!sr)
 		luaL_error(L, "TaskContext.requires returned NULL");
 
-	ServiceRequester_push(L, sr);
+	ServiceRequester_push(L, sr.get());
 	lua_replace(L, 1);
 	return ServiceRequester_requires(L);
 }
