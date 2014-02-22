@@ -1993,7 +1993,7 @@ namespace OCL
                         }
 			else if ( act_type == "FileDescriptorActivity") {
 				using namespace RTT::extras;
-                newact = new FileDescriptorActivity(scheduler, priority, 0);
+                newact = new FileDescriptorActivity(scheduler, priority, (RunnableInterface*)0);
 				FileDescriptorActivity* fdact = dynamic_cast< RTT::extras::FileDescriptorActivity* > (newact);
 				if (fdact) fdact->setTimeout(period);
 				else newact = 0;
