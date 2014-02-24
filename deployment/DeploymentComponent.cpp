@@ -1112,10 +1112,41 @@ namespace OCL
                                         } else
                                             if ( nm.rvalue().getType() == "SequentialActivity" ) {
                                                 this->setNamedActivity(comp.getName(), nm.rvalue().getType(), 0, 0, 0 );
-                                            } else {
-                                                log(Error) << "Unknown activity type: " << nm.rvalue().getType()<<endlog();
-                                                valid = false;
-                                            }
+											} else
+                                                if ( nm.rvalue().getType() == "FileDescriptorActivity" ) {
+                                                    RTT::Property<double> per = nm.rvalue().getProperty("Period");
+                                                    if ( !per.ready() ) {
+                                                        per = Property<double>("p","",0.0); // default to 0.0
+                                                    }
+                                                    // else ignore as is optional
+
+                                                    RTT::Property<int> prio = nm.rvalue().getProperty("Priority");
+                                                    if ( !prio.ready() ) {
+                                                        log(Error)<<"Please specify priority <short> of FileDescriptorActivity."<<endlog();
+                                                        valid = false;
+                                                    }
+
+                                                    unsigned int cpu_affinity = ~0; // default to all CPUs
+                                                    RTT::Property<unsigned int> cpu_affinity_prop = nm.rvalue().getProperty("CpuAffinity");
+                                                    if(cpu_affinity_prop.ready()) {
+                                                        cpu_affinity = cpu_affinity_prop.get();
+                                                    }
+                                                    // else ignore as is optional
+
+                                                    RTT::Property<string> sched = nm.rvalue().getProperty("Scheduler");
+                                                    int scheduler = ORO_SCHED_RT;
+                                                    if ( sched.ready() ) {
+                                                        scheduler = string_to_oro_sched( sched.get());
+                                                        if (scheduler == -1 )
+                                                            valid = false;
+                                                    }
+                                                    if (valid) {
+                                                        this->setNamedActivity(comp.getName(), nm.rvalue().getType(), per.get(), prio.get(), scheduler, cpu_affinity );
+                                                    }
+                                                } else {
+                                                    log(Error) << "Unknown activity type: " << nm.rvalue().getType()<<endlog();
+                                                    valid = false;
+                                                }
                             }
                         } else {
                             // no 'Activity' element, default to Slave:
