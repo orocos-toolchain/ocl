@@ -54,44 +54,29 @@ void FileAppender::updateHook()
        b) we consume too many events on one cycle
      */
     OCL::logging::LoggingEvent   event;
+
+	bool 						again = false;
+	int							count = 0;
+
     assert(appender);
     assert(0 <= maxEventsPerCycle);
-    if (0 == maxEventsPerCycle)
-    {
-        // consume infinite events
-        for (;;)
-        {
-            if (log_port.read( event ) == NewData)
-            {
-                log4cpp::LoggingEvent   e2 = event.toLog4cpp();
-                appender->doAppend(e2);
-            }
-            else
-            {
-                break;      // nothing to do
-            }
-        }
-    }
-    else
-    {
+	do
+	{
+        if (log_port.read( event ) == NewData)
+		{
+			++count;
+			log4cpp::LoggingEvent   e2 = event.toLog4cpp();
+			appender->doAppend(e2);
 
-        // consume up to maxEventsPerCycle events
-        int n       = maxEventsPerCycle;
-        do
-        {
-            if (log_port.read( event ) == NewData)
-            {
-                log4cpp::LoggingEvent   e2 = event.toLog4cpp();
-                appender->doAppend(e2);
-            }
-            else
-            {
-                break;      // nothing to do
-            }
-            --n;
-        }
-        while (0 < n);
-    }
+			// Consume infinite events OR up to maxEventsPerCycle events
+			again = (0 == maxEventsPerCycle) || (count < maxEventsPerCycle);
+		}
+		else
+		{
+			break;      // nothing to do
+		}
+	}
+	while (again);
 }
 
 void FileAppender::cleanupHook()
