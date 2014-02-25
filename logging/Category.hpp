@@ -158,6 +158,14 @@ protected:
     /// for access to \a log_port
     friend class OCL::logging::LoggingService;
     
+public:
+    /** Connect \a otherPort to \a log_port.
+         Typically used by unit test code to directly syphon off logging events.
+         @return true if connected sucessfully, otherwise false
+         @note No error is logged if fails to connect
+     */
+    bool connectToLogPort(RTT::base::PortInterface& otherPort);
+
 private:
     /* prevent copying and assignment */
     Category(const Category& other);

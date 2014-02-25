@@ -151,6 +151,11 @@ CategoryStream Category::getRTStream(log4cpp::Priority::Value priority)
                           priority : log4cpp::Priority::NOTSET);
 }
 
+bool Category::connectToLogPort(RTT::base::PortInterface& otherPort)
+{
+    return otherPort.connectTo(&log_port);
+}
+
 // namespaces
 }
 }
