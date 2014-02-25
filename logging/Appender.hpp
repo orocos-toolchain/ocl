@@ -27,8 +27,21 @@ public:
     virtual bool configureLayout();
     /// ensure port is connected before we start
     virtual bool startHook();
+	/// Drain the buffer
+	virtual void stopHook();
+
+	/** Process all remaining events in buffer
+	 */
+	virtual void drainBuffer();
 
 protected:
+	/** Process up \a n events
+        @param n if 0 ==n then process events until buffer is empty, otherwise
+        process at most n events
+        @pre 0 <= n (otherwise acts as though n==1)
+     */
+	virtual void processEvents(int n);
+
     /// Port we receive logging events on
     /// Initially unconnected. The logging service connects appenders.
     RTT::InputPort<OCL::logging::LoggingEvent> log_port;

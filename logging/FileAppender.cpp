@@ -47,36 +47,7 @@ bool FileAppender::configureHook()
 
 void FileAppender::updateHook()
 {
-    if (!log_port.connected()) return;      // no category connected to us
-
-    /* Consume waiting events until
-       a) the buffer is empty
-       b) we consume too many events on one cycle
-     */
-    OCL::logging::LoggingEvent   event;
-
-	bool 						again = false;
-	int							count = 0;
-
-    assert(appender);
-    assert(0 <= maxEventsPerCycle);
-	do
-	{
-        if (log_port.read( event ) == NewData)
-		{
-			++count;
-			log4cpp::LoggingEvent   e2 = event.toLog4cpp();
-			appender->doAppend(e2);
-
-			// Consume infinite events OR up to maxEventsPerCycle events
-			again = (0 == maxEventsPerCycle) || (count < maxEventsPerCycle);
-		}
-		else
-		{
-			break;      // nothing to do
-		}
-	}
-	while (again);
+	processEvents(maxEventsPerCycle);
 }
 
 void FileAppender::cleanupHook()

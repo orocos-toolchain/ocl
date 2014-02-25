@@ -13,12 +13,12 @@ public:
 	OstreamAppender(std::string name);
 	virtual ~OstreamAppender();
 
-	/** Process all remaining events in buffer
-	 */
-	virtual void drainBuffer();
 protected:
+	/// Create log4cpp appender
     virtual bool configureHook();
+	/// Process at most one (1) event
 	virtual void updateHook();
+	/// Destroy appender
 	virtual void cleanupHook();
 
     /** 
