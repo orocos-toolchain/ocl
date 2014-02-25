@@ -88,6 +88,27 @@ void OstreamAppender::updateHook()
     }
 }
 
+void OstreamAppender::drainBuffer()
+{
+    if (!log_port.connected()) return;      // no category connected to us
+
+    OCL::logging::LoggingEvent	event;
+    do
+    {
+        if (log_port.read( event ) == NewData)
+        {
+            log4cpp::LoggingEvent   e2 = event.toLog4cpp();
+            assert(appender);
+            appender->doAppend(e2);
+        }
+        else
+        {
+            break;		// buffer has been drained
+        }
+    }
+    while (true);
+}
+
 void OstreamAppender::cleanupHook()
 {
     delete appender;

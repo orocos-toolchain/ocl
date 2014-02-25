@@ -12,6 +12,10 @@ class OstreamAppender : public OCL::logging::Appender
 public:
 	OstreamAppender(std::string name);
 	virtual ~OstreamAppender();
+
+	/** Process all remaining events in buffer
+	 */
+	virtual void drainBuffer();
 protected:
     virtual bool configureHook();
 	virtual void updateHook();
