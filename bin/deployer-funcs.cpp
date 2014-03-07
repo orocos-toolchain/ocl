@@ -99,10 +99,10 @@ int deployerParseCmdLine(int                        argc,
         ("require-name-service",
          "Require CORBA name service")
 		("DeployerName",
-		 po::value<std::string>(&name),
+		 po::value< std::vector<std::string> >(),
 		 "Name of deployer component (the --DeployerName flag is optional). If you provide a script or XML file name, that will be run instead.")
 		;
-	pos.add("DeployerName", 1);
+    pos.add("DeployerName", -1);
 
 	// collate options
 	options.add(allowed);
@@ -190,13 +190,19 @@ int deployerParseCmdLine(int                        argc,
 			}
 		}
 		if (vm.count("DeployerName")) {
-		    if (name.rfind(".xml") == 4 ||
-		            name.rfind(".cpf") == 4 ||
-		            name.rfind(".osd") == 4 ||
-                name.rfind(".ops") == 4 ) {
-                scriptFiles.push_back(name);
-		        name.clear();
-            }            
+            const std::vector<std::string> &positional_arguments = vm["DeployerName"].as< std::vector<std::string> >();
+            for(std::vector<std::string>::const_iterator it = positional_arguments.begin(); it != positional_arguments.end(); ++it) {
+                if (it->size() >= 1 && it->at(0) == '_') continue; // ignore arguments that start with a _
+                std::string arg = *it;
+                if (arg.rfind(".xml") != std::string::npos ||
+                    arg.rfind(".cpf") != std::string::npos ||
+                    arg.rfind(".osd") != std::string::npos ||
+                    arg.rfind(".ops") != std::string::npos ) {
+                    scriptFiles.push_back(arg);
+                } else {
+                    name = arg;
+                }
+            }
 		}
 	}
 	catch (std::logic_error e)
