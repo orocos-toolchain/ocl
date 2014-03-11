@@ -546,7 +546,7 @@ namespace OCL
                 std::string item = to_parse.substr(startpos, endpos);
 
                 if ( taskobject->hasService( item ) ) {
-                    taskobject = peer->provides(item);
+                    taskobject = taskobject->provides(item);
                     itemfound = true;
                 } else
                     if ( peer->hasPeer( item ) ) {
