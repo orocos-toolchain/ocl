@@ -99,7 +99,6 @@
 #ifdef USE_READLINE
 # ifdef USE_EDITLINE
 #  include <editline/readline.h>
-#  include <editline/history.h>
 # else
 #  include <readline/readline.h>
 #  include <readline/history.h>
