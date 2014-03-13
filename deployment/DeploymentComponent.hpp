@@ -217,7 +217,7 @@ namespace OCL
          * @return null if the service could not be found, the service
          * otherwise
          */
-        ServiceRequester* stringToServiceRequester(std::string const& names);
+        ServiceRequester::shared_ptr stringToServiceRequester(std::string const& names);
         /**
          * Converts a dot-separated path to a service to a Port
          * object.

@@ -391,7 +391,7 @@ namespace OCL
     	return ret;
     }
 
-    ServiceRequester* DeploymentComponent::stringToServiceRequester(string const& names) {
+    ServiceRequester::shared_ptr DeploymentComponent::stringToServiceRequester(string const& names) {
         std::vector<std::string> strs;
         boost::split(strs, names, boost::is_any_of("."));
 
@@ -400,10 +400,10 @@ namespace OCL
             log(Error) << "No such component: '"<< component <<"'" <<endlog();
             if ( names.find('.') != string::npos )
                 log(Error)<< " when looking for service '" << names <<"'" <<endlog();
-            return NULL;
+            return ServiceRequester::shared_ptr();
         }
         // component is peer or self:
-        ServiceRequester* ret = (component != this->getName() ? getPeer(component)->requires() : this->requires());
+        ServiceRequester::shared_ptr ret = (component != this->getName() ? getPeer(component)->requires() : this->requires());
 
         // remove component name:
         strs.erase( strs.begin() );
@@ -591,7 +591,7 @@ namespace OCL
         std::string reqs_name(required.begin(), reqs.begin());
         std::string rop_name(reqs.begin()+1, required.end());
         log(Debug) << "Looking for required operation " << rop_name << " in service " << reqs_name << endlog();
-        ServiceRequester* r = this->stringToServiceRequester(reqs_name);
+        ServiceRequester::shared_ptr r = this->stringToServiceRequester(reqs_name);
         // Provided service
         boost::iterator_range<std::string::const_iterator> pros = boost::algorithm::find_last(provided, ".");
         std::string pros_name(provided.begin(), pros.begin());

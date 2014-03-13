@@ -1337,7 +1337,7 @@ namespace OCL
     bool TaskBrowser::printService( string name ) {
     	bool result = false;
         Service::shared_ptr ops = stringToService(name);
-        ServiceRequester* sr = 0;
+        ServiceRequester::shared_ptr sr;
 
         if ( ops || GlobalService::Instance()->hasService( name ) ) // only object name was typed
             {
