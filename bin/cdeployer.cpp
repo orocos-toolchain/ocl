@@ -172,7 +172,11 @@ int main(int argc, char** argv)
                 if ( !(*iter).empty() )
                 {
                     if ( (*iter).rfind(".xml",string::npos) == (*iter).length() - 4 || (*iter).rfind(".cpf",string::npos) == (*iter).length() - 4) {
-                        result = dc.kickStart( (*iter) );
+                        if ( deploymentOnlyChecked ) {
+                            result = dc.loadComponents( (*iter) ) && dc.configureComponents();
+                        } else {
+                            result = dc.kickStart( (*iter) );
+                        }
                         continue;
                     } if ( (*iter).rfind(".ops",string::npos) == (*iter).length() - 4 || (*iter).rfind(".osd",string::npos) == (*iter).length() - 4) {
                         result = dc.runScript( (*iter) );

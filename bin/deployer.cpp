@@ -163,10 +163,14 @@ int main(int argc, char** argv)
                 if ( !(*iter).empty() )
                 {
                     if ( (*iter).rfind(".xml",std::string::npos) == (*iter).length() - 4 || (*iter).rfind(".cpf",std::string::npos) == (*iter).length() - 4) {
-                        result = dc.kickStart( (*iter) ) && result;
+                        if ( deploymentOnlyChecked ) {
+                            result = dc.loadComponents( (*iter) ) && dc.configureComponents();
+                        } else {
+                            result = dc.kickStart( (*iter) );
+                        }
                         continue;
                     } if ( (*iter).rfind(".ops",std::string::npos) == (*iter).length() - 4 || (*iter).rfind(".osd",std::string::npos) == (*iter).length() - 4) {
-			result = dc.runScript( (*iter) ) && result;
+                        result = dc.runScript( (*iter) ) && result;
                         continue;
                     }
                     log(Error) << "Unknown extension of file: '"<< (*iter) <<"'. Must be xml, cpf for XML files or, ops or osd for script files."<<endlog();
