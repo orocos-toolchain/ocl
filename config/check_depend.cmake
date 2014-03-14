@@ -54,6 +54,7 @@ FIND_PATH( READLINE_H readline/readline.h )
 IF ( READLINE_H )
     MESSAGE("-- Looking for readline/readline.h - found")
     FIND_LIBRARY(READLINE_LIBRARY readline )
+    FIND_LIBRARY(HISTORY_LIBRARY history )
     # On win32, we need to look for both readline (release) and readlineD (debug)
     # to avoid mixing release/debug runtime libraries
     IF(WIN32)
