@@ -72,6 +72,7 @@
 #include <rtt/plugin/PluginLoader.hpp>
 #include <rtt/internal/GlobalService.hpp>
 #include <rtt/types/GlobalsRepository.hpp>
+#include <rtt/internal/GlobalEngine.hpp>
 #include <boost/algorithm/string.hpp>
 
 #include <iostream>
@@ -491,7 +492,7 @@ namespace OCL
         // complete on types:
         bool try_deeper = false;
         try {
-            Parser parser;
+            Parser parser(GlobalEngine::Instance());
             DataSourceBase::shared_ptr result = parser.parseExpression( peerpath + component_found, context );
             if (result && !component.empty() ) {
                 vector<string> members = result->getMemberNames();
@@ -508,7 +509,7 @@ namespace OCL
         // go a level deeper again.
         if (try_deeper) {
             try {
-                Parser parser;
+                Parser parser(GlobalEngine::Instance());
                 DataSourceBase::shared_ptr result = parser.parseExpression( peerpath + component, context );
                 if (result && !component.empty() ) {
                     vector<string> members = result->getMemberNames();
@@ -1389,7 +1390,7 @@ namespace OCL
 	    // Set caller=0 to have correct call/send semantics.
         // we're outside the updateHook(). Passing 'this' would
         // trigger the EE of the TB, but not our own function.
-        scripting::Parser _parser( 0 );
+        scripting::Parser _parser( GlobalEngine::Instance() );
 
         if (debug)
             cerr << "Trying ValueStatement..."<<nl;
