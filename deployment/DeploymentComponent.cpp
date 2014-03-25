@@ -124,6 +124,9 @@ namespace OCL
         this->addOperation("path", &DeploymentComponent::path, this, ClientThread).doc("Add additional directories to the component search path without importing them.").arg("Paths", "A colon or semi-colon separated list of paths to search for packages.");
 
         this->addOperation("loadComponent", &DeploymentComponent::loadComponent, this, ClientThread).doc("Load a new component instance from a library.").arg("Name", "The name of the to be created component").arg("Type", "The component type, used to lookup the library.");
+        this->addOperation("configureComponent", (bool (DeploymentComponent::*)(const std::string&))&DeploymentComponent::configureComponent, this, ClientThread).doc("Configure a component who is a peer of this deployer by name.").arg("Name", "The component's name");
+        this->addOperation("startComponent", (bool (DeploymentComponent::*)(const std::string&))&DeploymentComponent::startComponent, this, ClientThread).doc("Start a component who is a peer of this deployer by name.").arg("Name", "The component's name");
+        this->addOperation("stopComponent", (bool (DeploymentComponent::*)(const std::string&))&DeploymentComponent::stopComponent, this, ClientThread).doc("Stop a component who is a peer of this deployer by name.").arg("Name", "The component's name");
         // avoid warning about overriding
         this->provides()->removeOperation("loadService");
         this->addOperation("loadService", &DeploymentComponent::loadService, this, ClientThread).doc("Load a discovered service or plugin in an existing component.").arg("Name", "The name of the component which will receive the service").arg("Service", "The name of the service or plugin.");
@@ -2109,6 +2112,43 @@ namespace OCL
             } else {
                 log(Error) << "Could not cleanup Component "<< instance->getName() << " (not Stopped)"<<endlog();
                 valid = false;
+            }
+        }
+        return valid;
+    }
+
+    bool DeploymentComponent::configureComponent(RTT::TaskContext *instance)
+    {
+        RTT::Logger::In in("configureComponent");
+        bool valid = false;
+
+        if ( instance ) {
+            OperationCaller<bool(void)> instanceconfigure = instance->getOperation("configure");
+            if(instanceconfigure()) {
+                log(Info) << "Configured " << instance->getName()<<endlog();
+                valid = true;
+            }
+            else {
+                log(Error) << "Could not configure loaded Component "<< instance->getName() <<endlog();
+            }
+        }
+        return valid;
+    }
+
+    bool DeploymentComponent::startComponent(RTT::TaskContext *instance)
+    {
+        RTT::Logger::In in("startComponent");
+        bool valid = false;
+
+        if ( instance ) {
+            OperationCaller<bool(void)> instancestart = instance->getOperation("start");
+            if ( instance->isRunning() ||
+                 instancestart() ) {
+                log(Info) << "Started "<< instance->getName() <<endlog();
+                valid = true;
+            }
+            else {
+                log(Error) << "Could not start loaded Component "<< instance->getName() <<endlog();
             }
         }
         return valid;

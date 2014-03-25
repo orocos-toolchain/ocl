@@ -841,6 +841,40 @@ namespace OCL
         const RTT::FactoryMap& getFactories() const;
 
         /**
+         * Configure a single loaded and running component.
+         * @param instance instance pointer of the component.
+         * @return true if successfully configured.
+         */
+        bool configureComponent(RTT::TaskContext *instance);
+
+        /**
+         * Configure a single loaded and running components.
+         * @param comp_name name of the component.
+         * @return true if successfully configured 
+         */
+        bool configureComponent(const std::string& comp_name)
+        {
+            return this->configureComponent(  this->getPeer(comp_name) );
+        }
+
+        /**
+         * Stop a single loaded and running component.
+         * @param instance instance pointer of the component.
+         * @return true if successfully started.
+         */
+        bool startComponent(RTT::TaskContext *instance);
+
+        /**
+         * Stop a single loaded and running components.
+         * @param comp_name name of the component.
+         * @return true if successfully started 
+         */
+        bool startComponent(const std::string& comp_name)
+        {
+            return this->startComponent(  this->getPeer(comp_name) );
+        }
+
+        /**
          * Stop a single loaded and running component.
          * @param instance instance pointer of the component.
          * @return true if successfully stopped.
