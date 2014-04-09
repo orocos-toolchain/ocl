@@ -13,7 +13,8 @@ Appender::Appender(std::string name) :
     RTT::TaskContext(name, RTT::TaskContext::PreOperational), 
         appender(0),
         layoutName_prop("LayoutName", "Layout name (e.g. 'simple', 'pattern')"),
-        layoutPattern_prop("LayoutPattern", "Layout conversion pattern (for those layouts that use a pattern)")
+        layoutPattern_prop("LayoutPattern", "Layout conversion pattern (for those layouts that use a pattern)"),
+        countMaxPopped(0)
 {
     ports()->addEventPort("LogPort", log_port );
 
@@ -76,6 +77,23 @@ bool Appender::startHook()
 void Appender::stopHook()
 {
 	drainBuffer();
+
+	// introduce event to log diagnostics
+	if (0 != appender)
+	{
+		/* place a "#" at the front of the message, for appenders that are
+		 reporting data for post-processing. These particular appenders
+		 don't prepend the time data (it's one at time of sampling).
+		 This way gnuplot, etc., ignore this diagnostic data.
+		*/
+		std::stringstream	ss;
+		ss << "# countMaxPopped=" << countMaxPopped;
+		log4cpp::LoggingEvent	event("OCL.logging.Appender",
+									  ss.str(),
+									  "",
+									  log4cpp::Priority::DEBUG);
+		appender->doAppend(event);
+	}
 }
 
 void Appender::drainBuffer()
@@ -109,6 +127,7 @@ void Appender::processEvents(int n)
 
 			// Consume infinite events OR up to n events
 			again = (0 == n) || (count < n);
+			if ((0 != n) && (count == n)) ++countMaxPopped;
 		}
 		else
 		{
