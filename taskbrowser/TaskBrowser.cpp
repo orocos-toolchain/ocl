@@ -163,15 +163,58 @@ namespace OCL
 #if defined(USE_READLINE)
 
     // Signal code only on Posix:
+    int TaskBrowser::rl_received_signal;
 #if defined(USE_SIGNALS)
-
     void TaskBrowser::rl_sigwinch_handler(int sig, siginfo_t *si, void *ctxt) {
+        rl_received_signal = sig;
 #if defined(OROCOS_TARGET_XENOMAI) && CONFIG_XENO_VERSION_MAJOR == 2 && CONFIG_XENO_VERSION_MINOR >= 5
         if (xeno_sigwinch_handler(sig, si, ctxt) == 0)
 #endif
             rl_resize_terminal();
     }
+
+    void TaskBrowser::rl_signal_handler(int sig, siginfo_t *si, void *ctxt) {
+        rl_received_signal = sig;
+        switch(sig) {
+        case SIGINT:
+            if (rl_end > 0) {
+                rl_free_line_state();
+                rl_echo_signal_char(sig);
+                rl_received_signal = 0;
+            }
+        }
+    }
 #endif // USE_SIGNALS
+
+    int TaskBrowser::rl_getc(FILE *stream)
+    {
+        int result;
+        unsigned char c;
+
+        while (1)
+        {
+            rl_received_signal = 0;
+            result = ::read(fileno(stream), &c, sizeof(unsigned char));
+
+            if (result == sizeof(unsigned char))
+                return (c);
+
+            /* If zero characters are returned, then the file that we are
+             reading from is empty!  Return EOF in that case. */
+            if (result == 0)
+                return (EOF);
+
+            /* Return an error if SIGINT has been received */
+            if (errno == EINTR && rl_received_signal == SIGINT)
+                return (RL_ISSTATE (RL_STATE_READCMD) ? READERR : EOF);
+
+            /* If the error that we received was EINTR, then try again,
+             this is simply an interrupted system call to read ().
+             Otherwise, some error ocurred, also signifying EOF. */
+            if (errno != EINTR)
+                return (RL_ISSTATE (RL_STATE_READCMD) ? READERR : EOF);
+        }
+    }
 
     char *TaskBrowser::rl_gets ()
     {
@@ -205,12 +248,18 @@ namespace OCL
         } else {
             p = "> ";
         }
-#if defined(USE_SIGNALS)
 
+#ifdef USE_SIGNALS
         if (rl_set_signals() != 0)
             cerr << "Error setting signals !" <<endl;
 #endif
+
         line_read = readline ( p.c_str() );
+
+#ifdef USE_SIGNALS
+        if (rl_clear_signals() != 0)
+            cerr << "Error clearing signals !" <<endl;
+#endif
 
         /* If the line has any text in it,
            save it on the history. */
@@ -647,9 +696,11 @@ namespace OCL
         // we always catch sigwinch ourselves, in order to pass it on to Xenomai if necessary.
 #ifdef USE_SIGNALS
         rl_catch_sigwinch = 0;
+        rl_catch_signals = 0;
 #endif
         rl_completion_append_character = '\0'; // avoid adding spaces
         rl_attempted_completion_function = &TaskBrowser::orocos_hmi_completion;
+        rl_getc_function = &TaskBrowser::rl_getc;
 
         using_history();
         if ( read_history(".tb_history") != 0 ) {
@@ -661,6 +712,10 @@ namespace OCL
         sa.sa_flags = SA_SIGINFO | SA_RESTART;
         sigemptyset( &sa.sa_mask );
         sigaction(SIGWINCH, &sa, 0);
+
+        sa.sa_sigaction = &(TaskBrowser::rl_signal_handler);
+        sa.sa_flags = SA_SIGINFO;
+        sigaction(SIGINT, &sa, 0);
 #endif // USE_SIGNALS
 #endif // USE_READLINE
 
@@ -727,13 +782,6 @@ namespace OCL
      */
     void TaskBrowser::loop()
     {
-#ifdef USE_SIGNALS
-        // Let readline intercept relevant signals
-        if(rl_catch_signals == 0)
-            cerr << "Error: not catching signals !"<<endl;
-        if (rl_set_signals() != 0)
-            cerr << "Error setting signals !" <<endl;
-#endif
         cout << nl<<
             coloron <<
             "  This console reader allows you to browse and manipulate TaskContexts."<<nl<<

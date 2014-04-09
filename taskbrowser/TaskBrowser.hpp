@@ -120,6 +120,13 @@ namespace OCL
 #if defined(_POSIX_VERSION) && !defined(HAS_EDITLINE)
         static void rl_sigwinch_handler(int sig, siginfo_t *si, void *ctxt);
 #endif
+
+        static int rl_received_signal;
+        static void rl_signal_handler(int sig, siginfo_t *si, void *ctxt);
+
+        /* Custom implementation of rl_getc() to handle signals correctly. */
+        static int rl_getc(FILE *);
+
         /* Read a string, and return a pointer to it.
            Returns NULL on EOF. */
         char *rl_gets ();
