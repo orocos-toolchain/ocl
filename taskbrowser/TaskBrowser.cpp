@@ -205,7 +205,7 @@ namespace OCL
                 return (EOF);
 
             /* Return an error if SIGINT has been received */
-            if (errno == EINTR && rl_received_signal == SIGINT)
+            if (errno == EINTR && (rl_received_signal == SIGINT || rl_received_signal == SIGTERM))
                 return (RL_ISSTATE (RL_STATE_READCMD) ? READERR : EOF);
 
             /* If the error that we received was EINTR, then try again,
@@ -716,6 +716,7 @@ namespace OCL
         sa.sa_sigaction = &(TaskBrowser::rl_signal_handler);
         sa.sa_flags = SA_SIGINFO;
         sigaction(SIGINT, &sa, 0);
+        sigaction(SIGTERM, &sa, 0);
 #endif // USE_SIGNALS
 #endif // USE_READLINE
 
