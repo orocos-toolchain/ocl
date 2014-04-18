@@ -62,6 +62,7 @@ int main(int argc, char** argv)
 	std::string                 name("Deployer");
     bool                        requireNameService = false;
     bool                        deploymentOnlyChecked = false;
+	int							minNumberCPU = 0;
 	po::variables_map           vm;
 	po::options_description     taoOptions("Additional options can also be passed to TAO");
 	// we don't actually list any options for TAO ...
@@ -102,12 +103,20 @@ int main(int argc, char** argv)
     // otherwise process all options up to but not including "--"
 	int rc = OCL::deployerParseCmdLine(!found ? argc : taoIndex, argv,
                                        siteFile, scriptFiles, name, requireNameService,deploymentOnlyChecked,
+									   minNumberCPU,
                                        vm, &otherOptions);
 	if (0 != rc)
 	{
 		return rc;
 	}
 
+
+	// check system capabilities
+	rc = OCL::enforceMinNumberCPU(minNumberCPU);
+	if (0 != rc)
+	{
+		return rc;
+	}
 
 #if     defined(ORO_BUILD_LOGGING) && defined(OROSEM_LOG4CPP_LOGGING)
     if (!OCL::deployerConfigureRttLog4cppCategory(rttLog4cppConfigFile))

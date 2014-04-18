@@ -31,6 +31,10 @@
 #include <boost/assign/list_of.hpp>
 #include <boost/algorithm/string/case_conv.hpp>
 
+#if		defined(ORO_SUPPORT_CPU_AFFINITY)
+#include <unistd.h>
+#endif
+
 #if     defined(ORO_BUILD_LOGGING) && defined(OROSEM_LOG4CPP_LOGGING)
 // to configure RTT's use of log4cpp
 #include <log4cpp/Category.hh>
@@ -69,6 +73,7 @@ int deployerParseCmdLine(int                        argc,
                          std::string&               name,
                          bool&                      requireNameService,
                          bool&						deploymentOnlyChecked,
+						 int&						minNumberCPU,
                          po::variables_map&         vm,
                          po::options_description*   otherOptions)
 {
@@ -98,6 +103,9 @@ int deployerParseCmdLine(int                        argc,
 		 "Only check component loading, connecting peers and ports. Returns 255 in case of errors.")
         ("require-name-service",
          "Require CORBA name service")
+		("minNumberCPU",
+		 po::value<int>(&minNumberCPU),
+		 "The minimum number of CPUs required for deployment (0 <= value) [0==no minimum (default)]")
 		("DeployerName",
 		 po::value< std::vector<std::string> >(),
 		 "Name of deployer component (the --DeployerName flag is optional). If you provide a script or XML file name, that will be run instead.")
@@ -152,6 +160,14 @@ int deployerParseCmdLine(int                        argc,
 			else
 				if (fork() != 0 )
 					return 1;
+		}
+
+		if ( !(0 <= minNumberCPU) )
+		{
+			std::cout << std::endl
+            << "ERROR: Invalid minimum number CPU. Require 0 <= value"
+            << std::endl << options << std::endl;
+			return -2;
 		}
 
 		// turn off all console logging
@@ -212,6 +228,44 @@ int deployerParseCmdLine(int                        argc,
     }
 
     return 0;
+}
+
+int enforceMinNumberCPU(const int minNumberCPU)
+{
+	assert(0 <= minNumberCPU);
+
+	// enforce min CPU constraints
+	if (0 < minNumberCPU)
+	{
+#if		defined(ORO_SUPPORT_CPU_AFFINITY)
+#ifdef	__linux__
+		int numCPU = sysconf( _SC_NPROCESSORS_ONLN );
+#else
+#error Unsupported configuration!
+#endif
+		if (-1 == numCPU)
+		{
+			std::cerr << "ERROR: Unable to determine the number of CPUs for minimum number CPU support."
+					  << std::endl;
+			return -1;
+		}
+		else if (numCPU < minNumberCPU)
+		{
+			std::cerr << "ERROR: Number of CPUS (" << numCPU
+					  << ") is less than minimum required (" << minNumberCPU
+					  << ")" << std::endl;
+			return -2;
+		}
+		// else ok as numCPU <= minNumberCPU
+
+#else
+		std::cout << "WARNING: Ignoring minimum number of CPU requirement "
+				  << "as RTT does not support CPU affinity on this platform."
+				  << std::endl;
+#endif
+	}
+
+	return 0;
 }
 
 #ifdef  ORO_BUILD_RTALLOC
