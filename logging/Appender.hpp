@@ -54,6 +54,9 @@ protected:
     RTT::Property<std::string>                      layoutName_prop;
     /// Layout conversion pattern (for those layouts that use a pattern)
     RTT::Property<std::string>                      layoutPattern_prop;
+
+	// diagnostic: count number of times popped max events
+	unsigned int countMaxPopped;
 };
 
 // namespaces
