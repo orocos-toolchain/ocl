@@ -73,6 +73,51 @@ bool Appender::startHook()
     return true;
 }
 
+void Appender::stopHook()
+{
+	drainBuffer();
+}
+
+void Appender::drainBuffer()
+{
+	processEvents(0);
+}
+
+void Appender::processEvents(int n)
+{
+    if (!log_port.connected()) return;      // no category connected to us
+	if (!appender) return;				// no appender!?
+
+	// check pre-conditions
+	if (0 > n) n = 1;
+
+    /* Consume waiting events until
+       a) the buffer is empty
+       b) we consume enough events
+	*/
+    OCL::logging::LoggingEvent	event;
+	bool 						again = false;
+	int							count = 0;
+
+	do
+	{
+        if (log_port.read( event ) == RTT::NewData)
+		{
+			++count;
+
+			appender->doAppend( event.toLog4cpp() );
+
+			// Consume infinite events OR up to n events
+			again = (0 == n) || (count < n);
+		}
+		else
+		{
+			break;      // nothing to do
+		}
+	}
+	while (again);
+}
+
 // namespaces
 }
 }

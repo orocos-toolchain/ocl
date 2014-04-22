@@ -13,8 +13,11 @@ public:
 	FileAppender(std::string name);
 	virtual ~FileAppender();
 protected:
+	/// Create log4cpp appender
     virtual bool configureHook();
+	/// Process at most \a maxEventsPerCycle event
 	virtual void updateHook();
+	/// Destroy appender
 	virtual void cleanupHook();
     
     /// Name of file to append to

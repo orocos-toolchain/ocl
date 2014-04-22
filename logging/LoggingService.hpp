@@ -43,6 +43,8 @@ public:
 protected:
     // list of all category levels
     RTT::Property<RTT::PropertyBag>     levels_prop;
+    // list of all category additivity values (0 == false == additivity off)
+    RTT::Property<RTT::PropertyBag>     additivity_prop;
     // list of appenders per category
     RTT::Property<RTT::PropertyBag>     appenders_prop;
     // list of all active appenders
