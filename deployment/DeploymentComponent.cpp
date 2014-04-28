@@ -340,7 +340,7 @@ namespace OCL
             log(Error)<< "No such peer: "<<to<<endlog();
             return false;
         }
-        if ( t1->hasPeer(t2) ) {
+        if ( t1->hasPeer(t2->getName()) ) {
             log(Info) << "addPeer: "<< to << " is already a peer of " << from << endlog();
             return true;
         }
