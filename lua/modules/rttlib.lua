@@ -226,6 +226,14 @@ function propfromtab(prop, tab)
    return prop:get():fromtab(tab)
 end
 
+--- Update contents of a Attribute from a table.
+-- Available as a method for Attribute using attr:fromtab(tab)
+-- @param var Variable to update
+-- @param tab appropriate table
+function attrfromtab(attr, tab)
+   return attr:get():fromtab(tab)
+end
+
 --- Convert RTT Vector to Lua table
 -- @param sv Vector variable
 -- @return Lua table
@@ -242,6 +250,14 @@ end
 function prop2str(p)
    local info = p:info()
    return white(info.name) .. ' (' .. info.type .. ')' .. " = " .. if_nl_ind(yellow(var2str(p:get()))) .. red(" // " .. info.desc) .. ""
+end
+
+--- pretty print attributes
+-- @param p attribute
+-- @return string
+function attr2str(p)
+   local info = p:info()
+   return white(info.name) .. ' (' .. info.type .. ')' .. " = " .. if_nl_ind(yellow(var2str(p:get()))) .. ""
 end
 
 --- Convert an operation to a string.
@@ -311,6 +327,11 @@ function service2str(s, inds, indn)
       utils.foreach(function(portname)
 		       t[#t+1] = ind .. "        " .. port2str(s:getPort(portname))
 		    end, s:getPortNames())
+
+      t[#t+1] = ind .. magenta("   Attributes:  ")
+      utils.foreach(function(p)
+		       t[#t+1] = ind .. "       " .. attr2str(p)
+		    end, s:getAttributes())
 
       t[#t+1] = ind .. magenta("   Properties:  ")
       utils.foreach(function(p)
@@ -440,6 +461,11 @@ function tc2str(tc, full)
       res[#res+1] = "       " .. port2str(TaskContext.getPort(tc, p))
    end
 
+   res[#res+1] = magenta("   Attributes") .. ":"
+   for i,p in ipairs(TaskContext.getAttributes(tc)) do
+      res[#res+1] = "      " .. attr2str(p)
+   end
+
    res[#res+1] = magenta("   Properties") .. ":"
    for i,p in ipairs(TaskContext.getProperties(tc)) do
       res[#res+1] = "      " .. prop2str(p)
@@ -468,6 +494,8 @@ end
 --    },
 --    properties={
 --       { name='configurations', datatype='string', desc="Set of configuration" },
+--    attributes={
+--       { name='attributes', datatype='string'},
 --    }
 -- }
 
@@ -478,7 +506,7 @@ end
 -- @param tc optional TaskContext of interface to construct. default is rtt.getTC().
 function create_if(iface, tc)
    local tc = tc or rtt.getTC()
-   local res={ ports={}, props={} }
+   local res={ ports={}, props={}, attrs={}, }
 
    function create_port(pspec, i)
       local p
@@ -520,8 +548,22 @@ function create_if(iface, tc)
       res.props[pspec.name]=p
    end
 
+   function create_attr(pspec, i)
+      local p
+      assert(pspec.name, "missing attribute name in entry"..tostring(i))
+
+      if tc_has_attribute(tc, pspec.name) then
+	 res.attrs[pspec.name] = tc:getAttribute(pspec.name)
+	 return
+      end
+      p=rtt.Attribute(pspec.datatype)
+      tc:addAttribute(p, pspec.name)
+      res.attrs[pspec.name]=p
+   end
+
    utils.foreach(create_port, iface.ports)
    utils.foreach(create_prop, iface.properties)
+   utils.foreach(create_prop, iface.attributes)
    return res
 end
 
@@ -539,6 +581,12 @@ function tc_cleanup()
       prop:delete()
    end
 
+   local function cleanup_attr(pname)
+      local attr = TaskContext.getAttribute(tc, pname)
+      TaskContext.removeAttribute(tc, pname)
+      attr:delete()
+   end
+
    local function cleanup_port(pname)
       local port = TaskContext.getPort(tc, pname)
       TaskContext.removePort(tc, pname)
@@ -554,7 +602,9 @@ function tc_cleanup()
 				end, TaskContext.getPropertyNames(tc))
 
    local portnames = TaskContext.getPortNames(tc)
+   local attrnames = TaskContext.getAttributeNames(tc)
 
+   utils.foreach(cleanup_attr, attrnames)
    utils.foreach(cleanup_prop, propnames)
    utils.foreach(cleanup_port, portnames)
    return #propnames, #portnames
@@ -574,6 +624,14 @@ end
 -- @return true or false
 function tc_has_property(tc, name)
    return utils.table_has(TaskContext.getPropertyNames(tc), name)
+end
+
+--- Check if a TaskContext has a attribute with name
+-- @param tc TaskContext
+-- @param name attribute name to check for
+-- @return true or false
+function tc_has_attribute(tc, name)
+   return utils.table_has(TaskContext.getAttributeNames(tc), name)
 end
 
 
@@ -736,6 +794,7 @@ end
 -- conveniance constructors
 setmetatable(rtt.Variable, {__call=function(t,...) return rtt.Variable.new(...) end})
 setmetatable(rtt.Property, {__call=function(t,...) return rtt.Property.new(...) end})
+setmetatable(rtt.Attribute, {__call=function(t,...) return rtt.Attribute.new(...) end})
 setmetatable(rtt.InputPort, {__call=function(t,...) return rtt.InputPort.new(...) end})
 setmetatable(rtt.OutputPort, {__call=function(t,...) return rtt.OutputPort.new(...) end})
 setmetatable(rtt.EEHook, {__call=function(t,...) return rtt.EEHook.new(...) end})
@@ -767,6 +826,8 @@ if type(debug) == 'table' then
    reg.Variable.totab=var2tab
    reg.Property.__tostring=prop2str
    reg.Property.fromtab=propfromtab
+   reg.Attribute.__tostring=attr2str
+   reg.Attribute.fromtab=attrfromtab
    reg.Service.__tostring=service2str
    reg.Service.stat=portstats
    reg.ServiceRequester.__tostring=service_req2str

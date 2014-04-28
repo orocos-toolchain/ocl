@@ -1056,6 +1056,154 @@ static const struct luaL_Reg Property_m [] = {
 };
 
 /***************************************************************
+ * Attribute (boxed)
+ ***************************************************************/
+
+gen_push_bxptr(Attribute_push, "Attribute", AttributeBase)
+
+static int Attribute_new(lua_State *L)
+{
+	const char *type, *name;
+	AttributeBase *pb;
+	int argc = lua_gettop(L);
+	type = luaL_checkstring(L, 1);
+
+	/* name and description are optional */
+	name = (argc > 1) ? luaL_checkstring(L, 2) : "";
+
+	types::TypeInfo *ti = types::TypeInfoRepository::Instance()->type(type);
+
+	if(!ti)
+		luaL_error(L, "Attribute.new: unknown type %s", type);
+
+	pb =  ti->buildAttribute(name);
+	Attribute_push(L, pb);
+	return 1;
+}
+
+static int Attribute_get(lua_State *L)
+{
+	AttributeBase *pb = *(luaM_checkudata_mt_bx(L, 1, "Attribute", AttributeBase));
+	Variable_push_coerce(L, pb->getDataSource());
+	return 1;
+}
+
+static int Attribute_getRaw(lua_State *L)
+{
+	AttributeBase *pb = *(luaM_checkudata_mt_bx(L, 1, "Attribute", AttributeBase));
+	luaM_pushobject_mt(L, "Variable", DataSourceBase::shared_ptr)(pb->getDataSource());
+	return 1;
+}
+
+static int Attribute_set(lua_State *L)
+{
+	DataSourceBase::shared_ptr newdsb;
+	DataSourceBase::shared_ptr *newdsbp;
+	DataSourceBase::shared_ptr propdsb;
+	AttributeBase *pb = *(luaM_checkudata_mt_bx(L, 1, "Attribute", AttributeBase));
+	propdsb = pb->getDataSource();
+
+	/* assigning a DSB */
+	if ((newdsbp = luaM_testudata_mt(L, 2, "Variable", DataSourceBase::shared_ptr)) != NULL) {
+		newdsb = *newdsbp;
+		if(!propdsb->update(newdsb.get()))
+			luaL_error(L, "Attribute.set: failed to assign type %s to type %s",
+				   newdsb->getType().c_str(), propdsb->getType().c_str());
+	} else { /* assigning a Lua value */
+		Variable_fromlua(L, propdsb, 2);
+	}
+	return 1;
+}
+
+static int Attribute_info(lua_State *L)
+{
+	AttributeBase *pb = *(luaM_checkudata_mt_bx(L, 1, "Attribute", AttributeBase));
+	lua_newtable(L);
+	lua_pushstring(L, "name"); lua_pushstring(L, pb->getName().c_str()); lua_rawset(L, -3);
+	lua_pushstring(L, "type"); lua_pushstring(L, pb->getDataSource()->getType().c_str()); lua_rawset(L, -3);
+	return 1;
+}
+
+#if NOT_USED_YET
+/*
+ * Race condition if we collect properties: if we add this attribute to
+ * a TC and our life ends before that of the TC, the attribute will be
+ * deleted before the TaskContext.
+ */
+static int Attribute_gc(lua_State *L)
+{
+	AttributeBase *pb = *(luaM_checkudata_mt_bx(L, 1, "Attribute", AttributeBase));
+	delete pb;
+	return 0;
+}
+#endif
+
+
+/* only explicit destruction allowed */
+static int Attribute_del(lua_State *L)
+{
+	AttributeBase *pb = *(luaM_checkudata_mt_bx(L, 1, "Attribute", AttributeBase));
+	delete pb;
+
+	/* this prevents calling rtt methods which would cause a crash */
+	luaL_getmetatable(L, "__dead__");
+	lua_setmetatable(L, -2);
+	return 0;
+}
+
+/* indexability of properties */
+/*
+ * this is a dispatcher which checks if the key is a method, otherwise
+ * calls get for looking up the field. Inspired by
+ * http://lua-users.org/wiki/ObjectProperties
+ */
+static int Attribute_index(lua_State *L)
+{
+	const char* key = luaL_checkstring(L, 2);
+
+	lua_getmetatable(L, 1);
+	lua_getfield(L, -1, key); /* this actually calls the method */
+
+	/* Either key is name of a method in the metatable */
+	if(!lua_isnil(L, -1))
+		return 1;
+
+	lua_settop(L, 2); 	/* reset stack */
+	Attribute_get(L);	/* pushes attribute var */
+	lua_replace(L, 1);	/* replace prop with var */
+	return Variable_index(L);
+}
+
+static int Attribute_newindex(lua_State *L)
+{
+	Attribute_get(L);
+	lua_replace(L, 1);
+	return Variable_newindex(L);
+}
+
+static const struct luaL_Reg Attribute_f [] = {
+	{"new", Attribute_new },
+	{"get", Attribute_get },
+	{"getRaw", Attribute_getRaw },
+	{"set", Attribute_set },
+	{"info", Attribute_info },
+	{"delete", Attribute_del },
+	{NULL, NULL}
+};
+
+static const struct luaL_Reg Attribute_m [] = {
+	{"get", Attribute_get },
+	{"getRaw", Attribute_getRaw },
+	{"set", Attribute_set },
+	{"info", Attribute_info },
+	// todo: shall we or not? s.o. {"__gc", Attribute_gc },
+	{"delete", Attribute_del },
+	{"__index", Attribute_index },
+	{"__newindex", Attribute_newindex },
+	{NULL, NULL}
+};
+
+/***************************************************************
  * Ports (boxed)
  ***************************************************************/
 
@@ -1762,6 +1910,48 @@ static int Service_getProperties(lua_State *L)
 	return 1;
 }
 
+static int Service_getAttribute(lua_State *L)
+{
+	const char *name;
+	AttributeBase *prop;
+
+	Service::shared_ptr srv = *(luaM_checkudata_mt(L, 1, "Service", Service::shared_ptr));
+	name = luaL_checkstring(L, 2);
+
+	prop = srv->getAttribute(name);
+
+	if(!prop)
+		luaL_error(L, "%s failed. No such Attribute", __FILE__);
+
+	Attribute_push(L, prop);
+	return 1;
+}
+
+static int Service_getAttributeNames(lua_State *L)
+{
+	Service::shared_ptr srv;
+	srv = *(luaM_checkudata_mt(L, 1, "Service", Service::shared_ptr));
+	std::vector<std::string> plist = srv->getAttributeNames();
+	push_vect_str(L, plist);
+	return 1;
+}
+
+static int Service_getAttributes(lua_State *L)
+{
+	Service::shared_ptr srv;
+	srv = *(luaM_checkudata_mt(L, 1, "Service", Service::shared_ptr));
+	vector<AttributeBase*> props = srv->getValues();
+
+	int key = 1;
+	lua_createtable(L, props.size(), 0);
+	for(vector<AttributeBase*>::iterator it = props.begin(); it != props.end(); ++it) {
+		Attribute_push(L, *it);
+		lua_rawseti(L, -2, key++);
+	}
+
+	return 1;
+}
+
 static const struct luaL_Reg Service_f [] = {
 	{ "getName", Service_getName },
 	{ "doc", Service_doc },
@@ -1775,6 +1965,9 @@ static const struct luaL_Reg Service_f [] = {
 	{ "getProperty", Service_getProperty },
 	{ "getProperties", Service_getProperties },
 	{ "getPropertyNames", Service_getPropertyNames },
+	{ "getAttribute", Service_getAttribute },
+	{ "getAttributes", Service_getAttributes },
+	{ "getAttributeNames", Service_getAttributeNames },
 	{ NULL, NULL }
 };
 
@@ -1791,6 +1984,9 @@ static const struct luaL_Reg Service_m [] = {
 	{ "getProperty", Service_getProperty },
 	{ "getProperties", Service_getProperties },
 	{ "getPropertyNames", Service_getPropertyNames },
+	{ "getAttribute", Service_getAttribute },
+	{ "getAttributes", Service_getAttributes },
+	{ "getAttributeNames", Service_getAttributeNames },
 	{ "__gc", GCMethod<Service::shared_ptr> },
 	{ NULL, NULL }
 };
@@ -2204,6 +2400,81 @@ static int TaskContext_removeProperty(lua_State *L)
 	return 0;
 }
 
+static int TaskContext_addAttribute(lua_State *L)
+{
+	const char *name, *desc;
+	int argc = lua_gettop(L);
+	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
+	AttributeBase *pb = *(luaM_checkudata_mt_bx(L, 2, "Attribute", AttributeBase));
+
+	if(argc > 2) {
+		name = luaL_checkstring(L, 3);
+		pb->setName(name);
+	}
+
+	if(!tc->addAttribute(*pb))
+		luaL_error(L, "TaskContext.addAttribute: failed to add attribute %s.",
+			   pb->getName().c_str());
+
+	return 0;
+}
+
+static int TaskContext_getAttribute(lua_State *L)
+{
+	const char *name;
+	AttributeBase *prop;
+
+	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
+	name = luaL_checkstring(L, 2);
+
+	prop = tc->getAttribute(name);
+
+	if(!prop)
+		luaL_error(L, "%s failed. No such Attribute", __FILE__);
+
+	Attribute_push(L, prop);
+	return 1;
+}
+
+
+static int TaskContext_getAttributeNames(lua_State *L)
+{
+	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
+	std::vector<std::string> plist = tc->attributes()->getAttributeNames();
+	push_vect_str(L, plist);
+	return 1;
+}
+
+static int TaskContext_getAttributes(lua_State *L)
+{
+	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
+	vector<AttributeBase*> props = tc->attributes()->getValues();
+
+	int key = 1;
+	lua_createtable(L, props.size(), 0);
+	for(vector<AttributeBase*>::iterator it = props.begin(); it != props.end(); ++it) {
+		Attribute_push(L, *it);
+		lua_rawseti(L, -2, key++);
+	}
+
+	return 1;
+}
+
+static int TaskContext_removeAttribute(lua_State *L)
+{
+	const char *name;
+	AttributeBase *prop;
+
+	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
+	name = luaL_checkstring(L, 2);
+
+	if(!tc->attributes()->hasAttribute(name))
+		luaL_error(L, "%s failed. No such attribute", __FILE__);
+
+    tc->attributes()->removeAttribute(name);
+
+	return 0;
+}
 
 static int TaskContext_getOps(lua_State *L)
 {
@@ -2435,6 +2706,11 @@ static const struct luaL_Reg TaskContext_f [] = {
 	{ "getProperties", TaskContext_getProperties },
 	{ "getPropertyNames", TaskContext_getPropertyNames },
 	{ "removeProperty", TaskContext_removeProperty },
+	{ "addAttribute", TaskContext_addAttribute },
+	{ "getAttribute", TaskContext_getAttribute },
+	{ "getAttributes", TaskContext_getAttributes },
+	{ "getAttributeNames", TaskContext_getAttributeNames },
+	{ "removeAttribute", TaskContext_removeAttribute },
 	{ "getOps", TaskContext_getOps },
 	{ "getOpInfo", TaskContext_getOpInfo },
 	{ "hasOperation", TaskContext_hasOperation },
@@ -2469,6 +2745,11 @@ static const struct luaL_Reg TaskContext_m [] = {
 	{ "getProperty", TaskContext_getProperty },
 	{ "getProperties", TaskContext_getProperties },
 	{ "getPropertyNames", TaskContext_getPropertyNames },
+	{ "addAttribute", TaskContext_addAttribute },
+	{ "getAttribute", TaskContext_getAttribute },
+	{ "getAttributes", TaskContext_getAttributes },
+	{ "getAttributeNames", TaskContext_getAttributeNames },
+	{ "removeAttribute", TaskContext_removeAttribute },
 	{ "removeProperty", TaskContext_removeProperty },
 	{ "getOps", TaskContext_getOps },
 	{ "getOpInfo", TaskContext_getOpInfo },
@@ -2783,6 +3064,12 @@ int luaopen_rtt(lua_State *L)
 	lua_setfield(L, -2, "__index");
 	luaL_register(L, NULL, Property_m);
 	luaL_register(L, "rtt.Property", Property_f);
+
+	luaL_newmetatable(L, "Attribute");
+	lua_pushvalue(L, -1); /* duplicates metatable */
+	lua_setfield(L, -2, "__index");
+	luaL_register(L, NULL, Attribute_m);
+	luaL_register(L, "rtt.Attribute", Attribute_f);
 
 	luaL_newmetatable(L, "EEHook");
 	lua_pushvalue(L, -1); /* duplicates metatable */
