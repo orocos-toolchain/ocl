@@ -1,11 +1,6 @@
 SET(EXTRA_LIBRARIES)
 SET(EXTRA_DEPS)
 
-# RTALLOC is forced to off on win32
-IF(WIN32)
-  SET(BUILD_RTALLOC OFF CACHE BOOL "docstring" FORCE)
-ENDIF()
-
 IF ( BUILD_RTALLOC )
   # default to 512 kilobytes - see minimum size warning in deployer-funcs.cpp
   SET(ORO_DEFAULT_RTALLOC_SIZE 524288 CACHE STRING "Real-time memory pool size (bytes) for operations and logging.")
