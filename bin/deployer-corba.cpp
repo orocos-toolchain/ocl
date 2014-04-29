@@ -166,7 +166,6 @@ int main(int argc, char** argv)
             TaskContextServer::InitOrb( argc - taoIndex, &argv[taoIndex] );
 
             OCL::CorbaDeploymentComponent dc( name, siteFile );
-            bool result = false;
 
             if (0 == TaskContextServer::Create( &dc, true, requireNameService ))
                 {
@@ -176,9 +175,15 @@ int main(int argc, char** argv)
             // The orb thread accepts incomming CORBA calls.
             TaskContextServer::ThreadOrb();
 
-            // Only start the scripts after the Orb was created.
+            /* Only start the scripts after the Orb was created. Processing of
+               scripts stops after the first failed script, and -1 is returned.
+               Whether a script failed or all scripts succeeded, in non-daemon
+               and non-checking mode the TaskBrowser will be run to allow
+               inspection.
+             */
+            bool result = true;
             for (std::vector<std::string>::const_iterator iter=scriptFiles.begin();
-                 iter!=scriptFiles.end();
+                 iter!=scriptFiles.end() && result;
                  ++iter)
             {
                 if ( !(*iter).empty() )
