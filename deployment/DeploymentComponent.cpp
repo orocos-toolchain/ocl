@@ -340,6 +340,10 @@ namespace OCL
             log(Error)<< "No such peer: "<<to<<endlog();
             return false;
         }
+        if ( t1->hasPeer(t2->getName()) ) {
+            log(Info) << "addPeer: "<< to << " is already a peer of " << from << endlog();
+            return true;
+        }
         return t1->addPeer(t2);
     }
 
@@ -1235,9 +1239,14 @@ namespace OCL
                     RTT::Property<string> nm = (*it);
                     if ( nm.ready() )
                         {
-                            valid = this->addPeer( comps[comp.getName()].instance->getName(), nm.value() ) && valid;
-                            log(Info) << this->getName() << " connects " <<
-                                comps[comp.getName()].instance->getName() << " to "<< nm.value()  << endlog();
+                            if ( this->addPeer( comps[comp.getName()].instance->getName(), nm.value() ) == false ) {
+                                log(Error) << this->getName() << " can't make " << nm.value() << " a peer of " <<
+                                    comps[comp.getName()].instance->getName() << endlog();
+                                valid = false;
+                            } else {
+                                log(Info) << this->getName() << " makes " << nm.value() << " a peer of " <<
+                                    comps[comp.getName()].instance->getName() << endlog();
+                            }
                         }
                     else {
                         log(Error) << "Wrong property type in Peers struct. Expected property of type 'string',"
@@ -1407,9 +1416,13 @@ namespace OCL
                 } else {
                     log(Info) << "Setting activity of "<< comp.getName() <<endlog();
                 }
-                valid = peer->setActivity( comps[comp.getName()].act ) && valid;
-                assert( peer->engine()->getActivity() == comps[comp.getName()].act );
-                comps[comp.getName()].act = 0; // drops ownership.
+                if (peer->setActivity( comps[comp.getName()].act ) == false ) {
+                    valid = false;
+                    log(Error) << "Failed to set Activity of " << comp.getName() << endlog();
+                } else {
+                    assert( peer->engine()->getActivity() == comps[comp.getName()].act );
+                    comps[comp.getName()].act = 0; // drops ownership.
+                }
             }
 
             // Load scripts in order of appearance
@@ -1440,9 +1453,11 @@ namespace OCL
                 {
                     if( !peer->isRunning() )
                         {
-			    OperationCaller<bool(void)> peerconfigure = peer->getOperation("configure");
-                            if ( peerconfigure() == false)
+                            OperationCaller<bool(void)> peerconfigure = peer->getOperation("configure");
+                            if ( peerconfigure() == false) {
+                                log(Error) << "Component " << peer->getName() << " returns false in configure()" << endlog();
                                 valid = false;
+                            }
                         }
                     else
                         log(Warning) << "Apparently component "<< peer->getName()<< " don't need to be configured (already Running)." <<endlog();

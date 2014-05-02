@@ -1,5 +1,5 @@
-#ifndef	OSTREAMAPPENDER_HPP
-#define	OSTREAMAPPENDER_HPP 1
+#ifndef	GENERATIONALFILEAPPENDER_HPP
+#define	GENERATIONALFILEAPPENDER_HPP 1
 
 #include "Appender.hpp"
 #include <rtt/Property.hpp>
@@ -7,26 +7,36 @@
 namespace OCL {
 namespace logging {
 
-class OstreamAppender : public OCL::logging::Appender
+/** Appender supporting generations of log files
+
+	Each new generation is logged to a new file
+*/
+class GenerationalFileAppender : public OCL::logging::Appender
 {
 public:
-	OstreamAppender(std::string name);
-	virtual ~OstreamAppender();
-
+	GenerationalFileAppender(std::string name);
+	virtual ~GenerationalFileAppender();
 protected:
 	/// Create log4cpp appender
     virtual bool configureHook();
-	/// Process at most one (1) event
+	/// Process at most \a maxEventsPerCycle event
 	virtual void updateHook();
 	/// Destroy appender
 	virtual void cleanupHook();
 
-    /** 
+	/// @copydoc OCL::logging::advanceGeneration()
+	RTT::Operation<void(void)>		advanceGeneration_op;
+	/// Advance to the next logfile generation
+	void advanceGeneration();
+
+    /// Name of file to append to
+    RTT::Property<std::string>      filename_prop;
+    /**
      * Property to set maximum number of log events to pop per cycle
      */
     RTT::Property<int>              maxEventsPerCycle_prop;
 
-    /** 
+    /**
      * Maximum number of log events to pop per cycle
      *
      * Defaults to 1.
@@ -35,7 +45,7 @@ protected:
      * With enough event production, this could lead to thread
      * starvation!
      */
-    int                           maxEventsPerCycle;
+    int								maxEventsPerCycle;
 };
 
 // namespaces

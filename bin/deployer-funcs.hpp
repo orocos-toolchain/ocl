@@ -44,6 +44,7 @@ namespace OCL
 	\param scriptFiles Names of the XML files for the deployer to load and run
 	\param name Name of the deployer task
     \param requireNameService Whether to require the CORBA name service, or not
+	\param minNumberCPU The minimum number of CPUs required for deployment (0 == no minimum)
     \param vm The variables map into which the options are parsed.
 	\param otherOptions Caller can pass in other options to check for. If NULL,
 	then is ignored.
@@ -57,9 +58,23 @@ extern int deployerParseCmdLine(
 	std::string&                                    name,
     bool&                                           requireNameService,
     bool&                                           deploymentOnlyChecked,
+	int&											minNumberCPU,
     boost::program_options::variables_map&          vm,
 	boost::program_options::options_description*    otherOptions=NULL);
 
+
+/** Enforce a minimum number of CPUs required for deployment
+	\pre 0 <= minNumberCPU
+	\post If 0 < \a minNumberCPU and the number of CPUs present < minNumberCPU
+	then prints an error message and exit's with -1. Otherwise, nothing happens.
+	\warning Check only occurs on gnulinux (the only one with RTT CPU affinity
+	support)
+	\return 0 if (0==minNumberCPU) or (number CPUS <= minNumberCPU) or
+	the platform does not support CPU affinity in RTT, otherwise
+	-1 if unable to determine the number of CPUS, otherwise -2 (and so the
+	minimum number of CPUs is not present)
+*/
+extern int enforceMinNumberCPU(const int minNumberCPU);
 
 #ifdef  ORO_BUILD_RTALLOC
 

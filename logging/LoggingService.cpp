@@ -19,10 +19,12 @@ namespace logging {
 LoggingService::LoggingService(std::string name) :
 		RTT::TaskContext(name),
         levels_prop("Levels","A PropertyBag defining the level of each category of interest."),
+        additivity_prop("Additivity","A PropertyBag defining the additivity of each category of interest."),
         appenders_prop("Appenders","A PropertyBag defining the appenders for each category of interest."),
         logCategories_mtd("logCategories", &LoggingService::logCategories, this)
 {
     this->properties()->addProperty( levels_prop );
+    this->properties()->addProperty( additivity_prop );
     this->properties()->addProperty( appenders_prop );
     this->provides()->addOperation( logCategories_mtd ).doc("Log category hierarchy (not realtime!)");
 }
@@ -95,6 +97,36 @@ bool LoggingService::configureHook()
     if ( !active_appenders.empty() ) 
         log(Warning) <<"Reconfiguring LoggingService '"<<getName() << "': I've removed all existing Appender connections and will now rebuild them."<<endlog();
     active_appenders.clear();
+
+	// set the additivity of each category
+
+    bag = additivity_prop.value();  // an empty bag is ok
+
+    for (it=bag.getProperties().begin(); it != bag.getProperties().end(); ++it)
+    {
+        Property<bool>* category = dynamic_cast<Property<bool>* >( *it );
+        if ( !category )
+        {
+            log(Error) << "Expected Property '"
+                       << (*it)->getName() << "' to be of type boolean." << endlog();
+        }
+        else
+        {
+            std::string categoryName	= category->getName();
+            bool		additivity		= category->value();
+
+            // "" == categoryName implies the root category.
+
+            log(Debug) << "Getting category '" << categoryName << "'" << endlog();
+            log4cpp::Category& category =
+            log4cpp::Category::getInstance(categoryName);
+
+            category.setAdditivity(additivity);
+            log(Info) << "Category '" << categoryName
+                      << "' has additivity '" << std::string(additivity ? "on":"off") << "'"
+                      << endlog();
+        }
+    }
 
     // create a port for each appender, and associate category/appender
 

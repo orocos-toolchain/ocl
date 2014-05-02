@@ -10,7 +10,7 @@ IF ( BUILD_LOGGING AND LOG4CPP_FOUND )
 
   set(LOG4CXXLIB_CPPS Log4cxxAppender.cpp)
   set(LOGLIB_CPPS Category.cpp LoggingEvent.cpp CategoryStream.cpp)
-  set(LOGCOMP_CPPS Appender.cpp FileAppender.cpp OstreamAppender.cpp LoggingService.cpp)
+  set(LOGCOMP_CPPS Appender.cpp FileAppender.cpp OstreamAppender.cpp RollingFileAppender.cpp LoggingService.cpp GenerationalFileAppender.cpp)
 
   INCLUDE_DIRECTORIES( "${LOG4CPP_INCLUDE_DIRS}" )
   LINK_DIRECTORIES( "${LOG4CPP_LIBRARY_DIRS}" )

@@ -13,7 +13,8 @@ Appender::Appender(std::string name) :
     RTT::TaskContext(name, RTT::TaskContext::PreOperational), 
         appender(0),
         layoutName_prop("LayoutName", "Layout name (e.g. 'simple', 'pattern')"),
-        layoutPattern_prop("LayoutPattern", "Layout conversion pattern (for those layouts that use a pattern)")
+        layoutPattern_prop("LayoutPattern", "Layout conversion pattern (for those layouts that use a pattern)"),
+        countMaxPopped(0)
 {
     ports()->addEventPort("LogPort", log_port );
 
@@ -71,6 +72,69 @@ bool Appender::startHook()
 //    return log_port.ready();  
 
     return true;
+}
+
+void Appender::stopHook()
+{
+	drainBuffer();
+
+	// introduce event to log diagnostics
+	if (0 != appender)
+	{
+		/* place a "#" at the front of the message, for appenders that are
+		 reporting data for post-processing. These particular appenders
+		 don't prepend the time data (it's one at time of sampling).
+		 This way gnuplot, etc., ignore this diagnostic data.
+		*/
+		std::stringstream	ss;
+		ss << "# countMaxPopped=" << countMaxPopped;
+		log4cpp::LoggingEvent	event("OCL.logging.Appender",
+									  ss.str(),
+									  "",
+									  log4cpp::Priority::DEBUG);
+		appender->doAppend(event);
+	}
+}
+
+void Appender::drainBuffer()
+{
+	processEvents(0);
+}
+
+void Appender::processEvents(int n)
+{
+    if (!log_port.connected()) return;      // no category connected to us
+	if (!appender) return;				// no appender!?
+
+	// check pre-conditions
+	if (0 > n) n = 1;
+
+    /* Consume waiting events until
+       a) the buffer is empty
+       b) we consume enough events
+	*/
+    OCL::logging::LoggingEvent	event;
+	bool 						again = false;
+	int							count = 0;
+
+	do
+	{
+        if (log_port.read( event ) == RTT::NewData)
+		{
+			++count;
+
+			appender->doAppend( event.toLog4cpp() );
+
+			// Consume infinite events OR up to n events
+			again = (0 == n) || (count < n);
+			if ((0 != n) && (count == n)) ++countMaxPopped;
+		}
+		else
+		{
+			break;      // nothing to do
+		}
+	}
+	while (again);
 }
 
 // namespaces

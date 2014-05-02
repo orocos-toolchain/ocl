@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "cpf.dtd">
+
+<!-- slightly extreme test: large files, many backups, very fast output -->
+
+<properties>
+
+  <simple name="Import" type="string">
+	<value>../liborocos-logging</value>
+  </simple>
+  <simple name="Import" type="string">
+	<value>liborocos-logging-tests</value>
+  </simple>
+
+  <struct name="TestComponent1" type="OCL::logging::test::Component">
+    <struct name="Activity" type="Activity">
+      <simple name="Period" type="double"><value>0.005</value></simple>
+      <simple name="Priority" type="short"><value>0</value></simple>
+      <simple name="Scheduler" type="string"><value>ORO_SCHED_OTHER</value></simple>
+    </struct>
+    <simple name="AutoConf" type="boolean"><value>1</value></simple>
+    <simple name="AutoStart" type="boolean"><value>1</value></simple>
+	<struct name="Properties" type="PropertyBag">
+      <simple name="LogWithRTT" type="boolean"><value>0</value></simple>
+      <simple name="LogsPerCycle" type="short"><value>10</value></simple>
+	</struct>
+  </struct>
+
+  <struct name="TestComponent2" type="OCL::logging::test::Component">
+    <struct name="Activity" type="Activity">
+      <simple name="Period" type="double"><value>0.005</value></simple>
+      <simple name="Priority" type="short"><value>0</value></simple>
+      <simple name="Scheduler" type="string"><value>ORO_SCHED_OTHER</value></simple>
+    </struct>
+    <simple name="AutoConf" type="boolean"><value>1</value></simple>
+    <simple name="AutoStart" type="boolean"><value>1</value></simple>
+	<struct name="Properties" type="PropertyBag">
+      <simple name="LogWithRTT" type="boolean"><value>0</value></simple>
+      <simple name="LogsPerCycle" type="short"><value>10</value></simple>
+	</struct>
+  </struct>
+
+  <struct name="TestComponent3" type="OCL::logging::test::Component">
+    <struct name="Activity" type="Activity">
+      <simple name="Period" type="double"><value>0.005</value></simple>
+      <simple name="Priority" type="short"><value>0</value></simple>
+      <simple name="Scheduler" type="string"><value>ORO_SCHED_OTHER</value></simple>
+    </struct>
+    <simple name="AutoConf" type="boolean"><value>1</value></simple>
+    <simple name="AutoStart" type="boolean"><value>1</value></simple>
+	<struct name="Properties" type="PropertyBag">
+      <simple name="LogWithRTT" type="boolean"><value>0</value></simple>
+      <simple name="LogsPerCycle" type="short"><value>10</value></simple>
+	</struct>
+  </struct>
+
+  <struct name="AppenderA" type="OCL::logging::RollingFileAppender">
+    <struct name="Activity" type="Activity">
+      <simple name="Period" type="double"><value>0.01</value></simple>
+      <simple name="Priority" type="short"><value>0</value></simple>
+      <simple name="Scheduler" type="string"><value>ORO_SCHED_OTHER</value></simple>
+    </struct>
+    <simple name="AutoConf" type="boolean"><value>1</value></simple>
+    <simple name="AutoStart" type="boolean"><value>1</value></simple>
+	<struct name="Properties" type="PropertyBag">
+      <simple name="Filename" type="string"><value>rolling.log</value></simple>
+	  <!-- else can't keep up - this is the buffer size -->
+      <simple name="MaxEventsPerCycle" type="short"><value>200</value></simple>
+	  <!-- 100 MB X 10 = 1 GB of files-->
+      <simple name="MaxFileSize" type="short"><value>104857600</value></simple>
+      <simple name="MaxBackupIndex" type="short"><value>10</value></simple>
+      <simple name="LayoutName" type="string"><value>pattern</value></simple>
+      <simple name="LayoutPattern" type="string"><value>%d [%t] %-5p %c %x - %m%n</value></simple>
+	</struct>
+  </struct>
+
+  <!-- #################################################################
+	   LOGGING SERVICE
+	   ################################################################# -->
+
+  <struct name="LoggingService" type="OCL::logging::LoggingService">
+    <struct name="Activity" type="PeriodicActivity">
+      <simple name="Period" type="double"><value>0.5</value></simple>
+      <simple name="Priority" type="short"><value>0</value></simple>
+      <simple name="Scheduler" type="string"><value>ORO_SCHED_OTHER</value></simple>
+    </struct>
+
+    <simple name="AutoConf" type="boolean"><value>1</value></simple>
+    <simple name="AutoStart" type="boolean"><value>1</value></simple>
+
+    <struct name="Properties" type="PropertyBag">
+	  <struct name="Levels" type="PropertyBag">
+		<simple name="org.orocos.ocl.logging.tests" 
+				type="string"><value>debug</value></simple>
+	  </struct>
+
+	  <struct name="Appenders" type="PropertyBag">
+		<simple name="org.orocos.ocl.logging.tests" 
+				type="string"><value>AppenderA</value></simple>
+	  </struct>
+	</struct>
+
+	<struct name="Peers" type="PropertyBag">
+      <simple type="string"><value>AppenderA</value></simple>
+	</struct> 
+
+  </struct>
+
+</properties>

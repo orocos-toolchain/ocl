@@ -1140,10 +1140,6 @@ namespace OCL
                 log(Debug) <<"No such peer : "<< c <<endlog();
                 return 0;
             }
-        if ( !pp.foundPath() ) {
-                log(Debug) <<"No such peer : "<< c <<endlog();
-                return 0;
-            }
         taskobject = pp.taskObject();
         peer = pp.peer();
         return pp.peer();

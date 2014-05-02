@@ -9,4 +9,3 @@ install
 orocos-ocl.cmake
 lib
 **pc
-ocl/ocl-config.h
