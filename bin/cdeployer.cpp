@@ -163,7 +163,6 @@ int main(int argc, char** argv)
         // scope to force dc destruction prior to memory free
         {
             OCL::CorbaDeploymentComponent dc( name, siteFile );
-            bool result = true;
             // if TAO options not found then have TAO process just the program name,
             // otherwise TAO processes the program name plus all options (potentially
             // none) after "--"
@@ -174,8 +173,14 @@ int main(int argc, char** argv)
                 return -1;
             }
 
+            /* Only start the scripts after the Orb was created. Processing of
+               scripts stops after the first failed script, and -1 is returned.
+               Whether a script failed or all scripts succeeded, the CORBA
+               server will be run.
+             */
+            bool result = true;
             for (std::vector<std::string>::const_iterator iter=scriptFiles.begin();
-                 iter!=scriptFiles.end();
+                 iter!=scriptFiles.end() && result;
                  ++iter)
             {
                 if ( !(*iter).empty() )
