@@ -4,6 +4,31 @@ cwd="$(pwd)"
 abspath=$(dirname "$(cd "${0%/*}" 2>/dev/null; echo "$PWD"/"${0##*/}")")
 cmd=$(basename $0)
 
+# Search for an orocos path settings file.  This file is a list of relative
+# paths to be added to the RTT_COMPONENT_PATH environment variable.  This makes
+# it possible to ship code that builds and runs without forcing the user to
+# manually set up environment environment variables.
+# (Or rely on another software like ROS to do the forcing)
+MAGIC_FILE_NAME=.rtt_component_path
+scan_dir()
+{
+	if [ `find "$x" -maxdepth 1 -name $MAGIC_FILE_NAME` ]
+	then 
+		for p in `cat "$x"/$MAGIC_FILE_NAME`
+		do
+			export RTT_COMPONENT_PATH=${RTT_COMPONENT_PATH}:$x/$p
+		done
+		break;
+	fi
+}
+x=$cwd
+scan_dir
+until [ "$x" == "/" ]
+do 
+	x=`dirname "$x"`
+	scan_dir
+done
+
 if [ -z "${OROCOS_TARGET}" ]; then
     possibilities=$(echo $abspath/$cmd-*)
     if [ -z "$possibilities" -o ! -f "$possibilities" ]; then

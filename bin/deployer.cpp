@@ -163,10 +163,16 @@ int main(int argc, char** argv)
         // scope to force dc destruction prior to memory free
         {
             OCL::DeploymentComponent dc( name, siteFile );
-            bool result = true;
 
+            /* Only start the scripts after the Orb was created. Processing of
+               scripts stops after the first failed script, and -1 is returned.
+               Whether a script failed or all scripts succeeded, in non-daemon
+               and non-checking mode the TaskBrowser will be run to allow
+               inspection.
+             */
+            bool result = true;
             for (std::vector<std::string>::const_iterator iter=scriptFiles.begin();
-                 iter!=scriptFiles.end();
+                 iter!=scriptFiles.end() && result;
                  ++iter)
             {
                 if ( !(*iter).empty() )
