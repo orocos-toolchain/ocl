@@ -83,6 +83,8 @@ int deployerParseCmdLine(int                        argc,
 		 "Show program version")
 		("daemon,d",
 		 "Makes this program a daemon such that it runs in the background. Returns 1 in case of success.")
+		("noninteractive,n",
+		 "Makes this program run without the interactive console.")
 		("start,s",
 		 po::value< std::vector<std::string> >(&scriptFiles),
 		 "Deployment XML or script file (eg 'config-file.xml' or 'script.ops')")

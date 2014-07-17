@@ -179,8 +179,12 @@ int main(int argc, char** argv)
             if (result == false)
 		rc = -1;
 #ifdef USE_TASKBROWSER
-            // We don't start an interactive console when we're a daemon
-            if ( !deploymentOnlyChecked && !vm.count("daemon") ) {
+            if(vm.count("noninteractive")) {
+                RTT::OperationCaller<bool(void)> wait_for_interrupt = dc.getOperation("waitForInterrupt");
+                wait_for_interrupt();
+                dc.shutdownDeployment();
+            } else if ( !deploymentOnlyChecked && !vm.count("daemon")) {
+                // We don't start an interactive console when we're a daemon
                 OCL::TaskBrowser tb( &dc );
 
                 tb.loop();
