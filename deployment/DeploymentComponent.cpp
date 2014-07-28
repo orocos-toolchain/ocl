@@ -2267,7 +2267,7 @@ namespace OCL
                             totalWait = w;
                             log(Debug) << "Using override value for " << TOTAL_WAIT_PROP_NAME << endlog();
                         }
-
+                        else
                         {
                             log(Warning) << "Ignoring illegal value for " << TOTAL_WAIT_PROP_NAME << endlog();
                         }
