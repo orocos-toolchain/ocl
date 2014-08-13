@@ -29,8 +29,9 @@ namespace OCL
             RTT::OutputPort<RTT::os::Timer::TimerId>& me;
             std::vector<RTT::OutputPort<RTT::os::Timer::TimerId>* >& m_port_timers;
             TimeoutCatcher(std::vector<RTT::OutputPort<RTT::os::Timer::TimerId>* >& port_timers, RTT::OutputPort<RTT::os::Timer::TimerId>&  op) :
+                os::Timer(port_timers.size(), ORO_SCHED_RT, os::HighestPriority),
                 me(op),
-                os::Timer(port_timers.size(), ORO_SCHED_RT, os::HighestPriority), m_port_timers(port_timers)
+		m_port_timers(port_timers)
             {}
             virtual void timeout(os::Timer::TimerId id) {
                 m_port_timers[id]->write(id);
