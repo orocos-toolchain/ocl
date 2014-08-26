@@ -920,7 +920,6 @@ namespace OCL
                                 continue;
                             }
                             if ( (*optit)->getName() == "ProgramScript" ) {
-                                log(Warning) << "ProgramScript tag is deprecated. Rename it to 'RunScript'." <<endlog();
                                 base::PropertyBase* ps = comp.rvalue().getProperty("ProgramScript");
                                 if (!ps) {
                                     log(Error) << "ProgramScript must be of type <string>" << endlog();
@@ -929,7 +928,6 @@ namespace OCL
                                 continue;
                             }
                             if ( (*optit)->getName() == "StateMachineScript" ) {
-                                log(Warning) << "StateMachineScript tag is deprecated. Rename it to 'RunScript'." <<endlog();
                                 base::PropertyBase* ps = comp.rvalue().getProperty("StateMachineScript");
                                 if (!ps) {
                                     log(Error) << "StateMachineScript must be of type <string>" << endlog();
