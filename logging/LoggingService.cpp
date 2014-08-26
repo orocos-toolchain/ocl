@@ -224,7 +224,9 @@ void LoggingService::logCategories()
     log(Info) << "Number categories = " << (int)categories->size() << endlog();
     for (iter = categories->begin(); iter != categories->end(); ++iter)
     {
-        log(Info)
+        std::stringstream str;
+
+        str
             << "Category '" << (*iter)->getName() << "', level="
             << log4cpp::Priority::getPriorityName((*iter)->getPriority())
             << ", typeid='"
@@ -232,7 +234,18 @@ void LoggingService::logCategories()
             << "', type really is '" 
             << std::string(0 != dynamic_cast<OCL::logging::Category*>(*iter)
                            ? "OCL::Category" : "log4cpp::Category")
-            << "'" << endlog();
+            << "', additivity=" << (const char*)((*iter)->getAdditivity()?"yes":"no");
+        log4cpp::Category* p = (*iter)->getParent();
+        if (p)
+        {
+            str << ", parent name='" << p->getName() << "'";
+        }
+        else
+        {
+            str << ", No parent";
+        }
+
+        log(Info) << str.str() << endlog();
     }
 }
    
