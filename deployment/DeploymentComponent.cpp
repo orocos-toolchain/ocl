@@ -2308,8 +2308,9 @@ namespace OCL
                     // wait till done or timed out
                     log(Debug) << "Waiting for deployment shutdown to complete ..." << endlog();
                     int waited = 0;
-                    while ((RTT::SendNotReady == handle.collectIfDone() || peer->getProvider<Scripting>("scripting")->isProgramRunning(NAME)) &&
-                           (waited < totalWait))
+                    while ( ( (has_operation && RTT::SendNotReady == handle.collectIfDone() ) ||
+                              (has_program && peer->getProvider<Scripting>("scripting")->isProgramRunning(NAME)) ) 
+                            && (waited < totalWait) )
                     {
                         (void)rtos_nanosleep(&ts, NULL);
                         waited += wait;
