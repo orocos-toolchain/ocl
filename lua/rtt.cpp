@@ -2192,6 +2192,17 @@ static int TaskContext_addPeer(lua_State *L)
 	return 1;
 }
 
+/* bool connectPeers(TaskContext self, TaskContext peer)*/
+static int TaskContext_connectPeers(lua_State *L)
+{
+	bool ret;
+	TaskContext *self = *(luaM_checkudata_bx(L, 1, TaskContext));
+	TaskContext *peer = *(luaM_checkudata_bx(L, 2, TaskContext));
+	ret = self->connectPeers(peer);
+	lua_pushboolean(L, ret);
+	return 1;
+}
+
 /* void removePeer(TaskContext self, string peer)*/
 static int TaskContext_removePeer(lua_State *L)
 {
@@ -2734,6 +2745,7 @@ static const struct luaL_Reg TaskContext_m [] = {
 	{ "getState", TaskContext_getState },
 	{ "getPeers", TaskContext_getPeers },
 	{ "addPeer", TaskContext_addPeer },
+	{ "connectPeers", TaskContext_connectPeers },
 	{ "removePeer", TaskContext_removePeer },
 	{ "getPeer", TaskContext_getPeer },
 	{ "getPortNames", TaskContext_getPortNames },
