@@ -343,11 +343,11 @@ namespace OCL
             log(Error)<< "No such peer: "<<to<<endlog();
             return false;
         }
-        if ( t1->hasPeer(t2->getName()) ) {
+        if ( t1->hasPeer(to) ) {
             log(Info) << "addPeer: "<< to << " is already a peer of " << from << endlog();
             return true;
         }
-        return t1->addPeer(t2);
+        return t1->addPeer(t2,to);
     }
 
     bool DeploymentComponent::aliasPeer(const std::string& from, const std::string& to, const std::string& alias)
