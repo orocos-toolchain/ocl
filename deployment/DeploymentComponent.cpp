@@ -1749,8 +1749,8 @@ namespace OCL
         }
 
         // unlikely that this fails (checked at entry)!
-        this->addPeer( instance );
-        log(Info) << "Adding "<< instance->getName() << " as new peer:  OK."<< endlog(Info);
+        this->addPeer( instance, name );
+        log(Info) << "Adding "<< name << " as new peer:  OK."<< endlog(Info);
 
         comps[name].loaded = true;
 
