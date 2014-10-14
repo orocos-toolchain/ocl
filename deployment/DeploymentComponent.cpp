@@ -2215,17 +2215,33 @@ namespace OCL
         static const char*	WAIT_PROP_NAME="shutdownWait_ms";
         static const char*	TOTAL_WAIT_PROP_NAME="shutdownTotalWait_ms";
 
-        // if have operation named NAME in peer PEER then call it
+        RTT::OperationCaller<void(void)>	ds;
+        bool has_program = false;
+        bool has_operation = false;
+        // if have operation named NAME in peer PEER then use that one.
         RTT::TaskContext* peer = getPeer(PEER);
-        if (0 != peer)
-        {
-            RTT::OperationCaller<void(void)>	ds =
-                peer->getOperation(NAME);
-            if (ds.ready())
+        if ( 0 != peer){
+            has_operation = peer->provides()->hasOperation(NAME);
+            if(has_operation)
+                ds = peer->provides()->getOperation(NAME);
+        } else {
+            log(Info) << "Ignoring deployment shutdown function due to missing peer." << endlog();
+            return;
+        }
+        //If no such operation is found, check if we have a shutdown program?
+        if (!ds.ready()){
+            has_operation = false;
+            log(Info) << "Ignoring deployment shutdown function, looking for shutdown program script." << endlog();
+            has_program = peer->getProvider<Scripting>("scripting")->hasProgram(NAME);
+        }
+        //Only continue if we have a shutdown operation or program script
+        if (has_operation || has_program)
             {
                 log(Info) << "Shutting down deployment." << endlog();
-                RTT::SendHandle<void(void)> handle = ds.send();
-                if (handle.ready())
+                RTT::SendHandle<void(void)> handle;
+                if(has_operation)
+                    handle = ds.send();
+                if (handle.ready() || peer->getProvider<Scripting>("scripting")->startProgram(NAME))
                 {
                     // set defaults
 
@@ -2290,8 +2306,9 @@ namespace OCL
                     // wait till done or timed out
                     log(Debug) << "Waiting for deployment shutdown to complete ..." << endlog();
                     int waited = 0;
-                    while ((RTT::SendNotReady == handle.collectIfDone()) &&
-                           (waited < totalWait))
+                    while ( ( (has_operation && RTT::SendNotReady == handle.collectIfDone() ) ||
+                              (has_program && peer->getProvider<Scripting>("scripting")->isProgramRunning(NAME)) ) 
+                            && (waited < totalWait) )
                     {
                         (void)rtos_nanosleep(&ts, NULL);
                         waited += wait;
@@ -2307,19 +2324,14 @@ namespace OCL
                 }
                 else
                 {
-                    log(Error) << "Failed to start operation: " << NAME << endlog();
+                    log(Error) << "Failed to start operation or scripting program: " << NAME << endlog();
                 }
 
             }
             else
             {
-                log(Info) << "Ignoring missing deployment shutdown function." << endlog();
+                log(Info) << "No deployment shutdown function or program available." << endlog();
             }
-        }
-        else
-        {
-            log(Info) << "Ignoring deployment shutdown function due to missing peer." << endlog();
-        }
     }
 
 }
