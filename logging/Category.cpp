@@ -13,7 +13,7 @@ Category::Category(const std::string& name,
                    log4cpp::Category* parent,
                    log4cpp::Priority::Value priority) :
         log4cpp::Category(name, parent, priority),
-        log_port( convertName(name) )
+        log_port( convertName(name) , false )
 {
 }
 
