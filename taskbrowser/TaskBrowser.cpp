@@ -687,6 +687,7 @@ namespace OCL
           line_read(0),
           lastc(0), storedname(""), storedline(-1),
           usehex(false),
+          histfile(0),
           macrorecording(false)
     {
         tb = this;
@@ -703,7 +704,10 @@ namespace OCL
         rl_getc_function = &TaskBrowser::rl_getc;
 
         using_history();
-        if ( read_history(".tb_history") != 0 ) {
+        histfile = getenv("ORO_TB_HISTFILE");
+        if(histfile == 0)
+            histfile = ".tb_history";
+        if ( read_history(histfile) != 0 ) {
             read_history("~/.tb_history");
         }
 #ifdef USE_SIGNALS
@@ -730,7 +734,7 @@ namespace OCL
             {
                 free (line_read);
             }
-        if ( write_history(".tb_history") != 0 ) {
+        if ( write_history(histfile) != 0 ) {
             write_history("~/.tb_history");
         }
 #endif
