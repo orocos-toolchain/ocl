@@ -2111,7 +2111,7 @@ namespace OCL
             if ( !objlist.empty() )
                 for(vector<string>::iterator it = objlist.begin(); it != objlist.end(); ++it) {
                     if( peer->getPeer(*it) )
-                    	sresult << *it << "["<<getTaskStatusChar(peer->getPeer(*it))<<"] ";
+                    	sresult << *it << "["<<getTaskStatusChar(peer->getPeer(*it))<<"] \n";
                     else
                     	sresult << *it << "[X] ";
 	      }
