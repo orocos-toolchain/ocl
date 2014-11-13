@@ -1195,7 +1195,7 @@ namespace OCL
         RTT::Logger::In in("configureComponents");
         // do all groups
         bool valid = true;
-        for (int group = nextGroup - 1; group > 0; --group) {
+        for (int group = 0; group <= nextGroup; ++group) {
             valid &= configureComponentsGroup(group);
         }
         return valid;
@@ -1488,7 +1488,7 @@ namespace OCL
     {
         // do all groups
         bool valid = true;
-        for (int group = nextGroup - 1; group > 0; --group) {
+        for (int group = 0; group <= nextGroup; ++group) {
             valid &= startComponentsGroup(group);
         }
         return valid;
