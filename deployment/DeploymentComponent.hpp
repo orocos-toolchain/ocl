@@ -164,9 +164,11 @@ namespace OCL
         ConMap conmap;
 
         /**
-         * This vector holds the dynamically loaded components.
+         * This list and map hold the dynamically loaded components.
          */
-        typedef std::map<std::string, ComponentData> CompList;
+        typedef std::map<std::string, ComponentData> CompMap;
+        typedef std::list<std::string> CompList;
+        CompMap compmap;
         CompList comps;
 
         /**
@@ -181,7 +183,7 @@ namespace OCL
          * This method removes all references to the component hold in \a cit,
          * on the condition that it is not running.
          */
-        bool unloadComponentImpl( CompList::iterator cit );
+        bool unloadComponentImpl( CompMap::iterator cit );
 
 
         /**
@@ -270,7 +272,7 @@ namespace OCL
          */
         ~DeploymentComponent();
 
-        RTT::TaskContext* myGetPeer(std::string name) {return comps[ name ].instance; }
+        RTT::TaskContext* myGetPeer(std::string name) {return compmap[ name ].instance; }
 
         /**
          * Make two components peers in both directions, such that both can

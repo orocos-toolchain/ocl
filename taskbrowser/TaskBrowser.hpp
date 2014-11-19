@@ -114,7 +114,7 @@ namespace OCL
         PTrace straces;
 
         //file to store history
-        char* histfile;
+        const char* histfile;
 
         //! We store the last parsed expression in order to keep
         //! it a little longer in memory, for example, when it's an 'send()' operation call.
