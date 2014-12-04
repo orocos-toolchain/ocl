@@ -50,38 +50,64 @@ if(NOT WIN32)
 
 endif()
 
-FIND_PATH( READLINE_H readline/readline.h )
-IF ( READLINE_H )
-    MESSAGE("-- Looking for readline/readline.h - found")
-    FIND_LIBRARY(READLINE_LIBRARY readline )
-    FIND_LIBRARY(HISTORY_LIBRARY history )
-    # On win32, we need to look for both readline (release) and readlineD (debug)
-    # to avoid mixing release/debug runtime libraries
-    IF(WIN32)
-        FIND_LIBRARY(READLINED_LIBRARY readlineD )
-        IF(READLINE_LIBRARY AND READLINED_LIBRARY)
-            SET(READLINE_LIBRARY
-                optimized ${READLINE_LIBRARY}
-                debug ${READLINED_LIBRARY})
-        ENDIF()
-        MESSAGE("READLINE_LIBRARY = ${READLINE_LIBRARY}")
-    ENDIF(WIN32)
-    SET( READLINE 1 CACHE INTERNAL "libreadline" )
-    SET( READLINE_INCLUDE_DIR ${READLINE_H} )
-ELSE ( READLINE_H  )
-    MESSAGE("-- Looking for readline/readline.h - not found")
-    SET( READLINE 0 CACHE INTERNAL "libreadline" )
-ENDIF ( READLINE_H )
-
-FIND_PATH( EDITLINE_H editline/readline.h )
-IF ( EDITLINE_H )
-    MESSAGE("-- Looking for editline/readline.h - found")
-    FIND_LIBRARY(EDITLINE_LIBRARY edit )
-    SET( EDITLINE 1 CACHE INTERNAL "libedit" )
-ELSE ( EDITLINE_H  )
-    MESSAGE("-- Looking for editline/readline.h - not found")
-    SET( EDITLINE 0 CACHE INTERNAL "libedit" )
-ENDIF ( EDITLINE_H )
+IF (NOT APPLE)
+	FIND_PATH( READLINE_H readline/readline.h )
+	IF ( READLINE_H )
+	    MESSAGE("-- Looking for readline/readline.h - found")
+	    FIND_LIBRARY(READLINE_LIBRARY readline )
+	    FIND_LIBRARY(HISTORY_LIBRARY history )
+	    # On win32, we need to look for both readline (release) and readlineD (debug)
+	    # to avoid mixing release/debug runtime libraries
+	    IF(WIN32)
+	        FIND_LIBRARY(READLINED_LIBRARY readlineD )
+	        IF(READLINE_LIBRARY AND READLINED_LIBRARY)
+	            SET(READLINE_LIBRARY
+	                optimized ${READLINE_LIBRARY}
+	                debug ${READLINED_LIBRARY})
+	        ENDIF()
+	        MESSAGE("READLINE_LIBRARY = ${READLINE_LIBRARY}")
+	    ENDIF(WIN32)
+	    SET( READLINE 1 CACHE INTERNAL "libreadline" )
+	    SET( READLINE_INCLUDE_DIR ${READLINE_H} )
+	ELSE ( READLINE_H  )
+	    MESSAGE("-- Looking for readline/readline.h - not found")
+	    SET( READLINE 0 CACHE INTERNAL "libreadline" )
+	ENDIF ( READLINE_H )
+	
+	FIND_PATH( EDITLINE_H editline/readline.h )
+	IF ( EDITLINE_H )
+	    MESSAGE("-- Looking for editline/readline.h - found")
+	    FIND_LIBRARY(EDITLINE_LIBRARY edit )
+	    SET( EDITLINE 1 CACHE INTERNAL "libedit" )
+	ELSE ( EDITLINE_H  )
+	    MESSAGE("-- Looking for editline/readline.h - not found")
+	    SET( EDITLINE 0 CACHE INTERNAL "libedit" )
+	ENDIF ( EDITLINE_H )
+ELSE (NOT APPLE)
+	# look for Homebrew's version; the system-default editline is not usable
+	FIND_PATH(READLINE_H readline/readline.h
+		PATHS /usr/local/Cellar/readline/*/include
+		NO_DEFAULT_PATH
+	)
+	IF (READLINE_H)
+		MESSAGE("-- Found Homebrew's readline in " ${READLINE_H})
+		FIND_LIBRARY(READLINE_LIBRARY readline 
+			PATHS /usr/local/Cellar/readline/*/lib
+			NO_DEFAULT_PATH
+		)
+		FIND_LIBRARY(HISTORY_LIBRARY history 
+			PATHS /usr/local/Cellar/readline/*/lib
+			NO_DEFAULT_PATH
+		)
+		SET( READLINE 1 CACHE INTERNAL "libreadline" )
+		SET( READLINE_INCLUDE_DIR ${READLINE_H} )
+	ELSE (READLINE_H)
+		MESSAGE("-- Looking for readline/readline.h - not found")
+	    SET( READLINE 0 CACHE INTERNAL "libreadline" )
+	    MESSAGE("-- Looking for editline/readline.h - not found")
+	    SET( EDITLINE 0 CACHE INTERNAL "libedit" )
+	ENDIF (READLINE_H)
+ENDIF (NOT APPLE)
 
 find_package( Log4cpp 6.0) # 6.0 is the Orocos extended API of log4cpp
 if(LOG4CPP_FOUND)
