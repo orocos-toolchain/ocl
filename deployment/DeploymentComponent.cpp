@@ -1239,7 +1239,7 @@ namespace OCL
         return !failure && valid;
     }
 
-    bool DeploymentComponent::createDataPortConnections(const int group)
+    bool DeploymentComponent::createDataPortConnections(const bool skipUnconnected)
     {
         bool valid = true;
 
@@ -1247,11 +1247,18 @@ namespace OCL
             ConnectionData *connection =  &(it->second);
             std::string connection_name = it->first;
             
-            if ( connection->ports.size() == 1 ){
+            if ( connection->ports.size() == 1) {
                 string owner = connection->owners[0]->getName();
                 string portname = connection->ports.front()->getName();
                 string porttype = dynamic_cast<InputPortInterface*>(connection->ports.front() ) ? "InputPort" : "OutputPort";
-                if ( connection->ports.front()->createStream( connection->policy ) == false) {
+
+                // a connection that currently has only one port may end up with
+                // two ports later on, so we skip this connection for now.
+                if (skipUnconnected)
+                {
+                    log(Info) << "Skipping connection with name "<<connection_name<<" with only one Port "<<portname<<" from "<< owner << endlog();
+                }
+                else if ( connection->ports.front()->createStream( connection->policy ) == false) {
                     log(Warning) << "Creating stream with name "<<connection_name<<" with Port "<<portname<<" from "<< owner << " failed."<< endlog();
                 } else {
                     log(Info) << "Component "<< owner << "'s " + porttype<< " " + portname << " will stream to "<< connection->policy.name_id << endlog();
@@ -1380,7 +1387,7 @@ namespace OCL
         }
 
         // Create data port connections:
-        valid &= createDataPortConnections();
+        valid &= createDataPortConnections(true);
 
         // Autoconnect ports. The port name is the topic name.
         for (RTT::PropertyBag::iterator it= root.begin(); it!=root.end();it++) {
@@ -1525,6 +1532,9 @@ namespace OCL
             valid &= createConnectionMapFromPortsTag(comp, peer, false);
 
         }   // for root
+
+        // Create data port connections for any newly created connections/ports.
+        valid &= createDataPortConnections(false);
 
         // Finally, report success/failure (but ignore components that are actually running, as
         // they will have been configured/started previously)

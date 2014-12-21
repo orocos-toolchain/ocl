@@ -307,7 +307,22 @@ namespace OCL
                                              RTT::TaskContext* c,
                                              const bool ignoreNonexistentPorts);
 
-        bool createDataPortConnections();
+        /**
+         * Create data connections for all known connections in the conmap.
+         * This can be run multiple times, and it will only try to create any
+         * data connections that don't already exist.
+         *
+         * @param skipUnconnected Whether to skip connections that have only
+         * one port. This may occur when the port for one side of a connection
+         * does not yet exist, but will be created later in the deployment
+         * process (e.g. by a component that dynamically creates ports in its
+         * configureHook() ). If skipUnconnected==false then a connection with
+         * only one port will attempt to create a stream for the connection.
+         *
+         * @return true if all connections have an output port and all port
+         * connections were made succesfully.
+         */
+        bool createDataPortConnections(const bool skipUnconnected);
 
         using TaskContext::connectPorts;
         /**
