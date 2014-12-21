@@ -1220,6 +1220,79 @@ namespace OCL
         return !failure && valid;
     }
 
+    bool DeploymentComponent::createDataPortConnections(const int group)
+    {
+        bool valid = true;
+
+        for(ConMap::iterator it = conmap.begin(); it != conmap.end(); ++it) {
+            ConnectionData *connection =  &(it->second);
+            std::string connection_name = it->first;
+            
+            if ( connection->ports.size() == 1 ){
+                string owner = connection->owners[0]->getName();
+                string portname = connection->ports.front()->getName();
+                string porttype = dynamic_cast<InputPortInterface*>(connection->ports.front() ) ? "InputPort" : "OutputPort";
+                if ( connection->ports.front()->createStream( connection->policy ) == false) {
+                    log(Warning) << "Creating stream with name "<<connection_name<<" with Port "<<portname<<" from "<< owner << " failed."<< endlog();
+                } else {
+                    log(Info) << "Component "<< owner << "'s " + porttype<< " " + portname << " will stream to "<< connection->policy.name_id << endlog();
+                }
+                continue;
+            }
+            // first find all write ports.
+            base::PortInterface* writer = 0;
+            ConnectionData::Ports::iterator p = connection->ports.begin();
+            
+            // If one of the ports is connected, use that one as writer to connect to.
+            vector<OutputPortInterface*> writers;
+            while (p !=connection->ports.end() ) {
+                if ( OutputPortInterface* out = dynamic_cast<base::OutputPortInterface*>( *p ) ) {
+                    if ( writer ) {
+                        log(Info) << "Forming multi-output connections with additional OutputPort " << (*p)->getName() << "."<<endlog();
+                    } else
+                    writer = *p;
+                    writers.push_back( out );
+                    std::string owner = it->second.owners[p - it->second.ports.begin()]->getName();
+                    log(Info) << "Component "<< owner << "'s OutputPort "<< writer->getName()<< " will write topic "<<it->first<< endlog();
+                }
+                ++p;
+            }
+            
+            // Inform the user of non-optimal connections:
+            if ( writer == 0 ) {
+                log(Error) << "No OutputPort listed that writes " << it->first << endlog();
+                valid = false;
+                break;
+            }
+            
+            // connect all ports to writer
+            p = connection->ports.begin();
+            vector<OutputPortInterface*>::iterator w = writers.begin();
+            
+            while (w != writers.end() ) {
+                while (p != connection->ports.end() ) {
+                    // connect all readers to the list of writers
+                    if ( dynamic_cast<base::InputPortInterface*>( *p ) )
+                    {
+                        string owner = connection->owners[p - connection->ports.begin()]->getName();
+                        // only try to connect p if it is not in the same connection of writer.
+                        // OK. p is definately no part of writer's connection. Try to connect and flag errors if it fails.
+                        if ( (*w)->connectTo( *p, connection->policy ) == false) {
+                            log(Error) << "Could not subscribe InputPort "<< owner<<"."<< (*p)->getName() << " to topic " << (*w)->getName() <<'/'<< connection_name <<endlog();
+                            valid = false;
+                        } else {
+                            log(Info) << "Subscribed InputPort "<< owner<<"."<< (*p)->getName() <<" to topic " << (*w)->getName() <<'/'<< connection_name <<endlog();
+                        }
+                    }
+                    ++p;
+                }
+                ++w;
+                p = connection->ports.begin();
+            }
+        }
+        return valid;
+    }
+    
     bool DeploymentComponent::configureComponents()
     {
         RTT::Logger::In in("configureComponents");
@@ -1288,72 +1361,7 @@ namespace OCL
         }
 
         // Create data port connections:
-        for(ConMap::iterator it = conmap.begin(); it != conmap.end(); ++it) {
-            ConnectionData *connection =  &(it->second);
-            std::string connection_name = it->first;
-
-            if ( connection->ports.size() == 1 ){
-                string owner = connection->owners[0]->getName();
-                string portname = connection->ports.front()->getName();
-                string porttype = dynamic_cast<InputPortInterface*>(connection->ports.front() ) ? "InputPort" : "OutputPort";
-                if ( connection->ports.front()->createStream( connection->policy ) == false) {
-                    log(Warning) << "Creating stream with name "<<connection_name<<" with Port "<<portname<<" from "<< owner << " failed."<< endlog();
-                } else {
-                    log(Info) << "Component "<< owner << "'s " + porttype<< " " + portname << " will stream to "<< connection->policy.name_id << endlog();
-                }
-                continue;
-            }
-            // first find all write ports.
-            base::PortInterface* writer = 0;
-            ConnectionData::Ports::iterator p = connection->ports.begin();
-
-            // If one of the ports is connected, use that one as writer to connect to.
-            vector<OutputPortInterface*> writers;
-            while (p !=connection->ports.end() ) {
-                if ( OutputPortInterface* out = dynamic_cast<base::OutputPortInterface*>( *p ) ) {
-                    if ( writer ) {
-                        log(Info) << "Forming multi-output connections with additional OutputPort " << (*p)->getName() << "."<<endlog();
-                    } else
-                        writer = *p;
-                    writers.push_back( out );
-                    std::string owner = it->second.owners[p - it->second.ports.begin()]->getName();
-                    log(Info) << "Component "<< owner << "'s OutputPort "<< writer->getName()<< " will write topic "<<it->first<< endlog();
-                }
-                ++p;
-            }
-
-            // Inform the user of non-optimal connections:
-            if ( writer == 0 ) {
-                log(Error) << "No OutputPort listed that writes " << it->first << endlog();
-                valid = false;
-                break;
-            }
-
-            // connect all ports to writer
-            p = connection->ports.begin();
-            vector<OutputPortInterface*>::iterator w = writers.begin();
-
-            while (w != writers.end() ) {
-                while (p != connection->ports.end() ) {
-                    // connect all readers to the list of writers
-                    if ( dynamic_cast<base::InputPortInterface*>( *p ) )
-                    {
-                        string owner = connection->owners[p - connection->ports.begin()]->getName();
-                        // only try to connect p if it is not in the same connection of writer.
-                        // OK. p is definately no part of writer's connection. Try to connect and flag errors if it fails.
-                        if ( (*w)->connectTo( *p, connection->policy ) == false) {
-                            log(Error) << "Could not subscribe InputPort "<< owner<<"."<< (*p)->getName() << " to topic " << (*w)->getName() <<'/'<< connection_name <<endlog();
-                            valid = false;
-                        } else {
-                            log(Info) << "Subscribed InputPort "<< owner<<"."<< (*p)->getName() <<" to topic " << (*w)->getName() <<'/'<< connection_name <<endlog();
-                        }
-                    }
-                    ++p;
-                }
-                ++w;
-                p = connection->ports.begin();
-            }
-        }
+        valid &= createDataPortConnections();
 
         // Autoconnect ports. The port name is the topic name.
         for (RTT::PropertyBag::iterator it= root.begin(); it!=root.end();it++) {

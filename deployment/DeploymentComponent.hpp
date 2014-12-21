@@ -287,6 +287,8 @@ namespace OCL
          */
         bool connectPeers(const std::string& one, const std::string& other);
 
+        bool createDataPortConnections();
+
         using TaskContext::connectPorts;
         /**
          * Establish a data flow connection between two tasks. The direction
