@@ -287,8 +287,25 @@ namespace OCL
          */
         bool connectPeers(const std::string& one, const std::string& other);
 
+        /**
+         * Make connection map from the <Ports> tag of \a comp.
+         *
+         * @param comp Property bag describing component to scan the <Ports> tag
+         * of.
+         * @param c The TaskContext instance corresponding to \a comp
+         * @param ignoreNonexistentPorts Whether to ignore ports listed in the
+         * <Ports> tag that do not exist, otherwise to throw an error if such
+         * ports do not exist.
+         *
+         * @return true if all elements in the <Ports> tag are strings (and so
+         * contain port names) and either ignoreNonexistentPorts or
+         * !ignoreNonexistentPorts and all ports named exist in \a c.
+         *
+         * @pre 0 != c
+         */
         bool createConnectionMapFromPortsTag(RTT::Property<RTT::PropertyBag>& comp,
-                                             RTT::TaskContext* c);
+                                             RTT::TaskContext* c,
+                                             const bool ignoreNonexistentPorts);
 
         bool createDataPortConnections();
 

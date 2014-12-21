@@ -737,7 +737,8 @@ namespace OCL
     }
 
     bool DeploymentComponent::createConnectionMapFromPortsTag(RTT::Property<RTT::PropertyBag>& comp,
-                                                              RTT::TaskContext* c)
+                                                              RTT::TaskContext* c,
+                                                              const bool ignoreNonexistentPorts)
     {
         assert(0 != c);
 
@@ -755,8 +756,14 @@ namespace OCL
                 }
                 base::PortInterface* p = c->ports()->getPort( portcon.getName() );
                 if ( !p ) {
-                    log(Error)<< "Component '"<< c->getName() <<"' does not have a Port '"<< portcon.getName()<<"'." << endlog();
-                    valid = false;
+                    if (ignoreNonexistentPorts)
+                    {
+                        log(Info)<< "Component '"<< c->getName() <<"' does not have a Port '"<< portcon.getName()<<"'. Will try to connect again later." << endlog();
+                        continue;   // ignore this issue
+                    } else {
+                        log(Error)<< "Component '"<< c->getName() <<"' does not have a Port '"<< portcon.getName()<<"'." << endlog();
+                        valid = false;
+                    }
                 }
                 // store the port
                 if (valid){
@@ -1056,7 +1063,7 @@ namespace OCL
                             comp.value().getProperty("PropFile")->setName("PropertyFile");
 
                         // connect ports 'Ports' tag is optional.
-                        valid &= createConnectionMapFromPortsTag(comp, c);
+                        valid &= createConnectionMapFromPortsTag(comp, c, true);
 
                         // Setup the connections from this
                         // component to the others.
@@ -1513,7 +1520,11 @@ namespace OCL
                     else
                         log(Warning) << "Apparently component "<< peer->getName()<< " don't need to be configured (already Running)." <<endlog();
                 }
-        }
+
+            // scan for connection changes due to ports created in configure()
+            valid &= createConnectionMapFromPortsTag(comp, peer, false);
+
+        }   // for root
 
         // Finally, report success/failure (but ignore components that are actually running, as
         // they will have been configured/started previously)
