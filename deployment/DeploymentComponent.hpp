@@ -287,6 +287,9 @@ namespace OCL
          */
         bool connectPeers(const std::string& one, const std::string& other);
 
+        bool createConnectionMapFromPortsTag(RTT::Property<RTT::PropertyBag>& comp,
+                                             RTT::TaskContext* c);
+
         bool createDataPortConnections();
 
         using TaskContext::connectPorts;

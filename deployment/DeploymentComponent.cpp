@@ -736,6 +736,56 @@ namespace OCL
         return false;
     }
 
+    bool DeploymentComponent::createConnectionMapFromPortsTag(RTT::Property<RTT::PropertyBag>& comp,
+                                                              RTT::TaskContext* c)
+    {
+        assert(0 != c);
+
+        bool valid = true;
+
+        // connect ports 'Ports' tag is optional.
+        RTT::Property<RTT::PropertyBag>* ports = comp.value().getPropertyType<PropertyBag>("Ports");
+        if ( ports != 0 ) {
+            for (RTT::PropertyBag::iterator pit = ports->value().begin(); pit != ports->value().end(); pit++) {
+                Property<string> portcon = *pit;
+                if ( !portcon.ready() ) {
+                    log(Error)<< "RTT::Property '"<< (*pit)->getName() <<"' is not of type 'string'." << endlog();
+                    valid = false;
+                    continue;
+                }
+                base::PortInterface* p = c->ports()->getPort( portcon.getName() );
+                if ( !p ) {
+                    log(Error)<< "Component '"<< c->getName() <<"' does not have a Port '"<< portcon.getName()<<"'." << endlog();
+                    valid = false;
+                }
+                // store the port
+                if (valid){
+                    string conn_name = portcon.value(); // reads field of property
+                    bool to_add = true;
+                    // go through the vector to avoid duplicate items.
+                    // NOTE the sizes conmap[conn_name].ports.size() and conmap[conn_name].owners.size() are supposed to be equal
+                    for(unsigned int a=0; a < conmap[conn_name].ports.size(); a++)
+                    {
+                        if(  conmap[conn_name].ports.at(a) == p && conmap[conn_name].owners.at(a) == c)
+                        {
+                            to_add = false;
+                            continue;
+                        }
+                    }
+
+                    if(to_add)
+                    {
+                        log(Debug)<<"storing Port: "<<c->getName()<<"."<< portcon.getName();
+                        log(Debug)<<" in " << conn_name <<endlog();
+                        conmap[conn_name].ports.push_back( p );
+                        conmap[conn_name].owners.push_back( c );
+                    }
+                }
+            }
+        }
+        return valid;
+    }
+
     bool DeploymentComponent::loadConfiguration(const std::string& configurationfile)
     {
         return this->loadComponents(configurationfile);
@@ -1006,45 +1056,7 @@ namespace OCL
                             comp.value().getProperty("PropFile")->setName("PropertyFile");
 
                         // connect ports 'Ports' tag is optional.
-                        RTT::Property<RTT::PropertyBag>* ports = comp.value().getPropertyType<PropertyBag>("Ports");
-                        if ( ports != 0 ) {
-                            for (RTT::PropertyBag::iterator pit = ports->value().begin(); pit != ports->value().end(); pit++) {
-                                Property<string> portcon = *pit;
-                                if ( !portcon.ready() ) {
-                                    log(Error)<< "RTT::Property '"<< (*pit)->getName() <<"' is not of type 'string'." << endlog();
-                                    valid = false;
-                                    continue;
-                                }
-                                base::PortInterface* p = c->ports()->getPort( portcon.getName() );
-                                if ( !p ) {
-                                    log(Error)<< "Component '"<< c->getName() <<"' does not have a Port '"<< portcon.getName()<<"'." << endlog();
-                                    valid = false;
-                                }
-                                // store the port
-                                if (valid){
-                                    string conn_name = portcon.value(); // reads field of property
-                                    bool to_add = true;
-                                    // go through the vector to avoid duplicate items.
-                                    // NOTE the sizes conmap[conn_name].ports.size() and conmap[conn_name].owners.size() are supposed to be equal
-                                    for(unsigned int a=0; a < conmap[conn_name].ports.size(); a++)
-                                        {
-                                            if(  conmap[conn_name].ports.at(a) == p && conmap[conn_name].owners.at(a) == c)
-                                                {
-                                                    to_add = false;
-                                                    continue;
-                                                }
-                                        }
-
-                                    if(to_add)
-                                        {
-                                            log(Debug)<<"storing Port: "<<c->getName()<<"."<< portcon.getName();
-                                            log(Debug)<<" in " << conn_name <<endlog();
-                                            conmap[conn_name].ports.push_back( p );
-                                            conmap[conn_name].owners.push_back( c );
-                                        }
-                                }
-                            }
-                        }
+                        valid &= createConnectionMapFromPortsTag(comp, c);
 
                         // Setup the connections from this
                         // component to the others.
