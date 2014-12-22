@@ -191,8 +191,7 @@ int main(int argc, char** argv)
                     log(Error) << "Unknown extension of file: '"<< (*iter) <<"'. Must be xml, cpf for XML files or, ops or osd for script files."<<endlog();
                 }
             }
-            if (result == false)
-		rc = -1;
+            rc = (result ? 0 : -1);
 #ifdef USE_TASKBROWSER
             // We don't start an interactive console when we're a daemon
             if ( !deploymentOnlyChecked && !vm.count("daemon") ) {
