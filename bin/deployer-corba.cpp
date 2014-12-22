@@ -190,7 +190,14 @@ int main(int argc, char** argv)
                 {
                     if ( (*iter).rfind(".xml",string::npos) == (*iter).length() - 4 || (*iter).rfind(".cpf",string::npos) == (*iter).length() - 4) {
                         if ( deploymentOnlyChecked ) {
-                            result = dc.loadComponents( (*iter) ) && dc.configureComponents();
+                            if (!dc.loadComponents( (*iter) )) {
+                                result = false;
+                                log(Error) << "Failed to load file: '"<< (*iter) <<"'." << endlog();
+                            } else if (!dc.configureComponents()) {
+                                result = false;
+                                log(Error) << "Failed to configure file: '"<< (*iter) <<"'." << endlog();
+                            }
+                            // else leave result=true and continue
                         } else {
                             result = dc.kickStart( (*iter) );
                         }
