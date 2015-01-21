@@ -60,12 +60,12 @@ namespace OCL
 
     bool TimerComponent::wait(RTT::os::Timer::TimerId id, double seconds)
     {
-        return mtimer.arm(id, seconds);
+        return mtimer.arm(id, seconds) && mtimer.waitFor(id);
     }
 
     bool TimerComponent::waitFor(RTT::os::Timer::TimerId id)
     {
-        return true;
+        return mtimer.waitFor(id);
     }
 
     bool TimerComponent::isTimerExpired(RTT::os::Timer::TimerId id) const
