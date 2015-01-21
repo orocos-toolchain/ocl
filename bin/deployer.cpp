@@ -179,7 +179,14 @@ int main(int argc, char** argv)
                 {
                     if ( (*iter).rfind(".xml",std::string::npos) == (*iter).length() - 4 || (*iter).rfind(".cpf",std::string::npos) == (*iter).length() - 4) {
                         if ( deploymentOnlyChecked ) {
-                            result = dc.loadComponents( (*iter) ) && dc.configureComponents();
+                            if (!dc.loadComponents( (*iter) )) {
+                                result = false;
+                                log(Error) << "Failed to load file: '"<< (*iter) <<"'." << endlog();
+                            } else if (!dc.configureComponents()) {
+                                result = false;
+                                log(Error) << "Failed to configure file: '"<< (*iter) <<"'." << endlog();
+                            }
+                            // else leave result=true and continue
                         } else {
                             result = dc.kickStart( (*iter) );
                         }
@@ -191,8 +198,7 @@ int main(int argc, char** argv)
                     log(Error) << "Unknown extension of file: '"<< (*iter) <<"'. Must be xml, cpf for XML files or, ops or osd for script files."<<endlog();
                 }
             }
-            if (result == false)
-		rc = -1;
+            rc = (result ? 0 : -1);
 #ifdef USE_TASKBROWSER
             // We don't start an interactive console when we're a daemon
             if ( !deploymentOnlyChecked && !vm.count("daemon") ) {
