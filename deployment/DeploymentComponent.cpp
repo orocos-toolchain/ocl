@@ -647,6 +647,30 @@ namespace OCL
 
     bool DeploymentComponent::runScript(const std::string& file_name)
     {
+#ifdef BUILD_LUA_RTT
+        if (file_name.rfind(".lua") == file_name.length() - 4) {
+            if (!this->provides()->hasService("Lua")) {
+                // Load lua scripting service
+                if(!RTT::plugin::PluginLoader::Instance()->loadService("Lua", this)) {
+                  RTT::log(RTT::Error) << "Could not load lua service." << RTT::endlog();
+                  return false;
+                }
+
+                // Get exec_str operation
+                RTT::OperationCaller<bool(std::string)> exec_str =
+                    this->provides("Lua")->getOperation("exec_str");
+
+                // Load rttlib for first-class operation support
+                exec_str("require(\"rttlib\")");
+            }
+
+            // Get exec_file operation
+            RTT::OperationCaller<bool(std::string)> exec_file =
+                this->provides("Lua")->getOperation("exec_file");
+
+            return exec_file( file_name );
+        }
+#endif
         return this->getProvider<Scripting>("scripting")->runScript( file_name );
     }
 

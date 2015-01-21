@@ -10,6 +10,11 @@ IF ( BUILD_DEPLOYMENT )
     SET( HPPS DeploymentComponent.hpp )
     SET( SRCS DeploymentComponent.cpp )
 
+    # Add Lua support if BUILD_LUA_RTT is on
+    if(BUILD_LUA_RTT)
+        add_definitions(-DBUILD_LUA_RTT)
+    endif()
+
     orocos_library( orocos-ocl-deployment ${SRCS})
     SET_TARGET_PROPERTIES( orocos-ocl-deployment PROPERTIES
       DEFINE_SYMBOL OCL_DLL_EXPORT)
