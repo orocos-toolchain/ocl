@@ -6,8 +6,9 @@
     This package contains standard components for the Orocos Toolchain
   </description>
   <license>LGPL v2</license>
+  <maintainer email="orocos-dev@lists.mech.kuleuven.be">Orocos Developers</maintainer>
+
   <author>OCL Development Team</author>
-  <maintainer email="orocos-dev@lists.mech.kuleuven.be">OCL Development Team</maintainer>
   <url>http://www.orocos.org/ocl</url>
   
   <buildtool_depend>cmake</buildtool_depend>
