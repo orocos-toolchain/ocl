@@ -90,7 +90,7 @@ int deployerParseCmdLine(int                        argc,
 		 "Makes this program a daemon such that it runs in the background. Returns 1 in case of success.")
 		("start,s",
 		 po::value< std::vector<std::string> >(&scriptFiles),
-		 "Deployment XML or script file (eg 'config-file.xml' or 'script.ops')")
+         "Deployment XML or script file (eg 'config-file.xml', 'script.ops' or 'script.lua')")
 		("site-file",
 		 po::value<std::string>(&siteFile),
 		 "Site deployment XML file (eg 'Deployer-site.cpf' or 'Deployer-site.xml')")
@@ -213,7 +213,8 @@ int deployerParseCmdLine(int                        argc,
                 if (arg.rfind(".xml") != std::string::npos ||
                     arg.rfind(".cpf") != std::string::npos ||
                     arg.rfind(".osd") != std::string::npos ||
-                    arg.rfind(".ops") != std::string::npos ) {
+                    arg.rfind(".ops") != std::string::npos ||
+                    arg.rfind(".lua") != std::string::npos ) {
                     scriptFiles.push_back(arg);
                 } else {
                     name = arg;

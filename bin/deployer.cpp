@@ -191,11 +191,15 @@ int main(int argc, char** argv)
                             result = dc.kickStart( (*iter) );
                         }
                         continue;
-                    } if ( (*iter).rfind(".ops",std::string::npos) == (*iter).length() - 4 || (*iter).rfind(".osd",std::string::npos) == (*iter).length() - 4) {
+                    }
+
+                    if ( (*iter).rfind(".ops",std::string::npos) == (*iter).length() - 4 ||
+                         (*iter).rfind(".osd",std::string::npos) == (*iter).length() - 4 ||
+                         (*iter).rfind(".lua",std::string::npos) == (*iter).length() - 4) {
                         result = dc.runScript( (*iter) ) && result;
                         continue;
                     }
-                    log(Error) << "Unknown extension of file: '"<< (*iter) <<"'. Must be xml, cpf for XML files or, ops or osd for script files."<<endlog();
+                    log(Error) << "Unknown extension of file: '"<< (*iter) <<"'. Must be xml, cpf for XML files or, ops, osd or lua for script files."<<endlog();
                 }
             }
             rc = (result ? 0 : -1);
