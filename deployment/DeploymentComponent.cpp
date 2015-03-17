@@ -95,6 +95,7 @@ namespace OCL
 
     DeploymentComponent::DeploymentComponent(std::string name, std::string siteFile)
         : RTT::TaskContext(name, Stopped),
+          defaultWaitPeriodPolicy(ORO_WAIT_ABS),
           autoUnload("AutoUnload",
                      "Stop, cleanup and unload all components loaded by the DeploymentComponent when it is destroyed.",
                      true),
@@ -108,6 +109,7 @@ namespace OCL
           nextGroup(0)
     {
         this->addProperty( "RTT_COMPONENT_PATH", compPath ).doc("Locations to look for components. Use a colon or semi-colon separated list of paths. Defaults to the environment variable with the same name.");
+        this->addProperty( "DefaultWaitPeriodPolicy", defaultWaitPeriodPolicy ).doc("The default value for the wait period policy property for threads of newly created activities (ORO_WAIT_ABS or ORO_WAIT_REL).");
         this->addProperty( autoUnload );
         this->addAttribute( target );
 
@@ -206,6 +208,8 @@ namespace OCL
 			.arg("Timeout", "The timeout of the activity (set to zero for no timeout).")
 			.arg("Priority", "The priority of the activity.")
 			.arg("SchedType", "The scheduler type of the activity.");
+
+        this->addOperation("setWaitPeriodPolicy", &DeploymentComponent::setWaitPeriodPolicy, this, ClientThread).doc("Sets the wait period policy of an existing component thread.").arg("CompName", "The name of the Component.").arg("Policy", "The new policy (ORO_WAIT_ABS or ORO_WAIT_REL).");
 
         valid_names.insert("AutoUnload");
         valid_names.insert("UseNamingService");
@@ -2082,11 +2086,31 @@ namespace OCL
             return false;
         }
 
+        // assign default wait period policy to newly created activity
+        newact->thread()->setWaitPeriodPolicy(defaultWaitPeriodPolicy);
+
         // this must never happen if component is running:
         assert( peer->isRunning() == false );
         delete compmap[comp_name].act;
         compmap[comp_name].act = newact;
 
+        return true;
+    }
+
+    bool DeploymentComponent::setWaitPeriodPolicy(const std::string& comp_name, int policy)
+    {
+        if ( !compmap.count(comp_name) ) {
+            log(Error) << "Can't setWaitPeriodPolicy: component "<<comp_name<<" not found."<<endlog();
+            return false;
+        }
+
+        RTT::base::ActivityInterface *activity = compmap[comp_name].instance->getActivity();
+        if ( !activity ) {
+            log(Error) << "Can't setWaitPeriodPolicy: component "<<comp_name<<" has no activity (yet)."<<endlog();
+            return false;
+        }
+
+        activity->thread()->setWaitPeriodPolicy(policy);
         return true;
     }
 

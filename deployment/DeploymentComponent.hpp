@@ -93,6 +93,7 @@ namespace OCL
          */
         RTT::PropertyBag root;
         std::string compPath;
+        int defaultWaitPeriodPolicy;
         RTT::Property<bool> autoUnload;
         RTT::Attribute<bool> validConfig;
         RTT::Constant<int> sched_RT;
@@ -630,6 +631,17 @@ namespace OCL
                          double period, int priority,
                          int scheduler, unsigned cpu_affinity,
                          const std::string& master_name = "");
+
+        /**
+         * (Re-)set the wait period policy of a component's thread.
+         *
+         * @param comp_name The name of the component to change.
+         * @param policy    The new policy \a ORO_WAIT_ABS or \a ORO_WAIT_REL
+         *
+         * @return false if one of the parameters does not match.
+         */
+        bool setWaitPeriodPolicy(const std::string& comp_name,
+                         int policy);
 
         /**
          * Load a (partial) application XML configuration from disk. The
