@@ -200,11 +200,11 @@ ADD_SUBDIRECTORY( taskbrowser )
 ADD_SUBDIRECTORY( timer )
 ADD_SUBDIRECTORY( logging )
 ADD_SUBDIRECTORY( reporting )
-ADD_SUBDIRECTORY( bin )
 ADD_SUBDIRECTORY( lua )
 ADD_SUBDIRECTORY( deployment )
 ADD_SUBDIRECTORY( scripts/pkg )
 ADD_SUBDIRECTORY( helloworld )
+ADD_SUBDIRECTORY( bin )                 # depends on logging, taskbrowser and deployment
 
 MESSAGE("Selected Libraries: $ENV{SELECTED_LIBS}")
 SET(SELECTED_LIBS $ENV{SELECTED_LIBS})
