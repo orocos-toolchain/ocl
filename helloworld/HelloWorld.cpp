@@ -102,6 +102,13 @@ namespace OCL
         		cout <<"Setting 'flag' back to false."<<endl;
         		flag = false;
         	}
+
+            outport.write("Hello World!");
+
+            std::string sample;
+            while(bufferport.read(sample) == NewData) {
+                log(Debug) << "Received " << sample << endlog();
+            }
         }
     public:
         /**
