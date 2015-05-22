@@ -4,3 +4,9 @@ if [ "x$LUA_PATH" = "x" ]; then
     LUA_PATH=";"
 fi
 export LUA_PATH="$LUA_PATH;@CMAKE_INSTALL_PREFIX@/share/lua/5.1/?.lua"
+
+if [ "x$LUA_CPATH" = "x" ]; then
+    LUA_CPATH=";"
+fi
+export LUA_CPATH="$LUA_CPATH;@CMAKE_INSTALL_PREFIX@/lib/lua/5.1/?.so"
+

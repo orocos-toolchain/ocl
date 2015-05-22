@@ -93,6 +93,7 @@ namespace OCL
          */
         RTT::PropertyBag root;
         std::string compPath;
+        int defaultWaitPeriodPolicy;
         RTT::Property<bool> autoUnload;
         RTT::Attribute<bool> validConfig;
         RTT::Constant<int> sched_RT;
@@ -164,9 +165,11 @@ namespace OCL
         ConMap conmap;
 
         /**
-         * This vector holds the dynamically loaded components.
+         * This list and map hold the dynamically loaded components.
          */
-        typedef std::map<std::string, ComponentData> CompList;
+        typedef std::map<std::string, ComponentData> CompMap;
+        typedef std::list<std::string> CompList;
+        CompMap compmap;
         CompList comps;
 
         /**
@@ -181,7 +184,7 @@ namespace OCL
          * This method removes all references to the component hold in \a cit,
          * on the condition that it is not running.
          */
-        bool unloadComponentImpl( CompList::iterator cit );
+        bool unloadComponentImpl( CompMap::iterator cit );
 
 
         /**
@@ -270,7 +273,7 @@ namespace OCL
          */
         ~DeploymentComponent();
 
-        RTT::TaskContext* myGetPeer(std::string name) {return comps[ name ].instance; }
+        RTT::TaskContext* myGetPeer(std::string name) {return compmap[ name ].instance; }
 
         /**
          * Make two components peers in both directions, such that both can
@@ -630,6 +633,17 @@ namespace OCL
                          const std::string& master_name = "");
 
         /**
+         * (Re-)set the wait period policy of a component's thread.
+         *
+         * @param comp_name The name of the component to change.
+         * @param policy    The new policy \a ORO_WAIT_ABS or \a ORO_WAIT_REL
+         *
+         * @return false if one of the parameters does not match.
+         */
+        bool setWaitPeriodPolicy(const std::string& comp_name,
+                         int policy);
+
+        /**
          * Load a (partial) application XML configuration from disk. The
          * necessary components are located or loaded, but no
          * component configuration is yet applied. One can load
@@ -908,13 +922,14 @@ namespace OCL
             return this->cleanupComponent( this->getPeer(comp_name) );
         }
 
-		/**
-		 * Clean up and shutdown the entire deployment
-		 * If an operation named "shutdownDeployment" is found in a peer
+        /**
+         * Clean up and shutdown the entire deployment
+         * If an operation named "shutdownDeployment" is found in a peer
          * component named "Application", then that operation is called
-         * otherwise nothing occurs.
-		 */
-		void shutdownDeployment();
+         * otherwise if a scripting program named "shutdown" is loaded,
+         * then that will be executed, otherwise nothing occurs.
+         */
+        void shutdownDeployment();
 
     };
 

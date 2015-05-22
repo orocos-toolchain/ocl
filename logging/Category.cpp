@@ -1,5 +1,6 @@
 #include "logging/Category.hpp"
 #include <rtt/Logger.hpp>
+#include <rtt/ConnPolicy.hpp>
 #include <log4cpp/NDC.hh>
 #include <log4cpp/HierarchyMaintainer.hh>
 
@@ -12,7 +13,7 @@ Category::Category(const std::string& name,
                    log4cpp::Category* parent,
                    log4cpp::Priority::Value priority) :
         log4cpp::Category(name, parent, priority),
-        log_port( convertName(name) )
+        log_port( convertName(name) , false )
 {
 }
 
@@ -154,6 +155,12 @@ CategoryStream Category::getRTStream(log4cpp::Priority::Value priority)
 bool Category::connectToLogPort(RTT::base::PortInterface& otherPort)
 {
     return otherPort.connectTo(&log_port);
+}
+
+bool Category::connectToLogPort(RTT::base::PortInterface&   otherPort,
+                                RTT::ConnPolicy&            cp)
+{
+    return otherPort.connectTo(&log_port, cp);
 }
 
 // namespaces

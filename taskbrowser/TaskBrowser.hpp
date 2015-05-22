@@ -113,6 +113,9 @@ namespace OCL
         PTrace ptraces;
         PTrace straces;
 
+        //file to store history
+        const char* histfile;
+
         //! We store the last parsed expression in order to keep
         //! it a little longer in memory, for example, when it's an 'send()' operation call.
         base::DataSourceBase::shared_ptr last_expr;

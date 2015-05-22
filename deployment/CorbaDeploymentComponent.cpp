@@ -111,7 +111,7 @@ CorbaDeploymentComponent::CorbaDeploymentComponent(const std::string& name, cons
     {
         if ( dynamic_cast<RTT::corba::TaskContextProxy*>(c) ) {
             // is a proxy.
-            for ( CompList::iterator cit = comps.begin(); cit != comps.end(); ++cit) {
+            for ( CompMap::iterator cit = compmap.begin(); cit != compmap.end(); ++cit) {
                 if (cit->second.instance == c) {
                     cit->second.proxy = true;
                     return true;
@@ -121,8 +121,8 @@ CorbaDeploymentComponent::CorbaDeploymentComponent(const std::string& name, cons
             assert(false);
             return false;
         }
-        bool use_naming = comps[c->getName()].use_naming;
-        bool server = comps[c->getName()].server;
+        bool use_naming = compmap[c->getName()].use_naming;
+        bool server = compmap[c->getName()].server;
         log(Info) << "Name:"<< c->getName() << " Server: " << server << " Naming: " << use_naming <<endlog();
         // create a server, use naming.
         if (server)
