@@ -36,7 +36,7 @@ function find_rospack(package)
       depl = rttlib.findpeer("deployer") or rttlib.findpeer("Deployer")
       if not depl then error("find_rospack: failed to find a deployer") end
       depl:import("rtt_rospack")
-      rtt_rospack_find=rtt.provides("rospack"):getOperation("find")
+      rtt_rospack_find=rtt.provides("ros"):getOperation("find")
    end
    local res = rtt_rospack_find(package)
    if res~="" then return res else return false end
