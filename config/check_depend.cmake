@@ -95,7 +95,7 @@ if(LOG4CXX_FOUND)
   message("Found log4cxx in ${LOG4CXX_INCLUDE_DIRS}")
 endif(LOG4CXX_FOUND)
 
-find_package(Boost COMPONENTS program_options filesystem system)
+find_package(Boost REQUIRED COMPONENTS program_options filesystem system)
 
 # On win32, dynamically linking with boost_program_options requires
 # BOOST_PROGRAM_OPTIONS_DYN_LINK. Otherwise, there is a linking error.
