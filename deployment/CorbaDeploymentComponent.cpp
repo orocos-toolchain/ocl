@@ -86,6 +86,7 @@ CorbaDeploymentComponent::CorbaDeploymentComponent(const std::string& name, cons
         ComponentLoader::Instance()->addFactory("IOR", &createTaskContextProxyIOR);
 
         this->addOperation("server", &CorbaDeploymentComponent::createServer, this, ClientThread).doc("Creates a CORBA TaskContext server for the given component").arg("tc", "Name of the RTT::TaskContext (must be a peer).").arg("UseNamingService", "Set to true to use the naming service.");
+        this->addOperation("aliasServer", &CorbaDeploymentComponent::createAliasServer, this, ClientThread).doc("Creates a CORBA TaskContext server for the given component using an alias").arg("tc", "Name of the RTT::TaskContext (must be a peer).").arg("alias", "Alias to use when registering to the CORBA Namingservice").arg("UseNamingService", "Set to true to use the naming service.");
     }
 
     CorbaDeploymentComponent::~CorbaDeploymentComponent()
@@ -106,6 +107,17 @@ CorbaDeploymentComponent::CorbaDeploymentComponent(const std::string& name, cons
         return false;
     }
 
+    bool CorbaDeploymentComponent::createAliasServer(const std::string& tc, const std::string& alias, bool use_naming)
+    {
+        RTT::TaskContext* peer = this->getPeer(tc);
+        if (!peer) {
+            log(Error)<<"No such peer: "<< tc <<endlog();
+            return false;
+        }
+        if ( ::RTT::corba::TaskContextServer::Create(peer, alias, use_naming) != 0 )
+            return true;
+        return false;
+    }
 
     bool CorbaDeploymentComponent::componentLoaded(RTT::TaskContext* c)
     {

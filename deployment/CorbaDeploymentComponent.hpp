@@ -55,6 +55,11 @@ namespace OCL
          * Creates a ControlTask CORBA server for a given peer TaskContext.
          */
         bool createServer(const std::string& tc, bool use_naming);
+
+        /**
+         * Creates a ControlTask CORBA server for a given peer TaskContext.
+         */
+        bool createAliasServer(const std::string& tc, const std::string& alias, bool use_naming);
     };
 
 }

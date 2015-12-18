@@ -1776,8 +1776,8 @@ namespace OCL
         }
 
         // unlikely that this fails (checked at entry)!
-        this->addPeer( instance );
-        log(Info) << "Adding "<< instance->getName() << " as new peer:  OK."<< endlog(Info);
+        this->addPeer( instance, name );
+        log(Info) << "Adding "<< name << " as new peer:  OK."<< endlog(Info);
 
         compmap[name].loaded = true;
 
@@ -1826,7 +1826,7 @@ namespace OCL
                 // Finally, delete the activity before the TC !
                 delete it->act;
                 it->act = 0;
-                ComponentLoader::Instance()->unloadComponent( it->instance );
+                ComponentLoader::Instance()->unloadComponent( it->instance, name );
                 it->instance = 0;
                 log(Info) << "Disconnected and destroyed "<< name <<endlog();
             } else {
