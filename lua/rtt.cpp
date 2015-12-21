@@ -2630,7 +2630,7 @@ static int __SendHandle_collect(lua_State *L, bool block)
 	oip = shc->getOrp();
 	coll_argc = oip->collectArity();
 
-	if(argc == 1) {
+	if(block && (argc == 1)) {
 		// No args supplied, create them.
 		for(unsigned int i=1; i<=coll_argc; i++) {
 			ti = oip->getCollectType(i);
@@ -2640,16 +2640,23 @@ static int __SendHandle_collect(lua_State *L, bool block)
 		}
 	} else if (argc-1 == coll_argc) {
 		// args supplied, use them.
-		for(unsigned int arg=2; arg<=argc; arg++) {
-			if ((dsbp = luaM_testudata_mt(L, arg, "Variable", DataSourceBase::shared_ptr)) != NULL)
-				dsb = *dsbp;
-			else
-				luaL_error(L, "SendHandle.collect: expected Variable argument at position %d", arg-1);
-			shc->arg(dsb);
+		if (!shc->ready()) {
+			for(unsigned int arg=2; arg<=argc; arg++) {
+				if ((dsbp = luaM_testudata_mt(L, arg, "Variable", DataSourceBase::shared_ptr)) != NULL)
+					dsb = *dsbp;
+				else
+					luaL_error(L, "SendHandle.collect: expected Variable argument at position %d", arg-1);
+				shc->arg(dsb);
+			}
 		}
 	} else {
-		luaL_error(L, "SendHandle.collect: wrong number of args. expected either 0 or %d, got %d",
-			   coll_argc, argc-1);
+		if (block) {
+			luaL_error(L, "SendHandle.collect: wrong number of args. expected either 0 or %d, got %d",
+				   coll_argc, argc-1);
+		} else {
+			luaL_error(L, "SendHandle.collectIfDone: wrong number of args. expected %d, got %d",
+				   coll_argc, argc-1);
+		}
 	}
 
 	if(block) ss = shc->collect();
@@ -2660,9 +2667,14 @@ static int __SendHandle_collect(lua_State *L, bool block)
 	if(ss == SendSuccess) {
 		for (unsigned int i=0; i<coll_args.size(); i++)
 			Variable_push_coerce(L, coll_args[i]);
+
+		/* SendStatus + collect args */
+		return coll_args.size() + 1;
+
+	} else {
+		/* SendStatus only */
+		return 1;
 	}
-	/* SendStatus + collect args */
-	return coll_args.size() + 1;
 }
 
 static int SendHandle_collect(lua_State *L) { return __SendHandle_collect(L, true); }
