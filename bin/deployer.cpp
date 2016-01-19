@@ -44,6 +44,8 @@
 #include <deployment/DeploymentComponent.hpp>
 #include <iostream>
 #include <string>
+#include <unistd.h>
+#include <stdio.h>
 #include "deployer-funcs.hpp"
 
 #ifdef  ORO_BUILD_LOGGING
@@ -168,7 +170,7 @@ int main(int argc, char** argv)
                scripts stops after the first failed script, and -1 is returned.
                Whether a script failed or all scripts succeeded, in non-daemon
                and non-checking mode the TaskBrowser will be run to allow
-               inspection.
+               inspection if the input is a tty.
              */
             bool result = true;
             for (std::vector<std::string>::const_iterator iter=scriptFiles.begin();
@@ -203,12 +205,16 @@ int main(int argc, char** argv)
                 }
             }
             rc = (result ? 0 : -1);
+
 #ifdef USE_TASKBROWSER
             // We don't start an interactive console when we're a daemon
             if ( !deploymentOnlyChecked && !vm.count("daemon") ) {
-                OCL::TaskBrowser tb( &dc );
-
-                tb.loop();
+                if (isatty(fileno(stdin))) {
+                    OCL::TaskBrowser tb( &dc );
+                    tb.loop();
+                } else {
+                    dc.waitForInterrupt();
+                }
 
                 dc.shutdownDeployment();
             }

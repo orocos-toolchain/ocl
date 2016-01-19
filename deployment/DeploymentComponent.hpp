@@ -231,18 +231,6 @@ namespace OCL
          */
         base::PortInterface* stringToPort(std::string const& names);
 
-        /**
-         * Waits for any signal and then returns.
-         * @return false if this function could not install a signal handler.
-         */
-        bool waitForSignal(int signumber);
-
-        /**
-         * Waits for SIGINT and then returns.
-         * @return false if this function could not install a signal handler.
-         */
-        bool waitForInterrupt();
-
     public:
         /**
          * Constructs and configures this component.
@@ -930,6 +918,18 @@ namespace OCL
          * then that will be executed, otherwise nothing occurs.
          */
         void shutdownDeployment();
+
+        /**
+         * Waits for any signal and then returns.
+         * @return false if this function could not install a signal handler.
+         */
+        bool waitForSignal(int signumber);
+
+        /**
+         * Waits for SIGINT and then returns.
+         * @return false if this function could not install a signal handler.
+         */
+        bool waitForInterrupt();
 
     };
 
