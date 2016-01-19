@@ -72,6 +72,7 @@ public:
 int ORO_main(int, char**)
 {
     RTT::Logger::Instance()->setLogLevel(RTT::Logger::Info);
+    int exit_code = 0;
 
     MyTask t1("ComponentA");
     MyTask t2("ComponentB");
@@ -88,9 +89,19 @@ int ORO_main(int, char**)
         dc.addPeer( &p );
         dc.addPeer( &r );
         dc.kickStart("deployment.cpf");
-        TaskBrowser tb(&dc);
 
+#if defined(RTT_VERSION_GTE)
+#if RTT_VERSION_GTE(2,8,99)
+        if (RTT::ConnPolicy::Default().size != 99 ||
+            RTT::ConnPolicy::Default().buffer_policy != RTT::Shared) {
+            log(Fatal) << "Default ConnPolicy not set correctly!" << endlog();
+            exit_code = 1;
+        }
+#endif
+#endif
+
+        TaskBrowser tb(&dc);
         tb.loop();
     }
-    return 0;
+    return exit_code;
 }

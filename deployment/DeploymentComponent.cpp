@@ -828,7 +828,20 @@ namespace OCL
                         assert( cp_prop.ready() );
                         if ( cp_prop.compose( comp ) ) {
                             //It's a connection policy.
-                            conmap[cp_prop.getName()].policy = cp_prop.get();
+#if defined(RTT_VERSION_GTE)
+#if RTT_VERSION_GTE(2,8,99)
+                            // Set default ConnPolicy
+                            if (cp_prop.getName() == "Default") {
+                                RTT::ConnPolicy::Default() = cp_prop.get();
+                            } else {
+#endif
+#endif
+                                conmap[cp_prop.getName()].policy = cp_prop.get();
+#if defined(RTT_VERSION_GTE)
+#if RTT_VERSION_GTE(2,8,99)
+                            }
+#endif
+#endif
                             log(Debug) << "Saw connection policy " << (*it)->getName() << endlog();
                             continue;
                         }
