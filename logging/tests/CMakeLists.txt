@@ -10,7 +10,7 @@ IF ( BUILD_LOGGING_TEST )
 	TestComponent.cpp
 	TestLoggingAvailability.cpp
 	)
-  target_link_libraries(orocos-logging-tests orocos-ocl-logging log4cpp)
+  target_link_libraries(orocos-logging-tests orocos-ocl-logging ${LOG4CPP_LIBRARIES})
 
   GLOBAL_ADD_TEST(testlogging testlogging.cpp)
   target_link_libraries(testlogging orocos-ocl-logging)
