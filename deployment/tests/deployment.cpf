@@ -14,6 +14,14 @@
     <simple name="AutoStart" type="boolean"><value>1</value></simple>
   </struct>
 
+  <!-- Default connection policy -->
+  <struct name="Default" type="ConnPolicy">
+    <simple name="type" type="long"><value>0</value></simple>
+    <simple name="size" type="long"><value>99</value></simple>
+    <simple name="buffer_policy" type="long"><value>4</value></simple>
+    <simple name="lock_policy" type="long"><value>1</value></simple>
+  </struct>
+
   <!-- Connection policy -->
   <struct name="AConnection" type="ConnPolicy">
     <simple name="type" type="short"><value>1</value></simple>
