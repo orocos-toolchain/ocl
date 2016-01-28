@@ -83,11 +83,11 @@ ELSE ( EDITLINE_H  )
     SET( EDITLINE 0 CACHE INTERNAL "libedit" )
 ENDIF ( EDITLINE_H )
 
-find_package( Log4cpp 6.0) # 6.0 is the Orocos extended API of log4cpp
+find_package( Log4cpp ${OCL_VERSION} EXACT )
 if(LOG4CPP_FOUND)
-  message("Found log4cpp in ${LOG4CPP_INCLUDE_DIRS}")
+  message("Found orocos-log4cpp in ${LOG4CPP_INCLUDE_DIRS}")
 else(LOG4CPP_FOUND)
-  message("\n   log4cpp not found:\n * Is the version correct (6.0 or higher) ?\n * Did you build & install it ?\n * Did you source env.sh ?\n")
+  message("\n   orocos-log4cpp not found:\n * Is the version correct (${OCL_VERSION}) ?\n * Did you build & install it ?\n * Did you source env.sh ?\n")
 endif(LOG4CPP_FOUND)
 
 find_package( Log4cxx )
