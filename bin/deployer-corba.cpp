@@ -38,6 +38,8 @@
 #include <deployment/CorbaDeploymentComponent.hpp>
 #include <rtt/transports/corba/TaskContextServer.hpp>
 #include <iostream>
+#include <unistd.h>
+#include <stdio.h>
 #include "deployer-funcs.hpp"
 
 #include <rtt/transports/corba/corba.h>
@@ -179,7 +181,7 @@ int main(int argc, char** argv)
                scripts stops after the first failed script, and -1 is returned.
                Whether a script failed or all scripts succeeded, in non-daemon
                and non-checking mode the TaskBrowser will be run to allow
-               inspection.
+               inspection if the input is a tty.
              */
             bool result = true;
             for (std::vector<std::string>::const_iterator iter=scriptFiles.begin();
@@ -215,13 +217,19 @@ int main(int argc, char** argv)
             }
             rc = (result ? 0 : -1);
 
+#ifdef USE_TASKBROWSER
             if ( !deploymentOnlyChecked && !vm.count("daemon") ) {
-                 OCL::TaskBrowser tb( &dc );
-                 tb.loop();
+                if (isatty(fileno(stdin))) {
+                    OCL::TaskBrowser tb( &dc );
+                    tb.loop();
+                } else {
+                    dc.waitForInterrupt();
+                }
 
-                 // do it while CORBA is still up in case need to do anything remote.
-                 dc.shutdownDeployment();
+                // do it while CORBA is still up in case need to do anything remote.
+                dc.shutdownDeployment();
             }
+#endif
 
             TaskContextServer::ShutdownOrb();
 
