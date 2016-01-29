@@ -1,7 +1,0 @@
-usr/lib/pkgconfig/orocos-ocl-@TARGET@.pc
-usr/lib/pkgconfig/ocl-@TARGET@.pc
-usr/lib/pkgconfig/ocl-timer-@TARGET@.pc
-usr/lib/pkgconfig/ocl-deployment-@TARGET@.pc
-usr/lib/pkgconfig/ocl-taskbrowser-@TARGET@.pc
-usr/lib/pkgconfig/ocl-reporting-@TARGET@.pc
-usr/lib/pkgconfig/ocl-lua-@TARGET@.pc
