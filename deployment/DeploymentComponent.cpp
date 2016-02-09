@@ -341,8 +341,8 @@ namespace OCL
     bool DeploymentComponent::connectPeers(const std::string& one, const std::string& other)
     {
         RTT::Logger::In in("connectPeers");
-        RTT::TaskContext* t1 = one == this->getName() ? this : this->getPeer(one);
-        RTT::TaskContext* t2 = other == this->getName() ? this : this->getPeer(other);
+        RTT::TaskContext* t1 = (((one == this->getName()) || (one == "this")) ? this : this->getPeer(one));
+        RTT::TaskContext* t2 = (((other == this->getName()) || (other == "this")) ? this : this->getPeer(other));
         if (!t1) {
             log(Error)<< "No such peer: "<<one<<endlog();
             return false;
@@ -357,8 +357,8 @@ namespace OCL
     bool DeploymentComponent::addPeer(const std::string& from, const std::string& to)
     {
         RTT::Logger::In in("addPeer");
-        RTT::TaskContext* t1 = from == this->getName() ? this : this->getPeer(from);
-        RTT::TaskContext* t2 = to == this->getName() ? this : this->getPeer(to);
+        RTT::TaskContext* t1 = (((from == this->getName()) || (from == "this")) ? this : this->getPeer(from));
+        RTT::TaskContext* t2 = (((to == this->getName()) || (to == "this")) ? this : this->getPeer(to));
         if (!t1) {
             log(Error)<< "No such peer: "<<from<<endlog();
             return false;
@@ -377,8 +377,8 @@ namespace OCL
     bool DeploymentComponent::aliasPeer(const std::string& from, const std::string& to, const std::string& alias)
     {
         RTT::Logger::In in("addPeer");
-        RTT::TaskContext* t1 = from == this->getName() ? this : this->getPeer(from);
-        RTT::TaskContext* t2 = to == this->getName() ? this : this->getPeer(to);
+        RTT::TaskContext* t1 = (((from == this->getName()) || (from == "this")) ? this : this->getPeer(from));
+        RTT::TaskContext* t2 = (((to == this->getName()) || (to == "this")) ? this : this->getPeer(to));
         if (!t1) {
             log(Error)<< "No such peer known to deployer '"<< this->getName()<< "': "<<from<<endlog();
             return false;
@@ -398,14 +398,16 @@ namespace OCL
       if (strs.empty()) return Service::shared_ptr();
 
     	string component = strs.front();
-    	if (!hasPeer(component) && component != this->getName() ) {
-    		log(Error) << "No such component: '"<< component <<"'" <<endlog();
+        RTT::TaskContext *tc = (((component == this->getName()) || (component == "this")) ? this : getPeer(component));
+        if (!tc) {
+            log(Error) << "No such component: '"<< component << "'";
     		if ( names.find('.') != string::npos )
-    			log(Error)<< " when looking for service '" << names <<"'" <<endlog();
+                log(Error) << " when looking for service '" << names <<" '";
+            log() << endlog();
     		return Service::shared_ptr();
     	}
     	// component is peer or self:
-    	Service::shared_ptr ret = (component != this->getName() ? getPeer(component)->provides() : this->provides());
+        Service::shared_ptr ret = tc->provides();
 
     	// remove component name:
     	strs.erase( strs.begin() );
@@ -427,14 +429,15 @@ namespace OCL
         boost::split(strs, names, boost::is_any_of("."));
 
         string component = strs.front();
-        if (!hasPeer(component) && component != this->getName() ) {
+        RTT::TaskContext *tc = (((component == this->getName()) || (component == "this")) ? this : getPeer(component));
+        if (!tc) {
             log(Error) << "No such component: '"<< component <<"'" <<endlog();
             if ( names.find('.') != string::npos )
                 log(Error)<< " when looking for service '" << names <<"'" <<endlog();
             return ServiceRequester::shared_ptr();
         }
         // component is peer or self:
-        ServiceRequester::shared_ptr ret = (component != this->getName() ? getPeer(component)->requires() : this->requires());
+        ServiceRequester::shared_ptr ret = tc->requires();
 
         // remove component name:
         strs.erase( strs.begin() );
@@ -459,13 +462,14 @@ namespace OCL
       if (strs.empty()) return 0;
 
     	string component = strs.front();
-    	if (!hasPeer(component) && component != this->getName() ) {
+        RTT::TaskContext *tc = (((component == this->getName()) || (component == "this")) ? this : getPeer(component));
+        if (!tc) {
     		log(Error) << "No such component: '"<< component <<"'" ;
     		log(Error)<< " when looking for port '" << names <<"'" <<endlog();
     		return 0;
     	}
     	// component is peer or self:
-    	Service::shared_ptr serv = (component != this->getName() ? getPeer(component)->provides() : this->provides());
+        Service::shared_ptr serv = tc->provides();
     	base::PortInterface* ret = 0;
 
     	// remove component name:
@@ -1770,7 +1774,7 @@ namespace OCL
 
     bool DeploymentComponent::loadService(const std::string& name, const std::string& type) {
         TaskContext* peer = 0;
-        if (name == getName() )
+        if ((name == getName()) || (name == "this"))
             peer = this;
         else if ( (peer = getPeer(name)) == 0) {
             log(Error)<<"No such peer: "<< name<< ". Can not load service '"<<type<<"'."<<endlog();
