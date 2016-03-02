@@ -219,14 +219,7 @@ static const TypeInfo* ti_lookup(lua_State *L, const char *name)
 #endif /* TYPEINFO_CACHING */
 }
 
-/* helper, check if two type names are alias to the same TypeInfo */
-static bool __typenames_cmp(lua_State *L, const char* type1, const char* type2)
-{
-	const types::TypeInfo *ti1 = ti_lookup(L, type1);
-	const types::TypeInfo *ti2 = ti_lookup(L, type2);
-	return ti1 == ti2;
-}
-
+/* helper, check if a type name is an alias to the given TypeInfo */
 static bool __typenames_cmp(lua_State *L, const types::TypeInfo *ti1, const char* type2)
 {
 	const types::TypeInfo *ti2 = ti_lookup(L, type2);
@@ -2413,13 +2406,12 @@ static int TaskContext_removeProperty(lua_State *L)
 
 static int TaskContext_addAttribute(lua_State *L)
 {
-	const char *name, *desc;
 	int argc = lua_gettop(L);
 	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
 	AttributeBase *pb = *(luaM_checkudata_mt_bx(L, 2, "Attribute", AttributeBase));
 
 	if(argc > 2) {
-		name = luaL_checkstring(L, 3);
+		const char *name = luaL_checkstring(L, 3);
 		pb->setName(name);
 	}
 
@@ -2473,11 +2465,8 @@ static int TaskContext_getAttributes(lua_State *L)
 
 static int TaskContext_removeAttribute(lua_State *L)
 {
-	const char *name;
-	AttributeBase *prop;
-
 	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
-	name = luaL_checkstring(L, 2);
+	const char *name = luaL_checkstring(L, 2);
 
 	if(!tc->attributes()->hasAttribute(name))
 		luaL_error(L, "%s failed. No such attribute", __FILE__);
