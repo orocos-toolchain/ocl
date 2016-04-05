@@ -217,7 +217,6 @@ int main(int argc, char** argv)
             }
             rc = (result ? 0 : -1);
 
-#ifdef USE_TASKBROWSER
             if ( !deploymentOnlyChecked && !vm.count("daemon") ) {
                 if (isatty(fileno(stdin))) {
                     OCL::TaskBrowser tb( &dc );
@@ -229,7 +228,6 @@ int main(int argc, char** argv)
                 // do it while CORBA is still up in case need to do anything remote.
                 dc.shutdownDeployment();
             }
-#endif
 
             TaskContextServer::ShutdownOrb();
 
