@@ -165,62 +165,66 @@ int main(int argc, char** argv)
             // none) after "--"
             TaskContextServer::InitOrb( argc - taoIndex, &argv[taoIndex] );
 
-            OCL::CorbaDeploymentComponent dc( name, siteFile );
-
-            if (0 == TaskContextServer::Create( &dc, true, requireNameService ))
-                {
-                    return -1;
-                }
-
-            // The orb thread accepts incomming CORBA calls.
-            TaskContextServer::ThreadOrb();
-
-            /* Only start the scripts after the Orb was created. Processing of
-               scripts stops after the first failed script, and -1 is returned.
-               Whether a script failed or all scripts succeeded, in non-daemon
-               and non-checking mode the TaskBrowser will be run to allow
-               inspection.
-             */
-            bool result = true;
-            for (std::vector<std::string>::const_iterator iter=scriptFiles.begin();
-                 iter!=scriptFiles.end() && result;
-                 ++iter)
+            // scope to force dc destruction prior to memory free and Orb shutdown
             {
-                if ( !(*iter).empty() )
+                OCL::CorbaDeploymentComponent dc( name, siteFile );
+
+                if (0 == TaskContextServer::Create( &dc, true, requireNameService ))
+                    {
+                        return -1;
+                    }
+
+                // The orb thread accepts incomming CORBA calls.
+                TaskContextServer::ThreadOrb();
+
+                /* Only start the scripts after the Orb was created. Processing of
+                   scripts stops after the first failed script, and -1 is returned.
+                   Whether a script failed or all scripts succeeded, in non-daemon
+                   and non-checking mode the TaskBrowser will be run to allow
+                   inspection.
+                 */
+                bool result = true;
+                for (std::vector<std::string>::const_iterator iter=scriptFiles.begin();
+                     iter!=scriptFiles.end() && result;
+                     ++iter)
                 {
-                    if ( (*iter).rfind(".xml",string::npos) == (*iter).length() - 4 || (*iter).rfind(".cpf",string::npos) == (*iter).length() - 4) {
-                        if ( deploymentOnlyChecked ) {
-                            if (!dc.loadComponents( (*iter) )) {
-                                result = false;
-                                log(Error) << "Failed to load file: '"<< (*iter) <<"'." << endlog();
-                            } else if (!dc.configureComponents()) {
-                                result = false;
-                                log(Error) << "Failed to configure file: '"<< (*iter) <<"'." << endlog();
+                    if ( !(*iter).empty() )
+                    {
+                        if ( (*iter).rfind(".xml",string::npos) == (*iter).length() - 4 || (*iter).rfind(".cpf",string::npos) == (*iter).length() - 4) {
+                            if ( deploymentOnlyChecked ) {
+                                if (!dc.loadComponents( (*iter) )) {
+                                    result = false;
+                                    log(Error) << "Failed to load file: '"<< (*iter) <<"'." << endlog();
+                                } else if (!dc.configureComponents()) {
+                                    result = false;
+                                    log(Error) << "Failed to configure file: '"<< (*iter) <<"'." << endlog();
+                                }
+                                // else leave result=true and continue
+                            } else {
+                                result = dc.kickStart( (*iter) );
                             }
-                            // else leave result=true and continue
-                        } else {
-                            result = dc.kickStart( (*iter) );
+                            continue;
                         }
-                        continue;
-                    }
 
-                    if ( (*iter).rfind(".ops",string::npos) == (*iter).length() - 4 ||
-                         (*iter).rfind(".osd",string::npos) == (*iter).length() - 4 ||
-                         (*iter).rfind(".lua",string::npos) == (*iter).length() - 4) {
-                        result = dc.runScript( (*iter) );
-                        continue;
+                        if ( (*iter).rfind(".ops",string::npos) == (*iter).length() - 4 ||
+                             (*iter).rfind(".osd",string::npos) == (*iter).length() - 4 ||
+                             (*iter).rfind(".lua",string::npos) == (*iter).length() - 4) {
+                            result = dc.runScript( (*iter) );
+                            continue;
+                        }
+                        log(Error) << "Unknown extension of file: '"<< (*iter) <<"'. Must be xml, cpf for XML files or, ops, osd or lua for script files."<<endlog();
                     }
-                    log(Error) << "Unknown extension of file: '"<< (*iter) <<"'. Must be xml, cpf for XML files or, ops, osd or lua for script files."<<endlog();
                 }
-            }
-            rc = (result ? 0 : -1);
+                rc = (result ? 0 : -1);
 
-            if ( !deploymentOnlyChecked && !vm.count("daemon") ) {
-                 OCL::TaskBrowser tb( &dc );
-                 tb.loop();
+                // We don't start an interactive console when we're a daemon
+                if ( !deploymentOnlyChecked && !vm.count("daemon") ) {
+                     OCL::TaskBrowser tb( &dc );
+                     tb.loop();
 
-                 // do it while CORBA is still up in case need to do anything remote.
-                 dc.shutdownDeployment();
+                     // do it while CORBA is still up in case need to do anything remote.
+                     dc.shutdownDeployment();
+                }
             }
 
             TaskContextServer::ShutdownOrb();
