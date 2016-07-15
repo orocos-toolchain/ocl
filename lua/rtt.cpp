@@ -3130,6 +3130,7 @@ bool call_func(lua_State *L, const char *fname, TaskContext *tc,
 	if (lua_pcall(L, 0, num_res, 0) != 0) {
 		Logger::log(Logger::Error) << "LuaComponent '"<< tc->getName()  <<"': error calling function "
 					   << fname << ": " << lua_tostring(L, -1) << endlog();
+		lua_pop(L, 1);
 		ret = false;
 		goto out;
 	}
@@ -3139,6 +3140,7 @@ bool call_func(lua_State *L, const char *fname, TaskContext *tc,
 			Logger::log(Logger::Error) << "LuaComponent '" << tc->getName() << "': " << fname
 						   << " must return a bool but returned a "
 						   << lua_typename(L, lua_type(L, -1)) << endlog();
+			lua_pop(L, 1);
 			ret = false;
 			goto out;
 		}
