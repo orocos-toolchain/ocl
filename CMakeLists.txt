@@ -222,7 +222,14 @@ ENDIF( DISPLAY_FLAGS )
 
 INSTALL(FILES package.xml DESTINATION share/ocl)
 
-# Install an env-hook if catkin is found
+# Install an env-hook
+configure_file(env-hooks/00.ocl-lua.sh.in ${CMAKE_CURRENT_BINARY_DIR}/env-hooks/00.ocl-lua.sh @ONLY)
+install(
+  FILES ${CMAKE_CURRENT_BINARY_DIR}/env-hooks/00.ocl-lua.sh
+  DESTINATION etc/orocos/${OROCOS_TARGET}/profile.d
+)
+
+# Install a catkin env-hook if catkin is installed
 find_package(catkin QUIET)
 if(catkin_FOUND)
   catkin_add_env_hooks(00.ocl-lua SHELLS sh DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/env-hooks)
