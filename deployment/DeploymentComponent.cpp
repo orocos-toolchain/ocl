@@ -283,7 +283,6 @@ namespace OCL
       if ( autoUnload.get() ) {
           kickOutAll();
       }
-      ComponentLoader::Release();
     }
 
     bool DeploymentComponent::waitForInterrupt() {
