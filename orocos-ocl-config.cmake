@@ -10,9 +10,11 @@
 #
 # This script sets the following variables:
 #  OROCOS-OCL_FOUND: Boolean that indicates if OROCOS-OCL was found
-#  OROCOS-OCL_INCLUDE_DIRS: Paths to the necessary header files
 #  OROCOS-OCL_LIBRARIES: Libraries to link against to use OROCOS-OCL and all of the requested components
-#  OROCOS-OCL_DEFINITIONS: Definitions to use when compiling code that uses OROCOS-OCL
+#  OROCOS-OCL_INCLUDE_DIRS: Paths to the necessary header files
+#  OROCOS-OCL_LIBRARY_DIRS: The library dirs of OROCOS-OCL and all of the requested components
+#  OROCOS-OCL_CFLAGS_OTHER: The compile flags other than -I for OROCOS-OCL and all of the requested components
+#  OROCOS-OCL_LDFLAGS_OTHER: The linker flags other than -L and -l for OROCOS-OCL and all of the requested components
 #
 # This script additionally sets variables for each requested find_package COMPONENTS (OROCOS-OCL plugins).
 # For example, for the ''ocl-logging'' plugin this would be:
@@ -95,6 +97,9 @@ if(OROCOS-OCL_FOUND)
       list(APPEND OROCOS-OCL_FOUND_COMPONENTS ${COMPONENT})
       list(APPEND OROCOS-OCL_LIBRARIES ${${COMPONENT}_LIBRARIES})
       list(APPEND OROCOS-OCL_INCLUDE_DIRS ${${COMPONENT}_INCLUDE_DIRS})
+      list(APPEND OROCOS-OCL_LIBRARY_DIRS ${${COMPONENT}_LIBRARY_DIRS})
+      list(APPEND OROCOS-OCL_CFLAGS_OTHER ${${COMPONENT}_CFLAGS_OTHER})
+      list(APPEND OROCOS-OCL_LDFLAGS_OTHER ${${COMPONENT}_LDFLAGS_OTHER})
 
       string(TOUPPER ${COMPONENT} COMPONENT_UPPER)
 
@@ -119,12 +124,12 @@ if(NOT OROCOS-OCL_FIND_QUIETLY)
 
   # List found components
   if(OROCOS-OCL_FOUND_COMPONENTS)
-    message(STATUS "- Found requested orocos-ocl components:${OROCOS-OCL_FOUND_COMPONENTS}")
+    message(STATUS "- Found requested orocos-ocl components: ${OROCOS-OCL_FOUND_COMPONENTS}")
   endif()
 
   # List missing components
   if(OROCOS-OCL_MISSING_COMPONENTS)
-    message(STATUS "- Could NOT find requested orocos-ocl components:${OROCOS-OCL_MISSING_COMPONENTS}")
+    message(STATUS "- Could NOT find requested orocos-ocl components: ${OROCOS-OCL_MISSING_COMPONENTS}")
   endif()
 endif()
 
