@@ -21,11 +21,35 @@ LoggingService::LoggingService(std::string name) :
         levels_prop("Levels","A PropertyBag defining the level of each category of interest."),
         additivity_prop("Additivity","A PropertyBag defining the additivity of each category of interest."),
         appenders_prop("Appenders","A PropertyBag defining the appenders for each category of interest."),
+        level_EMERG_attr ("EMERG",  log4cpp::Priority::EMERG ),
+        level_FATAL_attr ("FATAL",  log4cpp::Priority::FATAL ),
+        level_ALERT_attr ("ALERT",  log4cpp::Priority::ALERT ),
+        level_CRIT_attr  ("CRIT",   log4cpp::Priority::CRIT  ),
+        level_ERROR_attr ("ERROR",  log4cpp::Priority::ERROR ),
+        level_WARN_attr  ("WARN",   log4cpp::Priority::WARN  ),
+        level_NOTICE_attr("NOTICE", log4cpp::Priority::NOTICE),
+        level_INFO_attr  ("INFO",   log4cpp::Priority::INFO  ),
+        level_DEBUG_attr ("DEBUG",  log4cpp::Priority::DEBUG ),
+        level_NOTSET_attr("NOTSET", log4cpp::Priority::NOTSET),
+        setCategoryPriority_mtd("setCategoryPriority", &LoggingService::setCategoryPriority, this),
+        getCategoryPriorityName_mtd("getCategoryPriorityName", &LoggingService::getCategoryPriorityName, this),
         logCategories_mtd("logCategories", &LoggingService::logCategories, this)
 {
     this->properties()->addProperty( levels_prop );
     this->properties()->addProperty( additivity_prop );
     this->properties()->addProperty( appenders_prop );
+    this->provides()->addAttribute(level_EMERG_attr);
+    this->provides()->addAttribute(level_FATAL_attr);
+    this->provides()->addAttribute(level_ALERT_attr);
+    this->provides()->addAttribute(level_CRIT_attr);
+    this->provides()->addAttribute(level_ERROR_attr);
+    this->provides()->addAttribute(level_WARN_attr);
+    this->provides()->addAttribute(level_NOTICE_attr);
+    this->provides()->addAttribute(level_INFO_attr);
+    this->provides()->addAttribute(level_DEBUG_attr);
+    this->provides()->addAttribute(level_NOTSET_attr);
+    this->provides()->addOperation( setCategoryPriority_mtd ).doc("Set the priority of category to p").arg("name", "Name of the category").arg("p", "Priority to set");
+    this->provides()->addOperation( getCategoryPriorityName_mtd ).doc("Get the priority name of category").arg("name", "Name of the category");
     this->provides()->addOperation( logCategories_mtd ).doc("Log category hierarchy (not realtime!)");
 }
 
@@ -212,6 +236,51 @@ bool LoggingService::configureHook()
     }
     
     return ok;
+}
+
+bool LoggingService::setCategoryPriority(const std::string& name,
+                                         const int          priority)
+{
+    bool rc = false;        // prove otherwise
+    log4cpp::Category* c = log4cpp::Category::exists(name);
+    if (NULL != c)
+    {
+        try {
+            c->setPriority(priority);
+            const std::string level = log4cpp::Priority::getPriorityName(priority);
+            rc = true;
+            log(Info)  << "Category '" << name << "' set to priority '" << level << "'"  << endlog();
+        } catch (...) {
+            log(Error) << "Priority value '" << priority << "' is not known!" << endlog();
+        }
+    }
+    else
+    {
+        log(Error) << "Could not find category '" << name << "'" << endlog();
+    }
+    return rc;
+}
+
+std::string LoggingService::getCategoryPriorityName(const std::string& name)
+{
+    std::string rc;
+    log4cpp::Category* c = log4cpp::Category::exists(name);
+    if (NULL != c)
+    {
+        try {
+            rc = log4cpp::Priority::getPriorityName(c->getPriority());
+            log(Info)  << "Category '" << name << "' has priority '" << rc << "'" << endlog();
+        } catch (...) {
+            rc = "UNKNOWN PRIORITY";
+            log(Error) << "Category '" << name << "' has unknown priority!" << endlog();
+        }
+    }
+    else
+    {
+        rc = "UNKNOWN CATEGORY";
+        log(Error) << "Could not find category '" << name << "'" << endlog();
+    }
+    return rc;
 }
 
 // NOT realtime
