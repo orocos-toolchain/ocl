@@ -49,7 +49,9 @@ if(BUILD_LUA_RTT)
     target_link_libraries(orocos-ocl-lua ${LUA_LIBRARIES} ${OROCOS-RTT_LIBRARIES} )
     set_target_properties(orocos-ocl-lua PROPERTIES COMPILE_FLAGS "-DOCL_COMPONENT_ONLY")
     install(TARGETS rttlua RUNTIME DESTINATION bin)
-    install(PROGRAMS ../bin/rttlua DESTINATION bin) # The shell script
+
+    configure_file(../bin/rttlua.in ../bin/rttlua @ONLY)
+    install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/../bin/rttlua DESTINATION bin) # The shell script
 
     install(FILES modules/rttlib.lua modules/ansicolors.lua modules/utils.lua modules/rttros.lua DESTINATION share/lua/5.1/)
 
@@ -71,7 +73,9 @@ if(BUILD_LUA_RTT)
       program_add_deps(rttlua-corba lua-repl orocos-ocl-deployment ${LUA_LIBRARIES} ${OROCOS-RTT_CORBA_LIBRARIES} orocos-ocl-deployment-corba ${EXTRA_DEPS} ${EXTRA_LIBRARIES} )
       set_target_properties(rttlua-corba PROPERTIES COMPILE_FLAGS "-DLUA_RTT_CORBA")
       install(TARGETS rttlua-corba RUNTIME DESTINATION bin)
-      install(PROGRAMS ../bin/rttlua DESTINATION bin RENAME rttlua-corba) # The shell script
+
+      configure_file(../bin/rttlua.in ../bin/rttlua-corba @ONLY)
+      install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/../bin/rttlua-corba DESTINATION bin) # The shell script
 
     endif(BUILD_LUA_RTT_CORBA AND OROCOS-RTT_CORBA_FOUND)
 
@@ -94,8 +98,10 @@ if(BUILD_LUA_RTT)
       target_link_libraries(orocos-ocl-lua-tlsf tlsf_rtt ${LUA_LIBRARIES} ${OROCOS-RTT_LIBRARIES})
 
       install(TARGETS rttlua-tlsf RUNTIME DESTINATION bin)
-      install(PROGRAMS ../bin/rttlua-tlsf DESTINATION bin) # The shell script
       install(FILES modules/tlsf_ext.lua DESTINATION share/lua/5.1/)
+
+      configure_file(../bin/rttlua.in ../bin/rttlua-tlsf @ONLY)
+      install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/../bin/rttlua-tlsf DESTINATION bin) # The shell script
     endif(BUILD_LUA_RTT_TLSF)
 
     add_subdirectory( plugins )
