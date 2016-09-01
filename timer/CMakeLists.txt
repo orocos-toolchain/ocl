@@ -8,6 +8,7 @@ IF ( BUILD_TIMER )
 
     orocos_component( orocos-ocl-timer ${SRCS} )
     SET_TARGET_PROPERTIES( orocos-ocl-timer PROPERTIES
+      SOVERSION ${OCL_SOVERSION}
       DEFINE_SYMBOL OCL_DLL_EXPORT)
     orocos_install_headers( ${HPPS} INSTALL include/orocos/ocl )
     orocos_generate_package()

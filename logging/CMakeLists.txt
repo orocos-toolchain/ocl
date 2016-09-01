@@ -16,7 +16,13 @@ IF ( BUILD_LOGGING AND LOG4CPP_FOUND )
   LINK_DIRECTORIES( "${LOG4CPP_LIBRARY_DIRS}" )
 
   orocos_component( orocos-ocl-logging ${LOGCOMP_CPPS} )
+  set_target_properties(orocos-ocl-logging PROPERTIES
+    SOVERSION ${OCL_SOVERSION}
+  )
   orocos_library( orocos-ocl-log4cpp ${LOGLIB_CPPS} )
+  set_target_properties(orocos-ocl-log4cpp PROPERTIES
+    SOVERSION ${OCL_SOVERSION}
+  )
 
   orocos_install_headers( ${HPPS} INSTALL include/orocos/ocl )
   target_link_libraries( orocos-ocl-log4cpp ${LOG4CPP_LIBRARIES})
@@ -26,6 +32,9 @@ IF ( BUILD_LOGGING AND LOG4CPP_FOUND )
     include_directories( "${LOG4CXX_INCLUDE_DIRS}" )
     orocos_component( orocos-ocl-log4cxx ${LOG4CXXLIB_CPPS} )
     target_link_libraries( orocos-ocl-log4cxx orocos-ocl-log4cpp ${LOG4CXX_LIBRARIES} )
+    set_target_properties(orocos-ocl-log4cxx PROPERTIES
+      SOVERSION ${OCL_SOVERSION}
+    )
   endif()
 
   orocos_generate_package( DEPENDS log4cpp )
