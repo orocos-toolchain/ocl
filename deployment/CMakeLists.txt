@@ -17,6 +17,7 @@ IF ( BUILD_DEPLOYMENT )
 
     orocos_library( orocos-ocl-deployment ${SRCS})
     SET_TARGET_PROPERTIES( orocos-ocl-deployment PROPERTIES
+      SOVERSION ${OCL_SOVERSION}
       DEFINE_SYMBOL OCL_DLL_EXPORT)
     orocos_install_headers( ${HPPS} INSTALL include/orocos/ocl )
     
@@ -25,6 +26,7 @@ IF ( BUILD_DEPLOYMENT )
     IF (OROCOS-RTT_CORBA_FOUND)
         orocos_library(orocos-ocl-deployment-corba CorbaDeploymentComponent.cpp )
         SET_TARGET_PROPERTIES( orocos-ocl-deployment-corba PROPERTIES
+          SOVERSION ${OCL_SOVERSION}
           DEFINE_SYMBOL OCL_DLL_EXPORT)
         orocos_install_headers( CorbaDeploymentComponent.hpp INSTALL include/orocos/ocl )
         TARGET_LINK_LIBRARIES( orocos-ocl-deployment-corba orocos-ocl-deployment)
