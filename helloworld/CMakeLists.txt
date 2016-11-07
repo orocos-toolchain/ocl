@@ -10,8 +10,9 @@ IF ( BUILD_HELLOWORLD )
     orocos_configure_executable( helloworld )
 
     orocos_component( orocos-ocl-helloworld ${SRCS} )
-    SET_TARGET_PROPERTIES( orocos-ocl-helloworld
-      PROPERTIES COMPILE_FLAGS "-DOCL_COMPONENT_ONLY" )
+    SET_TARGET_PROPERTIES( orocos-ocl-helloworld PROPERTIES
+      SOVERSION ${OCL_SOVERSION}
+      COMPILE_FLAGS "-DOCL_COMPONENT_ONLY" )
 
     TARGET_LINK_LIBRARIES( helloworld ${OROCOS-RTT_LIBRARIES} orocos-ocl-taskbrowser)
     SET_TARGET_PROPERTIES( helloworld PROPERTIES

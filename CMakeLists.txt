@@ -23,8 +23,9 @@ STRING( REGEX MATCHALL "[0-9]+" OCL_VERSIONS ${OCL_VERSION} )
 LIST( GET OCL_VERSIONS 0 OCL_VERSION_MAJOR)
 LIST( GET OCL_VERSIONS 1 OCL_VERSION_MINOR)
 LIST( GET OCL_VERSIONS 2 OCL_VERSION_PATCH)
+SET( OCL_SOVERSION ${OCL_VERSION_MAJOR}.${OCL_VERSION_MINOR} )
 SET( COMPONENT_VERSION ${OCL_VERSION} ) # Necessary for UseOrocos macros.
-MESSAGE( "Orocos Component Library version ${VERSION} (${OCL_VERSION_MAJOR}.${OCL_VERSION_MINOR}.${OCL_VERSION_PATCH})" )
+MESSAGE( "Orocos Component Library version ${OCL_VERSION}" )
 
 SET( PROJ_SOURCE_DIR ${ocl_SOURCE_DIR} )
 SET( PROJ_BINARY_DIR ${ocl_BINARY_DIR} )
@@ -107,22 +108,10 @@ list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/config")
 # This is the first in the include path.
 INCLUDE_DIRECTORIES( ${PROJ_SOURCE_DIR} ${PROJ_BINARY_DIR}/ocl )
 
-# Put your 'flags' inhere if you want them to apear in the
-# orocos-components.pc file. Various .cmake scripts below do
-# this.
-SET( ENV{OROCOS_COMPONENTS_CFLAGS} "")
-SET( ENV{OROCOS_COMPONENTS_LINKFLAGS} "")
-SET( ENV{OROCOS_COMPONENTS_REQUIRES} "")
-
-INCLUDE(${PROJ_SOURCE_DIR}/config/component_rules.cmake)
 INCLUDE(${PROJ_SOURCE_DIR}/config/TestUsesFile.cmake)
 
-# Tell UseOrocos macros we don't want to build ros-style:
-set(NO_ROS_PACKAGE TRUE)
-
-
 #############################
-#			    #
+#                           #
 # Building Documentation    #
 #                           #
 #############################
@@ -145,12 +134,11 @@ if (DOC_ONLY)
 endif()
 
 ## Find Orocos RTT with same version as OCL
-find_package(OROCOS-RTT ${OCL_VERSION} REQUIRED ${RTT_HINTS})
+find_package(OROCOS-RTT ${OCL_VERSION_MAJOR}.${OCL_VERSION_MINOR} EXACT REQUIRED ${RTT_HINTS})
 if (NOT OROCOS-RTT_FOUND)
-  message(FATAL_ERROR "\n   RTT not found:\n * Is the version correct (${OCL_VERSION} or higher) ?\n * Did you build & install it ?\n * Did you source env.sh ?\n")
+  message(FATAL_ERROR "\n   RTT not found:\n * Is the version correct (${OCL_VERSION_MAJOR}.${OCL_VERSION_MINOR}) ?\n * Did you build & install it ?\n * Did you source env.sh ?\n")
 else()
   include(${OROCOS-RTT_USE_FILE_PATH}/UseOROCOS-RTT.cmake)
-  add_definitions( -DRTT_COMPONENT )
   configure_file(Doxyfile.in Doxyfile @ONLY) # Again, now with OROCOS-RTT_PATH set.
 endif()
 
@@ -191,10 +179,6 @@ CONFIGURE_FILE( ${PROJ_SOURCE_DIR}/ocl/ocl-config.h.in ${PROJECT_BINARY_DIR}/ocl
 INSTALL( FILES ${PROJ_BINARY_DIR}/ocl/ocl-config.h DESTINATION include/orocos/ocl )
 INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR})
 
-
-#First unset the LOCAL_LIBRARIES
-SET(ENV{SELECTED_LIBS} "")
-SET(ENV{SELECTED_DIRS} "")
 ADD_SUBDIRECTORY( ocl )
 ADD_SUBDIRECTORY( taskbrowser )
 ADD_SUBDIRECTORY( timer )
@@ -205,13 +189,6 @@ ADD_SUBDIRECTORY( deployment )
 ADD_SUBDIRECTORY( scripts/pkg )
 ADD_SUBDIRECTORY( helloworld )
 ADD_SUBDIRECTORY( bin )                 # depends on logging, taskbrowser and deployment
-
-MESSAGE("Selected Libraries: $ENV{SELECTED_LIBS}")
-SET(SELECTED_LIBS $ENV{SELECTED_LIBS})
-SET(OROCOS_COMPONENTS_LINKFLAGS "$ENV{OROCOS_COMPONENTS_LINKFLAGS}")
-SET(OROCOS_COMPONENTS_CFLAGS "$ENV{OROCOS_COMPONENTS_CFLAGS}")
-SET(OROCOS_COMPONENTS_REQUIRES "$ENV{OROCOS_COMPONENTS_REQUIRES}")
-
 
 ###############################
 #                             #
