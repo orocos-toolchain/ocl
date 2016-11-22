@@ -982,6 +982,10 @@ namespace OCL
                                 continue;
                             }
                             c = compmap[(*it)->getName()].instance;
+
+                            // The component is added to a group only when it is loaded, not when a service is added or changed.
+                            compmap[(*it)->getName()].group = group;
+                            log(Info) << "Component " << (*it)->getName() << " added to group " << group << "." << endlog();
                         } else {
                             // If the user added c as a peer (outside of Deployer) store the pointer
                             compmap[(*it)->getName()].instance = c;
@@ -1197,11 +1201,6 @@ namespace OCL
                         if (!ret) {
                             log(Error) << "Failed to store deployment properties for component " << comp.getName() <<endlog();
                             valid = false;
-                        }
-                        else
-                        {
-                            log(Info) << "Added component " << (*it)->getName() << " to group " << group << endlog();
-                            compmap[(*it)->getName()].group = group;
                         }
                     }
 
