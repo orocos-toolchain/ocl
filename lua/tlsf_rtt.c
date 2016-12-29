@@ -13,9 +13,9 @@
 #define DEBUG_TLSF_TRACE	(1<<20)
 
 #ifdef RTL_TLSF_DEBUG
-# define _DBG(x, mask, fmt, args...) do{ if (mask & x) printf("%s: " fmt "\n", __FUNCTION__, ##args); } while(0);
+# define _DBG(x, mask, fmt, ...) do{ if (mask & x) printf("%s: " fmt "\n", __FUNCTION__, __VA_ARGS__); } while(0)
 #else
-# define _DBG(x, mask, fmt, args...) do { } while(0);
+# define _DBG(x, mask, fmt, ...) do { } while(0)
 #endif
 
 #define TLSF_POOL_MIN_SIZE	1*1014*1024
