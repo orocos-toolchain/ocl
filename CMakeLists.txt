@@ -226,7 +226,7 @@ INSTALL(FILES package.xml DESTINATION share/ocl)
 configure_file(env-hooks/00.ocl-lua.sh.in ${CMAKE_CURRENT_BINARY_DIR}/env-hooks/00.ocl-lua.sh @ONLY)
 install(
   FILES ${CMAKE_CURRENT_BINARY_DIR}/env-hooks/00.ocl-lua.sh
-  DESTINATION etc/orocos/${OROCOS_TARGET}/profile.d
+  DESTINATION etc/orocos/profile.d
 )
 
 # Install a catkin env-hook if catkin is installed
