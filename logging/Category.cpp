@@ -108,7 +108,11 @@ void Category::_logUnconditionally2(log4cpp::Priority::Value priority,
 
 void Category::callAppenders(const OCL::logging::LoggingEvent& event) throw()
 {
-    log_port.write( event );
+    // only write if the port is connected
+    if (log_port.connected())
+    {
+        log_port.write( event );
+    }
 
     // let our parent categories append (if they want to)
     if (getAdditivity() && (getParent() != NULL))
