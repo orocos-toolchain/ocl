@@ -295,15 +295,19 @@ void LoggingService::logCategories()
     {
         std::stringstream str;
 
+        OCL::logging::Category* c = dynamic_cast<OCL::logging::Category*>(*iter);
         str
             << "Category '" << (*iter)->getName() << "', level="
             << log4cpp::Priority::getPriorityName((*iter)->getPriority())
             << ", typeid='"
             << typeid(*iter).name()
             << "', type really is '" 
-            << std::string(0 != dynamic_cast<OCL::logging::Category*>(*iter)
-                           ? "OCL::Category" : "log4cpp::Category")
+            << std::string(0 != c ? "OCL::Category" : "log4cpp::Category")
             << "', additivity=" << (const char*)((*iter)->getAdditivity()?"yes":"no");
+        if (0 != c)
+        {
+            str << ", port=" << (c->log_port.connected() ? "connected" : "not connected");
+        }
         log4cpp::Category* p = (*iter)->getParent();
         if (p)
         {
