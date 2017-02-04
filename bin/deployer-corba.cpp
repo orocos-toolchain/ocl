@@ -192,12 +192,17 @@ int main(int argc, char** argv)
                 {
                     if ( (*iter).rfind(".xml",string::npos) == (*iter).length() - 4 || (*iter).rfind(".cpf",string::npos) == (*iter).length() - 4) {
                         if ( deploymentOnlyChecked ) {
-                            if (!dc.loadComponents( (*iter) )) {
+                            bool loadOk         = true;
+                            bool configureOk    = true;
+                            bool startOk        = true;
+                            if (!dc.kickStart2( (*iter), false, loadOk, configureOk, startOk )) {
                                 result = false;
-                                log(Error) << "Failed to load file: '"<< (*iter) <<"'." << endlog();
-                            } else if (!dc.configureComponents()) {
-                                result = false;
-                                log(Error) << "Failed to configure file: '"<< (*iter) <<"'." << endlog();
+                                if (!loadOk) {
+                                    log(Error) << "Failed to load file: '"<< (*iter) <<"'." << endlog();
+                                } else if (!configureOk) {
+                                    log(Error) << "Failed to configure file: '"<< (*iter) <<"'." << endlog();
+                                }
+                                (void)startOk;      // unused - avoid compiler warning
                             }
                             // else leave result=true and continue
                         } else {
