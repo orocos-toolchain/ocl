@@ -101,6 +101,7 @@ bool LoggingService::configureHook()
             }
             
             log(Debug) << "Getting category '" << categoryName << "'" << endlog();
+            // will create category if not exists
             log4cpp::Category& category =
                 log4cpp::Category::getInstance(categoryName);
 
@@ -142,6 +143,7 @@ bool LoggingService::configureHook()
             // "" == categoryName implies the root category.
 
             log(Debug) << "Getting category '" << categoryName << "'" << endlog();
+            // will create category if not exists
             log4cpp::Category& category =
             log4cpp::Category::getInstance(categoryName);
 
@@ -171,20 +173,13 @@ bool LoggingService::configureHook()
             std::string categoryName    = association->getName();
             std::string appenderName    = association->value();
             
-            // find category 
-            log4cpp::Category* p = log4cpp::HierarchyMaintainer::getDefaultMaintainer().getExistingInstance(categoryName);
+            // find category - will create category if not exists
+            log4cpp::Category& p   = log4cpp::Category::getInstance(categoryName);
             OCL::logging::Category* category =
-                dynamic_cast<OCL::logging::Category*>(p);
+                dynamic_cast<OCL::logging::Category*>(&p);
             if (0 == category)
             {
-                if (0 != p)
-                {
-                    log(Error) << "Category '" << categoryName << "' is not an OCL category: type is '" << typeid(*p).name() << "'" << endlog();
-                }
-                else
-                {
-                    log(Error) << "Category '" << categoryName << "' does not exist!" << endlog();
-                }
+                log(Error) << "Category '" << categoryName << "' is not an OCL category: type is '" << typeid(p).name() << "'" << endlog();
                 ok = false;
                 break;
             }
