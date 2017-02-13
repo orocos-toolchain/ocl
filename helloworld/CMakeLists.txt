@@ -6,7 +6,7 @@ IF ( BUILD_HELLOWORLD )
     FILE( GLOB SRCS [^.]*.cpp )
     FILE( GLOB HPPS [^.]*.hpp )
 
-    ADD_EXECUTABLE( helloworld ${SRCS} )
+    orocos_executable( helloworld ${SRCS} )
     orocos_component( orocos-ocl-helloworld ${SRCS} )
     SET_TARGET_PROPERTIES( orocos-ocl-helloworld PROPERTIES
       SOVERSION ${OCL_SOVERSION}
