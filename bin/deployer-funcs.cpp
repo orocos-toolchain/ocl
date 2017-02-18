@@ -367,6 +367,58 @@ boost::program_options::options_description deployerRtallocOptions(memorySize& r
     return rtallocOptions;
 }
 
+TLSFMemoryPool::TLSFMemoryPool() :
+    rtMem(0)
+{}
+
+TLSFMemoryPool::~TLSFMemoryPool()
+{
+    shutdown();
+}
+
+bool TLSFMemoryPool::initialize(const size_t memSize)
+{
+    if (0 != rtMem) return false;     // avoid double init
+    if (0 >= memSize) return false;   // invalid size
+
+    // don't calloc() as is first thing TLSF does.
+    rtMem = malloc(memSize);
+    assert(0 != rtMem);
+    const size_t freeMem = init_memory_pool(memSize, rtMem);
+    if ((size_t)-1 == freeMem)
+    {
+        std::cerr << std::dec
+                  << "Invalid memory pool size of " << memSize
+                  << " bytes (TLSF has a several kilobyte overhead)." << std::endl;
+        free(rtMem);
+        rtMem   = 0;
+        return false;
+    }
+    std::cout << std::dec
+              << "Real-time memory: " << freeMem << " bytes free of "
+              << memSize << " allocated." << std::endl;
+    return true;
+}
+
+void TLSFMemoryPool::shutdown()
+{
+    if (0 != rtMem)
+    {
+        OCL::deployerDumpTLSF();
+        const size_t overhead = get_overhead_size(rtMem);
+        std::cout << std::dec
+                  << "TLSF bytes allocated=" << get_pool_size(rtMem)
+                  << " overhead=" << overhead
+                  << " max-used=" << (get_max_size(rtMem) - overhead)
+                  << " still-allocated=" << (get_used_size(rtMem) - overhead)
+                  << std::endl;
+
+        destroy_memory_pool(rtMem);
+        free(rtMem);
+        rtMem   = 0;
+    }
+}
+
 void deployerDumpTLSF()
 {
     std::ofstream file;
