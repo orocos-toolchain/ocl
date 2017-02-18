@@ -254,6 +254,7 @@ int main(int argc, char** argv)
 #ifdef  ORO_BUILD_RTALLOC
     if (0 != rtMem)
     {
+        OCL::deployerDumpTLSF();
         std::cout << "TLSF bytes allocated=" << memSize
                   << " overhead=" << (memSize - freeMem)
                   << " max-used=" << get_max_size(rtMem)

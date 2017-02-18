@@ -259,6 +259,7 @@ int main(int argc, char** argv)
 #ifdef  ORO_BUILD_RTALLOC
     if (!rtMem)
     {
+        OCL::deployerDumpTLSF();
         destroy_memory_pool(rtMem);
         free(rtMem);
     }
