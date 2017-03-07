@@ -404,7 +404,12 @@ void TLSFMemoryPool::shutdown()
 {
     if (0 != rtMem)
     {
-        OCL::deployerDumpTLSF();
+        // only dump TLSF debug if env. var. is set
+        if (NULL != getenv("ORO_DEPLOYER_DUMP_TLSF_ON_SHUTDOWN"))
+        {
+            OCL::deployerDumpTLSF();
+        }
+
         const size_t overhead = get_overhead_size(rtMem);
         std::cout << std::dec
                   << "TLSF bytes allocated=" << get_pool_size(rtMem)
