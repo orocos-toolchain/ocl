@@ -108,6 +108,11 @@ inline std::ostream& operator<<(std::ostream& os, memorySize m)
 extern boost::program_options::options_description deployerRtallocOptions(
     memorySize& rtallocMemorySize);
 
+/** Dump internal TLSF memory state (+ other items) to files in PWD
+ ** \warn Not real-time!
+ */
+extern void deployerDumpTLSF();
+
 #if     defined(ORO_BUILD_LOGGING) && defined(OROSEM_LOG4CPP_LOGGING)
 /** Get command line options for log4cpp-configuration of RTT category
  */

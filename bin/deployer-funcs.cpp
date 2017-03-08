@@ -31,6 +31,15 @@
 #include <boost/assign/list_of.hpp>
 #include <boost/algorithm/string/case_conv.hpp>
 
+#ifdef  ORO_BUILD_RTALLOC
+// need access to all TLSF functions embedded in RTT
+#define ORO_MEMORY_POOL
+#define _DEBUG_TLSF_ 1
+#include <rtt/os/tlsf/tlsf.h>
+#include <boost/date_time/posix_time/posix_time.hpp>    // with I/O
+#include <fstream>
+#endif
+
 #if		defined(ORO_SUPPORT_CPU_AFFINITY)
 #include <unistd.h>
 #endif
@@ -44,6 +53,9 @@
 #endif
 
 namespace po = boost::program_options;
+#ifdef  ORO_BUILD_RTALLOC
+namespace bpt	= boost::posix_time;
+#endif
 
 using namespace RTT;
 using namespace std;
@@ -353,6 +365,28 @@ boost::program_options::options_description deployerRtallocOptions(memorySize& r
          "NB the minimum size depends on TLSF build options, but it is several kilobytes.")
         ;
     return rtallocOptions;
+}
+
+void deployerDumpTLSF()
+{
+    std::ofstream file;
+
+    // format now as "YYYYMMDDTHHMMSS.ffffff"
+    const bpt::ptime now = bpt::microsec_clock::local_time();
+    static const size_t START = strlen("YYYYMMDDTHHMMSS,");
+    std::string now_s = bpt::to_iso_string(now);    // YYYYMMDDTHHMMSS,fffffffff
+    now_s.replace(START-1, 1, ".");                 // replace "," with "."
+    now_s.erase(now_s.size()-3, 3);                 // from nanosec to microsec
+
+    // TLSF debug
+    FILE* ff = fopen("deployer_tlsf_dump.txt", "a");     // write+append
+    if (0 != ff)
+    {
+        fprintf(ff, "# Log at %s\n", now_s.c_str());
+        print_all_blocks_mp(ff);
+        (void)fclose(ff);
+        ff=0;
+    }
 }
 
 #endif  //  ORO_BUILD_RTALLOC
