@@ -11,8 +11,16 @@ namespace logging {
 struct LoggingEvent 
 {
 public:
+    /// Construct from RT strings
     LoggingEvent(const RTT::rt_string& category, 
                  const RTT::rt_string& message, 
+                 log4cpp::Priority::Value priority);
+    /** Construct from a mix of types
+        This is an optimization for use by \a Category::_logUnconditionally2(),
+        which constructs from "std::string&, rt_string&".
+     */
+    LoggingEvent(const std::string& category,
+                 const RTT::rt_string& message,
                  log4cpp::Priority::Value priority);
     /// Create with empty values
     LoggingEvent();

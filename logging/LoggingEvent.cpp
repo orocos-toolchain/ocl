@@ -39,6 +39,22 @@ LoggingEvent::LoggingEvent(const rt_string& categoryName,
     threadName = log4cpp::threading::getThreadId(&buffer[0]);
 }
 
+LoggingEvent::LoggingEvent(const std::string& c,
+                           const rt_string& m,
+                           log4cpp::Priority::Value priority) :
+        /* Optimization with std::string to prevent need to walk null-terminated
+         * string.
+         */
+        categoryName(c.c_str(), c.size()),
+        message(m),
+        priority(priority),
+        threadName(""),
+        timeStamp()
+{
+    char    buffer[16];
+    threadName = log4cpp::threading::getThreadId(&buffer[0]);
+}
+
 const LoggingEvent& LoggingEvent::operator=(const LoggingEvent& rhs)
 {
     if (&rhs != this)   // prevent self-copy
