@@ -39,6 +39,8 @@ protected:
         @param n if 0 ==n then process events until buffer is empty, otherwise
         process at most n events
         @pre 0 <= n (otherwise acts as though n==1)
+        @sa \a event
+        @warn Not multi-thread safe. Not re-entrant!
      */
 	virtual void processEvents(int n);
 
@@ -54,6 +56,15 @@ protected:
     RTT::Property<std::string>                      layoutName_prop;
     /// Layout conversion pattern (for those layouts that use a pattern)
     RTT::Property<std::string>                      layoutPattern_prop;
+
+    /* Used by \a processEvents() when popping items from the buffer.
+     * This is a class member, rather than a stack instance, to reduce the
+     * number of real-time memory allocations. The strings inside \a event
+     * will eventually allocate to the largest string seen in the system.
+     *
+     * \warn Assumes that processEvents() is not called by multiple threads!
+     */
+    OCL::logging::LoggingEvent	event;
 
 	// diagnostic: count number of times popped max events
 	unsigned int countMaxPopped;

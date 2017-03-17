@@ -88,11 +88,11 @@ void Appender::stopHook()
 		*/
 		std::stringstream	ss;
 		ss << "# countMaxPopped=" << countMaxPopped;
-		log4cpp::LoggingEvent	event("OCL.logging.Appender",
-									  ss.str(),
-									  "",
-									  log4cpp::Priority::DEBUG);
-		appender->doAppend(event);
+		log4cpp::LoggingEvent	ev("OCL.logging.Appender",
+                                   ss.str(),
+                                   "",
+                                   log4cpp::Priority::DEBUG);
+		appender->doAppend(ev);
 	}
 }
 
@@ -113,7 +113,6 @@ void Appender::processEvents(int n)
        a) the buffer is empty
        b) we consume enough events
 	*/
-    OCL::logging::LoggingEvent	event;
 	bool 						again = false;
 	int							count = 0;
 
