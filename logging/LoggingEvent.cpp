@@ -12,18 +12,18 @@ LoggingEvent::LoggingEvent() :
         categoryName(""),
         message(""),
         priority(log4cpp::Priority::NOTSET),
-        threadName(""),
         timeStamp()
 {
+    threadName[0] = '\0';       // ensure is terminated
 }
 
 LoggingEvent::LoggingEvent(const LoggingEvent& toCopy) :
         categoryName(toCopy.categoryName),
         message(toCopy.message),
         priority(toCopy.priority),
-        threadName(toCopy.threadName),
         timeStamp(toCopy.timeStamp)
 {
+    memcpy(threadName, toCopy.threadName, THREADNAME_SIZE);
 }
 
 LoggingEvent::LoggingEvent(const rt_string& categoryName, 
@@ -32,11 +32,10 @@ LoggingEvent::LoggingEvent(const rt_string& categoryName,
         categoryName(categoryName),
         message(message),
         priority(priority),
-        threadName(""),
         timeStamp()
 {
-    char    buffer[16];
-    threadName = log4cpp::threading::getThreadId(&buffer[0]);
+    /// See also log4cpp/src/PThreads.cpp::getThreadId()
+    (void)log4cpp::threading::getThreadId(&threadName[0]);
 }
 
 LoggingEvent::LoggingEvent(const std::string& c,
@@ -48,11 +47,10 @@ LoggingEvent::LoggingEvent(const std::string& c,
         categoryName(c.c_str(), c.size()),
         message(m),
         priority(priority),
-        threadName(""),
         timeStamp()
 {
-    char    buffer[16];
-    threadName = log4cpp::threading::getThreadId(&buffer[0]);
+    /// See also log4cpp/src/PThreads.cpp::getThreadId()
+    (void)log4cpp::threading::getThreadId(&threadName[0]);
 }
 
 const LoggingEvent& LoggingEvent::operator=(const LoggingEvent& rhs)
@@ -62,7 +60,7 @@ const LoggingEvent& LoggingEvent::operator=(const LoggingEvent& rhs)
         categoryName    = rhs.categoryName;
         message         = rhs.message;
         priority        = rhs.priority;
-        threadName      = rhs.threadName;
+        memcpy(threadName, rhs.threadName, THREADNAME_SIZE);
         timeStamp		= rhs.timeStamp;
     }
     return *this;
@@ -78,7 +76,7 @@ log4cpp::LoggingEvent LoggingEvent::toLog4cpp()
                                  makeString(this->message),
                                  makeString(""),    // not used
                                  this->priority,
-                                 makeString(this->threadName),
+                                 this->threadName,
                                  this->timeStamp);
 }
         

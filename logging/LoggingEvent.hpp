@@ -44,7 +44,11 @@ public:
 
     log4cpp::Priority::Value    priority;
 
-    /*const */RTT::rt_string       threadName;
+    /// The maximum size of threadname (bascially - pthread_self() as "%ld")
+    /// See also log4cpp/src/PThreads.cpp::getThreadId()
+    static const size_t         THREADNAME_SIZE=16;
+
+    char                        threadName[THREADNAME_SIZE];
 
     log4cpp::TimeStamp          timeStamp;
 
