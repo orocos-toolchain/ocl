@@ -13,7 +13,6 @@ struct LoggingEvent
 public:
     LoggingEvent(const RTT::rt_string& category, 
                  const RTT::rt_string& message, 
-                 const RTT::rt_string& ndc, 
                  log4cpp::Priority::Value priority);
     /// Create with empty values
     LoggingEvent();
@@ -27,7 +26,13 @@ public:
 
     /*const */RTT::rt_string       message;
 
-    /*const */RTT::rt_string       ndc;
+    /* NB "ndc" is not used in the real-time logging framework as it is
+     * inherently non-real-time safe in log4cpp itself. Instead an empty string
+     * is passed through. To prevent the repetitive use of an empty string,
+     * just don't use this at all and pass the empty string explicitly back
+     * to log4cpp when converting to log4cpp in toLog4cpp().
+     */
+    /*const RTT::rt_string       ndc;*/
 
     log4cpp::Priority::Value    priority;
 

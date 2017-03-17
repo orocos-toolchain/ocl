@@ -92,9 +92,6 @@ void Category::_logUnconditionally2(log4cpp::Priority::Value priority,
     {
         OCL::logging::LoggingEvent event(RTT::rt_string(getName().c_str()),
                                          RTT::rt_string(message.c_str()),
-                                         // NDC's are not real-time
-//                                     RTT::rt_string(log4cpp::NDC::get().c_str()),
-                                         RTT::rt_string(""),
                                          priority);
         callAppenders(event);
     }

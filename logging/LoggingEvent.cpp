@@ -11,7 +11,6 @@ namespace logging {
 LoggingEvent::LoggingEvent() :
         categoryName(""),
         message(""),
-        ndc(""),
         priority(log4cpp::Priority::NOTSET),
         threadName(""),
         timeStamp()
@@ -21,7 +20,6 @@ LoggingEvent::LoggingEvent() :
 LoggingEvent::LoggingEvent(const LoggingEvent& toCopy) :
         categoryName(toCopy.categoryName),
         message(toCopy.message),
-        ndc(toCopy.ndc),
         priority(toCopy.priority),
         threadName(toCopy.threadName),
         timeStamp(toCopy.timeStamp)
@@ -30,11 +28,9 @@ LoggingEvent::LoggingEvent(const LoggingEvent& toCopy) :
 
 LoggingEvent::LoggingEvent(const rt_string& categoryName, 
                            const rt_string& message,
-                           const rt_string& ndc, 
                            log4cpp::Priority::Value priority) :
         categoryName(categoryName),
         message(message),
-        ndc(ndc),
         priority(priority),
         threadName(""),
         timeStamp()
@@ -49,7 +45,6 @@ const LoggingEvent& LoggingEvent::operator=(const LoggingEvent& rhs)
     {
         categoryName    = rhs.categoryName;
         message         = rhs.message;
-        ndc             = rhs.ndc;
         priority        = rhs.priority;
         threadName      = rhs.threadName;
         timeStamp		= rhs.timeStamp;
@@ -65,7 +60,7 @@ log4cpp::LoggingEvent LoggingEvent::toLog4cpp()
 {   
     return log4cpp::LoggingEvent(makeString(this->categoryName),
                                  makeString(this->message),
-                                 makeString(this->ndc),
+                                 makeString(""),    // not used
                                  this->priority,
                                  makeString(this->threadName),
                                  this->timeStamp);
