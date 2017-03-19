@@ -2093,10 +2093,11 @@ namespace OCL
         else
             // special cases:
             if ( act_type == "PeriodicActivity" && period != 0.0)
+                // WARNING RTT::PeriodicActivity does not support a name!
                 newact = new RTT::extras::PeriodicActivity(scheduler, priority, period, cpu_affinity, 0);
             else
             if ( act_type == "NonPeriodicActivity" && period == 0.0)
-                newact = new RTT::Activity(scheduler, priority, period, cpu_affinity, 0);
+                newact = new RTT::Activity(scheduler, priority, period, cpu_affinity, 0, comp_name);
             else
                 if ( act_type == "SlaveActivity" ) {
                     if ( master_act == 0 )
@@ -2116,7 +2117,7 @@ namespace OCL
                         }
 			else if ( act_type == "FileDescriptorActivity") {
 				using namespace RTT::extras;
-                newact = new FileDescriptorActivity(scheduler, priority, period, cpu_affinity, 0);
+                newact = new FileDescriptorActivity(scheduler, priority, period, cpu_affinity, 0, comp_name);
 				FileDescriptorActivity* fdact = dynamic_cast< RTT::extras::FileDescriptorActivity* > (newact);
 				if (fdact) fdact->setTimeout(period);
 				else newact = 0;
