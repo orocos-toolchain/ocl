@@ -108,6 +108,38 @@ inline std::ostream& operator<<(std::ostream& os, memorySize m)
 extern boost::program_options::options_description deployerRtallocOptions(
     memorySize& rtallocMemorySize);
 
+/// Manage the default TLSF memory pool
+class TLSFMemoryPool
+{
+public:
+    /// Create default object (no allocation to pool)
+    TLSFMemoryPool();
+    /// Shutdown and deallocate memory pool (if necessary)
+    ~TLSFMemoryPool();
+
+    /** Initialize the default TLSF memory pool
+     **
+     ** @param memSize Size of memory pool
+     ** @return true if successful
+     ** @post if succesful then rtMem!=0 otherwise and rtMem=0
+     */
+    bool initialize(const size_t memSize);
+
+    /** Shutdown the default TLSF memory pool
+     ** @post rtMem=0 and the default TLSF memory pool is no longer available
+     */
+    void shutdown();
+
+protected:
+    /// Memory allocated for the pool
+    void*       rtMem;
+};
+
+/** Dump internal TLSF memory state (+ other items) to files in PWD
+ ** \warn Not real-time!
+ */
+extern void deployerDumpTLSF();
+
 #if     defined(ORO_BUILD_LOGGING) && defined(OROSEM_LOG4CPP_LOGGING)
 /** Get command line options for log4cpp-configuration of RTT category
  */

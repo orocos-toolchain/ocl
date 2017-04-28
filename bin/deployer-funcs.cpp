@@ -31,6 +31,15 @@
 #include <boost/assign/list_of.hpp>
 #include <boost/algorithm/string/case_conv.hpp>
 
+#ifdef  ORO_BUILD_RTALLOC
+// need access to all TLSF functions embedded in RTT
+#define ORO_MEMORY_POOL
+#define _DEBUG_TLSF_ 1
+#include <rtt/os/tlsf/tlsf.h>
+#include <boost/date_time/posix_time/posix_time.hpp>    // with I/O
+#include <fstream>
+#endif
+
 #if		defined(ORO_SUPPORT_CPU_AFFINITY)
 #include <unistd.h>
 #endif
@@ -44,6 +53,9 @@
 #endif
 
 namespace po = boost::program_options;
+#ifdef  ORO_BUILD_RTALLOC
+namespace bpt	= boost::posix_time;
+#endif
 
 using namespace RTT;
 using namespace std;
@@ -353,6 +365,85 @@ boost::program_options::options_description deployerRtallocOptions(memorySize& r
          "NB the minimum size depends on TLSF build options, but it is several kilobytes.")
         ;
     return rtallocOptions;
+}
+
+TLSFMemoryPool::TLSFMemoryPool() :
+    rtMem(0)
+{}
+
+TLSFMemoryPool::~TLSFMemoryPool()
+{
+    shutdown();
+}
+
+bool TLSFMemoryPool::initialize(const size_t memSize)
+{
+    if (0 != rtMem) return false;     // avoid double init
+    if (0 >= memSize) return false;   // invalid size
+
+    // don't calloc() as is first thing TLSF does.
+    rtMem = malloc(memSize);
+    assert(0 != rtMem);
+    const size_t freeMem = init_memory_pool(memSize, rtMem);
+    if ((size_t)-1 == freeMem)
+    {
+        std::cerr << std::dec
+                  << "Invalid memory pool size of " << memSize
+                  << " bytes (TLSF has a several kilobyte overhead)." << std::endl;
+        free(rtMem);
+        rtMem   = 0;
+        return false;
+    }
+    std::cout << std::dec
+              << "Real-time memory: " << freeMem << " bytes free of "
+              << memSize << " allocated." << std::endl;
+    return true;
+}
+
+void TLSFMemoryPool::shutdown()
+{
+    if (0 != rtMem)
+    {
+        // only dump TLSF debug if env. var. is set
+        if (NULL != getenv("ORO_DEPLOYER_DUMP_TLSF_ON_SHUTDOWN"))
+        {
+            OCL::deployerDumpTLSF();
+        }
+
+        const size_t overhead = get_overhead_size(rtMem);
+        std::cout << std::dec
+                  << "TLSF bytes allocated=" << get_pool_size(rtMem)
+                  << " overhead=" << overhead
+                  << " max-used=" << (get_max_size(rtMem) - overhead)
+                  << " still-allocated=" << (get_used_size(rtMem) - overhead)
+                  << std::endl;
+
+        destroy_memory_pool(rtMem);
+        free(rtMem);
+        rtMem   = 0;
+    }
+}
+
+void deployerDumpTLSF()
+{
+    std::ofstream file;
+
+    // format now as "YYYYMMDDTHHMMSS.ffffff"
+    const bpt::ptime now = bpt::microsec_clock::local_time();
+    static const size_t START = strlen("YYYYMMDDTHHMMSS,");
+    std::string now_s = bpt::to_iso_string(now);    // YYYYMMDDTHHMMSS,fffffffff
+    now_s.replace(START-1, 1, ".");                 // replace "," with "."
+    now_s.erase(now_s.size()-3, 3);                 // from nanosec to microsec
+
+    // TLSF debug
+    FILE* ff = fopen("deployer_tlsf_dump.txt", "a");     // write+append
+    if (0 != ff)
+    {
+        fprintf(ff, "# Log at %s\n", now_s.c_str());
+        print_all_blocks_mp(ff);
+        (void)fclose(ff);
+        ff=0;
+    }
 }
 
 #endif  //  ORO_BUILD_RTALLOC

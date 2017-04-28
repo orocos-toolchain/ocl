@@ -75,6 +75,7 @@ int main(int argc, char** argv)
     OCL::memorySize             rtallocMemorySize   = ORO_DEFAULT_RTALLOC_SIZE;
 	po::options_description     rtallocOptions      = OCL::deployerRtallocOptions(rtallocMemorySize);
 	otherOptions.add(rtallocOptions);
+    OCL::TLSFMemoryPool         memoryPool;
 #endif
 
 #if     defined(ORO_BUILD_LOGGING) && defined(OROSEM_LOG4CPP_LOGGING)
@@ -125,24 +126,9 @@ int main(int argc, char** argv)
 #endif
 
 #ifdef  ORO_BUILD_RTALLOC
-    size_t                  memSize     = rtallocMemorySize.size;
-    void*                   rtMem       = 0;
-    size_t                  freeMem     = 0;
-    if (0 < memSize)
+    if (!memoryPool.initialize(rtallocMemorySize.size))
     {
-        // don't calloc() as is first thing TLSF does.
-        rtMem = malloc(memSize);
-        assert(0 != rtMem);
-        freeMem = init_memory_pool(memSize, rtMem);
-        if ((size_t)-1 == freeMem)
-        {
-            cerr << "Invalid memory pool size of " << memSize 
-                          << " bytes (TLSF has a several kilobyte overhead)." << endl;
-            free(rtMem);
-            return -1;
-        }
-        cout << "Real-time memory: " << freeMem << " bytes free of "
-                  << memSize << " allocated." << endl;
+        return -1;
     }
 #endif  // ORO_BUILD_RTALLOC
 
@@ -225,18 +211,6 @@ int main(int argc, char** argv)
             }
 #endif
         }
-#ifdef  ORO_BUILD_RTALLOC
-        if (0 != rtMem)
-            {
-                // print statistics after deployment finished, but before os_exit() (needs Logger):
-                log(Debug) << "TLSF bytes allocated=" << memSize
-                           << " overhead=" << (memSize - freeMem)
-                           << " max-used=" << get_max_size(rtMem)
-                           << " currently-used=" << get_used_size(rtMem)
-                           << " still-allocated=" << (get_used_size(rtMem) - (memSize - freeMem))
-                           << endlog();
-            }
-#endif
 
         __os_exit();
 	}
@@ -252,18 +226,7 @@ int main(int argc, char** argv)
 #endif
 
 #ifdef  ORO_BUILD_RTALLOC
-    if (0 != rtMem)
-    {
-        std::cout << "TLSF bytes allocated=" << memSize
-                  << " overhead=" << (memSize - freeMem)
-                  << " max-used=" << get_max_size(rtMem)
-                  << " currently-used=" << get_used_size(rtMem)
-                  << " still-allocated=" << (get_used_size(rtMem) - (memSize - freeMem))
-                  << "\n";
-
-        destroy_memory_pool(rtMem);
-        free(rtMem);
-    }
+    memoryPool.shutdown();
 #endif
 
     return rc;
