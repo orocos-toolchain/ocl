@@ -162,7 +162,12 @@ protected:
     RTT::OutputPort<OCL::logging::LoggingEvent>   log_port;
     /// for access to \a log_port
     friend class OCL::logging::LoggingService;
-    
+public:
+    const RTT::OutputPort<OCL::logging::LoggingEvent>& get_log_port() const
+    {
+        return log_port;
+    };
+
 public:
     /** Connect \a otherPort to \a log_port.
          Typically used by unit test code to directly syphon off logging events.

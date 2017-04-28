@@ -11,36 +11,46 @@ namespace logging {
 LoggingEvent::LoggingEvent() :
         categoryName(""),
         message(""),
-        ndc(""),
         priority(log4cpp::Priority::NOTSET),
-        threadName(""),
         timeStamp()
 {
+    threadName[0] = '\0';       // ensure is terminated
 }
 
 LoggingEvent::LoggingEvent(const LoggingEvent& toCopy) :
         categoryName(toCopy.categoryName),
         message(toCopy.message),
-        ndc(toCopy.ndc),
         priority(toCopy.priority),
-        threadName(toCopy.threadName),
         timeStamp(toCopy.timeStamp)
 {
+    memcpy(threadName, toCopy.threadName, THREADNAME_SIZE);
 }
 
 LoggingEvent::LoggingEvent(const rt_string& categoryName, 
                            const rt_string& message,
-                           const rt_string& ndc, 
                            log4cpp::Priority::Value priority) :
         categoryName(categoryName),
         message(message),
-        ndc(ndc),
         priority(priority),
-        threadName(""),
         timeStamp()
 {
-    char    buffer[16];
-    threadName = log4cpp::threading::getThreadId(&buffer[0]);
+    /// See also log4cpp/src/PThreads.cpp::getThreadId()
+    (void)log4cpp::threading::getThreadId(&threadName[0]);
+}
+
+LoggingEvent::LoggingEvent(const std::string& c,
+                           const rt_string& m,
+                           log4cpp::Priority::Value priority) :
+        /* Optimization with std::string to prevent need to walk null-terminated
+         * string.
+         */
+        categoryName(c.c_str(), c.size()),
+        message(m),
+        priority(priority),
+        timeStamp()
+{
+    /// See also log4cpp/src/PThreads.cpp::getThreadId()
+    (void)log4cpp::threading::getThreadId(&threadName[0]);
 }
 
 const LoggingEvent& LoggingEvent::operator=(const LoggingEvent& rhs)
@@ -49,9 +59,8 @@ const LoggingEvent& LoggingEvent::operator=(const LoggingEvent& rhs)
     {
         categoryName    = rhs.categoryName;
         message         = rhs.message;
-        ndc             = rhs.ndc;
         priority        = rhs.priority;
-        threadName      = rhs.threadName;
+        memcpy(threadName, rhs.threadName, THREADNAME_SIZE);
         timeStamp		= rhs.timeStamp;
     }
     return *this;
@@ -65,9 +74,9 @@ log4cpp::LoggingEvent LoggingEvent::toLog4cpp()
 {   
     return log4cpp::LoggingEvent(makeString(this->categoryName),
                                  makeString(this->message),
-                                 makeString(this->ndc),
+                                 makeString(""),    // not used
                                  this->priority,
-                                 makeString(this->threadName),
+                                 this->threadName,
                                  this->timeStamp);
 }
         
