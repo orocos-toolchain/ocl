@@ -703,21 +703,54 @@ namespace OCL
 
     bool DeploymentComponent::kickStart(const std::string& configurationfile)
     {
+        bool              loadOk        = true;
+        bool              configureOk   = true;
+        bool              startOk       = true;
+
+        const bool rc = kickStart2(configurationfile, true, loadOk, configureOk, startOk);
+
+        // avoid compiler warnings
+        (void)loadOk;
+        (void)configureOk;
+        (void)startOk;
+
+        return rc;
+    }
+
+    bool DeploymentComponent::kickStart2(const std::string& configurationfile,
+                                         const bool         doStart,
+                                         bool&              loadOk,
+                                         bool&              configureOk,
+                                         bool&              startOk)
+    {
+        // set defaults
+        loadOk      = true;
+        configureOk = true;
+        startOk     = true;
+
         int thisGroup = nextGroup;
         ++nextGroup;    // whether succeed or fail
         if ( this->loadComponentsInGroup(configurationfile, thisGroup) ) {
             if (this->configureComponentsGroup(thisGroup) ) {
-                if ( this->startComponentsGroup(thisGroup) ) {
-                    log(Info) <<"Successfully loaded, configured and started components from "<< configurationfile <<endlog();
-                    return true;
+                if (doStart) {
+                    if ( this->startComponentsGroup(thisGroup) ) {
+                        log(Info) <<"Successfully loaded, configured and started components from "<< configurationfile <<endlog();
+                        return true;
+                    } else {
+                        log(Error) <<"Failed to start a component: aborting kick-start."<<endlog();
+                        startOk = false;
+                    }
                 } else {
-                    log(Error) <<"Failed to start a component: aborting kick-start."<<endlog();
+                    log(Info) <<"Successfully loaded and configured (but did not start) components from "<< configurationfile <<endlog();
+                    return true;
                 }
             } else {
                 log(Error) <<"Failed to configure a component: aborting kick-start."<<endlog();
+                configureOk = false;
             }
         } else {
             log(Error) <<"Failed to load a component: aborting kick-start."<<endlog();
+            loadOk = false;
         }
         return false;
     }

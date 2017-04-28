@@ -759,6 +759,28 @@ namespace OCL
         bool kickStart(const std::string& file_name);
 
         /**
+         * This function runs loadComponents and configureComponents, and
+         * optionally startComponents, in a row, given no failures occur along
+         * the way.
+         *
+         * @param configurationfile The file to load
+         * @param doStart True to run startComponents, otherwise the components
+         * are only loaded and configured.
+         * @param loadOk True if successfully loaded the file
+         * @param configureOk True if successfully configured all components
+         * loaded from the file
+         * @param startOk True if did not want to start (doStart==false) or
+         * did want to start (doStart==true) and successfully started all
+         * components loaded from the file, otherwise false
+         * @return (loadOk && configureOk && (!doStart || startOk))
+         */
+        bool kickStart2(const std::string& configurationfile,
+                        const bool         doStart,
+                        bool&              loadOk,
+                        bool&              configureOk,
+                        bool&              startOk);
+
+        /**
          * Stop, cleanup and unload a single component which were loaded by this component.
          * @param comp_name name of the component.
          * @return true if successfully stopped, cleaned and unloaded
