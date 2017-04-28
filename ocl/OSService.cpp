@@ -1,8 +1,11 @@
-
+#include <rtt/os/fosi.h>
 #include <rtt/Service.hpp>
 #include <rtt/plugin/ServicePlugin.hpp>
 #include <cstdlib>
 
+#ifndef WIN32
+#include <sys/wait.h>
+#endif
 
 // setEnvString and isEnv needed to be implemented because we
 // can't provide a getenv() implementation on windows without leaking
@@ -80,6 +83,14 @@ namespace OCL
                             "The name of the environment variable to write.").arg("value","The text to set.");
             addOperation("argc", &OSService::argc, this).doc("Returns the number of arguments, given to this application.");
             addOperation("argv", &OSService::argv, this).doc("Returns the arguments as a sequence of strings, given to this application.");
+            addOperation("sleep", &OSService::sleep, this).doc("Suspend execution of the calling thread")
+                    .arg("seconds", "Sleep for x seconds");
+            addOperation("usleep", &OSService::usleep, this).doc("Suspend execution of the calling thread")
+                    .arg("microseconds", "Sleep for x microseconds");
+            addOperation("nanosleep", &OSService::nanosleep, this).doc("Suspend execution of the calling thread")
+                    .arg("seconds", "Sleep for x seconds")
+                    .arg("nanoseconds", "Sleep for x nanoseconds");
+            addOperation("execute", &OSService::execute, this).doc("Execute a shell command");
         }
 
         int argc(void)
@@ -101,13 +112,57 @@ namespace OCL
         {
             return getEnvString(arg.c_str());
         }
+
         bool isenv(const std::string& arg)
         {
             return isEnv(arg.c_str());
         }
+
         bool setenv(const std::string& arg, const std::string& value)
         {
             return ::setenv(arg.c_str(), value.c_str(), 1) == 0;
+        }
+
+        int sleep(unsigned int seconds)
+        {
+            TIME_SPEC rqtp, rmtp;
+            rqtp.tv_sec = seconds;
+            rqtp.tv_nsec = 0;
+            return rtos_nanosleep(&rqtp, &rmtp);
+        }
+
+        int usleep(unsigned int microseconds)
+        {
+            TIME_SPEC rqtp, rmtp;
+            rqtp.tv_sec  = (microseconds / 1000000u);
+            rqtp.tv_nsec = (microseconds % 1000000u) * 1000u;
+            return rtos_nanosleep(&rqtp, &rmtp);
+        }
+
+        int nanosleep(unsigned int seconds, unsigned int nanoseconds)
+        {
+            TIME_SPEC rqtp, rmtp;
+            rqtp.tv_sec = seconds;
+            rqtp.tv_nsec = nanoseconds;
+            return rtos_nanosleep(&rqtp, &rmtp);
+        }
+
+        int execute(const std::string& command)
+        {
+#ifdef WIN32
+            return system(command.c_str());
+#else
+            int status = system(command.c_str());
+            if (status < 0) {
+                return status;
+            } else {
+                if (!WIFEXITED(status)) {
+                    return -1;
+                } else {
+                    return WEXITSTATUS(status);
+                }
+            }
+#endif
         }
     };
 }
