@@ -34,10 +34,12 @@
 #ifdef  ORO_BUILD_RTALLOC
 // need access to all TLSF functions embedded in RTT
 #define ORO_MEMORY_POOL
-#define _DEBUG_TLSF_ 1
+//#define _DEBUG_TLSF_ 1
 #include <rtt/os/tlsf/tlsf.h>
-#include <boost/date_time/posix_time/posix_time.hpp>    // with I/O
-#include <fstream>
+#ifdef _DEBUG_TLSF_
+    #include <boost/date_time/posix_time/posix_time.hpp>    // with I/O
+    #include <fstream>
+#endif
 #endif
 
 #if		defined(ORO_SUPPORT_CPU_AFFINITY)
@@ -53,7 +55,7 @@
 #endif
 
 namespace po = boost::program_options;
-#ifdef  ORO_BUILD_RTALLOC
+#ifdef _DEBUG_TLSF_
 namespace bpt	= boost::posix_time;
 #endif
 
@@ -426,6 +428,7 @@ void TLSFMemoryPool::shutdown()
 
 void deployerDumpTLSF()
 {
+#ifdef _DEBUG_TLSF_
     std::ofstream file;
 
     // format now as "YYYYMMDDTHHMMSS.ffffff"
@@ -444,6 +447,7 @@ void deployerDumpTLSF()
         (void)fclose(ff);
         ff=0;
     }
+#endif
 }
 
 #endif  //  ORO_BUILD_RTALLOC
