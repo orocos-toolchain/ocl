@@ -817,6 +817,28 @@ namespace OCL
                                 valid = false;
                             continue;
                         }
+                        if ( (*it)->getName() == "GlobalService" ) {
+                            RTT::Property<RTT::PropertyBag> global = *it;
+                            if ( !global.ready() ) {
+                                log(Error)<< "Found 'GlobalService' tag, but it is not a complex xml type"<<endlog();
+                                valid = false;
+                                continue;
+                            }
+                            // Check for default Global properties to be set.
+                            for (RTT::PropertyBag::const_iterator pf = global.rvalue().begin(); pf!= global.rvalue().end(); ++pf) {
+                                if ( (*pf)->getName() == "Properties"){
+                                    RTT::Property<RTT::PropertyBag> props = *pf;
+                                    bool ret = updateProperties( *RTT::internal::GlobalService::Instance()->properties(), props);
+                                    if (!ret) {
+                                        log(Error) << "Failed to configure Global Properties from configuration file."<<endlog();
+                                        valid = false;
+                                    } else {
+                                        log(Info) << "Configured Global Properties from configuration file." <<endlog();
+                                    }
+                                }
+                            }
+                            continue;
+                        }
                         // Check if it is a propertybag.
                         RTT::Property<RTT::PropertyBag> comp = *it;
                         if ( !comp.ready() ) {
@@ -1918,7 +1940,7 @@ namespace OCL
         }
         return false;
     }
-	
+
     bool DeploymentComponent::setActivityOnCPU(const std::string& comp_name,
                                           double period, int priority,
 					       int scheduler, unsigned int cpu_nr)
@@ -2365,7 +2387,7 @@ namespace OCL
                     log(Debug) << "Waiting for deployment shutdown to complete ..." << endlog();
                     int waited = 0;
                     while ( ( (has_operation && RTT::SendNotReady == handle.collectIfDone() ) ||
-                              (has_program && peer->getProvider<Scripting>("scripting")->isProgramRunning(NAME)) ) 
+                              (has_program && peer->getProvider<Scripting>("scripting")->isProgramRunning(NAME)) )
                             && (waited < totalWait) )
                     {
                         (void)rtos_nanosleep(&ts, NULL);

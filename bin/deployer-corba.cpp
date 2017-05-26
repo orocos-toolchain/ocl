@@ -173,6 +173,8 @@ int main(int argc, char** argv)
                 }
 
             // The orb thread accepts incomming CORBA calls.
+            // The properties that are used to create the ThreadOrb should be loaded upfront
+            // using the siteFile.
             TaskContextServer::ThreadOrb();
 
             /* Only start the scripts after the Orb was created. Processing of
