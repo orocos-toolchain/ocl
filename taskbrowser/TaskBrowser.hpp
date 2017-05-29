@@ -253,6 +253,11 @@ namespace OCL
         bool printService( const std::string name);
 
         /**
+         * Print GlobalsRepository attributes and constants.
+         */
+        bool printGlobals();
+
+        /**
          * Print a program listing of a loaded program centered at line \a line.
          */
         void printProgram( const std::string& pn, int line = -1, RTT::TaskContext* progpeer = 0 );
