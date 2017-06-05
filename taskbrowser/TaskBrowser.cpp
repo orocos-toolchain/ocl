@@ -162,9 +162,9 @@ namespace OCL
     // All readline specific functions
 #if defined(USE_READLINE)
 
+#if defined(USE_SIGNALS)
     // Signal code only on Posix:
     int TaskBrowser::rl_received_signal;
-#if defined(USE_SIGNALS)
     void TaskBrowser::rl_sigwinch_handler(int sig, siginfo_t *si, void *ctxt) {
         rl_received_signal = sig;
 #if defined(OROCOS_TARGET_XENOMAI) && CONFIG_XENO_VERSION_MAJOR == 2 && CONFIG_XENO_VERSION_MINOR >= 5
@@ -184,7 +184,6 @@ namespace OCL
             }
         }
     }
-#endif // USE_SIGNALS
 
     int TaskBrowser::rl_getc(FILE *stream)
     {
@@ -215,6 +214,7 @@ namespace OCL
                 return (RL_ISSTATE (RL_STATE_READCMD) ? READERR : EOF);
         }
     }
+#endif // USE_SIGNALS
 
     char *TaskBrowser::rl_gets ()
     {
@@ -712,10 +712,10 @@ namespace OCL
 #ifdef USE_SIGNALS
         rl_catch_sigwinch = 0;
         rl_catch_signals = 0;
+        rl_getc_function = &TaskBrowser::rl_getc;
 #endif
         rl_completion_append_character = '\0'; // avoid adding spaces
         rl_attempted_completion_function = &TaskBrowser::orocos_hmi_completion;
-        rl_getc_function = &TaskBrowser::rl_getc;
 
         using_history();
         histfile = getenv("ORO_TB_HISTFILE");

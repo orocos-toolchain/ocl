@@ -2,16 +2,16 @@ OPTION( BUILD_TASKBROWSER "Build TaskBrowser" ON )
 OPTION( TASKBROWSER_EDITLINE "Use editline instead of readline for TaskBrowser." OFF)
 
 IF ( BUILD_TASKBROWSER )
-    IF ( TASKBROWSER_EDITLINE AND NOT EDITLINE)
-      MESSAGE( FATAL_ERROR "Can't build TaskBrowser with editline support since it's not found (see TASKBROWSER_EDITLINE option).")
-    ENDIF ( TASKBROWSER_EDITLINE AND NOT EDITLINE)
-
     #Try to use editline in !GPL or user option:
     IF (NO_GPL OR TASKBROWSER_EDITLINE)
       SET(USE_EDITLINE 1)
     ENDIF (NO_GPL OR TASKBROWSER_EDITLINE)
 
     IF ( USE_EDITLINE )
+      IF ( NOT EDITLINE )
+        MESSAGE( FATAL_ERROR "Can't build TaskBrowser with editline support since it's not found (see TASKBROWSER_EDITLINE option).")
+      ENDIF ( NOT EDITLINE )
+
       MESSAGE( "Building TaskBrowser with editline support." )
     ELSE( USE_EDITLINE )
       IF (READLINE)
