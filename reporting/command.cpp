@@ -123,9 +123,10 @@ namespace
         protected:
             void maincode( int, std::string* )
             {
-                std::vector<std::string> list = _parent->getConnection()->getMarshaller()->getReporter()->getReport()->list();
-                for(unsigned int i=0;i<list.size();i++)
+                std::vector<std::string> list = _parent->getConnection()->getMarshaller()->getReporter()->makeFreshReport()->list();
+                for(unsigned int i=0;i<list.size();i++) {
                     socket()<<"305 "<<list[i]<<std::endl;
+                }
                 socket() << "306 End of list" << std::endl;
             }
 

@@ -203,7 +203,7 @@ namespace OCL
         /**
          * Return a property bag.
          */
-        const RTT::PropertyBag* getReport();
+        const RTT::PropertyBag* makeFreshReport();
     };
 
 }

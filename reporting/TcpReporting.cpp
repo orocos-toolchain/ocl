@@ -223,8 +223,9 @@ namespace OCL
     {
     }
 
-    const RTT::PropertyBag* TcpReporting::getReport()
+    const RTT::PropertyBag* TcpReporting::makeFreshReport()
     {
+        cleanReport();
         makeReport2();
         return &report;
     }

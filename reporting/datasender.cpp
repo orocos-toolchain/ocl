@@ -94,7 +94,7 @@ namespace TCP
         lock.lock();
         log(Debug)<<"Datasender::addSubscription: "<<name<<endlog();
         //Check if a property is available with that name?
-        if(reporter->getReport()->find(name)!=NULL){
+        if(reporter->makeFreshReport()->find(name)!=NULL){
             //check if subscription already exists
             std::vector<std::string>::const_iterator pos =
                 find(subscriptions.begin(),subscriptions.end(),name);
@@ -181,7 +181,7 @@ namespace TCP
         log(Debug)<<"Let's check the subscriptions"<<endlog();
         for(std::vector<std::string>::iterator elem = subscriptions.begin();
             elem!=subscriptions.end();elem++){
-            base::PropertyBase* prop = reporter->getReport()->find(*elem);
+            base::PropertyBase* prop = v.find(*elem);
             if(prop!=NULL){
                 writeOut(prop);
             }else{
