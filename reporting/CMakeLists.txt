@@ -10,8 +10,8 @@ IF ( BUILD_REPORTING )
     SET( HPPS ConsoleReporting.hpp  FileReporting.hpp NiceHeaderMarshaller.hpp ReportingComponent.hpp TableMarshaller.hpp)
 
     # Reporting to a socket
-    SET( SOCKET_SRCS command.cpp datasender.cpp socket.cpp socketmarshaller.cpp TcpReporting.cpp)
-    SET( SOCKET_HPPS command.hpp datasender.hpp socket.hpp socketmarshaller.hpp TcpReporting.hpp)
+    SET( SOCKET_SRCS tcpreportingsession.cpp command.cpp TcpReporting.cpp)
+    SET( SOCKET_HPPS tcpreportingsession.hpp command.hpp TcpReporting.hpp)
 
     if(NOT OROCOS_TARGET STREQUAL "win32")
       set(SRCS ${SRCS} ${SOCKET_SRCS})
