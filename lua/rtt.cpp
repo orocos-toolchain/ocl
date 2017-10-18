@@ -219,14 +219,7 @@ static const TypeInfo* ti_lookup(lua_State *L, const char *name)
 #endif /* TYPEINFO_CACHING */
 }
 
-/* helper, check if two type names are alias to the same TypeInfo */
-static bool __typenames_cmp(lua_State *L, const char* type1, const char* type2)
-{
-	const types::TypeInfo *ti1 = ti_lookup(L, type1);
-	const types::TypeInfo *ti2 = ti_lookup(L, type2);
-	return ti1 == ti2;
-}
-
+/* helper, check if a type name is an alias to the given TypeInfo */
 static bool __typenames_cmp(lua_State *L, const types::TypeInfo *ti1, const char* type2)
 {
 	const types::TypeInfo *ti2 = ti_lookup(L, type2);
@@ -2192,6 +2185,17 @@ static int TaskContext_addPeer(lua_State *L)
 	return 1;
 }
 
+/* bool connectPeers(TaskContext self, TaskContext peer)*/
+static int TaskContext_connectPeers(lua_State *L)
+{
+	bool ret;
+	TaskContext *self = *(luaM_checkudata_bx(L, 1, TaskContext));
+	TaskContext *peer = *(luaM_checkudata_bx(L, 2, TaskContext));
+	ret = self->connectPeers(peer);
+	lua_pushboolean(L, ret);
+	return 1;
+}
+
 /* void removePeer(TaskContext self, string peer)*/
 static int TaskContext_removePeer(lua_State *L)
 {
@@ -2402,13 +2406,12 @@ static int TaskContext_removeProperty(lua_State *L)
 
 static int TaskContext_addAttribute(lua_State *L)
 {
-	const char *name, *desc;
 	int argc = lua_gettop(L);
 	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
 	AttributeBase *pb = *(luaM_checkudata_mt_bx(L, 2, "Attribute", AttributeBase));
 
 	if(argc > 2) {
-		name = luaL_checkstring(L, 3);
+		const char *name = luaL_checkstring(L, 3);
 		pb->setName(name);
 	}
 
@@ -2462,11 +2465,8 @@ static int TaskContext_getAttributes(lua_State *L)
 
 static int TaskContext_removeAttribute(lua_State *L)
 {
-	const char *name;
-	AttributeBase *prop;
-
 	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
-	name = luaL_checkstring(L, 2);
+	const char *name = luaL_checkstring(L, 2);
 
 	if(!tc->attributes()->hasAttribute(name))
 		luaL_error(L, "%s failed. No such attribute", __FILE__);
@@ -2619,7 +2619,7 @@ static int __SendHandle_collect(lua_State *L, bool block)
 	oip = shc->getOrp();
 	coll_argc = oip->collectArity();
 
-	if(argc == 1) {
+	if(block && (argc == 1)) {
 		// No args supplied, create them.
 		for(unsigned int i=1; i<=coll_argc; i++) {
 			ti = oip->getCollectType(i);
@@ -2629,16 +2629,23 @@ static int __SendHandle_collect(lua_State *L, bool block)
 		}
 	} else if (argc-1 == coll_argc) {
 		// args supplied, use them.
-		for(unsigned int arg=2; arg<=argc; arg++) {
-			if ((dsbp = luaM_testudata_mt(L, arg, "Variable", DataSourceBase::shared_ptr)) != NULL)
-				dsb = *dsbp;
-			else
-				luaL_error(L, "SendHandle.collect: expected Variable argument at position %d", arg-1);
-			shc->arg(dsb);
+		if (!shc->ready()) {
+			for(unsigned int arg=2; arg<=argc; arg++) {
+				if ((dsbp = luaM_testudata_mt(L, arg, "Variable", DataSourceBase::shared_ptr)) != NULL)
+					dsb = *dsbp;
+				else
+					luaL_error(L, "SendHandle.collect: expected Variable argument at position %d", arg-1);
+				shc->arg(dsb);
+			}
 		}
 	} else {
-		luaL_error(L, "SendHandle.collect: wrong number of args. expected either 0 or %d, got %d",
-			   coll_argc, argc-1);
+		if (block) {
+			luaL_error(L, "SendHandle.collect: wrong number of args. expected either 0 or %d, got %d",
+				   coll_argc, argc-1);
+		} else {
+			luaL_error(L, "SendHandle.collectIfDone: wrong number of args. expected %d, got %d",
+				   coll_argc, argc-1);
+		}
 	}
 
 	if(block) ss = shc->collect();
@@ -2649,9 +2656,14 @@ static int __SendHandle_collect(lua_State *L, bool block)
 	if(ss == SendSuccess) {
 		for (unsigned int i=0; i<coll_args.size(); i++)
 			Variable_push_coerce(L, coll_args[i]);
+
+		/* SendStatus + collect args */
+		return coll_args.size() + 1;
+
+	} else {
+		/* SendStatus only */
+		return 1;
 	}
-	/* SendStatus + collect args */
-	return coll_args.size() + 1;
 }
 
 static int SendHandle_collect(lua_State *L) { return __SendHandle_collect(L, true); }
@@ -2734,6 +2746,7 @@ static const struct luaL_Reg TaskContext_m [] = {
 	{ "getState", TaskContext_getState },
 	{ "getPeers", TaskContext_getPeers },
 	{ "addPeer", TaskContext_addPeer },
+	{ "connectPeers", TaskContext_connectPeers },
 	{ "removePeer", TaskContext_removePeer },
 	{ "getPeer", TaskContext_getPeer },
 	{ "getPortNames", TaskContext_getPortNames },
@@ -3117,6 +3130,7 @@ bool call_func(lua_State *L, const char *fname, TaskContext *tc,
 	if (lua_pcall(L, 0, num_res, 0) != 0) {
 		Logger::log(Logger::Error) << "LuaComponent '"<< tc->getName()  <<"': error calling function "
 					   << fname << ": " << lua_tostring(L, -1) << endlog();
+		lua_pop(L, 1);
 		ret = false;
 		goto out;
 	}
@@ -3126,6 +3140,7 @@ bool call_func(lua_State *L, const char *fname, TaskContext *tc,
 			Logger::log(Logger::Error) << "LuaComponent '" << tc->getName() << "': " << fname
 						   << " must return a bool but returned a "
 						   << lua_typename(L, lua_type(L, -1)) << endlog();
+			lua_pop(L, 1);
 			ret = false;
 			goto out;
 		}

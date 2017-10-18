@@ -187,20 +187,30 @@ int main(int argc, char** argv)
                 {
                     if ( (*iter).rfind(".xml",string::npos) == (*iter).length() - 4 || (*iter).rfind(".cpf",string::npos) == (*iter).length() - 4) {
                         if ( deploymentOnlyChecked ) {
-                            result = dc.loadComponents( (*iter) ) && dc.configureComponents();
+                            if (!dc.loadComponents( (*iter) )) {
+                                result = false;
+                                log(Error) << "Failed to load file: '"<< (*iter) <<"'." << endlog();
+                            } else if (!dc.configureComponents()) {
+                                result = false;
+                                log(Error) << "Failed to configure file: '"<< (*iter) <<"'." << endlog();
+                            }
+                            // else leave result=true and continue
                         } else {
                             result = dc.kickStart( (*iter) );
                         }
                         continue;
-                    } if ( (*iter).rfind(".ops",string::npos) == (*iter).length() - 4 || (*iter).rfind(".osd",string::npos) == (*iter).length() - 4) {
+                    }
+
+                    if ( (*iter).rfind(".ops",string::npos) == (*iter).length() - 4 ||
+                         (*iter).rfind(".osd",string::npos) == (*iter).length() - 4 ||
+                         (*iter).rfind(".lua",string::npos) == (*iter).length() - 4) {
                         result = dc.runScript( (*iter) );
                         continue;
                     }
-                    log(Error) << "Unknown extension of file: '"<< (*iter) <<"'. Must be xml, cpf for XML files or, ops or osd for script files."<<endlog();
+                    log(Error) << "Unknown extension of file: '"<< (*iter) <<"'. Must be xml, cpf for XML files or, ops, osd or lua for script files."<<endlog();
                 }
             }
-            if (result == false)
-            	rc = -1;
+            rc = (result ? 0 : -1);
 
             // Export the DeploymentComponent as CORBA server.
             if ( !deploymentOnlyChecked ) {

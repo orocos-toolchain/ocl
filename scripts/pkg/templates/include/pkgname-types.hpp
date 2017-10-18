@@ -1,3 +1,6 @@
+#ifndef @PKGNAME@_TYPES_HPP
+#define @PKGNAME@_TYPES_HPP
+
 /**
  * In this header you may define a number of classes or structs,
  * which will be picked up by the typegen tool.
@@ -19,3 +22,5 @@ struct @Pkgname@Data
     /** Contains a sequence of doubles. */
     std::vector<double> samples;
 };
+
+#endif // @PKGNAME@_TYPES_HPP

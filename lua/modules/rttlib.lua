@@ -584,7 +584,8 @@ function tc_cleanup()
    local function cleanup_attr(pname)
       local attr = TaskContext.getAttribute(tc, pname)
       TaskContext.removeAttribute(tc, pname)
-      attr:delete()
+      -- TaskContext.removeAttribute invalidates the pointer stored in attr!
+      --attr:delete()
    end
 
    local function cleanup_port(pname)

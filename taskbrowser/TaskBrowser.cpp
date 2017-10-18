@@ -162,9 +162,9 @@ namespace OCL
     // All readline specific functions
 #if defined(USE_READLINE)
 
+#if defined(USE_SIGNALS)
     // Signal code only on Posix:
     int TaskBrowser::rl_received_signal;
-#if defined(USE_SIGNALS)
     void TaskBrowser::rl_sigwinch_handler(int sig, siginfo_t *si, void *ctxt) {
         rl_received_signal = sig;
 #if defined(OROCOS_TARGET_XENOMAI) && CONFIG_XENO_VERSION_MAJOR == 2 && CONFIG_XENO_VERSION_MINOR >= 5
@@ -184,7 +184,6 @@ namespace OCL
             }
         }
     }
-#endif // USE_SIGNALS
 
     int TaskBrowser::rl_getc(FILE *stream)
     {
@@ -215,6 +214,7 @@ namespace OCL
                 return (RL_ISSTATE (RL_STATE_READCMD) ? READERR : EOF);
         }
     }
+#endif // USE_SIGNALS
 
     char *TaskBrowser::rl_gets ()
     {
@@ -544,7 +544,14 @@ namespace OCL
             Parser parser(GlobalEngine::Instance());
             DataSourceBase::shared_ptr result = parser.parseExpression( peerpath + component_found, context );
             if (result && !component.empty() ) {
-                vector<string> members = result->getMemberNames();
+                DataSource<PropertyBag>::shared_ptr bag = DataSource<PropertyBag>::narrow(result.get());
+                vector<string> members;
+                if(bag){
+                    members = bag->rvalue().getPropertyNames();
+                }
+                else{
+                    members = result->getMemberNames();
+                }
                 for (std::vector<std::string>::iterator i = members.begin(); i!= members.end(); ++i ) {
                     if ( string( component_found + "." + *i ).find( component ) == 0  )
                         completes.push_back( peerpath + component_found + "." + *i );
@@ -561,7 +568,14 @@ namespace OCL
                 Parser parser(GlobalEngine::Instance());
                 DataSourceBase::shared_ptr result = parser.parseExpression( peerpath + component, context );
                 if (result && !component.empty() ) {
-                    vector<string> members = result->getMemberNames();
+                    DataSource<PropertyBag>::shared_ptr bag = DataSource<PropertyBag>::narrow(result.get());
+                    vector<string> members;
+                    if(bag){
+                        members = bag->rvalue().getPropertyNames();
+                    }
+                    else{
+                        members = result->getMemberNames();
+                    }
                     for (std::vector<std::string>::iterator i = members.begin(); i!= members.end(); ++i ) {
                         if (component_found + "." != component ) // catch corner case.
                             completes.push_back( peerpath + component + "." + *i );
@@ -687,6 +701,7 @@ namespace OCL
           line_read(0),
           lastc(0), storedname(""), storedline(-1),
           usehex(false),
+          histfile(0),
           macrorecording(false)
     {
         tb = this;
@@ -697,13 +712,16 @@ namespace OCL
 #ifdef USE_SIGNALS
         rl_catch_sigwinch = 0;
         rl_catch_signals = 0;
+        rl_getc_function = &TaskBrowser::rl_getc;
 #endif
         rl_completion_append_character = '\0'; // avoid adding spaces
         rl_attempted_completion_function = &TaskBrowser::orocos_hmi_completion;
-        rl_getc_function = &TaskBrowser::rl_getc;
 
         using_history();
-        if ( read_history(".tb_history") != 0 ) {
+        histfile = getenv("ORO_TB_HISTFILE");
+        if(histfile == 0)
+            histfile = ".tb_history";
+        if ( read_history(histfile) != 0 ) {
             read_history("~/.tb_history");
         }
 #ifdef USE_SIGNALS
@@ -730,7 +748,7 @@ namespace OCL
             {
                 free (line_read);
             }
-        if ( write_history(".tb_history") != 0 ) {
+        if ( write_history(histfile) != 0 ) {
             write_history("~/.tb_history");
         }
 #endif

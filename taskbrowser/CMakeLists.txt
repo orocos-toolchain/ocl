@@ -2,16 +2,16 @@ OPTION( BUILD_TASKBROWSER "Build TaskBrowser" ON )
 OPTION( TASKBROWSER_EDITLINE "Use editline instead of readline for TaskBrowser." OFF)
 
 IF ( BUILD_TASKBROWSER )
-    IF ( TASKBROWSER_EDITLINE AND NOT EDITLINE)
-      MESSAGE( FATAL_ERROR "Can't build TaskBrowser with editline support since it's not found (see TASKBROWSER_EDITLINE option).")
-    ENDIF ( TASKBROWSER_EDITLINE AND NOT EDITLINE)
-
     #Try to use editline in !GPL or user option:
     IF (NO_GPL OR TASKBROWSER_EDITLINE)
       SET(USE_EDITLINE 1)
     ENDIF (NO_GPL OR TASKBROWSER_EDITLINE)
 
     IF ( USE_EDITLINE )
+      IF ( NOT EDITLINE )
+        MESSAGE( FATAL_ERROR "Can't build TaskBrowser with editline support since it's not found (see TASKBROWSER_EDITLINE option).")
+      ENDIF ( NOT EDITLINE )
+
       MESSAGE( "Building TaskBrowser with editline support." )
     ELSE( USE_EDITLINE )
       IF (READLINE)
@@ -38,6 +38,7 @@ IF ( BUILD_TASKBROWSER )
     find_package(RTTPlugin REQUIRED rtt-scripting)      
     orocos_library( orocos-ocl-taskbrowser ${SRCS} )
     SET_TARGET_PROPERTIES( orocos-ocl-taskbrowser PROPERTIES
+      SOVERSION ${OCL_SOVERSION}
       DEFINE_SYMBOL OCL_DLL_EXPORT)
     orocos_install_headers( ${HPPS} INSTALL include/orocos/ocl )
 
@@ -52,7 +53,6 @@ IF ( BUILD_TASKBROWSER )
 
       # readline only depends on curses on unixes, not on mingw/msvc
       if (UNIX)
-        OROCOS_PKGCONFIG_LIBS(readline ${CURSES_IMPL})
         INCLUDE_DIRECTORIES( ${READLINE_INCLUDE_DIR} )
         TARGET_LINK_LIBRARIES( orocos-ocl-taskbrowser ${READLINE_LIBRARY} )
 	if ( CURSES_LIBRARY )
@@ -60,7 +60,6 @@ IF ( BUILD_TASKBROWSER )
           TARGET_LINK_LIBRARIES( orocos-ocl-taskbrowser ${CURSES_LIBRARY} )
 	endif()
       else(UNIX)
-        OROCOS_PKGCONFIG_LIBS(readline)
         INCLUDE_DIRECTORIES( ${READLINE_INCLUDE_DIR} )
         TARGET_LINK_LIBRARIES( orocos-ocl-taskbrowser ${READLINE_LIBRARY} )
       endif(UNIX)
@@ -70,11 +69,9 @@ IF ( BUILD_TASKBROWSER )
     # editline support
     if (USE_EDITLINE)
       if (UNIX)
-        OROCOS_PKGCONFIG_LIBS(editline)
         INCLUDE_DIRECTORIES( ${EDITLINE_INCLUDE_DIR} ${CURSES_INCLUDE_DIR} )
         target_link_libraries( orocos-ocl-taskbrowser ${EDITLINE_LIBRARY} ${CURSES_LIBRARY} )
       else(UNIX)
-        OROCOS_PKGCONFIG_LIBS(editline)
         INCLUDE_DIRECTORIES( ${EDITLINE_INCLUDE_DIR} )
         target_link_libraries( orocos-ocl-taskbrowser ${EDITLINE_LIBRARY} )
       endif(UNIX)
