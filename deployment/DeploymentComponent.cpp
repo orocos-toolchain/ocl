@@ -1036,7 +1036,7 @@ namespace OCL
 
                         // Check if we know or are this component.
                         RTT::TaskContext* c = 0;
-                        if ( (*it)->getName() == this->getName() )
+                        if ( (*it)->getName() == "this" || (*it)->getName() == this->getName() )
                             c = this;
                         else
                             c = this->getPeer( (*it)->getName() );
@@ -1899,7 +1899,7 @@ namespace OCL
                 // Finally, delete the activity before the TC !
                 delete it->act;
                 it->act = 0;
-                ComponentLoader::Instance()->unloadComponent( it->instance, name );
+                ComponentLoader::Instance()->unloadComponent( it->instance );
                 it->instance = 0;
                 log(Info) << "Disconnected and destroyed "<< name <<endlog();
             } else {
@@ -2082,7 +2082,7 @@ namespace OCL
         // stores it in compmap[comp_name].act
         RTT::TaskContext* peer = 0;
         base::ActivityInterface* master_act = 0;
-        if ( comp_name == this->getName() )
+        if ( comp_name == "this" || comp_name == this->getName() )
             peer = this;
         else
             if ( compmap.count(comp_name) )
@@ -2094,7 +2094,7 @@ namespace OCL
             return false;
         }
         if ( !master_name.empty() ) {
-            if ( master_name == this->getName() )
+            if ( master_name == "this" || master_name == this->getName() )
 	        master_act = this->engine()->getActivity();
             else
                 if ( compmap.count(master_name) && compmap[master_name].act )
@@ -2197,7 +2197,7 @@ namespace OCL
     {
         RTT::Logger::In in("DeploymentComponent");
         RTT::TaskContext* c;
-        if ( name == this->getName() )
+        if ( name == "this" || name == this->getName() )
             c = this;
         else
             c = this->getPeer(name);
