@@ -292,27 +292,6 @@ function op2str(op)
    return __op2str(op:info())
 end
 
---- Taskcontext operation to string.
--- Old version. Using the op2str and __op2str versions are preferred.
-function tc_op2str(tc, op)
-   local rettype, arity, descr, args = TaskContext.getOpInfo(tc, op)
-   local str = ""
-
-   if #args < 1  then
-      str = rettype .. " " .. cyan(op, false) .. "()"
-   else
-      str = rettype .. " " .. cyan(op, false) .. "("
-
-      for i=1,#args-1 do
-	 str = str .. args[i]["type"] .. " " .. args[i]["name"] .. ", "
-      end
-
-      str = str .. args[#args]["type"] .. " " .. args[#args]["name"] .. ")"
-   end
-   if descr then str = str .. " " .. red("// " .. descr) .. "" end
-   return str
-end
-
 --- Convert a service to a string.
 -- @param s Service
 -- @return string
