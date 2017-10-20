@@ -313,6 +313,9 @@ function tc_op2str(tc, op)
    return str
 end
 
+--- Convert a service to a string.
+-- @param s Service
+-- @return string
 function service2str(s, inds, indn)
    local inds = inds or '    '
    local indn = indn or 0
@@ -323,7 +326,7 @@ function service2str(s, inds, indn)
       t[#t+1] = ind .. magenta("Service: ") .. cyan(s:getName(), true)
       t[#t+1] = ind .. magenta("   Subservices: ") .. cyan(table.concat(s:getProviderNames(), ', '))
 
-      t[#t+1] = ind .. magenta("   Ports:       ") -- .. cyan(table.concat(s:getPortNames(), ', '))
+      t[#t+1] = ind .. magenta("   Ports:       ")
       utils.foreach(function(portname)
 		       t[#t+1] = ind .. "        " .. port2str(s:getPort(portname))
 		    end, s:getPortNames())
@@ -340,7 +343,7 @@ function service2str(s, inds, indn)
 
       t[#t+1] = ind .. magenta("   Operations:  ")
       utils.foreach(function(opname)
-		       t[#t+1] = ind .. "        " .. op2str(s:getOperation(opname))
+		       t[#t+1] = ind .. "        " .. __op2str(opname, s:getOperationInfo(opname))
 		    end, s:getOperationNames())
 
       utils.foreach(function (sstr)
@@ -474,7 +477,7 @@ function tc2str(tc, full)
    res[#res+1] = magenta("   Operations") .. ":"
    for i,v in ipairs(TaskContext.getOps(tc)) do
       if not utils.table_has(defops_lst, v) or full then
-	 res[#res+1] = "      " .. tc_op2str(tc, v)
+	 res[#res+1] = "      " .. __op2str(v, TaskContext.getOpInfo(tc, v))
       end
    end
    return table.concat(res, '\n')
