@@ -25,6 +25,9 @@ public:
         successfully, otherwise false
     */
     virtual bool configureLayout();
+    /** Set appender priority threshold.
+    */
+	bool configureThreshold();
     /// ensure port is connected before we start
     virtual bool startHook();
 	/// Drain the buffer
@@ -56,6 +59,8 @@ protected:
     RTT::Property<std::string>                      layoutName_prop;
     /// Layout conversion pattern (for those layouts that use a pattern)
     RTT::Property<std::string>                      layoutPattern_prop;
+    /// Priority threshold
+    RTT::Property<std::string>                      priorityThreshold_prop;
 
     /* Used by \a processEvents() when popping items from the buffer.
      * This is a class member, rather than a stack instance, to reduce the

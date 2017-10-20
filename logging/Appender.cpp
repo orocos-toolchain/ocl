@@ -1,6 +1,8 @@
 #include "logging/Appender.hpp"
 #include "ocl/Component.hpp"
 
+#include <boost/algorithm/string.hpp>
+
 #include <log4cpp/Appender.hh>
 #include <log4cpp/BasicLayout.hh>
 #include <log4cpp/SimpleLayout.hh>
@@ -14,16 +16,37 @@ Appender::Appender(std::string name) :
         appender(0),
         layoutName_prop("LayoutName", "Layout name (e.g. 'simple', 'pattern')"),
         layoutPattern_prop("LayoutPattern", "Layout conversion pattern (for those layouts that use a pattern)"),
+        priorityThreshold_prop("PriorityThreshold", "Messages with lower priorities are filtered.", "NOTSET"),
         countMaxPopped(0)
 {
     ports()->addEventPort("LogPort", log_port );
 
     properties()->addProperty(layoutName_prop);
-    properties()->addProperty(layoutPattern_prop);
+	properties()->addProperty(layoutPattern_prop);
+    properties()->addProperty(priorityThreshold_prop);
 }
 
 Appender::~Appender()
 {
+}
+
+bool Appender::configureThreshold() 
+{
+	log4cpp::Priority::Value priority = log4cpp::Priority::NOTSET;
+	try
+	{
+		priority = log4cpp::Priority::getPriorityValue( boost::to_upper_copy( priorityThreshold_prop.rvalue() ) );
+		
+	}
+	catch (std::invalid_argument)
+	{
+		// \todo more descriptive
+		RTT::Logger::In in(getName());
+		RTT::log(RTT::Error) << "Bad log4cpp priority: " << priorityThreshold_prop.rvalue() << RTT::endlog();
+		return false;
+	}
+	if (appender) appender->setThreshold(priority);
+	return true;
 }
 
 bool Appender::configureLayout()
@@ -70,6 +93,8 @@ bool Appender::startHook()
 {
     /// \todo input ports must be connected?
 //    return log_port.ready();  
+//
+	configureThreshold();
 
     return true;
 }
