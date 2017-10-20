@@ -179,6 +179,7 @@ namespace OCL
           report("Report"), snapshotted(false),
           writeHeader("WriteHeader","Set to true to start each report with a header.", true),
           decompose("Decompose","Set to false in order to not decompose the port data. The marshaller must be able to handle this itself for this to work.", true),
+          complexdecompose("ComplexDecompose","Use slow but more robust procedure for port data decomposition.", false),
           insnapshot("Snapshot","Set to true to enable snapshot mode. This will cause a non-periodic reporter to only report data upon the snapshot() operation.",false),
           synchronize_with_logging("Synchronize","Set to true if the timestamp should be synchronized with the logging",false),
           report_data("ReportData","A PropertyBag which defines which ports or components to report."),
@@ -191,6 +192,7 @@ namespace OCL
 
         this->properties()->addProperty( writeHeader );
         this->properties()->addProperty( decompose );
+        this->properties()->addProperty( complexdecompose );
         this->properties()->addProperty( insnapshot );
         this->properties()->addProperty( synchronize_with_logging);
         this->properties()->addProperty( report_data);
@@ -617,7 +619,12 @@ namespace OCL
         DataSource<bool>::shared_ptr checker;
         for(Reports::iterator it = root.begin(); it != root.end(); ++it ) {
             Property<PropertyBag>* subbag = new Property<PropertyBag>( it->get<T_QualName>(), "");
-            if ( decompose.get() && memberDecomposition( it->get<T_PortDS>(), subbag->value(), checker ) ) {
+			bool decompose_success = false;
+			if ( decompose.get() ) {
+				if ( complexdecompose.get() ) decompose_success = RTT::types::typeDecomposition( it->get<T_PortDS>(), subbag->value(), true );
+				else decompose_success = memberDecomposition( it->get<T_PortDS>(), subbag->value(), checker );
+			}
+            if ( decompose_success ) {
                 report.add( subbag );
                 it->get<T_Property>() = subbag;
             } else {

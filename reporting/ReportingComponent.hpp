@@ -238,6 +238,7 @@ namespace OCL
         RTT::Property<std::string>   config;
         RTT::Property<bool>          writeHeader;
         RTT::Property<bool>          decompose;
+        RTT::Property<bool>          complexdecompose;
         RTT::Property<bool>          insnapshot;
         RTT::Property<bool>          synchronize_with_logging;
         RTT::Property<PropertyBag>   report_data;
