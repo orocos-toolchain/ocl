@@ -17,7 +17,9 @@ TcpReportingSession::TcpReportingSession(tcp::socket *socket)
   flushOstream();
 }
 
-TcpReportingSession::~TcpReportingSession() { delete socket; }
+TcpReportingSession::~TcpReportingSession() {
+  delete socket;
+}
 
 void TcpReportingSession::terminate() {
   if (socket->is_open()) {

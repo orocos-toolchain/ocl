@@ -50,7 +50,8 @@ void TcpReporting::handleAccept(const asio::error_code& error) {
     stop();
   } else {
     TcpReportingSession* session = new TcpReportingSession(pending_socket);
-    addMarshaller(session, session);
+    pending_socket = NULL;
+    addMarshaller(0, session);
     sessions.push_back(session);
     registerAccept();
   }
@@ -59,12 +60,12 @@ void TcpReporting::handleAccept(const asio::error_code& error) {
 TcpReporting::TcpReporting(std::string fr_name /*= "Reporting"*/)
     : ReportingComponent(fr_name), acceptor(io_service), port(3142) {
   addProperty("port", port);
-  addMarshaller(0, new RTT::EmptyMarshaller());
 }
 
-TcpReporting::~TcpReporting() { delete pending_socket;}
+TcpReporting::~TcpReporting() {}
 
 bool TcpReporting::startHook() {
+  addMarshaller(0, new RTT::EmptyMarshaller());
   tcp::endpoint endpoint(tcp::v4(), port);
   asio::error_code error;
 
@@ -96,31 +97,27 @@ bool TcpReporting::startHook() {
 }
 
 void TcpReporting::stopHook() {
+  ReportingComponent::stopHook();  // This flushes all connections
+  io_service.poll();
+
   // Properly terminate the sessions
-  for (int i = 0; i < sessions.size(); i++) {
+  for (size_t i = 0; i < sessions.size(); i++) {
     sessions[i]->terminate();
   }
   io_service.poll();  // we need this to invoke the session terminations
 
-  // Free the sessions memory
-  for (int i = 0; i < sessions.size(); i++) {
-    delete sessions[i];
-  }
-  sessions.clear();
+  removeMarshallers();
 
-  // Close the acceptor
   acceptor.close();
   io_service.poll();
   io_service.reset();
-
-  ReportingComponent::stopHook();
 }
 
 void TcpReporting::updateHook() {
   asio::error_code error;
   io_service.poll(error);
   if (error) {
-    RTT::log(RTT::Error) << "error in updae hook" << error.message()
+    RTT::log(RTT::Error) << "error in update hook: " << error.message()
                          << RTT::endlog();
     stop();
   }
