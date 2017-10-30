@@ -181,7 +181,7 @@ int main(int argc, char** argv)
                             }
                             // else leave result=true and continue
                         } else {
-                            result = dc.kickStart( (*iter) );
+                            result = dc.kickStart( (*iter) ) && result;
                         }
                         continue;
                     }

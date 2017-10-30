@@ -191,7 +191,7 @@ int main(int argc, char** argv)
                         if ( (*iter).rfind(".ops", std::string::npos) == (*iter).length() - 4 ||
                              (*iter).rfind(".osd", std::string::npos) == (*iter).length() - 4 ||
                              (*iter).rfind(".lua", std::string::npos) == (*iter).length() - 4) {
-                            result = dc.runScript( (*iter) );
+                            result = dc.runScript( (*iter) ) && result;
                             continue;
                         }
 
