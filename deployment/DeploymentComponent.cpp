@@ -830,20 +830,26 @@ namespace OCL
                                 continue;
                             }
                             // Check for default Global properties to be set.
-                            for (RTT::PropertyBag::const_iterator pf = global.rvalue().begin(); pf!= global.rvalue().end(); ++pf) {
-                                if ( (*pf)->getName() == "Properties"){
+                            for (RTT::PropertyBag::const_iterator pf = global.rvalue().begin(); pf != global.rvalue().end(); ++pf) {
+                                if ( (*pf)->getName() == "Properties" ) {
                                     RTT::Property<RTT::PropertyBag> props = *pf;
-                                    bool ret = updateProperties( *RTT::types::GlobalsRepository::Instance()->properties(), props);
+                                    if ( !props.ready() ) {
+                                        log(Error)<< "Found 'Properties' in 'GlobalsRepository' tag, but it is not of type PropertyBag"<<endlog();
+                                        valid = false;
+                                        continue;
+                                    }
+                                    bool ret = updateProperties( *RTT::types::GlobalsRepository::Instance()->properties(), props );
                                     if (!ret) {
-                                        log(Error) << "Failed to configure Global Properties from configuration file."<<endlog();
+                                        log(Error) << "Failed to configure global properties from configuration file."<<endlog();
                                         valid = false;
                                     } else {
-                                        log(Info) << "Configured Global Properties from configuration file." <<endlog();
+                                        log(Info) << "Configured global properties from configuration file."<<endlog();
                                     }
                                 }
                             }
                             continue;
                         }
+
                         // Check if it is a propertybag.
                         RTT::Property<RTT::PropertyBag> comp = *it;
                         if ( !comp.ready() ) {
