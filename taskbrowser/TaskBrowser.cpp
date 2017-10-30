@@ -482,6 +482,8 @@ namespace OCL
                 completes.push_back("untrace ");
             if ( std::string( "GlobalService" ).find(text) == 0 )
                 completes.push_back("GlobalService");
+            if ( std::string( "GlobalsRepository" ).find(text) == 0 )
+                completes.push_back("GlobalsRepository");
 
             if (taskcontext == context && string("leave").find(text) == 0)
                 completes.push_back("leave");
