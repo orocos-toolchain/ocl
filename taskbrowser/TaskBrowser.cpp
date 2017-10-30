@@ -913,7 +913,7 @@ namespace OCL
                 } else if ( command == "GlobalService" ) {
                     printService(command);
                 } else if ( command == "GlobalsRepository" ) {
-                      printGlobals();
+                    printGlobals();
                 } else if ( command == "#debug") {
                     debug = !debug;
                 } else if ( command.find("list ") == 0 || command == "list" ) {
@@ -1567,7 +1567,7 @@ namespace OCL
           }
         } else {
           sresult << coloron << "(none)";
-          sresult << nl;
+          sresult << coloroff << nl;
         }
 
         sresult << nl << "  Attributes   : ";
@@ -1622,16 +1622,14 @@ namespace OCL
             GlobalsRepository::shared_ptr globals = GlobalsRepository::Instance();
 
             if ( globals->hasAttribute( global_var_name ) ) {
-                cerr << "Found value..."<<nl;
-                this->printResult( globals->getValue( comm )->getDataSource().get(), true );
+                this->printResult( globals->getValue( global_var_name )->getDataSource().get(), true );
                 cout << sresult.str()<<nl;
                 sresult.str("");
                 return;
             }
 
             if ( globals->hasProperty( global_var_name ) ) {
-                cerr << "Found value..."<<nl;
-                this->printResult( globals->properties()->find(global_var_name)->getDataSource().get(), true );
+                this->printResult( globals->properties()->find( global_var_name )->getDataSource().get(), true );
                 cout << sresult.str()<<nl;
                 sresult.str("");
                 return;
