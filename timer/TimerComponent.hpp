@@ -28,8 +28,8 @@ namespace OCL
         struct TimeoutCatcher : public os::Timer {
             RTT::OutputPort<RTT::os::Timer::TimerId>& me;
             std::vector<RTT::OutputPort<RTT::os::Timer::TimerId>* >& m_port_timers;
-            TimeoutCatcher(std::vector<RTT::OutputPort<RTT::os::Timer::TimerId>* >& port_timers, RTT::OutputPort<RTT::os::Timer::TimerId>&  op) :
-                os::Timer(port_timers.size(), ORO_SCHED_RT, os::HighestPriority),
+            TimeoutCatcher(std::vector<RTT::OutputPort<RTT::os::Timer::TimerId>* >& port_timers, RTT::OutputPort<RTT::os::Timer::TimerId>&  op, const std::string& name) :
+                os::Timer(port_timers.size(), ORO_SCHED_RT, os::HighestPriority, name + ".Timer"),
                 me(op),
 		m_port_timers(port_timers)
             {}
