@@ -25,9 +25,11 @@ public:
         successfully, otherwise false
     */
     virtual bool configureLayout();
+
     /** Set appender priority threshold.
     */
-	bool configureThreshold();
+    bool configureThreshold();
+
     /// ensure port is connected before we start
     virtual bool startHook();
 	/// Drain the buffer

@@ -22,7 +22,7 @@ Appender::Appender(std::string name) :
     ports()->addEventPort("LogPort", log_port );
 
     properties()->addProperty(layoutName_prop);
-	properties()->addProperty(layoutPattern_prop);
+    properties()->addProperty(layoutPattern_prop);
     properties()->addProperty(priorityThreshold_prop);
 }
 
@@ -32,21 +32,20 @@ Appender::~Appender()
 
 bool Appender::configureThreshold() 
 {
-	log4cpp::Priority::Value priority = log4cpp::Priority::NOTSET;
-	try
-	{
-		priority = log4cpp::Priority::getPriorityValue( boost::to_upper_copy( priorityThreshold_prop.rvalue() ) );
-		
-	}
-	catch (std::invalid_argument)
-	{
-		// \todo more descriptive
-		RTT::Logger::In in(getName());
-		RTT::log(RTT::Error) << "Bad log4cpp priority: " << priorityThreshold_prop.rvalue() << RTT::endlog();
-		return false;
-	}
-	if (appender) appender->setThreshold(priority);
-	return true;
+    log4cpp::Priority::Value priority = log4cpp::Priority::NOTSET;
+    try
+    {
+        priority = log4cpp::Priority::getPriorityValue( boost::to_upper_copy( priorityThreshold_prop.rvalue() ) );
+    }
+    catch (std::invalid_argument)
+    {
+        // \todo more descriptive
+        RTT::Logger::In in(getName());
+        RTT::log(RTT::Error) << "Bad log4cpp priority: " << priorityThreshold_prop.rvalue() << RTT::endlog();
+        return false;
+    }
+    if (appender) appender->setThreshold(priority);
+    return true;
 }
 
 bool Appender::configureLayout()
@@ -94,7 +93,7 @@ bool Appender::startHook()
     /// \todo input ports must be connected?
 //    return log_port.ready();  
 //
-	configureThreshold();
+    configureThreshold();
 
     return true;
 }
