@@ -36,6 +36,28 @@ public:
     }
 };
 
+// creates ports dynamically (ie in configureHook() )
+class MyDynamicTask
+: public RTT::TaskContext
+{
+public:
+    InputPort<double> d1;
+    OutputPort<double> d2;
+
+    MyDynamicTask(std::string n)
+        : RTT::TaskContext(n),
+        d1("d1"),
+        d2("d2")
+    {
+    }
+    virtual bool configureHook()
+    {
+        this->ports()->addPort( d1 );
+        this->ports()->addPort( d2 );
+        return true;
+    }
+};
+
 class HelloProvider
     : public RTT::TaskContext
 {
@@ -77,6 +99,7 @@ int ORO_main(int, char**)
     MyTask t1("ComponentA");
     MyTask t2("ComponentB");
     MyTask t3("ComponentC");
+    MyDynamicTask t4("ComponentD");
 
     HelloProvider p;
     HelloRequester r;
@@ -86,6 +109,7 @@ int ORO_main(int, char**)
         dc.addPeer( &t1 );
         dc.addPeer( &t2 );
         dc.addPeer( &t3 );
+        dc.addPeer( &t4 );
         dc.addPeer( &p );
         dc.addPeer( &r );
         dc.kickStart("deployment.cpf");

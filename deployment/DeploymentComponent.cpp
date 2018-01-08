@@ -789,6 +789,63 @@ namespace OCL
         return false;
     }
 
+    bool DeploymentComponent::createConnectionMapFromPortsTag(RTT::Property<RTT::PropertyBag>& comp,
+                                                              RTT::TaskContext* c,
+                                                              const bool ignoreNonexistentPorts)
+    {
+        assert(0 != c);
+
+        bool valid = true;
+
+        // connect ports 'Ports' tag is optional.
+        RTT::Property<RTT::PropertyBag>* ports = comp.value().getPropertyType<PropertyBag>("Ports");
+        if ( ports != 0 ) {
+            for (RTT::PropertyBag::iterator pit = ports->value().begin(); pit != ports->value().end(); pit++) {
+                Property<string> portcon = *pit;
+                if ( !portcon.ready() ) {
+                    log(Error)<< "RTT::Property '"<< (*pit)->getName() <<"' is not of type 'string'." << endlog();
+                    valid = false;
+                    continue;
+                }
+                base::PortInterface* p = c->ports()->getPort( portcon.getName() );
+                if ( !p ) {
+                    if (ignoreNonexistentPorts)
+                    {
+                        log(Info)<< "Component '"<< c->getName() <<"' does not have a Port '"<< portcon.getName()<<"'. Will try to connect again later." << endlog();
+                        continue;   // ignore this issue
+                    } else {
+                        log(Error)<< "Component '"<< c->getName() <<"' does not have a Port '"<< portcon.getName()<<"'." << endlog();
+                        valid = false;
+                    }
+                }
+                // store the port
+                if (valid){
+                    string conn_name = portcon.value(); // reads field of property
+                    bool to_add = true;
+                    // go through the vector to avoid duplicate items.
+                    // NOTE the sizes conmap[conn_name].ports.size() and conmap[conn_name].owners.size() are supposed to be equal
+                    for(unsigned int a=0; a < conmap[conn_name].ports.size(); a++)
+                    {
+                        if(  conmap[conn_name].ports.at(a) == p && conmap[conn_name].owners.at(a) == c)
+                        {
+                            to_add = false;
+                            continue;
+                        }
+                    }
+
+                    if(to_add)
+                    {
+                        log(Debug)<<"storing Port: "<<c->getName()<<"."<< portcon.getName();
+                        log(Debug)<<" in " << conn_name <<endlog();
+                        conmap[conn_name].ports.push_back( p );
+                        conmap[conn_name].owners.push_back( c );
+                    }
+                }
+            }
+        }
+        return valid;
+    }
+
     bool DeploymentComponent::loadConfiguration(const std::string& configurationfile)
     {
         return this->loadComponents(configurationfile);
@@ -1072,45 +1129,7 @@ namespace OCL
                             comp.value().getProperty("PropFile")->setName("PropertyFile");
 
                         // connect ports 'Ports' tag is optional.
-                        RTT::Property<RTT::PropertyBag>* ports = comp.value().getPropertyType<PropertyBag>("Ports");
-                        if ( ports != 0 ) {
-                            for (RTT::PropertyBag::iterator pit = ports->value().begin(); pit != ports->value().end(); pit++) {
-                                Property<string> portcon = *pit;
-                                if ( !portcon.ready() ) {
-                                    log(Error)<< "RTT::Property '"<< (*pit)->getName() <<"' is not of type 'string'." << endlog();
-                                    valid = false;
-                                    continue;
-                                }
-                                base::PortInterface* p = c->ports()->getPort( portcon.getName() );
-                                if ( !p ) {
-                                    log(Error)<< "Component '"<< c->getName() <<"' does not have a Port '"<< portcon.getName()<<"'." << endlog();
-                                    valid = false;
-                                }
-                                // store the port
-                                if (valid){
-                                    string conn_name = portcon.value(); // reads field of property
-                                    bool to_add = true;
-                                    // go through the vector to avoid duplicate items.
-                                    // NOTE the sizes conmap[conn_name].ports.size() and conmap[conn_name].owners.size() are supposed to be equal
-                                    for(unsigned int a=0; a < conmap[conn_name].ports.size(); a++)
-                                        {
-                                            if(  conmap[conn_name].ports.at(a) == p && conmap[conn_name].owners.at(a) == c)
-                                                {
-                                                    to_add = false;
-                                                    continue;
-                                                }
-                                        }
-
-                                    if(to_add)
-                                        {
-                                            log(Debug)<<"storing Port: "<<c->getName()<<"."<< portcon.getName();
-                                            log(Debug)<<" in " << conn_name <<endlog();
-                                            conmap[conn_name].ports.push_back( p );
-                                            conmap[conn_name].owners.push_back( c );
-                                        }
-                                }
-                            }
-                        }
+                        valid &= createConnectionMapFromPortsTag(comp, c, true);
 
                         // Setup the connections from this
                         // component to the others.
@@ -1286,6 +1305,91 @@ namespace OCL
         return !failure && valid;
     }
 
+    bool DeploymentComponent::createDataPortConnections(const bool skipUnconnected)
+    {
+        bool valid = true;
+
+        for(ConMap::iterator it = conmap.begin(); it != conmap.end(); ++it) {
+            ConnectionData *connection =  &(it->second);
+            std::string connection_name = it->first;
+
+            // Set the connection name as default name_id if none was given explicitly
+            if (connection->policy.name_id.empty()) {
+                connection->policy.name_id = connection_name;
+            }
+
+            if ( connection->ports.size() == 1 ){
+                string owner = connection->owners[0]->getName();
+                string portname = connection->ports.front()->getName();
+                string porttype = dynamic_cast<InputPortInterface*>(connection->ports.front() ) ? "InputPort" : "OutputPort";
+
+                // a connection that currently has only one port may end up with
+                // two ports later on, so we skip this connection for now.
+                if (skipUnconnected)
+                {
+                    log(Info) << "Skipping connection with name "<<connection_name<<" with only one Port "<<portname<<" from "<< owner << endlog();
+                }
+                else if ( connection->ports.front()->createStream( connection->policy ) == false) {
+                    log(Warning) << "Creating stream with name "<<connection_name<<" with Port "<<portname<<" from "<< owner << " failed."<< endlog();
+                } else {
+                    log(Info) << "Component "<< owner << "'s " + porttype<< " " + portname << " will stream to "<< connection->policy.name_id << endlog();
+                }
+                continue;
+            }
+            // first find all write ports.
+            base::PortInterface* writer = 0;
+            ConnectionData::Ports::iterator p = connection->ports.begin();
+
+            // If one of the ports is connected, use that one as writer to connect to.
+            vector<OutputPortInterface*> writers;
+            while (p !=connection->ports.end() ) {
+                if ( OutputPortInterface* out = dynamic_cast<base::OutputPortInterface*>( *p ) ) {
+                    if ( writer ) {
+                        log(Info) << "Forming multi-output connections with additional OutputPort " << (*p)->getName() << "."<<endlog();
+                    } else
+                    writer = *p;
+                    writers.push_back( out );
+                    std::string owner = it->second.owners[p - it->second.ports.begin()]->getName();
+                    log(Info) << "Component "<< owner << "'s OutputPort "<< writer->getName()<< " will write topic "<<it->first<< endlog();
+                }
+                ++p;
+            }
+
+            // Inform the user of non-optimal connections:
+            if ( writer == 0 ) {
+                log(Error) << "No OutputPort listed that writes " << it->first << endlog();
+                valid = false;
+                break;
+            }
+
+            // connect all ports to writer
+            p = connection->ports.begin();
+            vector<OutputPortInterface*>::iterator w = writers.begin();
+
+            while (w != writers.end() ) {
+                while (p != connection->ports.end() ) {
+                    // connect all readers to the list of writers
+                    if ( dynamic_cast<base::InputPortInterface*>( *p ) )
+                    {
+                        string owner = connection->owners[p - connection->ports.begin()]->getName();
+                        // only try to connect p if it is not in the same connection of writer.
+                        // OK. p is definately no part of writer's connection. Try to connect and flag errors if it fails.
+                        if ( (*w)->connectTo( *p, connection->policy ) == false) {
+                            log(Error) << "Could not subscribe InputPort "<< owner<<"."<< (*p)->getName() << " to topic " << (*w)->getName() <<'/'<< connection_name <<endlog();
+                            valid = false;
+                        } else {
+                            log(Info) << "Subscribed InputPort "<< owner<<"."<< (*p)->getName() <<" to topic " << (*w)->getName() <<'/'<< connection_name <<endlog();
+                        }
+                    }
+                    ++p;
+                }
+                ++w;
+                p = connection->ports.begin();
+            }
+        }
+        return valid;
+    }
+
     bool DeploymentComponent::configureComponents()
     {
         RTT::Logger::In in("configureComponents");
@@ -1354,77 +1458,7 @@ namespace OCL
         }
 
         // Create data port connections:
-        for(ConMap::iterator it = conmap.begin(); it != conmap.end(); ++it) {
-            ConnectionData *connection =  &(it->second);
-            std::string connection_name = it->first;
-
-            // Set the connection name as default name_id if none was given explicitly
-            if (connection->policy.name_id.empty()) {
-                connection->policy.name_id = connection_name;
-            }
-
-            if ( connection->ports.size() == 1 ){
-                string owner = connection->owners[0]->getName();
-                string portname = connection->ports.front()->getName();
-                string porttype = dynamic_cast<InputPortInterface*>(connection->ports.front() ) ? "InputPort" : "OutputPort";
-                if ( connection->ports.front()->createStream( connection->policy ) == false) {
-                    log(Warning) << "Creating stream with name "<<connection_name<<" with Port "<<portname<<" from "<< owner << " failed."<< endlog();
-                } else {
-                    log(Info) << "Component "<< owner << "'s " + porttype<< " " + portname << " will stream to "<< connection->policy.name_id << endlog();
-                }
-                continue;
-            }
-            // first find all write ports.
-            base::PortInterface* writer = 0;
-            ConnectionData::Ports::iterator p = connection->ports.begin();
-
-            // If one of the ports is connected, use that one as writer to connect to.
-            vector<OutputPortInterface*> writers;
-            while (p !=connection->ports.end() ) {
-                if ( OutputPortInterface* out = dynamic_cast<base::OutputPortInterface*>( *p ) ) {
-                    if ( writer ) {
-                        log(Info) << "Forming multi-output connections with additional OutputPort " << (*p)->getName() << "."<<endlog();
-                    } else
-                        writer = *p;
-                    writers.push_back( out );
-                    std::string owner = it->second.owners[p - it->second.ports.begin()]->getName();
-                    log(Info) << "Component "<< owner << "'s OutputPort "<< writer->getName()<< " will write topic "<<it->first<< endlog();
-                }
-                ++p;
-            }
-
-            // Inform the user of non-optimal connections:
-            if ( writer == 0 ) {
-                log(Error) << "No OutputPort listed that writes " << it->first << endlog();
-                valid = false;
-                break;
-            }
-
-            // connect all ports to writer
-            p = connection->ports.begin();
-            vector<OutputPortInterface*>::iterator w = writers.begin();
-
-            while (w != writers.end() ) {
-                while (p != connection->ports.end() ) {
-                    // connect all readers to the list of writers
-                    if ( dynamic_cast<base::InputPortInterface*>( *p ) )
-                    {
-                        string owner = connection->owners[p - connection->ports.begin()]->getName();
-                        // only try to connect p if it is not in the same connection of writer.
-                        // OK. p is definately no part of writer's connection. Try to connect and flag errors if it fails.
-                        if ( (*w)->connectTo( *p, connection->policy ) == false) {
-                            log(Error) << "Could not subscribe InputPort "<< owner<<"."<< (*p)->getName() << " to topic " << (*w)->getName() <<'/'<< connection_name <<endlog();
-                            valid = false;
-                        } else {
-                            log(Info) << "Subscribed InputPort "<< owner<<"."<< (*p)->getName() <<" to topic " << (*w)->getName() <<'/'<< connection_name <<endlog();
-                        }
-                    }
-                    ++p;
-                }
-                ++w;
-                p = connection->ports.begin();
-            }
-        }
+        valid &= createDataPortConnections(true);
 
         // Autoconnect ports. The port name is the topic name.
         for (RTT::PropertyBag::iterator it= root.begin(); it!=root.end();it++) {
@@ -1564,7 +1598,14 @@ namespace OCL
                     else
                         log(Warning) << "Apparently component "<< peer->getName()<< " don't need to be configured (already Running)." <<endlog();
                 }
-        }
+
+            // scan for connection changes due to ports created in configure()
+            valid &= createConnectionMapFromPortsTag(comp, peer, false);
+
+        }   // for root
+
+        // Create data port connections for any newly created connections/ports.
+        valid &= createDataPortConnections(false);
 
         // Finally, report success/failure (but ignore components that are actually running, as
         // they will have been configured/started previously)
@@ -1989,7 +2030,7 @@ namespace OCL
         }
         return false;
     }
-	
+
     bool DeploymentComponent::setActivityOnCPU(const std::string& comp_name,
                                           double period, int priority,
 					       int scheduler, unsigned int cpu_nr)
@@ -2437,7 +2478,7 @@ namespace OCL
                     log(Debug) << "Waiting for deployment shutdown to complete ..." << endlog();
                     int waited = 0;
                     while ( ( (has_operation && RTT::SendNotReady == handle.collectIfDone() ) ||
-                              (has_program && peer->getProvider<Scripting>("scripting")->isProgramRunning(NAME)) ) 
+                              (has_program && peer->getProvider<Scripting>("scripting")->isProgramRunning(NAME)) )
                             && (waited < totalWait) )
                     {
                         (void)rtos_nanosleep(&ts, NULL);

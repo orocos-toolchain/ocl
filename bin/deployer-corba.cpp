@@ -24,7 +24,6 @@
  *   Suite 330, Boston, MA  02111-1307  USA                                *
  ***************************************************************************/
 
-
 #include <rtt/rtt-config.h>
 #ifdef OS_RT_MALLOC
 // need access to all TLSF functions embedded in RTT
@@ -33,11 +32,13 @@
 #endif
 #include <rtt/os/main.h>
 #include <rtt/RTT.hpp>
+#include <rtt/Logger.hpp>
 
 #include <taskbrowser/TaskBrowser.hpp>
 #include <deployment/CorbaDeploymentComponent.hpp>
 #include <rtt/transports/corba/TaskContextServer.hpp>
 #include <iostream>
+#include <string>
 #include <unistd.h>
 #include <stdio.h>
 #include "deployer-funcs.hpp"
@@ -52,7 +53,6 @@
 #include "logging/Category.hpp"
 #endif
 
-using namespace std;
 using namespace RTT;
 using namespace RTT::corba;
 namespace po = boost::program_options;
@@ -60,20 +60,20 @@ namespace po = boost::program_options;
 int main(int argc, char** argv)
 {
 	std::string                 siteFile;      // "" means use default in DeploymentComponent.cpp
-    std::vector<std::string>    scriptFiles;
+	std::vector<std::string>    scriptFiles;
 	std::string                 name("Deployer");
     bool                        requireNameService = false;
     bool                        deploymentOnlyChecked = false;
 	int							minNumberCPU = 0;
-	po::variables_map           vm;
-	po::options_description     taoOptions("Additional options can also be passed to TAO");
+    po::variables_map           vm;
+	po::options_description     taoOptions("Additional options after a '--' are passed through to TAO");
 	// we don't actually list any options for TAO ...
 
 	po::options_description     otherOptions;
 
 #ifdef  ORO_BUILD_RTALLOC
-    OCL::memorySize         rtallocMemorySize   = ORO_DEFAULT_RTALLOC_SIZE;
-	po::options_description rtallocOptions      = OCL::deployerRtallocOptions(rtallocMemorySize);
+    OCL::memorySize             rtallocMemorySize   = ORO_DEFAULT_RTALLOC_SIZE;
+	po::options_description     rtallocOptions      = OCL::deployerRtallocOptions(rtallocMemorySize);
 	otherOptions.add(rtallocOptions);
     OCL::TLSFMemoryPool     memoryPool;
 #endif
@@ -88,31 +88,30 @@ int main(int argc, char** argv)
     // as last set of options
     otherOptions.add(taoOptions);
 
-    // were we given TAO options? ie find "--"
-    int     taoIndex    = 0;
+    // were we given non-deployer options? ie find "--"
+    int     optIndex    = 0;
     bool    found       = false;
 
-    while(!found && taoIndex<argc)
+    while(!found && optIndex<argc)
     {
-        found = (0 == strcmp("--", argv[taoIndex]));
-        if(!found) taoIndex++;
+        found = (0 == strcmp("--", argv[optIndex]));
+        if(!found) optIndex++;
     }
 
     if (found) {
-        argv[taoIndex] = argv[0];
+        argv[optIndex] = argv[0];
     }
 
-    // if TAO options not found then process all command line options,
+    // if extra options not found then process all command line options,
     // otherwise process all options up to but not including "--"
-	int rc = OCL::deployerParseCmdLine(!found ? argc : taoIndex, argv,
-                                       siteFile, scriptFiles, name, requireNameService,deploymentOnlyChecked,
+    int rc = OCL::deployerParseCmdLine(!found ? argc : optIndex, argv,
+                                       siteFile, scriptFiles, name, requireNameService, deploymentOnlyChecked,
 									   minNumberCPU,
                                        vm, &otherOptions);
 	if (0 != rc)
 	{
 		return rc;
 	}
-
 
 	// check system capabilities
 	rc = OCL::enforceMinNumberCPU(minNumberCPU);
@@ -141,8 +140,12 @@ int main(int argc, char** argv)
         OCL::logging::Category::createOCLCategory);
 #endif
 
+    /******************** WARNING ***********************
+     *   NO log(...) statements before __os_init() !!!!! 
+     ***************************************************/
+
     // start Orocos _AFTER_ setting up log4cpp
-	if (0 == __os_init(argc - taoIndex, &argv[taoIndex]))
+	if (0 == __os_init(argc - optIndex, &argv[optIndex]))
     {
 #ifdef  ORO_BUILD_LOGGING
         log(Info) << "OCL factory set for real-time logging" << endlog();
@@ -152,79 +155,83 @@ int main(int argc, char** argv)
             // if TAO options not found then have TAO process just the program name,
             // otherwise TAO processes the program name plus all options (potentially
             // none) after "--"
-            TaskContextServer::InitOrb( argc - taoIndex, &argv[taoIndex] );
+            TaskContextServer::InitOrb( argc - optIndex, &argv[optIndex] );
 
-            OCL::CorbaDeploymentComponent dc( name, siteFile );
+            // scope to force dc destruction prior to memory free and Orb shutdown
+            {
+                OCL::CorbaDeploymentComponent dc( name, siteFile );
 
-            if (0 == TaskContextServer::Create( &dc, true, requireNameService ))
+                if (0 == TaskContextServer::Create( &dc, true, requireNameService ))
                 {
                     return -1;
                 }
 
-            // The orb thread accepts incomming CORBA calls.
-            TaskContextServer::ThreadOrb();
+                // The orb thread accepts incoming CORBA calls.
+                TaskContextServer::ThreadOrb();
 
-            /* Only start the scripts after the Orb was created. Processing of
-               scripts stops after the first failed script, and -1 is returned.
-               Whether a script failed or all scripts succeeded, in non-daemon
-               and non-checking mode the TaskBrowser will be run to allow
-               inspection if the input is a tty.
-             */
-            bool result = true;
-            for (std::vector<std::string>::const_iterator iter=scriptFiles.begin();
-                 iter!=scriptFiles.end() && result;
-                 ++iter)
-            {
-                if ( !(*iter).empty() )
+                /* Only start the scripts after the Orb was created. Processing of
+                   scripts stops after the first failed script, and -1 is returned.
+                   Whether a script failed or all scripts succeeded, in non-daemon
+                   and non-checking mode the TaskBrowser will be run to allow
+                   inspection if the input is a tty.
+                 */
+                bool result = true;
+                for (std::vector<std::string>::const_iterator iter=scriptFiles.begin();
+                     iter!=scriptFiles.end() && result;
+                     ++iter)
                 {
-                    if ( (*iter).rfind(".xml",string::npos) == (*iter).length() - 4 || (*iter).rfind(".cpf",string::npos) == (*iter).length() - 4) {
-                        if ( deploymentOnlyChecked ) {
-                            bool loadOk         = true;
-                            bool configureOk    = true;
-                            bool startOk        = true;
-                            if (!dc.kickStart2( (*iter), false, loadOk, configureOk, startOk )) {
-                                result = false;
-                                if (!loadOk) {
-                                    log(Error) << "Failed to load file: '"<< (*iter) <<"'." << endlog();
-                                } else if (!configureOk) {
-                                    log(Error) << "Failed to configure file: '"<< (*iter) <<"'." << endlog();
+                    if ( !(*iter).empty() )
+                    {
+                        if ( (*iter).rfind(".xml",string::npos) == (*iter).length() - 4 || (*iter).rfind(".cpf",string::npos) == (*iter).length() - 4) {
+                            if ( deploymentOnlyChecked ) {
+                                bool loadOk         = true;
+                                bool configureOk    = true;
+                                bool startOk        = true;
+                                if (!dc.kickStart2( (*iter), false, loadOk, configureOk, startOk )) {
+                                    result = false;
+                                    if (!loadOk) {
+                                        log(Error) << "Failed to load file: '"<< (*iter) <<"'." << endlog();
+                                    } else if (!configureOk) {
+                                        log(Error) << "Failed to configure file: '"<< (*iter) <<"'." << endlog();
+                                    }
+                                    (void)startOk;      // unused - avoid compiler warning
                                 }
-                                (void)startOk;      // unused - avoid compiler warning
+                                // else leave result=true and continue
+                            } else {
+                                result = dc.kickStart( (*iter) ) && result;
                             }
-                            // else leave result=true and continue
-                        } else {
-                            result = dc.kickStart( (*iter) );
+                            continue;
                         }
-                        continue;
+
+                        if ( (*iter).rfind(".ops", std::string::npos) == (*iter).length() - 4 ||
+                             (*iter).rfind(".osd", std::string::npos) == (*iter).length() - 4 ||
+                             (*iter).rfind(".lua", std::string::npos) == (*iter).length() - 4) {
+                            result = dc.runScript( (*iter) ) && result;
+                            continue;
+                        }
+
+                        log(Error) << "Unknown extension of file: '"<< (*iter) <<"'. Must be xml, cpf for XML files or, ops, osd or lua for script files."<<endlog();
+                    }
+                }
+                rc = (result ? 0 : -1);
+
+                // We don't start an interactive console when we're a daemon
+                if ( !deploymentOnlyChecked && !vm.count("daemon") ) {
+                    if (isatty(fileno(stdin))) {
+                        OCL::TaskBrowser tb( &dc );
+                        tb.loop();
+                    } else {
+                        dc.waitForInterrupt();
                     }
 
-                    if ( (*iter).rfind(".ops",string::npos) == (*iter).length() - 4 ||
-                         (*iter).rfind(".osd",string::npos) == (*iter).length() - 4 ||
-                         (*iter).rfind(".lua",string::npos) == (*iter).length() - 4) {
-                        result = dc.runScript( (*iter) );
-                        continue;
-                    }
-                    log(Error) << "Unknown extension of file: '"<< (*iter) <<"'. Must be xml, cpf for XML files or, ops, osd or lua for script files."<<endlog();
+                    // do it while CORBA is still up in case need to do anything remote.
+                    dc.shutdownDeployment();
                 }
-            }
-            rc = (result ? 0 : -1);
-
-            if ( !deploymentOnlyChecked && !vm.count("daemon") ) {
-                if (isatty(fileno(stdin))) {
-                    OCL::TaskBrowser tb( &dc );
-                    tb.loop();
-                } else {
-                    dc.waitForInterrupt();
-                }
-
-                // do it while CORBA is still up in case need to do anything remote.
-                dc.shutdownDeployment();
             }
 
             TaskContextServer::ShutdownOrb();
 
             TaskContextServer::DestroyOrb();
-
 
         } catch( CORBA::Exception &e ) {
             log(Error) << argv[0] <<" ORO_main : CORBA exception raised!" << Logger::nl;
@@ -234,14 +241,19 @@ int main(int argc, char** argv)
             log(Error) << "Uncaught exception." << endlog();
         }
 
-		// shutdown Orocos
-		__os_exit();
-	}
-	else
-	{
-		std::cerr << "Unable to start Orocos" << std::endl;
+        // shutdown Orocos
+        __os_exit();
+    }
+    else
+    {
+        std::cerr << "Unable to start Orocos" << std::endl;
         rc = -1;
-	}
+    }
+
+#ifdef  ORO_BUILD_LOGGING
+    log4cpp::HierarchyMaintainer::getDefaultMaintainer().shutdown();
+    log4cpp::HierarchyMaintainer::getDefaultMaintainer().deleteAllCategories();
+#endif
 
 #ifdef  ORO_BUILD_RTALLOC
     memoryPool.shutdown();

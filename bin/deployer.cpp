@@ -58,12 +58,11 @@
 
 using namespace RTT;
 namespace po = boost::program_options;
-using namespace std;
 
 int main(int argc, char** argv)
 {
 	std::string                 siteFile;      // "" means use default in DeploymentComponent.cpp
-    std::vector<std::string>    scriptFiles;
+	std::vector<std::string>    scriptFiles;
 	std::string                 name("Deployer");
     bool                        requireNameService = false;         // not used
     bool                        deploymentOnlyChecked = false;
@@ -102,11 +101,10 @@ int main(int argc, char** argv)
     // if extra options not found then process all command line options,
     // otherwise process all options up to but not including "--"
     int rc = OCL::deployerParseCmdLine(!found ? argc : optIndex, argv,
-                                       siteFile, scriptFiles, name, requireNameService,deploymentOnlyChecked,
+                                       siteFile, scriptFiles, name, requireNameService, deploymentOnlyChecked,
 									   minNumberCPU,
                                        vm, &otherOptions);
-
-    if (0 != rc)
+	if (0 != rc)
 	{
 		return rc;
 	}
@@ -133,6 +131,7 @@ int main(int argc, char** argv)
 #endif  // ORO_BUILD_RTALLOC
 
 #ifdef  ORO_BUILD_LOGGING
+    // use our log4cpp-derived categories to do real-time logging
     log4cpp::HierarchyMaintainer::set_category_factory(
         OCL::logging::Category::createOCLCategory);
 #endif
@@ -148,6 +147,7 @@ int main(int argc, char** argv)
 #ifdef  ORO_BUILD_LOGGING
         log(Info) << "OCL factory set for real-time logging" << endlog();
 #endif
+        rc = -1;     // prove otherwise
         // scope to force dc destruction prior to memory free
         {
             OCL::DeploymentComponent dc( name, siteFile );
@@ -181,17 +181,18 @@ int main(int argc, char** argv)
                             }
                             // else leave result=true and continue
                         } else {
-                            result = dc.kickStart( (*iter) );
+                            result = dc.kickStart( (*iter) ) && result;
                         }
                         continue;
                     }
 
-                    if ( (*iter).rfind(".ops",std::string::npos) == (*iter).length() - 4 ||
-                         (*iter).rfind(".osd",std::string::npos) == (*iter).length() - 4 ||
-                         (*iter).rfind(".lua",std::string::npos) == (*iter).length() - 4) {
+                    if ( (*iter).rfind(".ops", std::string::npos) == (*iter).length() - 4 ||
+                         (*iter).rfind(".osd", std::string::npos) == (*iter).length() - 4 ||
+                         (*iter).rfind(".lua", std::string::npos) == (*iter).length() - 4) {
                         result = dc.runScript( (*iter) ) && result;
                         continue;
                     }
+
                     log(Error) << "Unknown extension of file: '"<< (*iter) <<"'. Must be xml, cpf for XML files or, ops, osd or lua for script files."<<endlog();
                 }
             }
@@ -212,13 +213,14 @@ int main(int argc, char** argv)
 #endif
         }
 
+        // shutdown Orocos
         __os_exit();
-	}
-	else
-	{
-		std::cerr << "Unable to start Orocos" << std::endl;
+    }
+    else
+    {
+        std::cerr << "Unable to start Orocos" << std::endl;
         rc = -1;
-	}
+    }
 
 #ifdef  ORO_BUILD_LOGGING
     log4cpp::HierarchyMaintainer::getDefaultMaintainer().shutdown();

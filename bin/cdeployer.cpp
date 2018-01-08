@@ -22,9 +22,7 @@
  *   License along with this program; if not, write to the Free Software   *
  *   Foundation, Inc., 59 Temple Place,                                    *
  *   Suite 330, Boston, MA  02111-1307  USA                                *
- *                                                                         *
  ***************************************************************************/
-
 
 #include <rtt/rtt-config.h>
 #ifdef OS_RT_MALLOC
@@ -32,27 +30,26 @@
 #define ORO_MEMORY_POOL
 #include <rtt/os/tlsf/tlsf.h>
 #endif
-
 #include <rtt/os/main.h>
 #include <rtt/RTT.hpp>
+#include <rtt/Logger.hpp>
 
 #include <deployment/CorbaDeploymentComponent.hpp>
 #include <rtt/transports/corba/TaskContextServer.hpp>
 #include <iostream>
+#include <string>
 #include "deployer-funcs.hpp"
 
 #ifdef  ORO_BUILD_LOGGING
 #   ifndef OS_RT_MALLOC
-#   warning Logging needs rtalloc!
+#   warning "Logging needs rtalloc!"
 #   endif
 #include <log4cpp/HierarchyMaintainer.hh>
 #include "logging/Category.hpp"
 #endif
 
-using namespace std;
-using namespace RTT::corba;
 using namespace RTT;
-using namespace OCL;
+using namespace RTT::corba;
 namespace po = boost::program_options;
 
 int main(int argc, char** argv)
@@ -86,23 +83,23 @@ int main(int argc, char** argv)
     // as last set of options
     otherOptions.add(taoOptions);
 
-    // were we given TAO options? ie find "--"
-    int     taoIndex    = 0;
+    // were we given non-deployer options? ie find "--"
+    int     optIndex    = 0;
     bool    found       = false;
 
-    while(!found && taoIndex<argc)
+    while(!found && optIndex<argc)
     {
-        found = (0 == strcmp("--", argv[taoIndex]));
-        if(!found) taoIndex++;
+        found = (0 == strcmp("--", argv[optIndex]));
+        if(!found) optIndex++;
     }
 
     if (found) {
-        argv[taoIndex] = argv[0];
+        argv[optIndex] = argv[0];
     }
 
-    // if TAO options not found then process all command line options,
+    // if extra options not found then process all command line options,
     // otherwise process all options up to but not including "--"
-	int rc = OCL::deployerParseCmdLine(!found ? argc : taoIndex, argv,
+    int rc = OCL::deployerParseCmdLine(!found ? argc : optIndex, argv,
                                        siteFile, scriptFiles, name, requireNameService, deploymentOnlyChecked,
 									   minNumberCPU,
                                        vm, &otherOptions);
@@ -133,6 +130,7 @@ int main(int argc, char** argv)
 #endif  // ORO_BUILD_RTALLOC
 
 #ifdef  ORO_BUILD_LOGGING
+    // use our log4cpp-derived categories to do real-time logging
     log4cpp::HierarchyMaintainer::set_category_factory(
         OCL::logging::Category::createOCLCategory);
 #endif
@@ -142,86 +140,99 @@ int main(int argc, char** argv)
      ***************************************************/
 
     // start Orocos _AFTER_ setting up log4cpp
-	if (0 == __os_init(argc - taoIndex, &argv[taoIndex]))
+	if (0 == __os_init(argc - optIndex, &argv[optIndex]))
     {
 #ifdef  ORO_BUILD_LOGGING
         log(Info) << "OCL factory set for real-time logging" << endlog();
 #endif
-        // scope to force dc destruction prior to memory free
-        {
-            OCL::CorbaDeploymentComponent dc( name, siteFile );
+        rc = -1;     // prove otherwise
+        try {
             // if TAO options not found then have TAO process just the program name,
             // otherwise TAO processes the program name plus all options (potentially
             // none) after "--"
-            TaskContextServer::InitOrb( argc - taoIndex, &argv[taoIndex] );
+            TaskContextServer::InitOrb( argc - optIndex, &argv[optIndex] );
 
-            if (0 == TaskContextServer::Create( &dc, true, requireNameService ))
+            // scope to force dc destruction prior to memory free and Orb shutdown
             {
-                return -1;
-            }
+                OCL::CorbaDeploymentComponent dc( name, siteFile );
 
-            /* Only start the scripts after the Orb was created. Processing of
-               scripts stops after the first failed script, and -1 is returned.
-               Whether a script failed or all scripts succeeded, the CORBA
-               server will be run.
-             */
-            bool result = true;
-            for (std::vector<std::string>::const_iterator iter=scriptFiles.begin();
-                 iter!=scriptFiles.end() && result;
-                 ++iter)
-            {
-                if ( !(*iter).empty() )
+                if (0 == TaskContextServer::Create( &dc, true, requireNameService ))
                 {
-                    if ( (*iter).rfind(".xml",string::npos) == (*iter).length() - 4 || (*iter).rfind(".cpf",string::npos) == (*iter).length() - 4) {
-                        if ( deploymentOnlyChecked ) {
-                            bool loadOk         = true;
-                            bool configureOk    = true;
-                            bool startOk        = true;
-                            if (!dc.kickStart2( (*iter), false, loadOk, configureOk, startOk )) {
-                                result = false;
-                                if (!loadOk) {
-                                    log(Error) << "Failed to load file: '"<< (*iter) <<"'." << endlog();
-                                } else if (!configureOk) {
-                                    log(Error) << "Failed to configure file: '"<< (*iter) <<"'." << endlog();
-                                }
-                                (void)startOk;      // unused - avoid compiler warning
-                            }
-                            // else leave result=true and continue
-                        } else {
-                            result = dc.kickStart( (*iter) );
-                        }
-                        continue;
-                    }
-
-                    if ( (*iter).rfind(".ops",string::npos) == (*iter).length() - 4 ||
-                         (*iter).rfind(".osd",string::npos) == (*iter).length() - 4 ||
-                         (*iter).rfind(".lua",string::npos) == (*iter).length() - 4) {
-                        result = dc.runScript( (*iter) );
-                        continue;
-                    }
-                    log(Error) << "Unknown extension of file: '"<< (*iter) <<"'. Must be xml, cpf for XML files or, ops, osd or lua for script files."<<endlog();
+                    return -1;
                 }
-            }
-            rc = (result ? 0 : -1);
 
-            // Export the DeploymentComponent as CORBA server.
-            if ( !deploymentOnlyChecked ) {
-            	TaskContextServer::RunOrb();
+                /* Only start the scripts after the Orb was created. Processing of
+                   scripts stops after the first failed script, and -1 is returned.
+                   Whether a script failed or all scripts succeeded, the CORBA
+                   server will be run.
+                 */
+                bool result = true;
+                for (std::vector<std::string>::const_iterator iter=scriptFiles.begin();
+                     iter!=scriptFiles.end() && result;
+                     ++iter)
+                {
+                    if ( !(*iter).empty() )
+                    {
+                        if ( (*iter).rfind(".xml",string::npos) == (*iter).length() - 4 || (*iter).rfind(".cpf",string::npos) == (*iter).length() - 4) {
+                            if ( deploymentOnlyChecked ) {
+                                bool loadOk         = true;
+                                bool configureOk    = true;
+                                bool startOk        = true;
+                                if (!dc.kickStart2( (*iter), false, loadOk, configureOk, startOk )) {
+                                    result = false;
+                                    if (!loadOk) {
+                                        log(Error) << "Failed to load file: '"<< (*iter) <<"'." << endlog();
+                                    } else if (!configureOk) {
+                                        log(Error) << "Failed to configure file: '"<< (*iter) <<"'." << endlog();
+                                    }
+                                    (void)startOk;      // unused - avoid compiler warning
+                                }
+                                // else leave result=true and continue
+                            } else {
+                                result = dc.kickStart( (*iter) ) && result;
+                            }
+                            continue;
+                        }
+
+                        if ( (*iter).rfind(".ops", std::string::npos) == (*iter).length() - 4 ||
+                             (*iter).rfind(".osd", std::string::npos) == (*iter).length() - 4 ||
+                             (*iter).rfind(".lua", std::string::npos) == (*iter).length() - 4) {
+                            result = dc.runScript( (*iter) ) && result;
+                            continue;
+                        }
+
+                        log(Error) << "Unknown extension of file: '"<< (*iter) <<"'. Must be xml, cpf for XML files or, ops, osd or lua for script files."<<endlog();
+                    }
+                }
+                rc = (result ? 0 : -1);
+
+                // Export the DeploymentComponent as CORBA server.
+                if ( !deploymentOnlyChecked ) {
+                    TaskContextServer::RunOrb();
+                }
             }
 
             TaskContextServer::ShutdownOrb();
 
             TaskContextServer::DestroyOrb();
 
+        } catch( CORBA::Exception &e ) {
+            log(Error) << argv[0] <<" ORO_main : CORBA exception raised!" << Logger::nl;
+            log() << CORBA_EXCEPTION_INFO(e) << endlog();
+        } catch (...) {
+            // catch this so that we can destroy the TLSF memory correctly
+            log(Error) << "Uncaught exception." << endlog();
         }
 
+        // shutdown Orocos
         __os_exit();
-	}
-	else
-	{
-		std::cerr << "Unable to start Orocos" << std::endl;
-        return -1;
-	}
+    }
+    else
+    {
+        std::cerr << "Unable to start Orocos" << std::endl;
+        rc = -1;
+    }
+
 #ifdef  ORO_BUILD_LOGGING
     log4cpp::HierarchyMaintainer::getDefaultMaintainer().shutdown();
     log4cpp::HierarchyMaintainer::getDefaultMaintainer().deleteAllCategories();

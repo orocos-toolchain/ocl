@@ -275,6 +275,43 @@ namespace OCL
          */
         bool connectPeers(const std::string& one, const std::string& other);
 
+        /**
+         * Make connection map from the <Ports> tag of \a comp.
+         *
+         * @param comp Property bag describing component to scan the <Ports> tag
+         * of.
+         * @param c The TaskContext instance corresponding to \a comp
+         * @param ignoreNonexistentPorts Whether to ignore ports listed in the
+         * <Ports> tag that do not exist, otherwise to throw an error if such
+         * ports do not exist.
+         *
+         * @return true if all elements in the <Ports> tag are strings (and so
+         * contain port names) and either ignoreNonexistentPorts or
+         * !ignoreNonexistentPorts and all ports named exist in \a c.
+         *
+         * @pre 0 != c
+         */
+        bool createConnectionMapFromPortsTag(RTT::Property<RTT::PropertyBag>& comp,
+                                             RTT::TaskContext* c,
+                                             const bool ignoreNonexistentPorts);
+
+        /**
+         * Create data connections for all known connections in the conmap.
+         * This can be run multiple times, and it will only try to create any
+         * data connections that don't already exist.
+         *
+         * @param skipUnconnected Whether to skip connections that have only
+         * one port. This may occur when the port for one side of a connection
+         * does not yet exist, but will be created later in the deployment
+         * process (e.g. by a component that dynamically creates ports in its
+         * configureHook() ). If skipUnconnected==false then a connection with
+         * only one port will attempt to create a stream for the connection.
+         *
+         * @return true if all connections have an output port and all port
+         * connections were made succesfully.
+         */
+        bool createDataPortConnections(const bool skipUnconnected);
+
         using TaskContext::connectPorts;
         /**
          * Establish a data flow connection between two tasks. The direction

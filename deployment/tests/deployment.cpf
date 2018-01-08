@@ -75,4 +75,20 @@
     <simple name="AutoSave" type="boolean"><value>1</value></simple>
   </struct>
 
+  <!-- Component 4 , already loaded in the application ! -->
+  <struct name="ComponentD" type="PropertyBag">
+    <struct name="Activity" type="Activity">
+      <simple name="Period" type="double"><value>0.2</value></simple>
+      <simple name="Priority" type="short"><value>1</value></simple>
+      <simple name="Scheduler" type="string"><value>ORO_SCHED_RT</value></simple>
+      <simple name="CpuAffinity" type="ushort"><value>3</value></simple>
+    </struct>
+    <simple name="AutoConf" type="boolean"><value>1</value></simple>
+    <simple name="AutoStart" type="boolean"><value>1</value></simple>
+    <struct name="Ports"  type="PropertyBag">
+        <simple name="d2" type="string"><value>AConnection</value></simple>
+        <simple name="d1" type="string"><value>BConnection</value></simple>
+    </struct>
+  </struct>
+
 </properties>

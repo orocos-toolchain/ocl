@@ -78,7 +78,7 @@ namespace OCL
      @endcode
      *
      */
-    class ReportingComponent
+    class OCL_API ReportingComponent
         : public RTT::TaskContext
     {
     protected:
