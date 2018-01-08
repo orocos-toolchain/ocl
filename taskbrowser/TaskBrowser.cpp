@@ -117,6 +117,12 @@
 extern "C"
 int xeno_sigwinch_handler(int sig, siginfo_t *si, void *ctxt);
 #endif
+
+#if defined(USE_SIGNALS) && defined(OROCOS_TARGET_XENOMAI) && CONFIG_XENO_VERSION_MAJOR == 3
+extern "C"
+int cobalt_sigshadow_handler(int sig, siginfo_t *si, void *ctxt);
+#endif
+
 namespace OCL
 {
     using namespace boost;
@@ -169,6 +175,9 @@ namespace OCL
         rl_received_signal = sig;
 #if defined(OROCOS_TARGET_XENOMAI) && CONFIG_XENO_VERSION_MAJOR == 2 && CONFIG_XENO_VERSION_MINOR >= 5
         if (xeno_sigwinch_handler(sig, si, ctxt) == 0)
+#endif
+#if defined(OROCOS_TARGET_XENOMAI) && CONFIG_XENO_VERSION_MAJOR == 3
+        if (cobalt_sigshadow_handler(sig, si, ctxt) == 0)
 #endif
             rl_resize_terminal();
     }
