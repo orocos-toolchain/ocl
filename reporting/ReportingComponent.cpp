@@ -619,11 +619,11 @@ namespace OCL
         DataSource<bool>::shared_ptr checker;
         for(Reports::iterator it = root.begin(); it != root.end(); ++it ) {
             Property<PropertyBag>* subbag = new Property<PropertyBag>( it->get<T_QualName>(), "");
-			bool decompose_success = false;
-			if ( decompose.get() ) {
-				if ( complexdecompose.get() ) decompose_success = RTT::types::typeDecomposition( it->get<T_PortDS>(), subbag->value(), true );
-				else decompose_success = memberDecomposition( it->get<T_PortDS>(), subbag->value(), checker );
-			}
+            bool decompose_success = false;
+            if ( decompose.get() ) {
+                if ( complexdecompose.get() ) decompose_success = RTT::types::typeDecomposition( it->get<T_PortDS>(), subbag->value(), true );
+                else decompose_success = memberDecomposition( it->get<T_PortDS>(), subbag->value(), checker );
+            }
             if ( decompose_success ) {
                 report.add( subbag );
                 it->get<T_Property>() = subbag;
