@@ -1973,8 +1973,8 @@ static const struct luaL_Reg Service_f [] = {
 	{ "getProviderNames", Service_getProviderNames },
 	{ "getOperationNames", Service_getOperationNames },
 	{ "hasOperation", Service_hasOperation },
-	{ "getPortNames", Service_getPortNames },
 	{ "getOperationInfo", Service_getOperationInfo },
+	{ "getPortNames", Service_getPortNames },
 	{ "provides", Service_provides },
 	{ "getOperation", Service_getOperation },
 	{ "getPort", Service_getPort },
@@ -2509,7 +2509,7 @@ static int TaskContext_getOps(lua_State *L)
 }
 
 /* returns restype, arity, table-of-arg-descr */
-static int TaskContext_getOpInfo(lua_State *L)
+static int TaskContext_getOperationInfo(lua_State *L)
 {
 	int i=1;
 	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
@@ -2748,7 +2748,8 @@ static const struct luaL_Reg TaskContext_f [] = {
 	{ "getAttributeNames", TaskContext_getAttributeNames },
 	{ "removeAttribute", TaskContext_removeAttribute },
 	{ "getOps", TaskContext_getOps },
-	{ "getOpInfo", TaskContext_getOpInfo },
+	{ "getOpInfo", TaskContext_getOperationInfo },
+	{ "getOperationInfo", TaskContext_getOperationInfo },
 	{ "hasOperation", TaskContext_hasOperation },
 	{ "provides", TaskContext_provides },
 	{ "getProviderNames", TaskContext_getProviderNames },
@@ -2789,7 +2790,8 @@ static const struct luaL_Reg TaskContext_m [] = {
 	{ "removeAttribute", TaskContext_removeAttribute },
 	{ "removeProperty", TaskContext_removeProperty },
 	{ "getOps", TaskContext_getOps },
-	{ "getOpInfo", TaskContext_getOpInfo },
+	{ "getOpInfo", TaskContext_getOperationInfo },
+	{ "getOperationInfo", TaskContext_getOperationInfo },
 	{ "hasOperation", TaskContext_hasOperation },
 	{ "provides", TaskContext_provides },
 	{ "getProviderNames", TaskContext_getProviderNames },
