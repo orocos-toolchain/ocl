@@ -5,6 +5,7 @@
 #include <boost/lexical_cast.hpp>
 
 #include <netcdf.h>
+#include <cmath>
 
 #define DIMENSION_VAR 1
 #define DIMENSION_ARRAY 2
@@ -25,10 +26,14 @@ namespace RTT
       int ncid;
       int dimsid;
       int ncopen;
+      float fNaN;
+      double dNaN;
 
       public:
 
-      NetcdfHeaderMarshaller(int ncid, int dimsid) : ncid( ncid ), dimsid(dimsid), ncopen(0) {}
+      NetcdfHeaderMarshaller(int ncid, int dimsid) :
+                    ncid( ncid ), dimsid(dimsid), ncopen(0),
+                    fNaN(nanf("")), dNaN(nan("")) {}
 
       virtual ~NetcdfHeaderMarshaller() {}
 
@@ -150,6 +155,7 @@ namespace RTT
           log(Error) << "Could not create variable " << sname << ", error " << retval <<endlog();
         else
           log(Info) << "Variable "<< sname << " successfully created" <<endlog();
+
       }
 
       /**
@@ -210,6 +216,8 @@ namespace RTT
           log(Error) << "Could not create variable " << sname << ", error " << retval <<endlog();
         else
           log(Info) << "Variable "<< sname << " successfully created" <<endlog();
+
+        nc_def_var_fill(ncid, varid, NC_FILL, &fNaN);
       }
 
       /**
@@ -231,6 +239,8 @@ namespace RTT
           log(Error) << "Could not create variable " << sname << ", error " << retval <<endlog();
         else
           log(Info) << "Variable "<< sname << " successfully created" <<endlog();
+
+        nc_def_var_fill(ncid, varid, NC_FILL, &dNaN);
       }
 
       /**
