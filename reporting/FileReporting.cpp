@@ -1,60 +1,34 @@
 
 #include "FileReporting.hpp"
-#include <rtt/RTT.hpp>
 #include <rtt/Logger.hpp>
-#include "TableMarshaller.hpp"
+#include <rtt/RTT.hpp>
 #include "NiceHeaderMarshaller.hpp"
-
+#include "TableMarshaller.hpp"
 
 #include "ocl/Component.hpp"
 ORO_LIST_COMPONENT_TYPE(OCL::FileReporting)
 
-namespace OCL
-{
-    using namespace RTT;
-    using namespace std;
+namespace OCL {
+using namespace RTT;
+using namespace std;
 
-    FileReporting::FileReporting(const std::string& fr_name)
-        : ReportingComponent( fr_name ),
-          repfile("ReportFile","Location on disc to store the reports.", "reports.dat")
-    {
-        this->properties()->addProperty( repfile );
-    }
+FileReporting::FileReporting(const std::string& fr_name)
+    : ReportingComponent(fr_name) {}
 
-    bool FileReporting::startHook()
-    {
-        mfile.open( repfile.get().c_str() );
-        if (mfile) {
-            if ( this->writeHeader)
-                fheader = new RTT::NiceHeaderMarshaller<std::ostream>( mfile );
-            else
-                fheader = 0;
-            fbody = new RTT::TableMarshaller<std::ostream>( mfile );
+bool FileReporting::startHook() {
+  this->addMarshaller(0, new RTT::TableMarshaller());
+  return ReportingComponent::startHook();
+}
 
-            this->addMarshaller( fheader, fbody );
-        } else {
-            log(Error) << "Could not open file "+repfile.get()+" for reporting."<<endlog();
-        }
+void FileReporting::stopHook() {
+  ReportingComponent::stopHook();
+  this->removeMarshallers();
+}
 
-        return ReportingComponent::startHook();
-    }
-
-    void FileReporting::stopHook()
-    {
-        ReportingComponent::stopHook();
-
-        this->removeMarshallers();
-        if (mfile)
-            mfile.close();
-    }
-
-    bool FileReporting::screenComponent( const std::string& comp)
-    {
-        Logger::In in("FileReporting::screenComponent");
-        ofstream file( (comp + ".screen").c_str() );
-        if (!file)
-            return false;
-        return this->screenImpl( comp, file );
-    }
-
+bool FileReporting::screenComponent(const std::string& comp) {
+  Logger::In in("FileReporting::screenComponent");
+  ofstream file((comp + ".screen").c_str());
+  if (!file) return false;
+  return this->screenImpl(comp, file);
+}
 }
