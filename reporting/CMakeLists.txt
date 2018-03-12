@@ -6,8 +6,8 @@ IF ( BUILD_REPORTING )
     find_package(RTTPlugin REQUIRED rtt-marshalling)
 
     # This gathers all the .cpp files into the variable 'SRCS'
-    SET( SRCS ConsoleReporting.cpp FileReporting.cpp ReportingComponent.cpp )
-    SET( HPPS ConsoleReporting.hpp  FileReporting.hpp NiceHeaderMarshaller.hpp ReportingComponent.hpp TableMarshaller.hpp)
+    SET( SRCS ConsoleReporting.cpp FileReporting.cpp ReportingComponent.cpp TSVReporting.cpp )
+    SET( HPPS ConsoleReporting.hpp  FileReporting.hpp NiceHeaderMarshaller.hpp ReportingComponent.hpp TableMarshaller.hpp TSVReporting.hpp TSVMarshaller.hpp )
 
     # Reporting to a socket
     SET( SOCKET_SRCS command.cpp datasender.cpp socket.cpp socketmarshaller.cpp TcpReporting.cpp)

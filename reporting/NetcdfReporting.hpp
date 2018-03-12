@@ -21,6 +21,12 @@ namespace OCL
         RTT::Property<std::string>  repfile;
 
         /**
+         * Flag to toggle the usage of the newer netCDF4 format.
+         * Beware that the new format does not shared access to the .nc file.
+         */
+        RTT::Property<bool> useNetCDF4;
+
+        /**
          * Netcdf ID
          */
         int ncid;

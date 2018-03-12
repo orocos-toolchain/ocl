@@ -18,9 +18,14 @@ namespace OCL
 
     NetcdfReporting::NetcdfReporting(const std::string& fr_name)
         : ReportingComponent( fr_name ),
-          repfile("ReportFile","Location on disc to store the reports.", "reports.nc")
+          repfile("ReportFile","Location on disc to store the reports.", "reports.nc"),
+          useNetCDF4("useNetCDF4", "This flag controls whether to use the newer netCDF4 format.\n"
+                                   "The new format supports writing NaN values where there are missing values in the reported values arrays\n"
+                                   "but does not support shared access to the netCDF (e.g. your visualizer can not read from the file while orocos writes to it.",
+                                    true)
     {
         this->properties()->addProperty( repfile );
+        this->properties()->addProperty( useNetCDF4 );
 
         if(types::TypeInfoRepository::Instance()->getTypeInfo<short>() == 0 )
         {
@@ -36,9 +41,12 @@ namespace OCL
        * Create a new netcdf dataset in the NC_CLOBBER mode.
        * This means that the nc_create function overwrites any existing dataset.
        */
-      retval = nc_create(repfile.get().c_str(), NC_CLOBBER | NC_SHARE, &ncid);
+      int cmode = NC_CLOBBER | NC_SHARE;
+      if(useNetCDF4.get())
+          cmode |= NC_NETCDF4;
+      retval = nc_create(repfile.get().c_str(), cmode, &ncid);
       if ( retval ) {
-       log(Error) << "Could not create "+repfile.get()+" for reporting."<<endlog();
+       log(Error) << "Could not create " << repfile.get() << " for reporting."<<endlog();
        return false;
       }
 
@@ -48,7 +56,7 @@ namespace OCL
        */
       retval = nc_def_dim(ncid, "time", NC_UNLIMITED, &dimsid);
       if ( retval ) {
-       log(Error) << "Could not create time dimension "+repfile.get() <<endlog();
+       log(Error) << "Could not create time dimension " << repfile.get() <<endlog();
        return false;
       }
 
@@ -57,7 +65,7 @@ namespace OCL
        */
       retval = nc_enddef( ncid );
       if ( retval ) {
-       log(Error) << "Could not leave define mode in "+repfile.get() <<endlog();
+       log(Error) << "Could not leave define mode in " << repfile.get() <<endlog();
        return false;
       }
 
@@ -83,7 +91,7 @@ namespace OCL
     if ( ncid )
       retval = nc_close (ncid);
     if ( retval )
-      log(Error) << "Could not close file "+repfile.get()+" for reporting."<<endlog();
+      log(Error) << "Could not close file " << repfile.get() << " for reporting."<<endlog();
   }
 
 }

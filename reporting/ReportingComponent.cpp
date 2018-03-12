@@ -355,7 +355,8 @@ namespace OCL
         Ports ports   = comp->ports()->getPorts();
         for (Ports::iterator it = ports.begin(); it != ports.end() ; ++it) {
             log(Debug) << "Checking port " << (*it)->getName()<<"."<<endlog();
-            this->reportPort( component, (*it)->getName() );
+            if(!dynamic_cast<base::InputPortInterface*>(*it)) //Don't try to report input ports
+                this->reportPort( component, (*it)->getName() );
         }
         return true;
     }
