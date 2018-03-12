@@ -38,99 +38,68 @@
 #ifndef PI_PROPERTIES_TABLESERIALIZER
 #define PI_PROPERTIES_TABLESERIALIZER
 
-#include <fstream>
-#include <map>
 #include <rtt/Property.hpp>
 #include <rtt/base/PropertyIntrospection.hpp>
+#include <rtt/marsh/StreamProcessor.hpp>
 #include <rtt/marsh/MarshallInterface.hpp>
 
-namespace RTT {
+namespace RTT
+{
 
-/**
- * A marsh::MarshallInterface for generating a stream of numbers, ordered in
- * columns. A new row is created on each flush() command. The
- * TableHeaderMarshaller can create the appropriate heading for
- * the columns.
- */
-class TableMarshaller : public marsh::MarshallInterface {
-  std::string msep;
-  std::map<std::string, std::ofstream*> streams;
-  typedef std::map<std::string, std::ofstream*>::iterator stream_it;
-  double current_reporting_timestamp;
+    /**
+     * A marsh::MarshallInterface for generating a stream of numbers, ordered in
+     * columns. A new row is created on each flush() command. The
+     * TableHeaderMarshaller can create the appropriate heading for
+     * the columns.
+     */
+    template<typename o_stream>
+    class TableMarshaller
+        : public marsh::MarshallInterface, public marsh::StreamProcessor<o_stream>
+    {
+        std::string msep;
+        public:
+        typedef o_stream output_stream;
+        typedef o_stream OutputStream;
 
-  std::ofstream* getStream(const std::string& key, base::PropertyBase* v) {
-    if (streams.count(key) == 0) {
-      streams[key] =
-          new std::ofstream((key + ".txt").c_str(), std::ofstream::out);
-      (*streams[key]) << "ReportingTimestamp";
-      serialize(v, *streams[key], "", true);
-      (*streams[key]) << std::endl;
-    }
-    return streams[key];
-  }
+        /**
+         * Create a new marshaller, streaming the data to a stream.
+         * @param os The stream to write the data to (i.e. cerr)
+         * @param sep The separater to place between each column and at
+         * the end of the line.
+         */
+        TableMarshaller(output_stream &os, std::string sep=" ") :
+            marsh::StreamProcessor<o_stream>(os), msep(sep)
+        {}
 
- public:
-  /**
-   * Create a new marshaller, streaming the data to a stream.
-   * @param os The stream to write the data to (i.e. cerr)
-   * @param sep The separater to place between each column and at
-   * the end of the line.
-   */
-  TableMarshaller(std::string sep = " ") : msep(sep) {}
+            virtual ~TableMarshaller() {}
 
-  virtual ~TableMarshaller() {
-    for (stream_it it = streams.begin(); it != streams.end(); ++it) {
-      it->second->close();
-      delete it->second;
-    }
-  }
+			virtual void serialize(base::PropertyBase* v)
+			{
+                *this->s << msep;
+                Property<PropertyBag>* bag = dynamic_cast< Property<PropertyBag>* >( v );
+                if ( bag )
+                    this->serialize( bag->value() );
+                else {
+                    *this->s << v->getDataSource();
+                }
+			}
 
-  virtual void serialize(base::PropertyBase* v) {
-    if (v->getName() == "TimeStamp") {
-        Property<double>* timestamp = dynamic_cast<Property<double>* >(v);
-        current_reporting_timestamp = timestamp->rvalue();
-    } else {
-      std::ofstream& stream = *getStream(v->getName(), v);
-      stream << current_reporting_timestamp;
-      serialize(v, stream);
-      stream << std::endl;
-    }
-  }
+            virtual void serialize(const PropertyBag &v)
+			{
+                for (
+                    PropertyBag::const_iterator i = v.getProperties().begin();
+                    i != v.getProperties().end();
+                    i++ )
+                {
+                    this->serialize( *i );
+                }
+			}
 
-  void serialize(base::PropertyBase* v, std::ofstream& stream,
-                 const std::string& prefix = "", bool header = false) {
-    Property<PropertyBag>* bag = dynamic_cast<Property<PropertyBag>*>(v);
-    if (bag) {
-      serialize(bag->rvalue(), stream, bag->getName(), header);
-    } else {
-      if (header) {
-        stream << msep << v->getName();
-      } else {
-        stream << msep << v->getDataSource();
-      }
-    }
-  }
-
-  virtual void serialize(const PropertyBag& v) {
-    for (PropertyBag::const_iterator i = v.getProperties().begin();
-         i != v.getProperties().end(); i++) {
-      serialize(*i);
-    }
-  }
-
-  virtual void serialize(const PropertyBag& v, std::ofstream& stream,
-                         const std::string& prefix = "", bool header = false) {
-    for (PropertyBag::const_iterator i = v.getProperties().begin();
-         i != v.getProperties().end(); i++) {
-      this->serialize(*i, stream, prefix, header);
-    }
-  }
-
-  virtual void flush() {
-    for (stream_it it = streams.begin(); it != streams.end(); ++it) {
-      it->second->flush();
-    }
-  }
-};
+            virtual void flush()
+            {
+                // TODO : buffer for formatting and flush here.
+                *this->s << msep <<std::endl;
+            }
+	};
 }
 #endif
