@@ -7,8 +7,14 @@
 #include <ocl/OCL.hpp>
 
 namespace OCL {
+
 /**
- * A component which writes data reports to a file.
+ * @brief The TSVReporting class writes the reported values to a collection of
+ * TSV (Tab Separated Values) files.
+ * Each reported port ends up in its own TSV file, named after the port. This
+ * solves the problem of ports, that emit data on different frequencies. It also
+ * makes any header writing obsolete, enabling us to add new reported ports
+ * during runtime. By default reportOnlyNewData is set to true.
  */
 class TSVReporting : public ReportingComponent {
  protected:

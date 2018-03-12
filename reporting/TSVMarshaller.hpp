@@ -47,10 +47,8 @@
 namespace RTT {
 
 /**
- * A marsh::MarshallInterface for generating a stream of numbers, ordered in
- * columns. A new row is created on each flush() command. The
- * TableHeaderMarshaller can create the appropriate heading for
- * the columns.
+ * @brief The TSVMarshaller class writes the serialized properties to a
+ * collection of TSV (tab separated values) files.
  */
 class TSVMarshaller : public marsh::MarshallInterface {
   std::string msep;
@@ -70,13 +68,8 @@ class TSVMarshaller : public marsh::MarshallInterface {
   }
 
  public:
-  /**
-   * Create a new marshaller, streaming the data to a stream.
-   * @param os The stream to write the data to (i.e. cerr)
-   * @param sep The separater to place between each column and at
-   * the end of the line.
-   */
-  TSVMarshaller(std::string sep = " ") : msep(sep) {}
+
+  TSVMarshaller(std::string sep = "\t") : msep(sep) {}
 
   virtual ~TSVMarshaller() {
     for (stream_it it = streams.begin(); it != streams.end(); ++it) {
@@ -87,8 +80,8 @@ class TSVMarshaller : public marsh::MarshallInterface {
 
   virtual void serialize(base::PropertyBase* v) {
     if (v->getName() == "TimeStamp") {
-        Property<double>* timestamp = dynamic_cast<Property<double>* >(v);
-        current_reporting_timestamp = timestamp->rvalue();
+      Property<double>* timestamp = dynamic_cast<Property<double>*>(v);
+      current_reporting_timestamp = timestamp->rvalue();
     } else {
       std::ofstream& stream = *getStream(v->getName(), v);
       stream << current_reporting_timestamp;
