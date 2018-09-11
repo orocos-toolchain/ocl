@@ -1757,6 +1757,36 @@ static int Service_provides(lua_State *L)
 	return ret;
 }
 
+/* returns restype, arity, table-of-arg-descr */
+static int Service_getOperationInfo(lua_State *L)
+{
+	int i=1;
+	Service *serv = *(luaM_checkudata_bx(L, 1, Service));
+	const char *op = luaL_checkstring(L, 2);
+	std::vector<ArgumentDescription> args;
+
+	if(!serv->hasMember(op))
+		luaL_error(L, "Service.getOperationInfo failed: no such operation");
+
+	lua_pushstring(L, serv->getDescription(op).c_str()); /* description */
+	lua_pushstring(L, serv->getResultType(op).c_str()); /* result type */
+	lua_pushinteger(L, serv->getArity(op));		/* arity */
+
+	args = serv->getArgumentList(op);
+
+	lua_newtable(L);
+
+	for (std::vector<ArgumentDescription>::iterator it = args.begin(); it != args.end(); it++) {
+		lua_newtable(L);
+		lua_pushstring(L, "name"); lua_pushstring(L, it->name.c_str()); lua_rawset(L, -3);
+		lua_pushstring(L, "type"); lua_pushstring(L, it->type.c_str()); lua_rawset(L, -3);
+		lua_pushstring(L, "desc"); lua_pushstring(L, it->description.c_str()); lua_rawset(L, -3);
+		lua_rawseti(L, -2, i++);
+	}
+
+	return 4;
+}
+
 static int Service_getOperation(lua_State *L)
 {
 	const char *op_str;
@@ -1943,6 +1973,7 @@ static const struct luaL_Reg Service_f [] = {
 	{ "getProviderNames", Service_getProviderNames },
 	{ "getOperationNames", Service_getOperationNames },
 	{ "hasOperation", Service_hasOperation },
+	{ "getOperationInfo", Service_getOperationInfo },
 	{ "getPortNames", Service_getPortNames },
 	{ "provides", Service_provides },
 	{ "getOperation", Service_getOperation },
@@ -1962,6 +1993,7 @@ static const struct luaL_Reg Service_m [] = {
 	{ "getProviderNames", Service_getProviderNames },
 	{ "getOperationNames", Service_getOperationNames },
 	{ "hasOperation", Service_hasOperation },
+	{ "getOperationInfo", Service_getOperationInfo },
 	{ "getPortNames", Service_getPortNames },
 	{ "provides", Service_provides },
 	{ "getOperation", Service_getOperation },
@@ -2477,7 +2509,7 @@ static int TaskContext_getOps(lua_State *L)
 }
 
 /* returns restype, arity, table-of-arg-descr */
-static int TaskContext_getOpInfo(lua_State *L)
+static int TaskContext_getOperationInfo(lua_State *L)
 {
 	int i=1;
 	TaskContext *tc = *(luaM_checkudata_bx(L, 1, TaskContext));
@@ -2487,9 +2519,9 @@ static int TaskContext_getOpInfo(lua_State *L)
 	if(!tc->operations()->hasMember(op))
 		luaL_error(L, "TaskContext.getOpInfo failed: no such operation");
 
+	lua_pushstring(L, tc->operations()->getDescription(op).c_str()); /* description */
 	lua_pushstring(L, tc->operations()->getResultType(op).c_str()); /* result type */
 	lua_pushinteger(L, tc->operations()->getArity(op));		/* arity */
-	lua_pushstring(L, tc->operations()->getDescription(op).c_str()); /* description */
 
 	args = tc->operations()->getArgumentList(op);
 
@@ -2716,7 +2748,8 @@ static const struct luaL_Reg TaskContext_f [] = {
 	{ "getAttributeNames", TaskContext_getAttributeNames },
 	{ "removeAttribute", TaskContext_removeAttribute },
 	{ "getOps", TaskContext_getOps },
-	{ "getOpInfo", TaskContext_getOpInfo },
+	{ "getOpInfo", TaskContext_getOperationInfo },
+	{ "getOperationInfo", TaskContext_getOperationInfo },
 	{ "hasOperation", TaskContext_hasOperation },
 	{ "provides", TaskContext_provides },
 	{ "getProviderNames", TaskContext_getProviderNames },
@@ -2757,7 +2790,8 @@ static const struct luaL_Reg TaskContext_m [] = {
 	{ "removeAttribute", TaskContext_removeAttribute },
 	{ "removeProperty", TaskContext_removeProperty },
 	{ "getOps", TaskContext_getOps },
-	{ "getOpInfo", TaskContext_getOpInfo },
+	{ "getOpInfo", TaskContext_getOperationInfo },
+	{ "getOperationInfo", TaskContext_getOperationInfo },
 	{ "hasOperation", TaskContext_hasOperation },
 	{ "provides", TaskContext_provides },
 	{ "getProviderNames", TaskContext_getProviderNames },
