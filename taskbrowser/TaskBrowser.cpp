@@ -489,6 +489,10 @@ namespace OCL
                 completes.push_back("trace ");
             if ( std::string( "untrace " ).find(text) == 0 )
                 completes.push_back("untrace ");
+            if ( std::string( "GlobalService" ).find(text) == 0 )
+                completes.push_back("GlobalService");
+            if ( std::string( "GlobalsRepository" ).find(text) == 0 )
+                completes.push_back("GlobalsRepository");
 
             if (taskcontext == context && string("leave").find(text) == 0)
                 completes.push_back("leave");
@@ -538,6 +542,35 @@ namespace OCL
                 completes.push_back( *i );
         }
 
+        // Global Properties:
+        comps = GlobalsRepository::Instance()->properties()->list();
+        for (std::vector<std::string>::iterator i = comps.begin(); i!= comps.end(); ++i ) {
+        if ( peerpath.empty() && i->find( component ) == 0  )
+            completes.push_back( *i );
+        }
+
+        if (component.find("GlobalsRepository") == 0) {
+
+            // Global Attributes:
+            comps = GlobalsRepository::Instance()->getAttributeNames();
+            for (std::vector<std::string>::iterator i = comps.begin(); i!= comps.end(); ++i ) {
+                completes.push_back( "GlobalsRepository." + *i );
+            }
+
+            // Global Properties:
+            comps = GlobalsRepository::Instance()->properties()->list();
+            for (std::vector<std::string>::iterator i = comps.begin(); i!= comps.end(); ++i ) {
+                completes.push_back( "GlobalsRepository." + *i );
+            }
+        } else if ( taskobject == peer->provides() && peer == context ) {
+            // Global methods:
+            comps = GlobalService::Instance()->getNames();
+            for (std::vector<std::string>::iterator i = comps.begin(); i!= comps.end(); ++i ) {
+                if ( i->find( component ) == 0  )
+                    completes.push_back( peerpath + *i );
+            }
+        }
+
         // Global methods:
         if ( taskobject == peer->provides() && peer == context) {
             comps = GlobalService::Instance()->getNames();
@@ -570,7 +603,7 @@ namespace OCL
             }
         } catch(...) {}
         // this is a hack to initiate a complete on a valid expression that might have members.
-        // the completer above would only return the expression itself, while this one tries to 
+        // the completer above would only return the expression itself, while this one tries to
         // go a level deeper again.
         if (try_deeper) {
             try {
@@ -797,7 +830,7 @@ namespace OCL
     {
         string::size_type pos1 = str.find_first_not_of(to_trim);
         string::size_type pos2 = str.find_last_not_of(to_trim);
-        if (pos1 == string::npos) 
+        if (pos1 == string::npos)
             str.clear(); // nothing else present
         else
             str = str.substr(pos1, pos2 - pos1 + 1);
@@ -888,6 +921,10 @@ namespace OCL
                     printHelp();
                 } else if ( command.find("help ") == 0) {
                     printHelp( command.substr(command.rfind(' ')));
+                } else if ( command == "GlobalService" ) {
+                    printService(command);
+                } else if ( command == "GlobalsRepository" ) {
+                    printGlobals();
                 } else if ( command == "#debug") {
                     debug = !debug;
                 } else if ( command.find("list ") == 0 || command == "list" ) {
@@ -1412,14 +1449,101 @@ namespace OCL
         Service::shared_ptr ops = stringToService(name);
         ServiceRequester::shared_ptr sr;
 
-        if ( ops || GlobalService::Instance()->hasService( name ) ) // only object name was typed
+        if ( ops || GlobalService::Instance()->hasService( name ) || name == "GlobalService" ) // only object name was typed
             {
-                if ( !ops )
+                if ( name == "GlobalService" )
+                    ops = GlobalService::Instance();
+                else if ( !ops )
                     ops = GlobalService::Instance()->provides(name);
-                sresult << nl << "Printing Interface of '"<< coloron << ops->getName() <<coloroff <<"' :"<<nl<<nl;
+                sresult << nl << "Printing Interface of '"<< coloron << ops->getName() <<coloroff <<"' :"<<nl;
+
+                sresult << nl <<" Configuration Properties: ";
+                RTT::PropertyBag* bag = ops->properties();
+                if ( bag && bag->size() != 0 ) {
+                    // Print Properties:
+                    for( RTT::PropertyBag::iterator it = bag->begin(); it != bag->end(); ++it) {
+                        base::DataSourceBase::shared_ptr pds = (*it)->getDataSource();
+                        sresult << nl << setw(11)<< right << Types()->toDot( (*it)->getType() )<< " "
+                            << coloron <<setw(14)<<left<< (*it)->getName() << coloroff;
+                        this->printResult( pds.get(), false ); // do not recurse
+                        sresult<<" ("<< (*it)->getDescription() <<')';
+                    }
+                } else {
+                    sresult << coloron << "(none)";
+                    sresult << coloroff << nl;
+                }
+
+                sresult << nl << "  Attributes   : ";
+                std::vector<std::string> objlist = ops->getAttributeNames();
+                if ( !objlist.empty() ) {
+                    sresult << nl;
+                    // Print Attributes:
+                    for( std::vector<std::string>::iterator it = objlist.begin(); it != objlist.end(); ++it) {
+                        base::DataSourceBase::shared_ptr pds = ops->getValue(*it)->getDataSource();
+                        sresult << setw(11)<< right << Types()->toDot( pds->getType() )<< " "
+                             << coloron <<setw( 14 )<<left<< *it << coloroff;
+                        this->printResult( pds.get(), false ); // do not recurse
+                        sresult <<nl;
+                    }
+                } else {
+                    sresult << coloron << "(none)";
+                    sresult << coloroff << nl;
+                }
+
+                sresult << coloroff << nl << "  Operations      : " << coloron << nl;
                 vector<string> methods = ops->getNames();
-                std::for_each( methods.begin(), methods.end(), boost::bind(&TaskBrowser::printOperation, this, _1, ops) );
-                cout << sresult.str();
+                if ( !methods.empty() ) {
+                    std::for_each( methods.begin(), methods.end(), boost::bind(&TaskBrowser::printOperation, this, _1, ops) );
+                    sresult <<nl;
+                } else {
+                  sresult << coloron << "(none)";
+                  sresult << coloroff << nl;
+                }
+
+                sresult << nl << " Data Flow Ports: ";
+                objlist = ops->getPortNames();
+                if ( !objlist.empty() ) {
+                    for(vector<string>::iterator it = objlist.begin(); it != objlist.end(); ++it) {
+                        base::PortInterface* port = ops->getPort(*it);
+                        bool writer = dynamic_cast<OutputPortInterface*>(port) ? true : false;
+                        // Port type R/W
+                        sresult << nl << " " << ( !writer ? " In" : "Out");
+                        // Port data type + name
+                        if ( !port->connected() )
+                            sresult << "(U) " << setw(11)<<right<< Types()->toDot( port->getTypeInfo()->getTypeName() );
+                        else
+                            sresult << "(C) " << setw(11)<<right<< Types()->toDot( port->getTypeInfo()->getTypeName() );
+                        sresult << " "
+                            << coloron <<setw( 14 )<<left<< *it << coloroff;
+
+                        InputPortInterface* iport = dynamic_cast<InputPortInterface*>(port);
+                        if (iport) {
+                            sresult << " <= ( use '"<< iport->getName() << ".read(sample)' to read a sample from this port)";
+                        }
+                        OutputPortInterface* oport = dynamic_cast<OutputPortInterface*>(port);
+                        if (oport) {
+                            if ( oport->keepsLastWrittenValue()) {
+                                DataSourceBase::shared_ptr dsb = oport->getDataSource();
+                                dsb->evaluate(); // read last written value.
+                                sresult << " => " << dsb;
+                            } else
+                                sresult << " => (keepsLastWrittenValue() == false. Enable it for this port in order to see it in the TaskBrowser.)";
+                        }
+                    }
+                } else {
+                    sresult << coloron << "(none)";
+                }
+                sresult << coloroff << nl;
+
+                objlist = ops->getProviderNames();
+                sresult <<nl<< " Services: "<<nl;
+                if ( !objlist.empty() ) {
+                    for(vector<string>::iterator it = objlist.begin(); it != objlist.end(); ++it)
+                        sresult <<coloron<< "  " << setw(14) << *it <<coloroff<< " ( "<< ops->provides(*it)->doc() << " ) "<<nl;
+                } else {
+                    sresult <<coloron<< "(none)";
+                }
+                cout << sresult.str() << coloroff << nl;
                 sresult.str("");
                 result = true;
             }
@@ -1435,6 +1559,48 @@ namespace OCL
                 result = true;
             }
         return result;
+    }
+
+    bool TaskBrowser::printGlobals() {
+        GlobalsRepository::shared_ptr globals = GlobalsRepository::Instance();
+
+        sresult << nl << "Printing Interface of '"<< coloron << "GlobalsRepository" <<coloroff <<"' :"<<nl;
+        sresult << nl << " Configuration Properties: ";
+        RTT::PropertyBag* bag = globals->properties();
+        if ( bag && bag->size() != 0 ) {
+          // Print Properties:
+          for( RTT::PropertyBag::iterator it = bag->begin(); it != bag->end(); ++it) {
+            base::DataSourceBase::shared_ptr pds = (*it)->getDataSource();
+            sresult << nl << setw(11)<< right << Types()->toDot( (*it)->getType() )<< " "
+               << coloron <<setw(14)<<left<< (*it)->getName() << coloroff;
+            this->printResult( pds.get(), false ); // do not recurse
+            sresult<<" ("<< (*it)->getDescription() <<')';
+          }
+        } else {
+          sresult << coloron << "(none)";
+          sresult << coloroff << nl;
+        }
+
+        sresult << nl << "  Attributes   : ";
+        std::vector<std::string> objlist = globals->getAttributeNames();
+        if ( !objlist.empty() ) {
+            sresult << nl;
+            // Print Attributes:
+            for( std::vector<std::string>::iterator it = objlist.begin(); it != objlist.end(); ++it) {
+                base::DataSourceBase::shared_ptr pds = globals->getValue(*it)->getDataSource();
+                sresult << setw(11)<< right << Types()->toDot( pds->getType() )<< " "
+                     << coloron <<setw( 14 )<<left<< *it << coloroff;
+                this->printResult( pds.get(), false ); // do not recurse
+                sresult <<nl;
+            }
+        } else {
+            sresult << coloron << "(none)";
+            sresult << coloroff << nl;
+        }
+
+        cout << sresult.str() << coloroff << nl;
+        sresult.str("");
+        return true;
     }
 
     void TaskBrowser::evalCommand(std::string& comm )

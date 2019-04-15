@@ -2971,6 +2971,13 @@ static int globals_getNames(lua_State *L)
 	return 1;
 }
 
+static int globals_getProperties(lua_State *L)
+{
+	GlobalsRepository::shared_ptr gr = GlobalsRepository::Instance();
+	push_vect_str(L, gr->properties()->list() );
+	return 1;
+}
+
 static int globals_get(lua_State *L)
 {
 	const char *name;
@@ -2984,8 +2991,13 @@ static int globals_get(lua_State *L)
 
 	if (ab)
 		Variable_push_coerce(L, ab->getDataSource());
-	else
-		lua_pushnil(L);
+	else {
+		base::PropertyBase *pb = gr->getProperty(name);
+		if (pb)
+			Variable_push_coerce(L, pb->getDataSource());
+		else
+			lua_pushnil(L);
+  }
 
 	return 1;
 }
@@ -3021,6 +3033,7 @@ static const struct luaL_Reg rtt_f [] = {
 	{"sleep", rtt_sleep },
 	{"getTC", getTC },
 	{"globals_getNames", globals_getNames },
+	{"globals_getProperties", globals_getProperties },
 	{"globals_get", globals_get },
 	{"provides", provides_global },
 	{"services", rtt_services },
