@@ -85,6 +85,8 @@ namespace OCL
             addOperation("argv", &OSService::argv, this).doc("Returns the arguments as a sequence of strings, given to this application.");
             addOperation("sleep", &OSService::sleep, this).doc("Suspend execution of the calling thread")
                     .arg("seconds", "Sleep for x seconds");
+            addOperation("millisleep", &OSService::millisleep, this).doc("Suspend execution of the calling thread")
+                    .arg("milliseconds", "Sleep for x milliseconds");
             addOperation("usleep", &OSService::usleep, this).doc("Suspend execution of the calling thread")
                     .arg("microseconds", "Sleep for x microseconds");
             addOperation("nanosleep", &OSService::nanosleep, this).doc("Suspend execution of the calling thread")
@@ -128,6 +130,14 @@ namespace OCL
             TIME_SPEC rqtp, rmtp;
             rqtp.tv_sec = seconds;
             rqtp.tv_nsec = 0;
+            return rtos_nanosleep(&rqtp, &rmtp);
+        }
+
+        int millisleep(unsigned int milliseconds)
+        {
+            TIME_SPEC rqtp, rmtp;
+            rqtp.tv_sec  = (milliseconds / 1000u);
+            rqtp.tv_nsec = (milliseconds % 1000u) * 1000000u;
             return rtos_nanosleep(&rqtp, &rmtp);
         }
 
