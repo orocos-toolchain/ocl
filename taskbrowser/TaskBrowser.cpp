@@ -1616,28 +1616,6 @@ namespace OCL
             return;
         }
 
-        // Minor hack : since GlobalsRepository is nor a peer or a service therefore
-        // seen_dotmember() wouldn't work.
-        if ( comm.find("GlobalsRepository.") == 0  ) {
-            std::string::size_type pos = comm.find("GlobalsRepository.")+strlen("GlobalsRepository.");
-            std::string global_var_name = std::string(comm, pos, comm.length());
-            GlobalsRepository::shared_ptr globals = GlobalsRepository::Instance();
-
-            if ( globals->hasAttribute( global_var_name ) ) {
-                this->printResult( globals->getValue( global_var_name )->getDataSource().get(), true );
-                cout << sresult.str()<<nl;
-                sresult.str("");
-                return;
-            }
-
-            if ( globals->hasProperty( global_var_name ) ) {
-                this->printResult( globals->properties()->find( global_var_name )->getDataSource().get(), true );
-                cout << sresult.str()<<nl;
-                sresult.str("");
-                return;
-            }
-        }
-
 	    // Set caller=0 to have correct call/send semantics.
         // we're outside the updateHook(). Passing 'this' would
         // trigger the EE of the TB, but not our own function.
