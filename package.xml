@@ -1,6 +1,6 @@
 <package>
   <name>ocl</name>
-  <version>2.9.0</version>
+  <version>2.9.1</version>
   <description>
     Orocos component library
     This package contains standard components for the Orocos Toolchain
