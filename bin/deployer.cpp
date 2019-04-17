@@ -132,13 +132,13 @@ int main(int argc, char** argv)
         freeMem = init_memory_pool(memSize, rtMem);
         if ((size_t)-1 == freeMem)
         {
-            cerr << "Invalid memory pool size of " << memSize 
-                          << " bytes (TLSF has a several kilobyte overhead)." << endl;
+            std::cerr << "Invalid memory pool size of " << memSize
+                      << " bytes (TLSF has a several kilobyte overhead)." << std::endl;
             free(rtMem);
             return -1;
         }
-        cout << "Real-time memory: " << freeMem << " bytes free of "
-                  << memSize << " allocated." << endl;
+        std::cout << "Real-time memory: " << freeMem << " bytes free of "
+                  << memSize << " allocated." << std::endl;
     }
 #endif  // ORO_BUILD_RTALLOC
 
