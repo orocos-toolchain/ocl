@@ -132,13 +132,13 @@ int main(int argc, char** argv)
         size_t freeMem = init_memory_pool(memSize, rtMem);
         if ((size_t)-1 == freeMem)
         {
-            cerr << "Invalid memory pool size of " << memSize
-                          << " bytes (TLSF has a several kilobyte overhead)." << endl;
+            std::cerr << "Invalid memory pool size of " << memSize
+                      << " bytes (TLSF has a several kilobyte overhead)." << std::endl;
             free(rtMem);
             return -1;
         }
-        cout << "Real-time memory: " << freeMem << " bytes free of "
-                  << memSize << " allocated." << endl;
+        std::cout << "Real-time memory: " << freeMem << " bytes free of "
+                  << memSize << " allocated." << std::endl;
     }
 #endif  // ORO_BUILD_RTALLOC
 
@@ -186,7 +186,8 @@ int main(int argc, char** argv)
                 {
                     if ( !(*iter).empty() )
                     {
-                        if ( (*iter).rfind(".xml",string::npos) == (*iter).length() - 4 || (*iter).rfind(".cpf",string::npos) == (*iter).length() - 4) {
+                        if ( (*iter).rfind(".xml", std::string::npos) == (*iter).length() - 4 ||
+                             (*iter).rfind(".cpf", std::string::npos) == (*iter).length() - 4) {
                             if ( deploymentOnlyChecked ) {
                                 if (!dc.loadComponents( (*iter) )) {
                                     result = false;
