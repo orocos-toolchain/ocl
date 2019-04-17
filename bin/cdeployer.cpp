@@ -173,7 +173,8 @@ int main(int argc, char** argv)
                 {
                     if ( !(*iter).empty() )
                     {
-                        if ( (*iter).rfind(".xml",string::npos) == (*iter).length() - 4 || (*iter).rfind(".cpf",string::npos) == (*iter).length() - 4) {
+                        if ( (*iter).rfind(".xml", std::string::npos) == (*iter).length() - 4 ||
+                             (*iter).rfind(".cpf", std::string::npos) == (*iter).length() - 4) {
                             if ( deploymentOnlyChecked ) {
                                 bool loadOk         = true;
                                 bool configureOk    = true;
