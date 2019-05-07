@@ -39,8 +39,6 @@
 #include <rtt/transports/corba/TaskContextServer.hpp>
 #include <iostream>
 #include <string>
-#include <unistd.h>
-#include <stdio.h>
 #include "deployer-funcs.hpp"
 
 #include <rtt/transports/corba/corba.h>
@@ -182,7 +180,8 @@ int main(int argc, char** argv)
                 {
                     if ( !(*iter).empty() )
                     {
-                        if ( (*iter).rfind(".xml",string::npos) == (*iter).length() - 4 || (*iter).rfind(".cpf",string::npos) == (*iter).length() - 4) {
+                        if ( (*iter).rfind(".xml", std::string::npos) == (*iter).length() - 4 ||
+                             (*iter).rfind(".cpf", std::string::npos) == (*iter).length() - 4) {
                             if ( deploymentOnlyChecked ) {
                                 bool loadOk         = true;
                                 bool configureOk    = true;

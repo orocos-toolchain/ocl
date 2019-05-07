@@ -44,8 +44,6 @@
 #include <deployment/DeploymentComponent.hpp>
 #include <iostream>
 #include <string>
-#include <unistd.h>
-#include <stdio.h>
 #include "deployer-funcs.hpp"
 
 #ifdef  ORO_BUILD_LOGGING
