@@ -28,188 +28,125 @@
 #define ORO_COMP_TCP_REPORTING_COMMAND_HPP
 #include <vector>
 #include <rtt/os/Mutex.hpp>
+#include "tcpreportingsession.hpp"
+#include <iostream>
 
-namespace OCL
-{
+namespace OCL {
+class Command;
+class RealCommand;
+class TcpReportingSession;
 
-namespace TCP
-{
-    class Datasender;
-    class Socket;
-    class Command;
-    class RealCommand;
+/**
+ * Reads a line from the client and interprete it.
+ */
+class TcpReportingInterpreter {
+ protected:
+  unsigned int parseParameters(std::string& ipt, std::string& cmd,
+                               std::string** params);
+  TcpReportingSession* _parent;
 
-    /**
-     * Reads a line from the client and interprete it.
-     */
-    class TcpReportingInterpreter
-    {
-        protected:
-            std::vector<Command*> cmds;
-            RTT::os::MutexRecursive commands;
-            unsigned int parseParameters( std::string& ipt, std::string& cmd, std::string** params );
-            Datasender* _parent;
+ public:
+  /**
+   * After setup, the interpreter will only recognize the command
+   * 'VERSION 1.0' by default.
+   */
+  TcpReportingInterpreter(TcpReportingSession* parent);
+  ~TcpReportingInterpreter();
+  void processLine(std::string line);
+  std::vector<Command*> cmds;
 
-        public:
-            /**
-             * After setup, the interpreter will only recognize the command
-             * 'VERSION 1.0' by default.
-             */
-            TcpReportingInterpreter(Datasender* parent);
-            ~TcpReportingInterpreter();
-            void process();
+  /**
+   * Get the marshaller associated with the current connection.
+   */
+  TcpReportingSession* getSession() const;
 
-            /**
-             * Get the marshaller associated with the current connection.
-             */
-            Datasender* getConnection() const;
+  /**
+   * Accept all valid commands (except 'VERSION 1.0')
+   */
+  void setVersion10();
 
-            /**
-             * Accept all valid commands (except 'VERSION 1.0')
-             */
-            void setVersion10();
+  /**
+   * Return a reference to the command list.
+   */
+  const std::vector<Command*>& giveCommands() const;
 
-            /**
-             * Return a reference to the command list.
-             */
-            const std::vector<Command*>& giveCommands() const;
+  /**
+   * Add support for the given command.
+   */
+  void addCommand(Command* command);
+};
 
-            /**
-             * Add support for the given command.
-             */
-            void addCommand( Command* command );
+/**
+ * Command pattern
+ */
+class Command {
+ protected:
+  std::string _name;
+  TcpReportingInterpreter* _parent;
+  unsigned int _minargs;
+  unsigned int _maxargs;
+  std::string _syntax;
 
-            /**
-             * Remove support for the given command name.
-             */
-            void removeCommand( const char* name );
-    };
+  /**
+   * Send the correct syntax to the client.
+   * Return false.
+   */
+  bool sendError102() const;
 
-    /**
-     * Command pattern
-     */
-    class Command
-    {
-        protected:
-            std::string _name;
+  /**
+   * Return the socket for this command.
+   * Fast shortcut for _parent->getConnection()->getSocket()
+   */
+  inline std::ostream& ostream() const;
 
-        public:
-            Command( std::string name );
-            virtual ~Command();
-            virtual bool is(std::string& cmd) const;
+ public:
+  Command(std::string name, TcpReportingInterpreter* parent,
+          unsigned int minargs, unsigned int maxargs,
+          std::string syntax);
+  Command(std::string name, TcpReportingInterpreter* parent,
+          unsigned int minargs, unsigned int maxargs);
+  Command(std::string name, TcpReportingInterpreter* parent);
 
-            /**
-             * Return a reference to the object which is really responsible
-             * for executing this command. This enables multiple names
-             * for the same command.
-             * Return 0 if no such command is founded.
-             */
-            virtual RealCommand* getRealCommand(const std::vector<Command*>& cmds) const = 0;
+  virtual bool is(std::string& cmd) const;
 
-            /**
-             * Find the command with the given name in the vector.
-             */
-            static Command* find(const std::vector<Command*>& cmds, const std::string& cmp);
+  /**
+   * Find the command with the given name in the vector.
+   */
+  static Command* find(const std::vector<Command*>& cmds,
+                       const std::string& cmp);
 
-            /**
-             * Compare on name
-             */
-            bool operator==(const std::string& cmp) const;
-            bool operator!=(const std::string& cmp) const;
-            bool operator<( const Command& cmp ) const;
+  /**
+   * Compare on name
+   */
+  bool operator==(const std::string& cmp) const;
+  bool operator!=(const std::string& cmp) const;
+  bool operator<(const Command& cmp) const;
 
-            /**
-             * Get the name of this command.
-             */
-            const std::string& getName() const;
-    };
+  /**
+   * Get the name of this command.
+   */
+  const std::string& getName() const;
+  std::string &getSyntax();
 
-    /**
-     * Another name for a command
-     */
-    class AliasCommand : public Command
-    {
-        private:
-            std::string _alias;
+  virtual void maincode(int argc, std::string* args) = 0;
 
-        public:
-            AliasCommand( std::string name, std::string alias );
-            virtual ~AliasCommand() {}
-            virtual RealCommand* getRealCommand(const std::vector<Command*>& cmds) const;
-    };
+  /**
+   * Return true if the syntax is correct, false otherwise.
+   * Send an error message to the client on incorrect syntax.
+   */
+  bool correctSyntax(unsigned int argc);
 
-    /**
-     * Real command which can be executed.
-     */
-    class RealCommand : public Command
-    {
-        protected:
-            TcpReportingInterpreter* _parent;
-            unsigned int _minargs;
-            unsigned int _maxargs;
-            const char* _syntax;
+  /**
+   * Execute this command.
+   */
+  void execute(int argc, std::string* args);
+};
 
-            /**
-             * Main code to be implemented by children.
-             */
-            virtual void maincode( int argc, std::string* args ) = 0;
-
-            /**
-             * Send the correct syntax to the client.
-             * Return false.
-             */
-            bool sendError102() const;
-
-            /**
-             * Send the message 101 OK to the client.
-             * Return true.
-             */
-            bool sendOK() const;
-
-            /**
-             * Convert the parameter with the given index to upper-case.
-             * The caller has to make sure that the given index is a valid index.
-             */
-            void toupper( std::string* args, int index ) const;
-
-            /**
-             * Convert all parameters between the start and stop index to upper-case.
-             * The caller has to make sure that both start and stop are valid indexes.
-             * stop must be strictly greater than start.
-             */
-            void toupper( std::string* args, int start, int stop ) const;
-
-            /**
-             * Return the socket for this command.
-             * Fast shortcut for _parent->getConnection()->getSocket()
-             */
-            inline Socket& socket() const;
-
-        public:
-            RealCommand( std::string name, TcpReportingInterpreter* parent, unsigned int minargs = 0, unsigned int maxargs = 0, const char* syntax = 0);
-            virtual ~RealCommand();
-
-            /**
-             * Return true if the syntax is correct, false otherwise.
-             * Send an error message to the client on incorrect syntax.
-             */
-            virtual bool correctSyntax( unsigned int argc, std::string* args );
-
-            /**
-             * Return syntax information
-             */
-            const char* getSyntax() const;
-
-            /**
-             * Returns this.
-             */
-            virtual RealCommand* getRealCommand(const std::vector<Command*>& cmds) const;
-
-            /**
-             * Execute this command.
-             */
-            void execute( int argc, std::string* args );
-    };
-}
+/**
+ * Real command which can be executed.
+ */
+class RealCommand : public Command {
+ public:
+};
 }
 #endif

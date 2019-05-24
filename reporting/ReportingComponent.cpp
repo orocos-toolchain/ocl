@@ -215,6 +215,10 @@ namespace OCL
 
     bool ReportingComponent::addMarshaller( marsh::MarshallInterface* headerM, marsh::MarshallInterface* bodyM)
     {
+        // If we were to allow this, we would provoce double deallocation upon destruction of the pair
+        if(headerM == bodyM)
+            return false;
+
         boost::shared_ptr<marsh::MarshallInterface> header(headerM);
         boost::shared_ptr<marsh::MarshallInterface> body(bodyM);
         if ( !header && !body)
