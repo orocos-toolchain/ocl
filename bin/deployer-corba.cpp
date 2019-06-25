@@ -41,8 +41,6 @@
 #include <string>
 #include "deployer-funcs.hpp"
 
-#include <rtt/transports/corba/corba.h>
-
 #ifdef  ORO_BUILD_LOGGING
 #   ifndef OS_RT_MALLOC
 #   warning "Logging needs rtalloc!"
@@ -171,7 +169,7 @@ int main(int argc, char** argv)
                    scripts stops after the first failed script, and -1 is returned.
                    Whether a script failed or all scripts succeeded, in non-daemon
                    and non-checking mode the TaskBrowser will be run to allow
-                   inspection.
+                   inspection if the input is a tty.
                  */
                 bool result = true;
                 for (std::vector<std::string>::const_iterator iter=scriptFiles.begin();
@@ -183,12 +181,17 @@ int main(int argc, char** argv)
                         if ( (*iter).rfind(".xml", std::string::npos) == (*iter).length() - 4 ||
                              (*iter).rfind(".cpf", std::string::npos) == (*iter).length() - 4) {
                             if ( deploymentOnlyChecked ) {
-                                if (!dc.loadComponents( (*iter) )) {
+                                bool loadOk         = true;
+                                bool configureOk    = true;
+                                bool startOk        = true;
+                                if (!dc.kickStart2( (*iter), false, loadOk, configureOk, startOk )) {
                                     result = false;
-                                    log(Error) << "Failed to load file: '"<< (*iter) <<"'." << endlog();
-                                } else if (!dc.configureComponents()) {
-                                    result = false;
-                                    log(Error) << "Failed to configure file: '"<< (*iter) <<"'." << endlog();
+                                    if (!loadOk) {
+                                        log(Error) << "Failed to load file: '"<< (*iter) <<"'." << endlog();
+                                    } else if (!configureOk) {
+                                        log(Error) << "Failed to configure file: '"<< (*iter) <<"'." << endlog();
+                                    }
+                                    (void)startOk;      // unused - avoid compiler warning
                                 }
                                 // else leave result=true and continue
                             } else {
@@ -247,7 +250,7 @@ int main(int argc, char** argv)
 
 #ifdef  ORO_BUILD_RTALLOC
     memoryPool.shutdown();
-#endif  // ORO_BUILD_RTALLOC
+#endif
 
     return rc;
 }

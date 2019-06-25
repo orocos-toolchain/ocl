@@ -67,8 +67,8 @@ int main(int argc, char** argv)
 	po::options_description     otherOptions;
 
 #ifdef  ORO_BUILD_RTALLOC
-    OCL::memorySize         rtallocMemorySize   = ORO_DEFAULT_RTALLOC_SIZE;
-	po::options_description rtallocOptions      = OCL::deployerRtallocOptions(rtallocMemorySize);
+    OCL::memorySize             rtallocMemorySize   = ORO_DEFAULT_RTALLOC_SIZE;
+	po::options_description     rtallocOptions      = OCL::deployerRtallocOptions(rtallocMemorySize);
 	otherOptions.add(rtallocOptions);
     OCL::TLSFMemoryPool     memoryPool;
 #endif
@@ -171,20 +171,26 @@ int main(int argc, char** argv)
                      iter!=scriptFiles.end() && result;
                      ++iter)
                 {
-                    if ( (*iter).rfind(".xml", std::string::npos) == (*iter).length() - 4 ||
-                         (*iter).rfind(".cpf", std::string::npos) == (*iter).length() - 4) {
-                        if ( deploymentOnlyChecked ) {
-                            bool loadOk         = true;
-                            bool configureOk    = true;
-                            bool startOk        = true;
-                            if (!dc.kickStart2( (*iter), false, loadOk, configureOk, startOk )) {
-                                result = false;
-                                if (!loadOk) {
-                                    log(Error) << "Failed to load file: '"<< (*iter) <<"'." << endlog();
-                                } else if (!configureOk) {
-                                    log(Error) << "Failed to configure file: '"<< (*iter) <<"'." << endlog();
+                    if ( !(*iter).empty() )
+                    {
+                        if ( (*iter).rfind(".xml", std::string::npos) == (*iter).length() - 4 ||
+                             (*iter).rfind(".cpf", std::string::npos) == (*iter).length() - 4) {
+                            if ( deploymentOnlyChecked ) {
+                                bool loadOk         = true;
+                                bool configureOk    = true;
+                                bool startOk        = true;
+                                if (!dc.kickStart2( (*iter), false, loadOk, configureOk, startOk )) {
+                                    result = false;
+                                    if (!loadOk) {
+                                        log(Error) << "Failed to load file: '"<< (*iter) <<"'." << endlog();
+                                    } else if (!configureOk) {
+                                        log(Error) << "Failed to configure file: '"<< (*iter) <<"'." << endlog();
+                                    }
+                                    (void)startOk;      // unused - avoid compiler warning
                                 }
-                                (void)startOk;      // unused - avoid compiler warning
+                                // else leave result=true and continue
+                            } else {
+                                result = dc.kickStart( (*iter) ) && result;
                             }
                             continue;
                         }
@@ -235,7 +241,7 @@ int main(int argc, char** argv)
 
 #ifdef  ORO_BUILD_RTALLOC
     memoryPool.shutdown();
-#endif  // ORO_BUILD_RTALLOC
+#endif
 
     return rc;
 }
