@@ -41,8 +41,6 @@
 #include <string>
 #include "deployer-funcs.hpp"
 
-#include <rtt/transports/corba/corba.h>
-
 #ifdef  ORO_BUILD_LOGGING
 #   ifndef OS_RT_MALLOC
 #   warning "Logging needs rtalloc!"
@@ -256,7 +254,7 @@ int main(int argc, char** argv)
 
 #ifdef  ORO_BUILD_RTALLOC
     memoryPool.shutdown();
-#endif  // ORO_BUILD_RTALLOC
+#endif
 
     return rc;
 }

@@ -67,8 +67,8 @@ int main(int argc, char** argv)
 	po::options_description     otherOptions;
 
 #ifdef  ORO_BUILD_RTALLOC
-    OCL::memorySize         rtallocMemorySize   = ORO_DEFAULT_RTALLOC_SIZE;
-	po::options_description rtallocOptions      = OCL::deployerRtallocOptions(rtallocMemorySize);
+    OCL::memorySize             rtallocMemorySize   = ORO_DEFAULT_RTALLOC_SIZE;
+	po::options_description     rtallocOptions      = OCL::deployerRtallocOptions(rtallocMemorySize);
 	otherOptions.add(rtallocOptions);
     OCL::TLSFMemoryPool     memoryPool;
 #endif
@@ -241,7 +241,7 @@ int main(int argc, char** argv)
 
 #ifdef  ORO_BUILD_RTALLOC
     memoryPool.shutdown();
-#endif  // ORO_BUILD_RTALLOC
+#endif
 
     return rc;
 }
