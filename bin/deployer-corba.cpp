@@ -214,11 +214,15 @@ int main(int argc, char** argv)
 
                 // We don't start an interactive console when we're a daemon
                 if ( !deploymentOnlyChecked && !vm.count("daemon") ) {
-                     OCL::TaskBrowser tb( &dc );
-                     tb.loop();
+                    if (isatty(fileno(stdin))) {
+                        OCL::TaskBrowser tb( &dc );
+                        tb.loop();
+                    } else {
+                        dc.waitForInterrupt();
+                    }
 
-                     // do it while CORBA is still up in case need to do anything remote.
-                     dc.shutdownDeployment();
+                    // do it while CORBA is still up in case need to do anything remote.
+                    dc.shutdownDeployment();
                 }
             }
 
