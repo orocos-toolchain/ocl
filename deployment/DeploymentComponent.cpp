@@ -1997,8 +1997,7 @@ namespace OCL
                                           double period, int priority,
 					       int scheduler, unsigned int cpu_nr)
     {
-        unsigned int mask = 0x1 << cpu_nr;
-        if ( this->setNamedActivity(comp_name, "Activity", period, priority, scheduler, mask) ) {
+        if ( this->setNamedActivity(comp_name, "Activity", period, priority, scheduler, cpu_nr) ) {
             assert( compmap[comp_name].instance );
             assert( compmap[comp_name].act );
             compmap[comp_name].instance->setActivity( compmap[comp_name].act );
