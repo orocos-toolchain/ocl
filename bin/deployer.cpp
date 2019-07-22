@@ -134,7 +134,6 @@ int main(int argc, char** argv)
         OCL::logging::Category::createOCLCategory);
 #endif
 
-
     /******************** WARNING ***********************
      *   NO log(...) statements before __os_init() !!!!! 
      ***************************************************/
@@ -163,7 +162,8 @@ int main(int argc, char** argv)
             {
                 if ( !(*iter).empty() )
                 {
-                    if ( (*iter).rfind(".xml",std::string::npos) == (*iter).length() - 4 || (*iter).rfind(".cpf",std::string::npos) == (*iter).length() - 4) {
+                    if ( (*iter).rfind(".xml", std::string::npos) == (*iter).length() - 4 ||
+                         (*iter).rfind(".cpf", std::string::npos) == (*iter).length() - 4) {
                         if ( deploymentOnlyChecked ) {
                             bool loadOk         = true;
                             bool configureOk    = true;
