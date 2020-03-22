@@ -140,4 +140,4 @@ void Appender::processEvents(int n)
 }
 }
 
-ORO_LIST_COMPONENT_TYPE(OCL::logging::Appender);
+ORO_LIST_COMPONENT_TYPE(OCL::logging::Appender)

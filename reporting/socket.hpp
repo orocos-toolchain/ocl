@@ -29,7 +29,7 @@
 
 namespace {
     class sockbuf;
-};
+}
 
 namespace OCL {
 namespace TCP {
@@ -101,6 +101,6 @@ namespace TCP {
              */
             void close();
     };
-};
-};
+}  // namespace TCP
+}  // namespace OCL
 #endif

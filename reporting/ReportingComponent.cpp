@@ -96,7 +96,11 @@ namespace OCL
         targetbag.setType( dsb->getTypeName() );
 
         // needed for recursion.
+#if __cplusplus < 201103L
         auto_ptr< Property<PropertyBag> > recurse_bag( new Property<PropertyBag>("recurse_bag","") );
+#else
+        unique_ptr< Property<PropertyBag> > recurse_bag( new Property<PropertyBag>("recurse_bag","") );
+#endif
         // First at the explicitly listed parts:
         for(vector<string>::iterator it = parts.begin(); it != parts.end(); ++it ) {
             // we first force getMember to get to the type, then we do it again but with a reference set.

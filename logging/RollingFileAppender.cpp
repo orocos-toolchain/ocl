@@ -77,4 +77,4 @@ void RollingFileAppender::cleanupHook()
 }
 }
 
-ORO_LIST_COMPONENT_TYPE(OCL::logging::RollingFileAppender);
+ORO_LIST_COMPONENT_TYPE(OCL::logging::RollingFileAppender)
