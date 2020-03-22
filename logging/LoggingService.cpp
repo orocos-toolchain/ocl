@@ -18,9 +18,6 @@ namespace logging {
 
 LoggingService::LoggingService(std::string name) :
 		RTT::TaskContext(name),
-        levels_prop("Levels","A PropertyBag defining the level of each category of interest."),
-        additivity_prop("Additivity","A PropertyBag defining the additivity of each category of interest."),
-        appenders_prop("Appenders","A PropertyBag defining the appenders for each category of interest."),
         level_EMERG_attr ("EMERG",  log4cpp::Priority::EMERG ),
         level_FATAL_attr ("FATAL",  log4cpp::Priority::FATAL ),
         level_ALERT_attr ("ALERT",  log4cpp::Priority::ALERT ),
@@ -33,6 +30,9 @@ LoggingService::LoggingService(std::string name) :
         level_NOTSET_attr("NOTSET", log4cpp::Priority::NOTSET),
         setCategoryPriority_mtd("setCategoryPriority", &LoggingService::setCategoryPriority, this),
         getCategoryPriorityName_mtd("getCategoryPriorityName", &LoggingService::getCategoryPriorityName, this),
+        levels_prop("Levels","A PropertyBag defining the level of each category of interest."),
+        additivity_prop("Additivity","A PropertyBag defining the additivity of each category of interest."),
+        appenders_prop("Appenders","A PropertyBag defining the appenders for each category of interest."),
         logCategories_mtd("logCategories", &LoggingService::logCategories, this)
 {
     this->properties()->addProperty( levels_prop );
