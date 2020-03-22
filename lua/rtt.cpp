@@ -1238,7 +1238,7 @@ static int Port_connect(lua_State *L)
 	PortInterface **pip1, **pip2;
 	PortInterface *pi1 = NULL;
 	PortInterface *pi2 = NULL;
-    ConnPolicy **cpp;
+	ConnPolicy **cpp;
 	ConnPolicy *cp = NULL;
 
 	if((pip1 = (PortInterface**) luaL_testudata(L, 1, "InputPort")) != NULL) {
@@ -1266,10 +1266,10 @@ static int Port_connect(lua_State *L)
 		cp=*cpp;
 	}
 
-    if ( cp )
-        ret = pi1->connectTo(pi2, *cp);
-    else
-        ret = pi1->connectTo(pi2);
+	if ( cp )
+		ret = pi1->connectTo(pi2, *cp);
+	else
+		ret = pi1->connectTo(pi2);
 
 	lua_pushboolean(L, ret);
 
@@ -1291,23 +1291,23 @@ static int Port_disconnect(lua_State *L)
 	else {
 		arg_type = lua_type(L, 1);
 		luaL_error(L, "Port.info: invalid argument 1, expected Port, got %s",
-			   lua_typename(L, arg_type));
-    }
-    if((pip2 = (PortInterface**) luaL_testudata(L, 2, "InputPort")) != NULL) {
-	pi2= *pip2;
-    } else if((pip2 = (PortInterface**) luaL_testudata(L, 2, "OutputPort")) != NULL) {
-	pi2= *pip2;
-    }
+			lua_typename(L, arg_type));
+	}
+	if((pip2 = (PortInterface**) luaL_testudata(L, 2, "InputPort")) != NULL) {
+		pi2= *pip2;
+	} else if((pip2 = (PortInterface**) luaL_testudata(L, 2, "OutputPort")) != NULL) {
+		pi2= *pip2;
+	}
 
-    if (pi2 != NULL)
-	ret = pi1->disconnect(pi2);
-    else{
-	pi1->disconnect();
-	ret = 1;
-    }
-    lua_pushboolean(L, ret);
+	if (pi2 != NULL)
+		ret = pi1->disconnect(pi2);
+	else{
+		pi1->disconnect();
+		ret = 1;
+	}
+	lua_pushboolean(L, ret);
 
-    return 1;
+	return 1;
 }
 
 
@@ -1755,7 +1755,7 @@ static int Service_provides(lua_State *L)
 		subsrv = srv->getService(subsrv_str);
 		if (subsrv == 0)
 			luaL_error(L, "Service.provides: no subservice %s of service %s",
-                       subsrv_str, srv->getName().c_str() );
+				subsrv_str, srv->getName().c_str() );
 		else
 			luaM_pushobject_mt(L, "Service", Service::shared_ptr)(subsrv);
 	}
@@ -2471,7 +2471,7 @@ static int TaskContext_removeAttribute(lua_State *L)
 	if(!tc->attributes()->hasAttribute(name))
 		luaL_error(L, "%s failed. No such attribute", __FILE__);
 
-    tc->attributes()->removeAttribute(name);
+	tc->attributes()->removeAttribute(name);
 
 	return 0;
 }

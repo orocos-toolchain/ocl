@@ -134,7 +134,7 @@ http://gobby.0x539.de/trac/browser/net6/trunk/src/socket.cpp?rev=224
                 }
             }
     };
-};
+}  // namespace
 
 namespace OCL {
 namespace TCP {
@@ -293,5 +293,5 @@ namespace TCP {
             ::close( _socket );
         }
     }
-};
-};
+}  // namespace TCP
+}  // namespace OCL
