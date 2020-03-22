@@ -64,4 +64,4 @@ void FileAppender::cleanupHook()
 }
 }
 
-ORO_LIST_COMPONENT_TYPE(OCL::logging::FileAppender);
+ORO_LIST_COMPONENT_TYPE(OCL::logging::FileAppender)

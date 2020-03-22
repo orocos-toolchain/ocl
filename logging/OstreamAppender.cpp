@@ -58,4 +58,4 @@ void OstreamAppender::cleanupHook()
 }
 }
 
-ORO_LIST_COMPONENT_TYPE(OCL::logging::OstreamAppender);
+ORO_LIST_COMPONENT_TYPE(OCL::logging::OstreamAppender)
