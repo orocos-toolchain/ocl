@@ -1606,10 +1606,10 @@ namespace OCL
         if ( context->provides()->getValue( comm ) ) {
             if (debug)
                 cerr << "Found value..."<<nl;
-                this->printResult( context->provides()->getValue( comm )->getDataSource().get(), true );
-                cout << sresult.str()<<nl;
-                sresult.str("");
-                return;
+            this->printResult( context->provides()->getValue( comm )->getDataSource().get(), true );
+            cout << sresult.str()<<nl;
+            sresult.str("");
+            return;
         }
 
         if ( result ) {
