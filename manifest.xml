@@ -1,23 +1,21 @@
 <package>
-    <description brief="Orocos component library">
-        This package contains standard components for the Orocos Toolchain
-    </description>
-		<license>LGPL v2</license>
-		<author>OCL Development Team</author>
+  <description brief="Orocos component library">
+    This package contains standard components for the Orocos Toolchain
+  </description>
+  <license>LGPL v2</license>
+  <url>http://www.orocos.org/ocl</url>
 
-		<review status="unreviewed" notes=""/>
-		<url>http://www.orocos.org/ocl</url>
+  <author>OCL Development Team</author>
 
-		<rosdep name="libreadline-dev"/>
-		<rosdep name="libncurses-dev"/>
-		<rosdep name="lua-dev"/>
-		<rosdep name="netcdf"/>
-		<depend package="rtt" />
-		<depend package="log4cpp" />
+  <rosdep name="libncurses-dev" />
+  <rosdep name="libreadline-dev" />
+  <depend package="log4cpp" />
+  <rosdep name="lua-dev" />
+  <rosdep name="netcdf" />
+  <depend package="rtt" />
 
-		<export>
-			<cpp cflags="-I${prefix}/install/include/orocos" lflags="-L${prefix}/lib"/>
-		</export>
+  <export>
+    <cpp cflags="-I${prefix}/install/include/orocos" lflags="-L${prefix}/lib"/>
+  </export>
 
 </package>
-
