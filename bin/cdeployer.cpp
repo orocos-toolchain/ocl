@@ -108,6 +108,17 @@ int main(int argc, char** argv)
 		return rc;
 	}
 
+	// remove deployer arguments from argc/argv
+	if (found)
+	{
+		argc = argc - optIndex;
+		argv = &argv[optIndex];
+	}
+	else
+	{
+		argc = 1;
+	}
+
 	// check system capabilities
 	rc = OCL::enforceMinNumberCPU(minNumberCPU);
 	if (0 != rc)
@@ -140,7 +151,7 @@ int main(int argc, char** argv)
      ***************************************************/
 
     // start Orocos _AFTER_ setting up log4cpp
-	if (0 == __os_init(argc - optIndex, &argv[optIndex]))
+	if (0 == __os_init(argc, argv))
     {
 #ifdef  ORO_BUILD_LOGGING
         log(Info) << "OCL factory set for real-time logging" << endlog();
