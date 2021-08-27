@@ -30,60 +30,6 @@ void Category::log(log4cpp::Priority::Value priority,
     }
 }
 
-void Category::debug(const RTT::rt_string& message) throw()
-{
-    if (isPriorityEnabled(log4cpp::Priority::DEBUG))
-        _logUnconditionally2(log4cpp::Priority::DEBUG, message);
-}
-
-void Category::info(const RTT::rt_string& message) throw()
-{
-    if (isPriorityEnabled(log4cpp::Priority::INFO))
-        _logUnconditionally2(log4cpp::Priority::INFO, message);
-}
-
-void Category::notice(const RTT::rt_string& message) throw()
-{
-    if (isPriorityEnabled(log4cpp::Priority::NOTICE))
-        _logUnconditionally2(log4cpp::Priority::NOTICE, message);
-}
-
-void Category::warn(const RTT::rt_string& message) throw()
-{
-    if (isPriorityEnabled(log4cpp::Priority::WARN))
-        _logUnconditionally2(log4cpp::Priority::WARN, message);
-}
-
-void Category::error(const RTT::rt_string& message) throw()
-{
-    if (isPriorityEnabled(log4cpp::Priority::ERROR))
-        _logUnconditionally2(log4cpp::Priority::ERROR, message);
-}
-
-void Category::crit(const RTT::rt_string& message) throw()
-{
-    if (isPriorityEnabled(log4cpp::Priority::CRIT))
-        _logUnconditionally2(log4cpp::Priority::CRIT, message);
-}
-
-void Category::alert(const RTT::rt_string& message) throw()
-{
-    if (isPriorityEnabled(log4cpp::Priority::ALERT))
-        _logUnconditionally2(log4cpp::Priority::ALERT, message);
-}
-
-void Category::emerg(const RTT::rt_string& message) throw()
-{
-    if (isPriorityEnabled(log4cpp::Priority::EMERG))
-        _logUnconditionally2(log4cpp::Priority::EMERG, message);
-}
-
-void Category::fatal(const RTT::rt_string& message) throw()
-{
-    if (isPriorityEnabled(log4cpp::Priority::FATAL))
-        _logUnconditionally2(log4cpp::Priority::FATAL, message);
-}
-
 
 void Category::_logUnconditionally2(log4cpp::Priority::Value priority,
                                     const RTT::rt_string& message) throw()
@@ -149,7 +95,7 @@ log4cpp::Category* Category::createOCLCategory(const std::string& name,
 
 CategoryStream Category::getRTStream(log4cpp::Priority::Value priority)
 {
-    return CategoryStream(this, isPriorityEnabled(priority) ? 
+    return CategoryStream(this, isPriorityEnabled(priority) ?
                           priority : log4cpp::Priority::NOTSET);
 }
 
