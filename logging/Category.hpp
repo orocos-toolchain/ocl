@@ -32,15 +32,15 @@ public:
 public:
     virtual void log(log4cpp::Priority::Value priority, 
                      const RTT::rt_string& message) throw();
-    void debug(const RTT::rt_string& message) throw();
-    void info(const RTT::rt_string& message) throw();
-    void notice(const RTT::rt_string& message) throw();
-    void warn(const RTT::rt_string& message) throw();
-    void error(const RTT::rt_string& message) throw();
-    void crit(const RTT::rt_string& message) throw();
-    void alert(const RTT::rt_string& message) throw();
-    void emerg(const RTT::rt_string& message) throw();
-    void fatal(const RTT::rt_string& message) throw();
+    void debug(const RTT::rt_string& message) throw() { log(log4cpp::Priority::DEBUG, message); }
+    void info(const RTT::rt_string& message) throw() { log(log4cpp::Priority::INFO, message); }
+    void notice(const RTT::rt_string& message) throw() { log(log4cpp::Priority::NOTICE, message); }
+    void warn(const RTT::rt_string& message) throw() { log(log4cpp::Priority::WARN, message); }
+    void error(const RTT::rt_string& message) throw() { log(log4cpp::Priority::ERROR, message); }
+    void crit(const RTT::rt_string& message) throw() { log(log4cpp::Priority::CRIT, message); }
+    void alert(const RTT::rt_string& message) throw() { log(log4cpp::Priority::ALERT, message); }
+    void emerg(const RTT::rt_string& message) throw() { log(log4cpp::Priority::EMERG, message); }
+    void fatal(const RTT::rt_string& message) throw() { log(log4cpp::Priority::FATAL, message); }
 
     /**
      * Returns a stream-like object into which you can log
