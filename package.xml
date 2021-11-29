@@ -1,38 +1,31 @@
-<package>
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
   <name>ocl</name>
   <version>2.10.0</version>
   <description>
     Orocos component library
     This package contains standard components for the Orocos Toolchain
   </description>
-  <license>LGPL v2</license>
-  <maintainer email="orocos-dev@lists.mech.kuleuven.be">Orocos Developers</maintainer>
+  <license>GPLv2</license> <!-- Compile with -DNO_GPL=ON to exclude GPL-licensed code. -->
+  <license>LGPL-2.1</license>
+  <maintainer email="orocos-dev@orocos.org">Orocos Developers</maintainer>
+  <url>http://www.orocos.org/ocl</url>
 
   <author>OCL Development Team</author>
-  <url>http://www.orocos.org/ocl</url>
-  
-  <buildtool_depend>cmake</buildtool_depend>
-  <buildtool_depend>catkin</buildtool_depend>
-  <run_depend>catkin</run_depend>
-  
-  <build_depend>libreadline-dev</build_depend>
-  <build_depend>libncurses-dev</build_depend>
-  <build_depend>lua-dev</build_depend>
-  <build_depend>netcdf</build_depend>
-  <build_depend>rtt</build_depend>
-  <build_depend>log4cpp</build_depend>
 
-  <run_depend>libreadline-dev</run_depend>
-  <run_depend>libncurses-dev</run_depend>
-  <run_depend>lua-dev</run_depend>
-  <run_depend>netcdf</run_depend>
-  <run_depend>rtt</run_depend>
-  <run_depend>log4cpp</run_depend>
+  <buildtool_depend>cmake</buildtool_depend>
+  <buildtool_depend condition="$ROS_VERSION == 1">catkin</buildtool_depend> <!-- optional -->
+
+  <depend>libncurses-dev</depend>
+  <depend>libreadline-dev</depend>
+  <depend>log4cpp</depend>
+  <depend>lua-dev</depend>
+  <depend>netcdf</depend>
+  <depend>rtt</depend>
 
   <export>
-    <build_type>
-      cmake
-    </build_type>
+    <build_type>cmake</build_type>
   </export>
 
 </package>

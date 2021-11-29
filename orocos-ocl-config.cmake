@@ -43,7 +43,7 @@
 include(FindPkgConfig)
 
 # Find RTT to get OROCOS_TARGET etc.
-if(NOT OROCOS_TARGET)
+if(NOT OROCOS-RTT_FOUND)
   find_package(OROCOS-RTT REQUIRED)
 endif()
 if(NOT COMMAND orocos_find_package)
